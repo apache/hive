@@ -12,24 +12,39 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
     <groupId>org.apache.hive</groupId>
     <version>4.0.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-
   <artifactId>hive-standalone-metastore-common</artifactId>
   <name>Hive Standalone Metastore Common Code</name>
-
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
   </properties>
-
   <dependencies>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty-shaded</artifactId>
+      <version>${io.grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+      <version>${io.grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+      <version>${io.grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>${javax.annotation-api.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-core</artifactId>
@@ -105,13 +120,21 @@
       <artifactId>hadoop-common</artifactId>
       <optional>true</optional>
       <exclusions>
-         <exclusion>
+        <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
-          </exclusion>
-       <exclusion>
+        </exclusion>
+        <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>
@@ -138,6 +161,14 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -157,6 +188,14 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -170,6 +209,14 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>
@@ -208,6 +255,14 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -226,8 +281,8 @@
       </exclusions>
     </dependency>
     <dependency>
-    <groupId>com.github.ben-manes.caffeine</groupId>
-    <artifactId>caffeine</artifactId>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
@@ -244,7 +299,6 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <!-- test scope dependencies -->
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -261,7 +315,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
   <profiles>
     <profile>
       <id>thriftif</id>
@@ -276,20 +329,19 @@
                 <phase>generate-sources</phase>
                 <configuration>
                   <target>
-                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
-                             classpathref="maven.plugin.classpath" />
+                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" classpathref="maven.plugin.classpath"/>
                     <property name="thrift.args" value="${thrift.args}"/>
                     <property name="thrift.gen.dir" value="${thrift.gen.dir}"/>
                     <delete dir="${thrift.gen.dir}"/>
                     <mkdir dir="${thrift.gen.dir}"/>
                     <for param="thrift.file">
                       <path>
-                        <fileset dir="." includes="src/main/thrift/*.thrift" />
+                        <fileset dir="." includes="src/main/thrift/*.thrift"/>
                       </path>
                       <sequential>
                         <echo message="Generating Thrift code for @{thrift.file}"/>
-                        <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-                          <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} " />
+                        <exec executable="${thrift.home}/bin/thrift" failonerror="true" dir=".">
+                          <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} "/>
                         </exec>
                       </sequential>
                     </for>
@@ -402,17 +454,7 @@
       </reporting>
     </profile>
   </profiles>
-
   <build>
-    <resources>
-      <resource>
-        <directory>${basedir}/src/main/resources</directory>
-        <includes>
-          <include>package.jdo</include>
-        </includes>
-      </resource>
-    </resources>
-
     <pluginManagement>
       <plugins>
         <plugin>
@@ -446,21 +488,6 @@
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
-            <id>setup-test-dirs</id>
-            <phase>process-test-resources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <delete dir="${test.tmp.dir}" />
-                <delete dir="${test.warehouse.dir}" />
-                <mkdir dir="${test.tmp.dir}" />
-                <mkdir dir="${test.warehouse.dir}" />
-              </target>
-            </configuration>
-          </execution>
-          <execution>
             <id>generate-version-annotation</id>
             <phase>generate-sources</phase>
             <configuration>
@@ -473,13 +500,6 @@
                 </exec>
               </target>
             </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>setup-metastore-scripts</id>
-            <phase>process-test-resources</phase>
             <goals>
               <goal>run</goal>
             </goals>
@@ -497,11 +517,20 @@
               <goal>run</goal>
             </goals>
             <configuration>
-              <protocArtifact>${protobuf.group}:protoc:${protobuf-exc.version}</protocArtifact>
+              <protocArtifact>com.google.protobuf:protoc:${protobuf.version}</protocArtifact>
               <addSources>none</addSources>
               <inputDirectories>
                 <include>${basedir}/src/main/protobuf/org/apache/hadoop/hive/metastore</include>
               </inputDirectories>
+              <outputTargets>
+                <outputTarget>
+                  <type>java</type>
+                </outputTarget>
+                <outputTarget>
+                  <type>grpc-java</type>
+                  <pluginArtifact>io.grpc:protoc-gen-grpc-java:${io.grpc.version}</pluginArtifact>
+                </outputTarget>
+              </outputTargets>
             </configuration>
           </execution>
         </executions>
@@ -529,85 +558,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <reuseForks>false</reuseForks>
-          <argLine>-Xmx2048m</argLine>
-          <failIfNoTests>false</failIfNoTests>
-          <systemPropertyVariables>
-            <log4j.debug>true</log4j.debug>
-            <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
-            <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
-            <hive.in.test>true</hive.in.test>
-          </systemPropertyVariables>
-          <additionalClasspathElements>
-            <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
-            <additionalClasspathElement>${itest.jdbc.jars}</additionalClasspathElement>
-          </additionalClasspathElements>
-          <skipITs>${skipITests}</skipITs> <!-- set this to false to run these tests -->
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <reuseForks>false</reuseForks>
-          <forkCount>${test.forkcount}</forkCount>
-          <argLine>-Xmx2048m</argLine>
-          <systemPropertyVariables>
-            <build.dir>${project.build.directory}</build.dir>
-            <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>
-            <derby.version>${derby.version}</derby.version>
-            <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
-            <log4j.debug>true</log4j.debug>
-            <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
-            <javax.jdo.option.ConnectionURL>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</javax.jdo.option.ConnectionURL>
-            <metastore.schema.verification>false</metastore.schema.verification>
-            <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
-            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
-          </systemPropertyVariables>
-          <additionalClasspathElements>
-            <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
-          </additionalClasspathElements>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>*.patch</exclude>
-            <exclude>binary-package-licenses/**</exclude>
-            <exclude>DEV-README</exclude>
-            <exclude>**/src/main/sql/**</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>**/*.txt</exclude>
-            <exclude>**/*.log</exclude>
-            <exclude>**/*.arcconfig</exclude>
-            <exclude>**/package-info.java</exclude>
-            <exclude>**/*.properties</exclude>
-            <exclude>**/*.q</exclude>
-            <exclude>**/*.q.out</exclude>
-            <exclude>**/*.xml</exclude>
-            <exclude>**/gen/**</exclude>
-            <exclude>**/patchprocess/**</exclude>
-            <exclude>**/metastore_db/**</exclude>
-          </excludes>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -642,22 +592,6 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr3-maven-plugin</artifactId>
-        <version>${antlr.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>antlr</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-          <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
-        </configuration>
-      </plugin>
-      <plugin>
         <!-- Suppress source assembly -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -673,5 +607,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

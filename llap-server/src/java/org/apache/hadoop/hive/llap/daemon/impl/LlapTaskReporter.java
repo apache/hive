@@ -291,7 +291,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
       int fromPreRoutedEventId = task.getNextPreRoutedEventId();
       int maxEvents = Math.min(maxEventsToGet, task.getMaxEventsToHandle());
       TezHeartbeatRequest request = new TezHeartbeatRequest(requestId, events, fromPreRoutedEventId,
-          containerIdStr, task.getTaskAttemptID(), fromEventId, maxEvents);
+          containerIdStr, task.getTaskAttemptID(), fromEventId, maxEvents, 0);
       LOG.debug("Sending heartbeat to AM, request={}", request);
 
       maybeLogCounters();

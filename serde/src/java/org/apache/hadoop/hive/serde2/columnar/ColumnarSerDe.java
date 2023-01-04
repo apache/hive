@@ -88,7 +88,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
     serdeParams = new LazySerDeParameters(configuration, properties, getClass().getName());
 
     // Create the ObjectInspectors for the fields. Note: Currently
-    // ColumnarObject uses same ObjectInpector as LazyStruct
+    // ColumnarObject uses same ObjectInspector as LazyStruct
     cachedObjectInspector = LazyFactory.createColumnarStructInspector(
         serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams);
 

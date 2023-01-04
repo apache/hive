@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.slf4j.Logger;
-import org.stringtemplate.v4.ST;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -101,7 +100,7 @@ public class IncrementalLoadTasksBuilder {
     this.shouldFailover = shouldFailover;
     if (shouldFailover) {
       this.metricCollector.reportFailoverStart("REPL_LOAD", metricMap,
-              new FailoverMetaData(new Path(dumpDirectory), conf));
+              new FailoverMetaData(new Path(dumpDirectory, ReplUtils.REPL_HIVE_BASE_DIR), conf));
     } else {
       this.metricCollector.reportStageStart("REPL_LOAD", metricMap);
     }
@@ -177,7 +176,8 @@ public class IncrementalLoadTasksBuilder {
       taskChainTail = updateIncPendTask;
 
       Map<String, String> dbProps = new HashMap<>();
-      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(lastReplayedEvent));
+      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
+              String.valueOf((lastReplayedEvent == null) ? eventTo : lastReplayedEvent));
       ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps, dumpDirectory,
               metricCollector, shouldFailover);
       Task<?> barrierTask = TaskFactory.get(replStateLogWork, conf);
@@ -196,8 +196,8 @@ public class IncrementalLoadTasksBuilder {
   }
 
   private boolean isEventNotReplayed(Map<String, String> params, FileStatus dir, DumpType dumpType) {
-    if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-      String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString()))) {
+      String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
       if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
         log.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
                 + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
@@ -242,7 +242,7 @@ public class IncrementalLoadTasksBuilder {
 
   private Task<?> dbUpdateReplStateTask(String dbName, String replState, Task<?> preCursor) {
     HashMap<String, String> mapProp = new HashMap<>();
-    mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
+    mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(), replState);
 
     AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
         new ReplicationSpec(replState, replState));

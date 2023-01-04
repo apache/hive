@@ -64,8 +64,7 @@ public class VectorUDFStructField extends VectorExpression {
     boolean[] inputIsNull = structColumnVector.isNull;
     boolean[] outputIsNull = outV.isNull;
 
-    // We do not need to do a column reset since we are carefully changing the output.
-    outV.isRepeating = false;
+    outV.reset();
 
     if (structColumnVector.isRepeating) {
       if (structColumnVector.noNulls || !structColumnVector.isNull[0]) {

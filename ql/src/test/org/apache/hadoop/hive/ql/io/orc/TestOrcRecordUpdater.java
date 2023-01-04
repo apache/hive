@@ -139,6 +139,7 @@ public class TestOrcRecordUpdater {
     Reader reader = OrcFile.createReader(bucketPath,
         new OrcFile.ReaderOptions(conf).filesystem(fs).maxLength(len));
     assertEquals(3, reader.getNumberOfRows());
+    reader.close();
 
     // read the second flush and make sure we see all 5 rows
     len = side.readLong();
@@ -185,6 +186,7 @@ public class TestOrcRecordUpdater {
     assertEquals("fifth",
         OrcRecordUpdater.getRow(row).getFieldValue(0).toString());
     assertEquals(false, rows.hasNext());
+    rows.close();
 
     // add one more record and close
     updater.insert(20, new MyRow("sixth"));
@@ -193,6 +195,7 @@ public class TestOrcRecordUpdater {
         new OrcFile.ReaderOptions(conf).filesystem(fs));
     assertEquals(6, reader.getNumberOfRows());
     assertEquals(6L, updater.getStats().getRowCount());
+    reader.close();
 
     assertEquals(false, fs.exists(sidePath));
   }
@@ -323,6 +326,7 @@ public class TestOrcRecordUpdater {
     assertNull(OrcRecordUpdater.getRow(row));
 
     assertEquals(false, rows.hasNext());
+    rows.close();
   }
 
   /*

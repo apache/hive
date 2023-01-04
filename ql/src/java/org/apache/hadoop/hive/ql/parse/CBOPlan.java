@@ -24,12 +24,18 @@ import org.apache.calcite.rel.RelNode;
  * Wrapper of Calcite plan.
  */
 public class CBOPlan {
+  private final ASTNode ast;
   private final RelNode plan;
   private final String invalidAutomaticRewritingMaterializationReason;
 
-  public CBOPlan(RelNode plan, String invalidAutomaticRewritingMaterializationReason) {
+  public CBOPlan(ASTNode ast, RelNode plan, String invalidAutomaticRewritingMaterializationReason) {
+    this.ast = ast;
     this.plan = plan;
     this.invalidAutomaticRewritingMaterializationReason = invalidAutomaticRewritingMaterializationReason;
+  }
+
+  public ASTNode getAst() {
+    return ast;
   }
 
   /**

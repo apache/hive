@@ -112,3 +112,19 @@ dfs -copyFromLocal ../../data/files/test_dec_space.csv hdfs:///tmp/test_dec_spac
 create external table test_dec_space (id int, value decimal) ROW FORMAT DELIMITED
  FIELDS TERMINATED BY ',' location 'hdfs:///tmp/test_dec_space';
 select * from test_dec_space;
+
+create table tbl (fld int);
+dfs -mkdir -p  hdfs:///tmp/test_load_aux_jar;
+dfs -copyFromLocal  ${system:hive.root}/data/files/identity_udf.jar  hdfs:///tmp/test_load_aux_jar/;
+
+-- both hive.aux.jars.path and hive.reloadable.aux.jars.path pointing to the same jar.
+SET hive.aux.jars.path=hdfs:///tmp/test_load_aux_jar/identity_udf.jar;
+SET hive.reloadable.aux.jars.path=hdfs:///tmp/test_load_aux_jar/;
+
+-- reload will load the identity_udf.jar from tmp/test_load_aux_jar
+RELOAD;
+
+insert into tbl values(1);
+select * from tbl;
+
+dfs -rmr -f hdfs:///tmp/test_load_aux_jar/

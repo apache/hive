@@ -57,6 +57,24 @@ public class HiveIcebergStorageHandlerTestUtils {
           .add(2L, "Trudy", "Pink")
           .build();
 
+  static final List<Record> OTHER_CUSTOMER_RECORDS_1 = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
+          .add(3L, "Marci", "Barna")
+          .add(4L, "Laci", "Zold")
+          .add(5L, "Peti", "Rozsaszin")
+          .build();
+
+  static final List<Record> OTHER_CUSTOMER_RECORDS_2 = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
+      .add(1L, "Joanna", "Pierce")
+      .add(1L, "Sharon", "Taylor")
+      .add(2L, "Joanna", "Silver")
+      .add(2L, "Bob", "Silver")
+      .add(2L, "Susan", "Morrison")
+      .add(2L, "Jake", "Donnel")
+      .add(3L, "Blake", "Burr")
+      .add(3L, "Trudy", "Johnson")
+      .add(3L, "Trudy", "Henderson")
+      .build();
+
   private HiveIcebergStorageHandlerTestUtils() {
     // Empty constructor for the utility class
   }

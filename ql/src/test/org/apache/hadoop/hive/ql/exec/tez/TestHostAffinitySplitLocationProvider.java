@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
@@ -167,7 +168,7 @@ public class TestHostAffinitySplitLocationProvider {
     return locations;
   }
 
-
+  @org.junit.Ignore("HIVE-26308")
   @Test (timeout = 20000)
   public void testConsistentHashingFallback() throws IOException {
     final int LOC_COUNT_TO = 20, SPLIT_COUNT = 500, MAX_MISS_COUNT = 4,
@@ -215,8 +216,7 @@ public class TestHostAffinitySplitLocationProvider {
     int[] hitCounts = new int[locs];
     for (int splitIx = 0; splitIx < splits.length; ++splitIx) {
       state.set(0);
-      int index = HostAffinitySplitLocationProvider.determineLocation(partLocs,
-          splits[splitIx].getPath().toString(), splits[splitIx].getStart(), null);
+      int index = HostAffinitySplitLocationProvider.determineLocation(partLocs, splits[splitIx]);
       ++hitCounts[index];
     }
     SummaryStatistics ss = new SummaryStatistics();
@@ -320,8 +320,7 @@ public class TestHostAffinitySplitLocationProvider {
     doReturn(new Path(fakePathString)).when(fileSplit).getPath();
     doReturn(locations).when(fileSplit).getLocations();
 
-    doReturn(locations).when(fileSplit).getLocations();
-    return fileSplit;
+    return new HiveInputFormat.HiveInputSplit(fileSplit, "unused");
   }
 
 

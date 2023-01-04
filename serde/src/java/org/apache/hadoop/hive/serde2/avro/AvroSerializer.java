@@ -161,7 +161,7 @@ class AvroSerializer {
 
   /** private cache to avoid lots of EnumSymbol creation while serializing.
    *  Two levels because the enum symbol is specific to a schema.
-   *  Object because we want to avoid the overhead of repeated toString calls while maintaining compatability.
+   *  Object because we want to avoid the overhead of repeated toString calls while maintaining compatibility.
    *  Provided there are few enum types per record, and few symbols per enum, memory use should be moderate.
    *  eg 20 types with 50 symbols each as length-10 Strings should be on the order of 100KB per AvroSerializer.
    */

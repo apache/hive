@@ -631,7 +631,7 @@ public final class ObjectInspectorUtils {
   /**
    * Computes the bucket number to which the bucketFields belong to
    * @param bucketFields  the bucketed fields of the row
-   * @param bucketFieldInspectors  the ObjectInpsectors for each of the bucketed fields
+   * @param bucketFieldInspectors  the ObjectInspectors for each of the bucketed fields
    * @param totalBuckets the number of buckets in the table
    * @return the bucket number using Murmur hash
    */
@@ -642,7 +642,7 @@ public final class ObjectInspectorUtils {
   /**
    * Computes the bucket number to which the bucketFields belong to
    * @param bucketFields  the bucketed fields of the row
-   * @param bucketFieldInspectors  the ObjectInpsectors for each of the bucketed fields
+   * @param bucketFieldInspectors  the ObjectInspectors for each of the bucketed fields
    * @param totalBuckets the number of buckets in the table
    * @return the bucket number
    */
@@ -1203,9 +1203,17 @@ public final class ObjectInspectorUtils {
       List<? extends StructField> fields1 = soi1.getAllStructFieldRefs();
       List<? extends StructField> fields2 = soi2.getAllStructFieldRefs();
       int minimum = Math.min(fields1.size(), fields2.size());
+      Object data1 =
+              soi1 instanceof ConstantObjectInspector
+              ? ((ConstantObjectInspector) soi1).getWritableConstantValue()
+              : o1;
+      Object data2 =
+              soi2 instanceof ConstantObjectInspector
+              ? ((ConstantObjectInspector) soi2).getWritableConstantValue()
+              : o2;
       for (int i = 0; i < minimum; i++) {
-        int r = compare(soi1.getStructFieldData(o1, fields1.get(i)), fields1
-            .get(i).getFieldObjectInspector(), soi2.getStructFieldData(o2,
+        int r = compare(soi1.getStructFieldData(data1, fields1.get(i)), fields1
+            .get(i).getFieldObjectInspector(), soi2.getStructFieldData(data2,
             fields2.get(i)), fields2.get(i).getFieldObjectInspector(),
             mapEqualComparer, nullValueOpt);
         if (r != 0) {

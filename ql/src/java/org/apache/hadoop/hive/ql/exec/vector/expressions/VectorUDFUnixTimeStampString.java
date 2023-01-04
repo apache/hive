@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.time.ZoneId;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -28,7 +30,9 @@ import org.apache.hadoop.io.Text;
 import java.nio.charset.CharacterCodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -39,7 +43,6 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
 
   private static final long serialVersionUID = 1L;
 
-  private transient SimpleDateFormat format;
   private transient ZoneId timeZone;
 
   public VectorUDFUnixTimeStampString(int colNum, int outputColumnNum) {
@@ -56,24 +59,20 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
     if (timeZone == null) {
       String timeZoneStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
       timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
-      format = getFormatter(timeZone);
     }
   }
 
   @Override
   protected long getField(byte[] bytes, int start, int length) throws ParseException {
-    Date date = null;
+
     try {
-      date = format.parse(Text.decode(bytes, start, length));
+      Timestamp timestamp = Timestamp.valueOf(Text.decode(bytes, start, length));
+      TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp,timeZone);
+      return timestampTZ.getEpochSecond();
     } catch (CharacterCodingException e) {
       throw new ParseException(e.getMessage(), 0);
+    } catch (IllegalArgumentException e){
+      throw new ParseException(e.getMessage(), 0);
     }
-    return date.getTime() / 1000;
-  }
-
-  private static SimpleDateFormat getFormatter(ZoneId timeZone) {
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    format.setTimeZone(TimeZone.getTimeZone(timeZone));
-    return format;
   }
 }

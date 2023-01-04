@@ -86,6 +86,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.Constants;
@@ -1340,7 +1341,7 @@ public class BeeLine implements Closeable {
       } else {
         org.apache.hadoop.fs.Path path = new org.apache.hadoop.fs.Path(fileName);
         FileSystem fs;
-        HiveConf conf = new HiveConf();
+        Configuration conf = new Configuration();
         if (!path.toUri().isAbsolute()) {
           fs = FileSystem.getLocal(conf);
           path = fs.makeQualified(path);

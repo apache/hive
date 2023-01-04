@@ -22,7 +22,6 @@ set hive.compute.splits.in.am=true;
 set tez.grouping.min-size=1000;
 set tez.grouping.max-size=50000;
 set hive.exec.dynamic.partition=true;
-set hive.merge.sparkfiles=false;
 
 -- 3 mappers
 explain insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2;
@@ -41,7 +40,6 @@ set hive.merge.orcfile.stripe.level=true;
 set hive.merge.tezfiles=true;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
-set hive.merge.sparkfiles=true;
 
 -- 3 mappers
 explain insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2;
@@ -60,7 +58,6 @@ set hive.merge.orcfile.stripe.level=false;
 set hive.merge.tezfiles=false;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
-set hive.merge.sparkfiles=false;
 
 insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2;
 insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2;

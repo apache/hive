@@ -50,6 +50,8 @@ import java.util.regex.Pattern;
 
 import javax.crypto.SecretKey;
 
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalDirAllocator;
 import org.apache.hadoop.fs.Path;
@@ -285,6 +287,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       maxShuffleThreads = 2 * Runtime.getRuntime().availableProcessors();
     }
 
+    port = conf.getInt(SHUFFLE_PORT_CONFIG_KEY, DEFAULT_SHUFFLE_PORT);
     // TODO: this is never used
     localDirs = conf.getTrimmedStrings(SHUFFLE_HANDLER_LOCAL_DIRS);
 
@@ -360,7 +363,6 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         .childOption(ChannelOption.SO_KEEPALIVE, true);
     initPipeline(bootstrap, conf);
 
-    port = conf.getInt(SHUFFLE_PORT_CONFIG_KEY, DEFAULT_SHUFFLE_PORT);
     Channel ch = bootstrap.bind().sync().channel();
     accepted.add(ch);
     port = ((InetSocketAddress)ch.localAddress()).getPort();
@@ -389,6 +391,9 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         ChannelPipeline pipeline = ch.pipeline();
         if (sslFactory != null) {
           pipeline.addLast("ssl", new SslHandler(sslFactory.createSSLEngine()));
+        }
+        if (LOG.isDebugEnabled()) {
+          pipeline.addLast("loggingHandler", new LoggingHandler(LogLevel.DEBUG));
         }
         pipeline.addLast("decoder", new HttpRequestDecoder());
         pipeline.addLast("aggregator", new HttpObjectAggregator(1 << 16));
@@ -430,7 +435,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   /**
    * Serialize the shuffle port into a ByteBuffer for use later on.
-   * @param port the port to be sent to the ApplciationMaster
+   * @param port the port to be sent to the ApplicationMaster
    * @return the serialized form of the port.
    */
   public static ByteBuffer serializeMetaData(int port) throws IOException {
@@ -1053,7 +1058,6 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     protected void sendError(ChannelHandlerContext ctx, String message, HttpResponseStatus status) {
       FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status);
       sendError(ctx, message, response);
-      response.release();
     }
 
     protected void sendError(ChannelHandlerContext ctx, String message, FullHttpResponse response) {
@@ -1071,7 +1075,6 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       header.write(out);
 
       sendError(ctx, wrappedBuffer(out.getData(), 0, out.getLength()), fullResponse);
-      fullResponse.release();
     }
 
     protected void sendError(ChannelHandlerContext ctx, ByteBuf content,
@@ -1086,6 +1089,11 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
       // Close the connection as soon as the error message is sent.
       ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+      /*
+       * The general rule of thumb is that the party that accesses a reference-counted object last
+       * is also responsible for the destruction of that reference-counted object.
+       */
+      content.release();
     }
 
     @Override

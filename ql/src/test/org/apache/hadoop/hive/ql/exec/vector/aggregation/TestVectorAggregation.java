@@ -56,6 +56,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
+
 public class TestVectorAggregation extends AggregationBase {
 
   @Test
@@ -183,14 +185,14 @@ public class TestVectorAggregation extends AggregationBase {
   public void testBloomFilter() throws Exception {
     Random random = new Random(7743);
 
-    doIntegerTests("bloom_filter", random);
-    doFloatingTests("bloom_filter", random);
-    doDecimalTests("bloom_filter", random, /* tryDecimal64 */ false);
+    doIntegerTests(BLOOM_FILTER_FUNCTION, random);
+    doFloatingTests(BLOOM_FILTER_FUNCTION, random);
+    doDecimalTests(BLOOM_FILTER_FUNCTION, random, /* tryDecimal64 */ false);
 
     doTests(
-        random, "bloom_filter", TypeInfoFactory.timestampTypeInfo);
+        random, BLOOM_FILTER_FUNCTION, TypeInfoFactory.timestampTypeInfo);
 
-    doStringFamilyTests("bloom_filter", random);
+    doStringFamilyTests(BLOOM_FILTER_FUNCTION, random);
   }
 
   private final static Set<String> varianceNames = new HashSet<String>();
@@ -507,7 +509,7 @@ public class TestVectorAggregation extends AggregationBase {
 
     VectorRandomRowSource partial1RowSource = new VectorRandomRowSource();
 
-    boolean allowNull = !aggregationName.equals("bloom_filter");
+    boolean allowNull = !aggregationName.equals(BLOOM_FILTER_FUNCTION);
     partial1RowSource.initGenerationSpecSchema(
         random, dataAggrGenerationSpecList, /* maxComplexDepth */ 0,
         allowNull,  /* isUnicodeOk */ true,
@@ -585,7 +587,7 @@ public class TestVectorAggregation extends AggregationBase {
       case "avg":
         hasDifferentCompleteExpr = true;
         break;
-      case "bloom_filter":
+      case BLOOM_FILTER_FUNCTION:
       case "count":
       case "max":
       case "min":
@@ -678,7 +680,7 @@ public class TestVectorAggregation extends AggregationBase {
       case "avg":
         hasDifferentPartial2Expr = true;
         break;
-      case "bloom_filter":
+      case BLOOM_FILTER_FUNCTION:
       case "count":
       case "max":
       case "min":
@@ -719,7 +721,7 @@ public class TestVectorAggregation extends AggregationBase {
       case "avg":
         hasDifferentFinalExpr = true;
         break;
-      case "bloom_filter":
+      case BLOOM_FILTER_FUNCTION:
       case "count":
         hasDifferentFinalExpr = true;
         break;

@@ -106,7 +106,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             keyColumns: 0:string, 1:int
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             partitionColumns: 0:string
                             valueColumns: 2:double, 3:bigint
                         Statistics: Num rows: 100 Data size: 18816 Basic stats: COMPLETE Column stats: NONE
@@ -132,7 +132,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 notVectorizedReason: PTF operator: Only PTF directly under reduce-shuffle is supported
                 vectorized: false
             Reduce Operator Tree:
@@ -296,3 +296,161 @@ NULL	sarah ovid	1.62	NULL
 26	yuri robinson	1.22	26
 69	yuri zipper	NULL	69
 56	zach robinson	0.86	56
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY
+SELECT ROW_NUMBER() OVER(order by age) AS rn FROM studentnull100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studentnull100
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY
+SELECT ROW_NUMBER() OVER(order by age) AS rn FROM studentnull100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studentnull100
+#### A masked pattern was here ####
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT ROW_NUMBER() OVER(order by age) AS rn FROM studentnull100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studentnull100
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ROW_NUMBER() OVER(order by age) AS rn FROM studentnull100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studentnull100
+#### A masked pattern was here ####
+rn
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100

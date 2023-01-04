@@ -1,0 +1,17 @@
+PREHOOK: query: create temporary table tmp1 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp1
+POSTHOOK: query: create temporary table tmp1 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp1
+PREHOOK: query: create temporary table tmp2 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp2
+POSTHOOK: query: create temporary table tmp2 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp2
+FAILED: SemanticException View definition references temporary table default@tmp1

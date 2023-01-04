@@ -20,9 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +36,8 @@ import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
@@ -102,7 +102,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
   @Parameters(name = "fileFormat={0}, engine={1}, catalog={2}, isVectorized={3}")
   public static Collection<Object[]> parameters() {
-    Collection<Object[]> testParams = new ArrayList<>();
+    Collection<Object[]> testParams = Lists.newArrayList();
     String javaVersion = System.getProperty("java.specification.version");
 
     // Run tests with every FileFormat for a single Catalog (HiveCatalog)
@@ -111,8 +111,8 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
         // include Tez tests only for Java 8
         if (javaVersion.equals("1.8")) {
           testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, false});
-          // test for vectorization=ON in case of ORC format and Tez engine
-          if (fileFormat == FileFormat.ORC && "tez".equals(engine) && MetastoreUtil.hive3PresentOnClasspath()) {
+          // test for vectorization=ON in case of ORC and PARQUET format with Tez engine
+          if (fileFormat != FileFormat.METADATA && "tez".equals(engine) && MetastoreUtil.hive3PresentOnClasspath()) {
             testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, true});
           }
         }
@@ -158,7 +158,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @AfterClass
-  public static void afterClass() {
+  public static void afterClass() throws Exception {
     shell.stop();
   }
 
@@ -167,6 +167,13 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
     HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, executionEngine);
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+    // Fetch task conversion might kick in for certain queries preventing vectorization code path to be used, so
+    // we turn it off explicitly to achieve better coverage.
+    if (isVectorized) {
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    } else {
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "more");
+    }
   }
 
   @After
@@ -182,7 +189,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
   protected void validateBasicStats(Table icebergTable, String dbName, String tableName)
       throws TException, InterruptedException {
     Map<String, String> hmsParams = shell.metastore().getTable(dbName, tableName).getParameters();
-    Map<String, String> summary = new HashMap<>();
+    Map<String, String> summary = Maps.newHashMap();
     if (icebergTable.currentSnapshot() == null) {
       for (String key : STATS_MAPPING.values()) {
         summary.put(key, "0");

@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.TestHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -39,6 +38,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.thrift.TException;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -82,6 +83,8 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
     hive.getConf().set(ValidTxnList.VALID_TXNS_KEY, "1:");
     hive.getConf().set(ValidWriteIdList.VALID_WRITEIDS_KEY, TABLE_NAME + ":1:");
     hive.getConf().setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.TestTxnManager");
+    // Pick a small number for the batch size to easily test code with multiple batches.
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX, 2);
     SessionState.start(hive.getConf());
     SessionState.get().initTxnMgr(hive.getConf());
     Context ctx = new Context(hive.getConf());
@@ -134,18 +137,32 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
 
   @Test
   public void testGetPartitionsByNames2() throws HiveException {
-    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
-    req.setDb_name(DB_NAME);
-    req.setTbl_name(TABLE_NAME);
     hive.getPartitionsByNames(DB_NAME,TABLE_NAME,null, t);
   }
 
   @Test
   public void testGetPartitionsByNames3() throws HiveException {
-    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
-    req.setDb_name(DB_NAME);
-    req.setTbl_name(TABLE_NAME);
     hive.getPartitionsByNames(t, new ArrayList<>(), true);
+  }
+
+  @Test
+  public void testGetPartitionsByNamesWithSingleBatch() throws HiveException {
+    hive.getPartitionsByNames(t, Arrays.asList("Greece", "Italy"), true);
+  }
+
+  @Test
+  public void testGetPartitionsByNamesWithMultipleEqualSizeBatches()
+      throws HiveException {
+    List<String> names = Arrays.asList("Greece", "Italy", "France", "Spain");
+    hive.getPartitionsByNames(t, names, true);
+  }
+
+  @Test
+  public void testGetPartitionsByNamesWithMultipleUnequalSizeBatches()
+      throws HiveException {
+    List<String> names =
+        Arrays.asList("Greece", "Italy", "France", "Spain", "Hungary");
+    hive.getPartitionsByNames(t, names, true);
   }
 
   @Test

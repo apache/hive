@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.fs.FSStatsAggregator;
@@ -156,7 +157,11 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
           while (driver.getResults(new ArrayList<String>())) {
           }
         } catch (CommandProcessorException e) {
-          throw new SemanticException(e.getMessage(), e);
+          if (e.getCause() instanceof ReCompileException) {
+            throw (ReCompileException) e.getCause();
+          } else {
+            throw new SemanticException(e.getMessage(), e);
+          }
         }
         config.setOpIdToRuntimeNumRows(aggregateStats(config.getExplainRootPath()));
       } catch (IOException e1) {
@@ -200,19 +205,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         && !config.isLogical()
         && !config.isVectorization()
         && !config.isAuthorize()
-        && (
-             (
-               HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_EXPLAIN_USER)
-               &&
-               HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
-             )
-             ||
-             (
-               HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_SPARK_EXPLAIN_USER)
-               &&
-               HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
-             )
-           )
+        && HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_EXPLAIN_USER)
+        && HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
         );
 
     ExplainWork work = new ExplainWork(ctx.getResFile(),

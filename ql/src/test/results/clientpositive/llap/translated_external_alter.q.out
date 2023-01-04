@@ -1,0 +1,16 @@
+PREHOOK: query: create table caseSensitive (a integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@caseSensitive
+POSTHOOK: query: create table caseSensitive (a integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@caseSensitive
+PREHOOK: query: alter table  casesEnsitivE set tblproperties('some'='one')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@casesensitive
+PREHOOK: Output: default@casesensitive
+POSTHOOK: query: alter table  casesEnsitivE set tblproperties('some'='one')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@casesensitive
+POSTHOOK: Output: default@casesensitive

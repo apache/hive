@@ -505,21 +505,46 @@ public class MetaStoreServerUtils {
     params.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
   }
 
+  /**
+   * Compare the names, types and comments of two lists of {@link FieldSchema}.
+   * <p>
+   * The name of {@link FieldSchema} is compared in the case-insensitive mode
+   * because all names in Hive are case-insensitive.
+   *
+   * @param oldCols old columns
+   * @param newCols new columns
+   * @return true if the two columns are the same, false otherwise
+   */
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
-    return ListUtils.isEqualList(oldCols, newCols);
+    if (oldCols == newCols) {
+      return true;
+    }
+    if (oldCols == null || newCols == null || oldCols.size() != newCols.size()) {
+      return false;
+    }
+    // We should ignore the case of field names, because some computing engines are case-sensitive, such as Spark.
+    List<FieldSchema> transformedOldCols = oldCols.stream()
+        .map(col -> new FieldSchema(col.getName().toLowerCase(), col.getType(), col.getComment()))
+        .collect(Collectors.toList());
+    List<FieldSchema> transformedNewCols = newCols.stream()
+        .map(col -> new FieldSchema(col.getName().toLowerCase(), col.getType(), col.getComment()))
+        .collect(Collectors.toList());
+    return ListUtils.isEqualList(transformedOldCols, transformedNewCols);
   }
 
   /**
    * Returns true if p is a prefix of s.
+   * <p>
+   * The compare of {@link FieldSchema} is the same as {@link #areSameColumns(List, List)}.
    */
   public static boolean arePrefixColumns(List<FieldSchema> p, List<FieldSchema> s) {
     if (p == s) {
       return true;
     }
-    if (p.size() > s.size()) {
+    if (p == null || s == null || p.size() > s.size()) {
       return false;
     }
-    return ListUtils.isEqualList(p, s.subList(0, p.size()));
+    return areSameColumns(p, s.subList(0, p.size()));
   }
 
   public static void updateBasicState(EnvironmentContext environmentContext, Map<String,String>
@@ -1192,8 +1217,8 @@ public class MetaStoreServerUtils {
       }
       PropertyUtils.setNestedProperty(bean, propertyName, value);
     } catch (Exception e) {
-      throw new MetaException(
-          org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      LOG.error("Failed to set nested property", e);
+      throw new MetaException(e.getMessage());
     }
   }
 

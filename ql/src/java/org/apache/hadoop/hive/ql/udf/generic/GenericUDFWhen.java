@@ -18,9 +18,16 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
@@ -28,7 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
 /**
  * GenericUDF Class for SQL construct
  * "CASE WHEN a THEN b WHEN c THEN d [ELSE f] END".
- * 
+ *
  * NOTES: 1. a and c should be boolean, or an exception will be thrown. 2. b, d
  * and f should be common types, or an exception will be thrown.
  */
@@ -49,7 +56,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
     + " END\n"
     + " FROM emp_details")
 
-public class GenericUDFWhen extends GenericUDF {
+public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
@@ -128,4 +135,23 @@ public class GenericUDFWhen extends GenericUDF {
     return sb.toString();
   }
 
+  @Override
+  public StatEstimator getStatEstimator() {
+    return new WhenStatEstimator();
+  }
+
+  static class WhenStatEstimator implements StatEstimator {
+
+    @Override
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+      for (int i = 1; i < argStats.size(); i += 2) {
+        combiner.add(argStats.get(i));
+      }
+      if (argStats.size() % 2 == 1) {
+        combiner.add(argStats.get(argStats.size() - 1));
+      }
+      return combiner.getResult();
+    }
+  }
 }

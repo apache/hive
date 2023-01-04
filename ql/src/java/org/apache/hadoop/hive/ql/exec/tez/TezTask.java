@@ -38,10 +38,12 @@ import javax.annotation.Nullable;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -61,7 +63,6 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -92,6 +93,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
 
 /**
  *
@@ -188,14 +191,17 @@ public class TezTask extends Task<TezWork> {
       // jobConf will hold all the configuration for hadoop, tez, and hive, which are not set in AM defaults
       JobConf jobConf = utils.createConfiguration(conf, false);
 
+      // Setup the job specific keystore path if exists and put the password into the environment variables of tez am/tasks.
+      HiveConfUtil.updateJobCredentialProviders(jobConf);
 
       // Get all user jars from work (e.g. input format stuff).
       String[] allNonConfFiles = work.configureJobConfAndExtractJars(jobConf);
       // DAG scratch dir. We get a session from the pool so it may be different from Tez one.
       // TODO: we could perhaps reuse the same directory for HiveResources?
       Path scratchDir = utils.createTezDir(ctx.getMRScratchDir(), conf);
-      CallerContext callerContext = CallerContext.create(
-          "HIVE", queryPlan.getQueryId(), "HIVE_QUERY_ID", queryPlan.getQueryStr());
+      CallerContext callerContext =
+          CallerContext.create("HIVE", String.format(USER_ID, queryPlan.getQueryId(), userName), "HIVE_QUERY_ID",
+              queryPlan.getQueryStr());
 
       perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
       session = sessionRef.value = WorkloadManagerFederation.getSession(
@@ -246,8 +252,10 @@ public class TezTask extends Task<TezWork> {
         }
 
         // Log all the info required to find the various logs for this query
+        String dagId = this.dagClient.getDagIdentifierString();
         LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG Session ID: [{}]", ServerUtils.hostname(), queryId,
-            this.dagClient.getDagIdentifierString(), this.dagClient.getSessionIdentifierString());
+            dagId, this.dagClient.getSessionIdentifierString());
+        LogUtils.putToMDC(LogUtils.DAGID_KEY, dagId);
 
         // finally monitor will print progress until the job is done
         TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, counters);
@@ -262,9 +270,6 @@ public class TezTask extends Task<TezWork> {
           Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
 
-          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
-            DeltaFilesMetricReporter.getInstance().submit(dagCounters);
-          }
           // if initial counters exists, merge it with dag counters to get aggregated view
           TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);
           counters = mergedCounters;
@@ -865,6 +870,13 @@ public class TezTask extends Task<TezWork> {
         throws IOException, TezException, InterruptedException {
       synchronized (dagClient) {
         return dagClient.waitForCompletionWithStatusUpdates(statusGetOpts);
+      }
+    }
+
+    @Override
+    public String getWebUIAddress() throws IOException, TezException {
+      synchronized (dagClient) {
+        return dagClient.getWebUIAddress();
       }
     }
   }

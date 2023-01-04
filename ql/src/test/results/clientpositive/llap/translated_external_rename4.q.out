@@ -1,0 +1,129 @@
+PREHOOK: query: CREATE TABLE part_test(
+c1 string
+,c2 string
+)PARTITIONED BY (dat string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_test
+POSTHOOK: query: CREATE TABLE part_test(
+c1 string
+,c2 string
+)PARTITIONED BY (dat string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_test
+PREHOOK: query: insert into part_test values ("11","th","20220101")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part_test
+POSTHOOK: query: insert into part_test values ("11","th","20220101")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part_test
+POSTHOOK: Output: default@part_test@dat=20220101
+POSTHOOK: Lineage: part_test PARTITION(dat=20220101).c1 SCRIPT []
+POSTHOOK: Lineage: part_test PARTITION(dat=20220101).c2 SCRIPT []
+PREHOOK: query: insert into part_test values ("22","th","20220102")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part_test
+POSTHOOK: query: insert into part_test values ("22","th","20220102")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part_test
+POSTHOOK: Output: default@part_test@dat=20220102
+POSTHOOK: Lineage: part_test PARTITION(dat=20220102).c1 SCRIPT []
+POSTHOOK: Lineage: part_test PARTITION(dat=20220102).c2 SCRIPT []
+PREHOOK: query: alter table part_test rename to part_test11
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@part_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_test
+PREHOOK: Output: default@part_test11
+POSTHOOK: query: alter table part_test rename to part_test11
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@part_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_test
+POSTHOOK: Output: default@part_test11
+PREHOOK: query: desc formatted part_test11
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@part_test11
+POSTHOOK: query: desc formatted part_test11
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@part_test11
+# col_name            	data_type           	comment             
+c1                  	string              	                    
+c2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dat                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	TRUE                
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	2                   
+	rawDataSize         	10                  
+	totalSize           	12                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted part_test11 partition(dat="20220101")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@part_test11
+POSTHOOK: query: desc formatted part_test11 partition(dat="20220101")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@part_test11
+# col_name            	data_type           	comment             
+c1                  	string              	                    
+c2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dat                 	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[20220101]          	 
+Database:           	default             	 
+Table:              	part_test11         	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\"}}
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	5                   
+	totalSize           	6                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

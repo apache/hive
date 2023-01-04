@@ -21,10 +21,12 @@ package org.apache.hadoop.hive.llap.io.api.impl;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -47,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.AvoidSplitCombination;
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
+import org.apache.hadoop.hive.ql.io.NullRowsInputFormat.NullRowsRecordReader;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -82,7 +86,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   private final Deserializer sourceSerDe;
   final ColumnVectorProducer cvp;
   final ExecutorService executor;
-  private final String hostName;
+  private static final String hostName = HiveStringUtils.getHostname();
 
   private final Configuration daemonConf;
 
@@ -96,7 +100,6 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     this.sourceASC = (sourceInputFormat instanceof AvoidSplitCombination)
         ? (AvoidSplitCombination)sourceInputFormat : null;
     this.sourceSerDe = sourceSerDe;
-    this.hostName = HiveStringUtils.getHostname();
   }
 
   @Override
@@ -137,9 +140,29 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       // This starts the reader in the background.
       rr.start();
       return result;
+    } catch (IOException ioe) {
+      throw ioe;
     } catch (Exception ex) {
-      throw new IOException(ex);
+      Throwable rootCause = JavaUtils.findRootCause(ex);
+      if (checkLimitReached(job)
+          && (rootCause instanceof InterruptedException || rootCause instanceof ClosedByInterruptException)) {
+        LlapIoImpl.LOG.info("Ignoring exception while getting record reader as limit is reached", rootCause);
+        return new NullRowsRecordReader(job, split);
+      } else {
+        throw new IOException(ex);
+      }
     }
+  }
+
+  private boolean checkLimitReached(JobConf job) {
+    /*
+     * 2 assumptions here when using "tez.mapreduce.vertex.name"
+     *
+     * 1. The execution engine is tez, which is valid in case of LLAP.
+     * 2. The property "tez.mapreduce.vertex.name" is present: it is handled in MRInputBase.initialize.
+     *    On Input codepaths we cannot use properties from TezProcessor.initTezAttributes.
+     */
+    return LimitOperator.checkLimitReachedForVertex(job, job.get("tez.mapreduce.vertex.name"));
   }
 
   private RecordReader<NullWritable, VectorizedRowBatch> wrapLlapReader(

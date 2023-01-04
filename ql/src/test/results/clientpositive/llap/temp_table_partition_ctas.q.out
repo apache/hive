@@ -173,6 +173,7 @@ POSTHOOK: Output: default@partition_ctas_1_temp@key=291
 POSTHOOK: Output: default@partition_ctas_1_temp@key=292
 POSTHOOK: Output: default@partition_ctas_1_temp@key=296
 POSTHOOK: Output: default@partition_ctas_1_temp@key=298
+POSTHOOK: Lineage: partition_ctas_1_temp.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_1_temp PARTITION(key=201).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_1_temp PARTITION(key=202).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_1_temp PARTITION(key=203).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -390,6 +391,7 @@ POSTHOOK: Output: default@partition_ctas_2_temp@value=val_291
 POSTHOOK: Output: default@partition_ctas_2_temp@value=val_292
 POSTHOOK: Output: default@partition_ctas_2_temp@value=val_296
 POSTHOOK: Output: default@partition_ctas_2_temp@value=val_298
+POSTHOOK: Lineage: partition_ctas_2_temp.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_2_temp PARTITION(value=val_201).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_2_temp PARTITION(value=val_202).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_2_temp PARTITION(value=val_203).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -854,6 +856,7 @@ POSTHOOK: Output: default@partition_ctas_diff_order_temp@value=val_291
 POSTHOOK: Output: default@partition_ctas_diff_order_temp@value=val_292
 POSTHOOK: Output: default@partition_ctas_diff_order_temp@value=val_296
 POSTHOOK: Output: default@partition_ctas_diff_order_temp@value=val_298
+POSTHOOK: Lineage: partition_ctas_diff_order_temp.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_diff_order_temp PARTITION(value=val_201).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_diff_order_temp PARTITION(value=val_202).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_diff_order_temp PARTITION(value=val_203).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1008,6 +1011,9 @@ POSTHOOK: Output: default@partition_ctas_complex_order_temp@c0=val_235_0/c4=val_
 POSTHOOK: Output: default@partition_ctas_complex_order_temp@c0=val_237_0/c4=val_237_4/c1=val_237_1
 POSTHOOK: Output: default@partition_ctas_complex_order_temp@c0=val_238_0/c4=val_238_4/c1=val_238_1
 POSTHOOK: Output: default@partition_ctas_complex_order_temp@c0=val_239_0/c4=val_239_4/c1=val_239_1
+POSTHOOK: Lineage: partition_ctas_complex_order_temp.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order_temp.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order_temp.c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_complex_order_temp PARTITION(c0=val_201_0,c4=val_201_4,c1=val_201_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_complex_order_temp PARTITION(c0=val_201_0,c4=val_201_4,c1=val_201_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_complex_order_temp PARTITION(c0=val_201_0,c4=val_201_4,c1=val_201_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]

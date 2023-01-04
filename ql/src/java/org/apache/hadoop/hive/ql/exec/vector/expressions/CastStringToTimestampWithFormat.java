@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Vectorized UDF for CAST (<STRING> TO TIMESTAMP WITH FORMAT <STRING>).
+ * Vectorized UDF for CAST (&lt;STRING&gt; TO TIMESTAMP WITH FORMAT &lt;STRING&gt;).
  */
 public class CastStringToTimestampWithFormat extends CastStringToTimestamp {
 

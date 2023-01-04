@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -32,7 +33,17 @@ public interface DataSourceProvider {
    * @param hdpConfig
    * @return the new connection pool
    */
-  DataSource create(Configuration hdpConfig) throws SQLException;
+  default DataSource create(Configuration hdpConfig) throws SQLException {
+    int maxPoolSize = MetastoreConf.getIntVar(hdpConfig, MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
+    return create(hdpConfig, maxPoolSize);
+  }
+
+  /**
+   * @param hdpConfig
+   * @param maxPoolSize the maximum size of the connection pool
+   * @return the new connection pool
+   */
+  DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException;
 
   /**
    * Get the declared pooling type string. This is used to check against the constant in
@@ -69,4 +80,23 @@ public interface DataSourceProvider {
     return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
   }
 
+  static String getDataSourceName(Configuration conf) {
+    return conf.get(DataSourceNameConfigurator.DATA_SOURCE_NAME);
+  }
+
+  class DataSourceNameConfigurator implements Closeable {
+    static final String DATA_SOURCE_NAME = "metastore.DataSourceProvider.pool.name";
+    private final Configuration configuration;
+    public DataSourceNameConfigurator(Configuration conf, String name) {
+      this.configuration = conf;
+      configuration.set(DATA_SOURCE_NAME, name);
+    }
+    public void resetName(String name) {
+      configuration.set(DATA_SOURCE_NAME, name);
+    }
+    @Override
+    public void close() {
+      configuration.unset(DATA_SOURCE_NAME);
+    }
+  }
 }

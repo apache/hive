@@ -8,7 +8,7 @@
 -- on the other side, clientnegative tests cannot be written at the moment
 -- as TestNegativeCliDriver won't utilize TezProcessor, where the actual vertex name, task number, task attempt number
 -- is set, this also implies that the udfs below support only tez, and they are not supposed to support any other execution engines
--- (MR and Spark are not supported in the future anyway)
+-- (MR is not supported in the future anyway)
 
 -- exception_in_vertex_udf can be typically used on mapper side and
 -- needs a column reference for the given mapper as the first parameter, because:

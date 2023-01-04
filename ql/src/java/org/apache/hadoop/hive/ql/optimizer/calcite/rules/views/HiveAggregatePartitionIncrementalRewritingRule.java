@@ -59,9 +59,9 @@ import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.findRe
  *
  * SELECT a, b, sum(sumc) FROM (
  *     SELECT a, b, sumc FROM mat1
- *     LEFT SEMI JOIN (SELECT a, b, sum(c) FROM t1 WHERE ROW__ID.writeId > 1 GROUP BY b, a) q ON (mat1.a <=> q.a)
+ *     LEFT SEMI JOIN (SELECT a, b, sum(c) FROM t1 WHERE ROW__ID.writeId &gt; 1 GROUP BY b, a) q ON (mat1.a &lt;=&gt; q.a)
  *     UNION ALL
- *     SELECT a, b, sum(c) sumc FROM t1 WHERE ROW__ID.writeId > 1 GROUP BY b, a
+ *     SELECT a, b, sum(c) sumc FROM t1 WHERE ROW__ID.writeId &gt; 1 GROUP BY b, a
  * ) sub
  * GROUP BY b, a
  */

@@ -122,7 +122,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * If there is no distinct expression, cachedKeys is simply like this.
    * cachedKeys[0] = [col0][col1]
    *
-   * with two distict expression, union(tag:key) is attatched for each distinct expression
+   * with two distict expression, union(tag:key) is attached for each distinct expression
    * cachedKeys[0] = [col0][col1][0:dist1]
    * cachedKeys[1] = [col0][col1][1:dist2]
    *

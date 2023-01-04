@@ -126,8 +126,8 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   }
 
   @Override
-  public void setMaxMemoryAvailable(final long memoryAvailble) {
-    this.memAvailable = memoryAvailble;
+  public void setMaxMemoryAvailable(final long memoryAvailable) {
+    this.memAvailable = memoryAvailable;
   }
 
   @Override

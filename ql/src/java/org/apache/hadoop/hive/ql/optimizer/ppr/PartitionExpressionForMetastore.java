@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -51,7 +52,7 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   @Override
   public String convertExprToFilter(byte[] exprBytes, String defaultPartitionName, boolean decodeFilterExpToStr)
       throws MetaException {
-    ExprNodeGenericFuncDesc expr;
+    ExprNodeDesc expr;
     try {
       expr = deserializeExpr(exprBytes);
     } catch (MetaException e) {
@@ -84,7 +85,7 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
       partColumnNames.add(fs.getName());
       partColumnTypeInfos.add(TypeInfoFactory.getPrimitiveTypeInfo(fs.getType()));
     }
-    ExprNodeGenericFuncDesc expr = deserializeExpr(exprBytes);
+    ExprNodeDesc expr = deserializeExpr(exprBytes);
     try {
       ExprNodeDescUtils.replaceEqualDefaultPartition(expr, defaultPartitionName);
     } catch (SemanticException ex) {
@@ -104,13 +105,19 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
     }
   }
 
-  private ExprNodeGenericFuncDesc deserializeExpr(byte[] exprBytes) throws MetaException {
-    ExprNodeGenericFuncDesc expr = null;
+  private ExprNodeDesc deserializeExpr(byte[] exprBytes) throws MetaException {
+    ExprNodeDesc expr = null;
     try {
-      expr = SerializationUtilities.deserializeExpressionFromKryo(exprBytes);
+      expr = SerializationUtilities.deserializeObjectWithTypeInformation(exprBytes, true);
     } catch (Exception ex) {
-      LOG.error("Failed to deserialize the expression", ex);
-      throw new MetaException(ex.getMessage());
+      LOG.error("Failed to deserialize the expression, fall back to deserializeObjectFromKryo", ex);
+      try {
+        expr = SerializationUtilities.deserializeObjectFromKryo(exprBytes, ExprNodeGenericFuncDesc.class);
+      } catch (Exception e) {
+        LOG.error("Failed to deserialize the expression", e);
+        throw new MetaException("SerializationUtilities#deserializeObjectWithTypeInformation: " + ex.getMessage() +
+            ", SerializationUtilities#deserializeObjectFromKryo: " + e.getMessage());
+      }
     }
     if (expr == null) {
       throw new MetaException("Failed to deserialize expression - ExprNodeDesc not present");

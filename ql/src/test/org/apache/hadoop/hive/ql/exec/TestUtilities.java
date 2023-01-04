@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
-import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -149,8 +148,15 @@ public class TestUtilities {
     assertEquals("db name", "dab1", dbtab[0]);
     assertEquals("table name", "tab1", dbtab[1]);
 
+    // test table name with metadata table name
+    tablename = "dab1.tab1.meta1";
+    dbtab = Utilities.getDbTableName(tablename);
+    assertEquals("db name", "dab1", dbtab[0]);
+    assertEquals("table name", "tab1", dbtab[1]);
+    assertEquals("metadata table name", "meta1", dbtab[2]);
+
     //test invalid table name
-    tablename = "dab1.tab1.x1";
+    tablename = "dab1.tab1.x1.y";
     try {
       dbtab = Utilities.getDbTableName(tablename);
       fail("exception was expected for invalid table name");
@@ -192,6 +198,51 @@ public class TestUtilities {
   public void testRemoveTempOrDuplicateFilesOnMrWithDp() throws Exception {
     List<Path> paths = runRemoveTempOrDuplicateFilesTestCase("mr", true);
     assertEquals(NUM_BUCKETS, paths.size());
+  }
+
+  @Test
+  public void testRenameFilesNotExists() throws Exception {
+    FileSystem fs = mock(FileSystem.class);
+    Path src = new Path("src");
+    Path dest = new Path("dir");
+    when(fs.exists(dest)).thenReturn(false);
+    when(fs.rename(src, dest)).thenReturn(true);
+    Utilities.renameOrMoveFiles(fs, src, dest);
+    verify(fs, times(1)).rename(src, dest);
+  }
+
+  @Test
+  public void testRenameFileExistsNonHive() throws Exception {
+    FileSystem fs = mock(FileSystem.class);
+    Path src = new Path("src");
+    Path dest = new Path("dir1");
+    Path finalPath = new Path(dest, "src_2");
+    FileStatus status = new FileStatus();
+    status.setPath(src);
+    when(fs.listStatus(src)).thenReturn(new FileStatus[]{status});
+    when(fs.exists(dest)).thenReturn(true);
+    when(fs.exists(new Path(dest, "src"))).thenReturn(true);
+    when(fs.exists(new Path(dest,"src_1"))).thenReturn(true);
+    when(fs.rename(src, finalPath)).thenReturn(true);
+    Utilities.renameOrMoveFiles(fs, src, dest);
+    verify(fs, times(1)).rename(src, finalPath);
+  }
+
+  @Test
+  public void testRenameFileExistsHivePath() throws Exception {
+    FileSystem fs = mock(FileSystem.class);
+    Path src = new Path("00001_02");
+    Path dest = new Path("dir1");
+    Path finalPath = new Path(dest, "00001_02_copy_2");
+    FileStatus status = new FileStatus();
+    status.setPath(src);
+    when(fs.listStatus(src)).thenReturn(new FileStatus[]{status});
+    when(fs.exists(dest)).thenReturn(true);
+    when(fs.exists(new Path(dest, "00001_02"))).thenReturn(true);
+    when(fs.exists(new Path(dest,"00001_02_copy_1"))).thenReturn(true);
+    when(fs.rename(src, finalPath)).thenReturn(true);
+    Utilities.renameOrMoveFiles(fs, src, dest);
+    verify(fs, times(1)).rename(src, finalPath);
   }
 
   private List<Path> runRemoveTempOrDuplicateFilesTestCase(String executionEngine, boolean dPEnabled)
@@ -681,15 +732,12 @@ public class TestUtilities {
 
     CountingWrappingTask mrTask = new CountingWrappingTask(new ExecDriver());
     CountingWrappingTask tezTask = new CountingWrappingTask(new TezTask());
-    CountingWrappingTask sparkTask = new CountingWrappingTask(new SparkTask());
 
     // First check - we should not have repeats in results
     assertEquals("No repeated MRTasks from Utilities.getMRTasks", 1,
         Utilities.getMRTasks(getTestDiamondTaskGraph(mrTask)).size());
     assertEquals("No repeated TezTasks from Utilities.getTezTasks", 1,
         Utilities.getTezTasks(getTestDiamondTaskGraph(tezTask)).size());
-    assertEquals("No repeated TezTasks from Utilities.getSparkTasks", 1,
-        Utilities.getSparkTasks(getTestDiamondTaskGraph(sparkTask)).size());
 
     // Second check - the tasks we looked for must not have been accessed more than
     // once as a result of the traversal (note that we actually wind up accessing
@@ -698,7 +746,6 @@ public class TestUtilities {
 
     assertEquals("MRTasks should have been visited only once", 2, mrTask.getDepCallCount());
     assertEquals("TezTasks should have been visited only once", 2, tezTask.getDepCallCount());
-    assertEquals("SparkTasks should have been visited only once", 2, sparkTask.getDepCallCount());
 
   }
 

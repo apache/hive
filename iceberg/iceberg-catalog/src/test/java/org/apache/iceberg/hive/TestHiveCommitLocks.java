@@ -20,9 +20,15 @@
 package org.apache.iceberg.hive;
 
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.iceberg.AssertHelpers;
@@ -42,7 +48,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class TestHiveCommitLocks extends HiveTableBaseTest {
@@ -50,8 +60,8 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
   private static HiveClientPool spyClientPool = null;
   private static CachedClientPool spyCachedClientPool = null;
   private static Configuration overriddenHiveConf = new Configuration(hiveConf);
-  private static AtomicReference<HiveMetaStoreClient> spyClientRef = new AtomicReference<>();
-  private static HiveMetaStoreClient spyClient = null;
+  private static AtomicReference<IMetaStoreClient> spyClientRef = new AtomicReference<>();
+  private static IMetaStoreClient spyClient = null;
   HiveTableOperations ops = null;
   TableMetadata metadataV1 = null;
   TableMetadata metadataV2 = null;
@@ -71,12 +81,13 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
     // The spy clients are reused between methods and closed at the end of all tests in this class.
     spyClientPool = spy(new HiveClientPool(1, overriddenHiveConf));
     when(spyClientPool.newClient()).thenAnswer(invocation -> {
-      HiveMetaStoreClient client = (HiveMetaStoreClient) invocation.callRealMethod();
-      spyClientRef.set(spy(client));
+      // cannot spy on RetryingHiveMetastoreClient as it is a proxy
+      IMetaStoreClient client = spy(new HiveMetaStoreClient(hiveConf));
+      spyClientRef.set(client);
       return spyClientRef.get();
     });
 
-    spyClientPool.run(HiveMetaStoreClient::isLocalMetaStore); // To ensure new client is created.
+    spyClientPool.run(IMetaStoreClient::isLocalMetaStore); // To ensure new client is created.
 
     spyCachedClientPool = spy(new CachedClientPool(hiveConf, Collections.emptyMap()));
     when(spyCachedClientPool.clientPool()).thenAnswer(invocation -> spyClientPool);
@@ -121,7 +132,7 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
   @Test
   public void testLockAcquisitionAtFirstTime() throws TException, InterruptedException {
     doReturn(acquiredLockResponse).when(spyClient).lock(any());
-    doNothing().when(spyOps).doUnlock(eq(dummyLockId));
+    doNothing().when(spyClient).unlock(eq(dummyLockId));
 
     spyOps.doCommit(metadataV2, metadataV1);
 
@@ -139,7 +150,7 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
         .doReturn(acquiredLockResponse)
         .when(spyClient)
         .checkLock(eq(dummyLockId));
-    doNothing().when(spyOps).doUnlock(eq(dummyLockId));
+    doNothing().when(spyClient).unlock(eq(dummyLockId));
 
     spyOps.doCommit(metadataV2, metadataV1);
 
@@ -209,5 +220,32 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
         CommitFailedException.class,
         "Could not acquire the lock on",
         () -> spyOps.doCommit(metadataV2, metadataV1));
+  }
+
+  @Test
+  public void testTableLevelProcessLockBlocksConcurrentHMSRequestsForSameTable() throws Exception {
+    int numConcurrentCommits = 10;
+    // resetting the spy client to forget about prior call history
+    reset(spyClient);
+
+    // simulate several concurrent commit operations on the same table
+    ExecutorService executor = Executors.newFixedThreadPool(numConcurrentCommits);
+    IntStream.range(0, numConcurrentCommits).forEach(i ->
+        executor.submit(() -> {
+          try {
+            spyOps.doCommit(metadataV2, metadataV1);
+          } catch (CommitFailedException e) {
+            // failures are expected here when checking the base version
+            // it's no problem, we're not testing the actual commit success here, only the HMS lock acquisition attempts
+          }
+        }));
+    executor.shutdown();
+    executor.awaitTermination(30, TimeUnit.SECONDS);
+
+    // intra-process commits to the same table should be serialized now
+    // i.e. no thread should receive WAITING state from HMS and have to call checkLock periodically
+    verify(spyClient, never()).checkLock(any(Long.class));
+    // all threads eventually got their turn
+    verify(spyClient, times(numConcurrentCommits)).lock(any(LockRequest.class));
   }
 }

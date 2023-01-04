@@ -612,6 +612,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
 PREHOOK: Input: default@stats_part@p=101
 PREHOOK: Input: default@stats_part@p=102
+PREHOOK: Output: default@stats_part
 PREHOOK: Output: default@stats_part@p=101
 PREHOOK: Output: default@stats_part@p=102
 POSTHOOK: query: update stats_part set key = key + 100 where key in(-50,40) and p > 100
@@ -619,8 +620,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_part
 POSTHOOK: Input: default@stats_part@p=101
 POSTHOOK: Input: default@stats_part@p=102
+POSTHOOK: Output: default@stats_part
+POSTHOOK: Output: default@stats_part@p=101
 POSTHOOK: Output: default@stats_part@p=101
 POSTHOOK: Output: default@stats_part@p=102
+POSTHOOK: Lineage: stats_part PARTITION(p=101).key EXPRESSION [(stats_part)stats_part.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_part PARTITION(p=101).value SIMPLE [(stats_part)stats_part.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain select max(key) from stats_part where p > 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
@@ -762,7 +767,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	2913                
+	totalSize           	2919                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -828,6 +833,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
 PREHOOK: Input: default@stats_part@p=101
 PREHOOK: Input: default@stats_part@p=102
+PREHOOK: Output: default@stats_part
 PREHOOK: Output: default@stats_part@p=101
 PREHOOK: Output: default@stats_part@p=102
 POSTHOOK: query: update stats_part set value = concat(value, 'updated') where cast(key as integer) in(40,53) and p > 100
@@ -835,6 +841,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_part
 POSTHOOK: Input: default@stats_part@p=101
 POSTHOOK: Input: default@stats_part@p=102
+POSTHOOK: Output: default@stats_part
 POSTHOOK: Output: default@stats_part@p=101
 POSTHOOK: Output: default@stats_part@p=102
 PREHOOK: query: desc formatted stats_part partition(p = 100)
@@ -896,7 +903,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	2913                
+	totalSize           	2919                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1034,7 +1041,7 @@ Partition Parameters:
 	numFiles            	5                   
 	numRows             	1                   
 	rawDataSize         	0                   
-	totalSize           	3611                
+	totalSize           	3617                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

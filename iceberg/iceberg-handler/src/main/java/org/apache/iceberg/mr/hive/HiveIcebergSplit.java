@@ -19,17 +19,22 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.tez.HashableInputSplit;
 import org.apache.hadoop.mapred.FileSplit;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.mr.mapreduce.IcebergSplit;
 import org.apache.iceberg.mr.mapreduce.IcebergSplitContainer;
+import org.apache.iceberg.relocated.com.google.common.primitives.Longs;
 import org.apache.iceberg.util.SerializationUtil;
 
 // Hive requires file formats to return splits that are instances of `FileSplit`.
-public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer {
+public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer, HashableInputSplit {
 
   private IcebergSplit innerSplit;
 
@@ -66,6 +71,21 @@ public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer
   @Override
   public Path getPath() {
     return new Path(tableLocation);
+  }
+
+  @Override
+  public byte[] getBytesForHash() {
+    Collection<FileScanTask> fileScanTasks = innerSplit.task().files();
+
+    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+      for (FileScanTask task : fileScanTasks) {
+        baos.write(task.file().path().toString().getBytes());
+        baos.write(Longs.toByteArray(task.start()));
+      }
+      return baos.toByteArray();
+    } catch (IOException ioe) {
+      throw new RuntimeException("Couldn't produce hash input bytes for HiveIcebergSplit: " + this, ioe);
+    }
   }
 
   @Override

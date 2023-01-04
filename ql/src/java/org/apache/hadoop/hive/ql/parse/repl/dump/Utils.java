@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
@@ -64,7 +65,6 @@ import java.util.concurrent.Callable;
 
 public class Utils {
   private static Logger LOG = LoggerFactory.getLogger(Utils.class);
-  public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = "bootstrap.dump.state.";
   private static final int DEF_BUF_SIZE = 8 * 1024;
 
   public enum ReplDumpState {
@@ -130,7 +130,9 @@ public class Utils {
             outStream.write(Utilities.newLineCode);
           }
         } finally {
-          IOUtils.closeStream(outStream);
+          if (outStream != null) {
+            outStream.close();
+          }
         }
         return null;
       });
@@ -198,7 +200,9 @@ public class Utils {
           outStream.writeBytes(content);
           outStream.write(Utilities.newLineCode);
         } finally {
-          IOUtils.closeStream(outStream);
+          if (outStream != null) {
+            outStream.close();
+          }
         }
         return null;
       });
@@ -231,7 +235,7 @@ public class Utils {
     return false;
   }
 
-  public static Iterable<String> matchesDb(Hive db, String dbPattern) throws HiveException {
+  public static List<String> matchesDb(Hive db, String dbPattern) throws HiveException {
     if (dbPattern == null) {
       return db.getAllDatabases();
     } else {
@@ -270,7 +274,7 @@ public class Utils {
     }
 
     Map<String, String> newParams = new HashMap<>();
-    String uniqueKey = BOOTSTRAP_DUMP_STATE_KEY_PREFIX + UUID.randomUUID().toString();
+    String uniqueKey = ReplConst.BOOTSTRAP_DUMP_STATE_KEY_PREFIX + UUID.randomUUID().toString();
     newParams.put(uniqueKey, ReplDumpState.ACTIVE.name());
     Map<String, String> params = database.getParameters();
 
@@ -315,7 +319,7 @@ public class Utils {
     }
 
     for (String key : params.keySet()) {
-      if (key.startsWith(BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
+      if (key.startsWith(ReplConst.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
               && params.get(key).equals(ReplDumpState.ACTIVE.name())) {
         return true;
       }

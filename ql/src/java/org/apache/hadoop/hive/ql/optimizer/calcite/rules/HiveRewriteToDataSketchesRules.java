@@ -16,7 +16,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +26,8 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelCollations;
+import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelFieldCollation.NullDirection;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
@@ -39,7 +40,6 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexShuttle;
@@ -53,7 +53,6 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilder.AggCall;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -67,7 +66,7 @@ import com.google.common.collect.Lists;
 /**
  * This rule could rewrite aggregate calls to be calculated using sketch based functions.
  *
- * <br/>
+ * <br>
  * Currently it can rewrite:
  * <ul>
  *  <li>{@code count(distinct(x))} using {@code CountDistinctRewrite}
@@ -98,8 +97,8 @@ public final class HiveRewriteToDataSketchesRules {
 
     private final ProjectFactory projectFactory;
 
-    public AggregateToProjectAggregateProject(RelOptRuleOperand operand) {
-      super(operand);
+    public AggregateToProjectAggregateProject(RelOptRuleOperand operand, String description) {
+      super(operand, description);
       projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
     }
 
@@ -230,7 +229,8 @@ public final class HiveRewriteToDataSketchesRules {
     private final String sketchType;
 
     public CountDistinctRewrite(String sketchType) {
-      super(operand(HiveAggregate.class, any()));
+      super(operand(HiveAggregate.class, any()),
+          "AggregateToProjectAggregateProject(CountDistinctRewrite)");
       this.sketchType = sketchType;
     }
 
@@ -305,7 +305,8 @@ public final class HiveRewriteToDataSketchesRules {
     private final String sketchType;
 
     public PercentileDiscRewrite(String sketchType) {
-      super(operand(HiveAggregate.class, operand(HiveProject.class, any())));
+      super(operand(HiveAggregate.class, operand(HiveProject.class, any())),
+          "AggregateToProjectAggregateProject(PercentileDiscRewrite)");
       this.sketchType = sketchType;
     }
 
@@ -334,16 +335,13 @@ public final class HiveRewriteToDataSketchesRules {
 
       @Override
       boolean isApplicable(AggregateCall aggCall) {
-        if ((aggInput instanceof Project)
-            && !aggCall.isDistinct() && aggCall.getArgList().size() == 4
+        if (aggInput != null
+            && !aggCall.isDistinct() && aggCall.getArgList().size() == 1
             && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_disc")
-            && !aggCall.hasFilter()) {
-          List<Integer> argList = aggCall.getArgList();
-          RexNode orderLiteral = aggInput.getProjects().get(argList.get(2));
-          if (orderLiteral.isA(SqlKind.LITERAL)) {
-            RexLiteral lit = (RexLiteral) orderLiteral;
-            return BigDecimal.valueOf(1).equals(lit.getValue());
-          }
+            && !aggCall.hasFilter()
+            && aggCall.collation.getFieldCollations().size() == 1) {
+          RelFieldCollation fieldCollation = aggCall.collation.getFieldCollations().get(0);
+          return fieldCollation.getDirection() == RelFieldCollation.Direction.ASCENDING;
         }
         return false;
       }
@@ -352,8 +350,8 @@ public final class HiveRewriteToDataSketchesRules {
       void rewrite(AggregateCall aggCall) {
         RelDataType origType = aggregate.getRowType().getFieldList().get(newProjectsAbove.size()).getType();
 
-        Integer argIndex = aggCall.getArgList().get(1);
-        RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
+        Integer collationKeyIndex = aggCall.collation.getFieldCollations().get(0).getFieldIndex();
+        RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), collationKeyIndex);
 
         RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
         RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
@@ -368,12 +366,11 @@ public final class HiveRewriteToDataSketchesRules {
         boolean ignoreNulls = true;
         List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
         int filterArg = aggCall.filterArg;
-        RelCollation collation = aggCall.getCollation();
         RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
         String name = aggFunction.getName();
 
         AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
-            collation, type, name);
+            RelCollations.EMPTY, type, name);
 
         Integer origFractionIdx = aggCall.getArgList().get(0);
         RexNode fraction = aggInput.getProjects().get(origFractionIdx);
@@ -397,8 +394,8 @@ public final class HiveRewriteToDataSketchesRules {
 
     protected final String sketchType;
 
-    public WindowingToProjectAggregateJoinProject(String sketchType) {
-      super(operand(HiveProject.class, any()), HiveRelFactories.HIVE_BUILDER, null);
+    public WindowingToProjectAggregateJoinProject(String sketchType, String description) {
+      super(operand(HiveProject.class, any()), HiveRelFactories.HIVE_BUILDER, description);
       this.sketchType = sketchType;
     }
 
@@ -505,8 +502,8 @@ public final class HiveRewriteToDataSketchesRules {
    */
   public static abstract class AbstractRankBasedRewriteRule extends WindowingToProjectAggregateJoinProject {
 
-    public AbstractRankBasedRewriteRule(String sketchType) {
-      super(sketchType);
+    public AbstractRankBasedRewriteRule(String sketchType, String description) {
+      super(sketchType, description);
     }
 
     protected static abstract class AbstractRankBasedRewriteBuilder extends VbuilderPAP {
@@ -542,17 +539,8 @@ public final class HiveRewriteToDataSketchesRules {
         RexNode key = orderKey.getKey();
         key = rexBuilder.makeCast(getFloatType(), key);
 
-        // @formatter:off
-        AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
-            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
-            /* distinct */ false,
-            /* approximate */ false,
-            /* ignoreNulls */ true,
-            null,
-            ImmutableList.of(),
-            null,
-            ImmutableList.of(key));
-        // @formatter:on
+        SqlAggFunction dataToSketchFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+        AggCall aggCall = relBuilder.aggregateCall(dataToSketchFunction, key).ignoreNulls(true);
 
         relBuilder.aggregate(relBuilder.groupKey(partitionKeys), aggCall);
 
@@ -617,7 +605,7 @@ public final class HiveRewriteToDataSketchesRules {
   public static class CumeDistRewriteRule extends AbstractRankBasedRewriteRule {
 
     public CumeDistRewriteRule(String sketchType) {
-      super(sketchType);
+      super(sketchType, "WindowingToProjectAggregateJoinProject(CumeDistRewriteRule)");
     }
 
     @Override
@@ -650,7 +638,7 @@ public final class HiveRewriteToDataSketchesRules {
    *  <pre>
    *   SELECT id, NTILE(4) OVER (ORDER BY id) FROM sketch_input;
    *     ⇒ SELECT id, CASE
-   *                    WHEN CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]) < 1
+   *                    WHEN CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]) &lt; 1
    *                      THEN 1
    *                    ELSE CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0])
    *                  END
@@ -662,7 +650,7 @@ public final class HiveRewriteToDataSketchesRules {
   public static class NTileRewrite extends AbstractRankBasedRewriteRule {
 
     public NTileRewrite(String sketchType) {
-      super(sketchType);
+      super(sketchType, "WindowingToProjectAggregateJoinProject(NTileRewrite)");
     }
 
     @Override
@@ -706,7 +694,7 @@ public final class HiveRewriteToDataSketchesRules {
    *  <pre>
    *   SELECT id, RANK() OVER (ORDER BY id) FROM sketch_input;
    *     ⇒ SELECT id, CASE
-   *                    WHEN ds_kll_n(ds) < (ceil(ds_kll_rank(ds, CAST(id AS FLOAT) )*ds_kll_n(ds))+1)
+   *                    WHEN ds_kll_n(ds) &lt; (ceil(ds_kll_rank(ds, CAST(id AS FLOAT) )*ds_kll_n(ds))+1)
    *                    THEN ds_kll_n(ds)
    *                    ELSE (ceil(ds_kll_rank(ds, CAST(id AS FLOAT) )*ds_kll_n(ds))+1)
    *                  END
@@ -718,7 +706,7 @@ public final class HiveRewriteToDataSketchesRules {
   public static class RankRewriteRule extends AbstractRankBasedRewriteRule {
 
     public RankRewriteRule(String sketchType) {
-      super(sketchType);
+      super(sketchType, "WindowingToProjectAggregateJoinProject(RankRewriteRule)");
     }
 
     @Override

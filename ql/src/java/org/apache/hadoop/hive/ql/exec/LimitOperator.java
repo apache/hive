@@ -31,12 +31,15 @@ import org.apache.hadoop.hive.ql.exec.tez.TezProcessor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * Limit operator implementation Limits the number of rows to be passed on.
  **/
 public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
+
+  private static final String LIMIT_REACHED_KEY_SUFFIX = "_limit_reached";
 
   protected transient int limit;
   protected transient int offset;
@@ -161,6 +164,32 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   }
 
   public static String getLimitReachedKey(Configuration conf) {
-    return conf.get(TezProcessor.HIVE_TEZ_VERTEX_NAME) + "_limit_reached";
+    return conf.get(TezProcessor.HIVE_TEZ_VERTEX_NAME) + LIMIT_REACHED_KEY_SUFFIX;
+  }
+
+  public static boolean checkLimitReached(JobConf jobConf) {
+    String queryId = HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEQUERYID);
+    String limitReachedKey = getLimitReachedKey(jobConf);
+
+    return checkLimitReached(jobConf, queryId, limitReachedKey);
+  }
+
+  public static boolean checkLimitReachedForVertex(JobConf jobConf, String vertexName) {
+    String queryId = HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEQUERYID);
+    return checkLimitReached(jobConf, queryId, vertexName + LIMIT_REACHED_KEY_SUFFIX);
+  }
+
+  private static boolean checkLimitReached(JobConf jobConf, String queryId, String limitReachedKey) {
+    try {
+      return ObjectCacheFactory.getCache(jobConf, queryId, false, true)
+          .retrieve(limitReachedKey, new Callable<AtomicBoolean>() {
+            @Override
+            public AtomicBoolean call() {
+              return new AtomicBoolean(false);
+            }
+          }).get();
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

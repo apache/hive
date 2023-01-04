@@ -75,7 +75,7 @@ public class MetastoreSchemaTool {
 
   private static String homeDir;
 
-  private static String findHomeDir() {
+  protected static String findHomeDir() {
     // If METASTORE_HOME is set, use it, else use HIVE_HOME for backwards compatibility.
     homeDir = homeDir == null ? System.getenv("METASTORE_HOME") : homeDir;
     return homeDir == null ? System.getenv("HIVE_HOME") : homeDir;
@@ -122,7 +122,7 @@ public class MetastoreSchemaTool {
     if (cmdLine.hasOption("userName")) {
       setUserName(cmdLine.getOptionValue("userName"));
     } else {
-      setUserName(getConf().get(MetastoreConf.ConfVars.CONNECTION_USER_NAME.getVarname()));
+      setUserName(MetastoreConf.getAsString(getConf(), MetastoreConf.ConfVars.CONNECTION_USER_NAME));
     }
     if (cmdLine.hasOption("passWord")) {
       setPassWord(cmdLine.getOptionValue("passWord"));

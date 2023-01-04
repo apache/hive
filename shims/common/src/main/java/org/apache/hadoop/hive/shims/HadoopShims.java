@@ -72,6 +72,8 @@ import org.apache.hadoop.util.Progressable;
  */
 public interface HadoopShims {
 
+  String USER_ID = "%s_User:%s";
+
   /**
    * Constructs and Returns TaskAttempt Logger Url
    * or null if the TaskLogServlet is not available
@@ -93,9 +95,6 @@ public interface HadoopShims {
       String nameNode, boolean usingLlap) throws IOException;
 
   public MiniMrShim getLocalMiniTezCluster(Configuration conf, boolean usingLlap);
-
-  public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
-      String nameNode, int numDir) throws IOException;
 
 
   /**
@@ -259,8 +258,6 @@ public interface HadoopShims {
    * @param filter A filter to use on the files in the directory
    * @return A list of file status with IDs
    * @throws IOException An I/O exception of some sort has occurred
-   * @throws FileNotFoundException If the path is not found in the
-   *           {@code FileSystem}
    * @throws UnsupportedOperationException the {@code FileSystem} is not a
    *           {@code DistributedFileSystem}
    */

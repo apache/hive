@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.ddl.misc.flags;
 
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 
 import java.util.Map;
 
@@ -43,9 +43,9 @@ public class ReplRemoveFirstIncLoadPendFlagOperation extends DDLOperation<ReplRe
     for (String dbName : Utils.matchesDb(context.getDb(), dbNameOrPattern)) {
       Database database = context.getDb().getMSC().getDatabase(dbName);
       Map<String, String> parameters = database.getParameters();
-      String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+      String incPendPara = parameters != null ? parameters.get(ReplConst.REPL_FIRST_INC_PENDING_FLAG) : null;
       if (incPendPara != null) {
-        parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+        parameters.remove(ReplConst.REPL_FIRST_INC_PENDING_FLAG);
         context.getDb().getMSC().alterDatabase(dbName, database);
       }
     }

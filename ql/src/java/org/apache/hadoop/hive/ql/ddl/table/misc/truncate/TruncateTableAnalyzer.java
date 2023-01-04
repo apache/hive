@@ -95,18 +95,22 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
 
   private void checkTruncateEligibility(ASTNode ast, ASTNode root, String tableName, Table table)
       throws SemanticException {
+    validateUnsupportedPartitionClause(table, root.getChildCount() > 1);
+
+    if (table.isNonNative()) {
+      if (table.getStorageHandler() == null || !table.getStorageHandler().supportsTruncateOnNonNativeTables()) {
+        throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO
+      } else {
+        // If the storage handler supports truncate, then we do not need to check anything else
+        return;
+      }
+    }
+
     boolean isForce = ast.getFirstChildWithType(HiveParser.TOK_FORCE) != null;
     if (!isForce &&
         table.getTableType() != TableType.MANAGED_TABLE &&
         table.getParameters().getOrDefault(MetaStoreUtils.EXTERNAL_TABLE_PURGE, "FALSE").equalsIgnoreCase("FALSE")) {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
-    }
-
-    validateUnsupportedPartitionClause(table, root.getChildCount() > 1);
-
-    if (table.isNonNative()
-        && (table.getStorageHandler() == null || !table.getStorageHandler().supportsTruncateOnNonNativeTables())) {
-      throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO
     }
 
     if (!table.isPartitioned() && root.getChildCount() > 1) {
@@ -116,10 +120,13 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
 
   private void addTruncateTableOutputs(ASTNode root, Table table, Map<String, String> partitionSpec)
       throws SemanticException {
-    boolean truncateKeepsDataFiles = AcidUtils.isTransactionalTable(table) &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
+    boolean truncateUseBase = (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE)
+        || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+      && AcidUtils.isTransactionalTable(table);
+    
     WriteEntity.WriteType writeType =
-        truncateKeepsDataFiles ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
+        truncateUseBase ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
+    
     if (partitionSpec == null) {
       if (!table.isPartitioned()) {
         outputs.add(new WriteEntity(table, writeType));

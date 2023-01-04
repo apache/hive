@@ -603,6 +603,7 @@ public class TestLlapTaskSchedulerService {
 
 
   @Test(timeout = 10000)
+  @org.junit.Ignore("HIVE-25713")
   public void testPreemption() throws InterruptedException, IOException {
 
     Priority priority1 = Priority.newInstance(1);
@@ -903,6 +904,39 @@ public class TestLlapTaskSchedulerService {
       tsWrapper.shutdown();
     }
   }
+
+  @Test(timeout = 10000)
+  public void testAdjustLocalityDelay() throws IOException, InterruptedException {
+    Priority priority1 = Priority.newInstance(1);
+    String[] host = new String[]{HOST1};
+
+    TestTaskSchedulerServiceWrapper tsWrapper =
+        new TestTaskSchedulerServiceWrapper(2000, host, 1, 0, 1000l);
+    try {
+      TezTaskAttemptID task1 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
+      Object clientCookie1 = "cookie1";
+      TezTaskAttemptID task2 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
+      Object clientCookie2 = "cookie2";
+
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, host, priority1, clientCookie1);
+      tsWrapper.allocateTask(task2, host, priority1, clientCookie2);
+      // There are enough resources for 1 task, the second one should just adjustLocalityDelay
+      assertFalse(tsWrapper.ts.getTaskInfo(task2).adjustedLocalityDelay);
+      while (true) {
+        tsWrapper.signalSchedulerRun();
+        tsWrapper.awaitSchedulerRun();
+        if (tsWrapper.ts.dagStats.getNumTotalAllocations() == 1) {
+          break;
+        }
+      }
+      // Active node instances do exist so delay should be adjusted
+      assertTrue(tsWrapper.ts.getTaskInfo(task2).adjustedLocalityDelay);
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
 
   @Test(timeout = 10000)
   public void testForcedLocalityUnknownHost() throws IOException, InterruptedException {

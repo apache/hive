@@ -300,7 +300,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     // first field always starts from 0, even when missing
     startPosition[0] = 0;
     for (int i = 1; i <= fields.length; i++) {
-      if (delimitIndexes[i - 1] != -1) {
+      if (fields.length > 1 && delimitIndexes[i - 1] != -1) {
         int start = delimitIndexes[i - 1] + fieldDelimit.length;
         startPosition[i] = start - i * diff;
       } else {

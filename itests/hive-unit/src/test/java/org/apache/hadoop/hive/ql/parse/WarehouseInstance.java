@@ -227,7 +227,7 @@ public class WarehouseInstance implements Closeable {
       driver.getResults(lastResults);
     }
     // Split around the 'tab' character
-    return (lastResults.get(0).split("\\t"))[colNum];
+    return !lastResults.isEmpty() ? (lastResults.get(0).split("\\t"))[colNum] : "";
   }
 
   public WarehouseInstance run(String command) throws Throwable {
@@ -388,7 +388,7 @@ public class WarehouseInstance implements Closeable {
     List<String> lowerCaseData =
         Arrays.stream(data).map(String::toLowerCase).collect(Collectors.toList());
     assertEquals(data.length, filteredResults.size());
-    assertTrue(StringUtils.join(filteredResults, ",") + " does not contain all expected" + StringUtils
+    assertTrue(StringUtils.join(filteredResults, ",") + " does not contain all expected " + StringUtils
             .join(lowerCaseData, ","), filteredResults.containsAll(lowerCaseData));
     return this;
   }
@@ -432,8 +432,8 @@ public class WarehouseInstance implements Closeable {
   }
 
   private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {
-    assertTrue(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
-    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(dumpDir));
+    assertTrue(props.containsKey(ReplConst.REPL_TARGET_DB_PROPERTY));
+    assertTrue(props.get(ReplConst.REPL_TARGET_DB_PROPERTY).equals(dumpDir));
   }
 
   public void verifyIfCkptSet(String dbName, String dumpDir) throws Exception {
@@ -611,6 +611,9 @@ public class WarehouseInstance implements Closeable {
   public void close() throws IOException {
     if (miniDFSCluster != null && miniDFSCluster.isClusterUp()) {
       miniDFSCluster.shutdown();
+    }
+    if (client != null) {
+      client.close();
     }
   }
 

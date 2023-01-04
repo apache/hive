@@ -66,7 +66,7 @@ public class GenericUDFAssertTrueOOM extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     BooleanWritable condition = (BooleanWritable) conditionConverter.convert(arguments[0].get());
     if (condition == null || !condition.get()) {
-      throw new MapJoinMemoryExhaustionError("assert_true_oom: assertation failed; Simulated OOM");
+      throw new MapJoinMemoryExhaustionError("assert_true_oom: assertion failed; Simulated OOM");
     }
     return null;
   }

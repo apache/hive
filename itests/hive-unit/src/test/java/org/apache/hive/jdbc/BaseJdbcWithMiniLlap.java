@@ -499,10 +499,12 @@ public abstract class BaseJdbcWithMiniLlap {
     assertEquals(0, c5Value.size());
 
     Map<?,?> c6Value = (Map<?,?>) rowValues[5];
-    assertEquals(0, c6Value.size());
+    assertEquals(1, c6Value.size());
+    assertEquals(null, c6Value.get(1));
 
     Map<?,?> c7Value = (Map<?,?>) rowValues[6];
-    assertEquals(0, c7Value.size());
+    assertEquals(1, c7Value.size());
+    assertEquals("b", c7Value.get("a"));
 
     List<?> c8Value = (List<?>) rowValues[7];
     assertEquals(null, c8Value.get(0));
@@ -518,7 +520,10 @@ public abstract class BaseJdbcWithMiniLlap {
     assertEquals(0, c13Value.size());
 
     Map<?,?> c14Value = (Map<?,?>) rowValues[13];
-    assertEquals(0, c14Value.size());
+    assertEquals(1, c14Value.size());
+    Map<?,?> mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(1));
+    assertEquals(1, mapVal.size());
+    assertEquals(100, mapVal.get(Integer.valueOf(10)));
 
     List<?> c15Value = (List<?>) rowValues[14];
     assertEquals(null, c15Value.get(0));
@@ -553,8 +558,9 @@ public abstract class BaseJdbcWithMiniLlap {
     assertEquals("y", c6Value.get(Integer.valueOf(2)));
 
     c7Value = (Map<?,?>) rowValues[6];
-    assertEquals(1, c7Value.size());
+    assertEquals(2, c7Value.size());
     assertEquals("v", c7Value.get("k"));
+    assertEquals("c", c7Value.get("b"));
 
     c8Value = (List<?>) rowValues[7];
     assertEquals("a", c8Value.get(0));
@@ -577,7 +583,7 @@ public abstract class BaseJdbcWithMiniLlap {
 
     c14Value = (Map<?,?>) rowValues[13];
     assertEquals(2, c14Value.size());
-    Map<?,?> mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(1));
+    mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(1));
     assertEquals(2, mapVal.size());
     assertEquals(Integer.valueOf(12), mapVal.get(Integer.valueOf(11)));
     assertEquals(Integer.valueOf(14), mapVal.get(Integer.valueOf(13)));

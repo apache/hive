@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 
 import java.io.IOException;
@@ -50,8 +52,9 @@ public class PostgresTPCDS extends Postgres {
   @Override
   public void install() {
     // Upgrade the metastore to latest by running explicitly a script.
+    String hiveSchemaVer = MetaStoreSchemaInfoFactory.get(new Configuration()).getHiveSchemaVersion();
     try (InputStream script = PostgresTPCDS.class.getClassLoader()
-        .getResourceAsStream("sql/postgres/upgrade-3.1.3000-to-4.0.0.postgres.sql")) {
+        .getResourceAsStream("sql/postgres/upgrade-3.1.3000-to-" + hiveSchemaVer + ".postgres.sql")) {
       new MetastoreSchemaTool().runScript(
           buildArray(
               "-upgradeSchema",

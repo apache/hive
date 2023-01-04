@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
+
 /**
  * Marker interface to indicate a given input format supports
  * vectorization input.
@@ -25,4 +28,8 @@ package org.apache.hadoop.hive.ql.exec.vector;
 public interface VectorizedInputFormatInterface {
 
   VectorizedSupport.Support[] getSupportedFeatures();
+
+  default VectorizedSupport.Support[] getSupportedFeatures(HiveConf hiveConf, TableDesc tableDesc) {
+    return getSupportedFeatures();
+  }
 }

@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.util.Set;
-import java.util.LinkedHashSet;
-import org.apache.hadoop.hive.ql.QTestExternalDB;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.QTestSetup;
 
@@ -37,7 +34,6 @@ public final class QTestArguments {
   private String cleanupScript;
   private boolean withLlapIo;
   private FsType fsType;
-  private Set<QTestExternalDB> externalDBs = new LinkedHashSet<>();
   private QTestSetup qtestSetup;
 
   private QTestArguments() {
@@ -83,10 +79,6 @@ public final class QTestArguments {
     return initScript;
   }
 
-  private void setExternalDBs(Set<QTestExternalDB> externalDBs) { this.externalDBs = externalDBs; }
-
-  public Set<QTestExternalDB> getExternalDBs() { return this.externalDBs; }
-
   private void setCleanupScript(String cleanupScript) {
     this.cleanupScript = cleanupScript;
   }
@@ -130,7 +122,6 @@ public final class QTestArguments {
     private QTestMiniClusters.MiniClusterType clusterType;
     private String initScript;
     private String cleanupScript;
-    private Set<QTestExternalDB> externalDBs = new LinkedHashSet<>();
     private boolean withLlapIo;
     private FsType fsType;
     private QTestSetup qtestSetup;
@@ -172,11 +163,6 @@ public final class QTestArguments {
       return this;
     }
 
-    public QTestArgumentsBuilder withExternalDBs(Set<QTestExternalDB> externalDBs) {
-      this.externalDBs = externalDBs;
-      return this;
-    }
-
     public QTestArgumentsBuilder withLlapIo(boolean withLlapIo) {
       this.withLlapIo = withLlapIo;
       return this;
@@ -202,9 +188,6 @@ public final class QTestArguments {
       testArguments.setCleanupScript(cleanupScript);
       testArguments.setWithLlapIo(withLlapIo);
       
-      testArguments.setExternalDBs(
-              externalDBs != null ? externalDBs : new LinkedHashSet<>());
-
       testArguments.setFsType(
           fsType != null ? fsType : clusterType.getDefaultFsType());
 

@@ -34,10 +34,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.apache.calcite.rel.metadata.RelMdUtil;
+import org.apache.datasketches.SketchesArgumentException;
+import org.apache.datasketches.kll.KllFloatsSketch;
+import org.apache.datasketches.memory.Memory;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -64,6 +71,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -118,7 +126,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -128,6 +138,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.greaterThanOrEqualSelectivity;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.greaterThanSelectivity;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.lessThanOrEqualSelectivity;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.lessThanSelectivity;
 
 public class StatsRulesProcFactory {
 
@@ -537,10 +552,11 @@ public class StatsRulesProcFactory {
       }
       for (int i = 0; i < columnStats.size(); i++) {
         long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
+        long intersectionSize = estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
         // (num of distinct vals for col in IN clause  / num of distinct vals for col )
         double columnFactor = dvs == 0 ? 0.5d : (1.0d / dvs);
         if (!multiColumn) {
-          columnFactor *=values.get(0).size();
+          columnFactor *= intersectionSize;
         }
         // max can be 1, even when ndv is larger in IN clause than in column stats
         factor *= columnFactor > 1d ? 1d : columnFactor;
@@ -553,6 +569,48 @@ public class StatsRulesProcFactory {
       }
       float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
       return Math.round(numRows * factor * inFactor);
+    }
+
+    private long estimateIntersectionSize(HiveConf conf, ColStatistics colStatistics, Set<ExprNodeDescEqualityWrapper> values) {
+      try {
+        boolean useBitVectors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_USE_BITVECTORS);
+        if (!useBitVectors){
+          return values.size();
+        }
+        if (colStatistics == null) {
+          return values.size();
+        }
+        byte[] bitVector = colStatistics.getBitVectors();
+        if (bitVector == null) {
+          return values.size();
+        }
+        NumDistinctValueEstimator sketch = NumDistinctValueEstimatorFactory.getNumDistinctValueEstimator(bitVector);
+        if (!(sketch instanceof HyperLogLog)) {
+          return values.size();
+        }
+        HyperLogLog hllCol = (HyperLogLog) sketch;
+        HyperLogLog hllVals = new HyperLogLog.HyperLogLogBuilder().build();
+
+        for (ExprNodeDescEqualityWrapper b : values) {
+          ObjectInspector oi = b.getExprNodeDesc().getWritableObjectInspector();
+          HiveMurmur3Adapter hma = new HiveMurmur3Adapter((PrimitiveObjectInspector) oi);
+          ExprNodeConstantDesc c = (ExprNodeConstantDesc) b.getExprNodeDesc();
+          hllVals.add(hma.murmur3(c.getWritableObjectInspector().getWritableConstantValue()));
+        }
+
+        long cntA = hllCol.count();
+        long cntB = hllVals.count();
+        hllCol.merge(hllVals);
+        long cntU = hllCol.count();
+
+        long cntI = cntA + cntB - cntU;
+        if (cntI < 0) {
+          return 0;
+        }
+        return cntI;
+      } catch (HiveException e) {
+        throw new RuntimeException("checking!", e);
+      }
     }
 
     static class RangeOps {
@@ -786,6 +844,38 @@ public class StatsRulesProcFactory {
         return currNumRows;
       }
 
+      final String leftValueString = leftExpression instanceof ExprNodeConstantDesc
+          ? ((ExprNodeConstantDesc) leftExpression).getValue().toString() : leftExpression.getExprString();
+      final String rightValueString = rightExpression instanceof ExprNodeConstantDesc
+          ? ((ExprNodeConstantDesc) rightExpression).getValue().toString() : rightExpression.getExprString();
+
+      try {
+        if (comparisonExpression instanceof ExprNodeColumnDesc) {
+          final ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc) comparisonExpression;
+          ColStatistics cs = stats.getColumnStatisticsFromColName(columnDesc.getColumn());
+          if (FilterSelectivityEstimator.isHistogramAvailable(cs)) {
+            final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(cs.getHistogram()));
+            final String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
+            final float leftValue = extractFloatFromLiteralValue(colTypeLowerCase, leftValueString);
+            final float rightValue = extractFloatFromLiteralValue(colTypeLowerCase, rightValueString);
+            if (invert) {
+              // column < leftValue OR column > rightValue
+              if (rightValue < leftValue) {
+                return kll.getN();
+              }
+              return Math.round(kll.getN() * (lessThanSelectivity(kll, leftValue) + greaterThanSelectivity(kll, rightValue)));
+            }
+            // if they are equal we can't handle it here, it becomes an equality predicate
+            if (Float.compare(leftValue, rightValue) != 0) {
+              return Math.round(kll.getN() * FilterSelectivityEstimator.betweenSelectivity(kll, leftValue, rightValue));
+            }
+          }
+        }
+      } catch(RuntimeException e) {
+        LOG.debug("Selectivity computation using histogram failed to parse the left ({}) or the right ({}) "
+            + "boundary value, using the generic computation strategy", leftValueString, rightValueString, e);
+      }
+
       ExprNodeDesc newExpression = rewriteBetweenToIn(comparisonExpression, leftExpression, rightExpression, invert);
 
       return evaluateExpression(stats, newExpression, aspCtx, neededCols, op, currNumRows);
@@ -920,14 +1010,13 @@ public class StatsRulesProcFactory {
 
     private long evaluateComparator(Statistics stats, AnnotateStatsProcCtx aspCtx, ExprNodeGenericFuncDesc genFunc,
         long currNumRows) {
-      long numRows = currNumRows;
       GenericUDF udf = genFunc.getGenericUDF();
 
       ExprNodeColumnDesc columnDesc;
       ExprNodeConstantDesc constantDesc;
       boolean upperBound;
       boolean closedBound;
-      String boundValue = null;
+      String boundValue;
       if (genFunc.getChildren().get(0) instanceof ExprNodeColumnDesc &&
           genFunc.getChildren().get(1) instanceof ExprNodeConstantDesc) {
         columnDesc = (ExprNodeColumnDesc) genFunc.getChildren().get(0);
@@ -956,13 +1045,23 @@ public class StatsRulesProcFactory {
         closedBound = isClosedBound(udf);
       } else {
         // default
-        return numRows / 3;
+        return currNumRows / 3;
       }
 
       ColStatistics cs = stats.getColumnStatisticsFromColName(columnDesc.getColumn());
+      String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
+
+      if (FilterSelectivityEstimator.isHistogramAvailable(cs)) {
+        try {
+          return evaluateComparatorWithHistogram(
+              cs, currNumRows, colTypeLowerCase, boundValue, upperBound, closedBound);
+        } catch (SketchesArgumentException e) {
+          LOG.info("Sketch-based statistics estimation failed, falling back to regular estimation", e);
+        }
+      }
+
       if (cs != null && cs.getRange() != null &&
           cs.getRange().maxValue != null && cs.getRange().minValue != null) {
-        String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
         try {
           if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)) {
             byte value = Byte.parseByte(boundValue);
@@ -970,7 +1069,7 @@ public class StatsRulesProcFactory {
             byte minValue = cs.getRange().minValue.byteValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -978,11 +1077,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -990,7 +1089,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
@@ -999,7 +1098,7 @@ public class StatsRulesProcFactory {
             short minValue = cs.getRange().minValue.shortValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1007,11 +1106,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1019,7 +1118,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME) ||
@@ -1036,7 +1135,7 @@ public class StatsRulesProcFactory {
             int minValue = cs.getRange().minValue.intValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1044,11 +1143,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1056,7 +1155,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME) ||
@@ -1072,7 +1171,7 @@ public class StatsRulesProcFactory {
             long minValue = cs.getRange().minValue.longValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1080,11 +1179,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1092,7 +1191,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
@@ -1101,7 +1200,7 @@ public class StatsRulesProcFactory {
             float minValue = cs.getRange().minValue.floatValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1109,11 +1208,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1121,7 +1220,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
@@ -1130,7 +1229,7 @@ public class StatsRulesProcFactory {
             double minValue = cs.getRange().minValue.doubleValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1138,11 +1237,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1150,7 +1249,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
@@ -1161,7 +1260,7 @@ public class StatsRulesProcFactory {
             int maxComparison = value.compareTo(maxValue);
             if (upperBound) {
               if (maxComparison > 0 || maxComparison == 0 && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minComparison < 0 || minComparison == 0 && !closedBound) {
                 return 0;
@@ -1171,12 +1270,12 @@ public class StatsRulesProcFactory {
                 // new estimate for the number of rows
                 return Math.round(
                     ((value.subtract(minValue)).divide(maxValue.subtract(minValue), RoundingMode.UP))
-                        .multiply(BigDecimal.valueOf(numRows))
+                        .multiply(BigDecimal.valueOf(currNumRows))
                         .doubleValue());
               }
             } else {
               if (minComparison < 0 || minComparison == 0 && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxComparison > 0 || maxComparison == 0 && !closedBound) {
                 return 0;
@@ -1186,17 +1285,70 @@ public class StatsRulesProcFactory {
                 // new estimate for the number of rows
                 return Math.round(
                     ((maxValue.subtract(value)).divide(maxValue.subtract(minValue), RoundingMode.UP))
-                        .multiply(BigDecimal.valueOf(numRows))
+                        .multiply(BigDecimal.valueOf(currNumRows))
                         .doubleValue());
               }
             }
           }
         } catch (NumberFormatException nfe) {
-          return numRows / 3;
+          return currNumRows / 3;
         }
       }
       // default
-      return numRows / 3;
+      return currNumRows / 3;
+    }
+
+    private long evaluateComparatorWithHistogram(ColStatistics cs, long currNumRows, String colTypeLowerCase,
+        String boundValue, boolean upperBound, boolean closedBound) {
+      final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(cs.getHistogram()));
+
+      if (kll.getN() == 0) {
+        return 0;
+      }
+
+      try {
+        final float value = extractFloatFromLiteralValue(colTypeLowerCase, boundValue);
+
+        // kll ignores null values (i.e., kll.getN() + numNulls = currNumRows), we therefore need to use kll.getN()
+        // instead of currNumRows since the CDF is expressed as a fraction of kll.getN(), not currNumRows
+        if (upperBound) {
+          return Math.round(kll.getN() * (closedBound ?
+              lessThanOrEqualSelectivity(kll, value) : lessThanSelectivity(kll, value)));
+        } else {
+          return Math.round(kll.getN() * (closedBound ?
+              greaterThanOrEqualSelectivity(kll, value) : greaterThanSelectivity(kll, value)));
+        }
+      } catch (RuntimeException e) {
+        LOG.debug("Selectivity computation using histogram failed to parse the boundary value ({}), "
+            + ", using the generic computation strategy", boundValue, e);
+        return currNumRows / 3;
+      }
+    }
+
+    @VisibleForTesting
+    protected static float extractFloatFromLiteralValue(String colTypeLowerCase, String value) {
+      if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)) {
+        return Byte.parseByte(value);
+      } else if (colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
+        return Short.parseShort(value);
+      } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
+        return Integer.parseInt(value);
+      } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
+        return Long.parseLong(value);
+      } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
+        return Float.parseFloat(value);
+      } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
+        return (float) Double.parseDouble(value);
+      } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+        return new BigDecimal(value).floatValue();
+      } else if (colTypeLowerCase.startsWith(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+        return Timestamp.valueOf(value).toEpochSecond();
+      } else if (colTypeLowerCase.startsWith(serdeConstants.DATE_TYPE_NAME)) {
+        return Date.valueOf(value).toEpochSecond();
+      } else {
+        throw new IllegalStateException(
+            "Unsupported type for comparator selectivity evaluation using histogram: " + colTypeLowerCase);
+      }
     }
 
     private boolean isClosedBound(GenericUDF udf) {
@@ -1884,8 +2036,8 @@ public class StatsRulesProcFactory {
           break;
         }
       }
-      // there could be case where join operators input are not RS e.g.
-      // map join with Spark. Since following estimation of statistics relies on join operators having it inputs as
+      // there could be case where join operators input are not RS
+      // Since following estimation of statistics relies on join operators having it inputs as
       // reduced sink it will not work for such cases. So we should not try to estimate stats
       if (allSatisfyPreCondition) {
         for (int pos = 0; pos < parents.size(); pos++) {

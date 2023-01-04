@@ -40,6 +40,10 @@ public class AcidConstants {
   public static final String VISIBILITY_PREFIX = "_v";
   public static final Pattern VISIBILITY_PATTERN = Pattern.compile(VISIBILITY_PREFIX + "\\d+");
 
+  public static final String SOFT_DELETE_PATH_SUFFIX = ".v";
+  public static final String SOFT_DELETE_TABLE_PATTERN = "\\" + SOFT_DELETE_PATH_SUFFIX + "\\d+";
+  public static final String SOFT_DELETE_TABLE = "soft_delete";
+  
   public static String baseDir(long writeId) {
     return BASE_PREFIX + String.format(DELTA_DIGITS, writeId);
   }

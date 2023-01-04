@@ -510,7 +510,7 @@ public class TestAvroDeserializer {
     assertEquals("DALEKS", finalValue);
   }
 
-  @Test // Fixed doesn't exist in Hive. Fixeds go in, lists of bytes go out.
+  @Test // Fixed doesn't exist in Hive. Fixed go in, lists of bytes go out.
   public void canDeserializeFixed() throws SerDeException, IOException {
     Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.FIXED_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);

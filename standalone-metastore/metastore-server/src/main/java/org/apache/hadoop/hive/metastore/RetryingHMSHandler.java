@@ -100,7 +100,6 @@ public class RetryingHMSHandler implements InvocationHandler {
   @Override
   public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
     int retryCount = -1;
-    int threadId = baseHandler.getThreadId();
     boolean error = true;
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.perfLogBegin(CLASS_NAME, method.getName());
@@ -111,7 +110,7 @@ public class RetryingHMSHandler implements InvocationHandler {
       return result.result;
     } finally {
       StringBuilder additionalInfo = new StringBuilder();
-      additionalInfo.append("threadId=").append(threadId).append(" retryCount=").append(retryCount)
+      additionalInfo.append("retryCount=").append(retryCount)
         .append(" error=").append(error);
       perfLogger.perfLogEnd(CLASS_NAME, method.getName(), additionalInfo.toString());
     }

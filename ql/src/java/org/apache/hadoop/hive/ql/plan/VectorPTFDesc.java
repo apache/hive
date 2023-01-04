@@ -119,18 +119,9 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
   public static HashMap<String, SupportedFunctionType> supportedFunctionsMap =
       new HashMap<String, SupportedFunctionType>();
   static {
-    supportedFunctionsMap.put("row_number", SupportedFunctionType.ROW_NUMBER);
-    supportedFunctionsMap.put("rank", SupportedFunctionType.RANK);
-    supportedFunctionsMap.put("dense_rank", SupportedFunctionType.DENSE_RANK);
-    supportedFunctionsMap.put("min", SupportedFunctionType.MIN);
-    supportedFunctionsMap.put("max", SupportedFunctionType.MAX);
-    supportedFunctionsMap.put("sum", SupportedFunctionType.SUM);
-    supportedFunctionsMap.put("avg", SupportedFunctionType.AVG);
-    supportedFunctionsMap.put("first_value", SupportedFunctionType.FIRST_VALUE);
-    supportedFunctionsMap.put("last_value", SupportedFunctionType.LAST_VALUE);
-    supportedFunctionsMap.put("count", SupportedFunctionType.COUNT);
-    supportedFunctionsMap.put("lead", SupportedFunctionType.LEAD);
-    supportedFunctionsMap.put("lag", SupportedFunctionType.LAG);
+    for (SupportedFunctionType supportedFunctionType : SupportedFunctionType.values()) {
+      supportedFunctionsMap.put(supportedFunctionType.name().toLowerCase(), supportedFunctionType);
+    }
   }
   public static List<String> supportedFunctionNames = new ArrayList<String>();
   static {
@@ -440,7 +431,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
     VectorPTFEvaluatorBase[] evaluators = new VectorPTFEvaluatorBase[evaluatorCount];
     for (int i = 0; i < evaluatorCount; i++) {
-      String functionName = evaluatorFunctionNames[i];
+      String functionName = evaluatorFunctionNames[i].toLowerCase();
       boolean isDistinct = evaluatorsAreDistinct[i];
       WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
       SupportedFunctionType functionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);

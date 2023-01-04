@@ -427,7 +427,7 @@ public class TestTimestampWritableV2 {
     assertTrue((((double) MAX_ADDITIONAL_SECONDS_BITS + 1) * (1L << 31)) * 1000 >
       Long.MAX_VALUE);
 
-    // This is how many bytes we need to store those additonal bits as a VInt.
+    // This is how many bytes we need to store those additional bits as a VInt.
     assertEquals(4, WritableUtils.getVIntSize(MAX_ADDITIONAL_SECONDS_BITS));
 
     // Therefore, the maximum total size of a serialized timestamp is 4 + 5 + 4 = 13.

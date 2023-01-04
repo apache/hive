@@ -110,28 +110,52 @@ POSTHOOK: Lineage: locations_n20.locationid SCRIPT []
 POSTHOOK: Lineage: locations_n20.name SCRIPT []
 PREHOOK: query: alter table emps_n30 add constraint pk1 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_n30
+PREHOOK: Output: default@emps_n30
 POSTHOOK: query: alter table emps_n30 add constraint pk1 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_n30
+POSTHOOK: Output: default@emps_n30
 PREHOOK: query: alter table depts_n20 add constraint pk2 primary key (deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_n20
+PREHOOK: Output: default@depts_n20
 POSTHOOK: query: alter table depts_n20 add constraint pk2 primary key (deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_n20
+POSTHOOK: Output: default@depts_n20
 PREHOOK: query: alter table dependents_n20 add constraint pk3 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@dependents_n20
+PREHOOK: Output: default@dependents_n20
 POSTHOOK: query: alter table dependents_n20 add constraint pk3 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@dependents_n20
+POSTHOOK: Output: default@dependents_n20
 PREHOOK: query: alter table locations_n20 add constraint pk4 primary key (locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@locations_n20
+PREHOOK: Output: default@locations_n20
 POSTHOOK: query: alter table locations_n20 add constraint pk4 primary key (locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@locations_n20
+POSTHOOK: Output: default@locations_n20
 PREHOOK: query: alter table emps_n30 add constraint fk1 foreign key (deptno) references depts_n20(deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_n30
+PREHOOK: Output: default@emps_n30
 POSTHOOK: query: alter table emps_n30 add constraint fk1 foreign key (deptno) references depts_n20(deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_n30
+POSTHOOK: Output: default@emps_n30
 PREHOOK: query: alter table depts_n20 add constraint fk2 foreign key (locationid) references locations_n20(locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_n20
+PREHOOK: Output: default@depts_n20
 POSTHOOK: query: alter table depts_n20 add constraint fk2 foreign key (locationid) references locations_n20(locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_n20
+POSTHOOK: Output: default@depts_n20
 PREHOOK: query: create materialized view mv1_n20 as
 select deptno, name, salary, commission
 from emps_n30

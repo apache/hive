@@ -26,11 +26,11 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
@@ -57,6 +57,7 @@ import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.base.Joiner;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.ObjectArrays;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
@@ -64,7 +65,7 @@ import org.junit.Assert;
 import org.junit.rules.TemporaryFolder;
 
 // Helper class for setting up and testing various catalog implementations
-abstract class TestTables {
+public abstract class TestTables {
   public static final TestTableType[] ALL_TABLE_TYPES = new TestTableType[] {
       TestTableType.HADOOP_TABLE,
       TestTableType.HADOOP_CATALOG,
@@ -99,6 +100,10 @@ abstract class TestTables {
     return tables;
   }
 
+  public String catalogName() {
+    return catalog;
+  }
+
   /**
    * The location string needed to be provided for CREATE TABLE ... commands,
    * like "LOCATION 'file:///tmp/warehouse/default/tablename'. Empty ("") if LOCATION is not needed.
@@ -109,11 +114,11 @@ abstract class TestTables {
 
   /**
    * The table properties string needed for the CREATE TABLE ... commands,
-   * like "TBLPROPERTIES('iceberg.catalog'='mycatalog')
-   * @return
+   * like {@code TBLPROPERTIES('iceberg.catalog'='mycatalog')}
+   * @return the tables properties string, such as {@code TBLPROPERTIES('iceberg.catalog'='mycatalog')}
    */
   public String propertiesForCreateTableSQL(Map<String, String> tableProperties) {
-    Map<String, String> properties = new HashMap<>(tableProperties);
+    Map<String, String> properties = Maps.newHashMap(tableProperties);
     properties.putIfAbsent(InputFormatConfig.CATALOG_NAME, catalog);
     String props = properties.entrySet().stream()
             .map(entry -> String.format("'%s'='%s'", entry.getKey(), entry.getValue()))
@@ -161,8 +166,119 @@ abstract class TestTables {
    */
   public Table createTable(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
       List<Record> records) throws IOException {
-    Table table = createIcebergTable(shell.getHiveConf(), tableName, schema, fileFormat, records);
-    String createHiveSQL = createHiveTableSQL(TableIdentifier.of("default", tableName), ImmutableMap.of());
+    return createTable(shell, tableName, schema, fileFormat, records, 1);
+  }
+
+
+  /**
+   * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * table as well when needed. The table will be in the 'default' database. The table will be populated with the
+   * provided List of {@link Record}s and will create extra snapshots by inserting one more line into the table.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param versions The number of history elements we want to create
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTableWithVersions(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
+      List<Record> records, int versions) throws IOException, InterruptedException {
+    Table table = createTable(shell, tableName, schema, fileFormat, records);
+
+    for (int i = 0; i < versions - 1; ++i) {
+      // Just wait a little so we definitely will not have the same timestamp for the snapshots
+      Thread.sleep(100);
+      shell.executeStatement("INSERT INTO " + tableName + " values(" +
+          (i + records.size()) + ",'Alice','Green_" + i + "')");
+    }
+
+    table.refresh();
+
+    return table;
+  }
+
+  /**
+   * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * table as well when needed. The table will be in the 'default' database. The table will be populated with the
+   * provided List of {@link Record}s.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param tblProperties Additional table properties
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
+      List<Record> records, Map<String, String> tblProperties) throws IOException {
+    return createTable(shell, tableName, schema, fileFormat, records, 1, tblProperties);
+  }
+
+  /**
+   * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * table as well when needed. The table will be in the 'default' database. The table will be populated with the
+   * provided List of {@link Record}s.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
+      List<Record> records, int formatVersion) throws IOException {
+    return createTable(shell, tableName, schema, fileFormat, records, formatVersion, Collections.emptyMap());
+  }
+
+  /**
+   * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * table as well when needed. The table will be in the 'default' database. The table will be populated with the
+   * provided List of {@link Record}s.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @param tblProperties Additional table properties
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
+      List<Record> records, int formatVersion, Map<String, String> tblProperties) throws IOException {
+    return createTable(shell, tableName, schema, SortOrder.unsorted(), PartitionSpec.unpartitioned(), fileFormat,
+        records, formatVersion, tblProperties);
+  }
+
+  /**
+   * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * table as well when needed. The table will be in the 'default' database. The table will be populated with the
+   * provided List of {@link Record}s.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param order The sort order used for the table creation
+   * @param partSpec The partition spec used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @param tblProperties Additional table properties
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, SortOrder order,
+      PartitionSpec partSpec, FileFormat fileFormat, List<Record> records, int formatVersion,
+      Map<String, String> tblProperties) throws IOException {
+    ImmutableMap<String, String> tblProps = ImmutableMap.<String, String>builder().putAll(tblProperties)
+        .put(TableProperties.FORMAT_VERSION, Integer.toString(formatVersion)).build();
+    Table table = createIcebergTable(shell.getHiveConf(), tableName, schema, order, partSpec, fileFormat, tblProps,
+        records);
+    String createHiveSQL = createHiveTableSQL(TableIdentifier.of("default", tableName), tblProps);
     if (createHiveSQL != null) {
       shell.executeStatement(createHiveSQL);
     }
@@ -184,16 +300,52 @@ abstract class TestTables {
    */
   public Table createTable(TestHiveShell shell, String tableName, Schema schema, PartitionSpec spec,
       FileFormat fileFormat, List<Record> records)  {
+    return createTable(shell, tableName, schema, spec, fileFormat, records, 1);
+  }
+
+  /**
+   * Creates a partitioned Hive test table using Hive SQL. The table will be in the 'default' database.
+   * The table will be populated with the provided List of {@link Record}s using a Hive insert statement.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param spec The partition specification for the table
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, PartitionSpec spec,
+      FileFormat fileFormat, List<Record> records, Integer formatVersion)  {
+    return createTable(shell, tableName, schema, spec, fileFormat, records, formatVersion, Collections.emptyMap());
+  }
+
+  /**
+   * Creates a partitioned Hive test table using Hive SQL. The table will be in the 'default' database.
+   * The table will be populated with the provided List of {@link Record}s using a Hive insert statement.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param spec The partition specification for the table
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @param tblProperties Additional table properties
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, PartitionSpec spec,
+      FileFormat fileFormat, List<Record> records, Integer formatVersion, Map<String, String> tblProperties) {
     TableIdentifier identifier = TableIdentifier.of("default", tableName);
+    String tblProps = propertiesForCreateTableSQL(ImmutableMap.<String, String>builder().putAll(tblProperties)
+        .put(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString())
+        .put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema))
+        .put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec))
+        .put(TableProperties.FORMAT_VERSION, Integer.toString(formatVersion))
+        .build());
     shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
-        " STORED BY '" + HiveIcebergStorageHandler.class.getName() + "' " +
-        locationForCreateTableSQL(identifier) +
-        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
-        SchemaParser.toJson(schema) + "', " +
-        "'" + InputFormatConfig.PARTITION_SPEC + "'='" +
-        PartitionSpecParser.toJson(spec) + "', " +
-        "'" + TableProperties.DEFAULT_FILE_FORMAT + "'='" + fileFormat + "', " +
-        "'" + InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
+        " STORED BY ICEBERG " + locationForCreateTableSQL(identifier) + tblProps);
 
     if (records != null && !records.isEmpty()) {
       String query = getInsertQuery(records, identifier, false);
@@ -215,6 +367,15 @@ abstract class TestTables {
       query.append("),");
     });
     query.setLength(query.length() - 1);
+    return query.toString();
+  }
+
+  public String getUpdateQuery(String tableName, Record record) {
+    StringBuilder query = new StringBuilder("UPDATE ").append(tableName).append(" SET ");
+
+    query.append(record.struct().fields().stream()
+        .map(field -> field.name() + "=" + getStringValueForInsert(record.getField(field.name()), field.type()))
+        .collect(Collectors.joining(",")));
     return query.toString();
   }
 
@@ -248,10 +409,31 @@ abstract class TestTables {
    * @throws IOException If there is an error writing data
    */
   public Table createIcebergTable(Configuration configuration, String tableName, Schema schema, FileFormat fileFormat,
-      List<Record> records) throws IOException {
+      Map<String, String> additionalTableProps, List<Record> records) throws IOException {
+    return createIcebergTable(configuration, tableName, schema, SortOrder.unsorted(), PartitionSpec.unpartitioned(),
+        fileFormat, additionalTableProps, records);
+  }
+
+  /**
+   * Creates an Iceberg table/data without creating the corresponding Hive table. The table will be in the 'default'
+   * namespace.
+   * @param configuration The configuration used during the table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param order The sort order used for the table creation
+   * @param partSpec The partition spec used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @return The create table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createIcebergTable(Configuration configuration, String tableName, Schema schema, SortOrder order,
+      PartitionSpec partSpec, FileFormat fileFormat, Map<String, String> additionalTableProps, List<Record> records)
+      throws IOException {
     String identifier = identifier("default." + tableName);
     TestHelper helper = new TestHelper(new Configuration(configuration), tables(), identifier, schema,
-        PartitionSpec.unpartitioned(), fileFormat, temp);
+        partSpec, fileFormat, additionalTableProps, temp);
+    helper.setOrder(order);
     Table table = helper.createTable();
 
     if (records != null && !records.isEmpty()) {
@@ -336,10 +518,9 @@ abstract class TestTables {
     @Override
     public Map<String, String> properties() {
       return ImmutableMap.of(
-              String.format(InputFormatConfig.CATALOG_TYPE_TEMPLATE, catalog), "custom",
-              String.format(InputFormatConfig.CATALOG_CLASS_TEMPLATE, catalog),
+              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogProperties.CATALOG_IMPL),
               TestCatalogs.CustomHadoopCatalog.class.getName(),
-              String.format(InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE, catalog),
+              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogProperties.WAREHOUSE_LOCATION),
               warehouseLocation
       );
     }
@@ -368,19 +549,22 @@ abstract class TestTables {
     @Override
     public Map<String, String> properties() {
       return ImmutableMap.of(
-              String.format(InputFormatConfig.CATALOG_TYPE_TEMPLATE, catalog), "hadoop",
-              String.format(InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE, catalog), warehouseLocation
+              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogUtil.ICEBERG_CATALOG_TYPE),
+              CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP,
+              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogProperties.WAREHOUSE_LOCATION),
+              warehouseLocation
       );
     }
 
+    @Override
     public String locationForCreateTableSQL(TableIdentifier identifier) {
       return "LOCATION '" + warehouseLocation + TestTables.tablePath(identifier) + "' ";
     }
   }
 
   static class HadoopTestTables extends TestTables {
-    HadoopTestTables(Configuration conf, TemporaryFolder temp, String catalogName) {
-      super(new HadoopTables(conf), temp, catalogName);
+    HadoopTestTables(Configuration conf, TemporaryFolder temp) {
+      super(new HadoopTables(conf), temp, Catalogs.ICEBERG_HADOOP_TABLE_NAME);
     }
 
     @Override
@@ -395,7 +579,7 @@ abstract class TestTables {
       }
 
       Assert.assertTrue(location.delete());
-      return location.toString();
+      return "file://" + location;
     }
 
     @Override
@@ -419,7 +603,8 @@ abstract class TestTables {
 
     @Override
     public Map<String, String> properties() {
-      return ImmutableMap.of(String.format(InputFormatConfig.CATALOG_TYPE_TEMPLATE, catalog), "hive");
+      return ImmutableMap.of(InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogUtil.ICEBERG_CATALOG_TYPE),
+              CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE);
     }
 
     @Override
@@ -439,7 +624,9 @@ abstract class TestTables {
 
   private String getStringValueForInsert(Object value, Type type) {
     String template = "\'%s\'";
-    if (type.equals(Types.TimestampType.withoutZone())) {
+    if (value == null) {
+      return "NULL";
+    } else if (type.equals(Types.TimestampType.withoutZone())) {
       return String.format(template, Timestamp.valueOf((LocalDateTime) value).toString());
     } else if (type.equals(Types.TimestampType.withZone())) {
       return String.format(template, Timestamp.from(((OffsetDateTime) value).toInstant()).toString());
@@ -451,25 +638,29 @@ abstract class TestTables {
     }
   }
 
-  enum TestTableType {
+  public enum TestTableType {
     HADOOP_TABLE {
+      @Override
       public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName) {
-        return new HadoopTestTables(conf, temporaryFolder, catalogName);
+        return new HadoopTestTables(conf, temporaryFolder);
       }
     },
     HADOOP_CATALOG {
+      @Override
       public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName)
           throws IOException {
         return new HadoopCatalogTestTables(conf, temporaryFolder, catalogName);
       }
     },
     CUSTOM_CATALOG {
+      @Override
       public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName)
           throws IOException {
         return new CustomCatalogTestTables(conf, temporaryFolder, catalogName);
       }
     },
     HIVE_CATALOG {
+      @Override
       public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName) {
         return new HiveTestTables(conf, temporaryFolder, catalogName);
       }

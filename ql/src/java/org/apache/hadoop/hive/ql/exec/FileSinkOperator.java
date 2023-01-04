@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -51,7 +52,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
-import org.apache.hadoop.hive.ql.exec.spark.SparkMetricUtils;
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -617,17 +618,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       initializeSpecPath();
       fs = specPath.getFileSystem(hconf);
 
-      if (hconf instanceof JobConf) {
-        jc = (JobConf) hconf;
-      } else {
-        // test code path
-        jc = new JobConf(hconf);
-      }
+      jc = new JobConf(hconf);
+      setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
 
       try {
         createHiveOutputFormat(jc);
       } catch (HiveException ex) {
-        logOutputFormatError(hconf, ex);
+        logOutputFormatError(jc, ex);
         throw ex;
       }
       isCompressed = conf.getCompressed();
@@ -638,7 +635,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       statsFromRecordWriter = new boolean[numFiles];
       AbstractSerDe serde = conf.getTableInfo().getSerDeClass().newInstance();
-      serde.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties(), null);
+      serde.initialize(unsetNestedColumnPaths(jc), conf.getTableInfo().getProperties(), null);
 
       serializer = serde;
 
@@ -1005,11 +1002,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   private void createDpDirCheckSrc(final Path dpStagingPath, final Path dpFinalPath) throws IOException {
-    if (!fs.exists(dpStagingPath) && !fs.exists(dpFinalPath)) {
-      fs.mkdirs(dpStagingPath);
-      // move task will create dp final path
-      if (reporter != null) {
-        reporter.incrCounter(counterGroup, Operator.HIVE_COUNTER_CREATED_DYNAMIC_PARTITIONS, 1);
+    if (!fs.exists(dpStagingPath)) {
+      FileSystem dpFs = dpFinalPath.getFileSystem(hconf);
+      if (!dpFs.exists(dpFinalPath)) {
+        fs.mkdirs(dpStagingPath);
+        // move task will create dp final path
+        if (reporter != null) {
+          reporter.incrCounter(counterGroup, Operator.HIVE_COUNTER_CREATED_DYNAMIC_PARTITIONS, 1);
+        }
       }
     }
   }
@@ -1056,8 +1056,15 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           createNewPaths(null, lbDirName);
         }
       } else if (conf.isCompactionTable()) {
-        int bucketProperty = getBucketProperty(row);
-        bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
+        if (conf.isRebalanceRequested()) {
+          //For rebalancing compaction, the unencoded bucket id comes in the bucketproperty. It must be encoded before
+          //writing the data out
+          bucketId = getBucketProperty(row);
+          setBucketProperty(hconf, row, bucketId);
+        } else {
+          int bucketProperty = getBucketProperty(row);
+          bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
+        }
         if (!filesCreatedPerBucket.get(bucketId)) {
           createBucketFilesForCompaction(fsp);
         }
@@ -1144,7 +1151,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           cntr = 0;
           numRows = 1;
         }
-        LOG.info(toString() + ": records written - " + numRows);
+        LOG.info("{}: {} written - {}",
+                this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
       }
 
       int writerOffset;
@@ -1443,12 +1451,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   @Override
   public void closeOp(boolean abort) throws HiveException {
 
-    row_count.set(numRows);
-    LOG.info(toString() + ": records written - " + numRows);
+    row_count.set(conf.isDeleteOfSplitUpdate() ? 0 : numRows);
 
-    if ("spark".equalsIgnoreCase(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
-      SparkMetricUtils.updateSparkRecordsWrittenMetrics(runTimeNumRows);
-    }
+    LOG.info("{}: {} written - {}",
+            this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
 
     if (!bDynParts && !filesCreated) {
       boolean isTez = "tez".equalsIgnoreCase(
@@ -1517,6 +1523,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
                 if (stats != null) {
                   fsp.addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
                   fsp.addToStat(StatsSetupConst.ROW_COUNT, stats.getRowCount());
+                  fsp.addToStat(StatsSetupConst.INSERT_COUNT, stats.getInsertCount());
+                  fsp.addToStat(StatsSetupConst.UPDATE_COUNT, stats.getUpdateCount());
+                  fsp.addToStat(StatsSetupConst.DELETE_COUNT, stats.getDeleteCount());
                 }
               }
             }
@@ -1525,9 +1534,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
         if (isNativeTable()) {
           fsp.commit(fs, commitPaths, deleteDeltas);
-        }
-        if ("spark".equals(HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE))) {
-          SparkMetricUtils.updateSparkBytesWrittenMetrics(LOG, fs, fsp.finalPaths);
         }
       }
       if (conf.isMmTable() || conf.isDirectInsert()) {
@@ -1825,6 +1831,20 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       return ((IntWritable) bucketProperty).get();
     } else {
       return (int) bucketProperty;
+    }
+  }
+
+  /**
+   * Required for rebalancing compaction. Encodes the raw bucket property set by the compactor
+   * @param row The acid row in which the bucket needs to be updated.
+   */
+  private void setBucketProperty(Configuration hiveConf, Object row, int bucketId) {
+    int encodedBucketValue = BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(bucketId));
+    Object bucketProperty = ((Object[]) row)[2];
+    if (bucketProperty instanceof Writable) {
+      ((IntWritable) bucketProperty).set(encodedBucketValue);
+    } else {
+      ((Object[]) row)[2] = encodedBucketValue;
     }
   }
 

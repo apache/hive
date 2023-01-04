@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -383,6 +384,27 @@ public class VectorizedRowBatchCtx {
     return result;
   }
 
+  public void setBucketAndWriteIdOf(VectorizedRowBatch vectorizedRowBatch, BucketIdentifier bucketIdentifier) {
+    if (bucketIdentifier == null) {
+      return;
+    }
+
+    int virtualColumnNum = findVirtualColumnNum(VirtualColumn.ROWID);
+    if (virtualColumnNum == -1) {
+      return;
+    }
+
+    StructColumnVector rowIdStructColVector = (StructColumnVector) vectorizedRowBatch.cols[virtualColumnNum];
+
+    LongColumnVector writeIdColVector = (LongColumnVector) rowIdStructColVector.fields[0];
+    writeIdColVector.isRepeating = true;
+    writeIdColVector.vector[0] = bucketIdentifier.getWriteId();
+    LongColumnVector bucketIdColVector = (LongColumnVector) rowIdStructColVector.fields[1];
+    bucketIdColVector.isRepeating = true;
+    bucketIdColVector.vector[0] = bucketIdentifier.getBucketProperty();
+    LongColumnVector rowIdColVector = (LongColumnVector) rowIdStructColVector.fields[2];
+  }
+
   /**
    * Add the partition values to the batch
    *
@@ -586,12 +608,12 @@ public class VectorizedRowBatchCtx {
     case CHAR:
     case VARCHAR: {
       BytesColumnVector bcv = (BytesColumnVector) col;
-      String sVal = value.toString();
-      if (sVal == null) {
+      if (value == null) {
         bcv.noNulls = false;
         bcv.isNull[0] = true;
         bcv.isRepeating = true;
       } else {
+        String sVal = value.toString();
         bcv.fill(sVal.getBytes());
       }
     }

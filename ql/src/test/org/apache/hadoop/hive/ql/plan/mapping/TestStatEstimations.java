@@ -35,6 +35,7 @@ import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -54,8 +55,8 @@ public class TestStatEstimations {
     String cmds[] = {
         // @formatter:off
         "create table t2(a integer, b string) STORED AS ORC",
-        "insert into t2 values(1, 'AAA'),(2, 'AAA'),(3, 'AAA'),(4, 'AAA'),(5, 'AAA')," +
-                              "(6, 'BBB'),(7, 'BBB'),(8, 'BBB'),(9, 'BBB'),(10, 'BBB')",
+        "insert into t2 values (1, 'A1'),(2, 'A2'),(3, 'A3'),(4, 'A4'),(5, 'A5')," +
+                              "(6, 'B1'),(7, 'B2'),(8, 'B3'),(9, 'B4'),(10, 'B5')",
         "analyze table t2 compute statistics for columns"
         // @formatter:on
     };
@@ -84,6 +85,39 @@ public class TestStatEstimations {
   }
 
   @Test
+  public void testFilterStringIn() throws ParseException, CommandProcessorException {
+    IDriver driver = createDriver();
+    String query = "explain select a from t2 where b IN ('A3', 'ABC', 'AXZ') order by a";
+
+    PlanMapper pm = getMapperForQuery(driver, query);
+    List<FilterOperator> fos = pm.getAll(FilterOperator.class);
+    // the same operator is present 2 times
+    fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
+    FilterOperator fop = fos.get(0);
+
+    // any estimation near 1 is ok...currently 1
+    assertEquals(1, fop.getStatistics().getNumRows());
+  }
+
+  // FIXME: right now not in is transformed into AND( NE(...) , NE(...) )
+  @Ignore
+  @Test
+  public void testFilterStringNotIn() throws CommandProcessorException {
+    IDriver driver = createDriver();
+    String query = "explain select a from t2 where b NOT IN ('XXX', 'UUU') order by a";
+
+    PlanMapper pm = getMapperForQuery(driver, query);
+    List<FilterOperator> fos = pm.getAll(FilterOperator.class);
+    // the same operator is present 2 times
+    fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
+    assertEquals(1, fos.size());
+    FilterOperator fop = fos.get(0);
+
+    // any estimation near 10 is ok...currently 10
+    assertEquals(10, fop.getStatistics().getNumRows());
+  }
+
+  @Test
   public void testFilterIntIn() throws ParseException, CommandProcessorException {
     IDriver driver = createDriver();
     String query = "explain select a from t2 where a IN (-1,0,1,2,10,20,30,40) order by a";
@@ -103,6 +137,7 @@ public class TestStatEstimations {
   private static IDriver createDriver() {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
+    conf.setBoolVar(ConfVars.HIVE_STATS_USE_BITVECTORS, true);
     conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

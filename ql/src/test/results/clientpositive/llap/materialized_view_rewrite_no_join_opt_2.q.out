@@ -110,28 +110,52 @@ POSTHOOK: Lineage: locations_n20.locationid SCRIPT []
 POSTHOOK: Lineage: locations_n20.name SCRIPT []
 PREHOOK: query: alter table emps_n30 add constraint pk1 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_n30
+PREHOOK: Output: default@emps_n30
 POSTHOOK: query: alter table emps_n30 add constraint pk1 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_n30
+POSTHOOK: Output: default@emps_n30
 PREHOOK: query: alter table depts_n20 add constraint pk2 primary key (deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_n20
+PREHOOK: Output: default@depts_n20
 POSTHOOK: query: alter table depts_n20 add constraint pk2 primary key (deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_n20
+POSTHOOK: Output: default@depts_n20
 PREHOOK: query: alter table dependents_n20 add constraint pk3 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@dependents_n20
+PREHOOK: Output: default@dependents_n20
 POSTHOOK: query: alter table dependents_n20 add constraint pk3 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@dependents_n20
+POSTHOOK: Output: default@dependents_n20
 PREHOOK: query: alter table locations_n20 add constraint pk4 primary key (locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@locations_n20
+PREHOOK: Output: default@locations_n20
 POSTHOOK: query: alter table locations_n20 add constraint pk4 primary key (locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@locations_n20
+POSTHOOK: Output: default@locations_n20
 PREHOOK: query: alter table emps_n30 add constraint fk1 foreign key (deptno) references depts_n20(deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_n30
+PREHOOK: Output: default@emps_n30
 POSTHOOK: query: alter table emps_n30 add constraint fk1 foreign key (deptno) references depts_n20(deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_n30
+POSTHOOK: Output: default@emps_n30
 PREHOOK: query: alter table depts_n20 add constraint fk2 foreign key (locationid) references locations_n20(locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_n20
+PREHOOK: Output: default@depts_n20
 POSTHOOK: query: alter table depts_n20 add constraint fk2 foreign key (locationid) references locations_n20(locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_n20
+POSTHOOK: Output: default@depts_n20
 PREHOOK: query: create materialized view mv1_part_n2 partitioned on (deptno) as
 select * from emps_n30 where empid < 150
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -147,6 +171,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@deptno=10
+POSTHOOK: Lineage: mv1_part_n2.commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
@@ -314,6 +342,9 @@ POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@deptno=10
 POSTHOOK: Output: default@mv1_part_n2@deptno=20
+POSTHOOK: Lineage: mv1_part_n2.commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
@@ -483,6 +514,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@deptno=10
+POSTHOOK: Lineage: mv1_part_n2.commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
@@ -614,6 +649,7 @@ POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Eric
 POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
 POSTHOOK: Output: default@mv1_part_n2@name=Theodore
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Eric).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Sebastian).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
@@ -701,6 +737,7 @@ POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Eric
 POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
 POSTHOOK: Output: default@mv1_part_n2@name=Theodore
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Eric).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Sebastian).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
@@ -829,6 +866,7 @@ POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
 POSTHOOK: Output: default@mv1_part_n2@name=Theodore
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Sebastian).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Theodore).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
@@ -954,6 +992,9 @@ POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Eric
 POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
 POSTHOOK: Output: default@mv1_part_n2@name=Theodore
+POSTHOOK: Lineage: mv1_part_n2.c EXPRESSION [(emps_n30)emps_n30.null, ]
+POSTHOOK: Lineage: mv1_part_n2.s EXPRESSION [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).c EXPRESSION [(emps_n30)emps_n30.null, ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).s EXPRESSION [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]

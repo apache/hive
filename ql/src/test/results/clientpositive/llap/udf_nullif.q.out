@@ -213,3 +213,57 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t0
 #### A masked pattern was here ####
 1	2	3.1	4.1
+PREHOOK: query: SELECT assert_true(NULLIF(array(1,2,3),array(1,2,3)) is null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(array(1,2,3),array(1,2,3)) is null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT assert_true(NULLIF(array(1,2,3),array(3,2,1)) is not null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(array(1,2,3),array(3,2,1)) is not null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT assert_true(NULLIF(named_struct("c", 1),named_struct("c", 1)) is null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(named_struct("c", 1),named_struct("c", 1)) is null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT assert_true(NULLIF(named_struct("c", 1),named_struct("c", 2)) is not null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(named_struct("c", 1),named_struct("c", 2)) is not null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT assert_true(NULLIF(map('a',1,'b',2),map('a',1,'b',2)) is null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(map('a',1,'b',2),map('a',1,'b',2)) is null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT assert_true(NULLIF(map('a',1,'b',2),map('a',1,'b',3)) is not null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(map('a',1,'b',2),map('a',1,'b',3)) is not null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL

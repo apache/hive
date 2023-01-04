@@ -28,11 +28,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hive.common.util.Retry;
 import org.apache.tez.runtime.library.common.shuffle.orderedgrouped.ShuffleHeader;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 
 import io.netty.channel.Channel;
@@ -46,6 +49,9 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class TestShuffleHandler {
 
+  @Rule
+  public Retry retry = new Retry(2); // in case of port collision in some tests
+
   private static final File TEST_DIR =
       new File(System.getProperty("test.build.data"), TestShuffleHandler.class.getName())
           .getAbsoluteFile();
@@ -58,7 +64,7 @@ public class TestShuffleHandler {
       this.lastAddress = lastAddress;
     }
 
-    SocketAddress getSocketAddres() {
+    SocketAddress getSocketAddress() {
       return lastAddress;
     }
   }
@@ -192,7 +198,7 @@ public class TestShuffleHandler {
     byte[] buffer = new byte[1024];
     while (input.read(buffer) != -1) {
     }
-    SocketAddress firstAddress = lastSocketAddress.getSocketAddres();
+    SocketAddress firstAddress = lastSocketAddress.getSocketAddress();
     input.close();
 
     // For keepAlive via URL
@@ -211,7 +217,7 @@ public class TestShuffleHandler {
     header = new ShuffleHeader();
     header.readFields(input);
     input.close();
-    SocketAddress secondAddress = lastSocketAddress.getSocketAddres();
+    SocketAddress secondAddress = lastSocketAddress.getSocketAddress();
     Assert.assertNotNull("Initial shuffle address should not be null", firstAddress);
     Assert.assertNotNull("Keep-Alive shuffle address should not be null", secondAddress);
     Assert.assertEquals(
@@ -248,6 +254,36 @@ public class TestShuffleHandler {
       if (conn != null) {
         conn.disconnect();
       }
+      shuffleHandler.stop();
+    }
+  }
+
+  @Test
+  public void testConfigPortStatic() throws Exception {
+    Random rand = new Random();
+    int port = rand.nextInt(10) + 50000;
+    Configuration conf = new Configuration();
+    // provide a port for ShuffleHandler
+    conf.setInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, port);
+    MockShuffleHandler2 shuffleHandler = new MockShuffleHandler2(conf);
+    try {
+      shuffleHandler.start();
+      Assert.assertEquals(port, shuffleHandler.getPort());
+    } finally {
+      shuffleHandler.stop();
+    }
+  }
+
+  @Test
+  public void testConfigPortDynamic() throws Exception {
+    Configuration conf = new Configuration();
+    // 0 as config, should be dynamically chosen by netty
+    conf.setInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, 0);
+    MockShuffleHandler2 shuffleHandler = new MockShuffleHandler2(conf);
+    try {
+      shuffleHandler.start();
+      Assert.assertTrue("ShuffleHandler should use a random chosen port", shuffleHandler.getPort() > 0);
+    } finally {
       shuffleHandler.stop();
     }
   }

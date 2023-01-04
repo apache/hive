@@ -1,0 +1,829 @@
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float), 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float), 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -64.0
+   Max Value            : 62.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float))) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float))) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -64.0
+   Max Value            : 62.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float), 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float), 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -64.0
+   Max Value            : 62.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float))) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float))) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -64.0
+   Max Value            : 62.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float), 300)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float), 300)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 300
+   min K                : 300
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 0.896%
+   Epsison PMF          : 1.127%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 5
+   Sorted               : false
+   Buffer Capacity Items: 781
+   Retained Items       : 769
+   Storage Bytes        : 3124
+   Min Value            : -64.0
+   Max Value            : 62.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float), 300)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (ctinyint as float), 300)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 300
+   min K                : 300
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 0.896%
+   Epsison PMF          : 1.127%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 5
+   Sorted               : false
+   Buffer Capacity Items: 781
+   Retained Items       : 769
+   Storage Bytes        : 3124
+   Min Value            : -64.0
+   Max Value            : 62.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (csmallint as float), 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (csmallint as float), 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9174
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 536
+   Storage Bytes        : 2196
+   Min Value            : -16379.0
+   Max Value            : 16376.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (csmallint as float))) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (csmallint as float))) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9174
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 536
+   Storage Bytes        : 2196
+   Min Value            : -16379.0
+   Max Value            : 16376.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (csmallint as float), 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (csmallint as float), 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9174
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 536
+   Storage Bytes        : 2196
+   Min Value            : -16379.0
+   Max Value            : 16376.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (csmallint as float))) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (csmallint as float))) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9174
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 536
+   Storage Bytes        : 2196
+   Min Value            : -16379.0
+   Max Value            : 16376.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float), 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float), 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -1.07327936E9
+   Max Value            : 1.07368058E9
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float))) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float))) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -1.07327936E9
+   Max Value            : 1.07368058E9
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float), 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float), 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -1.07327936E9
+   Max Value            : 1.07368058E9
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float))) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float))) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -1.07327936E9
+   Max Value            : 1.07368058E9
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float), 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float), 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -2.14731162E9
+   Max Value            : 2.14549837E9
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float))) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float))) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -2.14731162E9
+   Max Value            : 2.14549837E9
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float), 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float), 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -2.14731162E9
+   Max Value            : 2.14549837E9
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float))) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float))) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -2.14731162E9
+   Max Value            : 2.14549837E9
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cfloat, 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cfloat, 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -64.0
+   Max Value            : 79.553
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cfloat)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cfloat)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -64.0
+   Max Value            : 79.553
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cfloat, 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cfloat, 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -64.0
+   Max Value            : 79.553
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cfloat)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cfloat)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9173
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 535
+   Storage Bytes        : 2192
+   Min Value            : -64.0
+   Max Value            : 79.553
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cdouble as float), 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cdouble as float), 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9174
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 536
+   Storage Bytes        : 2196
+   Min Value            : -16379.0
+   Max Value            : 9763216.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cdouble as float))) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cdouble as float))) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9174
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 536
+   Storage Bytes        : 2196
+   Min Value            : -16379.0
+   Max Value            : 9763216.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cdouble as float), 200)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cdouble as float), 200)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9174
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 536
+   Storage Bytes        : 2196
+   Min Value            : -16379.0
+   Max Value            : 9763216.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cdouble as float))) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cdouble as float))) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 9174
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 6
+   Sorted               : false
+   Buffer Capacity Items: 547
+   Retained Items       : 536
+   Storage Bytes        : 2196
+   Min Value            : -16379.0
+   Max Value            : 9763216.0
+### End sketch summary
+
+PREHOOK: query: create table test_compute_kll (key1 int, key2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_compute_kll
+POSTHOOK: query: create table test_compute_kll (key1 int, key2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_compute_kll
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: insert overwrite table test_compute_kll select a.key, b.key from src as a, src as b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_compute_kll
+POSTHOOK: query: insert overwrite table test_compute_kll select a.key, b.key from src as a, src as b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_compute_kll
+POSTHOOK: Lineage: test_compute_kll.key1 EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_compute_kll.key2 EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (key1 as float))) from test_compute_kll
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_compute_kll
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (key1 as float))) from test_compute_kll
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_compute_kll
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 250000
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 11
+   Sorted               : false
+   Buffer Capacity Items: 601
+   Retained Items       : 598
+   Storage Bytes        : 2464
+   Min Value            : 0.0
+   Max Value            : 498.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (key2 as float))) from test_compute_kll
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_compute_kll
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (key2 as float))) from test_compute_kll
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_compute_kll
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 250000
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 11
+   Sorted               : false
+   Buffer Capacity Items: 601
+   Retained Items       : 598
+   Storage Bytes        : 2464
+   Min Value            : 0.0
+   Max Value            : 498.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (key1 as float))) from test_compute_kll
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_compute_kll
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (key1 as float))) from test_compute_kll
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_compute_kll
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 250000
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 11
+   Sorted               : false
+   Buffer Capacity Items: 601
+   Retained Items       : 598
+   Storage Bytes        : 2464
+   Min Value            : 0.0
+   Max Value            : 498.0
+### End sketch summary
+
+PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (key2 as float))) from test_compute_kll
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_compute_kll
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (key2 as float))) from test_compute_kll
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_compute_kll
+#### A masked pattern was here ####
+
+### KLL sketch summary:
+   K                    : 200
+   min K                : 200
+   M                    : 8
+   N                    : 250000
+   Epsilon              : 1.329%
+   Epsison PMF          : 1.652%
+   Empty                : false
+   Estimation Mode      : true
+   Levels               : 11
+   Sorted               : false
+   Buffer Capacity Items: 601
+   Retained Items       : 598
+   Storage Bytes        : 2464
+   Min Value            : 0.0
+   Max Value            : 498.0
+### End sketch summary
+

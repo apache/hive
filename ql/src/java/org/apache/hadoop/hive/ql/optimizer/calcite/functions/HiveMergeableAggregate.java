@@ -28,7 +28,7 @@ import org.apache.calcite.sql.type.SqlReturnTypeInference;
  * Mergeable aggregate.
  *
  * A mergeable aggregate is:
- * - accepts the same kind as inputs as the output (an X^n -> X function)
+ * - accepts the same kind as inputs as the output (an X^n -&gt; X function)
  *
  * Example: the SUM function is a great example; since SUM of SUM -s is the overall sum.
  */

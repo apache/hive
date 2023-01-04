@@ -1,4 +1,8 @@
 -- SORT_QUERY_RESULTS
+-- Mask the totalSize value as it can have slight variability, causing test flakiness
+--! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
+-- Mask random uuid
+--! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 
 set hive.vectorized.execution.enabled=false;
 
@@ -22,6 +26,15 @@ describe formatted test_truncate;
 insert into test_truncate values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five'); 
 select * from test_truncate;
 describe formatted test_truncate;
+
+truncate test_truncate;
+
+select count(*) from test_truncate;
+select * from test_truncate;
+describe formatted test_truncate;
+
+insert into test_truncate values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five');
+alter table test_truncate set tblproperties('external.table.purge'='false');
 
 truncate test_truncate;
 

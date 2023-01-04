@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Vectorized UDF for CAST (<STRING> TO DATE WITH FORMAT <STRING>).
+ * Vectorized UDF for CAST (&lt;STRING&gt; TO DATE WITH FORMAT &lt;STRING&gt;).
  */
 public class CastStringToDateWithFormat extends CastStringToDate {
 

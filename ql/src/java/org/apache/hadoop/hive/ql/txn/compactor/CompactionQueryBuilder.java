@@ -15,12 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -29,13 +30,13 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.ql.ddl.table.create.show.ShowCreateTableOperation;
 import org.apache.hadoop.hive.ql.exec.DDLPlanUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
@@ -43,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +62,7 @@ class CompactionQueryBuilder {
 
   // required fields, set in constructor
   private final Operation operation;
-  private String resultTableName;
+  private final String resultTableName;
 
   // required for some types of compaction. Required...
   private Table sourceTab; // for Create and for Insert in CRUD and insert-only major
@@ -70,6 +72,7 @@ class CompactionQueryBuilder {
   private AcidDirectory dir; // for Alter in minor
   private Partition sourcePartition; // for Insert in major and insert-only minor
   private String sourceTabForInsert; // for Insert
+  private int numberOfBuckets;  //for rebalance
 
   // settable booleans
   private boolean isPartitioned; // for Create
@@ -77,14 +80,8 @@ class CompactionQueryBuilder {
   private boolean isDeleteDelta; // for Alter in CRUD minor
 
   // internal use only, for legibility
-  private final boolean major;
-  private final boolean minor;
-  private final boolean crud;
   private final boolean insertOnly;
-
-  enum CompactionType {
-    MAJOR_CRUD, MINOR_CRUD, MAJOR_INSERT_ONLY, MINOR_INSERT_ONLY
-  }
+  private final CompactionType compactionType;
 
   enum Operation {
     CREATE, ALTER, INSERT, DROP
@@ -167,6 +164,15 @@ class CompactionQueryBuilder {
   }
 
   /**
+   * Sets the target number of implicit buckets for a rebalancing compaction
+   * @param numberOfBuckets The target number of buckets
+   */
+  public CompactionQueryBuilder setNumberOfBuckets(int numberOfBuckets) {
+    this.numberOfBuckets = numberOfBuckets;
+    return this;
+  }
+
+  /**
    * If true, Create operations will result in a table with partition column `file_name`.
    */
   CompactionQueryBuilder setPartitioned(boolean partitioned) {
@@ -178,6 +184,9 @@ class CompactionQueryBuilder {
    * If true, Create operations for CRUD minor compaction will result in a bucketed table.
    */
   CompactionQueryBuilder setBucketed(boolean bucketed) {
+    if(CompactionType.REBALANCE.equals(compactionType) && bucketed) {
+      throw new IllegalArgumentException("Rebalance compaction is supported only on implicitly-bucketed tables!");
+    }
     isBucketed = bucketed;
     return this;
   }
@@ -198,22 +207,22 @@ class CompactionQueryBuilder {
    * @param compactionType major or minor; crud or insert-only, e.g. CompactionType.MAJOR_CRUD.
    *                       Cannot be null.
    * @param operation query's Operation e.g. Operation.CREATE.
-   * @param resultTableName the name of the table we are running the operation on
+   * @param insertOnly Inidicated if the table is not full ACID but Insert-only (Micromanaged)
    * @throws IllegalArgumentException if compactionType is null
    */
-  CompactionQueryBuilder(CompactionType compactionType, Operation operation,
+  CompactionQueryBuilder(CompactionType compactionType, Operation operation, boolean insertOnly,
       String resultTableName) {
     if (compactionType == null) {
       throw new IllegalArgumentException("CompactionQueryBuilder.CompactionType cannot be null");
     }
+    this.compactionType = compactionType;
     this.operation = operation;
     this.resultTableName = resultTableName;
-    major = compactionType == CompactionType.MAJOR_CRUD
-        || compactionType == CompactionType.MAJOR_INSERT_ONLY;
-    crud =
-        compactionType == CompactionType.MAJOR_CRUD || compactionType == CompactionType.MINOR_CRUD;
-    minor = !major;
-    insertOnly = !crud;
+    this.insertOnly = insertOnly;
+
+    if (CompactionType.REBALANCE.equals(compactionType) && insertOnly) {
+      throw new IllegalArgumentException("Rebalance compaction is supported only on full ACID tables!");
+    }
   }
 
   /**
@@ -285,7 +294,9 @@ class CompactionQueryBuilder {
   private void buildSelectClauseForInsert(StringBuilder query) {
     // Need list of columns for major crud, mmmajor partitioned, mmminor
     List<FieldSchema> cols;
-    if (major && crud || major && insertOnly && sourcePartition != null || minor && insertOnly) {
+    if (CompactionType.REBALANCE.equals(compactionType) ||
+        CompactionType.MAJOR.equals(compactionType) && (!insertOnly || sourcePartition != null) ||
+        CompactionType.MINOR.equals(compactionType) && insertOnly) {
       if (sourceTab == null) {
         return; // avoid NPEs, don't throw an exception but skip this part of the query
       }
@@ -293,36 +304,60 @@ class CompactionQueryBuilder {
     } else {
       cols = null;
     }
-
-    if (crud) {
-      if (major) {
-        query.append(
-            "validate_acid_sort_order(ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId), "
-                + "ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId, ROW__ID.writeId, "
-                + "NAMED_STRUCT(");
+    switch (compactionType) {
+      case REBALANCE: {
+        query.append("0, t2.writeId, t2.rowId / CEIL(numRows / ");
+        query.append(numberOfBuckets);
+        query.append("), t2.rowId, t2.writeId, t2.data from (select ");
+        query.append("count(ROW__ID.writeId) over() as numRows, ROW__ID.writeId as writeId, " +
+            "(row_number() OVER (order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC)) -1 AS rowId, " +
+            "NAMED_STRUCT(");
         for (int i = 0; i < cols.size(); ++i) {
-          query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ")
-              .append(cols.get(i).getName());
+          query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', `")
+              .append(cols.get(i).getName()).append("`");
         }
-        query.append(") ");
-      } else { //minor
-        query.append(
-            "`operation`, `originalTransaction`, `bucket`, `rowId`, `currentTransaction`, `row`");
+        query.append(") as data");
+        break;
       }
-
-    } else { // mm
-      if (major) {
-        if (sourcePartition != null) { //mmmajor and partitioned
-          for (int i = 0; i < cols.size(); ++i) {
-            query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
+      case MAJOR: {
+        if (insertOnly) {
+          if (sourcePartition != null) { //mmmajor and partitioned
+            appendColumns(query, cols, false);
+          } else { // mmmajor and unpartitioned
+            query.append("*");
           }
-        } else { // mmmajor and unpartitioned
-          query.append("*");
+        } else {
+          query.append(
+              "validate_acid_sort_order(ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId), "
+                  + "ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId, ROW__ID.writeId, "
+                  + "NAMED_STRUCT(");
+          appendColumns(query, cols, true);
+          query.append(") ");
         }
-      } else { // mmminor
-        for (int i = 0; i < cols.size(); ++i) {
-          query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
+        break;
+      }
+      case MINOR: {
+        if (insertOnly) {
+          appendColumns(query, cols, false);
+        } else {
+          query.append(
+              "`operation`, `originalTransaction`, `bucket`, `rowId`, `currentTransaction`, `row`");
         }
+        break;
+      }
+    }
+  }
+
+  private void appendColumns(StringBuilder query, List<FieldSchema> cols, boolean alias) {
+    if (cols == null) {
+      throw new IllegalStateException("Query could not be created: Source columns are unknown");
+    }
+    for (int i = 0; i < cols.size(); ++i) {
+      if (alias) {
+        query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', `")
+            .append(cols.get(i).getName()).append("`");
+      } else {
+        query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
       }
     }
   }
@@ -333,10 +368,13 @@ class CompactionQueryBuilder {
     } else {
       query.append(sourceTab.getDbName()).append(".").append(sourceTab.getTableName());
     }
+    if (CompactionType.REBALANCE.equals(compactionType)) {
+      query.append(" order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC) t2");
+    }
   }
 
   private void buildWhereClauseForInsert(StringBuilder query) {
-    if (major && sourcePartition != null && sourceTab != null) {
+    if (CompactionType.MAJOR.equals(compactionType) && sourcePartition != null && sourceTab != null) {
       List<String> vals = sourcePartition.getValues();
       List<FieldSchema> keys = sourceTab.getPartitionKeys();
       if (keys.size() != vals.size()) {
@@ -347,12 +385,17 @@ class CompactionQueryBuilder {
 
       query.append(" where ");
       for (int i = 0; i < keys.size(); ++i) {
-        query.append(i == 0 ? "`" : " and `").append(keys.get(i).getName()).append("`='")
-            .append(vals.get(i)).append("'");
+        FieldSchema keySchema = keys.get(i);
+        query.append(i == 0 ? "`" : " and `").append(keySchema.getName()).append("`=");
+        if (!keySchema.getType().equalsIgnoreCase(ColumnType.BOOLEAN_TYPE_NAME)) {
+          query.append("'").append(vals.get(i)).append("'");
+        } else {
+          query.append(vals.get(i));
+        }
       }
     }
 
-    if (minor && crud && validWriteIdList != null) {
+    if (CompactionType.MINOR.equals(compactionType) && !insertOnly && validWriteIdList != null) {
       long[] invalidWriteIds = validWriteIdList.getInvalidWriteIds();
       if (invalidWriteIds.length > 0) {
         query.append(" where `originalTransaction` not in (").append(
@@ -372,7 +415,7 @@ class CompactionQueryBuilder {
 
     // CLUSTERED BY. (bucketing)
     int bucketingVersion = 0;
-    if (crud && minor) {
+    if (!insertOnly && CompactionType.MINOR.equals(compactionType)) {
       bucketingVersion = getMinorCrudBucketing(query, bucketingVersion);
     } else if (insertOnly) {
       getMmBucketing(query);
@@ -384,7 +427,7 @@ class CompactionQueryBuilder {
     }
 
     // STORED AS / ROW FORMAT SERDE + INPUTFORMAT + OUTPUTFORMAT
-    if (crud) {
+    if (!insertOnly) {
       query.append(" stored as orc");
     } else {
       copySerdeFromSourceTable(query);
@@ -407,23 +450,20 @@ class CompactionQueryBuilder {
       return; // avoid NPEs, don't throw an exception but skip this part of the query
     }
     query.append("(");
-    if (crud) {
+    if (!insertOnly) {
       query.append(
           "`operation` int, `originalTransaction` bigint, `bucket` int, `rowId` bigint, "
               + "`currentTransaction` bigint, `row` struct<");
     }
     List<FieldSchema> cols = sourceTab.getSd().getCols();
-    boolean isFirst = true;
+    List<String> columnDescs = new ArrayList<>();
     for (FieldSchema col : cols) {
-      if (!isFirst) {
-        query.append(", ");
-      }
-      isFirst = false;
-      query.append("`").append(col.getName()).append("` ");
-      query.append(crud ? ":" : "");
-      query.append(col.getType());
+      String columnType = DDLPlanUtils.formatType(TypeInfoUtils.getTypeInfoFromTypeString(col.getType()));
+      String columnDesc = "`" + col.getName() + "` " + (!insertOnly ? ":" : "") + columnType;
+      columnDescs.add(columnDesc);
     }
-    query.append(crud ? ">" : "");
+    query.append(StringUtils.join(',',columnDescs));
+    query.append(!insertOnly ? ">" : "");
     query.append(") ");
   }
 
@@ -539,11 +579,11 @@ class CompactionQueryBuilder {
   private void addTblProperties(StringBuilder query, int bucketingVersion) {
     Map<String, String> tblProperties = new HashMap<>();
     tblProperties.put("transactional", "false");
-    if (crud) {
-      tblProperties.put(AcidUtils.COMPACTOR_TABLE_PROPERTY, "true");
-    }
-    if (crud && minor && isBucketed) {
-      tblProperties.put("bucketing_version", String.valueOf(bucketingVersion));
+    if (!insertOnly) {
+      tblProperties.put(AcidUtils.COMPACTOR_TABLE_PROPERTY, compactionType.name());
+      if (CompactionType.MINOR.equals(compactionType) && isBucketed) {
+        tblProperties.put("bucketing_version", String.valueOf(bucketingVersion));
+      }
     }
     if (sourceTab != null) { // to avoid NPEs, skip this part if sourceTab is null
       if (insertOnly) {

@@ -22,8 +22,6 @@ import java.util.ArrayList;
 
 import java.util.List;
 
-import jline.internal.Log;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.cli.TableSchema;
@@ -34,13 +32,11 @@ import java.sql.RowIdLifetime;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.jar.Attributes;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hive.service.cli.GetInfoType;
 import org.apache.hive.service.rpc.thrift.TCLIService;
-import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
 import org.apache.hive.service.rpc.thrift.TGetCatalogsReq;
 import org.apache.hive.service.rpc.thrift.TGetCatalogsResp;
 import org.apache.hive.service.rpc.thrift.TGetColumnsReq;
@@ -218,47 +214,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
-  /**
-   * Convert a pattern containing JDBC catalog search wildcards into
-   * Java regex patterns.
-   *
-   * @param pattern input which may contain '%' or '_' wildcard characters, or
-   * these characters escaped using {@link #getSearchStringEscape()}.
-   * @return replace %/_ with regex search characters, also handle escaped
-   * characters.
-   */
-  private String convertPattern(final String pattern) {
-    if (pattern==null) {
-      return ".*";
-    } else {
-      StringBuilder result = new StringBuilder(pattern.length());
-
-      boolean escaped = false;
-      for (int i = 0, len = pattern.length(); i < len; i++) {
-        char c = pattern.charAt(i);
-        if (escaped) {
-          if (c != SEARCH_STRING_ESCAPE) {
-            escaped = false;
-          }
-          result.append(c);
-        } else {
-          if (c == SEARCH_STRING_ESCAPE) {
-            escaped = true;
-            continue;
-          } else if (c == '%') {
-            result.append(".*");
-          } else if (c == '_') {
-            result.append('.');
-          } else {
-            result.append(Character.toLowerCase(c));
-          }
-        }
-      }
-
-      return result.toString();
-    }
-  }
-
   public ResultSet getColumns(String catalog, String schemaPattern,
       String tableNamePattern, String columnNamePattern) throws SQLException {
     TGetColumnsResp colResp;
@@ -279,27 +234,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     .setClient(client)
     .setStmtHandle(colResp.getOperationHandle())
     .build();
-  }
-
-  /**
-   * We sort the output of getColumns to guarantee jdbc compliance.
-   * First check by table name then by ordinal position
-   */
-  private class GetColumnsComparator implements Comparator<JdbcColumn> {
-
-    public int compare(JdbcColumn o1, JdbcColumn o2) {
-      int compareName = o1.getTableName().compareTo(o2.getTableName());
-      if (compareName==0) {
-        if (o1.getOrdinalPos() > o2.getOrdinalPos()) {
-          return 1;
-        } else if (o1.getOrdinalPos() < o2.getOrdinalPos()) {
-          return -1;
-        }
-        return 0;
-      } else {
-        return compareName;
-      }
-    }
   }
 
   public Connection getConnection() throws SQLException {
@@ -742,22 +676,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     .setClient(client)
     .setStmtHandle(getTableResp.getOperationHandle())
     .build();
-  }
-
-  /**
-   * We sort the output of getTables to guarantee jdbc compliance.
-   * First check by table type then by table name
-   */
-  private class GetTablesComparator implements Comparator<JdbcTable> {
-
-    public int compare(JdbcTable o1, JdbcTable o2) {
-      int compareType = o1.getType().compareTo(o2.getType());
-      if (compareType==0) {
-        return o1.getTableName().compareTo(o2.getTableName());
-      } else {
-        return compareType;
-      }
-    }
   }
 
   /**

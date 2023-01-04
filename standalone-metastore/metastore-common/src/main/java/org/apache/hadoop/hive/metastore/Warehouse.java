@@ -57,6 +57,9 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
+
 /**
  * This class represents a warehouse where data of Hive tables is stored
  */
@@ -268,7 +271,7 @@ public class Warehouse {
   }
 
   /**
-   * Get the managed tables path specified by the database.  In the case of the default database the root of the
+   * Get the external tables path specified by the database.  In the case of the default database the root of the
    * warehouse is returned.
    * @param db database to get the path of
    * @return path to the database directory
@@ -355,15 +358,22 @@ public class Warehouse {
     Path dbPath = null;
     if (isExternal) {
       dbPath = new Path(db.getLocationUri());
-      if (FileUtils.isSubdirectory(getWhRoot().toString(), dbPath.toString() + Path.SEPARATOR)) {
+      if (FileUtils.isSubdirectory(getWhRoot().toString(), dbPath.toString()) ||
+          getWhRoot().equals(dbPath)) {
         // db metadata incorrect, find new location based on external warehouse root
         dbPath = getDefaultExternalDatabasePath(db.getName());
       }
     } else {
       dbPath = getDatabaseManagedPath(db);
     }
-    return getDnsPath(
-        new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+    if (!isExternal && tableName.matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
+      String[] groups = tableName.split("\\" + SOFT_DELETE_PATH_SUFFIX);
+      tableName = String.join(SOFT_DELETE_PATH_SUFFIX, 
+          MetaStoreUtils.encodeTableName(groups[0].toLowerCase()), groups[1]);
+    } else {
+      tableName = MetaStoreUtils.encodeTableName(tableName.toLowerCase());
+    }
+    return getDnsPath(new Path(dbPath, tableName));
   }
 
   public Path getDefaultManagedTablePath(Database db, String tableName) throws MetaException {
@@ -432,6 +442,21 @@ public class Warehouse {
       FileSystem srcFs = getFs(sourcePath);
       FileSystem destFs = getFs(destPath);
       return FileUtils.rename(srcFs, destFs, sourcePath, destPath);
+    } catch (Exception ex) {
+      MetaStoreUtils.throwMetaException(ex);
+    }
+    return false;
+  }
+
+  public boolean copyDir(Path sourcePath, Path destPath, boolean needCmRecycle) throws MetaException {
+    try {
+      if (needCmRecycle) {
+        cm.recycle(sourcePath, RecycleType.COPY, true);
+      }
+      FileSystem srcFs = getFs(sourcePath);
+      FileSystem destFs = getFs(destPath);
+      // TODO: this operation can be expensive depending on the size of data. 
+      return FileUtils.copy(srcFs, sourcePath, destFs, destPath, false, false, conf);
     } catch (Exception ex) {
       MetaStoreUtils.throwMetaException(ex);
     }

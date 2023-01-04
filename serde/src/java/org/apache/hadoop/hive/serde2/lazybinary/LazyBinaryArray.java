@@ -135,9 +135,9 @@ public class LazyBinaryArray extends
     // adjust arrays
     adjustArraySize(arraySize);
     // find out the null-bytes
-    int arryByteStart = start + vInt.length;
-    int nullByteCur = arryByteStart;
-    int nullByteEnd = arryByteStart + (arraySize + 7) / 8;
+    int arrayByteStart = start + vInt.length;
+    int nullByteCur = arrayByteStart;
+    int nullByteEnd = arrayByteStart + (arraySize + 7) / 8;
     // the begin the real elements
     int lastElementByteEnd = nullByteEnd;
     // the list element object inspector

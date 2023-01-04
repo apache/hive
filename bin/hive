@@ -101,7 +101,7 @@ if [[ "$SERVICE" == "beeline" && ! -z "$BEELINE_URL_LEGACY" ]] ; then
   SERVICE_ARGS=("${SERVICE_ARGS[@]}" "-c" "${BEELINE_URL_LEGACY}")
 fi
 
-if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus)$ ]] ; then
+if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|beeline|llapstatus)$ ]] ; then
   SKIP_HBASECP=true
 fi
 
@@ -111,21 +111,6 @@ fi
 
 if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
   . "${HIVE_CONF_DIR}/hive-env.sh"
-fi
-
-if [ "$SERVICE" != "beeline" ]; then
-  if [[ -z "$SPARK_HOME" ]]
-  then
-    bin=`dirname "$0"`
-    # many hadoop installs are in dir/{spark,hive,hadoop,..}
-    if test -e $bin/../../spark; then 
-      sparkHome=$(readlink -f $bin/../../spark)
-      if [[ -d $sparkHome ]]
-      then
-        export SPARK_HOME=$sparkHome
-      fi
-    fi
-  fi
 fi
 
 CLASSPATH="${TEZ_CONF_DIR:-/etc/tez/conf}:${HIVE_CONF_DIR}"
@@ -155,7 +140,7 @@ for f in ${HIVE_LIB}/*.jar; do
   CLASSPATH=${CLASSPATH}:$f;
 done
 
-# add the auxillary jars such as serdes
+# add the auxiliary jars such as serdes
 if [ -d "${HIVE_AUX_JARS_PATH}" ]; then
   hive_aux_jars_abspath=`cd ${HIVE_AUX_JARS_PATH} && pwd`
   for f in $hive_aux_jars_abspath/*.jar; do

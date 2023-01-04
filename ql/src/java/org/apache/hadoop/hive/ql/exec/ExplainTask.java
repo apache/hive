@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -74,7 +75,6 @@ import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationFactory;
@@ -101,8 +101,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(ExplainTask.class.getName());
 
   public static final String STAGE_DEPENDENCIES = "STAGE DEPENDENCIES";
+  private static final String EXCLUDED_RULES_PREFIX = "Excluded rules: ";
   private static final long serialVersionUID = 1L;
   public static final String EXPL_COLUMN_NAME = "Explain";
+  private static final String CBO_INFO_JSON_LABEL = "cboInfo";
+  private static final String CBO_PLAN_JSON_LABEL = "CBOPlan";
+  private static final String CBO_PLAN_TEXT_LABEL = "CBO PLAN:";
   private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
   private boolean isLogical = false;
 
@@ -152,15 +156,22 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return outJSONObject;
   }
 
-  public JSONObject getJSONCBOPlan(PrintStream out, ExplainWork work) throws Exception {
+  public JSONObject getJSONCBOPlan(PrintStream out, ExplainWork work) {
     JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
     boolean jsonOutput = work.isFormatted();
     String cboPlan = work.getCboPlan();
     if (cboPlan != null) {
+      String ruleExclusionRegex = getRuleExcludedRegex();
       if (jsonOutput) {
-        outJSONObject.put("CBOPlan", cboPlan);
+        outJSONObject.put(CBO_PLAN_JSON_LABEL, cboPlan);
+        if (!ruleExclusionRegex.isEmpty()) {
+          outJSONObject.put(CBO_INFO_JSON_LABEL, EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
+        }
       } else {
-        out.println("CBO PLAN:");
+        if (!ruleExclusionRegex.isEmpty()) {
+          out.println(EXCLUDED_RULES_PREFIX + ruleExclusionRegex + "\n");
+        }
+        out.println(CBO_PLAN_TEXT_LABEL);
         out.println(cboPlan);
       }
     }
@@ -272,6 +283,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       boolean jsonOutput, boolean isExtended, boolean appendTaskType, String cboInfo,
       String cboPlan, String optimizedSQL, String stageIdRearrange) throws Exception {
 
+    String ruleExclusionRegex = getRuleExcludedRegex();
+
     // If the user asked for a formatted output, dump the json output
     // in the output stream
     JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
@@ -282,9 +295,15 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (cboPlan != null) {
       if (jsonOutput) {
-        outJSONObject.put("CBOPlan", cboPlan);
+        outJSONObject.put(CBO_PLAN_JSON_LABEL, cboPlan);
+        if (!ruleExclusionRegex.isEmpty()) {
+          outJSONObject.put(CBO_INFO_JSON_LABEL, EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
+        }
       } else {
-        out.print("CBO PLAN:");
+        if (!ruleExclusionRegex.isEmpty()) {
+          out.println(EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
+        }
+        out.print(CBO_PLAN_TEXT_LABEL);
         out.println(cboPlan);
       }
     }
@@ -327,6 +346,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     if (!suppressOthersForVectorization) {
+      if (!jsonOutput && !ruleExclusionRegex.isEmpty()) {
+        out.println(EXCLUDED_RULES_PREFIX + ruleExclusionRegex + "\n");
+      }
+
       JSONObject jsonDependencies = outputDependencies(out, jsonOutput, appendTaskType, ordered);
 
       if (out != null) {
@@ -335,7 +358,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
       if (jsonOutput) {
         if (cboInfo != null) {
-          outJSONObject.put("cboInfo", cboInfo);
+          outJSONObject.put(CBO_INFO_JSON_LABEL, cboInfo);
         }
         outJSONObject.put(STAGE_DEPENDENCIES, jsonDependencies);
       }
@@ -430,7 +453,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonObject;
   }
 
-  public void addCreateTableStatement(Table table, List<String> tableCreateStmt , DDLPlanUtils ddlPlanUtils){
+  public void addCreateTableStatement(Table table, List<String> tableCreateStmt , DDLPlanUtils ddlPlanUtils) {
     tableCreateStmt.add(ddlPlanUtils.getCreateTableCommand(table, false) + ";");
   }
   
@@ -465,7 +488,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return;
   }
 
-  public void getDDLPlan(PrintStream out) throws HiveException, MetaException, Exception {
+  public void getDDLPlan(PrintStream out) throws Exception {
     DDLPlanUtils ddlPlanUtils = new DDLPlanUtils();
     Set<String> createDatabase = new TreeSet<String>();
     List<String> tableCreateStmt = new LinkedList<String>();
@@ -527,7 +550,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     try {
       Path resFile = work.getResFile();
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
-      out = new PrintStream(outS);
+      out = new PrintStream(outS, false, StandardCharsets.UTF_8.name());
 
       if(work.isDDL()){
         getDDLPlan(out);
@@ -728,36 +751,6 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
               json.accumulate(ent.getKey().toString(), jsonDep);
             }
           }
-        } else if (ent.getValue() != null && !((List<?>) ent.getValue()).isEmpty()
-            && ((List<?>) ent.getValue()).get(0) != null &&
-            ((List<?>) ent.getValue()).get(0) instanceof SparkWork.Dependency) {
-          if (out != null) {
-            boolean isFirst = true;
-            for (SparkWork.Dependency dep: (List<SparkWork.Dependency>) ent.getValue()) {
-              if (!isFirst) {
-                out.print(", ");
-              } else {
-                out.print("<- ");
-                isFirst = false;
-              }
-              out.print(dep.getName());
-              out.print(" (");
-              out.print(dep.getShuffleType());
-              out.print(", ");
-              out.print(dep.getNumPartitions());
-              out.print(")");
-            }
-            out.println();
-          }
-          if (jsonOutput) {
-            for (SparkWork.Dependency dep: (List<SparkWork.Dependency>) ent.getValue()) {
-              JSONObject jsonDep = new JSONObject(new LinkedHashMap<>());
-              jsonDep.put("parent", dep.getName());
-              jsonDep.put("type", dep.getShuffleType());
-              jsonDep.put("partitions", dep.getNumPartitions());
-              json.accumulate(ent.getKey().toString(), jsonDep);
-            }
-          }
         } else {
           if (out != null) {
             out.print(ent.getValue().toString());
@@ -949,6 +942,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     return invokeFlag;
+  }
+
+  private String getRuleExcludedRegex() {
+    return conf == null ? "" : conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
   }
 
   @VisibleForTesting

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 
 import com.google.common.base.Preconditions;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -259,7 +258,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       final TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(colTypes.get(i));
       genComputeStats(rewrittenQueryBuilder, conf, i, columnName, typeInfo);
 
-      columnNamesBuilder.append(unparseIdentifier(columnName, conf));
+      columnNamesBuilder.append(columnName);
 
       columnDummyValuesBuilder.append(
           "cast(null as " + typeInfo.toString() + ")");
@@ -311,13 +310,15 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     Preconditions.checkArgument(typeInfo.getCategory() == Category.PRIMITIVE);
     ColumnStatsType columnStatsType =
         ColumnStatsType.getColumnStatsType((PrimitiveTypeInfo) typeInfo);
+    List<ColumnStatsField> columnStatsFields = columnStatsType.getColumnStats();
+    columnStatsFields = ColumnStatsType.removeDisabledStatistics(conf, columnStatsFields);
     // The first column is always the type
     // The rest of columns will depend on the type itself
-    for (int i = 0; i < columnStatsType.getColumnStats().size(); i++) {
+    for (int i = 0; i < columnStatsFields.size(); i++) {
+      ColumnStatsField columnStatsField = columnStatsFields.get(i);
       if (i > 0) {
         rewrittenQueryBuilder.append(", ");
       }
-      ColumnStatsField columnStatsField = columnStatsType.getColumnStats().get(i);
       appendStatsField(rewrittenQueryBuilder, conf, columnStatsField, columnStatsType,
           columnName, pos);
     }
@@ -350,6 +351,9 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       break;
     case BITVECTOR:
       appendBitVector(rewrittenQueryBuilder, conf, columnName, pos);
+      break;
+    case KLL_SKETCH:
+      appendKllSketch(rewrittenQueryBuilder, conf, columnName, columnStatsType, pos);
       break;
     case MAX_LENGTH:
       appendMaxLength(rewrittenQueryBuilder, conf, columnName, pos);
@@ -455,6 +459,13 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         .append(unparseIdentifier(ColumnStatsField.BITVECTOR.getFieldName() + pos, conf));
   }
 
+  private static void appendKllSketch(StringBuilder rewrittenQueryBuilder, HiveConf conf,
+      String columnName, ColumnStatsType columnStatsType, int pos) throws SemanticException {
+    appendKllSketch(rewrittenQueryBuilder, conf, columnName, columnStatsType);
+    rewrittenQueryBuilder.append(" AS ")
+        .append(unparseIdentifier(ColumnStatsField.KLL_SKETCH.getFieldName() + pos, conf));
+  }
+
   private static void appendBitVector(StringBuilder rewrittenQueryBuilder, HiveConf conf,
       String columnName) throws SemanticException {
     String func = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ALGO).toLowerCase();
@@ -478,6 +489,33 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     } else {
       throw new UDFArgumentException("available ndv computation options are hll and fm. Got: " + func);
     }
+  }
+
+  private static void appendKllSketch(StringBuilder rewrittenQueryBuilder, HiveConf conf, String columnName,
+      ColumnStatsType columnStatsType) throws SemanticException {
+    int k;
+    try {
+      k = HiveStatsUtils.getKParamForKllSketch(conf);
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage());
+    }
+
+    boolean isDateFamily = columnStatsType.equals(ColumnStatsType.DATE) ||
+        columnStatsType.equals(ColumnStatsType.TIMESTAMP);
+
+    if (isDateFamily) {
+      rewrittenQueryBuilder.append("ds_kll_sketch(cast(unix_timestamp(")
+          .append(columnName)
+          .append(") as float)");
+    } else {
+      // add cast to float to make sure it works for other numeric types
+      rewrittenQueryBuilder.append("ds_kll_sketch(cast(")
+          .append(columnName)
+          .append(" as float)");
+    }
+    rewrittenQueryBuilder.append(", ")
+        .append(k)
+        .append(")");
   }
 
   private static void appendCountTrues(StringBuilder rewrittenQueryBuilder, HiveConf conf,

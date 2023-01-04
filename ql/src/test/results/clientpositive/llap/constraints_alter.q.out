@@ -166,8 +166,12 @@ POSTHOOK: Input: default@key_constraints
 #### A masked pattern was here ####
 PREHOOK: query: alter table t1_n2939 add constraint t1_n2939_pk primary key (a_n2939) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@t1_n2939
+PREHOOK: Output: default@t1_n2939
 POSTHOOK: query: alter table t1_n2939 add constraint t1_n2939_pk primary key (a_n2939) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@t1_n2939
+POSTHOOK: Output: default@t1_n2939
 PREHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columns_v2

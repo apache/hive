@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
@@ -609,7 +610,7 @@ public class HiveCalciteUtil {
     RelNode originalProjRel = null;
 
     while (tmpRel != null) {
-      if (tmpRel instanceof HiveProject || tmpRel instanceof HiveTableFunctionScan) {
+      if (tmpRel instanceof HiveProject || tmpRel instanceof HiveTableFunctionScan || tmpRel instanceof HiveValues) {
         originalProjRel = tmpRel;
         break;
       }
@@ -630,7 +631,7 @@ public class HiveCalciteUtil {
                                                               }
                                                             };
 
-  public static ImmutableList<RexNode> getPredsNotPushedAlready(RelNode inp, List<RexNode> predsToPushDown) {   
+  public static ImmutableList<RexNode> getPredsNotPushedAlready(RelNode inp, List<RexNode> predsToPushDown) {
     return getPredsNotPushedAlready(Sets.<String>newHashSet(), inp, predsToPushDown);
   }
 
@@ -1214,6 +1215,58 @@ public class HiveCalciteUtil {
     }
   }
 
+  private static class DisjunctivePredicatesFinder extends RexVisitorImpl<Void> {
+    // accounting for DeMorgan's law
+    boolean inNegation = false;
+    boolean hasDisjunction = false;
+
+    public DisjunctivePredicatesFinder() {
+      super(true);
+    }
+
+    @Override
+    public Void visitCall(RexCall call) {
+      switch (call.getKind()) {
+      case OR:
+        if (inNegation) {
+          return super.visitCall(call);
+        } else {
+          this.hasDisjunction = true;
+          return null;
+        }
+      case AND:
+        if (inNegation) {
+          this.hasDisjunction = true;
+          return null;
+        } else {
+          return super.visitCall(call);
+        }
+      case NOT:
+        inNegation = !inNegation;
+        return super.visitCall(call);
+      default:
+        return super.visitCall(call);
+      }
+    }
+  }
+
+  /**
+   * Returns whether the expression has disjunctions (OR) at any level of nesting.
+   * <ul>
+   * <li> Example 1: OR(=($0, $1), IS NOT NULL($2))):INTEGER (OR in the top-level expression) </li>
+   * <li> Example 2: NOT(AND(=($0, $1), IS NOT NULL($2))
+   *   this is equivalent to OR((&lt;&gt;($0, $1), IS NULL($2)) </li>
+   * <li> Example 3: AND(OR(=($0, $1), IS NOT NULL($2)))) (OR in inner expression) </li>
+   * </ul>
+   * @param node the expression where to look for disjunctions.
+   * @return true if the given expressions contains a disjunction, false otherwise.
+   */
+  public static boolean hasDisjuction(RexNode node) {
+    DisjunctivePredicatesFinder finder = new DisjunctivePredicatesFinder();
+    node.accept(finder);
+    return finder.hasDisjunction;
+  }
+
   /**
    * Checks if any of the expression given as list expressions are from right side of the join.
    *  This is used during anti join conversion.
@@ -1236,6 +1289,22 @@ public class HiveCalciteUtil {
       }
     }
     return false;
+  }
+
+  public static boolean hasAllExpressionsFromRightSide(RelNode joinRel, List<RexNode> expressions) {
+    List<RelDataTypeField> joinFields = joinRel.getRowType().getFieldList();
+    int nTotalFields = joinFields.size();
+    List<RelDataTypeField> leftFields = (joinRel.getInputs().get(0)).getRowType().getFieldList();
+    int nFieldsLeft = leftFields.size();
+    ImmutableBitSet rightBitmap = ImmutableBitSet.range(nFieldsLeft, nTotalFields);
+
+    for (RexNode node : expressions) {
+      ImmutableBitSet inputBits = RelOptUtil.InputFinder.bits(node);
+      if (!rightBitmap.contains(inputBits)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

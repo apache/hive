@@ -8,7 +8,7 @@ set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=50;
 
--- This is mainly intended for spark, to test runtime skew join together with map join
+-- This is to test runtime skew join together with map join
 
 CREATE TABLE T1_n94(key STRING, val STRING) STORED AS TEXTFILE;
 

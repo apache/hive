@@ -182,7 +182,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   protected final TTransport innerTransport;
 
   /**
-   * Strings used to lookup the various configurable paramaters of this
+   * Strings used to lookup the various configurable parameters of this
    * protocol.
    */
   public static final String ReturnNullsKey = "separators.return_nulls";

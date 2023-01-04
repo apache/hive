@@ -87,9 +87,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageAuthorizationHandler;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -97,6 +95,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -137,7 +136,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
  */
 @SuppressWarnings({ "rawtypes" }) public class DruidStorageHandler extends DefaultHiveMetaHook
-    implements HiveStorageHandler, HiveStorageAuthorizationHandler {
+    implements HiveStorageHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandler.class);
 
@@ -267,7 +266,8 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
   }
 
   @Override
-  public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException{
+  public URI getURIForAuth(Table table) throws URISyntaxException{
+    Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
     String host_name = conf.get(DRUID_HOST_NAME) != null ? conf.get(DRUID_HOST_NAME) :
             HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
     String table_name = tableProperties.get(Constants.DRUID_DATA_SOURCE);

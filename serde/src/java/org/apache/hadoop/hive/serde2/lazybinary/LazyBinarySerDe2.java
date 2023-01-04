@@ -65,7 +65,7 @@ import org.apache.hadoop.io.Writable;
 /**
  * Subclass of LazyBinarySerDe with faster serialization, initializing a serializer based on the
  * row columns rather than checking the ObjectInspector category/primitiveType for every value.
- * This appears to be around 3x faster than the LazyBinarSerDe serialization.
+ * This appears to be around 3x faster than the LazyBinarySerDe serialization.
  */
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES})
 public class LazyBinarySerDe2 extends LazyBinarySerDe {

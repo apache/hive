@@ -641,6 +641,14 @@ public class TestPartitionManagement {
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(3, partitions.size());
+
+    //Check that partition Discovery works for database with repl.background.enable as true.
+    db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.REPL_ENABLE_BACKGROUND_THREAD, ReplConst.TRUE);
+    client.alterDatabase(table.getDbName(), db);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(4, partitions.size());
   }
 
   @Test
@@ -680,6 +688,16 @@ public class TestPartitionManagement {
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(3, partitions.size());
+
+    //Check that partition retention works for database with repl.background.enable as true.
+    db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.REPL_ENABLE_BACKGROUND_THREAD, ReplConst.TRUE);
+    client.alterDatabase(table.getDbName(), db);
+
+    Thread.sleep(waitingPeriodForTest);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(0, partitions.size());
   }
 
   @Test

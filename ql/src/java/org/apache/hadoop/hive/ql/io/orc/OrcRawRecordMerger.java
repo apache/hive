@@ -493,9 +493,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             isLastFileForThisBucket = true;
             continue;
           }
-          Reader copyReader = OrcFile.createReader(f.getFileStatus().getPath(),
-            OrcFile.readerOptions(conf));
-          rowIdOffsetTmp += copyReader.getNumberOfRows();
+          try (Reader copyReader = OrcFile.createReader(f.getFileStatus().getPath(), OrcFile.readerOptions(conf))) {
+            rowIdOffsetTmp += copyReader.getNumberOfRows();
+          }
         }
         this.rowIdOffset = rowIdOffsetTmp;
         if (rowIdOffset > 0) {
@@ -763,15 +763,20 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   }
 
   /**
-   * Find the key range for the split (of the base).  These are used to filter delta files since
-   * both are sorted by key.
+   * Find the key range for the split (of the base) based on the 'hive.acid.key.index' metadata.
+   * These keys are used to filter delta files since both are sorted by key.
+   * If 'hive.acid.key.index' is missing from the ORC file, return null keys (which forces a full read).
    * @param reader the reader
    * @param options the options for reading with
-   * @throws IOException
    */
-  private KeyInterval discoverKeyBounds(Reader reader,
-                                 Reader.Options options) throws IOException {
-    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
+  private KeyInterval discoverKeyBounds(Reader reader, Reader.Options options) {
+    final RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
+    if (keyIndex == null) {
+      LOG.warn("Missing '{}' metadata in ORC file, can't compute min/max keys",
+          OrcRecordUpdater.ACID_KEY_INDEX_NAME);
+      return new KeyInterval(null, null);
+    }
+
     long offset = options.getOffset();
     long maxOffset = options.getMaxOffset();
     int firstStripe = 0;

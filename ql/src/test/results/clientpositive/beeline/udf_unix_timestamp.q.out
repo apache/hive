@@ -59,14 +59,14 @@ POSTHOOK: Input: default@oneline
 2009-03-20	1237532400
 PREHOOK: query: SELECT
   '2009 Mar 20 11:30:01 am',
-  unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
+  unix_timestamp('2009 Mar 20 11:30:01 AM', 'yyyy MMM dd h:mm:ss a')
 FROM oneline
 PREHOOK: type: QUERY
 PREHOOK: Input: default@oneline
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
   '2009 Mar 20 11:30:01 am',
-  unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
+  unix_timestamp('2009 Mar 20 11:30:01 AM', 'yyyy MMM dd h:mm:ss a')
 FROM oneline
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@oneline

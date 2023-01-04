@@ -19,19 +19,23 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
+
+import static org.apache.hadoop.hive.ql.io.AcidUtils.COMPACTOR_TABLE_PROPERTY;
 
 /**
  * FileSinkDesc.
@@ -96,6 +100,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   // Record what type of write this is.  Default is non-ACID (ie old style).
   private AcidUtils.Operation writeType = AcidUtils.Operation.NOT_ACID;
+  private Context.Operation writeOperation = Context.Operation.OTHER;
   private long tableWriteId = 0;  // table write id for this operation
   private int statementId = -1;
   private int maxStmtId = -1;
@@ -124,6 +129,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private boolean isDirectInsert = false;
 
   private AcidUtils.Operation acidOperation = null;
+  private boolean deleteOfSplitUpdate;
 
   private boolean isQuery = false;
 
@@ -139,7 +145,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
       final boolean multiFileSpray, final boolean canBeMerged, final int numFiles, final int totalFiles,
       final List<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath, Long mmWriteId,
       boolean isMmCtas, boolean isInsertOverwrite, boolean isQuery, boolean isCTASorCM, boolean isDirectInsert,
-      AcidUtils.Operation acidOperation) {
+      AcidUtils.Operation acidOperation, boolean deleteOfSplitUpdate) {
     this.dirName = dirName;
     setTableInfo(tableInfo);
     this.compressed = compressed;
@@ -159,6 +165,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     this.isCTASorCM = isCTASorCM;
     this.isDirectInsert = isDirectInsert;
     this.acidOperation = acidOperation;
+    this.deleteOfSplitUpdate = deleteOfSplitUpdate;
   }
 
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
@@ -180,7 +187,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed, destTableId, multiFileSpray, canBeMerged,
         numFiles, totalFiles, partitionCols, dpCtx, destPath, mmWriteId, isMmCtas, isInsertOverwrite, isQuery,
-        isCTASorCM, isDirectInsert, acidOperation);
+        isCTASorCM, isDirectInsert, acidOperation, deleteOfSplitUpdate);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
     ret.setGatherStats(gatherStats);
@@ -250,11 +257,15 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   public void setAcidOperation(AcidUtils.Operation acidOperation) {
     this.acidOperation = acidOperation;
-   }
+  }
 
-   public AcidUtils.Operation getAcidOperation() {
-     return acidOperation;
-   }
+  public AcidUtils.Operation getAcidOperation() {
+   return acidOperation;
+  }
+
+  public boolean isDeleteOfSplitUpdate() {
+    return deleteOfSplitUpdate;
+  }
 
   @Explain(displayName = "directory", explainLevels = { Level.EXTENDED })
   public Path getDirName() {
@@ -381,6 +392,17 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public boolean isCompactionTable() {
     return getTable() != null ? AcidUtils.isCompactionTable(table.getParameters())
         : AcidUtils.isCompactionTable(getTableInfo().getProperties());
+  }
+
+  /**
+   * @return true if the compaction type is 'REBALANCE', false otherwise.
+   */
+  public boolean isRebalanceRequested() {
+    String compactionType = getTable() != null
+        ? table.getParameters().get(COMPACTOR_TABLE_PROPERTY)
+        : getTableInfo().getProperties().getProperty(COMPACTOR_TABLE_PROPERTY);
+    return StringUtils.isNotBlank(compactionType) &&
+        CompactionType.valueOf(compactionType).equals(CompactionType.REBALANCE);
   }
 
   public boolean isMaterialization() {
@@ -582,6 +604,15 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public AcidUtils.Operation getWriteType() {
     return writeType;
   }
+
+  public void setWriteOperation(Context.Operation writeOperation) {
+    this.writeOperation = writeOperation;
+  }
+
+  public Context.Operation getWriteOperation() {
+    return writeOperation;
+  }
+
   @Explain(displayName = "Write Type")
   public String getWriteTypeString() {
     return getWriteType() == AcidUtils.Operation.NOT_ACID ? null : getWriteType().toString();

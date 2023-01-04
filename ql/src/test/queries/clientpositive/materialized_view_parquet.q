@@ -1,3 +1,5 @@
+-- Mask the totalSize value as it can have slight variability, causing test flakiness
+--! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 -- SORT_QUERY_RESULTS
 
 set hive.support.concurrency=true;
@@ -189,8 +191,10 @@ alter materialized view mv1_parquet_n2 rebuild;
 alter materialized view mv1_parquet_n2 rebuild;
 
 explain cbo
-select name from emps_parquet_n3 group by name;
+select name, sum(empid) from emps_parquet_n3 group by name;
 
-select name from emps_parquet_n3 group by name;
+select name, sum(empid) from emps_parquet_n3 group by name;
 
 drop materialized view mv1_parquet_n2;
+
+select name, sum(empid) from emps_parquet_n3 group by name;

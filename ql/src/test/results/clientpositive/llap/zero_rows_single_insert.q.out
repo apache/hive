@@ -59,13 +59,15 @@ POSTHOOK: Input: default@target_table
 100
 PREHOOK: query: INSERT OVERWRITE TABLE target_table SELECT key FROM src_table WHERE FALSE
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src_table
 PREHOOK: Output: default@target_table
 POSTHOOK: query: INSERT OVERWRITE TABLE target_table SELECT key FROM src_table WHERE FALSE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src_table
 POSTHOOK: Output: default@target_table
-POSTHOOK: Lineage: target_table.key SIMPLE [(src_table)src_table.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: target_table.key SIMPLE []
 PREHOOK: query: SELECT COUNT(*) FROM target_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target_table
@@ -95,13 +97,15 @@ POSTHOOK: Input: default@target_table
 100
 PREHOOK: query: INSERT INTO TABLE target_table SELECT key FROM src_table WHERE FALSE
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src_table
 PREHOOK: Output: default@target_table
 POSTHOOK: query: INSERT INTO TABLE target_table SELECT key FROM src_table WHERE FALSE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src_table
 POSTHOOK: Output: default@target_table
-POSTHOOK: Lineage: target_table.key SIMPLE [(src_table)src_table.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: target_table.key SIMPLE []
 PREHOOK: query: SELECT COUNT(*) FROM target_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target_table

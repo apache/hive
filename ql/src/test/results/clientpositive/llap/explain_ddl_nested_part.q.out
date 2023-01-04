@@ -1,0 +1,564 @@
+PREHOOK: query: create table test(foo int) partitioned by  (i int, j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test(foo int) partitioned by  (i int, j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: create table temp (i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp
+POSTHOOK: query: create table temp (i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp
+PREHOOK: query: insert into temp values (1),(2),(3),(4),(5),("ab"),("cd")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@temp
+POSTHOOK: query: insert into temp values (1),(2),(3),(4),(5),("ab"),("cd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@temp
+POSTHOOK: Lineage: temp.i SCRIPT []
+PREHOOK: query: insert into test partition(i, i)
+select i, i, i from temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp
+PREHOOK: Output: default@test
+POSTHOOK: query: insert into test partition(i, i)
+select i, i, i from temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp
+POSTHOOK: Output: default@test
+POSTHOOK: Output: default@test@i=1/j=1
+POSTHOOK: Output: default@test@i=2/j=2
+POSTHOOK: Output: default@test@i=3/j=3
+POSTHOOK: Output: default@test@i=4/j=4
+POSTHOOK: Output: default@test@i=5/j=5
+POSTHOOK: Output: default@test@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test PARTITION(i=1,j=1).foo SIMPLE [(temp)temp.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test PARTITION(i=2,j=2).foo SIMPLE [(temp)temp.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test PARTITION(i=3,j=3).foo SIMPLE [(temp)temp.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test PARTITION(i=4,j=4).foo SIMPLE [(temp)temp.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test PARTITION(i=5,j=5).foo SIMPLE [(temp)temp.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test PARTITION(i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__).foo SIMPLE [(temp)temp.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: explain ddl select * from test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@i=1/j=1
+PREHOOK: Input: default@test@i=2/j=2
+PREHOOK: Input: default@test@i=3/j=3
+PREHOOK: Input: default@test@i=4/j=4
+PREHOOK: Input: default@test@i=5/j=5
+PREHOOK: Input: default@test@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@i=1/j=1
+POSTHOOK: Input: default@test@i=2/j=2
+POSTHOOK: Input: default@test@i=3/j=3
+POSTHOOK: Input: default@test@i=4/j=4
+POSTHOOK: Input: default@test@i=5/j=5
+POSTHOOK: Input: default@test@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`test`(
+  `foo` int)
+PARTITIONED BY ( 
+  `i` int, 
+  `j` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.test ADD IF NOT EXISTS PARTITION (i=1,j=1);
+ALTER TABLE default.test PARTITION (i=1,j=1) UPDATE STATISTICS SET('numRows'='1','rawDataSize'='1' );
+ALTER TABLE default.test ADD IF NOT EXISTS PARTITION (i=2,j=2);
+ALTER TABLE default.test PARTITION (i=2,j=2) UPDATE STATISTICS SET('numRows'='1','rawDataSize'='1' );
+ALTER TABLE default.test ADD IF NOT EXISTS PARTITION (i=3,j=3);
+ALTER TABLE default.test PARTITION (i=3,j=3) UPDATE STATISTICS SET('numRows'='1','rawDataSize'='1' );
+ALTER TABLE default.test ADD IF NOT EXISTS PARTITION (i=4,j=4);
+ALTER TABLE default.test PARTITION (i=4,j=4) UPDATE STATISTICS SET('numRows'='1','rawDataSize'='1' );
+ALTER TABLE default.test ADD IF NOT EXISTS PARTITION (i=5,j=5);
+ALTER TABLE default.test PARTITION (i=5,j=5) UPDATE STATISTICS SET('numRows'='1','rawDataSize'='1' );
+-- ALTER TABLE default.test ADD IF NOT EXISTS PARTITION (i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__);
+-- ALTER TABLE default.test PARTITION (i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__) UPDATE STATISTICS SET('numRows'='2','rawDataSize'='4' );
+ALTER TABLE default.test PARTITION (i=1,j=1) UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test PARTITION i=1,j=1 FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwfO+SA== 
+ALTER TABLE default.test PARTITION (i=2,j=2) UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='2','highValue'='2','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test PARTITION i=2,j=2 FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBxIHguQQ= 
+ALTER TABLE default.test PARTITION (i=5,j=5) UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='5','highValue'='5','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test PARTITION i=5,j=5 FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwaPu+AE= 
+ALTER TABLE default.test PARTITION (i=3,j=3) UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test PARTITION i=3,j=3 FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
+ALTER TABLE default.test PARTITION (i=4,j=4) UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='4','highValue'='4','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test PARTITION i=4,j=4 FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBhJHj9wE= 
+-- ALTER TABLE default.test PARTITION (i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__) UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='0' );
+
+
+
+EXPLAIN select * from test;
+
+
+EXPLAIN CBO select * from test;
+
+
+EXPLAIN VECTORIZED select * from test;
+CBO PLAN:HiveProject(foo=[$0], i=[$1], j=[$2])
+  HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test
+          Select Operator
+            expressions: foo (type: int), i (type: int), j (type: int)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
+
+PREHOOK: query: create table test2 (foo int) partitioned by (i int, j int, s string, t string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test2
+POSTHOOK: query: create table test2 (foo int) partitioned by (i int, j int, s string, t string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test2
+PREHOOK: query: create table temp2 (i int, s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp2
+POSTHOOK: query: create table temp2 (i int, s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp2
+PREHOOK: query: insert into temp2 values (1880938,"1880938"),(3023419,"3023419"),(42629,"42629"),(3073641,"3073641"),(6758530,"6758530"),(3847717,"3847717"),(7880229,"7880229"),(4497880,"4497880"),(1956691,"1956691"),(2146641,"2146641"),(7005576,"7005576"),(1522484,"1522484"),(3076080,"3076080"),(4409637,"4409637"),(812837,"812837"),(967815,"967815"),(5247332,"5247332"),(7670676,"7670676"),(4604522,"4604522"),(9805326,"9805326"),(3583871,"3583871"),(6276003,"6276003"),(3187683,"3187683"),(7286712,"7286712"),(5238051,"5238051"),(4439186,"4439186"),(3356420,"3356420"),(2581458,"2581458"),(1565998,"1565998"),(4115101,"4115101"),(6129618,"6129618"),(4304398,"4304398"),(2049769,"2049769"),(5803231,"5803231"),(1655195,"1655195"),(971079,"971079")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@temp2
+POSTHOOK: query: insert into temp2 values (1880938,"1880938"),(3023419,"3023419"),(42629,"42629"),(3073641,"3073641"),(6758530,"6758530"),(3847717,"3847717"),(7880229,"7880229"),(4497880,"4497880"),(1956691,"1956691"),(2146641,"2146641"),(7005576,"7005576"),(1522484,"1522484"),(3076080,"3076080"),(4409637,"4409637"),(812837,"812837"),(967815,"967815"),(5247332,"5247332"),(7670676,"7670676"),(4604522,"4604522"),(9805326,"9805326"),(3583871,"3583871"),(6276003,"6276003"),(3187683,"3187683"),(7286712,"7286712"),(5238051,"5238051"),(4439186,"4439186"),(3356420,"3356420"),(2581458,"2581458"),(1565998,"1565998"),(4115101,"4115101"),(6129618,"6129618"),(4304398,"4304398"),(2049769,"2049769"),(5803231,"5803231"),(1655195,"1655195"),(971079,"971079")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@temp2
+POSTHOOK: Lineage: temp2.i SCRIPT []
+POSTHOOK: Lineage: temp2.s SCRIPT []
+PREHOOK: query: insert into temp2 values (1, NULL), (2,NULL), (NULL,NULL), (NULL,"3")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@temp2
+POSTHOOK: query: insert into temp2 values (1, NULL), (2,NULL), (NULL,NULL), (NULL,"3")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@temp2
+POSTHOOK: Lineage: temp2.i SCRIPT []
+POSTHOOK: Lineage: temp2.s SCRIPT []
+PREHOOK: query: insert into test2 partition(i,i,s,s)
+select i,i,i,s,s from temp2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp2
+PREHOOK: Output: default@test2
+POSTHOOK: query: insert into test2 partition(i,i,s,s)
+select i,i,i,s,s from temp2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp2
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@i=1/j=1/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test2@i=1522484/j=1522484/s=1522484/t=1522484
+POSTHOOK: Output: default@test2@i=1565998/j=1565998/s=1565998/t=1565998
+POSTHOOK: Output: default@test2@i=1655195/j=1655195/s=1655195/t=1655195
+POSTHOOK: Output: default@test2@i=1880938/j=1880938/s=1880938/t=1880938
+POSTHOOK: Output: default@test2@i=1956691/j=1956691/s=1956691/t=1956691
+POSTHOOK: Output: default@test2@i=2/j=2/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test2@i=2049769/j=2049769/s=2049769/t=2049769
+POSTHOOK: Output: default@test2@i=2146641/j=2146641/s=2146641/t=2146641
+POSTHOOK: Output: default@test2@i=2581458/j=2581458/s=2581458/t=2581458
+POSTHOOK: Output: default@test2@i=3023419/j=3023419/s=3023419/t=3023419
+POSTHOOK: Output: default@test2@i=3073641/j=3073641/s=3073641/t=3073641
+POSTHOOK: Output: default@test2@i=3076080/j=3076080/s=3076080/t=3076080
+POSTHOOK: Output: default@test2@i=3187683/j=3187683/s=3187683/t=3187683
+POSTHOOK: Output: default@test2@i=3356420/j=3356420/s=3356420/t=3356420
+POSTHOOK: Output: default@test2@i=3583871/j=3583871/s=3583871/t=3583871
+POSTHOOK: Output: default@test2@i=3847717/j=3847717/s=3847717/t=3847717
+POSTHOOK: Output: default@test2@i=4115101/j=4115101/s=4115101/t=4115101
+POSTHOOK: Output: default@test2@i=42629/j=42629/s=42629/t=42629
+POSTHOOK: Output: default@test2@i=4304398/j=4304398/s=4304398/t=4304398
+POSTHOOK: Output: default@test2@i=4409637/j=4409637/s=4409637/t=4409637
+POSTHOOK: Output: default@test2@i=4439186/j=4439186/s=4439186/t=4439186
+POSTHOOK: Output: default@test2@i=4497880/j=4497880/s=4497880/t=4497880
+POSTHOOK: Output: default@test2@i=4604522/j=4604522/s=4604522/t=4604522
+POSTHOOK: Output: default@test2@i=5238051/j=5238051/s=5238051/t=5238051
+POSTHOOK: Output: default@test2@i=5247332/j=5247332/s=5247332/t=5247332
+POSTHOOK: Output: default@test2@i=5803231/j=5803231/s=5803231/t=5803231
+POSTHOOK: Output: default@test2@i=6129618/j=6129618/s=6129618/t=6129618
+POSTHOOK: Output: default@test2@i=6276003/j=6276003/s=6276003/t=6276003
+POSTHOOK: Output: default@test2@i=6758530/j=6758530/s=6758530/t=6758530
+POSTHOOK: Output: default@test2@i=7005576/j=7005576/s=7005576/t=7005576
+POSTHOOK: Output: default@test2@i=7286712/j=7286712/s=7286712/t=7286712
+POSTHOOK: Output: default@test2@i=7670676/j=7670676/s=7670676/t=7670676
+POSTHOOK: Output: default@test2@i=7880229/j=7880229/s=7880229/t=7880229
+POSTHOOK: Output: default@test2@i=812837/j=812837/s=812837/t=812837
+POSTHOOK: Output: default@test2@i=967815/j=967815/s=967815/t=967815
+POSTHOOK: Output: default@test2@i=971079/j=971079/s=971079/t=971079
+POSTHOOK: Output: default@test2@i=9805326/j=9805326/s=9805326/t=9805326
+POSTHOOK: Output: default@test2@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__/s=3/t=3
+POSTHOOK: Output: default@test2@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test2 PARTITION(i=1,j=1,s=__HIVE_DEFAULT_PARTITION__,t=__HIVE_DEFAULT_PARTITION__).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=1522484,j=1522484,s=1522484,t=1522484).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=1565998,j=1565998,s=1565998,t=1565998).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=1655195,j=1655195,s=1655195,t=1655195).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=1880938,j=1880938,s=1880938,t=1880938).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=1956691,j=1956691,s=1956691,t=1956691).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=2,j=2,s=__HIVE_DEFAULT_PARTITION__,t=__HIVE_DEFAULT_PARTITION__).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=2049769,j=2049769,s=2049769,t=2049769).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=2146641,j=2146641,s=2146641,t=2146641).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=2581458,j=2581458,s=2581458,t=2581458).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=3023419,j=3023419,s=3023419,t=3023419).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=3073641,j=3073641,s=3073641,t=3073641).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=3076080,j=3076080,s=3076080,t=3076080).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=3187683,j=3187683,s=3187683,t=3187683).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=3356420,j=3356420,s=3356420,t=3356420).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=3583871,j=3583871,s=3583871,t=3583871).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=3847717,j=3847717,s=3847717,t=3847717).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=4115101,j=4115101,s=4115101,t=4115101).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=42629,j=42629,s=42629,t=42629).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=4304398,j=4304398,s=4304398,t=4304398).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=4409637,j=4409637,s=4409637,t=4409637).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=4439186,j=4439186,s=4439186,t=4439186).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=4497880,j=4497880,s=4497880,t=4497880).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=4604522,j=4604522,s=4604522,t=4604522).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=5238051,j=5238051,s=5238051,t=5238051).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=5247332,j=5247332,s=5247332,t=5247332).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=5803231,j=5803231,s=5803231,t=5803231).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=6129618,j=6129618,s=6129618,t=6129618).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=6276003,j=6276003,s=6276003,t=6276003).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=6758530,j=6758530,s=6758530,t=6758530).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=7005576,j=7005576,s=7005576,t=7005576).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=7286712,j=7286712,s=7286712,t=7286712).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=7670676,j=7670676,s=7670676,t=7670676).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=7880229,j=7880229,s=7880229,t=7880229).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=812837,j=812837,s=812837,t=812837).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=967815,j=967815,s=967815,t=967815).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=971079,j=971079,s=971079,t=971079).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=9805326,j=9805326,s=9805326,t=9805326).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__,s=3,t=3).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test2 PARTITION(i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__,s=__HIVE_DEFAULT_PARTITION__,t=__HIVE_DEFAULT_PARTITION__).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: explain ddl select * from test2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test2
+PREHOOK: Input: default@test2@i=1/j=1/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@test2@i=1522484/j=1522484/s=1522484/t=1522484
+PREHOOK: Input: default@test2@i=1565998/j=1565998/s=1565998/t=1565998
+PREHOOK: Input: default@test2@i=1655195/j=1655195/s=1655195/t=1655195
+PREHOOK: Input: default@test2@i=1880938/j=1880938/s=1880938/t=1880938
+PREHOOK: Input: default@test2@i=1956691/j=1956691/s=1956691/t=1956691
+PREHOOK: Input: default@test2@i=2/j=2/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@test2@i=2049769/j=2049769/s=2049769/t=2049769
+PREHOOK: Input: default@test2@i=2146641/j=2146641/s=2146641/t=2146641
+PREHOOK: Input: default@test2@i=2581458/j=2581458/s=2581458/t=2581458
+PREHOOK: Input: default@test2@i=3023419/j=3023419/s=3023419/t=3023419
+PREHOOK: Input: default@test2@i=3073641/j=3073641/s=3073641/t=3073641
+PREHOOK: Input: default@test2@i=3076080/j=3076080/s=3076080/t=3076080
+PREHOOK: Input: default@test2@i=3187683/j=3187683/s=3187683/t=3187683
+PREHOOK: Input: default@test2@i=3356420/j=3356420/s=3356420/t=3356420
+PREHOOK: Input: default@test2@i=3583871/j=3583871/s=3583871/t=3583871
+PREHOOK: Input: default@test2@i=3847717/j=3847717/s=3847717/t=3847717
+PREHOOK: Input: default@test2@i=4115101/j=4115101/s=4115101/t=4115101
+PREHOOK: Input: default@test2@i=42629/j=42629/s=42629/t=42629
+PREHOOK: Input: default@test2@i=4304398/j=4304398/s=4304398/t=4304398
+PREHOOK: Input: default@test2@i=4409637/j=4409637/s=4409637/t=4409637
+PREHOOK: Input: default@test2@i=4439186/j=4439186/s=4439186/t=4439186
+PREHOOK: Input: default@test2@i=4497880/j=4497880/s=4497880/t=4497880
+PREHOOK: Input: default@test2@i=4604522/j=4604522/s=4604522/t=4604522
+PREHOOK: Input: default@test2@i=5238051/j=5238051/s=5238051/t=5238051
+PREHOOK: Input: default@test2@i=5247332/j=5247332/s=5247332/t=5247332
+PREHOOK: Input: default@test2@i=5803231/j=5803231/s=5803231/t=5803231
+PREHOOK: Input: default@test2@i=6129618/j=6129618/s=6129618/t=6129618
+PREHOOK: Input: default@test2@i=6276003/j=6276003/s=6276003/t=6276003
+PREHOOK: Input: default@test2@i=6758530/j=6758530/s=6758530/t=6758530
+PREHOOK: Input: default@test2@i=7005576/j=7005576/s=7005576/t=7005576
+PREHOOK: Input: default@test2@i=7286712/j=7286712/s=7286712/t=7286712
+PREHOOK: Input: default@test2@i=7670676/j=7670676/s=7670676/t=7670676
+PREHOOK: Input: default@test2@i=7880229/j=7880229/s=7880229/t=7880229
+PREHOOK: Input: default@test2@i=812837/j=812837/s=812837/t=812837
+PREHOOK: Input: default@test2@i=967815/j=967815/s=967815/t=967815
+PREHOOK: Input: default@test2@i=971079/j=971079/s=971079/t=971079
+PREHOOK: Input: default@test2@i=9805326/j=9805326/s=9805326/t=9805326
+PREHOOK: Input: default@test2@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__/s=3/t=3
+PREHOOK: Input: default@test2@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from test2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test2@i=1/j=1/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@test2@i=1522484/j=1522484/s=1522484/t=1522484
+POSTHOOK: Input: default@test2@i=1565998/j=1565998/s=1565998/t=1565998
+POSTHOOK: Input: default@test2@i=1655195/j=1655195/s=1655195/t=1655195
+POSTHOOK: Input: default@test2@i=1880938/j=1880938/s=1880938/t=1880938
+POSTHOOK: Input: default@test2@i=1956691/j=1956691/s=1956691/t=1956691
+POSTHOOK: Input: default@test2@i=2/j=2/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@test2@i=2049769/j=2049769/s=2049769/t=2049769
+POSTHOOK: Input: default@test2@i=2146641/j=2146641/s=2146641/t=2146641
+POSTHOOK: Input: default@test2@i=2581458/j=2581458/s=2581458/t=2581458
+POSTHOOK: Input: default@test2@i=3023419/j=3023419/s=3023419/t=3023419
+POSTHOOK: Input: default@test2@i=3073641/j=3073641/s=3073641/t=3073641
+POSTHOOK: Input: default@test2@i=3076080/j=3076080/s=3076080/t=3076080
+POSTHOOK: Input: default@test2@i=3187683/j=3187683/s=3187683/t=3187683
+POSTHOOK: Input: default@test2@i=3356420/j=3356420/s=3356420/t=3356420
+POSTHOOK: Input: default@test2@i=3583871/j=3583871/s=3583871/t=3583871
+POSTHOOK: Input: default@test2@i=3847717/j=3847717/s=3847717/t=3847717
+POSTHOOK: Input: default@test2@i=4115101/j=4115101/s=4115101/t=4115101
+POSTHOOK: Input: default@test2@i=42629/j=42629/s=42629/t=42629
+POSTHOOK: Input: default@test2@i=4304398/j=4304398/s=4304398/t=4304398
+POSTHOOK: Input: default@test2@i=4409637/j=4409637/s=4409637/t=4409637
+POSTHOOK: Input: default@test2@i=4439186/j=4439186/s=4439186/t=4439186
+POSTHOOK: Input: default@test2@i=4497880/j=4497880/s=4497880/t=4497880
+POSTHOOK: Input: default@test2@i=4604522/j=4604522/s=4604522/t=4604522
+POSTHOOK: Input: default@test2@i=5238051/j=5238051/s=5238051/t=5238051
+POSTHOOK: Input: default@test2@i=5247332/j=5247332/s=5247332/t=5247332
+POSTHOOK: Input: default@test2@i=5803231/j=5803231/s=5803231/t=5803231
+POSTHOOK: Input: default@test2@i=6129618/j=6129618/s=6129618/t=6129618
+POSTHOOK: Input: default@test2@i=6276003/j=6276003/s=6276003/t=6276003
+POSTHOOK: Input: default@test2@i=6758530/j=6758530/s=6758530/t=6758530
+POSTHOOK: Input: default@test2@i=7005576/j=7005576/s=7005576/t=7005576
+POSTHOOK: Input: default@test2@i=7286712/j=7286712/s=7286712/t=7286712
+POSTHOOK: Input: default@test2@i=7670676/j=7670676/s=7670676/t=7670676
+POSTHOOK: Input: default@test2@i=7880229/j=7880229/s=7880229/t=7880229
+POSTHOOK: Input: default@test2@i=812837/j=812837/s=812837/t=812837
+POSTHOOK: Input: default@test2@i=967815/j=967815/s=967815/t=967815
+POSTHOOK: Input: default@test2@i=971079/j=971079/s=971079/t=971079
+POSTHOOK: Input: default@test2@i=9805326/j=9805326/s=9805326/t=9805326
+POSTHOOK: Input: default@test2@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__/s=3/t=3
+POSTHOOK: Input: default@test2@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`test2`(
+  `foo` int)
+PARTITIONED BY ( 
+  `i` int, 
+  `j` int, 
+  `s` string, 
+  `t` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.test2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+-- ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=1,j=1,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__');
+-- ALTER TABLE default.test2 PARTITION (i=1,j=1,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='1' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=1522484,j=1522484,s='1522484',t='1522484');
+ALTER TABLE default.test2 PARTITION (i=1522484,j=1522484,s='1522484',t='1522484') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=1565998,j=1565998,s='1565998',t='1565998');
+ALTER TABLE default.test2 PARTITION (i=1565998,j=1565998,s='1565998',t='1565998') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=1655195,j=1655195,s='1655195',t='1655195');
+ALTER TABLE default.test2 PARTITION (i=1655195,j=1655195,s='1655195',t='1655195') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=1880938,j=1880938,s='1880938',t='1880938');
+ALTER TABLE default.test2 PARTITION (i=1880938,j=1880938,s='1880938',t='1880938') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=1956691,j=1956691,s='1956691',t='1956691');
+ALTER TABLE default.test2 PARTITION (i=1956691,j=1956691,s='1956691',t='1956691') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+-- ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=2,j=2,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__');
+-- ALTER TABLE default.test2 PARTITION (i=2,j=2,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='1' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=2049769,j=2049769,s='2049769',t='2049769');
+ALTER TABLE default.test2 PARTITION (i=2049769,j=2049769,s='2049769',t='2049769') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=2146641,j=2146641,s='2146641',t='2146641');
+ALTER TABLE default.test2 PARTITION (i=2146641,j=2146641,s='2146641',t='2146641') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=2581458,j=2581458,s='2581458',t='2581458');
+ALTER TABLE default.test2 PARTITION (i=2581458,j=2581458,s='2581458',t='2581458') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=3023419,j=3023419,s='3023419',t='3023419');
+ALTER TABLE default.test2 PARTITION (i=3023419,j=3023419,s='3023419',t='3023419') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=3073641,j=3073641,s='3073641',t='3073641');
+ALTER TABLE default.test2 PARTITION (i=3073641,j=3073641,s='3073641',t='3073641') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=3076080,j=3076080,s='3076080',t='3076080');
+ALTER TABLE default.test2 PARTITION (i=3076080,j=3076080,s='3076080',t='3076080') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=3187683,j=3187683,s='3187683',t='3187683');
+ALTER TABLE default.test2 PARTITION (i=3187683,j=3187683,s='3187683',t='3187683') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=3356420,j=3356420,s='3356420',t='3356420');
+ALTER TABLE default.test2 PARTITION (i=3356420,j=3356420,s='3356420',t='3356420') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=3583871,j=3583871,s='3583871',t='3583871');
+ALTER TABLE default.test2 PARTITION (i=3583871,j=3583871,s='3583871',t='3583871') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=3847717,j=3847717,s='3847717',t='3847717');
+ALTER TABLE default.test2 PARTITION (i=3847717,j=3847717,s='3847717',t='3847717') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=4115101,j=4115101,s='4115101',t='4115101');
+ALTER TABLE default.test2 PARTITION (i=4115101,j=4115101,s='4115101',t='4115101') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=42629,j=42629,s='42629',t='42629');
+ALTER TABLE default.test2 PARTITION (i=42629,j=42629,s='42629',t='42629') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='5' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=4304398,j=4304398,s='4304398',t='4304398');
+ALTER TABLE default.test2 PARTITION (i=4304398,j=4304398,s='4304398',t='4304398') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=4409637,j=4409637,s='4409637',t='4409637');
+ALTER TABLE default.test2 PARTITION (i=4409637,j=4409637,s='4409637',t='4409637') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=4439186,j=4439186,s='4439186',t='4439186');
+ALTER TABLE default.test2 PARTITION (i=4439186,j=4439186,s='4439186',t='4439186') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=4497880,j=4497880,s='4497880',t='4497880');
+ALTER TABLE default.test2 PARTITION (i=4497880,j=4497880,s='4497880',t='4497880') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=4604522,j=4604522,s='4604522',t='4604522');
+ALTER TABLE default.test2 PARTITION (i=4604522,j=4604522,s='4604522',t='4604522') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=5238051,j=5238051,s='5238051',t='5238051');
+ALTER TABLE default.test2 PARTITION (i=5238051,j=5238051,s='5238051',t='5238051') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=5247332,j=5247332,s='5247332',t='5247332');
+ALTER TABLE default.test2 PARTITION (i=5247332,j=5247332,s='5247332',t='5247332') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=5803231,j=5803231,s='5803231',t='5803231');
+ALTER TABLE default.test2 PARTITION (i=5803231,j=5803231,s='5803231',t='5803231') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=6129618,j=6129618,s='6129618',t='6129618');
+ALTER TABLE default.test2 PARTITION (i=6129618,j=6129618,s='6129618',t='6129618') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=6276003,j=6276003,s='6276003',t='6276003');
+ALTER TABLE default.test2 PARTITION (i=6276003,j=6276003,s='6276003',t='6276003') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=6758530,j=6758530,s='6758530',t='6758530');
+ALTER TABLE default.test2 PARTITION (i=6758530,j=6758530,s='6758530',t='6758530') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=7005576,j=7005576,s='7005576',t='7005576');
+ALTER TABLE default.test2 PARTITION (i=7005576,j=7005576,s='7005576',t='7005576') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=7286712,j=7286712,s='7286712',t='7286712');
+ALTER TABLE default.test2 PARTITION (i=7286712,j=7286712,s='7286712',t='7286712') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=7670676,j=7670676,s='7670676',t='7670676');
+ALTER TABLE default.test2 PARTITION (i=7670676,j=7670676,s='7670676',t='7670676') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=7880229,j=7880229,s='7880229',t='7880229');
+ALTER TABLE default.test2 PARTITION (i=7880229,j=7880229,s='7880229',t='7880229') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=812837,j=812837,s='812837',t='812837');
+ALTER TABLE default.test2 PARTITION (i=812837,j=812837,s='812837',t='812837') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='6' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=967815,j=967815,s='967815',t='967815');
+ALTER TABLE default.test2 PARTITION (i=967815,j=967815,s='967815',t='967815') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='6' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=971079,j=971079,s='971079',t='971079');
+ALTER TABLE default.test2 PARTITION (i=971079,j=971079,s='971079',t='971079') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='6' );
+ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=9805326,j=9805326,s='9805326',t='9805326');
+ALTER TABLE default.test2 PARTITION (i=9805326,j=9805326,s='9805326',t='9805326') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='7' );
+-- ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__,s='3',t='3');
+-- ALTER TABLE default.test2 PARTITION (i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__,s='3',t='3') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='2' );
+-- ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__');
+-- ALTER TABLE default.test2 PARTITION (i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='2' );
+ALTER TABLE default.test2 PARTITION (i=1956691,j=1956691,s='1956691',t='1956691') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='1956691','highValue'='1956691','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=1956691,j=1956691,s='1956691',t='1956691' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgZ3cVQ== 
+ALTER TABLE default.test2 PARTITION (i=7005576,j=7005576,s='7005576',t='7005576') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='7005576','highValue'='7005576','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=7005576,j=7005576,s='7005576',t='7005576' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgc7krgc= 
+ALTER TABLE default.test2 PARTITION (i=7286712,j=7286712,s='7286712',t='7286712') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='7286712','highValue'='7286712','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=7286712,j=7286712,s='7286712',t='7286712' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwperKQ== 
+ALTER TABLE default.test2 PARTITION (i=1522484,j=1522484,s='1522484',t='1522484') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='1522484','highValue'='1522484','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=1522484,j=1522484,s='1522484',t='1522484' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBg5zSoAU= 
+ALTER TABLE default.test2 PARTITION (i=2049769,j=2049769,s='2049769',t='2049769') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='2049769','highValue'='2049769','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=2049769,j=2049769,s='2049769',t='2049769' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwfS2sAQ= 
+ALTER TABLE default.test2 PARTITION (i=3073641,j=3073641,s='3073641',t='3073641') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='3073641','highValue'='3073641','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=3073641,j=3073641,s='3073641',t='3073641' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBguu6jgQ= 
+ALTER TABLE default.test2 PARTITION (i=3583871,j=3583871,s='3583871',t='3583871') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='3583871','highValue'='3583871','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=3583871,j=3583871,s='3583871',t='3583871' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBxoKDzwM= 
+ALTER TABLE default.test2 PARTITION (i=3847717,j=3847717,s='3847717',t='3847717') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='3847717','highValue'='3847717','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=3847717,j=3847717,s='3847717',t='3847717' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBxfvAiwE= 
+ALTER TABLE default.test2 PARTITION (i=7670676,j=7670676,s='7670676',t='7670676') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='7670676','highValue'='7670676','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=7670676,j=7670676,s='7670676',t='7670676' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgejUtQU= 
+ALTER TABLE default.test2 PARTITION (i=1655195,j=1655195,s='1655195',t='1655195') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='1655195','highValue'='1655195','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=1655195,j=1655195,s='1655195',t='1655195' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwvLYBQ== 
+ALTER TABLE default.test2 PARTITION (i=6129618,j=6129618,s='6129618',t='6129618') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='6129618','highValue'='6129618','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=6129618,j=6129618,s='6129618',t='6129618' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgqzpngY= 
+ALTER TABLE default.test2 PARTITION (i=7880229,j=7880229,s='7880229',t='7880229') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='7880229','highValue'='7880229','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=7880229,j=7880229,s='7880229',t='7880229' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgturhwI= 
+ALTER TABLE default.test2 PARTITION (i=5803231,j=5803231,s='5803231',t='5803231') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='5803231','highValue'='5803231','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=5803231,j=5803231,s='5803231',t='5803231' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgpW7mQI= 
+-- ALTER TABLE default.test2 PARTITION (i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__,s='3',t='3') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='0','highValue'='0','numNulls'='1','numDVs'='0' );
+ALTER TABLE default.test2 PARTITION (i=4439186,j=4439186,s='4439186',t='4439186') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='4439186','highValue'='4439186','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=4439186,j=4439186,s='4439186',t='4439186' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgd22gQY= 
+ALTER TABLE default.test2 PARTITION (i=4497880,j=4497880,s='4497880',t='4497880') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='4497880','highValue'='4497880','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=4497880,j=4497880,s='4497880',t='4497880' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwcvXgAE= 
+ALTER TABLE default.test2 PARTITION (i=2146641,j=2146641,s='2146641',t='2146641') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='2146641','highValue'='2146641','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=2146641,j=2146641,s='2146641',t='2146641' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBg9/xOw== 
+ALTER TABLE default.test2 PARTITION (i=967815,j=967815,s='967815',t='967815') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='967815','highValue'='967815','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=967815,j=967815,s='967815',t='967815' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgom62gM= 
+ALTER TABLE default.test2 PARTITION (i=4604522,j=4604522,s='4604522',t='4604522') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='4604522','highValue'='4604522','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=4604522,j=4604522,s='4604522',t='4604522' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgrrK+AY= 
+ALTER TABLE default.test2 PARTITION (i=5238051,j=5238051,s='5238051',t='5238051') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='5238051','highValue'='5238051','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=5238051,j=5238051,s='5238051',t='5238051' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBhfjCjwE= 
+ALTER TABLE default.test2 PARTITION (i=3187683,j=3187683,s='3187683',t='3187683') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='3187683','highValue'='3187683','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=3187683,j=3187683,s='3187683',t='3187683' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwZn8uAc= 
+ALTER TABLE default.test2 PARTITION (i=6758530,j=6758530,s='6758530',t='6758530') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='6758530','highValue'='6758530','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=6758530,j=6758530,s='6758530',t='6758530' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgtSr0gQ= 
+ALTER TABLE default.test2 PARTITION (i=2581458,j=2581458,s='2581458',t='2581458') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='2581458','highValue'='2581458','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=2581458,j=2581458,s='2581458',t='2581458' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgf6ljQQ= 
+ALTER TABLE default.test2 PARTITION (i=4304398,j=4304398,s='4304398',t='4304398') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='4304398','highValue'='4304398','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=4304398,j=4304398,s='4304398',t='4304398' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgf2tnwQ= 
+ALTER TABLE default.test2 PARTITION (i=812837,j=812837,s='812837',t='812837') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='812837','highValue'='812837','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=812837,j=812837,s='812837',t='812837' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwuja+gY= 
+-- ALTER TABLE default.test2 PARTITION (i=2,j=2,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='2','highValue'='2','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=2,j=2,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBxIHguQQ= 
+ALTER TABLE default.test2 PARTITION (i=3356420,j=3356420,s='3356420',t='3356420') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='3356420','highValue'='3356420','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=3356420,j=3356420,s='3356420',t='3356420' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwa/logE= 
+-- ALTER TABLE default.test2 PARTITION (i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='0','highValue'='0','numNulls'='1','numDVs'='0' );
+ALTER TABLE default.test2 PARTITION (i=42629,j=42629,s='42629',t='42629') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='42629','highValue'='42629','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=42629,j=42629,s='42629',t='42629' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBweiP4AY= 
+ALTER TABLE default.test2 PARTITION (i=5247332,j=5247332,s='5247332',t='5247332') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='5247332','highValue'='5247332','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=5247332,j=5247332,s='5247332',t='5247332' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBg5mT4Qc= 
+ALTER TABLE default.test2 PARTITION (i=1565998,j=1565998,s='1565998',t='1565998') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='1565998','highValue'='1565998','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=1565998,j=1565998,s='1565998',t='1565998' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBhKGjdQ== 
+ALTER TABLE default.test2 PARTITION (i=1880938,j=1880938,s='1880938',t='1880938') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='1880938','highValue'='1880938','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=1880938,j=1880938,s='1880938',t='1880938' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgb2svAQ= 
+ALTER TABLE default.test2 PARTITION (i=9805326,j=9805326,s='9805326',t='9805326') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='9805326','highValue'='9805326','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=9805326,j=9805326,s='9805326',t='9805326' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBw96RggU= 
+ALTER TABLE default.test2 PARTITION (i=3076080,j=3076080,s='3076080',t='3076080') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='3076080','highValue'='3076080','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=3076080,j=3076080,s='3076080',t='3076080' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBweDt4QM= 
+ALTER TABLE default.test2 PARTITION (i=4409637,j=4409637,s='4409637',t='4409637') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='4409637','highValue'='4409637','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=4409637,j=4409637,s='4409637',t='4409637' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgsT4sAc= 
+ALTER TABLE default.test2 PARTITION (i=6276003,j=6276003,s='6276003',t='6276003') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='6276003','highValue'='6276003','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=6276003,j=6276003,s='6276003',t='6276003' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBw8Kw8wQ= 
+-- ALTER TABLE default.test2 PARTITION (i=1,j=1,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=1,j=1,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwfO+SA== 
+ALTER TABLE default.test2 PARTITION (i=3023419,j=3023419,s='3023419',t='3023419') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='3023419','highValue'='3023419','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=3023419,j=3023419,s='3023419',t='3023419' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBge2+4gQ= 
+ALTER TABLE default.test2 PARTITION (i=4115101,j=4115101,s='4115101',t='4115101') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='4115101','highValue'='4115101','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=4115101,j=4115101,s='4115101',t='4115101' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgaamtAY= 
+ALTER TABLE default.test2 PARTITION (i=971079,j=971079,s='971079',t='971079') UPDATE STATISTICS FOR COLUMN foo SET('lowValue'='971079','highValue'='971079','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.test2 PARTITION i=971079,j=971079,s='971079',t='971079' FOR COLUMN foo BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBg6XR2gc= 
+
+
+
+EXPLAIN select * from test2;
+
+
+EXPLAIN CBO select * from test2;
+
+
+EXPLAIN VECTORIZED select * from test2;
+CBO PLAN:HiveProject(foo=[$0], i=[$1], j=[$2], s=[$3], t=[$4])
+  HiveTableScan(table=[[default, test2]], table:alias=[test2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test2
+          Select Operator
+            expressions: foo (type: int), i (type: int), j (type: int), s (type: string), t (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4
+            ListSink
+

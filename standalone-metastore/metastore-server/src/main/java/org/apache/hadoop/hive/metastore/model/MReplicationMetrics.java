@@ -30,6 +30,7 @@ public class MReplicationMetrics {
   private String metadata;
   private String progress;
   private int startTime;
+  private String messageFormat;
 
   public MReplicationMetrics() {
   }
@@ -41,6 +42,7 @@ public class MReplicationMetrics {
     ret.setMetadata(mReplicationMetric.metadata);
     ret.setProgress(mReplicationMetric.progress);
     ret.setDumpExecutionId(mReplicationMetric.dumpExecutionId);
+    ret.setMessageFormat(mReplicationMetric.messageFormat);
     return ret;
   }
 
@@ -90,5 +92,13 @@ public class MReplicationMetrics {
 
   public void setStartTime(int startTime) {
     this.startTime = startTime;
+  }
+
+  public String getMessageFormat() {
+    return messageFormat;
+  }
+
+  public void setMessageFormat(String messageFormat) {
+    this.messageFormat = messageFormat;
   }
 }

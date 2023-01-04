@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
@@ -75,6 +77,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
+
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_SECURITY_HBASE_URLENCODE_AUTHORIZATION_URI;
 
 /**
  * HBaseStorageHandler provides a HiveStorageHandler implementation for
@@ -288,16 +292,33 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   }
 
   @Override
-  public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException{
+  public URI getURIForAuth(Table table) throws URISyntaxException {
+    Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
     hbaseConf = getConf();
-    String hbase_host = tableProperties.containsKey(HBASE_HOST_NAME)? tableProperties.get(HBASE_HOST_NAME) : hbaseConf.get(HBASE_HOST_NAME);
-    String hbase_port = tableProperties.containsKey(HBASE_CLIENT_PORT)? tableProperties.get(HBASE_CLIENT_PORT) : hbaseConf.get(HBASE_CLIENT_PORT);
-    String table_name = tableProperties.getOrDefault(HBaseSerDe.HBASE_TABLE_NAME, null);
-    String column_family = tableProperties.getOrDefault(HBaseSerDe.HBASE_COLUMNS_MAPPING, null);
-    if (column_family != null)
-      return new URI(HBASE_PREFIX+"//"+hbase_host+":"+hbase_port+"/"+table_name+"/"+column_family);
-    else
-      return new URI(HBASE_PREFIX+"//"+hbase_host+":"+hbase_port+"/"+table_name);
+    String hbase_host = tableProperties.getOrDefault(HBASE_HOST_NAME,
+        hbaseConf.get(HBASE_HOST_NAME));
+    String hbase_port = tableProperties.getOrDefault(HBASE_CLIENT_PORT,
+        hbaseConf.get(HBASE_CLIENT_PORT));
+    String table_name = encodeString(tableProperties.getOrDefault(HBaseSerDe.HBASE_TABLE_NAME,
+        null));
+    String column_family = encodeString(tableProperties.getOrDefault(
+        HBaseSerDe.HBASE_COLUMNS_MAPPING, null));
+    String URIString = HBASE_PREFIX + "//" + hbase_host + ":" + hbase_port + "/" + table_name;
+    if (column_family != null) {
+      URIString += "/" + column_family;
+    }
+    return new URI(URIString);
+  }
+
+  private String encodeString(String rawString) {
+    if (rawString == null) {
+      return null;
+    }
+    if (HiveConf.getBoolVar(jobConf, HIVE_SECURITY_HBASE_URLENCODE_AUTHORIZATION_URI)) {
+      return HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.encode(rawString);
+    } else {
+      return rawString.replace("#", "%23");
+    }
   }
 
   /**
@@ -354,6 +375,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     LOG.debug("Configuring JobConf for table {}.{}", tableDesc.getDbName(), tableDesc.getTableName());
     try {
+      HBaseConfiguration.addHbaseResources(jobConf);
       HBaseSerDe.configureJobConf(tableDesc, jobConf);
       /*
        * HIVE-6356

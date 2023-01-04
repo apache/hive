@@ -65,4 +65,9 @@ public class FilterDecimal64ColumnBetween extends FilterLongColumnBetween {
             VectorExpressionDescriptor.InputExpressionType.SCALAR,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
   }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
 }

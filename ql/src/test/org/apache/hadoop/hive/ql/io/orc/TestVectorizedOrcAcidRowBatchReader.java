@@ -244,12 +244,13 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
     //create 3 insert deltas so that we have 3 splits
     RecordUpdater updater = new OrcRecordUpdater(root, options);
-    updater.insert(options.getMinimumWriteId(),
-        new DummyRow(1, 0, options.getMinimumWriteId(), bucket));
-    updater.insert(options.getMinimumWriteId(),
-        new DummyRow(2, 1, options.getMinimumWriteId(), bucket));
-    updater.insert(options.getMinimumWriteId(),
-        new DummyRow(3, 2, options.getMinimumWriteId(), bucket));
+
+    //In the first delta add 2000 recs to simulate recs in multiple stripes.
+    int numRows = 2000;
+    for (int i = 1; i <= numRows; i++) {
+      updater.insert(options.getMinimumWriteId(),
+              new DummyRow(i, i-1, options.getMinimumWriteId(), bucket));
+    }
     updater.close(false);
 
     options.minimumWriteId(2)
@@ -328,7 +329,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     if(filterOn) {
       assertEquals(new OrcRawRecordMerger.KeyInterval(
           new RecordIdentifier(1, bucketProperty, 0),
-          new RecordIdentifier(1, bucketProperty, 2)),
+          new RecordIdentifier(1, bucketProperty, numRows - 1)),
           keyInterval);
     }
     else {
@@ -384,6 +385,13 @@ public class TestVectorizedOrcAcidRowBatchReader {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
     testDeleteEventFiltering2();
+  }
+  @Test
+  public void testDeleteEventFilteringOnWithoutIdx3() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
+    conf.set("orc.stripe.size", "1000");
+    testDeleteEventFiltering();
   }
 
   private void testDeleteEventFiltering2() throws Exception {
@@ -1177,7 +1185,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
   }
 
   @Test
-  public void testIsQualifiedDeleteDeltaForSplit() throws IOException {
+  public void testIsQualifiedDeleteDeltaForSplit() {
     // Original file
     checkPath("00000_0", "delete_delta_000012_000012_0000", true);
     checkPath("00000_0", "delete_delta_000001_000001", true);
@@ -1223,7 +1231,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     checkPath("delta_0000002_0000002/bucket_00001", "delete_delta_0000002_0000002_0001", true);
   }
 
-  private void checkPath(String splitPath, String deleteDeltaPath, boolean expected) throws IOException {
+  private void checkPath(String splitPath, String deleteDeltaPath, boolean expected) {
     String tableDir = "";//hdfs://localhost:59316/base/warehouse/acid_test/";
     AcidOutputFormat.Options ao = AcidUtils.parseBaseOrDeltaBucketFilename(new Path(tableDir + splitPath), conf);
     ParsedDeltaLight parsedDelta = ParsedDeltaLight.parse(new Path(tableDir + deleteDeltaPath));

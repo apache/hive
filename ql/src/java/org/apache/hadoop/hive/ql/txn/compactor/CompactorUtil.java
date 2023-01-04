@@ -17,15 +17,34 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.function.Function;
+
+import static java.lang.String.format;
 
 public class CompactorUtil {
   public static final String COMPACTOR = "compactor";
+  /**
+   * List of accepted properties for defining the compactor's job queue.
+   *
+   * The order is important and defines which property has precedence over the other if multiple properties are defined
+   * at the same time.
+   */
+  private static final List<String> QUEUE_PROPERTIES = Arrays.asList(
+      "compactor." + HiveConf.ConfVars.COMPACTOR_JOB_QUEUE.varname,
+      "compactor.mapreduce.job.queuename",
+      "compactor.mapred.job.queue.name"
+  );
 
   public interface ThrowingRunnable<E extends Exception> {
     void run() throws E;
@@ -41,15 +60,44 @@ public class CompactorUtil {
     }
   }
 
-  public static ThreadFactory createThreadFactory(String threadNameFormat) {
-    return new ThreadFactoryBuilder()
-      .setPriority(Thread.currentThread().getPriority())
-      .setDaemon(Thread.currentThread().isDaemon())
-      .setNameFormat(threadNameFormat)
-      .build();
+  public static ExecutorService createExecutorWithThreadFactory(int parallelism, String threadNameFormat) {
+    return new ForkJoinPool(parallelism,
+      pool -> {
+        ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+        worker.setName(format(threadNameFormat, worker.getPoolIndex()));
+        return worker;
+      },
+      null, false);
   }
 
-  public static ExecutorService createExecutorWithThreadFactory(int threadCount, String threadNameFormat) {
-    return Executors.newFixedThreadPool(threadCount, createThreadFactory(threadNameFormat));
+  /**
+   * Get the compactor queue name if it's defined.
+   * @param conf global hive conf
+   * @param ci compaction info object
+   * @param table instance of table
+   * @return name of the queue
+   */
+  static String getCompactorJobQueueName(HiveConf conf, CompactionInfo ci, Table table) {
+    // Get queue name from the ci. This is passed through
+    // ALTER TABLE table_name COMPACT 'major' WITH OVERWRITE TBLPROPERTIES('compactor.hive.compactor.job.queue'='some_queue')
+    List<Function<String, String>> propertyGetters = new ArrayList<>(2);
+    if (ci.properties != null) {
+      StringableMap ciProperties = new StringableMap(ci.properties);
+      propertyGetters.add(ciProperties::get);
+    }
+    if (table.getParameters() != null) {
+      propertyGetters.add(table.getParameters()::get);
+    }
+
+    for (Function<String, String> getter : propertyGetters) {
+      for (String p : QUEUE_PROPERTIES) {
+        String queueName = getter.apply(p);
+        if (queueName != null && !queueName.isEmpty()) {
+          return queueName;
+        }
+      }
+    }
+    return conf.getVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
   }
+
 }

@@ -41,13 +41,4 @@ public class AlterTableDropPartitionAnalyzer extends AbstractDropPartitionAnalyz
   protected boolean expectView() {
     return false;
   }
-
-  @Override
-  protected void postProcess(TableName tableName, Table table, AlterTableDropPartitionDesc desc) {
-    if (!AcidUtils.isTransactionalTable(table)) {
-      return;
-    }
-
-    setAcidDdlDesc(desc);
-  }
 }

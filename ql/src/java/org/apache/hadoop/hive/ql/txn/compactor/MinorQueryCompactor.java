@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -43,14 +44,13 @@ final class MinorQueryCompactor extends QueryCompactor {
   private static final Logger LOG = LoggerFactory.getLogger(MinorQueryCompactor.class.getName());
 
   @Override
-  void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+  public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+           ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
     LOG.info("Running query based minor compaction");
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
-    conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
     conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
@@ -69,7 +69,7 @@ final class MinorQueryCompactor extends QueryCompactor {
 
     runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
         Lists.newArrayList(resultDeltaDir, resultDeleteDeltaDir), createQueries,
-        compactionQueries, dropQueries);
+        compactionQueries, dropQueries, table.getParameters());
   }
 
 
@@ -147,8 +147,9 @@ final class MinorQueryCompactor extends QueryCompactor {
   private String buildCreateTableQuery(Table table, String newTableName, boolean isPartitioned,
       boolean isBucketed, String location) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_CRUD,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.CREATE,
+        false,
         newTableName)
         .setSourceTab(table)
         .setBucketed(isBucketed)
@@ -169,8 +170,9 @@ final class MinorQueryCompactor extends QueryCompactor {
   private String buildAlterTableQuery(String tableName, AcidDirectory dir,
       ValidWriteIdList validWriteIdList, boolean isDeleteDelta) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_CRUD,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.ALTER,
+        false,
         tableName)
         .setDir(dir)
         .setValidWriteIdList(validWriteIdList)
@@ -209,8 +211,9 @@ final class MinorQueryCompactor extends QueryCompactor {
   private String buildCompactionQuery(String sourceTableName, String resultTableName, Table table,
       ValidWriteIdList validWriteIdList) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_CRUD,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.INSERT,
+        false,
         resultTableName)
         .setSourceTabForInsert(sourceTableName)
         .setSourceTab(table)
@@ -233,8 +236,9 @@ final class MinorQueryCompactor extends QueryCompactor {
 
   private String getDropQuery(String tableToDrop) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_CRUD,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.DROP,
+        false,
         tableToDrop).build();
   }
 }

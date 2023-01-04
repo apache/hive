@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -112,8 +113,9 @@ public class PostExecOrcFileDump implements ExecuteWithHookContext {
         LOG.info("Printing orc file dump for " + fileStatus.getPath());
         if (fileStatus.getLen() > 0) {
           try {
-            // just creating orc reader is going to do sanity checks to make sure its valid ORC file
-            OrcFile.createReader(fs, fileStatus.getPath());
+            try (Reader notUsed = OrcFile.createReader(fs, fileStatus.getPath())) {
+              // just creating orc reader is going to do sanity checks to make sure its valid ORC file
+            }
             console.printError("-- BEGIN ORC FILE DUMP --");
             FileDump.main(new String[]{fileStatus.getPath().toString(), "--rowindex=*"});
             console.printError("-- END ORC FILE DUMP --");

@@ -333,6 +333,10 @@ public class TestMetastoreAuthorizationProvider {
     db = msc.getDatabase(dbName);
     dbLocn = db.getLocationUri();
     allowCreateInDb(dbName, userName, dbLocn);
+    dbLocn = db.getManagedLocationUri();
+     if (dbLocn != null) {
+       allowCreateInDb(dbName, userName, dbLocn);
+     }
     tbl.setTableType("EXTERNAL_TABLE");
     msc.createTable(tbl);
 

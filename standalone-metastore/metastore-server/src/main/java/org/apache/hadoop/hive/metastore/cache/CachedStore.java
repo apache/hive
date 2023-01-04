@@ -23,9 +23,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EmptyStackException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -76,7 +79,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -227,7 +229,6 @@ public class CachedStore implements RawStore, Configurable {
   private static void updateStatsForAlterTable(RawStore rawStore, Table tblBefore, Table tblAfter, String catalogName,
       String dbName, String tableName) throws Exception {
     ColumnStatistics colStats = null;
-    List<String> deletedCols = new ArrayList<>();
     if (tblBefore.isSetPartitionKeys()) {
       List<Partition> parts = sharedCache.listCachedPartitions(catalogName, dbName, tableName, -1);
       for (Partition part : parts) {
@@ -235,8 +236,14 @@ public class CachedStore implements RawStore, Configurable {
       }
     }
 
-    List<ColumnStatistics> multiColumnStats = HiveAlterHandler
-        .alterTableUpdateTableColumnStats(rawStore, tblBefore, tblAfter, null, null, rawStore.getConf(), deletedCols);
+    rawStore.alterTable(catalogName, dbName, tblBefore.getTableName(), tblAfter, null);
+
+    Set<String> deletedCols = new HashSet<>();
+    List<ColumnStatistics> multiColumnStats = HiveAlterHandler.getColumnStats(rawStore, tblBefore);
+    multiColumnStats.forEach(cs ->
+      deletedCols.addAll(HiveAlterHandler.filterColumnStatsForTableColumns(tblBefore.getSd().getCols(), cs)
+          .stream().map(ColumnStatisticsObj::getColName).collect(Collectors.toList())));
+
     if (multiColumnStats.size() > 1) {
       throw new RuntimeException("CachedStore can only be enabled for Hive engine");
     }
@@ -983,7 +990,7 @@ public class CachedStore implements RawStore, Configurable {
         List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
         List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
         if ((partNames != null) && (partNames.size() > 0)) {
-          Deadline.startTimer("getAggregareStatsForAllPartitions");
+          Deadline.startTimer("getAggregateStatsForAllPartitions");
           AggrStats aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           // Remove default partition from partition names and get aggregate stats again
@@ -997,7 +1004,7 @@ public class CachedStore implements RawStore, Configurable {
           }
           String defaultPartitionName = FileUtils.makePartName(partCols, partVals);
           partNames.remove(defaultPartitionName);
-          Deadline.startTimer("getAggregareStatsForAllPartitionsExceptDefault");
+          Deadline.startTimer("getAggregateStatsForAllPartitionsExceptDefault");
           AggrStats aggrStatsAllButDefaultPartition =
               rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
@@ -1321,7 +1328,7 @@ public class CachedStore implements RawStore, Configurable {
     if (succ && !canUseEvents) {
       String dbName = normalizeIdentifier(part.getDbName());
       String tblName = normalizeIdentifier(part.getTableName());
-      String catName = part.isSetCatName() ? normalizeIdentifier(part.getCatName()) : DEFAULT_CATALOG_NAME;
+      String catName = part.isSetCatName() ? normalizeIdentifier(part.getCatName()) : getDefaultCatalog(conf);
       if (!shouldCacheTable(catName, dbName, tblName)) {
         return succ;
       }
@@ -1988,6 +1995,12 @@ public class CachedStore implements RawStore, Configurable {
     return partitionNames;
   }
 
+  @Override
+  public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partSpecs)
+      throws MetaException, NoSuchObjectException {
+    return rawStore.getNumPartitionsByPs(catName, dbName, tblName, partSpecs);
+  }
+
   @Override public List<Partition> listPartitionsPsWithAuth(String catName, String dbName, String tblName,
       List<String> partSpecs, short maxParts, String userName, List<String> groupNames)
       throws MetaException, InvalidObjectException, NoSuchObjectException {
@@ -2185,7 +2198,7 @@ public class CachedStore implements RawStore, Configurable {
   private void updatePartitionColumnStatisticsInCache(ColumnStatistics colStats, Map<String, String> newParams,
                                                   List<String> partVals) throws MetaException, NoSuchObjectException {
     String catName = colStats.getStatsDesc().isSetCatName() ? normalizeIdentifier(
-            colStats.getStatsDesc().getCatName()) : DEFAULT_CATALOG_NAME;
+            colStats.getStatsDesc().getCatName()) : getDefaultCatalog(conf);
     String dbName = normalizeIdentifier(colStats.getStatsDesc().getDbName());
     String tblName = normalizeIdentifier(colStats.getStatsDesc().getTableName());
     if (!shouldCacheTable(catName, dbName, tblName)) {
@@ -2820,7 +2833,7 @@ public class CachedStore implements RawStore, Configurable {
     }
     String dbName = normalizeIdentifier(tbl.getDbName());
     String tblName = normalizeIdentifier(tbl.getTableName());
-    String catName = tbl.isSetCatName() ? normalizeIdentifier(tbl.getCatName()) : DEFAULT_CATALOG_NAME;
+    String catName = tbl.isSetCatName() ? normalizeIdentifier(tbl.getCatName()) : getDefaultCatalog(conf);
     if (!shouldCacheTable(catName, dbName, tblName)) {
       return constraints;
     }

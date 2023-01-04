@@ -518,7 +518,12 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     // Step 2 : create the Insert query
     StringBuilder rewrittenQueryStr = new StringBuilder();
 
-    rewrittenQueryStr.append("insert into table ");
+    if (isOverWrite) {
+      rewrittenQueryStr.append("insert overwrite table ");
+    } else {
+      rewrittenQueryStr.append("insert into table ");
+    }
+
     rewrittenQueryStr.append(getFullTableNameForSQL((ASTNode)(tableTree.getChild(0))));
     addPartitionColsToInsert(table.getPartCols(), inpPartSpec, rewrittenQueryStr);
     rewrittenQueryStr.append(" select * from ");

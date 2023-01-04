@@ -230,13 +230,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
     fsSupplier = getFsSupplier(split.getPath(), jobConf);
     fileKey = determineFileId(fsSupplier, split, daemonConf);
+    // Note: this makes a Tez-TR thread access the ORC file's tail (so this IO op is not handled by IO threads)
     fileMetadata = getFileFooterFromCacheOrDisk();
     final TypeDescription fileSchema = fileMetadata.getSchema();
-
-    fileIncludes = includes.generateFileIncludes(fileSchema);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("From {}, the file includes are {}", includes, DebugUtils.toString(fileIncludes));
-    }
 
     // Do not allow users to override zero-copy setting. The rest can be taken from user config.
     boolean useZeroCopy = OrcConf.USE_ZEROCOPY.getBoolean(daemonConf);
@@ -247,6 +243,12 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     this.jobConf = jobConf;
     // TODO: setFileMetadata could just create schema. Called in two places; clean up later.
     this.evolution = sef.createSchemaEvolution(fileMetadata.getSchema());
+
+    fileIncludes = includes.generateFileIncludes(fileSchema);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("From {}, the file includes are {}", includes, DebugUtils.toString(fileIncludes));
+    }
+
     consumer.setUseDecimal64ColumnVectors(HiveConf.getVar(jobConf,
       ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64"));
     consumer.setFileMetadata(fileMetadata);
@@ -497,8 +499,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return true;
   }
 
-  private static Object determineFileId(Supplier<FileSystem> fsSupplier,
-    FileSplit split, Configuration daemonConf) throws IOException {
+  private static Object determineFileId(Supplier<FileSystem> fsSupplier, FileSplit split, Configuration daemonConf)
+      throws IOException {
 
     if (split instanceof OrcSplit) {
       Object fileKey = ((OrcSplit)split).getFileKey();
@@ -507,17 +509,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
     }
     LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    return determineFileId(fsSupplier, split.getPath(), daemonConf);
-  }
-
-  static Object determineFileId(Supplier<FileSystem> fsSupplier, Path path, Configuration daemonConf)
-      throws IOException {
-
-    boolean allowSynthetic = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID);
-    boolean checkDefaultFs = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID);
-    boolean forceSynthetic = !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH);
-
-    return HdfsUtils.getFileId(fsSupplier.get(), path, allowSynthetic, checkDefaultFs, forceSynthetic);
+    return LlapHiveUtils.createFileIdUsingFS(fsSupplier.get(), split.getPath(), daemonConf);
   }
 
   /**
@@ -588,7 +580,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       Configuration daemonConf, MetadataCache metadataCache, Object fileKey) throws IOException {
     Supplier<FileSystem> fsSupplier = getFsSupplier(path, jobConf);
     if (fileKey == null) {
-      fileKey = determineFileId(fsSupplier, path, daemonConf);
+      fileKey = LlapHiveUtils.createFileIdUsingFS(fsSupplier.get(), path, daemonConf);
     }
 
     if(fileKey == null || metadataCache == null) {

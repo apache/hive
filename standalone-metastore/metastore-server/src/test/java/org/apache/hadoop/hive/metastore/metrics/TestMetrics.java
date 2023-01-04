@@ -23,20 +23,27 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.Counter;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.testutils.CapturingLogAppender;
 import org.apache.logging.log4j.Level;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @org.junit.Ignore("flaky HIVE-23682")
 @Category(MetastoreUnitTest.class)
@@ -93,14 +100,18 @@ public class TestMetrics {
 
     initializeMetrics(conf);
     Counter counter = Metrics.getOrCreateCounter("my-counter");
+    MapMetrics mapMetrics = Metrics.getOrCreateMapMetrics("my-map");
 
     for (int i = 0; i < 5; i++) {
       counter.inc();
+      mapMetrics.update(ImmutableMap.of("const", 1000, "var", i * 100));
       // Make sure it has a chance to dump it.
       Thread.sleep(REPORT_INTERVAL * 1000 + REPORT_INTERVAL * 1000 / 2);
       String json = new String(MetricsTestUtils.getFileData(jsonFile, 200, 10));
       MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "my-counter",
           i + 1);
+      MetricsTestUtils.verifyMapMetricsJson(json, "my-map",
+          ImmutableMap.of("const", 1000, "var", i * 100));
     }
   }
 
@@ -187,7 +198,6 @@ public class TestMetrics {
 
     Assert.assertEquals(2, Metrics.getReporters().size());
   }
-
   // Stolen from Hive's MetricsTestUtils.  Probably should break it out into it's own class.
   private static class MetricsTestUtils {
 
@@ -203,6 +213,20 @@ public class TestMetrics {
         this.category = category;
         this.metricsHandle = metricsHandle;
       }
+    }
+
+    static void verifyMapMetricsJson(String rawJson, String mBeanField,
+        Map<String, Integer> expectedValue) throws Exception {
+      ObjectMapper objectMapper = new ObjectMapper();
+      JsonNode rootNode = objectMapper.readTree(rawJson);
+      JsonNode mbeansNode = rootNode.get("mbeans");
+      Assert.assertTrue(mbeansNode instanceof ObjectNode);
+
+      JsonNode mBeanObj = mbeansNode.get(mBeanField);
+      Assert.assertTrue(mBeanObj instanceof ObjectNode);
+
+      Map<String, Integer> content = objectMapper.convertValue(mBeanObj, new TypeReference<Map<String, Integer>>(){});
+      assertThat(content, CoreMatchers.is(expectedValue));
     }
 
     static void verifyMetricsJson(String json, MetricsCategory category, String metricsName,

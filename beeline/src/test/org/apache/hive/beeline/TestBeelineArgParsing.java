@@ -113,9 +113,9 @@ public class TestBeelineArgParsing {
         + File.separator + "org"
         + File.separator + "postgresql"
         + File.separator + "postgresql"
-        + File.separator + "42.2.14"
+        + File.separator + "42.4.1"
         + File.separator
-        + "postgresql-42.2.14.jar";
+        + "postgresql-42.4.1.jar";
     return Arrays.asList(new Object[][] {
         { "jdbc:postgresql://host:5432/testdb", "org.postgresql.Driver", pathToPostgresJar, true },
         { "jdbc:dummy://host:5432/testdb", dummyDriverClazzName, pathToDummyDriver, false } });
@@ -193,11 +193,13 @@ public class TestBeelineArgParsing {
   public void testQueryScripts() throws Exception {
     TestBeeline bl = new TestBeeline();
     String args[] = new String[] {"-u", "url", "-n", "name",
-      "-p", "password", "-d", "driver", "-e", "select1", "-e", "select2"};
+      "-p", "password", "-d", "driver", "-e", "select1", "-e", "select2",
+      "-e", "select \"hive\""};
     Assert.assertEquals(0, bl.initArgs(args));
     Assert.assertTrue(bl.connectArgs.equals("url name password driver"));
     Assert.assertTrue(bl.queries.contains("select1"));
     Assert.assertTrue(bl.queries.contains("select2"));
+    Assert.assertTrue(bl.queries.contains("select \"hive\""));
   }
 
   /**

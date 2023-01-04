@@ -17,10 +17,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -33,7 +33,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
+	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -41,17 +41,16 @@ Table Parameters:
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
-	write.format.default	ORC                 
+	uuid                	#Masked#
+	write.format.default	orc                 
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: DROP TABLE ice_orc
 PREHOOK: type: DROPTABLE
@@ -80,10 +79,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_parquet
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_parquet
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -96,7 +95,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
+	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -104,17 +103,16 @@ Table Parameters:
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
-	write.format.default	PARQUET             
+	uuid                	#Masked#
+	write.format.default	parquet             
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: DROP TABLE ice_parquet
 PREHOOK: type: DROPTABLE
@@ -143,10 +141,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_avro
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_avro
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -159,7 +157,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
+	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -167,17 +165,16 @@ Table Parameters:
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
-	write.format.default	AVRO                
+	uuid                	#Masked#
+	write.format.default	avro                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: DROP TABLE ice_avro
 PREHOOK: type: DROPTABLE
@@ -206,10 +203,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -222,7 +219,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
+	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -230,17 +227,16 @@ Table Parameters:
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
-	write.format.default	AVRO                
+	uuid                	#Masked#
+	write.format.default	avro                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: DROP TABLE ice_t
 PREHOOK: type: DROPTABLE
@@ -265,10 +261,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -282,7 +278,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	dummy               	dummy_value         
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
+	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -290,17 +286,16 @@ Table Parameters:
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
-	write.format.default	ORC                 
+	uuid                	#Masked#
+	write.format.default	orc                 
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: DROP TABLE ice_t
 PREHOOK: type: DROPTABLE

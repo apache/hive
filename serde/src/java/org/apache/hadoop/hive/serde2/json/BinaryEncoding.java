@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.serde2.json;
 
 /**
- * Enums describing the available String->Bytes encoding available for JSON
+ * Enums describing the available String-&gt;Bytes encoding available for JSON
  * parsing. This base-64 variant is what most people would think of "the
  * standard" Base64 encoding for JSON: the specific MIME content transfer
  * encoding. The Raw String encoding produces an array of bytes by reading the

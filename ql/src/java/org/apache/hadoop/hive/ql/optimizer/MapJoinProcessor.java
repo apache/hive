@@ -194,7 +194,7 @@ public class MapJoinProcessor extends Transform {
       // set alias to fetch work
       newLocalWork.getAliasToFetchWork().put(alias, fetchWork);
     }
-    // remove small table ailias from aliasToWork;Avoid concurrent modification
+    // remove small table alias from aliasToWork;Avoid concurrent modification
     for (String alias : smallTableAliasList) {
       newWork.getMapWork().getAliasToWork().remove(alias);
     }
@@ -464,7 +464,7 @@ public class MapJoinProcessor extends Transform {
         HiveConf.getVar(hiveConf,
             HiveConf.ConfVars.HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE);
     EnabledOverride mapJoinFullOuterOverride =
-        EnabledOverride.nameMap.get(testMapJoinFullOuterOverrideString);
+        EnabledOverride.NAME_MAP.get(testMapJoinFullOuterOverrideString);
 
     final boolean isEnabled =
         HiveConf.getBoolVar(

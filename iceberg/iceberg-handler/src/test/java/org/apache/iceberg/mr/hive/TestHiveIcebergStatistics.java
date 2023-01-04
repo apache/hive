@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -28,7 +27,10 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -66,13 +68,13 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     String tableName = "customers";
     Table table = testTables
         .createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
-            new ArrayList<>());
+            Lists.newArrayList());
     shell.executeStatement("ANALYZE TABLE " + dbName + "." + tableName + " COMPUTE STATISTICS");
     validateBasicStats(table, dbName, tableName);
   }
 
   @Test
-  public void testStatWithInsert() {
+  public void testStatsWithInsert() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
@@ -87,25 +89,34 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
     shell.executeStatement(insert);
 
-    checkColStat(identifier.name(), "customer_id");
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
+
+    insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, identifier, false);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 5);
   }
 
   @Test
-  public void testStatWithInsertOverwrite() {
+  public void testStatsWithInsertOverwrite() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
-    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, true);
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, identifier,
+        true);
     shell.executeStatement(insert);
 
-    checkColStat(identifier.name(), "customer_id");
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 3, 5);
   }
 
   @Test
-  public void testStatWithPartitionedInsert() {
+  public void testStatsWithPartitionedInsert() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("last_name").build();
@@ -122,12 +133,13 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
     shell.executeStatement(insert);
 
-    checkColStat("customers", "customer_id");
-    checkColStat("customers", "first_name");
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStat(identifier.name(), "first_name", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
   }
 
   @Test
-  public void testStatWithCTAS() {
+  public void testStatsWithCTAS() {
     Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
@@ -136,15 +148,17 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
     shell.executeStatement(String.format(
-        "CREATE TABLE target STORED BY ICEBERG %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        "CREATE TABLE target STORED BY ICEBERG %s %s AS SELECT * FROM source",
         testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
-        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+        testTables.propertiesForCreateTableSQL(
+            ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString()))));
 
-    checkColStat("target", "id");
+    checkColStat("target", "id", true);
+    checkColStatMinMaxValue("target", "id", 0, 2);
   }
 
   @Test
-  public void testStatWithPartitionedCTAS() {
+  public void testStatsWithPartitionedCTAS() {
     Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
@@ -153,19 +167,89 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
     shell.executeStatement(String.format(
-        "CREATE TABLE target PARTITIONED BY (dept, name) " +
-            "STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source s",
-        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+        "CREATE TABLE target PARTITIONED BY (dept, name) STORED BY ICEBERG %s AS SELECT * FROM source s",
+        testTables.propertiesForCreateTableSQL(
+            ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString()))));
 
-    checkColStat("target", "id");
-    checkColStat("target", "dept");
+    checkColStat("target", "id", true);
+    checkColStat("target", "dept", true);
+    checkColStatMinMaxValue("target", "id", 0, 2);
+    checkColStatMaxLengthDistinctValue("target", "dept", 5, 3);
+    checkColStatMaxLengthDistinctValue("target", "name", 5, 3);
   }
 
-  private void checkColStat(String tableName, String colName) {
+  @Test
+  public void testStatsRemoved() throws IOException {
+    Assume.assumeTrue("Only HiveCatalog can remove stats which become obsolete",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, true);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
+
+    // Create a Catalog where the KEEP_HIVE_STATS is false
+    shell.metastore().hiveConf().set(ConfigProperties.KEEP_HIVE_STATS, StatsSetupConst.FALSE);
+    TestTables nonHiveTestTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
+    Table nonHiveTable = nonHiveTestTables.loadTable(identifier);
+
+    // Append data to the table through a this non-Hive engine (here java API)
+    nonHiveTestTables.appendIcebergTable(shell.getHiveConf(), nonHiveTable, fileFormat, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    checkColStat(identifier.name(), "customer_id", false);
+  }
+
+  private void checkColStat(String tableName, String colName, boolean accurate) {
     List<Object[]> rows = shell.executeStatement("DESCRIBE " + tableName + " " + colName);
 
-    Assert.assertEquals(2, rows.size());
-    Assert.assertEquals(StatsSetupConst.COLUMN_STATS_ACCURATE, rows.get(1)[0]);
+    if (accurate) {
+      Assert.assertEquals(2, rows.size());
+      Assert.assertEquals(StatsSetupConst.COLUMN_STATS_ACCURATE, rows.get(1)[0]);
+      // Check if the value is not {} (empty)
+      Assert.assertFalse(rows.get(1)[1].toString().matches("\\{\\}\\s*"));
+    } else {
+      // If we expect the stats to be not accurate
+      if (rows.size() == 1) {
+        // no stats now, we are ok
+        return;
+      } else {
+        Assert.assertEquals(2, rows.size());
+        Assert.assertEquals(StatsSetupConst.COLUMN_STATS_ACCURATE, rows.get(1)[0]);
+        // Check if the value is {} (empty)
+        Assert.assertTrue(rows.get(1)[1].toString().matches("\\{\\}\\s*"));
+      }
+    }
   }
 
+  private void checkColStatMinMaxValue(String tableName, String colName, int minValue, int maxValue) {
+    List<Object[]> rows = shell.executeStatement("DESCRIBE FORMATTED " + tableName + " " + colName);
+
+    // Check min
+    Assert.assertEquals("min", rows.get(2)[0]);
+    Assert.assertEquals(String.valueOf(minValue), rows.get(2)[1]);
+
+    // Check max
+    Assert.assertEquals("max", rows.get(3)[0]);
+    Assert.assertEquals(String.valueOf(maxValue), rows.get(3)[1]);
+  }
+
+  private void checkColStatMaxLengthDistinctValue(String tableName, String colName, int maxLength, int distinct) {
+    List<Object[]> rows = shell.executeStatement("DESCRIBE FORMATTED " + tableName + " " + colName);
+
+    // Check max length
+    Assert.assertEquals("max_col_len", rows.get(7)[0]);
+    Assert.assertEquals(String.valueOf(maxLength), rows.get(7)[1]);
+
+    // Check distinct
+    Assert.assertEquals("distinct_count", rows.get(5)[0]);
+    Assert.assertEquals(String.valueOf(distinct), rows.get(5)[1]);
+  }
 }

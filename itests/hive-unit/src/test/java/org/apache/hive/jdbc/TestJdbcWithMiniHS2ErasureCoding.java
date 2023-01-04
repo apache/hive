@@ -18,12 +18,9 @@
 
 package org.apache.hive.jdbc;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.MalformedURLException;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -64,27 +61,14 @@ public class TestJdbcWithMiniHS2ErasureCoding {
   private static HiveConf conf;
   private Connection hs2Conn = null;
 
-  private static HiveConf createHiveOnSparkConf() throws MalformedURLException {
-    String confDir = "../../data/conf/spark/standalone/hive-site.xml";
-    HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
-    HiveConf hiveConf = new HiveConf();
-    // Tell dfs not to consider load when choosing a datanode as this can cause failure as
-    // in a test we do not have spare datanode capacity.
-    hiveConf.setBoolean("dfs.namenode.redundancy.considerLoad", false);
-    hiveConf.set("hive.spark.client.connect.timeout", "30000ms");
-    hiveConf.set("spark.local.dir",
-        Paths.get(System.getProperty("test.tmp.dir"), "TestJdbcWithMiniHS2ErasureCoding-local-dir")
-            .toString());
-    return hiveConf;
-  }
-
     /**
      * Setup a mini HS2 with miniMR.
      */
   @BeforeClass
   public static void beforeTest() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
-    conf = createHiveOnSparkConf();
+    conf = new HiveConf();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     DriverManager.setLoginTimeout(0);
     miniHS2 = new MiniHS2.Builder()
         .withConf(conf)
@@ -155,7 +139,6 @@ public class TestJdbcWithMiniHS2ErasureCoding {
       stmt.execute("INSERT INTO TABLE " + tableName
             + " PARTITION (datestamp = '2014-09-24', i = 2)(userid,link) VALUES ('mac', 'superchunk.com')");
       String explain = getExtendedExplain(stmt, "select userid from " + tableName);
-      assertMatchAndCount(explain, " numFiles 4", 2);
       assertMatchAndCount(explain,  " numFilesErasureCoded 4", 2);
     }
   }

@@ -123,6 +123,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_update_1
 PREHOOK: Input: default@partitioned_update_1@part=1
 PREHOOK: Input: default@partitioned_update_1@part=2
+PREHOOK: Output: default@partitioned_update_1
 PREHOOK: Output: default@partitioned_update_1@part=1
 PREHOOK: Output: default@partitioned_update_1@part=2
 POSTHOOK: query: update partitioned_update_1 set c=99
@@ -130,9 +131,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partitioned_update_1
 POSTHOOK: Input: default@partitioned_update_1@part=1
 POSTHOOK: Input: default@partitioned_update_1@part=2
+POSTHOOK: Output: default@partitioned_update_1
+POSTHOOK: Output: default@partitioned_update_1@part=1
 POSTHOOK: Output: default@partitioned_update_1@part=1
 POSTHOOK: Output: default@partitioned_update_1@part=2
-row__id	insert_num	a	b	_c4	d	part
+POSTHOOK: Output: default@partitioned_update_1@part=2
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a SIMPLE [(partitioned_update_1)partitioned_update_1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE [(partitioned_update_1)partitioned_update_1.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).c SIMPLE []
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).d SIMPLE [(partitioned_update_1)partitioned_update_1.FieldSchema(name:d, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num SIMPLE [(partitioned_update_1)partitioned_update_1.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).a SIMPLE [(partitioned_update_1)partitioned_update_1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).b SIMPLE [(partitioned_update_1)partitioned_update_1.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).c SIMPLE []
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).d SIMPLE [(partitioned_update_1)partitioned_update_1.FieldSchema(name:d, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).insert_num SIMPLE [(partitioned_update_1)partitioned_update_1.FieldSchema(name:insert_num, type:int, comment:null), ]
+s.insert_num	s.a	s.b	s.c	s.d	s.part
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_update_1
@@ -163,12 +177,20 @@ insert_num	part	a	b	c	d
 115	1	32768	new	99	major glaciation
 PREHOOK: query: alter table partitioned_update_1 partition(part=1) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@partitioned_update_1
+PREHOOK: Output: default@partitioned_update_1@part=1
 POSTHOOK: query: alter table partitioned_update_1 partition(part=1) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@partitioned_update_1
+POSTHOOK: Output: default@partitioned_update_1@part=1
 PREHOOK: query: alter table partitioned_update_1 partition(part=2) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@partitioned_update_1
+PREHOOK: Output: default@partitioned_update_1@part=2
 POSTHOOK: query: alter table partitioned_update_1 partition(part=2) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@partitioned_update_1
+POSTHOOK: Output: default@partitioned_update_1@part=2
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_update_1
@@ -331,12 +353,20 @@ insert_num	part	a	b	c	d
 115	1	32768	new	32768	major glaciation
 PREHOOK: query: alter table partitioned_delete_1 partition(part=1) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@partitioned_delete_1
+PREHOOK: Output: default@partitioned_delete_1@part=1
 POSTHOOK: query: alter table partitioned_delete_1 partition(part=1) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@partitioned_delete_1
+POSTHOOK: Output: default@partitioned_delete_1@part=1
 PREHOOK: query: alter table partitioned_delete_1 partition(part=2) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@partitioned_delete_1
+PREHOOK: Output: default@partitioned_delete_1@part=2
 POSTHOOK: query: alter table partitioned_delete_1 partition(part=2) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@partitioned_delete_1
+POSTHOOK: Output: default@partitioned_delete_1@part=2
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_delete_1
@@ -496,12 +526,20 @@ insert_num	part	a	b	c	d
 113	1	40000	new	40000	Delaware
 PREHOOK: query: alter table partitioned_delete_2 partition(part=1) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@partitioned_delete_2
+PREHOOK: Output: default@partitioned_delete_2@part=1
 POSTHOOK: query: alter table partitioned_delete_2 partition(part=1) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@partitioned_delete_2
+POSTHOOK: Output: default@partitioned_delete_2@part=1
 PREHOOK: query: alter table partitioned_delete_2 partition(part=2) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@partitioned_delete_2
+PREHOOK: Output: default@partitioned_delete_2@part=2
 POSTHOOK: query: alter table partitioned_delete_2 partition(part=2) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@partitioned_delete_2
+POSTHOOK: Output: default@partitioned_delete_2@part=2
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_delete_2

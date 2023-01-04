@@ -21,10 +21,8 @@ package org.apache.hadoop.hive.ql;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -269,16 +267,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
             "warehouse/t/p=0/delta_0000001_0000001_0000/000001_0"}};
     checkExpected(rs, expected, "add partition (p=0)");
   }
-
-  /**
-   * {@link TestDbTxnManager2#testAddPartitionLocks}
-   */
-  @Ignore
-  @Test
-  public void testLocks() throws Exception {
-  }
-
-
+  
   @Test
   public void addPartitionTransactional() throws Exception {
     exception.expect(RuntimeException.class);

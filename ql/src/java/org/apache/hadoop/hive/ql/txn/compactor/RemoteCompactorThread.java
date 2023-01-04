@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -31,6 +32,8 @@ import org.apache.thrift.TException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
@@ -41,6 +44,16 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
  */
 public class RemoteCompactorThread extends CompactorThread {
   protected IMetaStoreClient msc;
+
+  private String poolName;
+
+  public String getPoolName() {
+    return poolName;
+  }
+
+  public void setPoolName(String poolName) {
+    this.poolName = poolName;
+  }
 
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
@@ -69,8 +82,9 @@ public class RemoteCompactorThread extends CompactorThread {
 
   @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
     try {
-      return msc.getPartitionsByNames(getDefaultCatalog(conf), ci.dbname, ci.tableName,
+      GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(ci.dbname, ci.tableName,
           Collections.singletonList(ci.partName));
+      return msc.getPartitionsByNames(req).getPartitions();
     } catch (TException e) {
       LOG.error("Unable to get partitions by name for CompactionInfo=" + ci);
       throw new MetaException(e.toString());

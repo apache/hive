@@ -36,6 +36,7 @@ public class TableName implements Serializable {
   private final String cat;
   private final String db;
   private final String table;
+  private final String metaTable;
 
   /**
    *
@@ -46,11 +47,22 @@ public class TableName implements Serializable {
    * @param dbName database name.  Cannot be null.  If you do not now it you can get it from
    *           SessionState.getCurrentDatabase() or use Warehouse.DEFAULT_DATABASE_NAME.
    * @param tableName  table name, cannot be null
+   * @param metaTable name
+   *           Use this to query Iceberg metadata tables.
    */
-  public TableName(final String catName, final String dbName, final String tableName) {
+  public TableName(final String catName, final String dbName, final String tableName, String metaTable) {
     this.cat = catName;
     this.db = dbName;
     this.table = tableName;
+    this.metaTable = metaTable;
+  }
+
+  public TableName(final String catName, final String dbName, final String tableName) {
+    this(catName, dbName, tableName, null);
+  }
+
+  public static TableName fromString(final String name, final String defaultCatalog, final String defaultDatabase) {
+    return fromString(name, defaultCatalog, defaultDatabase, null);
   }
 
   /**
@@ -64,10 +76,11 @@ public class TableName implements Serializable {
    * @param defaultDatabase default database to use if database is not in the name.  If you do
    *                        not now it you can get it from SessionState.getCurrentDatabase() or
    *                        use Warehouse.DEFAULT_DATABASE_NAME.
+   * @param metaTable When querying Iceberg metadata tables, set this parameter.
    * @return TableName
    * @throws IllegalArgumentException if a non-null name is given
    */
-  public static TableName fromString(final String name, final String defaultCatalog, final String defaultDatabase)
+  public static TableName fromString(final String name, final String defaultCatalog, final String defaultDatabase, String metaTable)
       throws IllegalArgumentException {
     if (name == null) {
       throw new IllegalArgumentException(String.join("", "Table value was null. ", ILL_ARG_EXCEPTION_MSG));
@@ -75,15 +88,15 @@ public class TableName implements Serializable {
     if (name.contains(DatabaseName.CAT_DB_TABLE_SEPARATOR)) {
       String[] names = name.split("\\.");
       if (names.length == 2) {
-        return new TableName(defaultCatalog, names[0], names[1]);
+        return new TableName(defaultCatalog, names[0], names[1], null);
       } else if (names.length == 3) {
-        return new TableName(names[0], names[1], names[2]);
+        return new TableName(names[0], names[1], names[2], null);
       } else {
         throw new IllegalArgumentException(ILL_ARG_EXCEPTION_MSG);
       }
 
     } else {
-      return new TableName(defaultCatalog, defaultDatabase, name);
+      return new TableName(defaultCatalog, defaultDatabase, name, metaTable);
     }
   }
 
@@ -97,6 +110,10 @@ public class TableName implements Serializable {
 
   public String getTable() {
     return table;
+  }
+
+  public String getMetaTable() {
+    return metaTable;
   }
 
   /**
@@ -122,7 +139,8 @@ public class TableName implements Serializable {
    * Get the name in db.table format, if db is not empty, otherwise pass only the table name.
    */
   public String getNotEmptyDbTable() {
-    return db == null || db.trim().isEmpty() ? table : db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table;
+    String metaTableName = metaTable == null ? "" : "." + metaTable;
+    return db == null || db.trim().isEmpty() ? table : db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table + metaTableName;
   }
 
   /**

@@ -36,7 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.QTestSystemProperties;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
-import org.apache.hadoop.hive.ql.QTestExternalDB;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 
 import com.google.common.base.Splitter;
@@ -61,7 +60,6 @@ public abstract class AbstractCliConfig {
   // these should have viable defaults
   private String cleanupScript;
   private String initScript;
-  private Set<QTestExternalDB> externalDBs = new LinkedHashSet<>();
   private String hiveConfDir;
   private MiniClusterType clusterType;
   private FsType fsType;
@@ -344,10 +342,6 @@ public abstract class AbstractCliConfig {
       this.initScript = initScript;
     }
   }
-  public Set<QTestExternalDB> getExternalDBs() { return externalDBs; }
-
-  protected void addExternalDB (QTestExternalDB externalDB) { this.externalDBs.add(externalDB); }
-
   public String getHiveConfDir() {
     return hiveConfDir;
   }

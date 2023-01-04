@@ -93,7 +93,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         if (desc.isFormatted()) {
           getColumnDataColPathSpecified(table, part, cols, colStats, deserializer);
         } else {
-          cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
+          cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
         }
       }
       fixDecimalColumnTypeName(cols);
@@ -117,7 +117,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   }
 
   private Table getTable() throws HiveException {
-    Table table = context.getDb().getTable(desc.getTableName().getDb(), desc.getTableName().getTable(), false);
+    Table table = context.getDb().getTable(desc.getTableName().getDb(), desc.getTableName().getTable(),
+        desc.getTableName().getMetaTable(), false, false, false);
     if (table == null) {
       throw new HiveException(ErrorMsg.INVALID_TABLE, desc.getDbTableName());
     }
@@ -207,7 +208,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         }
         table.setParameters(tableProps);
       } else {
-        cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
+        cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
         colStats.addAll(
             context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(),
                 tableName.getTable().toLowerCase(), colNames, false));
@@ -218,7 +219,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       // lower case name to get the stats.
       String partName = HMSHandler.lowerCaseConvertPartName(part.getName());
       partitions.add(partName);
-      cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
+      cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
           tableName.getDb().toLowerCase(), tableName.getTable().toLowerCase(), partitions, colNames, false);
       List<ColumnStatisticsObj> partitionColStat = partitionColumnStatistics.get(partName);
@@ -243,8 +244,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     StatObjectConverter.fillColumnStatisticsData(partCol.getType(), data, r == null ? null : r.minValue,
         r == null ? null : r.maxValue, r == null ? null : r.minValue, r == null ? null : r.maxValue,
         r == null ? null : r.minValue.toString(), r == null ? null : r.maxValue.toString(),
-        cs.getNumNulls(), cs.getCountDistint(), null, cs.getAvgColLen(), cs.getAvgColLen(),
-        cs.getNumTrues(), cs.getNumFalses());
+        cs.getNumNulls(), cs.getCountDistint(), null, null, cs.getAvgColLen(),
+        cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
     ColumnStatisticsObj cso = new ColumnStatisticsObj(partCol.getName(), partCol.getType(), data);
     colStats.add(cso);
     StatsSetupConst.setColumnStatsState(tableProps, colNames);
@@ -253,7 +254,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private void getColumnsForNotPartitionKeyColumn(List<FieldSchema> cols, List<ColumnStatisticsObj> colStats,
       Deserializer deserializer, List<String> colNames, TableName tableName, Map<String, String> tableProps)
       throws HiveException {
-    cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
+    cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
     List<String> parts = context.getDb().getPartitionNames(tableName.getDb().toLowerCase(),
         tableName.getTable().toLowerCase(), (short) -1);
     AggrStats aggrStats = context.getDb().getAggrColStatsFor(
@@ -292,11 +293,11 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     }
   }
 
-  private void handleMaterializedView(Table table) throws LockException {
+  private void handleMaterializedView(Table table) throws HiveException {
     if (table.isMaterializedView()) {
       table.setOutdatedForRewriting(context.getDb().isOutdatedMaterializedView(
               table,
-              new ArrayList<>(table.getCreationMetadata().getTablesUsed()),
+              table.getMVMetadata().getSourceTableNames(),
               false,
               SessionState.get().getTxnMgr()));
     }

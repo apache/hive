@@ -213,7 +213,7 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "properties", explainLevels = { Level.EXTENDED })
   public Map getPropertiesExplain() {
-    return PlanUtils.getPropertiesExplain(getProperties());
+    return PlanUtils.getPropertiesForExplain(getProperties());
   }
 
   public void setProperties(final Properties properties) {
@@ -250,7 +250,12 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
-    return getProperties().getProperty(hive_metastoreConstants.META_TABLE_NAME);
+    String tableName = getProperties().getProperty(hive_metastoreConstants.META_TABLE_NAME);
+    String metaTable = getProperties().getProperty("metaTable");
+    if (metaTable != null && tableName != null) {
+      return tableName + "." + metaTable;
+    }
+    return tableName;
   }
 
   @Explain(displayName = "input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

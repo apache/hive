@@ -50,9 +50,11 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.DataConnectorFilterContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.DatabaseFilterContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.TableFilterContext;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -232,6 +234,26 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     return list;
   }
 
+  @Override
+  public List<String> filterDataConnectors(List<String> dcList) throws MetaException {
+    LOG.debug("HiveMetaStoreAuthorizer.filterDataConnector()");
+
+    if (dcList == null) {
+      return Collections.emptyList();
+    }
+
+    DataConnectorFilterContext dataConnectorFilterContext = new DataConnectorFilterContext(dcList);
+    HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo = dataConnectorFilterContext.getAuthzContext();
+    List<String> filteredDataConnector = filterDataConnectorObjects(hiveMetaStoreAuthzInfo);
+    if (CollectionUtils.isEmpty(filteredDataConnector)) {
+      filteredDataConnector = Collections.emptyList();
+    }
+
+    LOG.debug("HiveMetaStoreAuthorizer.filterDataConnectors() :" + filteredDataConnector);
+
+    return filteredDataConnector;
+  }
+
   private List<String> filterDatabaseObjects(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo) throws MetaException {
     List<String> ret = null;
 
@@ -254,6 +276,40 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
 
     LOG.debug("<== HiveMetaStoreAuthorizer.filterDatabaseObjects() :" + ret );
 
+    return ret;
+  }
+
+  private List<String> filterDataConnectorObjects(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo) throws MetaException {
+    List<String> ret = null;
+
+    LOG.debug("==> HiveMetaStoreAuthorizer.filterDataConnectorObjects()");
+
+    try {
+      HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
+      List<HivePrivilegeObject> hivePrivilegeObjects = hiveMetaStoreAuthzInfo.getInputHObjs();
+      HiveAuthzContext hiveAuthzContext = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
+      List<HivePrivilegeObject> filteredHivePrivilegeObjects =
+              hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
+      if (CollectionUtils.isNotEmpty(filteredHivePrivilegeObjects)) {
+        ret = getFilteredDataConnectorList(filteredHivePrivilegeObjects);
+      }
+      LOG.info(String.format("Filtered %d connectors out of %d", filteredHivePrivilegeObjects.size(),
+              hivePrivilegeObjects.size()));
+    } catch (Exception e) {
+      throw new MetaException("Error in HiveMetaStoreAuthorizer.filterDataConnector()" + e.getMessage());
+    }
+
+    LOG.debug("<== HiveMetaStoreAuthorizer.filterDataConnectorObjects() :" + ret );
+
+    return ret;
+  }
+
+  private List<String> getFilteredDataConnectorList(List<HivePrivilegeObject> hivePrivilegeObjects) {
+    List<String> ret = new ArrayList<>();
+    for(HivePrivilegeObject hivePrivilegeObject: hivePrivilegeObjects) {
+      String dcName = hivePrivilegeObject.getObjectName();
+      ret.add(dcName);
+    }
     return ret;
   }
 
@@ -422,6 +478,21 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
         case READ_DATABASE:
           authzEvent = new ReadDatabaseEvent(preEventContext);
           break;
+        case CREATE_FUNCTION:
+          authzEvent = new CreateFunctionEvent(preEventContext);
+          break;
+        case DROP_FUNCTION:
+          authzEvent = new DropFunctionEvent(preEventContext);
+          break;
+        case CREATE_DATACONNECTOR:
+          authzEvent = new CreateDataConnectorEvent(preEventContext);
+          break;
+        case ALTER_DATACONNECTOR:
+          authzEvent = new AlterDataConnectorEvent(preEventContext);
+          break;
+        case DROP_DATACONNECTOR:
+          authzEvent = new DropDataConnectorEvent(preEventContext);
+          break;
         case AUTHORIZATION_API_CALL:
         case READ_ISCHEMA:
         case CREATE_ISCHEMA:
@@ -483,6 +554,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   boolean isSuperUser(String userName) {
     Configuration conf      = getConf();
     String        ipAddress = HMSHandler.getIPAddress();
+    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
     return (MetaStoreServerUtils.checkUserHasHostProxyPrivileges(userName, conf, ipAddress));
   }
 

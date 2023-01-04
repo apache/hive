@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * HiveChar.
  * String values will be padded to full char length.
- * Character legnth, comparison, hashCode should ignore trailing spaces.
+ * Character length, comparison, hashCode should ignore trailing spaces.
  */
 public class HiveChar extends HiveBaseChar
   implements Comparable<HiveChar> {

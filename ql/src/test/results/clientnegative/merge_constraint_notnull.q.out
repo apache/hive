@@ -50,7 +50,6 @@ PREHOOK: Input: default@testt
 PREHOOK: Output: default@merge_tmp_table
 PREHOOK: Output: default@testt
 PREHOOK: Output: default@testt
-PREHOOK: Output: default@testt
 Status: Failed
 Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
 #### A masked pattern was here ####

@@ -17,9 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
-import org.apache.hadoop.hive.ql.parse.repl.ReplState;
-import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 
 public class IncrementalDumpBegin extends ReplState {
   @JsonProperty
@@ -32,6 +35,7 @@ public class IncrementalDumpBegin extends ReplState {
   private Long estimatedNumEvents;
 
   @JsonProperty
+  @JsonSerialize(using = ReplUtils.TimeSerializer.class)
   private Long dumpStartTime;
 
   @JsonProperty

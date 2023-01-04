@@ -141,7 +141,7 @@ public class ReduceSinkDeDuplication extends Transform {
     }
   }
 
-  public abstract static class AbsctractReducerReducerProc implements SemanticNodeProcessor {
+  public abstract static class AbstractReducerReducerProc implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -175,7 +175,7 @@ public class ReduceSinkDeDuplication extends Transform {
         ReduceSinkDeduplicateProcCtx dedupCtx) throws SemanticException;
   }
 
-  static class GroupbyReducerProc extends AbsctractReducerReducerProc {
+  static class GroupbyReducerProc extends AbstractReducerReducerProc {
 
     // given a group by operator this determines if that group by belongs to semi-join branch
     // note that this works only for second last group by in semi-join branch (X-GB-RS-GB-RS)
@@ -245,7 +245,7 @@ public class ReduceSinkDeDuplication extends Transform {
     }
   }
 
-  static class JoinReducerProc extends AbsctractReducerReducerProc {
+  static class JoinReducerProc extends AbstractReducerReducerProc {
 
     // pRS-pJOIN-cRS
     @Override
@@ -293,7 +293,7 @@ public class ReduceSinkDeDuplication extends Transform {
     }
   }
 
-  static class ReducerReducerProc extends AbsctractReducerReducerProc {
+  static class ReducerReducerProc extends AbstractReducerReducerProc {
 
     // pRS-cRS
     @Override

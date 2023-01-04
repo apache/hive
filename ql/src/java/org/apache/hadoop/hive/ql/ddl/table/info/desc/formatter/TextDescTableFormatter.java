@@ -22,12 +22,15 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.ddl.table.info.desc.DescTableDesc;
@@ -45,7 +48,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -81,10 +84,11 @@ class TextDescTableFormatter extends DescTableFormatter {
       Partition partition, List<FieldSchema> columns, boolean isFormatted, boolean isExtended, boolean isOutputPadded,
       List<ColumnStatisticsObj> columnStats) throws HiveException {
     try {
-      addStatsData(out, columnPath, columns, isFormatted, columnStats, isOutputPadded);
+      addStatsData(out, conf, columnPath, columns, isFormatted, columnStats, isOutputPadded);
       addPartitionData(out, conf, columnPath, table, isFormatted, isOutputPadded);
 
-      if (columnPath == null) {
+      boolean isIcebergMetaTable = table.getMetaTable() != null;
+      if (columnPath == null && !isIcebergMetaTable) {
         addPartitionTransformData(out, table, isOutputPadded);
         if (isFormatted) {
           addFormattedTableData(out, table, partition, isOutputPadded);
@@ -107,12 +111,12 @@ class TextDescTableFormatter extends DescTableFormatter {
     if (table.isNonNative() && table.getStorageHandler() != null &&
         table.getStorageHandler().supportsPartitionTransform()) {
 
-      List<PartitionTransformSpec> partSpecs = table.getStorageHandler().getPartitionTransformSpec(table);
+      List<TransformSpec> partSpecs = table.getStorageHandler().getPartitionTransformSpec(table);
       if (partSpecs != null && !partSpecs.isEmpty()) {
         TextMetaDataTable metaDataTable = new TextMetaDataTable();
         partitionTransformOutput += LINE_DELIM + "# Partition Transform Information" + LINE_DELIM + "# ";
         metaDataTable.addRow(DescTableDesc.PARTITION_TRANSFORM_SPEC_SCHEMA.split("#")[0].split(","));
-        for (PartitionTransformSpec spec : partSpecs) {
+        for (TransformSpec spec : partSpecs) {
           String[] row = new String[2];
           row[0] = spec.getColumnName();
           if (spec.getTransformType() != null) {
@@ -128,21 +132,22 @@ class TextDescTableFormatter extends DescTableFormatter {
     out.write(partitionTransformOutput.getBytes(StandardCharsets.UTF_8));
   }
 
-  private void addStatsData(DataOutputStream out, String columnPath, List<FieldSchema> columns, boolean isFormatted,
-      List<ColumnStatisticsObj> columnStats, boolean isOutputPadded) throws IOException {
+  private void addStatsData(DataOutputStream out, HiveConf conf, String columnPath, List<FieldSchema> columns,
+      boolean isFormatted, List<ColumnStatisticsObj> columnStats, boolean isOutputPadded) throws IOException {
     String statsData = "";
     
     TextMetaDataTable metaDataTable = new TextMetaDataTable();
     boolean needColStats = isFormatted && columnPath != null;
+    boolean histogramEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
     if (needColStats) {
-      metaDataTable.addRow(DescTableDesc.COLUMN_STATISTICS_HEADERS.toArray(new String[0]));
+      metaDataTable.addRow(DescTableDesc.getColumnStatisticsHeaders(histogramEnabled).toArray(new String[0]));
     } else if (isFormatted && !SessionState.get().isHiveServerQuery()) {
       statsData += "# ";
       metaDataTable.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
     }
     for (FieldSchema column : columns) {
       metaDataTable.addRow(ShowUtils.extractColumnValues(column, needColStats,
-          getColumnStatisticsObject(column.getName(), column.getType(), columnStats)));
+          getColumnStatisticsObject(column.getName(), column.getType(), columnStats), histogramEnabled));
     }
     if (needColStats) {
       metaDataTable.transpose();
@@ -172,10 +177,12 @@ class TextDescTableFormatter extends DescTableFormatter {
       if (CollectionUtils.isNotEmpty(partitionColumns) &&
           conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY)) {
         TextMetaDataTable metaDataTable = new TextMetaDataTable();
+        boolean histogramEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
         partitionData += LINE_DELIM + "# Partition Information" + LINE_DELIM + "# ";
         metaDataTable.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
         for (FieldSchema partitionColumn : partitionColumns) {
-          metaDataTable.addRow(ShowUtils.extractColumnValues(partitionColumn, false, null));
+          metaDataTable.addRow(ShowUtils.extractColumnValues(
+              partitionColumn, false, null, histogramEnabled));
         }
         partitionData += metaDataTable.renderTable(isOutputPadded);
       }
@@ -196,7 +203,7 @@ class TextDescTableFormatter extends DescTableFormatter {
       throws IOException, UnsupportedEncodingException {
     String formattedTableInfo = null;
     if (partition != null) {
-      formattedTableInfo = getPartitionInformation(partition);
+      formattedTableInfo = getPartitionInformation(table, partition);
     } else {
       formattedTableInfo = getTableInformation(table, isOutputPadded);
     }
@@ -213,48 +220,76 @@ class TextDescTableFormatter extends DescTableFormatter {
     getTableMetaDataInformation(tableInfo, table, isOutputPadded);
 
     tableInfo.append(LINE_DELIM).append("# Storage Information").append(LINE_DELIM);
-    getStorageDescriptorInfo(tableInfo, table.getTTable().getSd());
+    getStorageDescriptorInfo(tableInfo, table, table.getTTable().getSd());
 
     if (table.isView() || table.isMaterializedView()) {
       String viewInfoTitle = "# " + (table.isView() ? "" : "Materialized ") + "View Information";
       tableInfo.append(LINE_DELIM).append(viewInfoTitle).append(LINE_DELIM);
-      getViewInfo(tableInfo, table);
+      getViewInfo(tableInfo, table, isOutputPadded);
     }
 
     return tableInfo.toString();
   }
 
-  private String getPartitionInformation(Partition partition) {
+  private String getPartitionInformation(Table table, Partition partition) {
     StringBuilder tableInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
     tableInfo.append(LINE_DELIM).append("# Detailed Partition Information").append(LINE_DELIM);
     getPartitionMetaDataInformation(tableInfo, partition);
 
     if (partition.getTable().getTableType() != TableType.VIRTUAL_VIEW) {
       tableInfo.append(LINE_DELIM).append("# Storage Information").append(LINE_DELIM);
-      getStorageDescriptorInfo(tableInfo, partition.getTPartition().getSd());
+      getStorageDescriptorInfo(tableInfo, table, partition.getTPartition().getSd());
     }
 
     return tableInfo.toString();
   }
 
-  private void getViewInfo(StringBuilder tableInfo, Table table) {
+  private void getViewInfo(StringBuilder tableInfo, Table table, boolean isOutputPadded) {
     formatOutput("Original Query:", table.getViewOriginalText(), tableInfo);
     formatOutput("Expanded Query:", table.getViewExpandedText(), tableInfo);
     if (table.isMaterializedView()) {
       formatOutput("Rewrite Enabled:", table.isRewriteEnabled() ? "Yes" : "No", tableInfo);
       formatOutput("Outdated for Rewriting:", table.isOutdatedForRewriting() == null ? "Unknown"
           : table.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
+      tableInfo.append(LINE_DELIM).append("# Materialized View Source table information").append(LINE_DELIM);
+      TextMetaDataTable metaDataTable = new TextMetaDataTable();
+      metaDataTable.addRow("Table name", "I/U/D since last rebuild");
+      List<SourceTable> sourceTableList = new ArrayList<>(table.getMVMetadata().getSourceTables());
+
+      sourceTableList.sort(Comparator.<SourceTable, String>comparing(sourceTable -> sourceTable.getTable().getDbName())
+              .thenComparing(sourceTable -> sourceTable.getTable().getTableName()));
+      for (SourceTable sourceTable : sourceTableList) {
+        String qualifiedTableName = TableName.getQualified(
+                sourceTable.getTable().getCatName(),
+                sourceTable.getTable().getDbName(),
+                sourceTable.getTable().getTableName());
+        metaDataTable.addRow(qualifiedTableName,
+                String.format("%d/%d/%d",
+                        sourceTable.getInsertedCount(), sourceTable.getUpdatedCount(), sourceTable.getDeletedCount()));
+      }
+      tableInfo.append(metaDataTable.renderTable(isOutputPadded));
     }
   }
 
-  private void getStorageDescriptorInfo(StringBuilder tableInfo, StorageDescriptor storageDesc) {
+  private void getStorageDescriptorInfo(StringBuilder tableInfo, Table table, StorageDescriptor storageDesc) {
     formatOutput("SerDe Library:", storageDesc.getSerdeInfo().getSerializationLib(), tableInfo);
     formatOutput("InputFormat:", storageDesc.getInputFormat(), tableInfo);
     formatOutput("OutputFormat:", storageDesc.getOutputFormat(), tableInfo);
     formatOutput("Compressed:", storageDesc.isCompressed() ? "Yes" : "No", tableInfo);
-    formatOutput("Num Buckets:", String.valueOf(storageDesc.getNumBuckets()), tableInfo);
-    formatOutput("Bucket Columns:", storageDesc.getBucketCols().toString(), tableInfo);
-    formatOutput("Sort Columns:", storageDesc.getSortCols().toString(), tableInfo);
+    if (!table.isNonNative() || table.getStorageHandler() == null ||
+        !table.getStorageHandler().supportsPartitionTransform()) {
+      // The Iceberg partition transform already contains the bucketing information, and these are not relevant there
+      formatOutput("Num Buckets:", String.valueOf(storageDesc.getNumBuckets()), tableInfo);
+      formatOutput("Bucket Columns:", storageDesc.getBucketCols().toString(), tableInfo);
+    }
+
+    String sortColumnsInfo;
+    if (table.isNonNative() && table.getStorageHandler() != null && table.getStorageHandler().supportsSortColumns()) {
+      sortColumnsInfo = table.getStorageHandler().sortColumns(table).toString();
+    } else {
+      sortColumnsInfo = storageDesc.getSortCols().toString();
+    }
+    formatOutput("Sort Columns:", sortColumnsInfo, tableInfo);
 
     if (storageDesc.isStoredAsSubDirectories()) {
       formatOutput("Stored As SubDirectories:", "Yes", tableInfo);
@@ -388,27 +423,27 @@ class TextDescTableFormatter extends DescTableFormatter {
     StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
     constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
-    if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(table.getPrimaryKeyInfo())) {
+    if (PrimaryKeyInfo.isNotEmpty(table.getPrimaryKeyInfo())) {
       constraintsInfo.append(LINE_DELIM).append("# Primary Key").append(LINE_DELIM);
       getPrimaryKeyInformation(constraintsInfo, table.getPrimaryKeyInfo());
     }
-    if (ForeignKeyInfo.isForeignKeyInfoNotEmpty(table.getForeignKeyInfo())) {
+    if (ForeignKeyInfo.isNotEmpty(table.getForeignKeyInfo())) {
       constraintsInfo.append(LINE_DELIM).append("# Foreign Keys").append(LINE_DELIM);
       getForeignKeysInformation(constraintsInfo, table.getForeignKeyInfo());
     }
-    if (UniqueConstraint.isUniqueConstraintNotEmpty(table.getUniqueKeyInfo())) {
+    if (UniqueConstraint.isNotEmpty(table.getUniqueKeyInfo())) {
       constraintsInfo.append(LINE_DELIM).append("# Unique Constraints").append(LINE_DELIM);
       getUniqueConstraintsInformation(constraintsInfo, table.getUniqueKeyInfo());
     }
-    if (NotNullConstraint.isNotNullConstraintNotEmpty(table.getNotNullConstraint())) {
+    if (NotNullConstraint.isNotEmpty(table.getNotNullConstraint())) {
       constraintsInfo.append(LINE_DELIM).append("# Not Null Constraints").append(LINE_DELIM);
       getNotNullConstraintsInformation(constraintsInfo, table.getNotNullConstraint());
     }
-    if (DefaultConstraint.isCheckConstraintNotEmpty(table.getDefaultConstraint())) {
+    if (DefaultConstraint.isNotEmpty(table.getDefaultConstraint())) {
       constraintsInfo.append(LINE_DELIM).append("# Default Constraints").append(LINE_DELIM);
       getDefaultConstraintsInformation(constraintsInfo, table.getDefaultConstraint());
     }
-    if (CheckConstraint.isCheckConstraintNotEmpty(table.getCheckConstraint())) {
+    if (CheckConstraint.isNotEmpty(table.getCheckConstraint())) {
       constraintsInfo.append(LINE_DELIM).append("# Check Constraints").append(LINE_DELIM);
       getCheckConstraintsInformation(constraintsInfo, table.getCheckConstraint());
     }
@@ -528,8 +563,8 @@ class TextDescTableFormatter extends DescTableFormatter {
     if (CollectionUtils.isNotEmpty(columns)) {
       for (CheckConstraintCol column : columns) {
         String[] fields = new String[2];
-        fields[0] = "Column Name:" + column.colName;
-        fields[1] = "Check Value:" + column.checkExpression;
+        fields[0] = "Column Name:" + column.getColName();
+        fields[1] = "Check Value:" + column.getCheckExpression();
         formatOutput(fields, constraintsInfo);
       }
     }
@@ -558,27 +593,27 @@ class TextDescTableFormatter extends DescTableFormatter {
     if (table.getTableConstraintsInfo().isTableConstraintsInfoNotEmpty()) {
       out.write(("Constraints").getBytes(StandardCharsets.UTF_8));
       out.write(Utilities.tabCode);
-      if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(table.getPrimaryKeyInfo())) {
+      if (PrimaryKeyInfo.isNotEmpty(table.getPrimaryKeyInfo())) {
         out.write(table.getPrimaryKeyInfo().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }
-      if (ForeignKeyInfo.isForeignKeyInfoNotEmpty(table.getForeignKeyInfo())) {
+      if (ForeignKeyInfo.isNotEmpty(table.getForeignKeyInfo())) {
         out.write(table.getForeignKeyInfo().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }
-      if (UniqueConstraint.isUniqueConstraintNotEmpty(table.getUniqueKeyInfo())) {
+      if (UniqueConstraint.isNotEmpty(table.getUniqueKeyInfo())) {
         out.write(table.getUniqueKeyInfo().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }
-      if (NotNullConstraint.isNotNullConstraintNotEmpty(table.getNotNullConstraint())) {
+      if (NotNullConstraint.isNotEmpty(table.getNotNullConstraint())) {
         out.write(table.getNotNullConstraint().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }
-      if (DefaultConstraint.isCheckConstraintNotEmpty(table.getDefaultConstraint())) {
+      if (DefaultConstraint.isNotEmpty(table.getDefaultConstraint())) {
         out.write(table.getDefaultConstraint().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }
-      if (CheckConstraint.isCheckConstraintNotEmpty(table.getCheckConstraint())) {
+      if (CheckConstraint.isNotEmpty(table.getCheckConstraint())) {
         out.write(table.getCheckConstraint().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }

@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.common.StatsSetupConst.COLUMN_STATS_ACCURATE;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * This class contains the optimizations for MetaStore that rely on direct SQL access to
@@ -148,7 +149,7 @@ class DirectSqlUpdateStat {
   private void populateInsertUpdateMap(Map<PartitionInfo, ColumnStatistics> statsPartInfoMap,
                                        Map<PartColNameInfo, MPartitionColumnStatistics> updateMap,
                                        Map<PartColNameInfo, MPartitionColumnStatistics>insertMap,
-                                       Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
+                                       Connection dbConn, Table tbl) throws SQLException, MetaException, NoSuchObjectException {
     StringBuilder prefix = new StringBuilder();
     StringBuilder suffix = new StringBuilder();
     Statement statement = null;
@@ -182,6 +183,9 @@ class DirectSqlUpdateStat {
       ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
       long partId = partitionInfo.partitionId;
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+      if (!statsDesc.isSetCatName()) {
+        statsDesc.setCatName(tbl.getCatName());
+      }
       for (ColumnStatisticsObj statisticsObj : colStats.getStatsObj()) {
         PartColNameInfo temp = new PartColNameInfo(partId, statisticsObj.getColName());
         if (selectedParts.contains(temp)) {
@@ -229,8 +233,8 @@ class DirectSqlUpdateStat {
             + "\"TABLE_NAME\", \"PARTITION_NAME\", \"COLUMN_NAME\", \"COLUMN_TYPE\", \"PART_ID\","
             + " \"LONG_LOW_VALUE\", \"LONG_HIGH_VALUE\", \"DOUBLE_HIGH_VALUE\", \"DOUBLE_LOW_VALUE\","
             + " \"BIG_DECIMAL_LOW_VALUE\", \"BIG_DECIMAL_HIGH_VALUE\", \"NUM_NULLS\", \"NUM_DISTINCTS\", \"BIT_VECTOR\" ,"
-            + " \"AVG_COL_LEN\", \"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\", \"ENGINE\") values "
-            + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + " \"HISTOGRAM\", \"AVG_COL_LEN\", \"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\", \"ENGINE\") values "
+            + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     try {
       preparedStatement = dbConn.prepareStatement(insert);
@@ -256,12 +260,13 @@ class DirectSqlUpdateStat {
         preparedStatement.setObject(15, mPartitionColumnStatistics.getNumNulls());
         preparedStatement.setObject(16, mPartitionColumnStatistics.getNumDVs());
         preparedStatement.setObject(17, mPartitionColumnStatistics.getBitVector());
-        preparedStatement.setObject(18, mPartitionColumnStatistics.getAvgColLen());
-        preparedStatement.setObject(19, mPartitionColumnStatistics.getMaxColLen());
-        preparedStatement.setObject(20, mPartitionColumnStatistics.getNumTrues());
-        preparedStatement.setObject(21, mPartitionColumnStatistics.getNumFalses());
-        preparedStatement.setLong(22, mPartitionColumnStatistics.getLastAnalyzed());
-        preparedStatement.setString(23, mPartitionColumnStatistics.getEngine());
+        preparedStatement.setObject(18, mPartitionColumnStatistics.getHistogram());
+        preparedStatement.setObject(19, mPartitionColumnStatistics.getAvgColLen());
+        preparedStatement.setObject(20, mPartitionColumnStatistics.getMaxColLen());
+        preparedStatement.setObject(21, mPartitionColumnStatistics.getNumTrues());
+        preparedStatement.setObject(22, mPartitionColumnStatistics.getNumFalses());
+        preparedStatement.setLong(23, mPartitionColumnStatistics.getLastAnalyzed());
+        preparedStatement.setString(24, mPartitionColumnStatistics.getEngine());
 
         maxCsId++;
         numRows++;
@@ -565,6 +570,14 @@ class DirectSqlUpdateStat {
     return partitionInfoMap;
   }
 
+  private void setAnsiQuotes(Connection dbConn) throws SQLException {
+    if (sqlGenerator.getDbProduct().isMYSQL()) {
+      try (Statement stmt = dbConn.createStatement()) {
+        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      }
+    }
+  }
+
   /**
    * Update the statistics for the given partitions. Add the notification logs also.
    * @return map of partition key to column stats if successful, null otherwise.
@@ -582,6 +595,8 @@ class DirectSqlUpdateStat {
       jdoConn = pm.getDataStoreConnection();
       dbConn = (Connection) (jdoConn.getNativeConnection());
 
+      setAnsiQuotes(dbConn);
+
       Map<PartitionInfo, ColumnStatistics> partitionInfoMap = getPartitionInfo(dbConn, tbl.getId(), partColStatsMap);
 
       Map<String, Map<String, String>> result =
@@ -589,7 +604,7 @@ class DirectSqlUpdateStat {
 
       Map<PartColNameInfo, MPartitionColumnStatistics> insertMap = new HashMap<>();
       Map<PartColNameInfo, MPartitionColumnStatistics> updateMap = new HashMap<>();
-      populateInsertUpdateMap(partitionInfoMap, updateMap, insertMap, dbConn);
+      populateInsertUpdateMap(partitionInfoMap, updateMap, insertMap, dbConn, tbl);
 
       LOG.info("Number of stats to insert  " + insertMap.size() + " update " + updateMap.size());
 
@@ -647,14 +662,16 @@ class DirectSqlUpdateStat {
       jdoConn = pm.getDataStoreConnection();
       dbConn = (Connection) (jdoConn.getNativeConnection());
 
+      setAnsiQuotes(dbConn);
+
       // This loop will be iterated at max twice. If there is no records, it will first insert and then do a select.
       // We are not using any upsert operations as select for update and then update is required to make sure that
       // the caller gets a reserved range for CSId not used by any other thread.
       boolean insertDone = false;
       while (maxCsId == 0) {
-        String query = "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\"= "
-                + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics")
-                + " FOR UPDATE";
+        String query = sqlGenerator.addForUpdateClause("SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" "
+                + "WHERE \"SEQUENCE_NAME\"= "
+                + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics"));
         LOG.debug("Going to execute query " + query);
         statement = dbConn.createStatement();
         rs = statement.executeQuery(query);

@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.hive;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Pair;
@@ -71,9 +72,9 @@ public final class HiveSchemaUtil {
    * @return An equivalent Iceberg Schema
    */
   public static Schema convert(List<FieldSchema> fieldSchemas, boolean autoConvert) {
-    List<String> names = new ArrayList<>(fieldSchemas.size());
-    List<TypeInfo> typeInfos = new ArrayList<>(fieldSchemas.size());
-    List<String> comments = new ArrayList<>(fieldSchemas.size());
+    List<String> names = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
+    List<TypeInfo> typeInfos = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
+    List<String> comments = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
 
     for (FieldSchema col : fieldSchemas) {
       names.add(col.getName());
@@ -178,35 +179,68 @@ public final class HiveSchemaUtil {
   }
 
   /**
-   * Compares a list of columns to another list, by name, to find an out of order column.
-   * It iterates through updated one by one, and compares the name of the column to the name of the column in the old
-   * list, in the same position. It returns the first mismatch it finds in updated, if any.
+   * Compares two lists of columns to each other to find the (singular) column that was moved. This works ideally for
+   * identifying the column that was moved by an ALTER TABLE ... CHANGE COLUMN command.
    *
-   * @param updated The list of the columns after some updates have taken place
+   * Note: This method is only suitable for finding a single reordered column.
+   * Consequently, this method is NOT suitable for handling scenarios where multiple column reorders are possible at the
+   * same time, such as ALTER TABLE ... REPLACE COLUMNS commands.
+   *
+   * @param updated The list of the columns after some updates have taken place (if any)
    * @param old The list of the original columns
    * @param renameMapping A map of name aliases for the updated columns (e.g. if a column rename occurred)
-   * @return A pair consisting of the first out of order column name, and its preceding column name (if any).
+   * @return A pair consisting of the reordered column's name, and its preceding column's name (if any).
    *         Returns a null in case there are no out of order columns.
    */
-  public static Pair<String, Optional<String>> getFirstOutOfOrderColumn(List<FieldSchema> updated,
+  public static Pair<String, Optional<String>> getReorderedColumn(List<FieldSchema> updated,
                                                                         List<FieldSchema> old,
                                                                         Map<String, String> renameMapping) {
-    for (int i = 0; i < updated.size() && i < old.size(); ++i) {
+    // first collect the updated index for each column
+    Map<String, Integer> nameToNewIndex = Maps.newHashMap();
+    for (int i = 0; i < updated.size(); ++i) {
       String updatedCol = renameMapping.getOrDefault(updated.get(i).getName(), updated.get(i).getName());
-      String oldCol = old.get(i).getName();
-      if (!oldCol.equals(updatedCol)) {
-        Optional<String> previousCol = i > 0 ? Optional.of(updated.get(i - 1).getName()) : Optional.empty();
-        return Pair.of(updatedCol, previousCol);
+      nameToNewIndex.put(updatedCol, i);
+    }
+
+    // find the column which has the highest index difference between its position in the old vs the updated list
+    String reorderedColName = null;
+    int maxIndexDiff = 0;
+    for (int oldIndex = 0; oldIndex < old.size(); ++oldIndex) {
+      String oldName = old.get(oldIndex).getName();
+      Integer newIndex = nameToNewIndex.get(oldName);
+      if (newIndex != null) {
+        int indexDiff = Math.abs(newIndex - oldIndex);
+        if (maxIndexDiff < indexDiff) {
+          maxIndexDiff = indexDiff;
+          reorderedColName = oldName;
+        }
       }
     }
-    return null;
+
+    if (maxIndexDiff == 0) {
+      // if there are no changes in index, there were no reorders
+      return null;
+    } else {
+      int newIndex = nameToNewIndex.get(reorderedColName);
+      if (newIndex > 0) {
+        // if the newIndex > 0, that means the column was moved after another column:
+        // ALTER TABLE tbl CHANGE COLUMN reorderedColName reorderedColName type AFTER previousColName;
+        String previousColName = renameMapping.getOrDefault(
+            updated.get(newIndex - 1).getName(), updated.get(newIndex - 1).getName());
+        return Pair.of(reorderedColName, Optional.of(previousColName));
+      } else {
+        // if the newIndex is 0, that means the column was moved to the first position:
+        // ALTER TABLE tbl CHANGE COLUMN reorderedColName reorderedColName type FIRST;
+        return Pair.of(reorderedColName, Optional.empty());
+      }
+    }
   }
 
   public static class SchemaDifference {
-    private final List<FieldSchema> missingFromFirst = new ArrayList<>();
-    private final List<FieldSchema> missingFromSecond = new ArrayList<>();
-    private final List<FieldSchema> typeChanged = new ArrayList<>();
-    private final List<FieldSchema> commentChanged = new ArrayList<>();
+    private final List<FieldSchema> missingFromFirst = Lists.newArrayList();
+    private final List<FieldSchema> missingFromSecond = Lists.newArrayList();
+    private final List<FieldSchema> typeChanged = Lists.newArrayList();
+    private final List<FieldSchema> commentChanged = Lists.newArrayList();
 
     public List<FieldSchema> getMissingFromFirst() {
       return missingFromFirst;
@@ -262,6 +296,8 @@ public final class HiveSchemaUtil {
       case DATE:
         return "date";
       case TIME:
+      case STRING:
+      case UUID:
         return "string";
       case TIMESTAMP:
         Types.TimestampType timestampType = (Types.TimestampType) type;
@@ -269,11 +305,7 @@ public final class HiveSchemaUtil {
           return "timestamp with local time zone";
         }
         return "timestamp";
-      case STRING:
-      case UUID:
-        return "string";
       case FIXED:
-        return "binary";
       case BINARY:
         return "binary";
       case DECIMAL:

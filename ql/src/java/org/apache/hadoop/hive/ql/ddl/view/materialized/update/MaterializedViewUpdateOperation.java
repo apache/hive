@@ -18,17 +18,15 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.materialized.update;
 
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
+import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 
-import com.google.common.collect.ImmutableSet;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.getSnapshotOf;
 
 /**
  * Operation process of updating a materialized view.
@@ -55,13 +53,11 @@ public class MaterializedViewUpdateOperation extends DDLOperation<MaterializedVi
       } else if (desc.isUpdateCreationMetadata()) {
         // We need to update the status of the creation signature
         Table mvTable = context.getDb().getTable(desc.getName());
-        CreationMetadata cm = new CreationMetadata(MetaStoreUtils.getDefaultCatalog(context.getConf()),
-            mvTable.getDbName(), mvTable.getTableName(),
-            ImmutableSet.copyOf(mvTable.getCreationMetadata().getTablesUsed()));
-        cm.setValidTxnList(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-        context.getDb().updateCreationMetadata(mvTable.getDbName(), mvTable.getTableName(), cm);
-        mvTable.setCreationMetadata(cm);
-        HiveMaterializedViewsRegistry.get().createMaterializedView(context.getDb().getConf(), mvTable);
+        MaterializedViewMetadata newMetadata = mvTable.getMVMetadata().reset(
+                getSnapshotOf(context, mvTable.getMVMetadata().getSourceTableNames()));
+        context.getDb().updateCreationMetadata(mvTable.getDbName(), mvTable.getTableName(), newMetadata);
+        mvTable.setMaterializedViewMetadata(newMetadata);
+        HiveMaterializedViewsRegistry.get().refreshMaterializedView(context.getDb().getConf(), mvTable);
       }
     } catch (HiveException e) {
       LOG.debug("Exception during materialized view cache update", e);

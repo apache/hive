@@ -1,0 +1,116 @@
+PREHOOK: query: create table source(p int, key int,value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source
+POSTHOOK: query: create table source(p int, key int,value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source
+PREHOOK: query: insert into source(p, key, value) values (101,42,'string42')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@source
+POSTHOOK: query: insert into source(p, key, value) values (101,42,'string42')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@source
+POSTHOOK: Lineage: source.key SCRIPT []
+POSTHOOK: Lineage: source.p SCRIPT []
+POSTHOOK: Lineage: source.value SCRIPT []
+PREHOOK: query: create table stats_part(key int,value string) partitioned by (p int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: create table stats_part(key int,value string) partitioned by (p int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_part
+PREHOOK: query: from source
+insert into stats_part select key, value, p
+insert into stats_part select key, value, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: from source
+insert into stats_part select key, value, p
+insert into stats_part select key, value, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source
+POSTHOOK: Output: default@stats_part
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Lineage: stats_part PARTITION(p=101).key SIMPLE [(source)source.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_part PARTITION(p=101).key SIMPLE [(source)source.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_part PARTITION(p=101).value SIMPLE [(source)source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: stats_part PARTITION(p=101).value SIMPLE [(source)source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select p, key, value from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+#### A masked pattern was here ####
+POSTHOOK: query: select p, key, value from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+#### A masked pattern was here ####
+101	42	string42
+101	42	string42
+PREHOOK: query: desc formatted stats_part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	2                   
+	numPartitions       	1                   
+	numRows             	2                   
+	rawDataSize         	22                  
+	totalSize           	24                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select count(*) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+2
+PREHOOK: query: select count(*) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+#### A masked pattern was here ####
+2

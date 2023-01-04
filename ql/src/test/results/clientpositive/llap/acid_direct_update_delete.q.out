@@ -60,10 +60,14 @@ PREHOOK: query: UPDATE test_update_bucketed SET value='New value' WHERE id IN ('
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_bucketed
 PREHOOK: Output: default@test_update_bucketed
+PREHOOK: Output: default@test_update_bucketed
 POSTHOOK: query: UPDATE test_update_bucketed SET value='New value' WHERE id IN ('6','11', '18', '20')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: default@test_update_bucketed
+POSTHOOK: Output: default@test_update_bucketed
+POSTHOOK: Lineage: test_update_bucketed.id SIMPLE [(test_update_bucketed)test_update_bucketed.FieldSchema(name:id, type:string, comment:null), ]
+POSTHOOK: Lineage: test_update_bucketed.value SIMPLE []
 PREHOOK: query: SELECT * FROM test_update_bucketed
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_bucketed
@@ -100,10 +104,14 @@ PREHOOK: query: UPDATE test_update_bucketed SET value='New value2' WHERE id IN (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_bucketed
 PREHOOK: Output: default@test_update_bucketed
+PREHOOK: Output: default@test_update_bucketed
 POSTHOOK: query: UPDATE test_update_bucketed SET value='New value2' WHERE id IN ('2','18', '19')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: default@test_update_bucketed
+POSTHOOK: Output: default@test_update_bucketed
+POSTHOOK: Lineage: test_update_bucketed.id SIMPLE [(test_update_bucketed)test_update_bucketed.FieldSchema(name:id, type:string, comment:null), ]
+POSTHOOK: Lineage: test_update_bucketed.value SIMPLE []
 PREHOOK: query: SELECT * FROM test_update_bucketed
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_bucketed

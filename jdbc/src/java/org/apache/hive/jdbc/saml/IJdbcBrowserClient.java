@@ -36,6 +36,12 @@ import org.apache.hive.service.auth.saml.HiveSamlUtils;
 public interface IJdbcBrowserClient extends Closeable {
 
   /**
+   * Start a webserver and bind to a port number as configued.
+   * @throws HiveJdbcBrowserException
+   */
+  void startListening() throws HiveJdbcBrowserException;
+
+  /**
    * Execute the browser actions to complete the SSO workflow. This method assumes
    * that the {@link #init(JdbcBrowserClientContext)} method has been called already
    * to initialize the state needed for doing the browser based flow.
@@ -47,7 +53,7 @@ public interface IJdbcBrowserClient extends Closeable {
   /**
    * Initializes the browser client context. The client context contains a client
    * identifier which must be used to set the http header with key
-   * {@link HiveSamlUtils.SSO_CLIENT_IDENTIFIER}.
+   * {@link HiveSamlUtils#SSO_CLIENT_IDENTIFIER}.
    */
   void init(JdbcBrowserClientContext context);
 
@@ -111,30 +117,10 @@ public interface IJdbcBrowserClient extends Closeable {
     private final boolean status;
     private final String token;
 
-    public HiveJdbcBrowserServerResponse(String postResponse) {
-      Map<String, String> params = parseUrlEncodedFormData(postResponse);
-      status = Boolean.parseBoolean(params.get(HiveSamlUtils.STATUS_KEY));
-      msg = params.getOrDefault(HiveSamlUtils.MESSAGE_KEY, "");
-      token = params.get(HiveSamlUtils.TOKEN_KEY);
-    }
-
-
-    private Map<String, String> parseUrlEncodedFormData(String line) {
-      String decoded;
-      try {
-        decoded = URLDecoder.decode(line, StandardCharsets.UTF_8.toString());
-      } catch (UnsupportedEncodingException e) {
-        throw new RuntimeException(e);
-      }
-      Map<String, String> ret = new HashMap<>();
-      for (String params : decoded.split("&")) {
-        if (params.contains("=")) {
-          String key = params.substring(0, params.indexOf("="));
-          String val = params.substring(params.indexOf("=") + 1);
-          ret.put(key, val);
-        }
-      }
-      return ret;
+    public HiveJdbcBrowserServerResponse(boolean status, String msg, String token) {
+      this.status = status;
+      this.msg = msg;
+      this.token = token;
     }
 
     public String getMsg() {
@@ -147,6 +133,14 @@ public interface IJdbcBrowserClient extends Closeable {
 
     public String getToken() {
       return token;
+    }
+
+    /**
+     * A response is valid if the status is true with a non-empty token or
+     * if status is false
+     */
+    public boolean isValid() {
+      return !status || (token != null && !token.isEmpty());
     }
   }
 }

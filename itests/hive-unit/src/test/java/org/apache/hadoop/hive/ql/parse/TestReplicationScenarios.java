@@ -25,13 +25,17 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
@@ -81,7 +85,6 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
@@ -132,11 +135,10 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
@@ -197,7 +199,8 @@ public class TestReplicationScenarios {
       hconf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);
       return;
     }
-
+    // Disable auth so the call should succeed
+    MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     hconf.set(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getHiveName(),
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
     hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
@@ -205,6 +208,7 @@ public class TestReplicationScenarios {
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
     proxySettingName = "hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts";
     hconf.set(proxySettingName, "*");
+    MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
     hconf.set(MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES.getHiveName(), "3");
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -245,13 +249,16 @@ public class TestReplicationScenarios {
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
     MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
+    MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+    hconfMirrorServer.set(proxySettingName, "*");
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
     MetastoreConf.setVar(hconfMirror, MetastoreConf.ConfVars.THRIFT_URIS, thriftUri);
-
     driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
     PersistenceManagerProvider.setTwoMetastoreTesting(true);
+    MetastoreConf.setTimeVar(hconf, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, 0, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconfMirror, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, 0, TimeUnit.SECONDS);
   }
 
   @AfterClass
@@ -259,16 +266,19 @@ public class TestReplicationScenarios {
     // FIXME : should clean up TEST_PATH, but not doing it now, for debugging's sake
     //Clean up the warehouse after test run as we are restoring the warehouse path for other metastore creation
     Path warehousePath = new Path(MetastoreConf.getVar(hconf, MetastoreConf.ConfVars.WAREHOUSE));
-    try {
-      warehousePath.getFileSystem(hconf).delete(warehousePath, true);
-    } catch (IOException e) {
-
-    }
     Path warehousePathReplica = new Path(MetastoreConf.getVar(hconfMirror, MetastoreConf.ConfVars.WAREHOUSE));
     try {
+      warehousePath.getFileSystem(hconf).delete(warehousePath, true);
       warehousePathReplica.getFileSystem(hconfMirror).delete(warehousePathReplica, true);
     } catch (IOException e) {
 
+    }
+    Hive.closeCurrent();
+    if (metaStoreClient != null) {
+      metaStoreClient.close();
+    }
+    if (metaStoreClientMirror != null) {
+      metaStoreClientMirror.close();
     }
   }
 
@@ -2437,7 +2447,7 @@ public class TestReplicationScenarios {
 
     // For next run, CM is enabled, set REPL_EVENT_DB_LISTENER_TTL to low value for events to get deleted
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds * 60 * 60, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds , TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds , TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
@@ -2465,7 +2475,7 @@ public class TestReplicationScenarios {
     // First check with high ttl
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, false);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds  * 60 * 60, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("CREATE TABLE " + dbName
@@ -2491,7 +2501,7 @@ public class TestReplicationScenarios {
     //With CM disabled, set a low ttl for events to get deleted
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, false);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds   * 60 * 60, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds   * 60 * 60, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=2) SELECT a FROM " + dbName
@@ -2514,10 +2524,70 @@ public class TestReplicationScenarios {
     //restore original values
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, true);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, 86400, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, 864000, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, 864000, TimeUnit.SECONDS);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, 7200, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
     verifySetupSteps = verifySetupOriginal;
+  }
+
+  @Test
+  public void testCleanerThreadStartupWait() throws Exception {
+    int eventsTtl = 20;
+    HiveConf newConf = new HiveConf(hconf);
+
+    // Set TTL short enough for testing.
+    MetastoreConf.setTimeVar(newConf, REPL_EVENT_DB_LISTENER_TTL, eventsTtl, TimeUnit.SECONDS);
+
+    // Set startup wait interval.
+    MetastoreConf.setTimeVar(newConf, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, eventsTtl * 5, TimeUnit.SECONDS);
+
+    // Set cleaner wait interval.
+    MetastoreConf
+        .setTimeVar(newConf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, 10, TimeUnit.MILLISECONDS);
+    newConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL, true);
+    // Reset Cleaner to have a initial wait time.
+    DbNotificationListener.resetCleaner(newConf);
+
+    IMetaStoreClient msClient = metaStoreClient;
+    run("create database referenceDb", driver);
+
+    long firstEventId = msClient.getCurrentNotificationEventId().getEventId();;
+
+    run("create database cleanupStartup", driver);
+    run("drop database cleanupStartup", driver);
+
+    LOG.info("Done with creating events.");
+
+    // Check events are pushed into notification logs.
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    // Reset Cleaner to have a initial wait time.
+    DbNotificationListener.resetCleaner(newConf);
+
+    // Sleep for eventsTtl time and see if events are there.
+    Thread.sleep(eventsTtl * 1000);
+
+    // Check events are there in notification logs.
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    // Sleep for some more time and see if events are there.
+    Thread.sleep(eventsTtl * 1000);
+
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    // Sleep more than the initial wait time and see if Events get cleaned up post that
+    Thread.sleep(eventsTtl * 4000);
+
+    // Events should have cleaned up.
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(0, rsp.getEventsSize());
+
+    // Reset with original configuration.
+    DbNotificationListener.resetCleaner(hconf);
+    run("drop database referenceDb", driver);
   }
 
   @Test
@@ -4121,27 +4191,32 @@ public class TestReplicationScenarios {
     NotificationEventResponse rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
     // Test various scenarios
-    // Remove the proxy privilege and the auth should fail (in reality the proxy setting should not be changed on the fly)
-    hconf.unset(proxySettingName);
-    // Need to explicitly update ProxyUsers
-    ProxyUsers.refreshSuperUserGroupsConfiguration(hconf);
-    // Verify if the auth should fail
-    Exception ex = null;
+    // Remove the proxy privilege by reseting proxy configuration to default value.
+    // The auth should fail (in reality the proxy setting should not be changed on the fly)
+    // Pretty hacky: Affects both instances of HMS
+    ProxyUsers.refreshSuperUserGroupsConfiguration();
     try {
+      hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, false);
+      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
+      Assert.fail("Get Next Nofitication should have failed due to no proxy auth");
     } catch (TException e) {
-      ex = e;
+      // Expected to throw an Exception - keep going
     }
-    assertNotNull(ex);
     // Disable auth so the call should succeed
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+    MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     try {
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
       assertEquals(1, rsp.getEventsSize());
     } finally {
       // Restore the settings
-      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
+      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+      hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, true);
       hconf.set(proxySettingName, "*");
+
+      // Restore Proxy configurations to test values
+      // Pretty hacky: Applies one setting to both instances of HMS
       ProxyUsers.refreshSuperUserGroupsConfiguration(hconf);
     }
   }
@@ -4551,6 +4626,99 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testReplicationMetricForSkippedIteration() throws Throwable {
+    String name = testName.getMethodName();
+    String primaryDbName = createDB(name, driver);
+    String replicaDbName = "replicaDb";
+    try {
+      isMetricsEnabledForTests(true);
+      MetricCollector collector = MetricCollector.getInstance();
+      run("create table " + primaryDbName + ".t1 (id int) STORED AS TEXTFILE", driver);
+      run("insert into " + primaryDbName + ".t1 values(1)", driver);
+      run("repl dump " + primaryDbName, driver);
+
+      ReplicationMetric metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("repl dump " + primaryDbName, driver);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+
+      run("repl load " + primaryDbName + " into " + replicaDbName, driverMirror);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("repl load " + primaryDbName + " into " + replicaDbName, driverMirror);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+    } finally {
+      isMetricsEnabledForTests(false);
+    }
+  }
+
+  @Test
+  public void testReplicationMetricForFailedIteration() throws Throwable {
+    String name = testName.getMethodName();
+    String primaryDbName = createDB(name, driver);
+    String replicaDbName = "tgtDb";
+    try {
+      isMetricsEnabledForTests(true);
+      MetricCollector collector = MetricCollector.getInstance();
+      run("create table " + primaryDbName + ".t1 (id int) STORED AS TEXTFILE", driver);
+      run("insert into " + primaryDbName + ".t1 values(1)", driver);
+      Tuple dumpData = replDumpDb(primaryDbName);
+
+      ReplicationMetric metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("repl load " + primaryDbName + " into " + replicaDbName, driverMirror);
+
+      Path nonRecoverableFile = new Path(new Path(dumpData.dumpLocation), ReplAck.NON_RECOVERABLE_MARKER.toString());
+      FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(hconf);
+      fs.create(nonRecoverableFile);
+
+      verifyFail("REPL DUMP " + primaryDbName, driver);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+      verifyFail("REPL DUMP " + primaryDbName, driver);
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+      fs.delete(nonRecoverableFile, true);
+      dumpData = replDumpDb(primaryDbName);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("ALTER DATABASE " + replicaDbName + " SET DBPROPERTIES('" + ReplConst.REPL_INCOMPATIBLE + "'='true')", driverMirror);
+
+      verifyFail("REPL LOAD " + primaryDbName + " INTO " + replicaDbName, driverMirror);
+
+      nonRecoverableFile = new Path(new Path(dumpData.dumpLocation), ReplAck.NON_RECOVERABLE_MARKER.toString());
+      assertTrue(fs.exists(nonRecoverableFile));
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.FAILED_ADMIN);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+      verifyFail("REPL LOAD " + primaryDbName + " INTO " + replicaDbName, driverMirror);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+    } finally {
+      isMetricsEnabledForTests(false);
+    }
+  }
+
+  @Test
   public void testAddPartition() throws Throwable{
     // Get the logger at the root level.
     Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
@@ -4643,6 +4811,7 @@ public class TestReplicationScenarios {
     appender.removeFromLogger(logger.getName());
   }
 
+  @org.junit.Ignore("HIVE-26073")
   @Test
   public void testIncrementalStatisticsMetrics() throws Throwable {
     isMetricsEnabledForTests(true);
@@ -4655,6 +4824,7 @@ public class TestReplicationScenarios {
 
     // Do a bootstrap dump & load
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+    collector.getMetrics();
     ReplLoadWork.setMbeansParamsForTesting(true,true);
 
     // Do some operations at the source side so that the count & metrics can be counted at the load side.
@@ -4682,6 +4852,9 @@ public class TestReplicationScenarios {
       List<Stage> stages = elem.getProgress().getStages();
       assertTrue(stages.size() != 0);
       for (Stage stage : stages) {
+        if (stage.getReplStats() == null) {
+          continue;
+        }
         for (String event : events) {
           assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
         }
@@ -4725,6 +4898,9 @@ public class TestReplicationScenarios {
       List<Stage> stages = elem.getProgress().getStages();
       assertTrue(stages.size() != 0);
       for (Stage stage : stages) {
+        if (stage.getReplStats() == null) {
+          continue;
+        }
         for (String event : events) {
           assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
         }
@@ -4820,7 +4996,7 @@ public class TestReplicationScenarios {
     assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(lastDbReplDumpId));
 
     Table tbl = metaStoreClientMirror.getTable(replDbName, tblName);
-    String tblLastReplId = tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    String tblLastReplId = tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
     assertTrue(Long.parseLong(tblLastReplId) > Long.parseLong(lastDbReplDumpId));
     assertTrue(Long.parseLong(tblLastReplId) <= Long.parseLong(lastReplDumpId));
     return lastReplDumpId;

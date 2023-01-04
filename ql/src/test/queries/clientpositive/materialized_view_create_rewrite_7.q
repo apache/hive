@@ -1,10 +1,9 @@
--- Test habndling Sum0 aggregate function when rewriting insert overwrite MV rebuild plan to incremental
+-- Test handling Sum0 aggregate function when rewriting insert overwrite MV rebuild plan to incremental
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.materializedview.rewriting.sql=false;
 
---create table t1(a char(15), b int, c int) stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only');
 create table t1(a char(15), b int, c int) stored as orc TBLPROPERTIES ('transactional'='true');
 
 insert into t1(a, b, c) values

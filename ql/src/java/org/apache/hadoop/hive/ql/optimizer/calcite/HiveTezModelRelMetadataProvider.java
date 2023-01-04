@@ -57,5 +57,4 @@ public class HiveTezModelRelMetadataProvider {
                 HiveRelMdCollation.SOURCE,
                 HiveRelMdPredicates.SOURCE,
                 JaninoRelMetadataProvider.DEFAULT)));
-
 }

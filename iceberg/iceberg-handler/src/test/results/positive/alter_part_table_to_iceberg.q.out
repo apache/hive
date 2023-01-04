@@ -37,7 +37,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -126,8 +126,8 @@ POSTHOOK: query: describe formatted tbl_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_orc
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -141,18 +141,27 @@ Retention:          	0
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
+	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
 	numRows             	9                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	759                 
+	totalSize           	#Masked#                 
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	orc                 
 	 	 
 # Storage Information	 	 
@@ -160,8 +169,6 @@ SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: select * from tbl_orc order by a
 PREHOOK: type: QUERY
@@ -227,7 +234,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -316,8 +323,8 @@ POSTHOOK: query: describe formatted tbl_parquet
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -331,18 +338,27 @@ Retention:          	0
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
 	numRows             	9                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1659                
+	totalSize           	#Masked#                
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	parquet             
 	 	 
 # Storage Information	 	 
@@ -350,8 +366,6 @@ SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: select * from tbl_parquet order by a
 PREHOOK: type: QUERY
@@ -417,7 +431,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -506,8 +520,8 @@ POSTHOOK: query: describe formatted tbl_avro
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_avro
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -521,18 +535,27 @@ Retention:          	0
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
-	numRows             	0                   
+	numRows             	9                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1054                
+	totalSize           	#Masked#                
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	avro                
 	 	 
 # Storage Information	 	 
@@ -540,8 +563,6 @@ SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: select * from tbl_avro order by a
 PREHOOK: type: QUERY

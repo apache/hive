@@ -25,6 +25,7 @@ public class QueryInfo {
   private final String userName;
   private final String executionEngine;
   private final long beginTime;
+  private final String sessionId;
   private final String operationId;
   private Long runtime;  // tracks only running portion of the query.
 
@@ -34,11 +35,12 @@ public class QueryInfo {
 
   private String operationLogLocation;
 
-  public QueryInfo(String state, String userName, String executionEngine, String operationId) {
+  public QueryInfo(String state, String userName, String executionEngine, String sessionId, String operationId) {
     this.state = state;
     this.userName = userName;
     this.executionEngine = executionEngine;
     this.beginTime = System.currentTimeMillis();
+    this.sessionId = sessionId;
     this.operationId = operationId;
   }
 
@@ -84,6 +86,10 @@ public class QueryInfo {
 
   public synchronized void updateState(String state) {
     this.state = state;
+  }
+
+  public String getSessionId() {
+    return sessionId;
   }
 
   public String getOperationId() {

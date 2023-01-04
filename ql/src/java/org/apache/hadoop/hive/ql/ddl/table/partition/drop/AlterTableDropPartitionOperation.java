@@ -40,8 +40,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
-import com.google.common.collect.Iterables;
-
 /**
  * Operation process of dropping some partitions of a table.
  */
@@ -103,7 +101,10 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
         } else {
           for (Partition p : partitions) {
             if (replicationSpec.allowEventReplacementInto(dbParams)) {
-              context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), true);
+              PartitionDropOptions options =
+                  PartitionDropOptions.instance().deleteData(desc.getDeleteData())
+                    .setWriteId(desc.getWriteId());
+              context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), options);
             }
           }
         }
@@ -117,17 +118,18 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
 
   private void dropPartitions(boolean isRepl) throws HiveException {
     // ifExists is currently verified in AlterTableDropPartitionAnalyzer
-    TableName tablenName = HiveTableName.of(desc.getTableName());
+    TableName tableName = HiveTableName.of(desc.getTableName());
 
     List<Pair<Integer, byte[]>> partitionExpressions = new ArrayList<>(desc.getPartSpecs().size());
     for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
       partitionExpressions.add(Pair.of(partSpec.getPrefixLength(),
-          SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
+          SerializationUtilities.serializeObjectWithTypeInformation(partSpec.getPartSpec())));
     }
 
     PartitionDropOptions options =
-        PartitionDropOptions.instance().deleteData(true).ifExists(true).purgeData(desc.getIfPurge());
-    List<Partition> droppedPartitions = context.getDb().dropPartitions(tablenName.getDb(), tablenName.getTable(),
+        PartitionDropOptions.instance().deleteData(desc.getDeleteData())
+          .ifExists(true).purgeData(desc.getIfPurge());
+    List<Partition> droppedPartitions = context.getDb().dropPartitions(tableName.getDb(), tableName.getTable(),
         partitionExpressions, options);
 
     if (isRepl) {
@@ -145,7 +147,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
       DDLUtils.addIfAbsentByName(new WriteEntity(partition, WriteEntity.WriteType.DDL_NO_LOCK), context);
 
       if (llapEvictRequestBuilder != null) {
-        llapEvictRequestBuilder.addPartitionOfATable(tablenName.getDb(), tablenName.getTable(), partition.getSpec());
+        llapEvictRequestBuilder.addPartitionOfATable(tableName.getDb(), tableName.getTable(), partition.getSpec());
       }
     }
 

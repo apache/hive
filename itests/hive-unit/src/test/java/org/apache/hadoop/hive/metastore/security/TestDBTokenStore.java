@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.DBTokenStore;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenStore.TokenStoreException;
 import org.apache.hadoop.io.Text;
@@ -49,7 +50,9 @@ public class TestDBTokenStore {
   public void testDBTokenStore() throws TokenStoreException, MetaException, IOException {
 
     DelegationTokenStore ts = new DBTokenStore();
-    ts.init(new HMSHandler("Test handler"), HadoopThriftAuthBridge.Server.ServerMode.METASTORE);
+    HMSHandler hms = new HMSHandler("Test handler", MetastoreConf.newMetastoreConf());
+    hms.init();
+    ts.init(hms, HadoopThriftAuthBridge.Server.ServerMode.METASTORE);
     assertEquals(0, ts.getMasterKeys().length);
     assertEquals(false,ts.removeMasterKey(-1));
     try{

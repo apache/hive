@@ -39,10 +39,15 @@ PREHOOK: query: update acid_utc set b = 'fred',c = 3.14
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_utc
 PREHOOK: Output: default@acid_utc
+PREHOOK: Output: default@acid_utc
 POSTHOOK: query: update acid_utc set b = 'fred',c = 3.14
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_utc
 POSTHOOK: Output: default@acid_utc
+POSTHOOK: Output: default@acid_utc
+POSTHOOK: Lineage: acid_utc.a SIMPLE [(acid_utc)acid_utc.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_utc.b EXPRESSION []
+POSTHOOK: Lineage: acid_utc.c EXPRESSION []
 PREHOOK: query: select * from acid_utc order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_utc

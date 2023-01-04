@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
@@ -207,9 +208,11 @@ public class DagUtils {
   class CollectFileSinkUrisNodeProcessor implements SemanticNodeProcessor {
 
     private final Set<URI> uris;
+    private final Set<TableDesc> tableDescs;
 
-    public CollectFileSinkUrisNodeProcessor(Set<URI> uris) {
+    public CollectFileSinkUrisNodeProcessor(Set<URI> uris, Set<TableDesc> tableDescs) {
       this.uris = uris;
+      this.tableDescs = tableDescs;
     }
 
     @Override
@@ -220,6 +223,8 @@ public class DagUtils {
         OperatorDesc desc = op.getConf();
         if (desc instanceof FileSinkDesc) {
           FileSinkDesc fileSinkDesc = (FileSinkDesc) desc;
+          tableDescs.add(fileSinkDesc.getTableInfo());
+
           Path dirName = fileSinkDesc.getDirName();
           if (dirName != null) {
             uris.add(dirName.toUri());
@@ -238,9 +243,9 @@ public class DagUtils {
     opRules.put(new RuleRegExp("R1", FileSinkOperator.getOperatorName() + ".*"), np);
   }
 
-  private void collectFileSinkUris(List<Node> topNodes, Set<URI> uris) {
+  private void collectFileSinkUris(List<Node> topNodes, Set<URI> uris, Set<TableDesc> tableDescs) {
 
-    CollectFileSinkUrisNodeProcessor np = new CollectFileSinkUrisNodeProcessor(uris);
+    CollectFileSinkUrisNodeProcessor np = new CollectFileSinkUrisNodeProcessor(uris, tableDescs);
 
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     addCollectFileSinkUrisRules(opRules, np);
@@ -255,11 +260,14 @@ public class DagUtils {
     }
   }
 
-
   /**
    * Set up credentials for the base work on secure clusters
    */
   public void addCredentials(BaseWork work, DAG dag, JobConf conf) {
+    Set<URI> fileSinkUris = new HashSet<URI>();
+    Set<TableDesc> fileSinkTableDescs = new HashSet<TableDesc>();
+    collectNeededFileSinkData(work, fileSinkUris, fileSinkTableDescs);
+
     if (work instanceof MapWork){
       Set<Path> paths = ((MapWork)work).getPathToAliases().keySet();
       if (!paths.isEmpty()) {
@@ -280,12 +288,18 @@ public class DagUtils {
         }
         dag.addURIsForCredentials(uris);
       }
-      getKafkaCredentials((MapWork)work, dag, conf);
+      getKafkaCredentials((MapWork)work, fileSinkTableDescs, dag, conf);
     }
-    getCredentialsForFileSinks(work, dag);
+    getCredentialsForFileSinks(work, fileSinkUris, dag);
   }
 
-  private void getKafkaCredentials(MapWork work, DAG dag, JobConf conf) {
+  private void collectNeededFileSinkData(BaseWork work, Set<URI> fileSinkUris, Set<TableDesc> fileSinkTableDescs) {
+    List<Node> topNodes = getTopNodes(work);
+    LOG.debug("Collecting file sink uris for {} topnodes: {}", work.getClass(), topNodes);
+    collectFileSinkUris(topNodes, fileSinkUris, fileSinkTableDescs);
+  }
+
+  private void getKafkaCredentials(MapWork work, Set<TableDesc> fileSinkTableDescs, DAG dag, JobConf conf) {
     if (!UserGroupInformation.isSecurityEnabled()){
       return;
     }
@@ -294,26 +308,53 @@ public class DagUtils {
       LOG.debug("Kafka credentials already added, skipping...");
       return;
     }
-    LOG.info("Getting kafka credentials for mapwork: " + work.getName());
+    LOG.debug("Getting kafka credentials for mapwork (if needed): " + work.getName());
 
-    String kafkaBrokers = null;
     Map<String, PartitionDesc> partitions = work.getAliasToPartnInfo();
-    for (PartitionDesc partition : partitions.values()) {
+
+    // We don't need to iterate on all partitions, and check the same TableDesc.
+    PartitionDesc partition = partitions.values().stream().findFirst().orElse(null);
+    if (partition != null) {
       TableDesc tableDesc = partition.getTableDesc();
-      kafkaBrokers = (String) tableDesc.getProperties().get("kafka.bootstrap.servers"); //FIXME: KafkaTableProperties
-      if (kafkaBrokers != null && !kafkaBrokers.isEmpty()) {
-        getKafkaDelegationTokenForBrokers(dag, conf, kafkaBrokers);
+      if (collectKafkaDelegationTokenForTableDesc(dag, conf, tableDesc)) {
+        // don't collect delegation token again, if it was already successful
         return;
-      } else {
-        // we don't need to iterate on all partitions, and checking the same TableDesc
-        // if partitions[0].getTableDesc() doesn't show kafka table, let's return quickly
-        break;
+      }
+    }
+
+    for (TableDesc tableDesc : fileSinkTableDescs) {
+      if (collectKafkaDelegationTokenForTableDesc(dag, conf, tableDesc)) {
+        // don't collect delegation token again, if it was already successful
+        return;
       }
     }
   }
 
+  /**
+   * Tries to collect delegation tokens for kafka in the scope of a TableDesc.
+   * If "security.protocol" is set to "PLAINTEXT", we don't need to collect delegation token at all.
+   * @param dag
+   * @param conf
+   * @param tableDesc
+   * @return a boolean, telling whether the token collection was successful
+   */
+  private boolean collectKafkaDelegationTokenForTableDesc(DAG dag, JobConf conf, TableDesc tableDesc) {
+    String kafkaBrokers = (String) tableDesc.getProperties().get("kafka.bootstrap.servers"); //FIXME: KafkaTableProperties
+    String consumerSecurityProtocol = (String) tableDesc.getProperties().get(
+        "kafka.consumer." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
+    String producerSecurityProtocol = (String) tableDesc.getProperties().get(
+        "kafka.producer." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
+    if (kafkaBrokers != null && !kafkaBrokers.isEmpty() &&
+        !CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL.equalsIgnoreCase(consumerSecurityProtocol) &&
+        !CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL.equalsIgnoreCase(producerSecurityProtocol)) {
+      getKafkaDelegationTokenForBrokers(dag, conf, kafkaBrokers);
+      return true;
+    }
+    return false;
+  }
+
   private void getKafkaDelegationTokenForBrokers(DAG dag, JobConf conf, String kafkaBrokers) {
-    LOG.debug("Getting kafka credentials for brokers: {}", kafkaBrokers);
+    LOG.info("Getting kafka credentials for brokers: {}", kafkaBrokers);
 
     String keytab = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
     String principal = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
@@ -351,14 +392,7 @@ public class DagUtils {
         new Token<>(token.tokenInfo().tokenId().getBytes(), token.hmac(), null, new Text("kafka")));
   }
 
-  private void getCredentialsForFileSinks(BaseWork baseWork, DAG dag) {
-    Set<URI> fileSinkUris = new HashSet<URI>();
-
-    List<Node> topNodes = getTopNodes(baseWork);
-
-    LOG.debug("Collecting file sink uris for {} topnodes: {}", baseWork.getClass(), topNodes);
-    collectFileSinkUris(topNodes, fileSinkUris);
-
+  private void getCredentialsForFileSinks(BaseWork baseWork, Set<URI> fileSinkUris, DAG dag) {
     if (LOG.isDebugEnabled()) {
       for (URI fileSinkUri : fileSinkUris) {
         LOG.debug("Marking {} output URI as needing credentials (filesink): {}",
@@ -727,7 +761,8 @@ public class DagUtils {
   /*
    * Helper to setup default environment for a task in YARN.
    */
-  private Map<String, String> getContainerEnvironment(Configuration conf, boolean isMap) {
+  @VisibleForTesting
+  Map<String, String> getContainerEnvironment(Configuration conf, boolean isMap) {
     Map<String, String> environment = new HashMap<String, String>();
     MRHelpers.updateEnvBasedOnMRTaskEnv(conf, environment, isMap);
     return environment;
@@ -1225,7 +1260,6 @@ public class DagUtils {
    * @param inputOutputJars The file names to localize.
    * @return Map&lt;String, LocalResource&gt; (srcPath, local resources) to add to execution
    * @throws IOException when hdfs operation fails.
-   * @throws LoginException when getDefaultDestDir fails with the same exception
    */
   public Map<String, LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
       String[] inputOutputJars, String[] skipJars) throws IOException {
@@ -1297,18 +1331,20 @@ public class DagUtils {
   }
 
   // the api that finds the jar being used by this class on disk
-  public String getExecJarPathLocal(Configuration configuration) throws URISyntaxException {
-    // returns the location on disc of the jar of this class.
-
-    URI uri = DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-    if (configuration.getBoolean(ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
-      if (new File(uri.getPath()).isDirectory()) {
-        // IDE support for running tez jobs
-        uri = createEmptyArchive();
+  public String getExecJarPathLocal(Configuration configuration) {
+    try {
+      // returns the location on disc of the jar of this class.
+      String uri = DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
+      if (uri.endsWith(".jar")) {
+        return uri;
       }
+    } catch (Exception ignored) {}
+    //Fall back to hive config, if the uri could not get, or it does not point to a .jar file
+    String jar = configuration.get(ConfVars.HIVEJAR.varname);
+    if (!StringUtils.isBlank(jar)) {
+      return jar;
     }
-    return uri.toString();
-
+    throw new RuntimeException("Could not get hive-exec local path");
   }
 
   /**
@@ -1369,9 +1405,14 @@ public class DagUtils {
   public LocalResource localizeResource(
       Path src, Path dest, LocalResourceType type, Configuration conf) throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
-    // We call copyFromLocal below, so we basically assume src is a local file.
-    FileSystem srcFs = FileSystem.getLocal(conf);
-    if (src != null && !checkPreExisting(srcFs, src, dest, conf)) {
+    FileSystem srcFs;
+    if (src.toUri().getScheme() != null) {
+      srcFs = src.getFileSystem(conf);
+    } else {
+      srcFs = FileSystem.getLocal(conf);
+    }
+
+    if (!checkPreExisting(srcFs, src, dest, conf)) {
       // copy the src to the destination and create local resource.
       // do not overwrite.
       String srcStr = src.toString();
@@ -1387,12 +1428,8 @@ public class DagUtils {
         return createLocalResource(destFS, dest, type, LocalResourceVisibility.PRIVATE);
       }
       try {
-        if (src.toUri().getScheme()!=null) {
-          FileUtil.copy(src.getFileSystem(conf), src, destFS, dest, false, false, conf);
-        }
-        else {
-          destFS.copyFromLocalFile(false, false, src, dest);
-        }
+        // FileUtil.copy takes care of copy from local filesystem internally.
+        FileUtil.copy(srcFs, src, destFS, dest, false, false, conf);
         synchronized (notifier) {
           notifier.notifyAll(); // Notify if we have successfully copied the file.
         }
@@ -1411,9 +1448,10 @@ public class DagUtils {
         // Only log on the first wait, and check after wait on the last iteration.
         if (!checkOrWaitForTheFile(
             srcFs, src, dest, conf, notifierOld, waitAttempts, sleepInterval, true)) {
-          LOG.error("Could not find the jar that was being uploaded");
-          throw new IOException("Previous writer likely failed to write " + dest +
-              ". Failing because I am unlikely to write too.");
+          LOG.error("Could not find the jar that was being uploaded: src = {}, dest = {}, type = {}", src, dest, type);
+          throw new IOException("Could not find jar while attempting to localize resource. Previous writer may have " +
+              "failed to write " + dest + ". Failing because I am unlikely to write too. Refer to exception for more " +
+              "troubleshooting details.", e);
         }
       } finally {
         if (notifier == notifierNew) {
@@ -1421,8 +1459,7 @@ public class DagUtils {
         }
       }
     }
-    return createLocalResource(destFS, dest, type,
-        LocalResourceVisibility.PRIVATE);
+    return createLocalResource(destFS, dest, type, LocalResourceVisibility.PRIVATE);
   }
 
   public boolean checkOrWaitForTheFile(FileSystem srcFs, Path src, Path dest, Configuration conf,

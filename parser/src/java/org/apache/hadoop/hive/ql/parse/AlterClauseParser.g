@@ -73,6 +73,7 @@ alterTableStatementSuffix
     | partitionSpec alterTblPartitionStatementSuffix[true] -> alterTblPartitionStatementSuffix partitionSpec
     | alterStatementSuffixSetOwner
     | alterStatementSuffixSetPartSpec
+    | alterStatementSuffixExecute
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -431,11 +432,16 @@ blocking
   -> TOK_BLOCKING
   ;
 
+compactPool
+  : KW_POOL poolName=StringLiteral
+  -> ^(TOK_COMPACT_POOL $poolName)
+  ;
+
 alterStatementSuffixCompact
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
-    : KW_COMPACT compactType=StringLiteral blocking? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)?
-    -> ^(TOK_ALTERTABLE_COMPACT $compactType blocking? tableProperties?)
+    : KW_COMPACT compactType=StringLiteral blocking? compactPool? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)?
+    -> ^(TOK_ALTERTABLE_COMPACT $compactType blocking?  compactPool? tableProperties?)
     ;
 
 alterStatementSuffixSetOwner
@@ -450,6 +456,15 @@ alterStatementSuffixSetPartSpec
 @after { gParent.popMsg(state); }
     : KW_SET KW_PARTITION KW_SPEC LPAREN (spec = partitionTransformSpec) RPAREN
     -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec)
+    ;
+
+alterStatementSuffixExecute
+@init { gParent.pushMsg("alter table execute", state); }
+@after { gParent.popMsg(state); }
+    : KW_EXECUTE KW_ROLLBACK LPAREN (rollbackParam=(StringLiteral | Number)) RPAREN
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_ROLLBACK $rollbackParam)
+    | KW_EXECUTE KW_EXPIRE_SNAPSHOTS LPAREN (expireParam=StringLiteral) RPAREN
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam)
     ;
 
 fileFormat

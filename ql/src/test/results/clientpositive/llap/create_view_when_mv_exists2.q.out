@@ -1,0 +1,97 @@
+PREHOOK: query: create table t1(col0 int) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(col0 int) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1(col0) values (0),(1),(3),(10),(NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1(col0) values (0),(1),(3),(10),(NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.col0 SCRIPT []
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
+PREHOOK: query: create materialized view mv1 as
+select * from t1 where col0 > 2 union select * from t1 where col0 = 0
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 as
+select * from t1 where col0 > 2 union select * from t1 where col0 = 0
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.col0 EXPRESSION [(t1)t1.FieldSchema(name:col0, type:int, comment:null), ]
+PREHOOK: query: explain cbo
+create view v1 as
+select sub.* from (select * from t1 where col0 > 2 union select * from t1 where col0 = 0) sub
+where sub.col0 = 10
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1
+POSTHOOK: query: explain cbo
+create view v1 as
+select sub.* from (select * from t1 where col0 > 2 union select * from t1 where col0 = 0) sub
+where sub.col0 = 10
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v1
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveProject($f0=[CAST(10):INTEGER])
+    HiveFilter(condition=[=($0, 10)])
+      HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: create view v1 as
+select sub.* from (select * from t1 where col0 > 2 union select * from t1 where col0 = 0) sub
+where sub.col0 = 10
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1
+POSTHOOK: query: create view v1 as
+select sub.* from (select * from t1 where col0 > 2 union select * from t1 where col0 = 0) sub
+where sub.col0 = 10
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.col0 SIMPLE []
+PREHOOK: query: explain cbo
+select * from v1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@v1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@v1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveProject($f0=[CAST(10):INTEGER])
+    HiveFilter(condition=[=($0, 10)])
+      HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: select * from v1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@v1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@v1
+#### A masked pattern was here ####
+10

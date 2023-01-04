@@ -125,11 +125,6 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   }
 
   @Override
-  public void setThreadId(int threadId) {
-    this.threadId = threadId;
-  }
-
-  @Override
   public void init(AtomicBoolean stop) throws MetaException {
     this.stop = stop;
     setPriority(MIN_PRIORITY);
@@ -142,7 +137,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     txnHandler = TxnUtils.getTxnStore(conf);
     rs = RawStoreProxy.getProxy(conf, conf,
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL), threadId);
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL));
     for (int i = 0; i < workers.length; ++i) {
       workers[i] = new Thread(new WorkerRunnable(conf, user));
       workers[i].setDaemon(true);
@@ -164,6 +159,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
         return;
       }
     }
+    stopWorkers();
     LOG.info("Stats updater thread was stopped and will now exit");
   }
 
@@ -634,7 +630,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
       }
       cmd = req.buildCommand();
       LOG.debug("Running {} based on {}", cmd, req);
-      DriverUtils.runOnDriver(conf, user, ss, cmd);
+      DriverUtils.runOnDriver(conf, ss, cmd);
     } catch (Exception e) {
       LOG.error("Analyze command failed: " + cmd, e);
       try {

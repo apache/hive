@@ -52,10 +52,24 @@ PREHOOK: query: update acid_uot set cstring1 = 'fred' where cint < -1070551679
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uot
 PREHOOK: Output: default@acid_uot
+PREHOOK: Output: default@acid_uot
 POSTHOOK: query: update acid_uot set cstring1 = 'fred' where cint < -1070551679
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uot
 POSTHOOK: Output: default@acid_uot
+POSTHOOK: Output: default@acid_uot
+POSTHOOK: Lineage: acid_uot.cbigint SIMPLE [(acid_uot)acid_uot.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: acid_uot.cboolean1 SIMPLE [(acid_uot)acid_uot.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: acid_uot.cboolean2 SIMPLE [(acid_uot)acid_uot.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: acid_uot.cdouble SIMPLE [(acid_uot)acid_uot.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: acid_uot.cfloat SIMPLE [(acid_uot)acid_uot.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: acid_uot.cint SIMPLE [(acid_uot)acid_uot.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uot.csmallint SIMPLE [(acid_uot)acid_uot.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: acid_uot.cstring1 SIMPLE []
+POSTHOOK: Lineage: acid_uot.cstring2 SIMPLE [(acid_uot)acid_uot.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: acid_uot.ctimestamp1 SIMPLE [(acid_uot)acid_uot.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: acid_uot.ctimestamp2 SIMPLE [(acid_uot)acid_uot.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: acid_uot.ctinyint SIMPLE [(acid_uot)acid_uot.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: select * from acid_uot where cstring1 = 'fred'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uot

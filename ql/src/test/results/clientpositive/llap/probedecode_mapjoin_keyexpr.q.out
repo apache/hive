@@ -152,7 +152,7 @@ STAGE PLANS:
                             bigTableValueColumns: 0:string, 1:bigint, 2:bigint, 3:int, 4:decimal(12,2), 5:decimal(12,2), 6:decimal(12,2), 7:decimal(12,2), 8:string, 9:string, 10:string, 11:string, 12:string, 13:string, 14:string, 15:string
                             className: VectorMapJoinInnerMultiKeyOperator
                             native: true
-                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                             nonOuterSmallTableKeyMapping: []
                             projectedOutput: 0:string, 1:bigint, 2:bigint, 3:int, 4:decimal(12,2), 5:decimal(12,2), 6:decimal(12,2), 7:decimal(12,2), 8:string, 9:string, 10:string, 11:string, 12:string, 13:string, 14:string, 15:string, 20:bigint, 21:bigint, 22:bigint, 23:int, 24:decimal(12,2), 25:decimal(12,2), 26:decimal(12,2), 27:decimal(12,2), 28:string, 29:string, 30:string, 31:string, 32:string, 33:string, 34:string, 35:string
                             smallTableValueMapping: 20:bigint, 21:bigint, 22:bigint, 23:int, 24:decimal(12,2), 25:decimal(12,2), 26:decimal(12,2), 27:decimal(12,2), 28:string, 29:string, 30:string, 31:string, 32:string, 33:string, 34:string, 35:string
@@ -230,7 +230,7 @@ STAGE PLANS:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumns: 19:double
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:bigint, 1:bigint, 2:bigint, 3:int, 4:decimal(12,2), 5:decimal(12,2), 6:decimal(12,2), 7:decimal(12,2), 8:string, 9:string, 10:string, 11:string, 12:string, 13:string, 14:string, 15:string
                         Statistics: Num rows: 1 Data size: 1948 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: int), _col4 (type: decimal(12,2)), _col5 (type: decimal(12,2)), _col6 (type: decimal(12,2)), _col7 (type: decimal(12,2)), _col8 (type: string), _col9 (type: string), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: string), _col15 (type: string)

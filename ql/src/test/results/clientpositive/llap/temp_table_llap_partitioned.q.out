@@ -1934,7 +1934,7 @@ STAGE PLANS:
                         bigTableValueColumns: 1:int, 6:char(255), 7:varchar(255), 10:tinyint
                         className: VectorMapJoinInnerBigOnlyLongOperator
                         native: true
-                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                         nonOuterSmallTableKeyMapping: []
                         projectedOutput: 1:int, 6:char(255), 7:varchar(255), 10:tinyint
                         hashTableImplementationType: OPTIMIZED
@@ -1995,7 +1995,7 @@ STAGE PLANS:
                         className: VectorReduceSinkLongOperator
                         keyColumns: 10:tinyint
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
@@ -2344,6 +2344,10 @@ POSTHOOK: Input: default@orc_llap_part_temp@ctinyint=9
 POSTHOOK: Input: default@orc_llap_part_temp@ctinyint=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table_n0_temp
+POSTHOOK: Lineage: llap_temp_table_n0_temp.cchar1 SIMPLE [(orc_llap_part_temp)oft.FieldSchema(name:cchar1, type:char(255), comment:null), ]
+POSTHOOK: Lineage: llap_temp_table_n0_temp.cint SIMPLE [(orc_llap_part_temp)oft.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table_n0_temp.ctinyint SIMPLE [(orc_llap_part_temp)oft.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table_n0_temp.cvchar1 SIMPLE [(orc_llap_part_temp)oft.FieldSchema(name:cvchar1, type:varchar(255), comment:null), ]
 PREHOOK: query: explain vectorization detail
 select sum(hash(*)) from llap_temp_table_n0_temp
 PREHOOK: type: QUERY
@@ -2405,7 +2409,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:bigint
                         Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
@@ -2430,7 +2434,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: 
                 reduceColumnSortOrder: 
                 allNative: false

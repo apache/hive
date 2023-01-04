@@ -42,6 +42,7 @@ import java.io.File;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /*
 Test whether HiveAuthorizer for MetaStore operation is trigger and HiveMetaStoreAuthzInfo is created by HiveMetaStoreAuthorizer
@@ -53,6 +54,7 @@ public class TestHiveMetaStoreAuthorizer {
   private static final String viewName         = "tmpview";
   private static final String roleName         = "tmpRole";
   private static final String catalogName      = "testCatalog";
+  private static final String dcName           = "testDC";
   private static final String unAuthorizedUser = "bob";
   private static final String authorizedUser   = "sam";
   private static final String superUser        = "hive";
@@ -82,12 +84,14 @@ public class TestHiveMetaStoreAuthorizer {
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
-    hmsHandler = new HMSHandler("test", conf, true);
+    hmsHandler = new HMSHandler("test", conf);
+    hmsHandler.init();
     rawStore   = new ObjectStore();
     rawStore.setConf(hmsHandler.getConf());
     // Create the 'hive' catalog with new warehouse directory
     HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
     try {
+      hmsHandler.drop_dataconnector(dcName, true ,true);
       hmsHandler.drop_table(dbName, tblName, true);
       hmsHandler.drop_database(dbName, true, false);
       hmsHandler.drop_catalog(new DropCatalogRequest(catalogName));
@@ -357,6 +361,54 @@ public class TestHiveMetaStoreAuthorizer {
       if (StringUtils.isNotEmpty(err)) {
         assert(true);
       }
+    }
+  }
+
+  @Test
+  public void testR_CreateDataConnector_unAuthorizedUser() {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+    try {
+      DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
+      hmsHandler.create_dataconnector(connector);
+    } catch (Exception e) {
+      String err = e.getMessage();
+      String expected = "Operation type " + HiveOperationType.CREATEDATACONNECTOR+ " not allowed for user:" + unAuthorizedUser;
+      assertEquals(expected, err);
+    }
+  }
+
+  @Test
+  public void testS_CreateDataConnector_authorizedUser() {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
+      hmsHandler.create_dataconnector(connector);
+    } catch (Exception e) {
+      fail("testS_CreateDataConnector_authorizedUser() failed with " + e);
+    }
+  }
+
+  @Test
+  public void testT_AlterDataConnector_AuthorizedUser() {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
+      hmsHandler.create_dataconnector(connector);
+
+      DataConnector newConnector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3308/hive");
+      hmsHandler.alter_dataconnector(dcName, newConnector);
+    } catch (Exception e) {
+      fail("testT_AlterDataConnector_AuthorizedUser() failed with " + e);
+    }
+  }
+
+  @Test
+  public void testU_DropDataConnector_authorizedUser() {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      hmsHandler.drop_dataconnector(dcName, true, true);
+    } catch (Exception e) {
+      fail("testU_DropDataConnector_authorizedUser() failed with " + e);
     }
   }
 }

@@ -1,0 +1,6 @@
+PREHOOK: query: create external table t1s (a string,b string,c string) location 'sfs+FILE:///.../nonexistent/path/f1.txt/#SINGLEFILE#'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: sfs+FILE:///.../nonexistent/path/f1.txt/#SINGLEFILE#
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1s
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Got exception: java.io.FileNotFoundException File FILE:///.../nonexistent/path/f1.txt does not exist)

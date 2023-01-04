@@ -1,0 +1,78 @@
+PREHOOK: query: create external table test_dt(id string, dt date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_dt
+POSTHOOK: query: create external table test_dt(id string, dt date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_dt
+PREHOOK: query: insert into test_dt values('11', '2021-07-06'), ('22', '2021-07-07')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_dt
+POSTHOOK: query: insert into test_dt values('11', '2021-07-06'), ('22', '2021-07-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_dt
+POSTHOOK: Lineage: test_dt.dt SCRIPT []
+POSTHOOK: Lineage: test_dt.id SCRIPT []
+PREHOOK: query: select datediff(dt1.dt, '2021-07-01') from test_dt dt1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+POSTHOOK: query: select datediff(dt1.dt, '2021-07-01') from test_dt dt1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+5
+6
+PREHOOK: query: select datediff(dt1.dt, '2021-07-01') from test_dt dt1 left join test_dt dt on dt1.id = dt.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+POSTHOOK: query: select datediff(dt1.dt, '2021-07-01') from test_dt dt1 left join test_dt dt on dt1.id = dt.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+5
+6
+PREHOOK: query: select datediff('2021-07-01', dt1.dt) from test_dt dt1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+POSTHOOK: query: select datediff('2021-07-01', dt1.dt) from test_dt dt1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+-5
+-6
+PREHOOK: query: select datediff('2021-07-01', dt1.dt) from test_dt dt1 left join test_dt dt on dt1.id = dt.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+POSTHOOK: query: select datediff('2021-07-01', dt1.dt) from test_dt dt1 left join test_dt dt on dt1.id = dt.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+-5
+-6
+PREHOOK: query: select datediff(dt1.dt, dt1.dt) from test_dt dt1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+POSTHOOK: query: select datediff(dt1.dt, dt1.dt) from test_dt dt1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+0
+0
+PREHOOK: query: select datediff(dt1.dt, dt1.dt) from test_dt dt1 left join test_dt dt on dt1.id = dt.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+POSTHOOK: query: select datediff(dt1.dt, dt1.dt) from test_dt dt1 left join test_dt dt on dt1.id = dt.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_dt
+#### A masked pattern was here ####
+0
+0

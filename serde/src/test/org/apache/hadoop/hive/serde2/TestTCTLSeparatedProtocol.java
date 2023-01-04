@@ -231,12 +231,12 @@ public class TestTCTLSeparatedProtocol {
     assertTrue(prot.readString().equals("bye!"));
     prot.readFieldEnd();
 
-    // shouldl return nulls at end
+    // should return nulls at end
     prot.readFieldBegin();
     assertNull(prot.readString());
     prot.readFieldEnd();
 
-    // shouldl return nulls at end
+    // should return nulls at end
     prot.readFieldBegin();
     assertNull(prot.readString());
     prot.readFieldEnd();
@@ -299,12 +299,12 @@ public class TestTCTLSeparatedProtocol {
     prot.readListEnd();
     prot.readFieldEnd();
 
-    // shouldl return nulls at end
+    // should return nulls at end
     prot.readFieldBegin();
     assertNull(prot.readString());
     prot.readFieldEnd();
 
-    // shouldl return nulls at end
+    // should return nulls at end
     prot.readFieldBegin();
     assertNull(prot.readString());
     prot.readFieldEnd();
@@ -530,7 +530,7 @@ public class TestTCTLSeparatedProtocol {
     separatedProtocol.initialize(null, new Properties());
     try {
       separatedProtocol.readStructBegin();
-      fail("Runtime Exception is expected if the intialization of tokenizer failed.");
+      fail("Runtime Exception is expected if the initialization of tokenizer failed.");
     } catch (Exception e) {
       assertTrue(e.getCause() instanceof TTransportException);
     }

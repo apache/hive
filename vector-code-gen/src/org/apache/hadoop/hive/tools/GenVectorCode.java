@@ -1100,10 +1100,16 @@ public class GenVectorCode extends Task {
       {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncSin", "double", "long", "Math.sin", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSinh", "double", "double", "StrictMath.sinh", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSinh", "double", "long", "StrictMath.sinh", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncCos", "double", "double", "StrictMath.cos", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncCos", "double", "long", "StrictMath.cos", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCosh", "double", "double", "StrictMath.cosh", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCosh", "double", "long", "StrictMath.cosh", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncTan", "double", "long", "Math.tan", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTanh", "double", "double", "StrictMath.tanh", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTanh", "double", "long", "StrictMath.tanh", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncATan", "double", "long", "Math.atan", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncDegrees", "double", "double", "Math.toDegrees", "", "", "", ""},
@@ -1208,9 +1214,14 @@ public class GenVectorCode extends Task {
       {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
       {"VectorUDAFSum", "VectorUDAFSumDouble", "double"},
 
+      // "long" as <ValueType> for "MERGING" is ignored
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorFinal", "long", "MERGING"},
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorLong", "long", "COMPLETE"},
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorDouble", "double", "COMPLETE"},
+
+      // "double" as <ValueType> for "MERGING" is ignored
+      {"VectorUDAFComputeDsKllSketch", "VectorUDAFComputeDsKllSketchFinal", "double", "MERGING"},
+      {"VectorUDAFComputeDsKllSketch", "VectorUDAFComputeDsKllSketchDouble", "double", "COMPLETE"},
 
 
       // Template, <ClassName>, <ValueType>, <IfDefined>
@@ -1465,7 +1476,9 @@ public class GenVectorCode extends Task {
       } else if (tdesc[0].equals("VectorUDAFAvgDecimalMerge")) {
         generateVectorUDAFAvgMerge(tdesc);
       } else if (tdesc[0].equals("VectorUDAFComputeBitVector")) {
-        generateVectorUDAFComputeBitVector(tdesc);
+        generateVectorUDAFDataSummary(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFComputeDsKllSketch")) {
+        generateVectorUDAFDataSummary(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVar")) {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVarDecimal")) {
@@ -1934,7 +1947,7 @@ public class GenVectorCode extends Task {
         className, templateString);
   }
 
-  private void generateVectorUDAFComputeBitVector(String[] tdesc) throws Exception {
+  private void generateVectorUDAFDataSummary(String[] tdesc) throws Exception {
     String className = tdesc[1];
     String valueType = tdesc[2];
     String columnType = getColumnVectorType(valueType);

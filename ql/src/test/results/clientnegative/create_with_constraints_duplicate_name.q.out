@@ -48,4 +48,6 @@ POSTHOOK: Output: database:db2
 POSTHOOK: Output: db2@t2
 PREHOOK: query: alter table t1 add constraint constraint_name foreign key (x) references t2(x) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: db2@t1
+PREHOOK: Output: db2@t1
 FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidObjectException(message:Constraint name already exists: db2.t2.constraint_name)

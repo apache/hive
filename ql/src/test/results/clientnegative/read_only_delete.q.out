@@ -1,0 +1,34 @@
+POSTHOOK: query: CREATE DATABASE writable
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:writable
+POSTHOOK: query: CREATE TABLE writable.src
+    (cint INT)
+    CLUSTERED BY (cint) INTO 1 BUCKETS STORED AS ORC
+    TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:writable
+POSTHOOK: Output: writable@src
+POSTHOOK: query: ALTER DATABASE writable SET DBPROPERTIES('readonly' = 'false')
+POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:writable
+POSTHOOK: query: DELETE FROM writable.src WHERE cint < 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: writable@src
+POSTHOOK: Output: writable@src
+POSTHOOK: query: CREATE DATABASE readonly
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:readonly
+POSTHOOK: query: CREATE TABLE readonly.src
+    (cint INT)
+    CLUSTERED BY (cint) INTO 1 BUCKETS STORED AS ORC
+    TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:readonly
+POSTHOOK: Output: readonly@src
+POSTHOOK: query: ALTER DATABASE readonly SET DBPROPERTIES('readonly' = 'true')
+POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:readonly
+FAILED: Hive Internal Error: org.apache.hadoop.hive.ql.parse.SemanticException(Database readonly is read-only)
+org.apache.hadoop.hive.ql.parse.SemanticException: Database readonly is read-only
+#### A masked pattern was here ####
+

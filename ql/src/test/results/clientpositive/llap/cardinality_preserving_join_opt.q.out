@@ -122,8 +122,12 @@ POSTHOOK: Input: default@store_sales
 John	John Doe Doe	42.5	1	1
 PREHOOK: query: alter table store_sales add constraint pk_c primary key (ss_customer_sk) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
 POSTHOOK: query: alter table store_sales add constraint pk_c primary key (ss_customer_sk) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
 PREHOOK: query: explain cbo
 select
     c_first_name,
@@ -192,12 +196,20 @@ POSTHOOK: Input: default@store_sales
 John	John Doe Doe	42.5	1	1
 PREHOOK: query: alter table store_sales drop constraint pk_c
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
 POSTHOOK: query: alter table store_sales drop constraint pk_c
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
 PREHOOK: query: alter table customer add constraint pk_c primary key (c_customer_sk) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@customer
+PREHOOK: Output: default@customer
 POSTHOOK: query: alter table customer add constraint pk_c primary key (c_customer_sk) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@customer
+POSTHOOK: Output: default@customer
 PREHOOK: query: explain cbo
 select
     c_first_name,
@@ -264,8 +276,12 @@ POSTHOOK: Input: default@store_sales
 John	John Doe Doe	42.5	1	1
 PREHOOK: query: alter table store_sales add constraint pk_c primary key (ss_customer_sk) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
 POSTHOOK: query: alter table store_sales add constraint pk_c primary key (ss_customer_sk) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
 PREHOOK: query: explain cbo
 select
     c_first_name,

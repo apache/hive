@@ -83,7 +83,7 @@ import javax.annotation.Nullable;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -728,20 +728,24 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     fs.delete(ackFile, false);
     fs.delete(ackLastEventID, false);
     //delete all the event folders except first event
-    long startEvent = Long.valueOf(tuple.lastReplicationId) + 1;
+    long startEvent = -1;
+    long endEvent = Long.valueOf(incrementalDump1.lastReplicationId);
+    for (long eventDir = Long.valueOf(tuple.lastReplicationId) + 1;  eventDir <= endEvent; eventDir++) {
+      Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventDir));
+      if (fs.exists(eventRoot)) {
+        if (startEvent == -1){
+          startEvent = eventDir;
+        } else {
+          fs.delete(eventRoot, true);
+        }
+      }
+    }
     Path startEventRoot = new Path(hiveDumpDir, String.valueOf(startEvent));
     Map<Path, Long> firstEventModTimeMap = new HashMap<>();
     for (FileStatus fileStatus: fs.listStatus(startEventRoot)) {
       firstEventModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
     }
-    long endEvent = Long.valueOf(incrementalDump1.lastReplicationId);
     assertTrue(endEvent - startEvent > 1);
-    for (long eventDir = startEvent + 1;  eventDir <= endEvent; eventDir++) {
-      Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventDir));
-      if (fs.exists(eventRoot)) {
-        fs.delete(eventRoot, true);
-      }
-    }
     Utils.writeOutput(String.valueOf(startEvent), ackLastEventID, primary.hiveConf);
     WarehouseInstance.Tuple incrementalDump2 = primary.dump(primaryDbName, withClause);
     assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
@@ -1933,4 +1937,94 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // Clean up the filter file.
     new File(filterFilePath).delete();
   }
+
+  @Test
+  public void testTableAndPartitionExportServiceWithParallelism() throws Throwable {
+    List<String> extTableList = new ArrayList<String>();
+    List<String> mgnTableList = new ArrayList<String>();
+    List<String> dumpWithClause = ReplicationTestUtils.includeExternalTableClause(true);
+
+    primary.run("use " + primaryDbName);
+
+    // create 5 managed partitioned and 5 external un-partitioned tables.
+    // create first 2 tables with  2 partitions, another 2 with 4 partitions and
+    // another 2 tables with 6 partitions and so on.
+
+    int pt = 0;
+    for (int i = 0; i < 5; i++) {
+      primary.run("CREATE EXTERNAL TABLE ptned" + i + " (a int)");
+      extTableList.add("ptned" + i);
+      primary.run("CREATE TABLE ptnmgned" + i + " (a int) partitioned by (b int)");
+      mgnTableList.add("ptnmgned" + i);
+
+      if (i % 2 == 0) {
+        pt += 2;
+      }
+      for (int j = 0; j < pt; j++) {
+        primary.run("ALTER TABLE ptnmgned" + i + " ADD PARTITION(b=" + j + ")");
+        // insert some rows in each partitions of table
+        for (int k = 0; k < pt; k++) {
+          primary.run("INSERT INTO TABLE ptned" + i + " VALUES (" + k + ")");
+          primary.run("INSERT INTO TABLE ptnmgned" + i + " PARTITION(b=" + j + ") VALUES (" + k + ")");
+        }
+      }
+    }
+
+    // create 5 un-partitioned table
+    for (int i = 0; i < 5; i++) {
+      primary.run("CREATE EXTERNAL TABLE unptned" + i + " (a int)");
+      extTableList.add("unptned" + i);
+      primary.run("CREATE TABLE unptnmgned" + i + " (a int)");
+      mgnTableList.add("unptnmgned" + i);
+      //insert some rows in each tables
+      for (int j = 0; j < 2; j++) {
+        primary.run("INSERT INTO TABLE unptned" + i + " VALUES (" + j + ")");
+        primary.run("INSERT INTO TABLE unptnmgned" + i + " VALUES (" + j + ")");
+      }
+    }
+
+    //start bootstrap dump
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, dumpWithClause);
+    // verify that the external table filelist is written correctly for bootstrap
+    ReplicationTestUtils.assertExternalFileList(extTableList, tuple.dumpLocation, primary);
+
+    List<String> newTableList = new ArrayList<String>();
+    newTableList.addAll(extTableList);
+    newTableList.addAll(mgnTableList);
+
+    replica.load(replicatedDbName, primaryDbName, dumpWithClause)
+        .run("use " + replicatedDbName)
+        .run("show tables")
+        .verifyResults(newTableList);
+
+    primary.run("use " + primaryDbName);
+    // create 5 un-partitioned table for incremental dump
+    for (int i = 0; i < 5; i++) {
+      primary.run("CREATE EXTERNAL TABLE incrunptned" + i + "(a int)");
+      extTableList.add("incrunptned" + i);
+      primary.run("CREATE TABLE incrunptnmgned" + i + "(a int)");
+      mgnTableList.add("incrunptnmgned" + i);
+      // insert some rows in each tables
+      for (int j = 0; j < 2; j++) {
+        primary.run("INSERT INTO TABLE incrunptned" + i + " VALUES (" + j + ")");
+        primary.run("INSERT INTO TABLE incrunptnmgned" + i + " VALUES (" + j + ")");
+      }
+    }
+
+    newTableList.clear();
+    newTableList.addAll(extTableList);
+    newTableList.addAll(mgnTableList);
+
+    //start incremental dump
+    WarehouseInstance.Tuple newTuple = primary.dump(primaryDbName, dumpWithClause);
+
+    replica.load(replicatedDbName, primaryDbName, dumpWithClause)
+        .run("use " + replicatedDbName)
+        .run("show tables")
+        .verifyResults(newTableList);
+
+    // verify that the external table filelist is written correctly for incremental dump
+    ReplicationTestUtils.assertExternalFileList(extTableList, newTuple.dumpLocation, primary);
+  }
+
 }

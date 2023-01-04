@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -61,7 +62,7 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
   public static void setupObjectRegistry(ObjectRegistry objectRegistry) {
     staticRegistry = objectRegistry;
-    staticPool = Executors.newCachedThreadPool();
+    staticPool = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("Tez-object-cache %d").build());
   }
 
   @Override
@@ -119,5 +120,11 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
   public void remove(String key) {
     LOG.info("Removing key: " + key);
     registry.delete(key);
+  }
+
+  public static void close() {
+    if (staticPool != null) {
+      staticPool.shutdown();
+    }
   }
 }

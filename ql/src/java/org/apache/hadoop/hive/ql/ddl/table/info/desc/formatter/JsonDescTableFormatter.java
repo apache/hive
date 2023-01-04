@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.formatting.MapBuilder;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 
 import java.io.DataOutputStream;
 import java.util.ArrayList;
@@ -245,7 +245,7 @@ public class JsonDescTableFormatter extends DescTableFormatter {
     }
     if (table.isNonNative() && table.getStorageHandler() != null &&
         table.getStorageHandler().supportsPartitionTransform()) {
-      List<PartitionTransformSpec> specs = table.getStorageHandler().getPartitionTransformSpec(table);
+      List<TransformSpec> specs = table.getStorageHandler().getPartitionTransformSpec(table);
       if (!specs.isEmpty()) {
         builder.put("partitionSpecInfo", specs.stream().map(s -> {
           Map<String, String> result = new LinkedHashMap<>();
@@ -258,22 +258,22 @@ public class JsonDescTableFormatter extends DescTableFormatter {
         }).collect(Collectors.toList()));
       }
     }
-    if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(table.getPrimaryKeyInfo())) {
+    if (PrimaryKeyInfo.isNotEmpty(table.getPrimaryKeyInfo())) {
       builder.put("primaryKeyInfo", table.getPrimaryKeyInfo());
     }
-    if (ForeignKeyInfo.isForeignKeyInfoNotEmpty(table.getForeignKeyInfo())) {
+    if (ForeignKeyInfo.isNotEmpty(table.getForeignKeyInfo())) {
       builder.put("foreignKeyInfo", table.getForeignKeyInfo());
     }
-    if (UniqueConstraint.isUniqueConstraintNotEmpty(table.getUniqueKeyInfo())) {
+    if (UniqueConstraint.isNotEmpty(table.getUniqueKeyInfo())) {
       builder.put("uniqueConstraintInfo", table.getUniqueKeyInfo());
     }
-    if (NotNullConstraint.isNotNullConstraintNotEmpty(table.getNotNullConstraint())) {
+    if (NotNullConstraint.isNotEmpty(table.getNotNullConstraint())) {
       builder.put("notNullConstraintInfo", table.getNotNullConstraint());
     }
-    if (DefaultConstraint.isCheckConstraintNotEmpty(table.getDefaultConstraint())) {
+    if (DefaultConstraint.isNotEmpty(table.getDefaultConstraint())) {
       builder.put("defaultConstraintInfo", table.getDefaultConstraint());
     }
-    if (CheckConstraint.isCheckConstraintNotEmpty(table.getCheckConstraint())) {
+    if (CheckConstraint.isNotEmpty(table.getCheckConstraint())) {
       builder.put("checkConstraintInfo", table.getCheckConstraint());
     }
     if (table.getStorageHandlerInfo() != null) {

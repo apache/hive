@@ -23,7 +23,6 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -53,6 +52,8 @@ public interface HiveMetaHook {
   String PROPERTIES_SEPARATOR = "'";
   String MIGRATE_HIVE_TO_ICEBERG = "migrate_hive_to_iceberg";
   String INITIALIZE_ROLLBACK_MIGRATION = "initialize_rollback_migration";
+  // if this flag is set to true, the HMS call from HiveMetaStoreClient#alter_table() will be skipped
+  String SKIP_METASTORE_ALTER = "skip_metastore_alter";
 
   /**
    * Called before a new table definition is added to the metastore
@@ -144,9 +145,8 @@ public interface HiveMetaHook {
    * Called after a table is altered in the metastore during ALTER TABLE.
    * @param table new table definition
    * @param context environment context, containing information about the alter operation type
-   * @param partitionSpecProxy list of partitions wrapped in {@link PartitionSpecProxy}
    */
-  default void commitAlterTable(Table table, EnvironmentContext context, PartitionSpecProxy partitionSpecProxy) throws MetaException {
+  default void commitAlterTable(Table table, EnvironmentContext context) throws MetaException {
     // Do nothing
   }
 
@@ -167,6 +167,22 @@ public interface HiveMetaHook {
    * @throws MetaException
    */
   public default void preTruncateTable(Table table, EnvironmentContext context) throws MetaException {
+    // Do nothing
+  }
+
+  /**
+   * Returns true if the HMS table should be created by the implementing class.
+   * @return
+   */
+  default boolean createHMSTableInHook() {
+    return false;
+  }
+
+  /**
+   *  Set storage handler specific table properties
+   * @param table
+   */
+  default void postGetTable(Table table) {
     // Do nothing
   }
 }

@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.serde2;
 public interface SerDeStatsStruct {
 
   /**
-   * Rerurns the serialized size of the object.
+   * Returns the serialized size of the object.
    */
   public long getRawDataSerializedSize();
 

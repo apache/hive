@@ -18,11 +18,10 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.create;
 
-import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -31,10 +30,17 @@ import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.metastore.Warehouse;
+
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.getSnapshotOf;
 
 /**
  * Operation process of creating a view.
@@ -60,11 +66,17 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
       Table tbl = desc.toTable(context.getConf());
       // We set the signature for the view if it is a materialized view
       if (tbl.isMaterializedView()) {
-        CreationMetadata cm =
-            new CreationMetadata(MetaStoreUtils.getDefaultCatalog(context.getConf()), tbl.getDbName(),
-                tbl.getTableName(), ImmutableSet.copyOf(desc.getTablesUsed()));
-        cm.setValidTxnList(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-        tbl.getTTable().setCreationMetadata(cm);
+        Set<SourceTable> sourceTables = new HashSet<>(desc.getTablesUsed().size());
+        for (TableName tableName : desc.getTablesUsed()) {
+          sourceTables.add(context.getDb().getTable(tableName).createSourceTable());
+        }
+        MaterializedViewMetadata metadata = new MaterializedViewMetadata(
+                MetaStoreUtils.getDefaultCatalog(context.getConf()),
+                tbl.getDbName(),
+                tbl.getTableName(),
+                sourceTables,
+                getSnapshotOf(context, desc.getTablesUsed()));
+        tbl.setMaterializedViewMetadata(metadata);
       }
       context.getDb().createTable(tbl, desc.getIfNotExists());
       DDLUtils.addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK),

@@ -21,7 +21,6 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -32,6 +31,8 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
 import org.junit.Assert;
@@ -57,7 +58,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     Assert.assertEquals(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns().size(), rows.size());
     for (int i = 0; i < HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns().size(); i++) {
       Types.NestedField field = HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns().get(i);
-      String comment = field.doc() == null ? "from deserializer" : field.doc();
+      String comment = field.doc() == null ? "" : field.doc();
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
           comment}, rows.get(i));
     }
@@ -90,6 +91,53 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     Assert.assertArrayEquals(new Object[]{1L, "Green"}, result.get(1));
     Assert.assertArrayEquals(new Object[]{2L, "Pink"}, result.get(2));
 
+  }
+
+  @Test
+  public void testColumnReorders() throws IOException {
+    Schema schema = new Schema(
+        required(1, "a", Types.LongType.get()),
+        required(2, "b", Types.StringType.get()),
+        required(3, "c", Types.StringType.get()),
+        required(4, "d", Types.IntegerType.get()),
+        required(5, "e", Types.IntegerType.get()),
+        required(6, "f", Types.StringType.get())
+    );
+    testTables.createTable(shell, "customers", schema, fileFormat, ImmutableList.of());
+    shell.executeStatement("INSERT INTO customers VALUES (1, 'foo', 'bar', 33, 44, 'baz'), " +
+        "(2, 'foo2', 'bar2', 55, 66, 'baz2')");
+
+    // move one position to the right
+    // a,b,c,d,e,f -> b,a,c,d,e,f
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN a a bigint AFTER b");
+    List<Object[]> result = shell.executeStatement("SELECT * FROM customers ORDER BY a");
+    Assert.assertEquals(2, result.size());
+    Assert.assertArrayEquals(new Object[]{"foo", 1L, "bar", 33, 44, "baz"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{"foo2", 2L, "bar2", 55, 66, "baz2"}, result.get(1));
+
+    // move first to the last
+    // b,a,c,d,e,f -> a,c,d,e,f,b
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN b b string AFTER f");
+    result = shell.executeStatement("SELECT * FROM customers ORDER BY a");
+    Assert.assertEquals(2, result.size());
+    Assert.assertArrayEquals(new Object[]{1L, "bar", 33, 44, "baz", "foo"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{2L, "bar2", 55, 66, "baz2", "foo2"}, result.get(1));
+
+    // move middle to the first
+    // a,c,d,e,f,b -> e,a,c,d,f,b
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN e e int FIRST");
+    result = shell.executeStatement("SELECT * FROM customers ORDER BY a");
+    Assert.assertEquals(2, result.size());
+    Assert.assertArrayEquals(new Object[]{44, 1L, "bar", 33, "baz", "foo"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{66, 2L, "bar2", 55, "baz2", "foo2"}, result.get(1));
+
+    // move one position to the left
+    // e,a,c,d,f,b -> e,a,d,c,f,b
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN d d int AFTER a");
+    result = shell.executeStatement("SELECT * FROM customers ORDER BY a");
+    Assert.assertEquals(2, result.size());
+    Assert.assertArrayEquals(new Object[]{44, 1L, 33, "bar", "baz", "foo"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{66, 2L, 55, "bar2", "baz2", "foo2"}, result.get(1));
   }
 
   // Tests CHANGE COLUMN feature similarly like above, but with a more complex schema, aimed to verify vectorized
@@ -127,7 +175,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     shell.executeStatement("ALTER TABLE orders CHANGE COLUMN " +
         "item fruit string");
     List<Object[]> result = shell.executeStatement("SELECT customer_first_name, customer_last_name, SUM(quantity) " +
-        "FROM orders where price >= 3 group by customer_first_name, customer_last_name");
+        "FROM orders where price >= 3 group by customer_first_name, customer_last_name order by customer_first_name");
 
     assertQueryResult(result, 4,
         "Doctor", "Strange", 900L,
@@ -140,7 +188,8 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     shell.executeStatement("ALTER TABLE orders ADD COLUMNS (nickname string)");
     shell.executeStatement("INSERT INTO orders VALUES (7, 'Romanoff', 'Natasha', 3, 250, 'apple', 'Black Widow')");
     result = shell.executeStatement("SELECT customer_first_name, customer_last_name, nickname, SUM(quantity) " +
-        " FROM orders where price >= 3 group by customer_first_name, customer_last_name, nickname");
+        " FROM orders where price >= 3 group by customer_first_name, customer_last_name, nickname " +
+        " order by customer_first_name");
     assertQueryResult(result, 5,
         "Doctor", "Strange", null, 900L,
         "Natasha", "Romanoff", "Black Widow", 250L,
@@ -152,7 +201,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     shell.executeStatement("ALTER TABLE orders CHANGE COLUMN fruit fruit string AFTER nickname");
     result = shell.executeStatement("SELECT customer_first_name, customer_last_name, nickname, fruit, SUM(quantity) " +
         " FROM orders where price >= 3 and fruit < 'o' group by customer_first_name, customer_last_name, nickname, " +
-        "fruit");
+        "fruit order by customer_first_name");
     assertQueryResult(result, 4,
         "Doctor", "Strange", null, "apple", 100L,
         "Natasha", "Romanoff", "Black Widow", "apple", 250L,
@@ -173,17 +222,15 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
 
     // Drop columns via REPLACE COLUMNS
     shell.executeStatement("ALTER TABLE orders REPLACE COLUMNS (" +
-        "customer_last_name string COMMENT 'from deserializer', order_id int COMMENT 'from deserializer'," +
-        " quantity int, nick string COMMENT 'from deserializer'," +
-        " fruit string COMMENT 'from deserializer')");
+        "customer_last_name string, order_id int, quantity int, nick string, fruit string)");
 
     result = shell.executeStatement("DESCRIBE orders");
     assertQueryResult(result, 5,
-        "customer_last_name", "string", "from deserializer",
-        "order_id", "int", "from deserializer",
-        "quantity", "int", "from deserializer",
-        "nick", "string", "from deserializer",
-        "fruit", "string", "from deserializer");
+        "customer_last_name", "string", "",
+        "order_id", "int", "",
+        "quantity", "int", "",
+        "nick", "string", "",
+        "fruit", "string", "");
     result = shell.executeStatement("SELECT * FROM orders ORDER BY order_id");
     assertQueryResult(result, 7,
         "Strange", 1, 100, null, "apple",
@@ -329,7 +376,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     icebergTable = testTables.loadTable(TableIdentifier.of("default", "people"));
     testTables.appendIcebergTable(shell.getHiveConf(), icebergTable, fileFormat, null, newPeople);
 
-    List<Record> sortedExpected = new ArrayList<>(people);
+    List<Record> sortedExpected = Lists.newArrayList(people);
     sortedExpected.addAll(newPeople);
     sortedExpected.sort(Comparator.comparingLong(record -> (Long) record.get(0)));
     List<Object[]> rows = shell
@@ -749,5 +796,39 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
         .add(4L, -3147483648L, 55d, "-2234.5").build();
     rows = shell.executeStatement("SELECT * FROM types_table where id in(3, 4)");
     HiveIcebergTestUtils.validateData(expectedResults, HiveIcebergTestUtils.valueForRow(schemaForResultSet, rows), 0);
+  }
+
+  @Test
+  public void testSchemaEvolutionForMigratedTables() {
+    // create a standard Hive table w/ some records
+    TableIdentifier tableIdentifier = TableIdentifier.of("default", "customers");
+    shell.executeStatement(String.format(
+        "CREATE EXTERNAL TABLE customers (id bigint, first_name string, last_name string) STORED AS %s %s",
+        fileFormat, testTables.locationForCreateTableSQL(tableIdentifier)));
+    shell.executeStatement("INSERT INTO customers VALUES (11, 'Lisa', 'Truman')");
+
+    // migrate it to Iceberg
+    shell.executeStatement("ALTER TABLE customers SET TBLPROPERTIES " +
+        "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
+
+    // try to perform illegal schema evolution operations
+    AssertHelpers.assertThrows("issuing a replace columns operation on a migrated Iceberg table should throw",
+        IllegalArgumentException.class, "Cannot perform REPLACE COLUMNS operation on a migrated Iceberg table",
+        () -> shell.executeStatement("ALTER TABLE customers REPLACE COLUMNS (id bigint, last_name string)"));
+
+    AssertHelpers.assertThrows("issuing a change column operation on a migrated Iceberg table should throw",
+        IllegalArgumentException.class, "Cannot perform CHANGE COLUMN operation on a migrated Iceberg table",
+        () -> shell.executeStatement("ALTER TABLE customers CHANGE COLUMN id customer_id bigint"));
+
+    // check if valid ops are still okay
+    shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
+    shell.executeStatement("ALTER TABLE customers ADD COLUMNS (date_joined timestamp)");
+
+    // double check if schema change worked safely
+    shell.executeStatement("INSERT INTO customers VALUES (22, 'Mike', 'Bloomfield', from_unixtime(unix_timestamp()))");
+    List<Object[]> result = shell.executeStatement("SELECT * FROM customers ORDER BY id");
+    Assert.assertEquals(2, result.size());
+    Assert.assertNull(result.get(0)[3]); // first record has null timestamp
+    Assert.assertNotNull(result.get(1)[3]); // second record has timestamp filled out
   }
 }

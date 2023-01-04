@@ -925,7 +925,7 @@ public class MapJoinTestConfig {
     case FAST:
       mapJoinTableContainer =
           new VectorMapJoinFastTableContainer(
-              mapJoinDesc, testDesc.hiveConf, testData.smallTableKeyHashMap.size());
+              mapJoinDesc, testDesc.hiveConf, testData.smallTableKeyHashMap.size(), 1);
       break;
     default:
       throw new RuntimeException("Unexpected hash table implementation type " + vectorDesc.getHashTableImplementationType());

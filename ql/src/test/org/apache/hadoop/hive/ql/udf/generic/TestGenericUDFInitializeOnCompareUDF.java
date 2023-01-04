@@ -23,17 +23,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
+import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category.PRIMITIVE;
+import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category.UNION;
 import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.getStandardListObjectInspector;
 import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.getStandardMapObjectInspector;
 import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.getStandardStructObjectInspector;
@@ -57,17 +58,9 @@ import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFacto
  * </ul>
  *
  */
-@RunWith(Parameterized.class)
 public class TestGenericUDFInitializeOnCompareUDF {
 
-  private final UDFArguments args;
-
-  public TestGenericUDFInitializeOnCompareUDF(UDFArguments arguments) {
-    this.args = arguments;
-  }
-
-  @Parameterized.Parameters(name = "{0}")
-  public static Collection<UDFArguments> generateArguments() {
+  private static Collection<UDFArguments> generateArguments() {
     List<UDFArguments> arguments = new ArrayList<>();
 
     List<ObjectInspector> primitives = new ArrayList<>();
@@ -96,9 +89,29 @@ public class TestGenericUDFInitializeOnCompareUDF {
     return arguments;
   }
 
-  @Test
-  public void testArgsWithDifferentTypeCategoriesThrowsException() {
-    Assume.assumeFalse(args.left.getCategory().equals(args.right.getCategory()));
+  private static Stream<UDFArguments> generateArgsWithDifferentCategories() {
+    return generateArguments().stream().filter(args -> !args.left.getCategory().equals(args.right.getCategory()));
+  }
+
+  private static Stream<UDFArguments> generateArgsWithSameCategoryNoBothPrimitive() {
+    return generateArguments().stream().filter(args -> {
+      ObjectInspector.Category left = args.left.getCategory();
+      ObjectInspector.Category right = args.right.getCategory();
+      return left.equals(right) && !(PRIMITIVE.equals(left) && PRIMITIVE.equals(right));
+    });
+  }
+
+  private static Stream<UDFArguments> generateArgsWithSameTypesNoCategoryUnion() {
+    return generateArguments().stream().filter(args -> {
+      TypeInfo left = TypeInfoUtils.getTypeInfoFromObjectInspector(args.left);
+      TypeInfo right = TypeInfoUtils.getTypeInfoFromObjectInspector(args.right);
+      return left.equals(right) && !UNION.equals(left.getCategory()) && !UNION.equals(right.getCategory());
+    });
+  }
+
+  @ParameterizedTest
+  @MethodSource("generateArgsWithDifferentCategories")
+  public void testArgsWithDifferentTypeCategoriesThrowsException(UDFArguments args) {
     List<GenericUDF> udfs = Arrays.asList(
         new GenericUDFOPEqual(),
         new GenericUDFOPEqualNS(),
@@ -113,20 +126,14 @@ public class TestGenericUDFInitializeOnCompareUDF {
       try {
         u.initialize(new ObjectInspector[] { args.left, args.right });
       }catch (UDFArgumentException e){
-        Assert.assertTrue("Unexpected message for " + u.getUdfName(), e.getMessage().contains("Type mismatch"));
+        Assertions.assertTrue(e.getMessage().contains("Type mismatch"), "Unexpected message for " + u.getUdfName());
       }
     }
   }
   
-  @Test
-  public void testEqualityUDFWithSameTypeArgsSucceeds() throws UDFArgumentException {
-    TypeInfo tleft = TypeInfoUtils.getTypeInfoFromObjectInspector(args.left);
-    TypeInfo tRight = TypeInfoUtils.getTypeInfoFromObjectInspector(args.right);
-    Assume.assumeTrue("Skip arguments with different types", tleft.equals(tRight));
-    boolean unionInputs = 
-        tleft.getCategory().equals(ObjectInspector.Category.UNION) ||
-        tRight.getCategory().equals(ObjectInspector.Category.UNION); 
-    Assume.assumeFalse("Union types are not currently supported", unionInputs);
+  @ParameterizedTest
+  @MethodSource("generateArgsWithSameTypesNoCategoryUnion")
+  public void testEqualityUDFWithSameTypeArgsSucceeds(UDFArguments args) throws UDFArgumentException {
     List<GenericUDF> udfs = Arrays.asList(
         new GenericUDFOPEqual(),
         new GenericUDFOPEqualNS(),
@@ -138,21 +145,16 @@ public class TestGenericUDFInitializeOnCompareUDF {
     }
   }
 
-  @Test
-  public void testBaseNonEqualityUDFWithNonPrimitiveTypeArgsThrowsException() {
-    Assume.assumeTrue("Skip arguments with different categories",
-        args.left.getCategory().equals(args.right.getCategory()));
-    boolean allPrimitives =
-        args.left.getCategory().equals(ObjectInspector.Category.PRIMITIVE) &&
-        args.right.getCategory().equals(ObjectInspector.Category.PRIMITIVE);
-    Assume.assumeFalse("Skip primitive only arguments", allPrimitives);
+  @ParameterizedTest
+  @MethodSource("generateArgsWithSameCategoryNoBothPrimitive")
+  public void testBaseNonEqualityUDFWithNonPrimitiveTypeArgsThrowsException(UDFArguments args) {
     List<GenericUDF> udfs = Arrays
         .asList(new GenericUDFOPGreaterThan(), new GenericUDFOPLessThan(), new GenericUDFOPEqualOrGreaterThan(),
             new GenericUDFOPEqualOrLessThan());
     for (GenericUDF udf : udfs) {
       try {
         udf.initialize(new ObjectInspector[] { args.left, args.right });
-        Assert.fail(
+        Assertions.fail(
             udf.getUdfName() + " operator should not accept non primitive types [" + args.left.getCategory() + ","
                 + args.right.getCategory() + "]");
       } catch (UDFArgumentException e) {
@@ -161,7 +163,7 @@ public class TestGenericUDFInitializeOnCompareUDF {
             e.getMessage().contains("not support LIST types") ||
             e.getMessage().contains("not support STRUCT types") ||
             e.getMessage().contains("not support UNION types");
-        Assert.assertTrue("Unexpected message for " + udf.getUdfName(), isValidMessage);
+        Assertions.assertTrue(isValidMessage, "Unexpected message for " + udf.getUdfName());
       }
     }
   }

@@ -18,14 +18,11 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -43,7 +40,7 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
  * (providing something which appears to be a non-native table with respect to
  * metadata even though its behavior is otherwise identical to a native table).
  */
-public class DefaultStorageHandler implements HiveStorageHandler, HiveStorageAuthorizationHandler {
+public class DefaultStorageHandler implements HiveStorageHandler {
   private Configuration conf;
 
   @Override
@@ -65,17 +62,6 @@ public class DefaultStorageHandler implements HiveStorageHandler, HiveStorageAut
   public HiveMetaHook getMetaHook() {
     // no hook by default
     return null;
-  }
-
-  @Override
-  public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException{
-    // custom storage URI by default
-    try {
-      return new URI(this.getClass().getSimpleName().toLowerCase() + "://" +
-              HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties));
-    } catch (Exception ex) {
-      throw new URISyntaxException("Unsupported ex",ex.getMessage());
-    }
   }
 
   public HiveAuthorizationProvider getAuthorizationProvider()

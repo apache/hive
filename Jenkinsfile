@@ -22,7 +22,7 @@ properties([
     // do not run multiple testruns on the same branch
     disableConcurrentBuilds(),
     parameters([
-        string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
+        string(name: 'SPLIT', defaultValue: '22', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
     ])
 ])
@@ -67,7 +67,7 @@ setPrLabel("PENDING");
 
 def executorNode(run) {
   hdbPodTemplate {
-    timeout(time: 6, unit: 'HOURS') {
+    timeout(time: 12, unit: 'HOURS') {
       node(POD_LABEL) {
         container('hdb') {
           run()
@@ -81,7 +81,6 @@ def buildHive(args) {
   configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
       sh '''#!/bin/bash -e
-ls -l
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
@@ -94,13 +93,28 @@ OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePl
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
-if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt"; sed -i '/\\/ITest/d' $PWD/inclusions.txt;fi
+if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 mvn $OPTS '''+args+'''
 du -h --max-depth=1
 df -h
 '''
     }
+  }
+}
+
+def sonarAnalysis(args) {
+  withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
+      def mvnCmd = """mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+      -Dsonar.organization=apache \
+      -Dsonar.projectKey=apache_hive \
+      -Dsonar.host.url=https://sonarcloud.io \
+      """+args+" -DskipTests -Dit.skipTests -Dmaven.javadoc.skip"
+
+      sh """#!/bin/bash -e
+      sw java 11 && . /etc/profile.d/java.sh
+      export MAVEN_OPTS=-Xmx5G
+      """+mvnCmd
   }
 }
 
@@ -193,7 +207,34 @@ jobWrappers {
   executorNode {
     container('hdb') {
       stage('Checkout') {
-        checkout scm
+        if(env.CHANGE_ID) {
+          checkout([
+            $class: 'GitSCM',
+            branches: scm.branches,
+            doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+            extensions: scm.extensions,
+            userRemoteConfigs: scm.userRemoteConfigs + [[
+              name: 'origin',
+              refspec: scm.userRemoteConfigs[0].refspec+ " +refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target",
+              url: scm.userRemoteConfigs[0].url,
+              credentialsId: scm.userRemoteConfigs[0].credentialsId
+            ]],
+          ])
+	  sh '''#!/bin/bash
+set -e
+echo "@@@ patches in the PR but not on target ($CHANGE_TARGET)"
+git log --oneline origin/target..HEAD
+echo "@@@ patches on target but not in the PR"
+git log --oneline HEAD..origin/target
+echo "@@@ merging target"
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+git merge origin/target
+'''
+
+        } else {
+          checkout scm
+        }
       }
       stage('Prechecks') {
         def spotbugsProjects = [
@@ -203,6 +244,16 @@ jobWrappers {
             ":hive-standalone-metastore-common",
             ":hive-service-rpc"
         ]
+        sh '''#!/bin/bash
+set -e
+xmlstarlet edit -L `find . -name pom.xml`
+git diff
+n=`git diff | wc -l`
+if [ $n != 0 ]; then
+  echo "!!! incorrectly formatted pom.xmls detected; see above!" >&2
+  exit 1
+fi
+'''
         buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
       stage('Compile') {
@@ -221,7 +272,7 @@ jobWrappers {
   }
 
   def branches = [:]
-  for (def d in ['derby','postgres','mysql']) {
+  for (def d in ['derby','postgres',/*'mysql',*/'oracle']) {
     def dbType=d
     def splitName = "init@$dbType"
     branches[splitName] = {
@@ -243,18 +294,55 @@ reinit_metastore $dbType
 time docker rm -f dev_$dbType || true
 '''
           }
-          stage('verify') {
-            try {
-              sh """#!/bin/bash -e
-mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -Dmaven.test.failure.ignore -B -Ditest.jdbc.jars=`find /apps/lib/ -type f | paste -s -d:`
-"""
-            } finally {
-              junit '**/TEST-*.xml'
-            }
-          }
         }
       }
     }
+  }
+  branches['nightly-check'] = {
+      executorNode {
+        stage('Prepare') {
+            loadWS();
+        }
+        stage('Build') {
+            sh '''#!/bin/bash
+set -e
+dev-support/nightly
+'''
+            buildHive("install -Dtest=noMatches -Pdist -pl packaging -am")
+        }
+        stage('Verify') {
+            sh '''#!/bin/bash
+set -e
+tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
+'''
+            buildHive("install -Dtest=noMatches -Pdist,iceberg -f apache-hive-*-nightly-*/pom.xml")
+        }
+      }
+  }
+  branches['sonar'] = {
+      executorNode {
+          if(env.BRANCH_NAME == 'master') {
+              stage('Prepare') {
+                  loadWS();
+              }
+              stage('Sonar') {
+                  sonarAnalysis("-Dsonar.branch.name=${BRANCH_NAME}")
+              }
+          } else if(env.CHANGE_ID) {
+              stage('Prepare') {
+                  loadWS();
+              }
+              stage('Sonar') {
+                  sonarAnalysis("""-Dsonar.pullrequest.github.repository=apache/hive \
+                                   -Dsonar.pullrequest.key=${CHANGE_ID} \
+                                   -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
+                                   -Dsonar.pullrequest.base=${CHANGE_TARGET} \
+                                   -Dsonar.pullrequest.provider=GitHub""")
+              }
+          } else {
+              echo "Skipping sonar analysis, we only run it on PRs and on the master branch, found ${env.BRANCH_NAME}"
+          }
+      }
   }
   for (int i = 0; i < splits.size(); i++) {
     def num = i
@@ -290,6 +378,18 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
             }
           }
         }
+      }
+    }
+  }
+  branches['javadoc-check'] = {
+    executorNode {
+      stage('Prepare') {
+          loadWS();
+      }
+      stage('Generate javadoc') {
+          sh """#!/bin/bash -e
+mvn install javadoc:javadoc javadoc:aggregate -DskipTests -pl '!itests/hive-jmh,!itests/util'
+"""
       }
     }
   }

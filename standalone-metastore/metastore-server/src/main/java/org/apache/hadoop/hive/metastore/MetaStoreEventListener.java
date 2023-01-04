@@ -343,7 +343,7 @@ public abstract class MetaStoreEventListener implements Configurable {
 
   /**
    * This will be called to perform acid write operation in a batch.
-   * @param acidWriteEvent event to be processed
+   * @param batchAcidWriteEvent event to be processed
    * @param dbConn jdbc connection to remote meta store db.
    * @param sqlGenerator helper class to generate db specific sql string.
    * @throws MetaException

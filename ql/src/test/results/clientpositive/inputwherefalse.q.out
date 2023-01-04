@@ -10,9 +10,7 @@ select key
 where key = 100 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: target/warehouse/destemp.out/dir1
-PREHOOK: Output: target/warehouse/destemp.out/dir2
-PREHOOK: Output: target/warehouse/destemp.out/dir3
+#### A masked pattern was here ####
 POSTHOOK: query: From (select * from src) a
 insert overwrite directory 'target/warehouse/destemp.out/dir1/'
 select key
@@ -25,9 +23,7 @@ select key
 where key = 100 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: target/warehouse/destemp.out/dir1
-POSTHOOK: Output: target/warehouse/destemp.out/dir2
-POSTHOOK: Output: target/warehouse/destemp.out/dir3
+#### A masked pattern was here ####
 200
 100
 #### A masked pattern was here ####
@@ -43,9 +39,7 @@ select key
 where key = 100 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: target/warehouse/destemp.out/dir1
-PREHOOK: Output: target/warehouse/destemp.out/dir2
-PREHOOK: Output: target/warehouse/destemp.out/dir3
+#### A masked pattern was here ####
 POSTHOOK: query: From (select * from src) a
 insert overwrite directory 'target/warehouse/destemp.out/dir1/'
 select key
@@ -58,9 +52,7 @@ select key
 where key = 100 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: target/warehouse/destemp.out/dir1
-POSTHOOK: Output: target/warehouse/destemp.out/dir2
-POSTHOOK: Output: target/warehouse/destemp.out/dir3
+#### A masked pattern was here ####
 200
 100
 #### A masked pattern was here ####

@@ -1,0 +1,45 @@
+PREHOOK: query: CREATE EXTERNAL TABLE country
+(
+    id int,
+    name varchar(20)
+)
+    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+    TBLPROPERTIES (
+        "hive.sql.database.type" = "POSTGRES",
+        "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+        "hive.sql.dbcp.username" = "qtestuser",
+        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.table" = "country"
+        )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country
+POSTHOOK: query: CREATE EXTERNAL TABLE country
+(
+    id int,
+    name varchar(20)
+)
+    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+    TBLPROPERTIES (
+        "hive.sql.database.type" = "POSTGRES",
+        "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+        "hive.sql.dbcp.username" = "qtestuser",
+        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.table" = "country"
+        )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country
+PREHOOK: query: SELECT * FROM country
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM country
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country
+#### A masked pattern was here ####
+1	India
+2	Russia
+3	USA

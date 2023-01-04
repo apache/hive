@@ -49,7 +49,7 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
   public List<String> filterTableNames(String catName, String dbName, List<String> tableList)
       throws MetaException {
     List<HivePrivilegeObject> listObjs = getHivePrivObjects(dbName, tableList);
-    return getTableNames(getFilteredObjects(listObjs));
+    return getFilteredObjectNames(getFilteredObjects(listObjs));
   }
   @Override
   public List<Table> filterTables(List<Table> tableList) throws MetaException {
@@ -98,7 +98,7 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     return tnames;
   }
 
-  private List<String> getTableNames(List<HivePrivilegeObject> filteredObjects) {
+  private List<String> getFilteredObjectNames(List<HivePrivilegeObject> filteredObjects) {
     List<String> tnames = new ArrayList<String>();
     for(HivePrivilegeObject obj : filteredObjects) {
       tnames.add(obj.getObjectName());
@@ -153,6 +153,10 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
              .filter(e -> filteredTableNames.contains(e.getTableName())).collect(Collectors.toList());
    }
 
-
+  @Override
+  public List<String> filterDataConnectors(List<String> dcList) throws MetaException {
+    List<HivePrivilegeObject> listObjs = HivePrivilegeObjectUtils.getHivePrivDcObjects(dcList);
+    return getFilteredObjectNames(getFilteredObjects(listObjs));
+  }
 }
 

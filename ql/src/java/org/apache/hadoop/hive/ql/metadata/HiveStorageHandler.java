@@ -18,21 +18,36 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collections;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
@@ -203,7 +218,7 @@ public interface HiveStorageHandler extends Configurable {
    *
    * @param operatorDesc operatorDesc
    * @param initialProps Map containing initial operator properties
-   * @return Map<String, String> containing additional operator specific information from storage handler
+   * @return Map&lt;String, String&gt; containing additional operator specific information from storage handler
    * OR `initialProps` if the storage handler choose to not provide any such information.
    */
   default Map<String, String> getOperatorDescProperties(OperatorDesc operatorDesc, Map<String, String> initialProps) {
@@ -229,17 +244,15 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Check if CTAS operations should behave in a direct-insert manner (i.e. no move task).
-   *
-   * If true, the compiler will not include the table creation task and move task into the execution plan.
-   * Instead, it's the responsibility of storage handler/serde to create the table during the compilation phase.
+   * Check if CTAS and CMV operations should behave in a direct-insert manner (i.e. no move task).
+   * <p>
    * Please note that the atomicity of the operation will suffer in this case, i.e. the created table might become
-   * exposed, depending on the implementation, before the CTAS operations finishes.
+   * exposed, depending on the implementation, before the CTAS or CMV operations finishes.
    * Rollback (e.g. dropping the table) is also the responsibility of the storage handler in case of failures.
    *
-   * @return whether direct insert CTAS is required
+   * @return whether direct insert CTAS or CMV is required
    */
-  default boolean directInsertCTAS() {
+  default boolean directInsert() {
     return false;
   }
 
@@ -257,6 +270,106 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  enum AcidSupportType {
+    NONE,
+    WITH_TRANSACTIONS,
+    WITHOUT_TRANSACTIONS
+  }
+
+  /**
+   * Specifies whether the table supports ACID operations or not (DELETE, UPDATE and MERGE statements).
+   *
+   * Possible return values:
+   * <ul>
+   *   <li>AcidSupportType.NONE - ACID operations are not supported</li>
+   *   <li>AcidSupportType.WITH_TRANSACTIONS - ACID operations are supported, and must use a valid HiveTxnManager to wrap
+   *   the operation in a transaction, like in the case of standard Hive ACID tables</li>
+   *   <li>AcidSupportType.WITHOUT_TRANSACTIONS - ACID operations are supported, and there is no need for a HiveTxnManager
+   *   to open/close transactions for the operation, i.e. org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager
+   *   can be used</li>
+   * </ul>
+   *
+   * @return the table's ACID support type
+   */
+  default AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table,
+      boolean isWriteOperation) {
+    return AcidSupportType.NONE;
+  }
+
+  /**
+   * Specifies which additional virtual columns should be added to the virtual column registry during compilation
+   * for tables that support ACID operations.
+   *
+   * Should only return a non-empty list if
+   * {@link HiveStorageHandler#supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table, boolean)} ()} returns something
+   * other NONE.
+   *
+   * @return the list of ACID virtual columns
+   */
+  default List<VirtualColumn> acidVirtualColumns() {
+    return Collections.emptyList();
+  }
+
+  /**
+   * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
+   * queries.
+   * - DELETE FROM T WHERE A = 32 is rewritten into
+   * INSERT INTO T SELECT &lt;selectCols&gt; FROM T WHERE A = 32 SORT BY &lt;sortCols&gt;.
+   * - UPDATE T SET B=12 WHERE A = 32 is rewritten into
+   * INSERT INTO T SELECT &lt;selectCols&gt;, &lt;newValues&gt; FROM T WHERE A = 32 SORT BY &lt;sortCols&gt;.
+   *
+   * This method specifies which columns should be injected into the &lt;selectCols&gt; part of the rewritten query.
+   *
+   * Should only return a non-empty list if
+   * {@link HiveStorageHandler#supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table, boolean)} returns something
+   * other NONE.
+   *
+   * @param table the table which is being deleted/updated/merged into
+   * @param operation the operation type we are executing
+   * @return the list of columns that should be projected in the rewritten ACID query
+   */
+  default List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+    return Collections.emptyList();
+  }
+
+  /**
+   * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
+   * queries. E.g. DELETE FROM T WHERE A = 32 is rewritten into
+   * INSERT INTO T SELECT &lt;selectCols&gt; FROM T WHERE A = 32 SORT BY &lt;sortCols&gt;.
+   *
+   * This method specifies which columns should be injected into the &lt;sortCols&gt; part of the rewritten query.
+   *
+   * Should only return a non-empty list if
+   * {@link HiveStorageHandler#supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table, boolean)} returns something
+   * other NONE.
+   *
+   * @param table the table which is being deleted/updated/merged into
+   * @param operation the operation type we are executing
+   * @return the list of columns that should be used as sort columns in the rewritten ACID query
+   */
+  default List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+    return Collections.emptyList();
+  }
+
+  /**
+   * Check if the underlying storage handler implementation supports sort columns.
+   * @return true if the storage handler can support it
+   */
+  default boolean supportsSortColumns() {
+    return false;
+  }
+
+  /**
+   * Collect the columns that are used to sort the content of the data files
+   * @param table the table which is being sorted
+   * @return the list of columns that are used during data sorting
+   */
+  default List<FieldSchema> sortColumns(org.apache.hadoop.hive.ql.metadata.Table table) {
+    Preconditions.checkState(supportsSortColumns(), "Should only be called for table formats where data sorting " +
+        "is supported");
+    return Collections.emptyList();
+  }
+
   /**
    * Check if the underlying storage handler implementation support partition transformations.
    * @return true if the storage handler can support it
@@ -271,7 +384,23 @@ public interface HiveStorageHandler extends Configurable {
    * @param table the HMS table, must be non-null
    * @return partition transform specification, can be null.
    */
-  default List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table table) {
+  default List<TransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return null;
+  }
+
+  /**
+   * Creates a DynamicPartitionCtx instance that will be set up by the storage handler itself. Useful for non-native
+   * tables where partitions are not handled by Hive, and sorting is required in a custom way before writing the table.
+   * @param conf job conf
+   * @param table the HMS table
+   * @return the created DP context object, null if DP context / sorting is not required
+   * @throws SemanticException
+   */
+  default DynamicPartitionCtx createDPContext(
+          HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table, Operation writeOperation)
+      throws SemanticException {
+    Preconditions.checkState(alwaysUnpartitioned(), "Should only be called for table formats where partitioning " +
+        "is not handled by Hive but the table format itself. See alwaysUnpartitioned() method.");
     return null;
   }
 
@@ -329,5 +458,67 @@ public interface HiveStorageHandler extends Configurable {
    */
   default boolean isTimeTravelAllowed() {
     return false;
+  }
+
+  default boolean isMetadataTableSupported() {
+    return false;
+  }
+
+  default boolean isValidMetadataTable(String metaTableName) {
+    return false;
+  }
+
+  /**
+   * Constructs a URI for authorization purposes using the HMS table object
+   * @param table The HMS table object
+   * @return the URI for authorization
+   */
+  default URI getURIForAuth(Table table) throws URISyntaxException {
+    Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
+    return new URI(this.getClass().getSimpleName().toLowerCase() + "://" +
+        HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties));
+  }
+
+  /**
+   * Validates whether the sink operation is permitted for the specific storage handler, based
+   * on information contained in the sinkDesc.
+   * @param sinkDesc The sink descriptor
+   * @throws SemanticException if the sink operation is not allowed
+   */
+  default void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
+  }
+
+  /**
+   * Execute an operation on storage handler level
+   * @param executeSpec operation specification
+   */
+  default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
+  }
+
+  /**
+   * Gets whether this storage handler supports snapshots.
+   * @return true means snapshots are supported false otherwise
+   */
+  default boolean areSnapshotsSupported() {
+    return false;
+  }
+
+  /**
+   * Query the most recent unique snapshot's context of the passed table.
+   * @param table - {@link org.apache.hadoop.hive.ql.metadata.Table} which snapshot context should be returned.
+   * @return {@link SnapshotContext} wraps the snapshotId or null if no snapshot present.
+   */
+  default SnapshotContext getCurrentSnapshotContext(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return null;
+  }
+
+  /**
+   * Alter table operations can rely on this to customize the EnvironmentContext to be used during the alter table
+   * invocation (both on client and server side of HMS)
+   * @param alterTableDesc the alter table desc (e.g.: AlterTableSetPropertiesDesc) containing the work to do
+   * @param environmentContext an existing EnvironmentContext created prior, now to be filled/amended
+   */
+  default void prepareAlterTableEnvironmentContext(AbstractAlterTableDesc alterTableDesc,
+      EnvironmentContext environmentContext) {
   }
 }

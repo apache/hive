@@ -84,7 +84,7 @@ public final class LazyFactory {
    * of the lazy object.
    *
    * @param poi PrimitiveObjectInspector
-   * @param typeBinary a switch to return either a LazyPrimtive class or it's binary
+   * @param typeBinary a switch to return either a LazyPrimitive class or it's binary
    *        companion
    * @return LazyPrimitive&lt;? extends ObjectInspector, ? extends Writable&gt;
    */

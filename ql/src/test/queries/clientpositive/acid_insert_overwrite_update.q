@@ -26,7 +26,6 @@ insert overwrite table sequential_update values(current_timestamp, 0, current_ti
 delete from sequential_update where seq=2;
 select distinct IF(seq==0, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update;
 
-alter table sequential_update compact 'major';
 select distinct IF(seq==0, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update;
 
 -- Check with load

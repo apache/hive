@@ -518,8 +518,8 @@ public class RowResolver implements Serializable{
         return true;
       }
     } else {
-      for (Map.Entry<String, Map<String, String>> ambigousColsEntry: ambiguousColumns.entrySet()) {
-        Map<String, String> cmap = ambigousColsEntry.getValue();
+      for (Map.Entry<String, Map<String, String>> ambiguousColsEntry: ambiguousColumns.entrySet()) {
+        Map<String, String> cmap = ambiguousColsEntry.getValue();
         for (Map.Entry<String, String> cmapEnt : cmap.entrySet()) {
           if (colAlias.equalsIgnoreCase(cmapEnt.getKey())) {
             return true;

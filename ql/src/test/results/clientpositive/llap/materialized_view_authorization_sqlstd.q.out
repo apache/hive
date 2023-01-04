@@ -229,6 +229,8 @@ POSTHOOK: Input: db1@testmvtable
 POSTHOOK: Output: database:db2
 POSTHOOK: Output: db2@testmv
 POSTHOOK: Output: db2@testmv
+POSTHOOK: Lineage: testmv.id SIMPLE [(testmvtable)tmv.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: testmv.name SIMPLE [(testmvtable)tmv.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: grant all on table db1.testmvtable to user user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: db1@testmvtable

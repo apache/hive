@@ -135,6 +135,16 @@ class TCLIServiceHandler : virtual public TCLIServiceIf {
     printf("SetClientInfo\n");
   }
 
+  void UploadData(TUploadDataResp& _return, const TUploadDataReq& req) {
+    // Your implementation goes here
+    printf("UploadData\n");
+  }
+
+  void DownloadData(TDownloadDataResp& _return, const TDownloadDataReq& req) {
+    // Your implementation goes here
+    printf("DownloadData\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

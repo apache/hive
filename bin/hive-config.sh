@@ -68,3 +68,7 @@ export HIVE_AUX_JARS_PATH=$HIVE_AUX_JARS_PATH
 
 # Default to use 256MB 
 export HADOOP_HEAPSIZE=${HADOOP_HEAPSIZE:-256}
+
+# Disable the JNDI. This feature has critical RCE vulnerability.
+# when 2.x <= log4j.version <= 2.14.1
+export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.formatMsgNoLookups=true"

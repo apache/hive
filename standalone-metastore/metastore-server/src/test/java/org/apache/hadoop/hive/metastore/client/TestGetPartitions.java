@@ -414,7 +414,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
       createTable3PartCols1Part(client);
       client.getPartitionsByNames(null, TABLE_NAME, Lists.newArrayList("yyyy=2000/mm=01/dd=02"));
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | MetaException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }

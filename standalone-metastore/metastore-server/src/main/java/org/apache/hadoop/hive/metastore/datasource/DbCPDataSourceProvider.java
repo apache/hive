@@ -31,7 +31,6 @@ import org.apache.commons.pool2.impl.BaseObjectPoolConfig;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,8 +56,9 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
-  public DataSource create(Configuration hdpConfig) throws SQLException {
-    LOG.debug("Creating dbcp connection pool for the MetaStore");
+  public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
+    String poolName = DataSourceProvider.getDataSourceName(hdpConfig);
+    LOG.info("Creating dbcp connection pool for the MetaStore, maxPoolSize: {}, name: {}", maxPoolSize, poolName);
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
@@ -77,9 +77,6 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
       dbcpDs.setConnectionProperties(kv.getKey() + "=" + kv.getValue());
     }
 
-    int maxPoolSize = hdpConfig.getInt(
-            MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getVarname(),
-            ((Long) MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getDefaultVal()).intValue());
     long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
     int connectionMaxIlde = hdpConfig.getInt(CONNECTION_MAX_IDLE_PROPERTY, 8);
     int connectionMinIlde = hdpConfig.getInt(CONNECTION_MIN_IDLE_PROPERTY, 0);

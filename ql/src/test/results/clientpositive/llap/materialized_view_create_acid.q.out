@@ -74,3 +74,7 @@ Original Query:     	SELECT a, b, c FROM cmv_basetable_n4
 Expanded Query:     	SELECT `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`b`, `cmv_basetable_n4`.`c` FROM `default`.`cmv_basetable_n4`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n4	0/0/0               	 

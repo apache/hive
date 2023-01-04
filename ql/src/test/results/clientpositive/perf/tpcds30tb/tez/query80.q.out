@@ -444,7 +444,7 @@ STAGE PLANS:
                           1 Map 19
                         Statistics: Num rows: 1930188361 Data size: 613394664868 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
-                          expressions: _col15 (type: string), _col4 (type: decimal(7,2)), CASE WHEN (_col9 is not null) THEN (_col9) ELSE (0) END (type: decimal(7,2)), (_col5 - CASE WHEN (_col10 is not null) THEN (_col10) ELSE (0) END) (type: decimal(8,2))
+                          expressions: _col15 (type: string), _col4 (type: decimal(7,2)), if(_col9 is not null, _col9, 0) (type: decimal(7,2)), (_col5 - if(_col10 is not null, _col10, 0)) (type: decimal(8,2))
                           outputColumnNames: _col0, _col1, _col2, _col3
                           Statistics: Num rows: 1930188361 Data size: 613394664868 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
@@ -499,7 +499,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1000000)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1000000)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -512,7 +512,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1000000)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1000000)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -525,7 +525,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1000000)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1000000)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -589,7 +589,7 @@ STAGE PLANS:
                           1 Map 9
                         Statistics: Num rows: 3560979800 Data size: 738066718256 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
-                          expressions: _col15 (type: string), _col4 (type: decimal(7,2)), CASE WHEN (_col9 is not null) THEN (_col9) ELSE (0) END (type: decimal(7,2)), (_col5 - CASE WHEN (_col10 is not null) THEN (_col10) ELSE (0) END) (type: decimal(8,2))
+                          expressions: _col15 (type: string), _col4 (type: decimal(7,2)), if(_col9 is not null, _col9, 0) (type: decimal(7,2)), (_col5 - if(_col10 is not null, _col10, 0)) (type: decimal(8,2))
                           outputColumnNames: _col0, _col1, _col2, _col3
                           Statistics: Num rows: 3560979800 Data size: 738066718256 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
@@ -661,7 +661,7 @@ STAGE PLANS:
                           1 Map 24
                         Statistics: Num rows: 953023671 Data size: 308477137804 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
-                          expressions: _col15 (type: string), _col4 (type: decimal(7,2)), CASE WHEN (_col9 is not null) THEN (_col9) ELSE (0) END (type: decimal(7,2)), (_col5 - CASE WHEN (_col10 is not null) THEN (_col10) ELSE (0) END) (type: decimal(8,2))
+                          expressions: _col15 (type: string), _col4 (type: decimal(7,2)), if(_col9 is not null, _col9, 0) (type: decimal(7,2)), (_col5 - if(_col10 is not null, _col10, 0)) (type: decimal(8,2))
                           outputColumnNames: _col0, _col1, _col2, _col3
                           Statistics: Num rows: 953023671 Data size: 308477137804 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator

@@ -1170,7 +1170,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             task, priority, capability);
     if (!dagRunning) {
       if (metrics != null && id != null) {
-        metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
+        metrics.setDagId(id.getDAGID().toString());
       }
       dagRunning = true;
     }
@@ -1191,7 +1191,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         task, priority, capability, containerId);
     if (!dagRunning) {
       if (metrics != null && id != null) {
-        metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
+        metrics.setDagId(id.getDAGID().toString());
       }
       dagRunning = true;
     }
@@ -1204,7 +1204,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   protected TezTaskAttemptID getTaskAttemptId(Object task) {
     // TODO: why does Tez API use "Object" for this?
     if (task instanceof TaskAttempt) {
-      return ((TaskAttempt)task).getID();
+      return ((TaskAttempt)task).getTaskAttemptID();
     }
     throw new AssertionError("LLAP plugin can only schedule task attempts");
   }
@@ -1402,12 +1402,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    * @return
    */
   private SelectHostResult selectHost(TaskInfo request, Map<String, List<NodeInfo>> availableHostMap) {
-    // short-circuit when all nodes are busy
-    if (availableHostMap.values().isEmpty()) {
-      // reset locality delay
-      if (request.localityDelayTimeout > 0 && isRequestedHostPresent(request)) {
-        request.resetLocalityDelayInfo();
-      }
+    // short-circuit when no-active instances exist
+    if (availableHostMap.isEmpty()) {
       return SELECT_HOST_RESULT_DELAYED_RESOURCES;
     }
     String[] requestedHosts = request.requestedHosts;
@@ -1430,6 +1426,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         boolean requestedHostsWillBecomeAvailable = false;
         for (String host : requestedHosts) {
           prefHostCount++;
+
+          // Check if the host is removed from the registry after availableHostMap is created.
+          Set<LlapServiceInstance> activeInstancesByHost = activeInstances.getByHost(host);
+          if (activeInstancesByHost == null || activeInstancesByHost.isEmpty()) {
+            continue;
+          }
+
           // Pick the first host always. Weak attempt at cache affinity.
           if (availableHostMap.containsKey(host)) {
             List<NodeInfo> instances = availableHostMap.getOrDefault(host, new ArrayList<>());
@@ -1447,23 +1450,26 @@ public class LlapTaskSchedulerService extends TaskScheduler {
                 if (request.shouldForceLocality()) {
                   requestedHostsWillBecomeAvailable = true;
                 } else {
-                  LlapServiceInstance inst = activeInstances.getByHost(host).stream().findFirst().get();
-                  NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
-                  if (nodeInfo != null && nodeInfo.getEnableTime() > request.getLocalityDelayTimeout()
-                      && nodeInfo.isDisabled() && nodeInfo.hadCommFailure()) {
-                    LOG.debug("Host={} will not become available within requested timeout", nodeInfo);
-                    // This node will likely be activated after the task timeout expires.
-                  } else {
-                    // Worth waiting for the timeout.
-                    requestedHostsWillBecomeAvailable = true;
+                  for (LlapServiceInstance inst : activeInstancesByHost) {
+                    NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
+                    if (nodeInfo == null) {
+                      LOG.warn("Null NodeInfo when attempting to get host {}", host);
+                      // Leave requestedHostWillBecomeAvailable as is. If some other host is found - delay,
+                      // else ends up allocating to a random host immediately.
+                      continue;
+                    }
+                    if (nodeInfo.getEnableTime() > request.getLocalityDelayTimeout()
+                            && nodeInfo.isDisabled() && nodeInfo.hadCommFailure()) {
+                      LOG.debug("Host={} will not become available within requested timeout", nodeInfo);
+                      // This node will likely be activated after the task timeout expires.
+                    } else {
+                      // Worth waiting for the timeout.
+                      requestedHostsWillBecomeAvailable = true;
+                    }
                   }
                 }
               }
             }
-          } else {
-            LOG.warn("Null NodeInfo when attempting to get host {}", host);
-            // Leave requestedHostWillBecomeAvailable as is. If some other host is found - delay,
-            // else ends up allocating to a random host immediately.
           }
         }
         // Check if forcing the location is required.
@@ -1527,7 +1533,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             ((requestedHosts == null || requestedHosts.length == 0) ? "null" : requestedHostsDebugStr));
         return new SelectHostResult(nextSlot);
       }
-
+      // When all nodes are busy, reset locality delay
+      if (request.localityDelayTimeout > 0 && isRequestedHostPresent(request)) {
+        request.resetLocalityDelayInfo();
+      }
       return SELECT_HOST_RESULT_DELAYED_RESOURCES;
     } finally {
       readLock.unlock();
@@ -1820,6 +1829,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
               hostList.add(nodeInfo);
             }
           }
+        } else {
+          LOG.warn("Null NodeInfo when attempting to get available resources for " + inst.getWorkerIdentity());
         }
       }
       // isClusterCapacityFull will be set to false on every trySchedulingPendingTasks call
@@ -1846,7 +1857,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    */
   private boolean shouldCycle(Map<String, List<NodeInfo>> availableHostMap) {
     // short-circuit on resource availability
-    if (!availableHostMap.values().isEmpty()) return true;
+    int nodeCnt = 0;
+    for (List<NodeInfo> nodes : availableHostMap.values()) {
+      nodeCnt += nodes.size();
+    }
+    if (nodeCnt > 0) return true;
     // check if pending Pri is lower than existing tasks pri
     int specMax = speculativeTasks.isEmpty() ? Integer.MIN_VALUE : speculativeTasks.lastKey();
     int guarMax = guaranteedTasks.isEmpty() ? Integer.MIN_VALUE : guaranteedTasks.lastKey();
@@ -2093,7 +2108,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           if (preemptHosts != null && !preemptHosts.contains(taskInfo.getAssignedNode().getHost())) {
             continue; // Not the right host.
           }
-          Map<Integer, Set<Integer>> depInfo = getDependencyInfo(taskInfo.getAttemptId().getTaskID().getVertexID().getDAGId());
+          Map<Integer, Set<Integer>> depInfo = getDependencyInfo(taskInfo.getAttemptId().getDAGID());
           Set<Integer> vertexDepInfo = null;
           if (depInfo != null) {
             vertexDepInfo = depInfo.get(vertexNum(forTask));
@@ -2749,7 +2764,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       return hadCommFailure;
     }
 
-    boolean _canAccepInternal() {
+    boolean _canAcceptInternal() {
       return !hadCommFailure && !disabled
           &&(numSchedulableTasks == -1 || ((numSchedulableTasks - numScheduledTasks) > 0));
     }
@@ -2758,7 +2773,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     may be running in the system. Also depends upon the capacity usage configuration
      */
     boolean canAcceptTask() {
-      boolean result = _canAccepInternal();
+      boolean result = _canAcceptInternal();
       if (LOG.isTraceEnabled()) {
         LOG.trace(constructCanAcceptLogResult(result));
       }
@@ -2813,7 +2828,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     private String toShortString() {
       StringBuilder sb = new StringBuilder();
-      sb.append(", canAcceptTask=").append(_canAccepInternal());
+      sb.append(", canAcceptTask=").append(_canAcceptInternal());
       sb.append(", st=").append(numScheduledTasks);
       sb.append(", ac=").append((numSchedulableTasks - numScheduledTasks));
       sb.append(", commF=").append(hadCommFailure);

@@ -56,10 +56,15 @@ PREHOOK: query: update `aci/d_u/ami` set `d?*de e` = 3.14 where `d?*de e` = 109.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@aci/d_u/ami
 PREHOOK: Output: default@aci/d_u/ami
+PREHOOK: Output: default@aci/d_u/ami
 POSTHOOK: query: update `aci/d_u/ami` set `d?*de e` = 3.14 where `d?*de e` = 109.23 or `d?*de e` = 119.23
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@aci/d_u/ami
 POSTHOOK: Output: default@aci/d_u/ami
+POSTHOOK: Output: default@aci/d_u/ami
+POSTHOOK: Lineage: aci/d_u/ami.d?*de e EXPRESSION []
+POSTHOOK: Lineage: aci/d_u/ami.i SIMPLE [(aci/d_u/ami)aci/d_u/ami.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: aci/d_u/ami.vc SIMPLE [(aci/d_u/ami)aci/d_u/ami.FieldSchema(name:vc, type:varchar(128), comment:null), ]
 PREHOOK: query: select * from `aci/d_u/ami` order by `d?*de e`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@aci/d_u/ami

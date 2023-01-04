@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.kudu;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +36,14 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
@@ -53,9 +57,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Provides a HiveStorageHandler implementation for Apache Kudu.
  */
-public class KuduStorageHandler extends DefaultStorageHandler implements HiveStoragePredicateHandler {
+public class KuduStorageHandler extends DefaultStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(KuduStorageHandler.class);
+
+  private static final String KUDU_PREFIX = "kudu:";
 
   private static final String KUDU_PROPERTY_PREFIX = "kudu.";
 
@@ -153,6 +159,17 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
         jobProperties.put(propToCopy, value);
       }
     }
+  }
+
+  @Override
+  public URI getURIForAuth(Table table) throws URISyntaxException {
+    Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
+    String host_name = tableProperties.get(KUDU_MASTER_ADDRS_KEY) != null ?
+            tableProperties.get(KUDU_MASTER_ADDRS_KEY) : conf.get(KUDU_MASTER_ADDRS_KEY);
+    Preconditions.checkNotNull(host_name, "Set Table property " + conf);
+    String table_name = tableProperties.get(KUDU_TABLE_NAME_KEY);
+    Preconditions.checkNotNull(table_name, "Set Table property " + KUDU_TABLE_NAME_KEY);
+    return new URI(KUDU_PREFIX+"//"+host_name+"/"+table_name);
   }
 
   /**

@@ -177,6 +177,10 @@ Original Query:     	select key from masking_test_n_mv
 Expanded Query:     	select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.masking_test_n_mv	0/0/0               	 
 PREHOOK: query: explain
 select key from `masking_test_n_mv`
 PREHOOK: type: QUERY
@@ -875,6 +879,10 @@ Original Query:     	select key from srcTnx
 Expanded Query:     	select `srctnx`.`key` from `default`.`srcTnx`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.srctnx 	0/0/0               	 
 PREHOOK: query: explain
 select key from `masking_test_view_n_mv_2` order by key
 PREHOOK: type: QUERY

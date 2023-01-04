@@ -78,7 +78,7 @@ public class QueryInfoCache {
   }
 
   /**
-   * Remove the live operation's query info from the {@liveQueryInfos},
+   * Remove the live operation's query info from the {@link #liveQueryInfos},
    * and push the query info to the historic query cache if enabled.
    * @param operation the to remove operation
    */

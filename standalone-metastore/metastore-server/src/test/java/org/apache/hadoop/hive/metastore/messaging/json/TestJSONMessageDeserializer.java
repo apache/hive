@@ -112,4 +112,15 @@ public class TestJSONMessageDeserializer {
     }}, 98L);
     assertEquals(expected, actual);
   }
+
+  @Test
+  public void testDeserializeControlCharacter() throws IOException {
+    String json = "{\"a\":47,\"map\":{\"a\":\"a\",\"b\":\"a value \n for b\"},\"l\":98}";
+    MyClass actual = JSONMessageDeserializer.mapper.readValue(json, MyClass.class);
+    MyClass expected = new MyClass(47, new HashMap<String, String>() {{
+      put("a", "a");
+      put("b", "a value \n for b");
+    }}, 98L);
+    assertEquals(expected, actual);
+  }
 }

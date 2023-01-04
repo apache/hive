@@ -86,6 +86,8 @@ public abstract class MessageDeserializer {
       return getUpdatePartitionColumnStatMessage(messageBody);
     case DELETE_PARTITION_COLUMN_STAT:
       return getDeletePartitionColumnStatMessage(messageBody);
+    case COMMIT_COMPACTION:
+      return getCommitCompactionMessage(messageBody);
     default:
       throw new IllegalArgumentException("Unsupported event-type: " + eventTypeString);
     }
@@ -236,6 +238,18 @@ public abstract class MessageDeserializer {
    * Method to de-serialize DeletePartitionColumnStatMessage instance.
    */
   public abstract DeletePartitionColumnStatMessage getDeletePartitionColumnStatMessage(String messageBody);
+
+  /**
+   * Method to de-serialize CommitCompactionMessage instance.
+   */
+  public abstract CommitCompactionMessage getCommitCompactionMessage(String messageBody);
+
+  /**
+   * Method to de-serialize any string passed. Need to be over-ridden by specific serialization subclasses.
+   */
+  public String deSerializeGenericString(String messageBody) {
+    return messageBody;
+  }
 
   // Protection against construction.
   protected MessageDeserializer() {}

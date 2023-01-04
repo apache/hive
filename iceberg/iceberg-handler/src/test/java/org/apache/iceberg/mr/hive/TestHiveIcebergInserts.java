@@ -20,16 +20,21 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.SnapshotSummary;
+import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
@@ -37,6 +42,10 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
+import static org.apache.iceberg.NullOrder.NULLS_FIRST;
+import static org.apache.iceberg.NullOrder.NULLS_LAST;
+import static org.apache.iceberg.expressions.Expressions.bucket;
+import static org.apache.iceberg.expressions.Expressions.truncate;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
@@ -45,6 +54,87 @@ import static org.apache.iceberg.types.Types.NestedField.required;
  * inserting values, inserting from select subqueries, insert overwrite table, etc...
  */
 public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Test
+  public void testSortedInsert() throws IOException {
+    TableIdentifier identifier = TableIdentifier.of("default", "sort_table");
+
+    Schema schema = new Schema(
+        optional(1, "id", Types.IntegerType.get(), "unique ID"),
+        optional(2, "data", Types.StringType.get())
+    );
+    SortOrder order = SortOrder.builderFor(schema)
+        .asc("id", NULLS_FIRST)
+        .desc("data", NULLS_LAST)
+        .build();
+
+    testTables.createTable(shell, identifier.name(), schema, order, PartitionSpec.unpartitioned(), fileFormat,
+        ImmutableList.of(), 1, ImmutableMap.of());
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES (4, 'a'), (1, 'a'), (3, 'a'), (2, 'a'), " +
+            "(null, 'a'), (3, 'b'), (3, null)", identifier.name()));
+
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(null, "a").add(1, "a").add(2, "a").add(3, "b").add(3, "a").add(3, null).add(4, "a")
+        .build();
+    List<Object[]> result = shell.executeStatement(String.format("SELECT * FROM %s", identifier.name()));
+    HiveIcebergTestUtils.validateData(expected, HiveIcebergTestUtils.valueForRow(schema, result));
+  }
+
+  @Test
+  public void testSortedAndTransformedInsert() throws IOException {
+    TableIdentifier identifier = TableIdentifier.of("default", "sort_table");
+
+    SortOrder order = SortOrder.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .asc(bucket("customer_id", 2), NULLS_FIRST)
+        .desc(truncate("first_name", 4), NULLS_LAST)
+        .asc("last_name", NULLS_LAST)
+        .build();
+
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, order,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), 1, ImmutableMap.of());
+
+    StringBuilder insertQuery = new StringBuilder().append(String.format("INSERT INTO %s VALUES ", identifier.name()));
+    HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2.forEach(record -> insertQuery.append("(")
+        .append(record.get(0)).append(",'")
+        .append(record.get(1)).append("','")
+        .append(record.get(2)).append("'),"));
+    insertQuery.setLength(insertQuery.length() - 1);
+
+    shell.executeStatement(insertQuery.toString());
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(2L, "Susan", "Morrison").add(1L, "Sharon", "Taylor").add(1L, "Joanna", "Pierce")
+        .add(2L, "Joanna", "Silver").add(2L, "Jake", "Donnel").add(2L, "Bob", "Silver").add(3L, "Trudy", "Henderson")
+        .add(3L, "Trudy", "Johnson").add(3L, "Blake", "Burr").build();
+    List<Object[]> result = shell.executeStatement(String.format("SELECT * FROM %s", identifier.name()));
+    HiveIcebergTestUtils.validateData(expected,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, result));
+  }
+
+  @Test
+  public void testSortedAndTransformedInsertIntoPartitionedTable() throws IOException {
+    TableIdentifier identifier = TableIdentifier.of("default", "tbl_bucketed");
+    Schema schema = new Schema(
+        optional(1, "a", Types.IntegerType.get()),
+        optional(2, "b", Types.StringType.get()),
+        optional(3, "c", Types.IntegerType.get())
+    );
+    SortOrder order = SortOrder.builderFor(schema)
+        .desc("c", NULLS_FIRST)
+        .asc(truncate("b", 1))
+        .build();
+    PartitionSpec partitionSpec = PartitionSpec.builderFor(schema)
+        .bucket("b", 2)
+        .build();
+    testTables.createTable(shell, identifier.name(), schema, order, partitionSpec, fileFormat, ImmutableList.of(), 1,
+        ImmutableMap.of());
+    shell.executeStatement(String.format("INSERT INTO %s VALUES (1, 'EUR', 10), (5, 'HUF', 30), (2, 'EUR', 10), " +
+        "(8, 'PLN', 20), (6, 'USD', null)", identifier.name()));
+    List<Object[]> result = shell.executeStatement(String.format("SELECT * FROM %s", identifier.name()));
+    List<Record> expected =
+        TestHelper.RecordsBuilder.newInstance(schema).add(1, "EUR", 10).add(2, "EUR", 10).add(6, "USD", null)
+            .add(5, "HUF", 30).add(8, "PLN", 20).build();
+    HiveIcebergTestUtils.validateData(expected, HiveIcebergTestUtils.valueForRow(schema, result));
+  }
 
   @Test
   public void testInsert() throws IOException {
@@ -66,17 +156,46 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
   }
 
   @Test
+  public void testInsertIntoORCFile() throws IOException {
+    Assume.assumeTrue("Testing the create table ... stored as ORCFILE syntax is enough for a single scenario.",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
+    shell.executeStatement("CREATE TABLE t2(c0 DOUBLE , c1 DOUBLE , c2 DECIMAL) STORED BY " +
+        "ICEBERG STORED AS ORCFILE");
+    shell.executeStatement("INSERT INTO t2(c1, c0) VALUES(0.1803113419993464, 0.9381388537256228)");
+    List<Object[]> results = shell.executeStatement("SELECT * FROM t2");
+    Assert.assertEquals(1, results.size());
+    Assert.assertEquals(0.9381388537256228, results.get(0)[0]);
+    Assert.assertEquals(0.1803113419993464, results.get(0)[1]);
+    Assert.assertEquals(null, results.get(0)[2]);
+  }
+
+
+  @Test
+  public void testStoredByIcebergInTextFile() {
+    Assume.assumeTrue("Testing the create table ... stored as TEXTFILE syntax is enough for a single scenario.",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
+    AssertHelpers.assertThrows("Create table should not work with textfile", IllegalArgumentException.class,
+        "Unsupported fileformat",
+        () ->
+            shell.executeStatement("CREATE TABLE IF NOT EXISTS t2(c0 DOUBLE , c1 DOUBLE , c2 DECIMAL) STORED BY " +
+                "ICEBERG STORED AS TEXTFILE"));
+  }
+
+  @Test
   public void testInsertSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
+
       // TODO: remove this filter when issue #1881 is resolved
       if (type == Types.UUIDType.get() && fileFormat == FileFormat.PARQUET) {
         continue;
       }
+
       // TODO: remove this filter when we figure out how we could test binary types
-      if (type.equals(Types.BinaryType.get()) || type.equals(Types.FixedType.ofLength(5))) {
+      if (type == Types.BinaryType.get() || type.equals(Types.FixedType.ofLength(5))) {
         continue;
       }
+
       String columnName = type.typeId().toString().toLowerCase() + "_column";
 
       Schema schema = new Schema(required(1, "id", Types.LongType.get()), required(2, columnName, type));
@@ -101,7 +220,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     shell.executeStatement("INSERT INTO customers SELECT * FROM customers");
 
     // Check that everything is duplicated as expected
-    List<Record> records = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    List<Record> records = Lists.newArrayList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     records.addAll(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     HiveIcebergTestUtils.validateData(table, records, 0);
   }
@@ -143,7 +262,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         spec, fileFormat, ImmutableList.of());
 
     // IOW into empty target table -> whole source result set is inserted
-    List<Record> expected = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    List<Record> expected = Lists.newArrayList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     expected.add(TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(8L, "Sue", "Green").build().get(0)); // add one more to 'Green' so we have a partition w/ multiple records
     shell.executeStatement(testTables.getInsertQuery(expected, target, true));
@@ -158,7 +277,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         .build();
     shell.executeStatement(testTables.getInsertQuery(newRecords, target, true));
 
-    expected = new ArrayList<>(newRecords);
+    expected = Lists.newArrayList(newRecords);
     expected.add(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.get(2)); // existing, untouched partition ('Pink')
     HiveIcebergTestUtils.validateData(table, expected, 0);
 
@@ -166,6 +285,38 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     shell.executeStatement("INSERT OVERWRITE TABLE target SELECT * FROM target WHERE FALSE");
 
     HiveIcebergTestUtils.validateData(table, expected, 0);
+  }
+
+  @Test
+  public void testInsertOverwriteBucketPartitionedTableThrowsError() {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .bucket("last_name", 16).identity("customer_id").build();
+    testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, ImmutableList.of());
+
+    AssertHelpers.assertThrows("IOW should not work on bucket partitioned table", IllegalArgumentException.class,
+        "Cannot perform insert overwrite query on bucket partitioned Iceberg table",
+        () -> shell.executeStatement(
+            testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, target, true)));
+  }
+
+  @Test
+  public void testInsertOverwriteWithPartitionEvolutionThrowsError() throws IOException {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    shell.executeStatement("ALTER TABLE target SET PARTITION SPEC(TRUNCATE(2, last_name))");
+    List<Record> newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Mike", "Taylor")
+        .add(1L, "Christy", "Hubert")
+        .build();
+    AssertHelpers.assertThrows("IOW should not work on tables with partition evolution",
+        IllegalArgumentException.class,
+        "Cannot perform insert overwrite query on Iceberg table where partition evolution happened.",
+        () -> shell.executeStatement(testTables.getInsertQuery(newRecords, target, true)));
+    // TODO: we should add additional test cases after merge + compaction is supported in hive that allows us to
+    // rewrite the data
   }
 
   /**
@@ -181,7 +332,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     shell.executeStatement("INSERT INTO customers SELECT * FROM customers ORDER BY customer_id");
 
     // Check that everything is duplicated as expected
-    List<Record> records = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    List<Record> records = Lists.newArrayList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     records.addAll(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     HiveIcebergTestUtils.validateData(table, records, 0);
   }
@@ -297,6 +448,28 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
   }
 
   @Test
+  public void testStructMapWithNull() throws IOException {
+    Schema schema = new Schema(required(1, "id", Types.LongType.get()),
+        required(2, "mapofstructs", Types.MapType.ofRequired(3, 4, Types.StringType.get(),
+            Types.StructType.of(required(5, "something", Types.StringType.get()),
+                required(6, "someone", Types.StringType.get()),
+                required(7, "somewhere", Types.StringType.get())
+            ))
+        )
+    );
+
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(0L, ImmutableMap.of())
+        .build();
+
+    testTables.createTable(shell, "mapwithnull", schema, fileFormat, records);
+
+    List<Object[]> results = shell.executeStatement("select mapofstructs['context'].someone FROM mapwithnull");
+    Assert.assertEquals(1, results.size());
+    Assert.assertNull(results.get(0)[0]);
+  }
+
+  @Test
   public void testWriteWithDefaultWriteFormat() {
     Assume.assumeTrue("Testing the default file format is enough for a single scenario.",
         testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
@@ -305,10 +478,11 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
 
     // create Iceberg table without specifying a write format in the tbl properties
     // it should fall back to using the default file format
-    shell.executeStatement(String.format("CREATE EXTERNAL TABLE %s (id bigint, name string) STORED BY '%s' %s",
+    shell.executeStatement(String.format("CREATE EXTERNAL TABLE %s (id bigint, name string) STORED BY '%s' %s %s",
         identifier,
         HiveIcebergStorageHandler.class.getName(),
-        testTables.locationForCreateTableSQL(identifier)));
+        testTables.locationForCreateTableSQL(identifier),
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
 
     shell.executeStatement(String.format("INSERT INTO %s VALUES (10, 'Linda')", identifier));
     List<Object[]> results = shell.executeStatement(String.format("SELECT * FROM %s", identifier));
@@ -332,5 +506,105 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     shell.executeStatement("INSERT INTO target SELECT * FROM source WHERE first_name = 'Nobody'");
     HiveIcebergTestUtils.validateData(target, ImmutableList.of(), 0);
+  }
+
+  @Test
+  public void testInsertOverwriteOnEmptyV1Table() throws IOException {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    // Insert some data.
+    List<Record> newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "ABC", "DBAK")
+        .add(1L, "XYZ", "RDBS")
+        .build();
+    shell.executeStatement(testTables.getInsertQuery(newRecords, target, false));
+
+    // Change the partition and then insert some more data.
+    shell.executeStatement("ALTER TABLE target SET PARTITION SPEC(TRUNCATE(2, last_name))");
+    newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(2L, "Mike", "Taylor")
+        .add(3L, "Christy", "Hubert")
+        .build();
+
+    shell.executeStatement(testTables.getInsertQuery(newRecords, target, false));
+
+    // Truncate the table
+    shell.executeStatement("TRUNCATE TABLE target");
+
+    newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Mike", "Taylor")
+        .add(3L, "ABC", "DBAK")
+        .add(4L, "APL", "DBAM")
+        .build();
+
+    // Do an insert-overwrite and this should be successful because the table is empty.
+    shell.executeStatement(testTables.getInsertQuery(newRecords, target, true));
+
+    HiveIcebergTestUtils.validateData(table, newRecords, 0);
+  }
+
+  @Test
+  public void testInsertOverwriteOnEmptyV2Table() throws IOException {
+    // Create a V2 table with merge-on-read.
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Map<String, String> opTypes = ImmutableMap.of(
+        TableProperties.DELETE_MODE, "merge-on-read",
+        TableProperties.MERGE_MODE, "merge-on-read",
+        TableProperties.UPDATE_MODE, "merge-on-read");
+
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2, opTypes);
+
+    // Insert some data.
+    List<Record> newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(3L, "ABC", "DBAK")
+        .add(4L, "XYZ", "RDBS")
+        .add(5L, "CBO", "HIVE")
+        .add(6L, "HADOOP", "HDFS")
+        .build();
+    shell.executeStatement(testTables.getInsertQuery(newRecords, target, false));
+
+    // Perform some deletes & updates.
+    shell.executeStatement("update target set first_name='WXYZ' where customer_id=1");
+    shell.executeStatement("delete from target where customer_id%2=0");
+
+    // Change the partition and then insert some more data.
+    shell.executeStatement("ALTER TABLE target SET PARTITION SPEC(TRUNCATE(2, last_name))");
+    newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(7L, "Mike", "Taylor")
+        .add(8L, "Christy", "Hubert")
+        .add(9L, "RDBMS", "Talk")
+        .add(10L, "Notification", "Hub")
+        .add(11L, "Vector", "HDFS")
+        .build();
+    shell.executeStatement(testTables.getInsertQuery(newRecords, target, false));
+
+    // Perform some deletes & updates.
+    shell.executeStatement("update target set first_name='RDBMSV2' where customer_id=9");
+    shell.executeStatement("delete from target where customer_id%2=0 AND customer_id>6");
+
+    Table icebergTable = testTables.loadTable(target);
+    // There should be some delete files, due to our delete & update operations.
+    Assert.assertNotEquals("0", icebergTable.currentSnapshot().summary().get(SnapshotSummary.TOTAL_DELETE_FILES_PROP));
+
+    long preTruncateSnapshotId = icebergTable.currentSnapshot().snapshotId();
+    List<Object[]> result =
+        shell.executeStatement(String.format("SELECT * FROM %s order by customer_id", target.name()));
+
+    // Truncate the table
+    shell.executeStatement("TRUNCATE TABLE target");
+
+    // Do an insert-overwrite and this should be successful because the table is empty.
+    shell.executeStatement(
+        "INSERT OVERWRITE TABLE target select * from target FOR SYSTEM_VERSION AS OF " + preTruncateSnapshotId);
+
+    HiveIcebergTestUtils.validateData(table,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, result), 0);
+    icebergTable = testTables.loadTable(target);
+
+    // There should be no delete files, they should have been merged with the data files
+    Assert.assertEquals("0", icebergTable.currentSnapshot().summary().get(SnapshotSummary.TOTAL_DELETE_FILES_PROP));
   }
 }

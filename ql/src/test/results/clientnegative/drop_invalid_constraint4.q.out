@@ -16,4 +16,6 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2
 PREHOOK: query: ALTER TABLE table1 DROP CONSTRAINT pk2
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table1
 FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidObjectException(message:The constraint: pk2 does not exist for the associated table: default.table1)

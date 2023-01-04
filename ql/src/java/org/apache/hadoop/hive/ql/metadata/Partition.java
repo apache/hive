@@ -507,9 +507,10 @@ public class Partition implements Serializable {
         return tPartition.getSd().getCols();
       } else if (forMs && !Table.shouldStoreFieldsInMetastore(
           SessionState.getSessionConf(), serializationLib, table.getParameters())) {
-        return Hive.getFieldsFromDeserializerForMsStorage(table, getDeserializer());
+        return Hive.getFieldsFromDeserializerForMsStorage(table, getDeserializer(), SessionState.getSessionConf());
       }
-      return HiveMetaStoreUtils.getFieldsFromDeserializer(table.getTableName(), getDeserializer());
+      return HiveMetaStoreUtils.getFieldsFromDeserializer(table.getTableName(), getDeserializer(),
+          SessionState.getSessionConf());
     } catch (Exception e) {
       LOG.error("Unable to get cols from serde: " +
           tPartition.getSd().getSerdeInfo().getSerializationLib(), e);

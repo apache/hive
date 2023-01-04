@@ -47,7 +47,7 @@ public class RawStoreProxy implements InvocationHandler {
   private final long socketTimeout;
 
   protected RawStoreProxy(Configuration hiveConf, Configuration conf,
-      Class<? extends RawStore> rawStoreClass, int id) throws MetaException {
+      Class<? extends RawStore> rawStoreClass) throws MetaException {
     this.conf = conf;
     this.hiveConf = hiveConf;
     this.socketTimeout = MetastoreConf.getTimeVar(hiveConf,
@@ -59,12 +59,12 @@ public class RawStoreProxy implements InvocationHandler {
     this.base = ReflectionUtils.newInstance(rawStoreClass, conf);
   }
 
-  public static RawStore getProxy(Configuration hiveConf, Configuration conf, String rawStoreClassName,
-      int id) throws MetaException {
+  public static RawStore getProxy(Configuration hiveConf, Configuration conf, String rawStoreClassName)
+      throws MetaException {
 
     Class<? extends RawStore> baseClass = JavaUtils.getClass(rawStoreClassName, RawStore.class);
 
-    RawStoreProxy handler = new RawStoreProxy(hiveConf, conf, baseClass, id);
+    RawStoreProxy handler = new RawStoreProxy(hiveConf, conf, baseClass);
 
     // Look for interfaces on both the class and all base classes.
     return (RawStore) Proxy.newProxyInstance(RawStoreProxy.class.getClassLoader(),

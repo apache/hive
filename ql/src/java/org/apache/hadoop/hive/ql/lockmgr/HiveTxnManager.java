@@ -291,7 +291,10 @@ public interface HiveTxnManager {
    */
   boolean recordSnapshot(QueryPlan queryPlan);
 
+  @Deprecated
   boolean isImplicitTransactionOpen();
+
+  boolean isImplicitTransactionOpen(Context ctx);
 
   boolean isTxnOpen();
   /**
@@ -299,7 +302,15 @@ public interface HiveTxnManager {
    */
   long getCurrentTxnId();
 
-  /**
+ /**
+  * if {@code writeId > 0}, sets it in the tableWriteId cache, otherwise, calls {@link #getTableWriteId(String, String)}.
+  * @param dbName
+  * @param tableName
+  * @throws LockException
+  */
+ void setTableWriteId(String dbName, String tableName, long writeId) throws LockException;
+
+ /**
    * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction.
    */
   long getTableWriteId(String dbName, String tableName) throws LockException;
@@ -313,7 +324,7 @@ public interface HiveTxnManager {
   * @return 0 if not yet allocated
   * @throws LockException
   */
- public long getAllocatedTableWriteId(String dbName, String tableName) throws LockException;
+ long getAllocatedTableWriteId(String dbName, String tableName) throws LockException;
 
  /**
    * Allocates write id for each transaction in the list.
@@ -335,6 +346,14 @@ public interface HiveTxnManager {
 
   // Can be used by operation to set the stmt id when allocation is done somewhere else.
   int getCurrentStmtId();
+
+  /**
+   * Reset locally cached information.
+   * This is called before re-compilation after aquiring lock if the transaction is not
+   * outdated. The intent is to clear any cached information such as WriteIds (but not
+   * reseting/rolling back the overall transaction).
+   */
+   void clearCaches();
 
   /**
    * Acquire the materialization rebuild lock for a given view. We need to specify the fully

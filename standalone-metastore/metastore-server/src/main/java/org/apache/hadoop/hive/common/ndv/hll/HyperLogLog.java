@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.common.ndv.hll;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,17 +29,19 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hive.common.util.Murmur3;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * <pre>
  * This is an implementation of the following variants of hyperloglog (HLL)
- * algorithm 
+ * algorithm
  * Original  - Original HLL algorithm from Flajolet et. al from
  *             http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf
  * HLLNoBias - Google's implementation of bias correction based on lookup table
  *             http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/40671.pdf
  * HLL++     - Google's implementation of HLL++ algorithm that uses SPARSE registers
  *             http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/40671.pdf
- * 
+ *
  * Following are the constructor parameters that determines which algorithm is
  * used
  * <b>numRegisterIndexBits</b> - number of LSB hashcode bits to be used as register index.
@@ -194,7 +195,7 @@ public class HyperLogLog implements NumDistinctValueEstimator {
     } else if (hashBits <= 64) {
       alphaMM = 0.709f;
     } else {
-      alphaMM = 0.7213f / (float) (1 + 1.079f / m);
+      alphaMM = 0.7213f / (1 + 1.079f / m);
     }
 
     // For efficiency alpha is multiplied by m^2
@@ -262,7 +263,7 @@ public class HyperLogLog implements NumDistinctValueEstimator {
 
       // if size of sparse map excess the threshold convert the sparse map to
       // dense register and switch to DENSE encoding
-      if (sparseRegister.getSize() > encodingSwitchThreshold) {
+      if (sparseRegister.isSizeGreaterThan(encodingSwitchThreshold)) {
         encoding = EncodingType.DENSE;
         denseRegister = sparseToDenseRegister(sparseRegister);
         sparseRegister = null;
@@ -390,7 +391,7 @@ public class HyperLogLog implements NumDistinctValueEstimator {
   }
 
   private long linearCount(int mVal, long numZeros) {
-    return (long) (Math.round(mVal * Math.log(mVal / ((double) numZeros))));
+    return (Math.round(mVal * Math.log(mVal / ((double) numZeros))));
   }
 
   // refer paper
@@ -463,7 +464,7 @@ public class HyperLogLog implements NumDistinctValueEstimator {
       sparseRegister.merge(hll.getHLLSparseRegister());
       // if after merge the sparse switching threshold is exceeded then change
       // to dense encoding
-      if (sparseRegister.getSize() > encodingSwitchThreshold) {
+      if (sparseRegister.isSizeGreaterThan(encodingSwitchThreshold)) {
         encoding = EncodingType.DENSE;
         denseRegister = sparseToDenseRegister(sparseRegister);
         sparseRegister = null;
@@ -485,7 +486,7 @@ public class HyperLogLog implements NumDistinctValueEstimator {
 
   /**
    * Reduces the accuracy of the HLL provided to a smaller size
-   * @param p0 
+   * @param p0
    *         - new p size for the new HyperLogLog (smaller or no change)
    * @return reduced (or same) HyperLogLog instance
    */
@@ -668,6 +669,11 @@ public class HyperLogLog implements NumDistinctValueEstimator {
   @Override
   public boolean canMerge(NumDistinctValueEstimator o) {
     return o instanceof HyperLogLog;
+  }
+
+  @VisibleForTesting
+  public int getEncodingSwitchThreshold() {
+    return encodingSwitchThreshold;
   }
 
 }

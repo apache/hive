@@ -56,15 +56,15 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
       new JDBCExpandExpressionsRule.ProjectionExpressions();
 
 
-  private JDBCExpandExpressionsRule(RelOptRuleOperand operand) {
-    super(operand);
+  private JDBCExpandExpressionsRule(RelOptRuleOperand operand, String description) {
+    super(operand, description);
   }
 
   /** Rule adapter to apply the transformation to Filter conditions. */
   private static class FilterCondition extends JDBCExpandExpressionsRule {
 
     private FilterCondition() {
-      super(operand(JdbcFilter.class, any()));
+      super(operand(JdbcFilter.class, any()), "JDBCExpandExpressionsRule(FilterCondition)");
     }
 
     @Override
@@ -91,7 +91,7 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
   private static class JoinCondition extends JDBCExpandExpressionsRule {
 
     private JoinCondition () {
-      super(operand(JdbcJoin.class, any()));
+      super(operand(JdbcJoin.class, any()), "JDBCExpandExpressionsRule(JoinCondition)");
     }
 
     @Override
@@ -124,7 +124,7 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
   private static class ProjectionExpressions extends JDBCExpandExpressionsRule {
 
     private ProjectionExpressions() {
-      super(operand(JdbcProject.class, any()));
+      super(operand(JdbcProject.class, any()), "JDBCExpandExpressionsRule(ProjectionExpressions)");
     }
 
     @Override

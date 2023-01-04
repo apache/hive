@@ -1,0 +1,95 @@
+PREHOOK: query: with
+t_y as (select col1 as id,col2 as s from (VALUES(0,'a'),(1,'y')) as c),
+t_xy as (select col1 as id,col2 as s from (VALUES(1,'x'),(1,'y')) as c) 
+select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: with
+t_y as (select col1 as id,col2 as s from (VALUES(0,'a'),(1,'y')) as c),
+t_xy as (select col1 as id,col2 as s from (VALUES(1,'x'),(1,'y')) as c) 
+select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	x	NULL	NULL
+NULL	NULL	0	a
+1	y	1	y
+PREHOOK: query: create table t_y (id integer,s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_y
+POSTHOOK: query: create table t_y (id integer,s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_y
+PREHOOK: query: create table t_xy (id integer,s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_xy
+POSTHOOK: query: create table t_xy (id integer,s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_xy
+PREHOOK: query: insert into t_y values(0,'a'),(1,'y'),(1,'x')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_y
+POSTHOOK: query: insert into t_y values(0,'a'),(1,'y'),(1,'x')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_y
+POSTHOOK: Lineage: t_y.id SCRIPT []
+POSTHOOK: Lineage: t_y.s SCRIPT []
+PREHOOK: query: insert into t_xy values(1,'x'),(1,'y')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_xy
+POSTHOOK: query: insert into t_xy values(1,'x'),(1,'y')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_xy
+POSTHOOK: Lineage: t_xy.id SCRIPT []
+POSTHOOK: Lineage: t_xy.s SCRIPT []
+PREHOOK: query: select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_xy
+PREHOOK: Input: default@t_y
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_xy
+POSTHOOK: Input: default@t_y
+#### A masked pattern was here ####
+1	x	NULL	NULL
+NULL	NULL	0	a
+1	y	1	y
+1	y	1	x
+PREHOOK: query: select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_xy
+PREHOOK: Input: default@t_y
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_xy
+POSTHOOK: Input: default@t_y
+#### A masked pattern was here ####
+1	x	NULL	NULL
+NULL	NULL	0	a
+1	y	1	y
+1	y	1	x
+PREHOOK: query: select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_xy
+PREHOOK: Input: default@t_y
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_xy
+POSTHOOK: Input: default@t_y
+#### A masked pattern was here ####
+1	x	NULL	NULL
+NULL	NULL	0	a
+1	y	1	y
+1	y	1	x

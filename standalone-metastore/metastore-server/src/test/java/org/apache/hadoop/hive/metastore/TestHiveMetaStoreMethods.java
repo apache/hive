@@ -46,6 +46,7 @@ public class TestHiveMetaStoreMethods {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     hmsHandler = new HMSHandler("hive-conf", conf);
+    hmsHandler.init();
   }
 
   protected void initConf() {

@@ -78,7 +78,7 @@ public class StartMiniHS2Cluster {
     miniHS2.start(confOverlay);
     miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
 
-    System.out.println("JDBC URL avaailable at " + miniHS2.getJdbcURL());
+    System.out.println("JDBC URL available at " + miniHS2.getJdbcURL());
 
     // MiniHS2 cluster is up .. let it run until someone kills the test
     while (true) {

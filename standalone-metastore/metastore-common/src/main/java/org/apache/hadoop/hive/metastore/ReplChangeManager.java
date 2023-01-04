@@ -45,6 +45,7 @@ import static org.apache.hadoop.fs.permission.AclEntryType.OTHER;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -74,9 +75,9 @@ public class ReplChangeManager {
   private static final String ORIG_LOC_TAG = "user.original-loc";
   static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
   private static final String URI_FRAGMENT_SEPARATOR = "#";
-  public static final String SOURCE_OF_REPLICATION = "repl.source.for";
+  public static final String SOURCE_OF_REPLICATION = ReplConst.SOURCE_OF_REPLICATION;
   private static final String TXN_WRITE_EVENT_FILE_SEPARATOR = "]";
-  static final String CM_THREAD_NAME_PREFIX = "cmclearer-";
+  public static final String CM_THREAD_NAME_PREFIX = "cmclearer-";
   private static final String NO_ENCRYPTION = "noEncryption";
   private static String cmRootDir;
   private static String encryptedCmRootDir;
@@ -204,7 +205,8 @@ public class ReplChangeManager {
         inited = true;
       }
     } catch (IOException e) {
-      throw new MetaException(StringUtils.stringifyException(e));
+      LOG.error("Failed to created ReplChangeManager", e);
+      throw new MetaException(e.getMessage());
     }
   }
 
@@ -377,32 +379,28 @@ public class ReplChangeManager {
    * @return Corresponding FileInfo object
    */
   public static FileInfo getFileInfo(Path src, String checksumString, String srcCMRootURI, String subDir,
-                                     Configuration conf) throws MetaException {
+      Configuration conf) throws IOException {
+    FileSystem srcFs = src.getFileSystem(conf);
+    if (checksumString == null) {
+      return new FileInfo(srcFs, src, subDir);
+    }
+
+    Path cmPath = getCMPath(conf, src.getName(), checksumString, srcCMRootURI);
+    if (!srcFs.exists(src)) {
+      return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
+    }
+
+    String currentChecksumString;
     try {
-      FileSystem srcFs = src.getFileSystem(conf);
-      if (checksumString == null) {
-        return new FileInfo(srcFs, src, subDir);
-      }
-
-      Path cmPath = getCMPath(conf, src.getName(), checksumString, srcCMRootURI);
-      if (!srcFs.exists(src)) {
-        return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
-      }
-
-      String currentChecksumString;
-      try {
-        currentChecksumString = checksumFor(src, srcFs);
-      } catch (IOException ex) {
-        // If the file is missing or getting modified, then refer CM path
-        return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
-      }
-      if ((currentChecksumString == null) || checksumString.equals(currentChecksumString)) {
-        return new FileInfo(srcFs, src, cmPath, checksumString, true, subDir);
-      } else {
-        return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
-      }
-    } catch (IOException e) {
-      throw new MetaException(StringUtils.stringifyException(e));
+      currentChecksumString = checksumFor(src, srcFs);
+    } catch (IOException ex) {
+      // If the file is missing or getting modified, then refer CM path
+      return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
+    }
+    if ((currentChecksumString == null) || checksumString.equals(currentChecksumString)) {
+      return new FileInfo(srcFs, src, cmPath, checksumString, true, subDir);
+    } else {
+      return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
     }
   }
 
@@ -472,10 +470,16 @@ public class ReplChangeManager {
   /**
    * Thread to clear old files of cmroot recursively
    */
-  static class CMClearer implements Runnable {
+  public static class CMClearer implements Runnable {
     private Map<String, String> encryptionZones;
     private long secRetain;
     private Configuration conf;
+
+    public CMClearer(long secRetain, Configuration conf) {
+      this.encryptionZones = encryptionZoneToCmrootMapping;
+      this.secRetain = secRetain;
+      this.conf = conf;
+    }
 
     CMClearer(Map<String, String> encryptionZones, long secRetain, Configuration conf) {
       this.encryptionZones = encryptionZones;
@@ -532,8 +536,7 @@ public class ReplChangeManager {
           .namingPattern(CM_THREAD_NAME_PREFIX + "%d")
           .daemon(true)
           .build());
-      executor.scheduleAtFixedRate(new CMClearer(encryptionZoneToCmrootMapping,
-                      MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
+      executor.scheduleAtFixedRate(new CMClearer(MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
               0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
     }
   }
@@ -552,8 +555,8 @@ public class ReplChangeManager {
   public static String getReplPolicyIdString(Database db) {
     if (db != null) {
       Map<String, String> m = db.getParameters();
-      if ((m != null) && (m.containsKey(SOURCE_OF_REPLICATION))) {
-        String replPolicyId = m.get(SOURCE_OF_REPLICATION);
+      if ((m != null) && (m.containsKey(ReplConst.SOURCE_OF_REPLICATION))) {
+        String replPolicyId = m.get(ReplConst.SOURCE_OF_REPLICATION);
         LOG.debug("repl policy for database {} is {}", db.getName(), replPolicyId);
         return replPolicyId;
       }

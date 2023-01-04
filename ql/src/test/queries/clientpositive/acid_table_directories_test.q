@@ -1,3 +1,5 @@
+--! qt:disabled:disabled Tests the output of LS -R and that changes, Post Hadoop 3.3.x the output isn't sorted, so
+--disabled as part of HIVE-24484 (Upgrade Hadoop to 3.3.1)
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;

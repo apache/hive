@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.apache.iceberg.AssertHelpers;
@@ -31,6 +30,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -73,7 +73,7 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
   @Parameterized.Parameters(name = "fileFormat1={0}, fileFormat2={1}, engine={2}, tableType1={3}, catalogName1={4}, " +
           "tableType2={5}, catalogName2={6}")
   public static Collection<Object[]> parameters() {
-    Collection<Object[]> testParams = new ArrayList<>();
+    Collection<Object[]> testParams = Lists.newArrayList();
     String javaVersion = System.getProperty("java.specification.version");
 
     // Run tests with PARQUET and ORC file formats for a two Catalogs
@@ -97,7 +97,7 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
   }
 
   @AfterClass
-  public static void afterClass() {
+  public static void afterClass() throws Exception {
     shell.stop();
   }
 
@@ -118,16 +118,16 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
 
   @Test
   public void testJoinTablesFromDifferentCatalogs() throws IOException {
-    createAndAddRecords(testTables1, fileFormat1, TableIdentifier.of("default", "customers1"), table1CatalogName,
+    createAndAddRecords(testTables1, fileFormat1, TableIdentifier.of("default", "customers1"),
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-    createAndAddRecords(testTables2, fileFormat2, TableIdentifier.of("default", "customers2"), table2CatalogName,
+    createAndAddRecords(testTables2, fileFormat2, TableIdentifier.of("default", "customers2"),
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     List<Object[]> rows = shell.executeStatement("SELECT c2.customer_id, c2.first_name, c2.last_name " +
             "FROM default.customers2 c2 JOIN default.customers1 c1 ON c2.customer_id = c1.customer_id " +
             "ORDER BY c2.customer_id");
     Assert.assertEquals(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.size(), rows.size());
-    HiveIcebergTestUtils.validateData(new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS),
+    HiveIcebergTestUtils.validateData(Lists.newArrayList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS),
             HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, rows), 0);
   }
 
@@ -164,14 +164,14 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
   }
 
   private void createAndAddRecords(TestTables testTables, FileFormat fileFormat, TableIdentifier identifier,
-                                   String catalogName, List<Record> records) throws IOException {
+                                   List<Record> records) throws IOException {
     String createSql = String.format(
         "CREATE EXTERNAL TABLE %s (customer_id BIGINT, first_name STRING, last_name STRING)" +
         " STORED BY ICEBERG %s " +
         " TBLPROPERTIES ('%s'='%s', '%s'='%s')",
         identifier,
         testTables.locationForCreateTableSQL(identifier),
-        InputFormatConfig.CATALOG_NAME, catalogName,
+        InputFormatConfig.CATALOG_NAME, testTables.catalogName(),
         TableProperties.DEFAULT_FILE_FORMAT, fileFormat);
     shell.executeStatement(createSql);
     Table icebergTable = testTables.loadTable(identifier);

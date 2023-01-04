@@ -77,7 +77,7 @@ public class ObjectCacheFactory {
           return null;
         }
       }
-    } else { // mr or spark
+    } else { // mr
       return new ObjectCacheWrapper(
           new  org.apache.hadoop.hive.ql.exec.mr.ObjectCache(), queryId);
     }

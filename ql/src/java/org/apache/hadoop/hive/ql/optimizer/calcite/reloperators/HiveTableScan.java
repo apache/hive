@@ -39,6 +39,7 @@ import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -60,6 +61,44 @@ import com.google.common.collect.ImmutableSet;
  */
 public class HiveTableScan extends TableScan implements HiveRelNode {
 
+  public enum HiveTableScanTrait {
+    /**
+     * If this is a fully acid table scan fetch the deleted rows too.
+     * This can be done only with uncompacted delete deltas.
+     */
+    FetchDeletedRows(Constants.ACID_FETCH_DELETED_ROWS),
+    /**
+     * Provide bucket and writeId for records coming from Insert only transactional tables.
+     * Can not be used for fully acid tables since those tables store this metadata
+     * in the RowId struct for each record.
+     */
+    FetchInsertOnlyBucketIds(Constants.INSERT_ONLY_FETCH_BUCKET_ID);
+
+    private final String propertyKey;
+
+    HiveTableScanTrait(String propertyKey) {
+      this.propertyKey = propertyKey;
+    }
+
+    public String getPropertyKey() {
+      return propertyKey;
+    }
+
+    public static HiveTableScanTrait from(Map<String, String> properties) {
+      if (properties == null) {
+        return null;
+      }
+
+      for (HiveTableScanTrait trait : values()) {
+        if (Boolean.parseBoolean(properties.get(trait.propertyKey))) {
+          return trait;
+        }
+      }
+
+      return null;
+    }
+  }
+
   private final RelDataType hiveTableScanRowType;
   private final ImmutableList<Integer> neededColIndxsFrmReloptHT;
   private final String tblAlias;
@@ -69,7 +108,9 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   private final ImmutableSet<Integer> virtualColIndxsInTS;
   // insiderView will tell this TableScan is inside a view or not.
   private final boolean insideView;
-  private final boolean fetchDeletedRows;
+  // This can be replaced with EnumSet<HiveTableScanTrait>
+  // if combination of multiple traits will be allowed in the future.
+  private final HiveTableScanTrait tableScanTrait;
 
   public String getTableAlias() {
     return tblAlias;
@@ -93,18 +134,19 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
       String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView) {
-    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView, false);
+    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView, null);
   }
 
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
-      String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView, boolean fetchDeletedRows) {
+      String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView,
+      HiveTableScanTrait tableScanTrait) {
     this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView,
-        fetchDeletedRows);
+        tableScanTrait);
   }
 
   private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
       String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView,
-      boolean fetchDeletedRows) {
+      HiveTableScanTrait tableScanTrait) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
     this.tblAlias = alias;
@@ -117,7 +159,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     this.virtualColIndxsInTS = colIndxPair.getRight();
     this.useQBIdInDigest = useQBIdInDigest;
     this.insideView = insideView;
-    this.fetchDeletedRows = fetchDeletedRows;
+    this.tableScanTrait = tableScanTrait;
   }
 
   @Override
@@ -135,12 +177,12 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan copy(RelDataType newRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
-        this.concatQbIDAlias, newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows);
+        this.concatQbIDAlias, newRowtype, this.useQBIdInDigest, this.insideView, this.tableScanTrait);
   }
 
-  public HiveTableScan enableFetchDeletedRows() {
+  public HiveTableScan setTableScanTrait(HiveTableScanTrait tableScanTrait) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
-        this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, true);
+        this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, tableScanTrait);
   }
 
   /**
@@ -150,7 +192,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan copyIncludingTable(RelDataType newRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table).copy(newRowtype), this.tblAlias, this.concatQbIDAlias,
-        newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows);
+        newRowtype, this.useQBIdInDigest, this.insideView, this.tableScanTrait);
   }
 
   // We need to include isInsideView inside digest to differentiate direct
@@ -164,17 +206,12 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       .itemIf("insideView", this.isInsideView(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
-      .itemIf("fetchDeleted", this.fetchDeletedRows,
+      .itemIf("tableScanTrait", this.tableScanTrait,
           pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);
   }
 
   @Override
   public void register(RelOptPlanner planner) {
-
-  }
-
-  @Override
-  public void implement(Implementor implementor) {
 
   }
 
@@ -285,8 +322,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     return insideView;
   }
 
-  public boolean isFetchDeletedRows() {
-    return fetchDeletedRows;
+  public HiveTableScanTrait getTableScanTrait() {
+    return tableScanTrait;
   }
 
   @Override

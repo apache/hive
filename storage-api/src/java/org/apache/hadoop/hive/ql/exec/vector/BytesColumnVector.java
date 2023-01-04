@@ -115,6 +115,10 @@ public class BytesColumnVector extends ColumnVector {
    * @param length  length of source byte sequence
    */
   public void setRef(int elementNum, byte[] sourceBuf, int start, int length) {
+    if (sourceBuf == null) {
+      this.isNull[elementNum] = true;
+      this.noNulls = false;
+    }
     vector[elementNum] = sourceBuf;
     this.start[elementNum] = start;
     this.length[elementNum] = length;
@@ -260,7 +264,7 @@ public class BytesColumnVector extends ColumnVector {
    * @param leftLen length of left argument
    * @param rightSourceBuf container of right argument
    * @param rightStart start of right argument
-   * @param rightLen length of right arugment
+   * @param rightLen length of right argument
    */
   public void setConcat(int elementNum, byte[] leftSourceBuf, int leftStart, int leftLen,
       byte[] rightSourceBuf, int rightStart, int rightLen) {

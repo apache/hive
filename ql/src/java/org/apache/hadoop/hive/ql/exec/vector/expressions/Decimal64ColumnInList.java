@@ -62,4 +62,9 @@ public class Decimal64ColumnInList extends LongColumnInList {
     // return null since this will be handled as a special case in VectorizationContext
     return null;
   }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
 }

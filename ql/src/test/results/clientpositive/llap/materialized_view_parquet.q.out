@@ -110,28 +110,52 @@ POSTHOOK: Lineage: locations_parquet_n2.locationid SCRIPT []
 POSTHOOK: Lineage: locations_parquet_n2.name SCRIPT []
 PREHOOK: query: alter table emps_parquet_n3 add constraint pk1 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: default@emps_parquet_n3
 POSTHOOK: query: alter table emps_parquet_n3 add constraint pk1 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: default@emps_parquet_n3
 PREHOOK: query: alter table depts_parquet_n2 add constraint pk2 primary key (deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_parquet_n2
+PREHOOK: Output: default@depts_parquet_n2
 POSTHOOK: query: alter table depts_parquet_n2 add constraint pk2 primary key (deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_parquet_n2
+POSTHOOK: Output: default@depts_parquet_n2
 PREHOOK: query: alter table dependents_parquet_n2 add constraint pk3 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@dependents_parquet_n2
+PREHOOK: Output: default@dependents_parquet_n2
 POSTHOOK: query: alter table dependents_parquet_n2 add constraint pk3 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@dependents_parquet_n2
+POSTHOOK: Output: default@dependents_parquet_n2
 PREHOOK: query: alter table locations_parquet_n2 add constraint pk4 primary key (locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@locations_parquet_n2
+PREHOOK: Output: default@locations_parquet_n2
 POSTHOOK: query: alter table locations_parquet_n2 add constraint pk4 primary key (locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@locations_parquet_n2
+POSTHOOK: Output: default@locations_parquet_n2
 PREHOOK: query: alter table emps_parquet_n3 add constraint fk1 foreign key (deptno) references depts_parquet_n2(deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: default@emps_parquet_n3
 POSTHOOK: query: alter table emps_parquet_n3 add constraint fk1 foreign key (deptno) references depts_parquet_n2(deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: default@emps_parquet_n3
 PREHOOK: query: alter table depts_parquet_n2 add constraint fk2 foreign key (locationid) references locations_parquet_n2(locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_parquet_n2
+PREHOOK: Output: default@depts_parquet_n2
 POSTHOOK: query: alter table depts_parquet_n2 add constraint fk2 foreign key (locationid) references locations_parquet_n2(locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_parquet_n2
+POSTHOOK: Output: default@depts_parquet_n2
 PREHOOK: query: create materialized view mv1_parquet_n2
 TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
 select * from emps_parquet_n3 where empid < 150
@@ -176,7 +200,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	279                 
-	totalSize           	1220                
+	totalSize           	#Masked#                
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -195,6 +219,10 @@ Original Query:     	select * from emps_parquet_n3 where empid < 150
 Expanded Query:     	select `emps_parquet_n3`.`empid`, `emps_parquet_n3`.`deptno`, `emps_parquet_n3`.`name`, `emps_parquet_n3`.`salary`, `emps_parquet_n3`.`commission` from `default`.`emps_parquet_n3` where `emps_parquet_n3`.`empid` < 150	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.emps_parquet_n3	0/0/0               	 
 PREHOOK: query: explain cbo
 select *
 from (select * from emps_parquet_n3 where empid < 120) t
@@ -817,6 +845,8 @@ STAGE PLANS:
                 TableScan
                   alias: emps_parquet_n3
                   filterExpr: (ROW__ID.writeid > 3L) (type: boolean)
+                  properties:
+                    insertonly.fetch.bucketid TRUE
                   Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ROW__ID.writeid > 3L) (type: boolean)
@@ -991,35 +1021,35 @@ POSTHOOK: Lineage: mv1_parquet_n2.name EXPRESSION [(emps_parquet_n3)emps_parquet
 POSTHOOK: Lineage: mv1_parquet_n2.s EXPRESSION [(emps_parquet_n3)emps_parquet_n3.FieldSchema(name:empid, type:int, comment:null), (mv1_parquet_n2)default.mv1_parquet_n2.FieldSchema(name:s, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv1_parquet_n2.salary EXPRESSION [(emps_parquet_n3)emps_parquet_n3.FieldSchema(name:salary, type:float, comment:null), (mv1_parquet_n2)default.mv1_parquet_n2.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain cbo
-select name from emps_parquet_n3 group by name
+select name, sum(empid) from emps_parquet_n3 group by name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emps_parquet_n3
 PREHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
-select name from emps_parquet_n3 group by name
+select name, sum(empid) from emps_parquet_n3 group by name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps_parquet_n3
 POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}])
+HiveAggregate(group=[{0}], agg#0=[sum($3)])
   HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
 
-PREHOOK: query: select name from emps_parquet_n3 group by name
+PREHOOK: query: select name, sum(empid) from emps_parquet_n3 group by name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emps_parquet_n3
 PREHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select name from emps_parquet_n3 group by name
+POSTHOOK: query: select name, sum(empid) from emps_parquet_n3 group by name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps_parquet_n3
 POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
-Bill
-Eric
-Sebastian
-Theodore
+Bill	620
+Eric	200
+Sebastian	150
+Theodore	110
 PREHOOK: query: drop materialized view mv1_parquet_n2
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mv1_parquet_n2
@@ -1028,3 +1058,15 @@ POSTHOOK: query: drop materialized view mv1_parquet_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_parquet_n2
 POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: select name, sum(empid) from emps_parquet_n3 group by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select name, sum(empid) from emps_parquet_n3 group by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+#### A masked pattern was here ####
+Bill	620
+Eric	200
+Sebastian	150
+Theodore	110

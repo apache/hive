@@ -222,7 +222,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
    * @param columnIndex the first column is 1, the second is 2, ...
    * @return the column value; if the value is SQL NULL, the value returned is
    *         false
-   * @throws if the columnIndex is not valid; if a database access error occurs
+   * @throws SQLException if the columnIndex is not valid; if a database access error occurs
    *           or this method is called on a closed result set
    * @see ResultSet#getBoolean(int)
    */
@@ -261,7 +261,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
    *          the name of the column
    * @return the column value; if the value is SQL NULL, the value returned is
    *         false
-   * @throws if the columnIndex is not valid; if a database access error occurs
+   * @throws SQLException if the columnIndex is not valid; if a database access error occurs
    *           or this method is called on a closed result set
    * @see ResultSet#getBoolean(String)
    */

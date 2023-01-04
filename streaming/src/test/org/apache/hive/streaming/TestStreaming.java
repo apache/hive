@@ -72,11 +72,13 @@ import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
@@ -109,6 +111,7 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -216,7 +219,7 @@ public class TestStreaming {
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     dbFolder.create();
-
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, "raw://" + dbFolder.newFolder("warehouse"));
 
     //1) Start from a clean slate (metastore)
     TestTxnDbUtil.cleanDb(conf);
@@ -421,7 +424,7 @@ public class TestStreaming {
     Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/base_0000005_v0000024/bucket_00000"));
     Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\ta5\tb6"));
     Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/base_0000005_v0000024/bucket_00000"));
-    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t0\t0"));
+    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":4,\"bucketid\":536870913,\"rowid\":0}\t0\t0"));
     Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000005_v0000024/bucket_00000"));
   }
 
@@ -775,8 +778,8 @@ public class TestStreaming {
     Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000009_v0000028/bucket_00000"));
     Assert.assertTrue(rs.get(4), rs.get(4).startsWith("{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}\ta13\tb14"));
     Assert.assertTrue(rs.get(4), rs.get(4).endsWith("streamingnobuckets/base_0000009_v0000028/bucket_00000"));
-    Assert.assertTrue(rs.get(5), rs.get(5).startsWith("{\"writeid\":6,\"bucketid\":536870912,\"rowid\":0}\t0\t0"));
-    Assert.assertTrue(rs.get(5), rs.get(5).endsWith("streamingnobuckets/base_0000009_v0000028/bucket_00000"));
+    Assert.assertTrue(rs.get(5), rs.get(5).startsWith("{\"writeid\":6,\"bucketid\":536936449,\"rowid\":0}\t0\t0"));
+    Assert.assertTrue(rs.get(5), rs.get(5).endsWith("streamingnobuckets/base_0000009_v0000028/bucket_00001"));
   }
 
   /**
@@ -785,7 +788,6 @@ public class TestStreaming {
   public static void runWorker(HiveConf hiveConf) throws Exception {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
-    t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
     t.init(stop);
     t.run();
@@ -1317,10 +1319,14 @@ public class TestStreaming {
     connection.close();
   }
 
+  /**
+   * Starting with HDFS 3.3.1, the underlying system NOW SUPPORTS hflush so there should
+   * be no exception.
+   */
   @Test
   public void testTransactionBatchSizeValidation() throws Exception {
     final String schemes = conf.get(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES.varname);
-    // the output stream of this FS doesn't support hflush, so the below test will fail
+    // the output stream of this FS doesn't used to support hflush earlier, now it shouldn't throw any exception
     conf.setVar(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES, "raw");
 
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
@@ -1337,10 +1343,6 @@ public class TestStreaming {
           .withHiveConf(conf)
           .connect();
 
-      Assert.fail();
-    } catch (ConnectionError e) {
-      Assert.assertTrue("Expected connection error due to batch sizes",
-          e.getMessage().contains("only supports transaction batch"));
     } finally {
       conf.setVar(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES, schemes);
     }
@@ -1365,7 +1367,6 @@ public class TestStreaming {
       .connect();
 
     connection.beginTransaction();
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
     //ensure txn timesout
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 2, TimeUnit.MILLISECONDS);
     AcidHouseKeeperService houseKeeperService = new AcidHouseKeeperService();
@@ -2139,19 +2140,18 @@ public class TestStreaming {
 
   private ArrayList<SampleRec> dumpBucket(Path orcFile) throws IOException {
     org.apache.hadoop.fs.FileSystem fs = org.apache.hadoop.fs.FileSystem.getLocal(new Configuration());
-    Reader reader = OrcFile.createReader(orcFile,
-      OrcFile.readerOptions(conf).filesystem(fs));
-
-    RecordReader rows = reader.rows();
-    StructObjectInspector inspector = (StructObjectInspector) reader
-      .getObjectInspector();
-
-    System.out.format("Found Bucket File : %s \n", orcFile.getName());
     ArrayList<SampleRec> result = new ArrayList<SampleRec>();
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      SampleRec rec = (SampleRec) deserializeDeltaFileRow(row, inspector)[5];
-      result.add(rec);
+    try (Reader reader = OrcFile.createReader(orcFile, OrcFile.readerOptions(conf).filesystem(fs))) {
+      RecordReader rows = reader.rows();
+      StructObjectInspector inspector = (StructObjectInspector) reader
+          .getObjectInspector();
+
+      System.out.format("Found Bucket File : %s \n", orcFile.getName());
+      while (rows.hasNext()) {
+        Object row = rows.next(null);
+        SampleRec rec = (SampleRec) deserializeDeltaFileRow(row, inspector)[5];
+        result.add(rec);
+      }
     }
 
     return result;

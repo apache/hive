@@ -17,6 +17,8 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
+import java.util.List;
+
 /**
  * HCat message sent when an abort transaction is done.
  */
@@ -33,4 +35,5 @@ public abstract class AbortTxnMessage extends EventMessage {
    */
   public abstract Long getTxnId();
 
+  public abstract List<String> getDbsUpdated();
 }

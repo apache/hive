@@ -65,4 +65,9 @@ public class FilterDecimal64ColumnInList extends FilterLongColumnInList {
     sb.append("]");
     return sb.toString();
   }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
 }

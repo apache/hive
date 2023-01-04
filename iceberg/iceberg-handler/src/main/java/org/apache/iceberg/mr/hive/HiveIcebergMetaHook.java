@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -29,11 +30,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -44,10 +47,20 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
@@ -60,28 +73,42 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.Transaction;
+import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.UpdateProperties;
 import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.hive.CachedClientPool;
+import org.apache.iceberg.hive.HiveCommitLock;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.mapping.MappingUtil;
+import org.apache.iceberg.mapping.NameMapping;
+import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.util.Pair;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HiveIcebergMetaHook implements HiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergMetaHook.class);
+  public static final Map<String, String> COMMON_HMS_PROPERTIES = ImmutableMap.of(
+      BaseMetastoreTableOperations.TABLE_TYPE_PROP, BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase()
+  );
   private static final Set<String> PARAMETERS_TO_REMOVE = ImmutableSet
       .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME, InputFormatConfig.PARTITION_SPEC);
   private static final Set<String> PROPERTIES_TO_REMOVE = ImmutableSet
@@ -92,7 +119,19 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
       AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
-      AlterTableType.UPDATE_COLUMNS);
+      AlterTableType.UPDATE_COLUMNS, AlterTableType.SETPARTITIONSPEC, AlterTableType.EXECUTE);
+  private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = ImmutableList.of(
+      FileFormat.PARQUET.name().toLowerCase(),
+      FileFormat.ORC.name().toLowerCase(),
+      FileFormat.AVRO.name().toLowerCase());
+  private static final PartitionDropOptions DROP_OPTIONS = new PartitionDropOptions().deleteData(false).ifExists(true);
+  private static final List<org.apache.commons.lang3.tuple.Pair<Integer, byte[]>> EMPTY_FILTER =
+      Lists.newArrayList(org.apache.commons.lang3.tuple.Pair.of(1, new byte[0]));
+  static final String MIGRATED_TO_ICEBERG = "MIGRATED_TO_ICEBERG";
+  static final String ORC_FILES_ONLY = "iceberg.orc.files.only";
+
+  static final String DECIMAL64_VECTORIZATION = "iceberg.decimal64.vectorization";
+  static final String MANUAL_ICEBERG_METADATA_LOCATION_CHANGE = "MANUAL_ICEBERG_METADATA_LOCATION_CHANGE";
 
   private final Configuration conf;
   private Table icebergTable = null;
@@ -100,10 +139,24 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private boolean deleteIcebergTable;
   private FileIO deleteIo;
   private TableMetadata deleteMetadata;
-  private boolean canMigrateHiveTable;
+  private boolean isTableMigration;
   private PreAlterTableProperties preAlterTableProperties;
   private UpdateSchema updateSchema;
+  private UpdatePartitionSpec updatePartitionSpec;
+  private Transaction transaction;
   private AlterTableType currentAlterTableOp;
+  private boolean createHMSTableInHook = false;
+  private HiveCommitLock commitLock;
+
+  private enum FileFormat {
+    ORC("orc"), PARQUET("parquet"), AVRO("avro");
+
+    private final String label;
+
+    FileFormat(String label) {
+      this.label = label;
+    }
+  }
 
   public HiveIcebergMetaHook(Configuration conf) {
     this.conf = conf;
@@ -118,6 +171,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
 
     if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
+      if (Boolean.parseBoolean(this.catalogProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
+        throw new RuntimeException("CTLT target table must be a HiveCatalog table.");
+      }
       // For non-HiveCatalog tables too, we should set the input and output format
       // so that the table can be read by other engines like Impala
       hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getCanonicalName());
@@ -126,7 +182,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       // If not using HiveCatalog check for existing table
       try {
 
-        this.icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
+        this.icebergTable = IcebergTableUtil.getTable(conf, catalogProperties, true);
 
         Preconditions.checkArgument(catalogProperties.getProperty(InputFormatConfig.TABLE_SCHEMA) == null,
             "Iceberg table already created - can not use provided schema");
@@ -156,7 +212,16 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema));
     catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
-    updateHmsTableProperties(hmsTable);
+    setCommonHmsTablePropertiesForIceberg(hmsTable);
+
+    if (hmsTable.getParameters().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+      createHMSTableInHook = true;
+    }
+
+    assertFileFormat(catalogProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
+
+    // Set whether the format is ORC, to be used during vectorization.
+    setOrcOnlyFilesParam(hmsTable);
   }
 
   @Override
@@ -171,7 +236,26 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
       }
 
-      Catalogs.createTable(conf, catalogProperties);
+      setFileFormat(catalogProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
+
+      String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      Table table;
+      if (metadataLocation != null) {
+        table = Catalogs.registerTable(conf, catalogProperties, metadataLocation);
+      } else {
+        table = Catalogs.createTable(conf, catalogProperties);
+      }
+
+      if (!HiveTableUtil.isCtas(catalogProperties)) {
+        return;
+      }
+
+      // set this in the query state so that we can rollback the table in the lifecycle hook in case of failures
+      String tableIdentifier = catalogProperties.getProperty(Catalogs.NAME);
+      SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);
+      SessionStateUtil.addResource(conf, tableIdentifier, table);
+
+      HiveTableUtil.createFileForTableObject(table, conf);
     }
   }
 
@@ -187,10 +271,18 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         "TRUE".equalsIgnoreCase(hmsTable.getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE));
 
     if (deleteIcebergTable && Catalogs.hiveCatalog(conf, catalogProperties) && deleteData) {
-      // Store the metadata and the id for deleting the actual table data
-      String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-      this.deleteIo = IcebergTableUtil.getTable(conf, catalogProperties).io();
-      this.deleteMetadata = TableMetadataParser.read(deleteIo, metadataLocation);
+      // Store the metadata and the io for deleting the actual table data
+      try {
+        String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+        this.deleteIo = Catalogs.loadTable(conf, catalogProperties).io();
+        this.deleteMetadata = TableMetadataParser.read(deleteIo, metadataLocation);
+      } catch (Exception e) {
+        LOG.error("preDropTable: Error during loading Iceberg table or parsing its metadata for HMS table: {}.{}. " +
+                "In some cases, this might lead to undeleted metadata files under the table directory: {}. " +
+                "Please double check and, if needed, manually delete any dangling files/folders, if any. " +
+                "In spite of this error, the HMS table drop operation should proceed as normal.",
+            hmsTable.getDbName(), hmsTable.getTableName(), hmsTable.getSd().getLocation(), e);
+      }
     }
   }
 
@@ -208,7 +300,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           Catalogs.dropTable(conf, catalogProperties);
         } else {
           // do nothing if metadata folder has been deleted already (Hive 4 behaviour for purge=TRUE)
-          if (deleteIo.newInputFile(deleteMetadata.location()).exists()) {
+          if (deleteMetadata != null && deleteIo.newInputFile(deleteMetadata.location()).exists()) {
             CatalogUtil.dropTableData(deleteIo, deleteMetadata);
           }
         }
@@ -224,22 +316,37 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    setupAlterOperationType(hmsTable, context);
     catalogProperties = getCatalogProperties(hmsTable);
+    setupAlterOperationType(hmsTable, context);
+    if (commitLock == null) {
+      commitLock = new HiveCommitLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
+          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(), hmsTable.getTableName());
+    }
+
     try {
-      icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
+      commitLock.acquire();
+      doPreAlterTable(hmsTable, context);
+    } catch (Exception e) {
+      commitLock.release();
+      throw new MetaException(StringUtils.stringifyException(e));
+    }
+  }
+
+  private void doPreAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
+      throws MetaException {
+    try {
+      icebergTable = IcebergTableUtil.getTable(conf, catalogProperties, true);
     } catch (NoSuchTableException nte) {
       context.getProperties().put(MIGRATE_HIVE_TO_ICEBERG, "true");
-      // If the iceberg table does not exist, and the hms table is external and not temporary and not acid
-      // we will create it in commitAlterTable
-      StorageDescriptor sd = hmsTable.getSd();
-      canMigrateHiveTable = MetaStoreUtils.isExternalTable(hmsTable) && !hmsTable.isTemporary() &&
-          !AcidUtils.isTransactionalTable(hmsTable);
-      if (!canMigrateHiveTable) {
-        throw new MetaException("Converting non-external, temporary or transactional hive table to iceberg " +
-            "table is not allowed.");
-      }
+      // If the iceberg table does not exist, then this is an ALTER command aimed at migrating the table to iceberg
+      // First we must check whether it's eligible for migration to iceberg
+      // If so, we will create the iceberg table in commitAlterTable and go ahead with the migration
+      assertTableCanBeMigrated(hmsTable);
+      isTableMigration = true;
+      // Set whether the format is ORC, to be used during vectorization.
+      setOrcOnlyFilesParam(hmsTable);
 
+      StorageDescriptor sd = hmsTable.getSd();
       preAlterTableProperties = new PreAlterTableProperties();
       preAlterTableProperties.tableLocation = sd.getLocation();
       preAlterTableProperties.format = sd.getInputFormat();
@@ -248,53 +355,193 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
       context.getProperties().put(HiveMetaHook.ALLOW_PARTITION_KEY_CHANGE, "true");
       // If there are partition keys specified remove them from the HMS table and add them to the column list
-      if (hmsTable.isSetPartitionKeys() && !hmsTable.getPartitionKeys().isEmpty()) {
-        List<PartitionTransformSpec> spec = PartitionTransform.getPartitionTransformSpec(hmsTable.getPartitionKeys());
-        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
-          throw new MetaException("Query state attached to Session state must be not null. " +
-              "Partition transform metadata cannot be saved.");
+      try {
+        Hive db = SessionState.get().getHiveDb();
+        preAlterTableProperties.partitionSpecProxy = db.getMSC().listPartitionSpecs(
+            hmsTable.getCatName(), hmsTable.getDbName(), hmsTable.getTableName(), Integer.MAX_VALUE);
+        if (hmsTable.isSetPartitionKeys() && !hmsTable.getPartitionKeys().isEmpty()) {
+          db.dropPartitions(hmsTable.getDbName(), hmsTable.getTableName(), EMPTY_FILTER, DROP_OPTIONS);
+
+          List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(hmsTable.getPartitionKeys());
+          if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
+            throw new MetaException("Query state attached to Session state must be not null. " +
+                "Partition transform metadata cannot be saved.");
+          }
+          hmsTable.getSd().getCols().addAll(hmsTable.getPartitionKeys());
+          hmsTable.setPartitionKeysIsSet(false);
         }
-        hmsTable.getSd().getCols().addAll(hmsTable.getPartitionKeys());
-        hmsTable.setPartitionKeysIsSet(false);
+      } catch (MetaException me) {
+        throw me;
+      } catch (HiveException | TException e) {
+        throw new MetaException(StringUtils.stringifyException(e));
       }
+
       preAlterTableProperties.spec = spec(conf, preAlterTableProperties.schema, hmsTable);
 
       sd.setInputFormat(HiveIcebergInputFormat.class.getCanonicalName());
       sd.setOutputFormat(HiveIcebergOutputFormat.class.getCanonicalName());
-      sd.setSerdeInfo(new SerDeInfo("icebergSerde", HiveIcebergSerDe.class.getCanonicalName(),
-          Collections.emptyMap()));
-      updateHmsTableProperties(hmsTable);
+      sd.setSerdeInfo(new SerDeInfo("icebergSerde", HiveIcebergSerDe.class.getCanonicalName(), Collections.emptyMap()));
+      setCommonHmsTablePropertiesForIceberg(hmsTable);
+      // set an additional table prop to designate that this table has been migrated to Iceberg, i.e.
+      // all or some of its data files have not been written out using the Iceberg writer, and therefore those data
+      // files do not contain Iceberg field IDs. This makes certain schema evolution operations problematic, so we
+      // want to disable these ops for now using this new table prop
+      hmsTable.getParameters().put(MIGRATED_TO_ICEBERG, "true");
+      NameMapping nameMapping = MappingUtil.create(preAlterTableProperties.schema);
+      hmsTable.getParameters().put(TableProperties.DEFAULT_NAME_MAPPING, NameMappingParser.toJson(nameMapping));
     }
 
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
       handleAddColumns(hmsTable);
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
+      assertNotMigratedTable(hmsTable.getParameters(), currentAlterTableOp.getName().toUpperCase());
       handleReplaceColumns(hmsTable);
     } else if (AlterTableType.RENAME_COLUMN.equals(currentAlterTableOp)) {
+      // passing in the "CHANGE COLUMN" string instead, since RENAME COLUMN is not part of SQL syntax (not to mention
+      // that users can change data types or reorder columns too with this alter op type, so its name is misleading..)
+      assertNotMigratedTable(hmsTable.getParameters(), "CHANGE COLUMN");
       handleChangeColumn(hmsTable);
+    } else {
+      setDeleteModeOnTableProperties(icebergTable, hmsTable.getParameters());
+      assertNotCrossTableMetadataLocationChange(hmsTable.getParameters(), context);
+    }
+
+    // Migration case is already handled above, in case of migration we don't have all the properties set till this
+    // point.
+    if (!isTableMigration) {
+      // Set whether the format is ORC, to be used during vectorization.
+      setOrcOnlyFilesParam(hmsTable);
+    }
+
+  }
+
+  /**
+   * Perform a check on the current iceberg table whether a metadata change can be performed. A table is eligible if
+   * the current metadata uuid and the new metadata uuid matches.
+   * @param tblParams hms table properties, must be non-null
+   */
+  private void assertNotCrossTableMetadataLocationChange(Map<String, String> tblParams, EnvironmentContext context) {
+    if (tblParams.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+      Preconditions.checkArgument(icebergTable != null,
+          "Cannot perform table migration to Iceberg and setting the snapshot location in one step. " +
+              "Please migrate the table first");
+      String newMetadataLocation = tblParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      FileIO io = ((BaseTable) icebergTable).operations().io();
+      TableMetadata newMetadata = TableMetadataParser.read(io, newMetadataLocation);
+      TableMetadata currentMetadata = ((BaseTable) icebergTable).operations().current();
+      if (!currentMetadata.uuid().equals(newMetadata.uuid())) {
+        throw new UnsupportedOperationException(
+            String.format("Cannot change iceberg table %s metadata location pointing to another table's metadata %s",
+                icebergTable.name(), newMetadataLocation)
+        );
+      }
+      if (!currentMetadata.metadataFileLocation().equals(newMetadataLocation) &&
+          !context.getProperties().containsKey(MANUAL_ICEBERG_METADATA_LOCATION_CHANGE)) {
+        // If we got here then this is an alter table operation where the table to be changed had an Iceberg commit
+        // meanwhile. The base metadata locations differ, while we know that this wasn't an intentional, manual
+        // metadata_location set by a user. To protect the interim commit we need to refresh the metadata file location.
+        tblParams.put(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, currentMetadata.metadataFileLocation());
+        LOG.warn("Detected an alter table operation attempting to do alterations on an Iceberg table with a stale " +
+            "metadata_location. Considered base metadata_location: {}, Actual metadata_location: {}. Will override " +
+            "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
+            newMetadataLocation, currentMetadata.metadataFileLocation());
+      }
     }
   }
 
+  private void assertNotMigratedTable(Map<String, String> tblParams, String opType) {
+    if (Boolean.parseBoolean(tblParams.get(MIGRATED_TO_ICEBERG))) {
+      throw new UnsupportedOperationException(
+          String.format("Cannot perform %s operation on a migrated Iceberg table.", opType));
+    }
+  }
+
+  /**
+   * Checks if the table can be migrated to iceberg format. An eligible table is:
+   * - external
+   * - not temporary
+   * - not acid
+   * - uses one of supported file formats
+   * @param hmsTable the table which should be migrated to iceberg, if eligible
+   * @throws MetaException if the table is not eligible for migration due to violating one of the conditions above
+   */
+  private void assertTableCanBeMigrated(org.apache.hadoop.hive.metastore.api.Table hmsTable)
+      throws MetaException {
+    StorageDescriptor sd = hmsTable.getSd();
+    boolean hasCorrectTableType = MetaStoreUtils.isExternalTable(hmsTable) && !hmsTable.isTemporary() &&
+        !AcidUtils.isTransactionalTable(hmsTable);
+    if (!hasCorrectTableType) {
+      throw new MetaException("Converting non-external, temporary or transactional hive table to iceberg " +
+          "table is not allowed.");
+    }
+    boolean hasCorrectFileFormat = MIGRATION_ALLOWED_SOURCE_FORMATS.stream()
+        .anyMatch(f -> sd.getInputFormat().toLowerCase().contains(f));
+    if (!hasCorrectFileFormat) {
+      throw new MetaException("Cannot convert hive table to iceberg with input format: " + sd.getInputFormat());
+    }
+
+    List<TypeInfo> typeInfos =
+        hmsTable.getSd().getCols().stream().map(f -> TypeInfoUtils.getTypeInfoFromTypeString(f.getType()))
+            .collect(Collectors.toList());
+    for (TypeInfo typeInfo : typeInfos) {
+      validateColumnType(typeInfo);
+    }
+  }
+
+  private void validateColumnType(TypeInfo typeInfo) throws MetaException {
+    switch (typeInfo.getCategory()) {
+      case PRIMITIVE:
+        PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
+            ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+        if (primitiveCategory.equals(PrimitiveObjectInspector.PrimitiveCategory.CHAR) || primitiveCategory.equals(
+            PrimitiveObjectInspector.PrimitiveCategory.VARCHAR)) {
+          throw new MetaException(String.format(
+              "Cannot convert hive table to iceberg that contains column type %s. " + "Use string type columns instead",
+             primitiveCategory));
+        }
+        break;
+      case STRUCT:
+        List<TypeInfo> structTypeInfos = ((StructTypeInfo) typeInfo).getAllStructFieldTypeInfos();
+        for (TypeInfo structTypeInfo : structTypeInfos) {
+          validateColumnType(structTypeInfo);
+        }
+        break;
+      case LIST:
+        validateColumnType(((ListTypeInfo) typeInfo).getListElementTypeInfo());
+        break;
+      case MAP:
+        MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
+        validateColumnType(mapTypeInfo.getMapKeyTypeInfo());
+        validateColumnType(mapTypeInfo.getMapValueTypeInfo());
+        break;
+    }
+  }
+
+
   @Override
-  public void commitAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context,
-      PartitionSpecProxy partitionSpecProxy) throws MetaException {
-    if (canMigrateHiveTable) {
+  public void commitAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
+      throws MetaException {
+    if (commitLock == null) {
+      throw new IllegalStateException("Hive commit lock should already be set");
+    }
+    commitLock.release();
+    if (isTableMigration) {
       catalogProperties = getCatalogProperties(hmsTable);
       catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));
       catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(preAlterTableProperties.spec));
-      setFileFormat();
+      setFileFormat(preAlterTableProperties.format);
       if (Catalogs.hiveCatalog(conf, catalogProperties)) {
         catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
       }
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
-          partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
+          preAlterTableProperties.partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
     } else if (currentAlterTableOp != null) {
       switch (currentAlterTableOp) {
         case REPLACE_COLUMNS:
         case RENAME_COLUMN:
         case ADDCOLS:
-          if (updateSchema != null) {
-            updateSchema.commit();
+          if (transaction != null) {
+            transaction.commitTransaction();
           }
           break;
         case ADDPROPS:
@@ -310,6 +557,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
   @Override
   public void rollbackAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context) {
+    if (commitLock == null) {
+      throw new IllegalStateException("Hive commit lock should already be set");
+    }
+    commitLock.release();
     if (Boolean.parseBoolean(context.getProperties().getOrDefault(MIGRATE_HIVE_TO_ICEBERG, "false"))) {
       LOG.debug("Initiating rollback for table {} at location {}",
           hmsTable.getTableName(), hmsTable.getSd().getLocation());
@@ -346,6 +597,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     context.putToProperties("truncateSkipDataDeletion", "true");
   }
 
+  @Override public boolean createHMSTableInHook() {
+    return createHMSTableInHook;
+  }
+
   private void alterTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable,
       Map<String, String> contextProperties) {
     Map<String, String> hmsTableParameters = hmsTable.getParameters();
@@ -375,39 +630,52 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
             "Unsupported ALTER TABLE operation type on Iceberg table " + tableName + ", must be one of: " +
                 SUPPORTED_ALTER_OPS);
       }
+
+      if (currentAlterTableOp != AlterTableType.ADDPROPS && Catalogs.hiveCatalog(conf, catalogProperties)) {
+        context.getProperties().put(SKIP_METASTORE_ALTER, "true");
+      }
     }
   }
 
-  private void setFileFormat() {
-    String format = preAlterTableProperties.format.toLowerCase();
-    if (format.contains("orc")) {
-      catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, "orc");
-    } else if (format.contains("parquet")) {
-      catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, "parquet");
-    } else if (format.contains("avro")) {
-      catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, "avro");
+  private void setFileFormat(String format) {
+    if (format == null) {
+      return;
+    }
+
+    String lowerCaseFormat = format.toLowerCase();
+    for (FileFormat fileFormat : FileFormat.values()) {
+      if (lowerCaseFormat.contains(fileFormat.label)) {
+        catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.label);
+      }
     }
   }
 
-  private void updateHmsTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // Set the table type even for non HiveCatalog based tables
-    hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-        BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+  private void assertFileFormat(String format) {
+    if (format == null) {
+      return;
+    }
+    String lowerCaseFormat = format.toLowerCase();
+    Preconditions.checkArgument(Arrays.stream(FileFormat.values()).anyMatch(v -> lowerCaseFormat.contains(v.label)),
+        String.format("Unsupported fileformat %s", format));
+  }
 
-    // Allow purging table data if the table is created now and not set otherwise
-    hmsTable.getParameters().putIfAbsent(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE");
-
+  private void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     // If the table is not managed by Hive catalog then the location should be set
     if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
       Preconditions.checkArgument(hmsTable.getSd() != null && hmsTable.getSd().getLocation() != null,
           "Table location not set");
     }
 
+    Map<String, String> hmsParams = hmsTable.getParameters();
+    COMMON_HMS_PROPERTIES.forEach(hmsParams::putIfAbsent);
+
     // Remove null values from hms table properties
-    hmsTable.getParameters().entrySet().removeIf(e -> e.getKey() == null || e.getValue() == null);
+    hmsParams.entrySet().removeIf(e -> e.getKey() == null || e.getValue() == null);
 
     // Remove creation related properties
-    PARAMETERS_TO_REMOVE.forEach(hmsTable.getParameters()::remove);
+    PARAMETERS_TO_REMOVE.forEach(hmsParams::remove);
+
+    setDeleteModeOnTableProperties(null, hmsParams);
   }
 
   /**
@@ -497,12 +765,14 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         HiveSchemaUtil.getSchemaDiff(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()), false)
             .getMissingFromSecond();
     if (!addedCols.isEmpty()) {
-      updateSchema = icebergTable.updateSchema();
+      transaction = icebergTable.newTransaction();
+      updateSchema = transaction.updateSchema();
     }
     for (FieldSchema addedCol : addedCols) {
       updateSchema.addColumn(addedCol.getName(),
           HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())), addedCol.getComment());
     }
+    updateSchema.commit();
   }
 
   private void handleReplaceColumns(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
@@ -515,7 +785,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       schemaDifference.getMissingFromFirst().forEach(icebergCols::remove);
     }
 
-    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getFirstOutOfOrderColumn(
+    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getReorderedColumn(
         hmsCols, icebergCols, ImmutableMap.of());
 
     // limit the scope of this operation to only dropping columns
@@ -531,12 +801,14 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           "mismatches between HMS and Iceberg, please consider the UPDATE COLUMNS command.");
     }
 
-    updateSchema = icebergTable.updateSchema();
+    transaction = icebergTable.newTransaction();
+    updateSchema = transaction.updateSchema();
     LOG.info("handleReplaceColumns: Dropping the following columns for Iceberg table {}, cols: {}",
         hmsTable.getTableName(), schemaDifference.getMissingFromFirst());
     for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
       updateSchema.deleteColumn(droppedCol.getName());
     }
+    updateSchema.commit();
   }
 
   private void handleChangeColumn(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
@@ -551,11 +823,11 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           schemaDifference.getMissingFromSecond().get(0).getName(),
           schemaDifference.getMissingFromFirst().get(0).getName());
     }
-    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getFirstOutOfOrderColumn(hmsCols, icebergCols,
-        renameMapping);
+    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getReorderedColumn(hmsCols, icebergCols, renameMapping);
 
     if (!schemaDifference.isEmpty() || outOfOrder != null) {
-      updateSchema = icebergTable.updateSchema();
+      transaction = icebergTable.newTransaction();
+      updateSchema = transaction.updateSchema();
     } else {
       // we should get here if the user didn't change anything about the column
       // i.e. no changes to the name, type, comment or order
@@ -597,6 +869,22 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         updateSchema.moveFirst(outOfOrder.first());
       }
     }
+    updateSchema.commit();
+
+    handlePartitionRename(schemaDifference);
+  }
+
+  private void handlePartitionRename(HiveSchemaUtil.SchemaDifference schemaDifference) {
+    // in case a partition column has been renamed, spec needs to be adjusted too
+    if (!schemaDifference.getMissingFromSecond().isEmpty()) {
+      FieldSchema oldField = schemaDifference.getMissingFromFirst().get(0);
+      FieldSchema updatedField = schemaDifference.getMissingFromSecond().get(0);
+      if (icebergTable.spec().fields().stream().anyMatch(pf -> pf.name().equals(oldField.getName()))) {
+        updatePartitionSpec = transaction.updateSpec();
+        updatePartitionSpec.renameField(oldField.getName(), updatedField.getName());
+        updatePartitionSpec.commit();
+      }
+    }
   }
 
   private Type.PrimitiveType getPrimitiveTypeOrThrow(FieldSchema field) throws MetaException {
@@ -608,11 +896,59 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     return (Type.PrimitiveType) newType;
   }
 
+  private void setOrcOnlyFilesParam(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (isOrcOnlyFiles(hmsTable)) {
+      hmsTable.getParameters().put(ORC_FILES_ONLY, "true");
+    } else {
+      hmsTable.getParameters().put(ORC_FILES_ONLY, "false");
+    }
+  }
+
+  private boolean isOrcOnlyFiles(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) &&
+        ((hmsTable.getSd().getInputFormat() != null &&
+            hmsTable.getSd().getInputFormat().toUpperCase().contains(org.apache.iceberg.FileFormat.ORC.name())) ||
+            org.apache.iceberg.FileFormat.ORC.name()
+                .equalsIgnoreCase(hmsTable.getSd().getSerdeInfo().getParameters().get("write.format.default")) ||
+            org.apache.iceberg.FileFormat.ORC.name()
+                .equalsIgnoreCase(hmsTable.getParameters().get("write.format.default")));
+  }
+
+  // TODO: remove this if copy-on-write mode gets implemented in Hive
+  private static void setDeleteModeOnTableProperties(Table icebergTable, Map<String, String> newProps) {
+    // Hive only supports merge-on-read delete mode, it will actually throw an error if DML operations are attempted on
+    // tables that don't have this (the default is copy-on-write). We set this at table creation and v1->v2 conversion.
+    if ((icebergTable == null || ((BaseTable) icebergTable).operations().current().formatVersion() == 1) &&
+        "2".equals(newProps.get(TableProperties.FORMAT_VERSION))) {
+      newProps.put(TableProperties.DELETE_MODE, "merge-on-read");
+      newProps.put(TableProperties.UPDATE_MODE, "merge-on-read");
+      newProps.put(TableProperties.MERGE_MODE, "merge-on-read");
+    }
+  }
+
+  @Override
+  public void postGetTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (hmsTable != null) {
+      try {
+        Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
+        String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
+        // If it is not the default format version, then set it in the table properties.
+        if (!"1".equals(formatVersion)) {
+          hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+        }
+      } catch (NoSuchTableException | NotFoundException ex) {
+        // If the table doesn't exist, ignore throwing exception from here
+      }
+    }
+  }
+
   private class PreAlterTableProperties {
     private String tableLocation;
     private String format;
     private Schema schema;
     private PartitionSpec spec;
     private List<FieldSchema> partitionKeys;
+    private PartitionSpecProxy partitionSpecProxy;
   }
+
 }

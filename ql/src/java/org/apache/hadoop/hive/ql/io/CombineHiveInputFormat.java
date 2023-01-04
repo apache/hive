@@ -517,24 +517,19 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     int numThreads = Math.min(MAX_CHECK_NONCOMBINABLE_THREAD_NUM,
         (int) Math.ceil((double) paths.length / DEFAULT_NUM_PATH_PER_THREAD));
 
-    // This check is necessary because for Spark branch, the result array from
-    // getInputPaths() above could be empty, and therefore numThreads could be 0.
-    // In that case, Executors.newFixedThreadPool will fail.
-    if (numThreads > 0) {
-      try {
-        Set<Integer> nonCombinablePathIndices = getNonCombinablePathIndices(job, paths, numThreads);
-        for (int i = 0; i < paths.length; i++) {
-          if (nonCombinablePathIndices.contains(i)) {
-            nonCombinablePaths.add(paths[i]);
-          } else {
-            combinablePaths.add(paths[i]);
-          }
+    try {
+      Set<Integer> nonCombinablePathIndices = getNonCombinablePathIndices(job, paths, numThreads);
+      for (int i = 0; i < paths.length; i++) {
+        if (nonCombinablePathIndices.contains(i)) {
+          nonCombinablePaths.add(paths[i]);
+        } else {
+          combinablePaths.add(paths[i]);
         }
-      } catch (Exception e) {
-        LOG.error("Error checking non-combinable path", e);
-        perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
-        throw new IOException(e);
       }
+    } catch (Exception e) {
+      LOG.error("Error checking non-combinable path", e);
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+      throw new IOException(e);
     }
 
     // Store the previous value for the path specification
@@ -710,7 +705,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       throw new IOException("cannot find class " + inputFormatClassName);
     }
 
-    pushProjectionsAndFiltersAndAsOf(job, inputFormatClass, hsplit.getPath(0));
+    pushProjectionsAndFiltersAndAsOf(job, hsplit.getPath(0));
 
     return ShimLoader.getHadoopShims().getCombineFileInputFormat()
         .getRecordReader(job,

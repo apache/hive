@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -52,6 +53,11 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
 
   private List<String> columnNames;
   private List<TypeInfo> columnTypes;
+  private List<String> columnComments;
+
+  private List<String> partitionColumnNames;
+  private List<TypeInfo> partitionColumnTypes;
+  private List<String> partitionColumnComments;
 
   /**
    * Initialize the SerDe. By default, this will use one set of properties,
@@ -76,6 +82,10 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
     this.properties = SerDeUtils.createOverlayedProperties(tableProperties, partitionProperties);
     this.columnNames = parseColumnNames();
     this.columnTypes = parseColumnTypes();
+    this.columnComments = parseColumnComments(serdeConstants.LIST_COLUMN_COMMENTS);
+    this.partitionColumnNames = parseColumnNames(serdeConstants.LIST_PARTITION_COLUMNS);
+    this.partitionColumnTypes = parseColumnTypes(serdeConstants.LIST_PARTITION_COLUMN_TYPES);
+    this.partitionColumnComments = parseColumnComments(serdeConstants.LIST_PARTITION_COLUMN_COMMENTS);
 
     Preconditions.checkArgument(this.columnNames.size() == this.columnTypes.size(),
         "Column names must match count of column types");
@@ -84,7 +94,11 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
   }
 
   protected List<String> parseColumnNames() {
-    final String columnNameProperty = this.properties.getProperty(serdeConstants.LIST_COLUMNS, "");
+    return parseColumnNames(serdeConstants.LIST_COLUMNS);
+  }
+
+  protected List<String> parseColumnNames(String key) {
+    final String columnNameProperty = this.properties.getProperty(key, "");
     final String columnNameDelimiter =
         this.properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA));
 
@@ -93,10 +107,21 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
   }
 
   protected List<TypeInfo> parseColumnTypes() {
-    final String columnTypeProperty = this.properties.getProperty(serdeConstants.LIST_COLUMN_TYPES, "");
+    return parseColumnTypes(serdeConstants.LIST_COLUMN_TYPES);
+  }
+
+  protected List<TypeInfo> parseColumnTypes(String key) {
+    final String columnTypeProperty = this.properties.getProperty(key, "");
 
     return columnTypeProperty.isEmpty() ? Collections.emptyList()
         : Collections.unmodifiableList(TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty));
+  }
+
+  protected List<String> parseColumnComments(String key) {
+    final String columnCommentProperty = this.properties.getProperty(key, "");
+
+    return columnCommentProperty.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(
+        Arrays.asList(columnCommentProperty.split(Character.toString(ColumnType.COLUMN_COMMENTS_DELIMITER))));
   }
 
   /**
@@ -140,6 +165,22 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
 
   public List<TypeInfo> getColumnTypes() {
     return columnTypes;
+  }
+
+  public List<String> getColumnComments() {
+    return columnComments;
+  }
+
+  public List<String> getPartitionColumnNames() {
+    return partitionColumnNames;
+  }
+
+  public List<TypeInfo> getPartitionColumnTypes() {
+    return partitionColumnTypes;
+  }
+
+  public List<String> getPartitionColumnComments() {
+    return partitionColumnComments;
   }
 
   public Optional<Configuration> getConfiguration() {

@@ -62,6 +62,13 @@ tableOrColumn
     identifier -> ^(TOK_TABLE_OR_COL identifier)
     ;
 
+defaultValue
+@init { gParent.pushMsg("default value", state); }
+@after { gParent.popMsg(state); }
+    :
+    KW_DEFAULT -> ^(TOK_TABLE_OR_COL TOK_DEFAULT_VALUE)
+    ;
+
 expressionList
 @init { gParent.pushMsg("expression list", state); }
 @after { gParent.popMsg(state); }
@@ -228,9 +235,9 @@ tableName
 @init { gParent.pushMsg("table name", state); }
 @after { gParent.popMsg(state); }
     :
-    db=identifier DOT tab=identifier
+    db=identifier DOT tab=identifier (DOT meta=identifier)?
     {tables.add(new ImmutablePair<>($db.text, $tab.text));}
-    -> ^(TOK_TABNAME $db $tab)
+    -> ^(TOK_TABNAME $db $tab $meta?)
     |
     tab=identifier
     {tables.add(new ImmutablePair<>(null, $tab.text));}

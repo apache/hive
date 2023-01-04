@@ -210,8 +210,10 @@ public class QueryPlan implements Serializable {
    * @param path
    * @return The statementId from the FileSinkOperator with the given writeId, moveTaskId, operation and path.
    * -1 if there are multiple FileSinkOperators with the same value of these parameters.
+   * The original statement id if there were no matching acid sinks.
    */
-  public Integer getStatementIdForAcidWriteType(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
+  public Integer getStatementIdForAcidWriteType(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path,
+                                                int originalStatementId) {
     FileSinkDesc result = null;
     for (FileSinkDesc acidSink : acidSinks) {
       if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
@@ -226,7 +228,9 @@ public class QueryPlan implements Serializable {
     if (result != null) {
       return result.getStatementId();
     } else {
-      return -1;
+      // If there were no matching acid sinks proceed with the original statement id. This can happen, if we used the
+      // load data inpath command on an insert only table.
+      return originalStatementId;
     }
   }
 

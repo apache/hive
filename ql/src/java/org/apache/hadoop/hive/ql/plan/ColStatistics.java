@@ -31,6 +31,8 @@ public class ColStatistics {
   private boolean isPrimaryKey;
   private boolean isEstimated;
   private boolean isFilteredColumn;
+  private byte[] bitVectors;
+  private byte[] histogram;
 
   public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
@@ -111,6 +113,22 @@ public class ColStatistics {
     this.range = r;
   }
 
+  public byte[] getBitVectors() {
+    return bitVectors;
+  }
+
+  public void setBitVectors(byte[] bitVectors) {
+    this.bitVectors = bitVectors;
+  }
+
+  public byte[] getHistogram() {
+    return histogram;
+  }
+
+  public void setHistogram(byte[] histogram) {
+    this.histogram = histogram;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -148,6 +166,8 @@ public class ColStatistics {
     clone.setNumNulls(numNulls);
     clone.setNumTrues(numTrues);
     clone.setNumFalses(numFalses);
+    clone.setBitVectors(bitVectors);
+    clone.setHistogram(histogram);
     clone.setPrimaryKey(isPrimaryKey);
     clone.setIsEstimated(isEstimated);
     clone.setIsFilteredColumn(isFilteredColumn);

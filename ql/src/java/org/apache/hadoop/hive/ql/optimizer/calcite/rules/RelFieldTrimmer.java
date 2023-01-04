@@ -190,12 +190,13 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     // Fields that define the collation cannot be discarded.
     final RelMetadataQuery mq = rel.getCluster().getMetadataQuery();
     final ImmutableList<RelCollation> collations = mq.collations(input);
-    for (RelCollation collation : collations) {
-      for (RelFieldCollation fieldCollation : collation.getFieldCollations()) {
-        fieldsUsedBuilder.set(fieldCollation.getFieldIndex());
+    if (collations != null) {
+      for (RelCollation collation : collations) {
+        for (RelFieldCollation fieldCollation : collation.getFieldCollations()) {
+          fieldsUsedBuilder.set(fieldCollation.getFieldIndex());
+        }
       }
     }
-
     // Correlating variables are a means for other relational expressions to use
     // fields.
     for (final CorrelationId correlation : rel.getVariablesSet()) {

@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.conf;
 
+import java.util.regex.Pattern;
+
 public class Constants {
   /* Constants for Hive stats */
   public static final String HIVE_ENGINE = "hive";
@@ -56,6 +58,7 @@ public class Constants {
   public static final String JDBC_DRIVER = JDBC_CONFIG_PREFIX + ".jdbc.driver";
   public static final String JDBC_USERNAME = JDBC_CONFIG_PREFIX + ".dbcp.username";
   public static final String JDBC_PASSWORD = JDBC_CONFIG_PREFIX + ".dbcp.password";
+  public static final String JDBC_PASSWORD_URI = JDBC_CONFIG_PREFIX + ".dbcp.password.uri";
   public static final String JDBC_KEYSTORE = JDBC_CONFIG_PREFIX + ".dbcp.password.keystore";
   public static final String JDBC_KEY = JDBC_CONFIG_PREFIX + ".dbcp.password.key";
   public static final String JDBC_QUERY = JDBC_CONFIG_PREFIX + ".query";
@@ -89,4 +92,17 @@ public class Constants {
   public static final String MODE = "mode";
 
   public static final String ACID_FETCH_DELETED_ROWS = "acid.fetch.deleted.rows";
+  public static final String INSERT_ONLY_FETCH_BUCKET_ID = "insertonly.fetch.bucketid";
+
+  public static final String ERROR_MESSAGE_NO_DETAILS_AVAILABLE = "No detailed message available";
+
+  public static final String ORC_INPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat";
+  public static final String ORC_OUTPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat";
+
+
+  public static final Pattern COMPACTION_POOLS_PATTERN = Pattern.compile("hive\\.compactor\\.worker\\.(.*)\\.threads");
+  public static final String HIVE_COMPACTOR_WORKER_POOL = "hive.compactor.worker.pool";
+
+  public static final String HTTP_HEADER_REQUEST_TRACK = "X-Request-ID";
+  public static final String TIME_POSTFIX_REQUEST_TRACK = "_TIME";
 }

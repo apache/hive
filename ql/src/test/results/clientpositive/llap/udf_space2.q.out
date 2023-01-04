@@ -1,0 +1,50 @@
+PREHOOK: query: DESCRIBE FUNCTION space
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION space
+POSTHOOK: type: DESCFUNCTION
+space(n) - returns n spaces
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED space
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED space
+POSTHOOK: type: DESCFUNCTION
+space(n) - returns n spaces
+Example:
+   > SELECT space(2) FROM src LIMIT 1;
+  '  '
+Function class:org.apache.hadoop.hive.ql.udf.UDFSpace
+Function type:BUILTIN
+PREHOOK: query: create table udf_space(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@udf_space
+POSTHOOK: query: create table udf_space(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@udf_space
+PREHOOK: query: insert into udf_space values (5),(6),(7),(8),(9),(10),(11),(12),(13),(14)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@udf_space
+POSTHOOK: query: insert into udf_space values (5),(6),(7),(8),(9),(10),(11),(12),(13),(14)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@udf_space
+POSTHOOK: Lineage: udf_space.i SCRIPT []
+PREHOOK: query: select i, SPACE(i) from udf_space
+PREHOOK: type: QUERY
+PREHOOK: Input: default@udf_space
+#### A masked pattern was here ####
+POSTHOOK: query: select i, SPACE(i) from udf_space
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@udf_space
+#### A masked pattern was here ####
+5	     
+6	      
+7	       
+8	        
+9	         
+10	          
+11	           
+12	            
+13	             
+14	              

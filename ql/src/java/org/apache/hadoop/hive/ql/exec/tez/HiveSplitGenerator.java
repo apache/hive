@@ -23,11 +23,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
 import org.apache.hadoop.fs.BlockLocation;
@@ -37,7 +40,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
+import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,20 +189,7 @@ public class HiveSplitGenerator extends InputInitializer {
           (InputFormat<?, ?>) ReflectionUtils.newInstance(JavaUtils.loadClass(realInputFormatName),
             jobConf);
 
-        int totalResource = 0;
-        int taskResource = 0;
-        int availableSlots = 0;
-        // FIXME. Do the right thing Luke.
-        if (getContext() == null) {
-          // for now, totalResource = taskResource for llap
-          availableSlots = 1;
-        }
-
-        if (getContext() != null) {
-          totalResource = getContext().getTotalAvailableResource().getMemory();
-          taskResource = getContext().getVertexTaskResource().getMemory();
-          availableSlots = totalResource / taskResource;
-        }
+        int availableSlots = getAvailableSlotsCalculator().getAvailableSlots();
 
         if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1) <= 1) {
           // broken configuration from mapred-default.xml
@@ -272,30 +262,33 @@ public class HiveSplitGenerator extends InputInitializer {
         String groupName = null;
         String vertexName = null;
         if (inputInitializerContext != null) {
-          tezCounters = new TezCounters();
-          groupName = HiveInputCounters.class.getName();
-          vertexName = jobConf.get(Operator.CONTEXT_NAME_KEY, "");
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.RAW_INPUT_SPLITS.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).increment(splits.length);
-          final List<Path> paths = Utilities.getInputPathsTez(jobConf, work);
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_DIRECTORIES.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).increment(paths.size());
-          final Set<String> files = new HashSet<>();
-          for (InputSplit inputSplit : splits) {
-            if (inputSplit instanceof FileSplit) {
-              final FileSplit fileSplit = (FileSplit) inputSplit;
-              final Path path = fileSplit.getPath();
-              // The assumption here is the path is a file. Only case this is different is ACID deltas.
-              // The isFile check is avoided here for performance reasons.
-              final String fileStr = path.toString();
-              if (!files.contains(fileStr)) {
-                files.add(fileStr);
+          try {
+            tezCounters = new TezCounters();
+            groupName = HiveInputCounters.class.getName();
+            vertexName = jobConf.get(Operator.CONTEXT_NAME_KEY, "");
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.RAW_INPUT_SPLITS.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).increment(splits.length);
+            final List<Path> paths = Utilities.getInputPathsTez(jobConf, work);
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_DIRECTORIES.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).increment(paths.size());
+            final Set<String> files = new HashSet<>();
+            for (InputSplit inputSplit : splits) {
+              if (inputSplit instanceof FileSplit) {
+                final FileSplit fileSplit = (FileSplit) inputSplit;
+                final Path path = fileSplit.getPath();
+                // The assumption here is the path is a file. Only case this is different is ACID deltas.
+                // The isFile check is avoided here for performance reasons.
+                final String fileStr = path.toString();
+                if (!files.contains(fileStr)) {
+                  files.add(fileStr);
+                }
               }
             }
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_FILES.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).increment(files.size());
+          } catch (Exception e) {
+            LOG.warn("Caught exception while trying to update Tez counters", e);
           }
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_FILES.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).increment(files.size());
-          DeltaFilesMetricReporter.createCountersForAcidMetrics(tezCounters, jobConf);
         }
 
         if (work.getIncludedBuckets() != null) {
@@ -308,12 +301,16 @@ public class HiveSplitGenerator extends InputInitializer {
         InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
         LOG.info("Number of split groups: " + flatSplits.length);
         if (inputInitializerContext != null) {
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.GROUPED_INPUT_SPLITS.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).setValue(flatSplits.length);
+          try {
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.GROUPED_INPUT_SPLITS.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).setValue(flatSplits.length);
 
-          LOG.debug("Published tez counters: {}", tezCounters);
+            LOG.debug("Published tez counters: {}", tezCounters);
 
-          inputInitializerContext.addCounters(tezCounters);
+            inputInitializerContext.addCounters(tezCounters);
+          } catch (Exception e) {
+            LOG.warn("Caught exception while trying to update Tez counters", e);
+          }
         }
 
         List<TaskLocationHint> locationHints = splitGrouper.createTaskLocationHints(flatSplits, generateConsistentSplits);
@@ -441,5 +438,13 @@ public class HiveSplitGenerator extends InputInitializer {
         throw new RuntimeException("Problem getting input split size", e);
       }
     }
+  }
+
+  private AvailableSlotsCalculator getAvailableSlotsCalculator() throws Exception {
+    Class<?> clazz = Class.forName(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SPLITS_AVAILABLE_SLOTS_CALCULATOR_CLASS),
+            true, Utilities.getSessionSpecifiedClassLoader());
+    AvailableSlotsCalculator slotsCalculator = (AvailableSlotsCalculator) ReflectionUtil.newInstance(clazz, null);
+    slotsCalculator.initialize(conf, this);
+    return slotsCalculator;
   }
 }

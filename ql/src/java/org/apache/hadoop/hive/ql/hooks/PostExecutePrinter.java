@@ -80,8 +80,8 @@ public class PostExecutePrinter implements ExecuteWithHookContext {
         if (o1.getKey().getDataContainer().isPartition() &&
             o2.getKey().getDataContainer().isPartition()) {
           // Both are partitioned tables.
-          ret = o1.getKey().getDataContainer().getPartition().toString()
-          .compareTo(o2.getKey().getDataContainer().getPartition().toString());
+          ret = o1.getKey().getDataContainer().getPartition().getValues().toString()
+          .compareTo(o2.getKey().getDataContainer().getPartition().getValues().toString());
 
           if (ret != 0) {
             return ret;

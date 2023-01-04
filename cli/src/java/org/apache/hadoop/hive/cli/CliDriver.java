@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.cli;
 
+import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
 import static org.apache.hadoop.util.StringUtils.stringifyException;
 
 import java.io.BufferedReader;
@@ -54,14 +55,13 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
+import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -251,12 +251,14 @@ public class CliDriver {
         }
 
         // Set HDFS CallerContext to queryId and reset back to sessionId after the query is done
-        ShimLoader.getHadoopShims().setHadoopQueryContext(qp.getQueryState().getQueryId());
+        ShimLoader.getHadoopShims()
+            .setHadoopQueryContext(String.format(USER_ID, qp.getQueryState().getQueryId(), ss.getUserName()));
         try {
           response = qp.run(cmd);
         } catch (CommandProcessorException e) {
           qp.close();
-          ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId());
+          ShimLoader.getHadoopShims()
+              .setHadoopSessionContext(String.format(USER_ID, ss.getSessionId(), ss.getUserName()));
           throw e;
         }
 
@@ -293,7 +295,8 @@ public class CliDriver {
           throw new CommandProcessorException(1);
         } finally {
           qp.close();
-          ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId());
+          ShimLoader.getHadoopShims()
+              .setHadoopSessionContext(String.format(USER_ID, ss.getSessionId(), ss.getUserName()));
 
           if (out instanceof FetchConverter) {
             ((FetchConverter) out).fetchFinished();

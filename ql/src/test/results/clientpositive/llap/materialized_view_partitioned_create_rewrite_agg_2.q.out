@@ -7,26 +7,26 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: INSERT INTO t1(a, b, c, d, e) VALUES
-(1, 1, 1, "one", 1.1),
-(1, 4, 1, "one", 4.2),
-(2, 2, 2, "two", 2.2),
-(1, 10, 1, "one", 10.1),
-(2, 2, 2, "two", 2.2),
-(1, 3, 1, "one", 3.1),
-(null, 4, null, "unknown", 4.6),
-(null, 4, 2, "unknown", 4.7)
+(1, 1, 1, 'one', 1.1),
+(1, 4, 1, 'one', 4.2),
+(2, 2, 2, 'two', 2.2),
+(1, 10, 1, 'one', 10.1),
+(2, 2, 2, 'two', 2.2),
+(1, 3, 1, 'one', 3.1),
+(null, 4, null, 'unknown', 4.6),
+(null, 4, 2, 'unknown', 4.7)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t1
 POSTHOOK: query: INSERT INTO t1(a, b, c, d, e) VALUES
-(1, 1, 1, "one", 1.1),
-(1, 4, 1, "one", 4.2),
-(2, 2, 2, "two", 2.2),
-(1, 10, 1, "one", 10.1),
-(2, 2, 2, "two", 2.2),
-(1, 3, 1, "one", 3.1),
-(null, 4, null, "unknown", 4.6),
-(null, 4, 2, "unknown", 4.7)
+(1, 1, 1, 'one', 1.1),
+(1, 4, 1, 'one', 4.2),
+(2, 2, 2, 'two', 2.2),
+(1, 10, 1, 'one', 10.1),
+(2, 2, 2, 'two', 2.2),
+(1, 3, 1, 'one', 3.1),
+(null, 4, null, 'unknown', 4.6),
+(null, 4, 2, 'unknown', 4.7)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
@@ -35,14 +35,14 @@ POSTHOOK: Lineage: t1.b SCRIPT []
 POSTHOOK: Lineage: t1.c SCRIPT []
 POSTHOOK: Lineage: t1.d SCRIPT []
 POSTHOOK: Lineage: t1.e SCRIPT []
-PREHOOK: query: CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a, c, d) STORED AS ORC TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only") AS
+PREHOOK: query: CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a, c, d) STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') AS
 SELECT a, sum(b) sumb, c, d, sum(e) sume FROM t1 GROUP BY a, c, d
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
-POSTHOOK: query: CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a, c, d) STORED AS ORC TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only") AS
+POSTHOOK: query: CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a, c, d) STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') AS
 SELECT a, sum(b) sumb, c, d, sum(e) sume FROM t1 GROUP BY a, c, d
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
@@ -53,6 +53,8 @@ POSTHOOK: Output: default@mat1@a=1/c=1/d=one
 POSTHOOK: Output: default@mat1@a=2/c=2/d=two
 POSTHOOK: Output: default@mat1@a=__HIVE_DEFAULT_PARTITION__/c=2/d=unknown
 POSTHOOK: Output: default@mat1@a=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=unknown
+POSTHOOK: Lineage: mat1.sumb EXPRESSION [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.sume EXPRESSION [(t1)t1.FieldSchema(name:e, type:float, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=1,c=1,d=one).sumb EXPRESSION [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=1,c=1,d=one).sume EXPRESSION [(t1)t1.FieldSchema(name:e, type:float, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=2,c=2,d=two).sumb EXPRESSION [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
@@ -62,16 +64,16 @@ POSTHOOK: Lineage: mat1 PARTITION(a=__HIVE_DEFAULT_PARTITION__,c=2,d=unknown).su
 POSTHOOK: Lineage: mat1 PARTITION(a=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=unknown).sumb EXPRESSION [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=unknown).sume EXPRESSION [(t1)t1.FieldSchema(name:e, type:float, comment:null), ]
 PREHOOK: query: INSERT INTO t1(a, b, c, d, e) VALUES
-(1, 3, 1, "one", 3.3),
-(1, 110, 1, "one", 110.11),
-(null, 20, null, "unknown", 20.22)
+(1, 3, 1, 'one', 3.3),
+(1, 110, 1, 'one', 110.11),
+(null, 20, null, 'unknown', 20.22)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t1
 POSTHOOK: query: INSERT INTO t1(a, b, c, d, e) VALUES
-(1, 3, 1, "one", 3.3),
-(1, 110, 1, "one", 110.11),
-(null, 20, null, "unknown", 20.22)
+(1, 3, 1, 'one', 3.3),
+(1, 110, 1, 'one', 110.11),
+(null, 20, null, 'unknown', 20.22)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1

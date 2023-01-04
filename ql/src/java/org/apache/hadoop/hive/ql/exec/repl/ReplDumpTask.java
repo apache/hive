@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.commons.collections4.CollectionUtils;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -39,7 +40,6 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.CatalogFilter;
@@ -61,10 +61,12 @@ import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.events.EventUtils;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
@@ -72,6 +74,7 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.ExportService;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
@@ -104,6 +107,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -117,19 +121,36 @@ import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DB_PROPERTY;
+import static org.apache.hadoop.hive.common.repl.ReplConst.TARGET_OF_REPLICATION;
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_DIRECTORY;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.createAndGetEventAckFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.createBootstrapTableList;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getReplEventIdFromDatabase;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getTablesFromTableDiffFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getTargetEventId;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFailover;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFirstIncrementalPending;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.getOpenTxns;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.cleanupSnapshots;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.getDFS;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.getListFromFileList;
+import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.KEY.CURR_STATE_ID_SOURCE;
+import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.KEY.CURR_STATE_ID_TARGET;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -139,6 +160,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final long SLEEP_TIME_FOR_TESTS = 30000;
   private Set<String> tablesForBootstrap = new HashSet<>();
   private List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
+  private boolean createEventMarker = false;
+  private boolean unsetDbPropertiesForOptimisedBootstrap;
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -171,26 +194,31 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         initiateDataCopyTasks();
       } else {
         Path dumpRoot = ReplUtils.getEncodedDumpRootPath(conf, work.dbNameOrPattern.toLowerCase());
-        if (ReplUtils.failedWithNonRecoverableError(ReplUtils.getLatestDumpPath(dumpRoot, conf), conf)) {
+        Path latestDumpPath = ReplUtils.getLatestDumpPath(dumpRoot, conf);
+        if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
           LOG.error("Previous dump failed with non recoverable error. Needs manual intervention. ");
+          Path nonRecoverableFile = new Path(latestDumpPath, NON_RECOVERABLE_MARKER.toString());
+          ReplUtils.reportStatusInReplicationMetrics(getName(), Status.SKIPPED, nonRecoverableFile.toString(), conf);
           setException(new SemanticException(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.format()));
           return ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode();
         }
         Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
         boolean isFailoverMarkerPresent = false;
-        if (previousValidHiveDumpPath == null) {
+        boolean isFailover = isFailover(work.dbNameOrPattern, getHive());
+        LOG.debug("Database is {} going through failover", isFailover ? "" : "not");
+        if (previousValidHiveDumpPath == null && !isFailover) {
           work.setBootstrap(true);
         } else {
-          work.setOldReplScope(new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
-          isFailoverMarkerPresent = isDumpFailoverReady(previousValidHiveDumpPath);
+          work.setOldReplScope(isFailover ? null : new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
+          isFailoverMarkerPresent = !isFailover && isDumpFailoverReady(previousValidHiveDumpPath);
         }
         //Proceed with dump operation in following cases:
         //1. No previous dump is present.
         //2. Previous dump is already loaded and it is not in failover ready status.
-        if (shouldDump(previousValidHiveDumpPath, isFailoverMarkerPresent)) {
+        if (shouldDump(previousValidHiveDumpPath, isFailoverMarkerPresent, isFailover)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, work.isBootstrap());
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
-          if (!work.isBootstrap()) {
+          if (!work.isBootstrap() && !isFailover) {
             preProcessFailoverIfRequired(previousValidHiveDumpPath, isFailoverMarkerPresent);
           }
           // Set distCp custom name corresponding to the replication policy.
@@ -211,20 +239,71 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
           Long lastReplId;
           LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
-          if (work.isBootstrap()) {
+          if (isFailover) {
+            if (createEventMarker) {
+              LOG.info("Optimised Bootstrap Dump triggered for {}.", work.dbNameOrPattern);
+              // Before starting optimised bootstrap, check if the first incremental is done to ensure database is in
+              // consistent state.
+              isFirstIncrementalPending(work.dbNameOrPattern, getHive());
+              // Get the last replicated event id from the database.
+              String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive());
+              // Get the last replicated event id from the database with respect to target.
+              String targetDbEventId = getTargetEventId(work.dbNameOrPattern, getHive());
+
+              LOG.info("Creating event_ack file for database {} with event id {}.", work.dbNameOrPattern, dbEventId);
+              lastReplId =
+                  createAndGetEventAckFile(currentDumpPath, dmd, cmRoot, dbEventId, targetDbEventId, conf, work);
+              finishRemainingTasks();
+            } else {
+              // We should be here only if TableDiff is Present.
+              boolean isTableDiffDirectoryPresent =
+                      checkFileExists(previousValidHiveDumpPath.getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
+              boolean isAbortTxnsListPresent =
+                      checkFileExists(previousValidHiveDumpPath.getParent(), conf, OptimisedBootstrapUtils.ABORT_TXNS_FILE);
+
+              assert isTableDiffDirectoryPresent;
+
+              // Set boolean to determine the db properties need to sorted once dump is complete
+              unsetDbPropertiesForOptimisedBootstrap = true;
+
+              long fromEventId = Long.parseLong(getEventIdFromFile(previousValidHiveDumpPath.getParent(), conf)[1]);
+              LOG.info("Starting optimised bootstrap from event id {} for database {}", fromEventId,
+                  work.dbNameOrPattern);
+              work.setEventFrom(fromEventId);
+
+              // Get the tables to be bootstrapped from the table diff
+              tablesForBootstrap = getTablesFromTableDiffFile(previousValidHiveDumpPath.getParent(), conf);
+              if (isAbortTxnsListPresent) {
+                abortReplCreatedTxnsPriorToFailover(previousValidHiveDumpPath.getParent(), conf);
+              }
+
+              // Generate the bootstrapped table list and put it in the new dump directory for the load to consume.
+              createBootstrapTableList(currentDumpPath, tablesForBootstrap, conf);
+
+              dumpDbMetadata(work.dbNameOrPattern, new Path(hiveDumpRoot, EximUtil.METADATA_PATH_NAME),
+                      fromEventId, getHive());
+              // Call the normal dump with the tablesForBootstrap set.
+              lastReplId =  incrementalDump(hiveDumpRoot, dmd, cmRoot, getHive());
+            }
+          }
+          else if (work.isBootstrap()) {
             lastReplId = bootStrapDump(hiveDumpRoot, dmd, cmRoot, getHive());
           } else {
             work.setEventFrom(getEventFromPreviousDumpMetadata(previousValidHiveDumpPath));
             lastReplId = incrementalDump(hiveDumpRoot, dmd, cmRoot, getHive());
           }
-          work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
-          initiateDataCopyTasks();
+          // The datacopy doesn't need to be initialised in case of optimised bootstrap first dump.
+          if (lastReplId >= 0) {
+            work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
+            initiateDataCopyTasks();
+          }
         } else {
           if (isFailoverMarkerPresent) {
             LOG.info("Previous Dump is failover ready. Skipping this iteration.");
           } else {
             LOG.info("Previous Dump is not yet loaded. Skipping this iteration.");
           }
+          ReplUtils.reportStatusInReplicationMetrics(getName(), Status.SKIPPED, null, conf);
         }
       }
     } catch (RuntimeException e) {
@@ -255,6 +334,16 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       }
     }
     return 0;
+  }
+
+  private void abortReplCreatedTxnsPriorToFailover(Path dumpPath, HiveConf conf) throws LockException, IOException {
+    List<Long> replCreatedTxnsToAbort = OptimisedBootstrapUtils.getTxnIdFromAbortTxnsFile(dumpPath, conf);
+    String replPolicy = HiveUtils.getReplPolicy(work.dbNameOrPattern);
+    HiveTxnManager hiveTxnManager = getTxnMgr();
+    for (Long txnId : replCreatedTxnsToAbort) {
+      LOG.info("Rolling back Repl_Created txns:" + replCreatedTxnsToAbort.toString() + " opened prior to failover.");
+      hiveTxnManager.replRollbackTxn(replPolicy, txnId);
+    }
   }
 
   private void preProcessFailoverIfRequired(Path previousValidHiveDumpDir, boolean isPrevFailoverReadyMarkerPresent)
@@ -334,7 +423,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private void initiateDataCopyTasks() throws SemanticException, IOException {
+  private void initiateDataCopyTasks() throws HiveException, IOException {
     TaskTracker taskTracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
     if (childTasks == null) {
       childTasks = new ArrayList<>();
@@ -373,7 +462,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
 
-  private void finishRemainingTasks() throws SemanticException {
+  private void finishRemainingTasks() throws HiveException {
     boolean isFailoverInProgress = shouldFailover() && !work.isBootstrap();
     if (isFailoverInProgress) {
       Utils.create(new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + File.separator
@@ -382,6 +471,26 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     Path dumpAckFile = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + File.separator
                     + ReplAck.DUMP_ACKNOWLEDGEMENT);
+
+    // Check if we need to unset database properties after successful optimised bootstrap.
+    if (unsetDbPropertiesForOptimisedBootstrap) {
+      Hive hiveDb = getHive();
+      Database database = hiveDb.getDatabase(work.dbNameOrPattern);
+      LinkedHashMap<String, String> dbParams = new LinkedHashMap<>(database.getParameters());
+      LOG.debug("Database {} params before removal {}", work.dbNameOrPattern, dbParams);
+      dbParams.remove(TARGET_OF_REPLICATION);
+      dbParams.remove(CURR_STATE_ID_TARGET.toString());
+      dbParams.remove(CURR_STATE_ID_SOURCE.toString());
+      dbParams.remove(REPL_TARGET_DB_PROPERTY);
+      dbParams.remove(ReplConst.REPL_ENABLE_BACKGROUND_THREAD);
+
+      database.setParameters(dbParams);
+      LOG.info("Removing {} property from the database {} after successful optimised bootstrap dump", String.join(",",
+          new String[] { TARGET_OF_REPLICATION, CURR_STATE_ID_TARGET.toString(), CURR_STATE_ID_SOURCE.toString(),
+              REPL_TARGET_DB_PROPERTY }), work.dbNameOrPattern);
+      hiveDb.alterDatabase(work.dbNameOrPattern, database);
+      LOG.debug("Database {} paramas after removal {}", work.dbNameOrPattern, dbParams);
+    }
     Utils.create(dumpAckFile, conf);
     prepareReturnValues(work.getResultValues());
     work.getMetricCollector().reportEnd(isFailoverInProgress ? Status.FAILOVER_READY : Status.SUCCESS);
@@ -487,16 +596,46 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return false;
   }
 
-  private boolean shouldDump(Path previousDumpPath, boolean isFailoverMarkerPresent) throws IOException {
+  private boolean shouldDump(Path previousDumpPath, boolean isFailoverMarkerPresent, boolean isFailover)
+      throws IOException, HiveException {
     /** a) If there is no previous dump dir found, the current run is bootstrap case.
      * b) If the previous dump was successful and it contains failover marker file as well as
      * HiveConf.ConfVars.HIVE_REPL_FAILOVER_START == true, last dump was a controlled failover dump,
      * skip doing any further dump.
      */
     if (previousDumpPath == null) {
+      createEventMarker = isFailover;
       return true;
     } else if (isFailoverMarkerPresent && shouldFailover()) {
       return false;
+    } else if (isFailover) {
+      // In case of OptimisedBootstrap Failover, We need to do a dump in case:
+      // 1. No EVENT_ACK file is there.
+      // 2. EVENT_ACK file and TABLE_DIFF_COMPLETE file is also there and the current database id is same as that in
+      // the EVENT_ACK file
+      boolean isEventAckFilePresent = checkFileExists(previousDumpPath.getParent(), conf, EVENT_ACK_FILE);
+      if (!isEventAckFilePresent) {
+        // If in the previous valid dump path, Event_Ack isn't there that means the previous one was a normal dump,
+        // we need to trigger the failover dump
+        LOG.debug("EVENT_ACK file not found in {}. Proceeding with OptimisedBootstrap Failover",
+            previousDumpPath.getParent());
+        createEventMarker = true;
+        return true;
+      }
+      // Event_ACK file is present check if it contains correct value or not.
+      String fileEventId = getEventIdFromFile(previousDumpPath.getParent(), conf)[0];
+      String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive()).trim();
+      if (!dbEventId.equalsIgnoreCase(fileEventId)) {
+        // In case the database event id changed post table_diff_complete generation, that means both forward &
+        // backward policies are operational, We fail in that case with non-recoverable error.
+        LOG.error("The database eventID {} and the event id in the EVENT_ACK file {} both mismatch. FilePath {}",
+            dbEventId, fileEventId, previousDumpPath.getParent());
+        throw new RuntimeException("Database event id changed post table diff generation.");
+      } else {
+        // Check table_diff_complete and Load_ACK
+        return checkFileExists(previousDumpPath.getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY) && checkFileExists(previousDumpPath,
+            conf, LOAD_ACKNOWLEDGEMENT.toString());
+      }
     } else {
       FileSystem fs = previousDumpPath.getFileSystem(conf);
       return fs.exists(new Path(previousDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
@@ -632,7 +771,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       work.setFailoverMetadata(fmd);
       return;
     }
-    List<Long> txnsForDb = getOpenTxns(getTxnMgr().getValidTxns(excludedTxns), work.dbNameOrPattern);
+    HiveTxnManager hiveTxnManager = getTxnMgr();
+    List<Long> txnsForDb = getOpenTxns(hiveTxnManager, hiveTxnManager.getValidTxns(excludedTxns), work.dbNameOrPattern);
     if (!txnsForDb.isEmpty()) {
       LOG.debug("Going to abort transactions: {} for database: {}.", txnsForDb, work.dbNameOrPattern);
       hiveDb.abortTransactions(txnsForDb);
@@ -643,7 +783,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     List<Long> openTxns = getOpenTxns(allValidTxns);
     fmd.setOpenTxns(openTxns);
     fmd.setTxnsWithoutLock(getTxnsNotPresentInHiveLocksTable(openTxns));
-    txnsForDb = getOpenTxns(allValidTxns, work.dbNameOrPattern);
+    txnsForDb = getOpenTxns(hiveTxnManager, allValidTxns, work.dbNameOrPattern);
     if (!txnsForDb.isEmpty()) {
       LOG.debug("Going to abort transactions: {} for database: {}.", txnsForDb, work.dbNameOrPattern);
       hiveDb.abortTransactions(txnsForDb);
@@ -813,6 +953,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             prevSnaps = getListFromFileList(snapPathFileList);
           }
         }
+        ExportService exportService = new ExportService(conf);
         for(String matchedDbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
           for (String tableName : Utils.matchesTbl(hiveDb, matchedDbName, work.replScope)) {
             try {
@@ -828,7 +969,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               // Dump the table to be bootstrapped if required.
               if (shouldBootstrapDumpTable(table)) {
                 HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, matchedDbName).table(table);
-                dumpTable(matchedDbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
+                dumpTable(exportService, matchedDbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
                         hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
               }
               if (tableList != null && isTableSatifiesConfig(table)) {
@@ -840,6 +981,21 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               LOG.debug(te.getMessage());
             }
           }
+
+          if (exportService != null && exportService.isExportServiceRunning()) {
+            try {
+              exportService.waitForTasksToFinishAndShutdown();
+            } catch (SemanticException e) {
+              LOG.error("ExportService thread failed to perform table dump operation ", e.getCause());
+              throw new SemanticException(e.getMessage(), e);
+            }
+            try {
+              exportService.await(60, TimeUnit.SECONDS);
+            } catch (Exception e) {
+              LOG.error("Error while shutting down ExportService ", e);
+            }
+          }
+
           // if it is not a table level replication, add a single task for
           // the database default location and the paths configured.
           if (isExternalTablePresent && shouldDumpExternalTableLocation(conf) && isSingleTaskForExternalDb) {
@@ -969,9 +1125,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // of the ACID tables might be included for bootstrap during incremental dump. For old policy, its because the table
     // may not satisfying the old policy but satisfying the new policy. For filter, it may happen that the table
     // is renamed and started satisfying the policy.
-    return ((!work.replScope.includeAllTables())
-            || (previousReplScopeModified())
-            || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES));
+    return !work.replScope.includeAllTables() || previousReplScopeModified() || !tablesForBootstrap.isEmpty()
+            || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
   }
 
   private void dumpEvent(NotificationEvent ev, Path evRoot, Path dumpRoot, Path cmRoot, Hive db) throws Exception {
@@ -1063,6 +1218,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, conf);
         FileList snapPathFileList = isSnapshotEnabled ? createTableFileList(
             SnapshotUtils.getSnapshotFileListPath(dumpRoot), EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT, conf) : null) {
+      ExportService exportService = new ExportService(conf);
       for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
         LOG.debug("Dumping db: " + dbName);
         // TODO : Currently we don't support separate table list for each database.
@@ -1139,7 +1295,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                         conf);
                 isExternalTablePresent = true;
               }
-              dumpTable(dbName, tblName, validTxnList, dbRoot, dbDataRoot,
+              dumpTable(exportService, dbName, tblName, validTxnList, dbRoot, dbDataRoot,
                       bootDumpBeginReplId,
                       hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
             } catch (InvalidTableException te) {
@@ -1150,6 +1306,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             dumpConstraintMetadata(dbName, tblName, dbRoot, hiveDb, table != null ? table.getTTable().getId() : -1);
             if (tableList != null && isTableSatifiesConfig(table)) {
               tableList.add(tblName);
+            }
+          }
+
+          if (exportService != null && exportService.isExportServiceRunning()) {
+            try {
+              exportService.waitForTasksToFinishAndShutdown();
+            } catch (SemanticException e) {
+              LOG.error("ExportService thread failed to perform table dump operation ", e.getCause());
+              throw new SemanticException(e.getMessage(), e);
+            }
+            try {
+              exportService.await(60, TimeUnit.SECONDS);
+            } catch (Exception e) {
+              LOG.error("Error while shutting down ExportService ", e);
             }
           }
 
@@ -1303,7 +1473,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return dbRoot;
   }
 
-  void dumpTable(String dbName, String tblName, String validTxnList, Path dbRootMetadata,
+  void dumpTable(ExportService exportService, String dbName, String tblName, String validTxnList, Path dbRootMetadata,
                                        Path dbRootData, long lastReplId, Hive hiveDb,
                                        HiveWrapper.Tuple<Table> tuple, FileList managedTbleList, boolean dataCopyAtLoad)
           throws Exception {
@@ -1324,8 +1494,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
     tuple.replicationSpec.setRepl(true);
-    new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).write(
-            false, managedTbleList, dataCopyAtLoad);
+    TableExport tableExport = new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx);
+    if (exportService != null && exportService.isExportServiceRunning()) {
+      tableExport.parallelWrite(exportService,false, managedTbleList, dataCopyAtLoad);
+    } else {
+      tableExport.serialWrite(false, managedTbleList, dataCopyAtLoad);
+    }
     work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.TABLES.name(), 1);
     work.getReplLogger().tableLog(tblName, tableSpec.tableHandle.getTableType());
   }
@@ -1365,33 +1539,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return !showLocksResponse.getLocks().isEmpty();
   }
 
-  List<Long> getOpenTxns(ValidTxnList validTxnList, String dbName) throws LockException {
-    HiveLockManager lockManager = getTxnMgr().getLockManager();
-    long[] invalidTxns = validTxnList.getInvalidTransactions();
-    List<Long> openTxns = new ArrayList<>();
-    Set<Long> dbTxns = new HashSet<>();
-    if (lockManager instanceof DbLockManager) {
-      ShowLocksRequest request = new ShowLocksRequest();
-      request.setDbname(dbName.toLowerCase());
-      ShowLocksResponse showLocksResponse = ((DbLockManager)lockManager).getLocks(request);
-      for (ShowLocksResponseElement showLocksResponseElement : showLocksResponse.getLocks()) {
-        dbTxns.add(showLocksResponseElement.getTxnid());
-      }
-      for (long invalidTxn : invalidTxns) {
-        if (dbTxns.contains(invalidTxn) && !validTxnList.isTxnAborted(invalidTxn)) {
-          openTxns.add(invalidTxn);
-        }
-      }
-    } else {
-      for (long invalidTxn : invalidTxns) {
-        if (!validTxnList.isTxnAborted(invalidTxn)) {
-          openTxns.add(invalidTxn);
-        }
-      }
-    }
-    return openTxns;
-  }
-
   // Get list of valid transactions for Repl Dump. Also wait for a given amount of time for the
   // open transactions to finish. Abort any open transactions after the wait is over.
   String getValidTxnListForReplDump(Hive hiveDb, long waitUntilTime) throws HiveException {
@@ -1404,7 +1551,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // of time to see if all open txns < current txn is getting aborted/committed. If not, then
     // we forcefully abort those txns just like AcidHouseKeeperService.
     //Exclude readonly and repl created tranasactions
-    ValidTxnList validTxnList = getTxnMgr().getValidTxns(excludedTxns);
+    HiveTxnManager hiveTxnManager = getTxnMgr();
+    ValidTxnList validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
     while (System.currentTimeMillis() < waitUntilTime) {
       //check if no open txns at all
       List<Long> openTxnListForAllDbs = getOpenTxns(validTxnList);
@@ -1419,7 +1567,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (getTxnsNotPresentInHiveLocksTable(openTxnListForAllDbs).isEmpty()) {
         //If all open txns have been inserted in the hive locks table, we just need to check for the db under replication
         // If there are no txns which are open for the given db under replication, then just return it.
-        if (getOpenTxns(validTxnList, work.dbNameOrPattern).isEmpty()) {
+        if (getOpenTxns(hiveTxnManager, validTxnList, work.dbNameOrPattern).isEmpty()) {
           return validTxnList.toString();
         }
       }
@@ -1429,17 +1577,17 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       } catch (InterruptedException e) {
         LOG.info("REPL DUMP thread sleep interrupted", e);
       }
-      validTxnList = getTxnMgr().getValidTxns(excludedTxns);
+      validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
     }
 
     // After the timeout just force abort the open txns
     if (conf.getBoolVar(REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT)) {
-      List<Long> openTxns = getOpenTxns(validTxnList, work.dbNameOrPattern);
+      List<Long> openTxns = getOpenTxns(hiveTxnManager, validTxnList, work.dbNameOrPattern);
       if (!openTxns.isEmpty()) {
         //abort only write transactions for the db under replication if abort transactions is enabled.
         hiveDb.abortTransactions(openTxns);
-        validTxnList = getTxnMgr().getValidTxns(excludedTxns);
-        openTxns = getOpenTxns(validTxnList, work.dbNameOrPattern);
+        validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
+        openTxns = getOpenTxns(hiveTxnManager, validTxnList, work.dbNameOrPattern);
         if (!openTxns.isEmpty()) {
           LOG.warn("REPL DUMP unable to force abort all the open txns: {} after timeout due to unknown reasons. " +
             "However, this is rare case that shouldn't happen.", openTxns);
@@ -1457,17 +1605,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private long getSleepTime() {
     return (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)
       || conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)) ? SLEEP_TIME_FOR_TESTS : SLEEP_TIME;
-  }
-
-  private List<Long> getOpenTxns(ValidTxnList validTxnList) {
-    long[] invalidTxns = validTxnList.getInvalidTransactions();
-    List<Long> openTxns = new ArrayList<>();
-    for (long invalidTxn : invalidTxns) {
-      if (!validTxnList.isTxnAborted(invalidTxn)) {
-        openTxns.add(invalidTxn);
-      }
-    }
-    return openTxns;
   }
 
   private ReplicationSpec getNewReplicationSpec(String evState, String objState,

@@ -1,0 +1,524 @@
+PREHOOK: query: drop database if exists db_with_default_table_type cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists db_with_default_table_type cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database db_with_default_table_type with DBPROPERTIES("defaultTableType"="EXTERNAL")
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db_with_default_table_type
+POSTHOOK: query: create database db_with_default_table_type with DBPROPERTIES("defaultTableType"="EXTERNAL")
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db_with_default_table_type
+PREHOOK: query: use db_with_default_table_type
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db_with_default_table_type
+POSTHOOK: query: use db_with_default_table_type
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db_with_default_table_type
+PREHOOK: query: create table transactional_table_1 (id int, name string) tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db_with_default_table_type
+PREHOOK: Output: db_with_default_table_type@transactional_table_1
+POSTHOOK: query: create table transactional_table_1 (id int, name string) tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db_with_default_table_type
+POSTHOOK: Output: db_with_default_table_type@transactional_table_1
+PREHOOK: query: desc formatted transactional_table_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db_with_default_table_type@transactional_table_1
+POSTHOOK: query: desc formatted transactional_table_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db_with_default_table_type@transactional_table_1
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	db_with_default_table_type	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: create managed table managed_table_1(id int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db_with_default_table_type
+PREHOOK: Output: db_with_default_table_type@managed_table_1
+POSTHOOK: query: create managed table managed_table_1(id int, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db_with_default_table_type
+POSTHOOK: Output: db_with_default_table_type@managed_table_1
+PREHOOK: query: desc formatted managed_table_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db_with_default_table_type@managed_table_1
+POSTHOOK: query: desc formatted managed_table_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db_with_default_table_type@managed_table_1
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	db_with_default_table_type	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: create transactional table transactional_table_2 (id int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db_with_default_table_type
+PREHOOK: Output: db_with_default_table_type@transactional_table_2
+POSTHOOK: query: create transactional table transactional_table_2 (id int, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db_with_default_table_type
+POSTHOOK: Output: db_with_default_table_type@transactional_table_2
+PREHOOK: query: desc formatted transactional_table_2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db_with_default_table_type@transactional_table_2
+POSTHOOK: query: desc formatted transactional_table_2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db_with_default_table_type@transactional_table_2
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	db_with_default_table_type	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: create transactional table transactional_table_like_1 like transactional_table_1
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db_with_default_table_type
+PREHOOK: Output: db_with_default_table_type@transactional_table_like_1
+POSTHOOK: query: create transactional table transactional_table_like_1 like transactional_table_1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db_with_default_table_type
+POSTHOOK: Output: db_with_default_table_type@transactional_table_like_1
+PREHOOK: query: desc formatted transactional_table_like_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db_with_default_table_type@transactional_table_like_1
+POSTHOOK: query: desc formatted transactional_table_like_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db_with_default_table_type@transactional_table_like_1
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	db_with_default_table_type	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: create transactional table transactional_table_ctas_1 as select * from transactional_table_2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: db_with_default_table_type@transactional_table_2
+PREHOOK: Output: database:db_with_default_table_type
+PREHOOK: Output: db_with_default_table_type@transactional_table_ctas_1
+POSTHOOK: query: create transactional table transactional_table_ctas_1 as select * from transactional_table_2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: db_with_default_table_type@transactional_table_2
+POSTHOOK: Output: database:db_with_default_table_type
+POSTHOOK: Output: db_with_default_table_type@transactional_table_ctas_1
+POSTHOOK: Lineage: transactional_table_ctas_1.id SIMPLE [(transactional_table_2)transactional_table_2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: transactional_table_ctas_1.name SIMPLE [(transactional_table_2)transactional_table_2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: desc formatted transactional_table_ctas_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db_with_default_table_type@transactional_table_ctas_1
+POSTHOOK: query: desc formatted transactional_table_ctas_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db_with_default_table_type@transactional_table_ctas_1
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	db_with_default_table_type	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: create table ext_table_1(id int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db_with_default_table_type
+PREHOOK: Output: db_with_default_table_type@ext_table_1
+POSTHOOK: query: create table ext_table_1(id int, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db_with_default_table_type
+POSTHOOK: Output: db_with_default_table_type@ext_table_1
+PREHOOK: query: desc formatted ext_table_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db_with_default_table_type@ext_table_1
+POSTHOOK: query: desc formatted ext_table_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db_with_default_table_type@ext_table_1
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	db_with_default_table_type	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create external table ext_table_2(id int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db_with_default_table_type
+PREHOOK: Output: db_with_default_table_type@ext_table_2
+POSTHOOK: query: create external table ext_table_2(id int, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db_with_default_table_type
+POSTHOOK: Output: db_with_default_table_type@ext_table_2
+PREHOOK: query: desc formatted ext_table_2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db_with_default_table_type@ext_table_2
+POSTHOOK: query: desc formatted ext_table_2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db_with_default_table_type@ext_table_2
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	db_with_default_table_type	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table ext_table_like_1 like ext_table_1
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db_with_default_table_type
+PREHOOK: Output: db_with_default_table_type@ext_table_like_1
+POSTHOOK: query: create table ext_table_like_1 like ext_table_1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db_with_default_table_type
+POSTHOOK: Output: db_with_default_table_type@ext_table_like_1
+PREHOOK: query: desc formatted ext_table_like_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db_with_default_table_type@ext_table_like_1
+POSTHOOK: query: desc formatted ext_table_like_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db_with_default_table_type@ext_table_like_1
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	db_with_default_table_type	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table ext_table_ctas_1 as select * from ext_table_2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: db_with_default_table_type@ext_table_2
+PREHOOK: Output: database:db_with_default_table_type
+PREHOOK: Output: db_with_default_table_type@ext_table_ctas_1
+POSTHOOK: query: create table ext_table_ctas_1 as select * from ext_table_2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: db_with_default_table_type@ext_table_2
+POSTHOOK: Output: database:db_with_default_table_type
+POSTHOOK: Output: db_with_default_table_type@ext_table_ctas_1
+POSTHOOK: Lineage: ext_table_ctas_1.id SIMPLE [(ext_table_2)ext_table_2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: ext_table_ctas_1.name SIMPLE [(ext_table_2)ext_table_2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: desc formatted ext_table_ctas_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db_with_default_table_type@ext_table_ctas_1
+POSTHOOK: query: desc formatted ext_table_ctas_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db_with_default_table_type@ext_table_ctas_1
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	db_with_default_table_type	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop database if exists altered_db cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists altered_db cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database altered_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:altered_db
+POSTHOOK: query: create database altered_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:altered_db
+PREHOOK: query: use altered_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:altered_db
+POSTHOOK: query: use altered_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:altered_db
+PREHOOK: query: create table managed_table (id int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: altered_db@managed_table
+PREHOOK: Output: database:altered_db
+POSTHOOK: query: create table managed_table (id int, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: altered_db@managed_table
+POSTHOOK: Output: database:altered_db
+PREHOOK: query: desc formatted managed_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: altered_db@managed_table
+POSTHOOK: query: desc formatted managed_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: altered_db@managed_table
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	altered_db          	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: alter database altered_db set DBPROPERTIES ("defaultTableType"="EXTERNAL")
+PREHOOK: type: ALTERDATABASE
+PREHOOK: Output: database:altered_db
+POSTHOOK: query: alter database altered_db set DBPROPERTIES ("defaultTableType"="EXTERNAL")
+POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:altered_db
+PREHOOK: query: create table external_table (id int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: altered_db@external_table
+PREHOOK: Output: database:altered_db
+POSTHOOK: query: create table external_table (id int, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: altered_db@external_table
+POSTHOOK: Output: database:altered_db
+PREHOOK: query: desc formatted external_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: altered_db@external_table
+POSTHOOK: query: desc formatted external_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: altered_db@external_table
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	altered_db          	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

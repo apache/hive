@@ -116,6 +116,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_FIRST;
+import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_LAST;
+import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.ASC;
+import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC;
+
 /**
  * BaseSemanticAnalyzer.
  *
@@ -136,6 +141,9 @@ public abstract class BaseSemanticAnalyzer {
   protected Map<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
   ParseContext pCtx = null;
+
+  //user defined functions in query
+  protected Set<String> userSuppliedFunctions;
 
   /**
    * A set of FileSinkOperators being written to in an ACID compliant way.  We need to remember
@@ -281,6 +289,7 @@ public abstract class BaseSemanticAnalyzer {
       inputs = new LinkedHashSet<ReadEntity>();
       outputs = new LinkedHashSet<WriteEntity>();
       txnManager = queryState.getTxnManager();
+      userSuppliedFunctions = new HashSet<>();
     } catch (Exception e) {
       throw new SemanticException(e);
     }
@@ -394,15 +403,20 @@ public abstract class BaseSemanticAnalyzer {
   public static Map.Entry<String, String> getDbTableNamePair(ASTNode tableNameNode) throws SemanticException {
 
     if (tableNameNode.getType() != HiveParser.TOK_TABNAME ||
-        (tableNameNode.getChildCount() != 1 && tableNameNode.getChildCount() != 2)) {
+        (tableNameNode.getChildCount() != 1 && tableNameNode.getChildCount() != 2
+            && tableNameNode.getChildCount() != 3)) {
       throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.INVALID_TABLE_NAME.getMsg(), tableNameNode));
     }
 
-    if (tableNameNode.getChildCount() == 2) {
+    if (tableNameNode.getChildCount() == 2 || tableNameNode.getChildCount() == 3) {
       String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
       String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
       if (dbName.contains(".") || tableName.contains(".")) {
         throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tableNameNode));
+      }
+      if (tableNameNode.getChildCount() == 3) {
+        String metaTable = unescapeIdentifier(tableNameNode.getChild(2).getText());
+        tableName = tableName + "." + metaTable;
       }
       return Pair.of(dbName, tableName);
     } else {
@@ -419,9 +433,17 @@ public abstract class BaseSemanticAnalyzer {
     if (tokenType == HiveParser.TOK_TABNAME) {
       // table node
       Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableOrColumnNode);
-      return TableName.fromString(dbTablePair.getValue(),
+      String tableName = dbTablePair.getValue();
+      String metaTable = null;
+      if (tableName.contains(".")) {
+        String[] tmpNames = tableName.split("\\.");
+        tableName = tmpNames[0];
+        metaTable = tmpNames[1];
+      }
+      return TableName.fromString(tableName,
           null,
-          dbTablePair.getKey() == null ? currentDatabase : dbTablePair.getKey())
+          dbTablePair.getKey() == null ? currentDatabase : dbTablePair.getKey(),
+          metaTable)
           .getNotEmptyDbTable();
     } else if (tokenType == HiveParser.StringLiteral) {
       return unescapeSQLString(tableOrColumnNode.getText());
@@ -450,10 +472,18 @@ public abstract class BaseSemanticAnalyzer {
    */
   public static TableName getQualifiedTableName(ASTNode tabNameNode, String catalogName) throws SemanticException {
     if (tabNameNode.getType() != HiveParser.TOK_TABNAME || (tabNameNode.getChildCount() != 1
-        && tabNameNode.getChildCount() != 2)) {
+        && tabNameNode.getChildCount() != 2 && tabNameNode.getChildCount() != 3)) {
       throw new SemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.INVALID_TABLE_NAME.getMsg(), tabNameNode));
     }
+
+    if (tabNameNode.getChildCount() == 3) {
+      final String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
+      final String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
+      final String metaTableName = unescapeIdentifier(tabNameNode.getChild(2).getText());
+      return HiveTableName.fromString(tableName, catalogName, dbName, metaTableName);
+    }
+
     if (tabNameNode.getChildCount() == 2) {
       final String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
       final String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
@@ -484,14 +514,18 @@ public abstract class BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   public static String getUnescapedUnqualifiedTableName(ASTNode node) throws SemanticException {
-    assert node.getChildCount() <= 2;
+    assert node.getChildCount() <= 3;
     assert node.getType() == HiveParser.TOK_TABNAME;
 
-    if (node.getChildCount() == 2) {
+    if (node.getChildCount() == 2 || node.getChildCount() == 3) {
       node = (ASTNode) node.getChild(1);
     }
 
-    return getUnescapedName(node);
+    String tableName = getUnescapedName(node);
+    if (node.getChildCount() == 3) {
+      tableName = tableName + "." + node.getChild(2);
+    }
+    return tableName;
   }
 
   public static String getTableAlias(ASTNode node) throws SemanticException {
@@ -1414,6 +1448,16 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
+   * Gets the user supplied functions.
+   * Note 1: This list only accumulates UDFs explicitly mentioned in the query
+   * Note 2: This list will not include UDFs defined with views/tables
+   * @return List of String with names of UDFs.
+   */
+  public Set<String> getUserSuppliedFunctions() {
+    return userSuppliedFunctions;
+  }
+
+  /**
    * Checks if given specification is proper specification for prefix of
    * partition cols, for table partitioned by ds, hr, min valid ones are
    * (ds='2008-04-08'), (ds='2008-04-08', hr='12'), (ds='2008-04-08', hr='12', min='30')
@@ -1811,23 +1855,28 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected Table getTable(TableName tn, boolean throwException) throws SemanticException {
-    return getTable(tn.getDb(), tn.getTable(), throwException);
+    return getTable(tn.getDb(), tn.getTable(), tn.getMetaTable(), throwException);
   }
 
   protected Table getTable(String tblName) throws SemanticException {
-    return getTable(null, tblName, true);
+    return getTable(null, tblName, null, true);
   }
 
   protected Table getTable(String tblName, boolean throwException) throws SemanticException {
-    return getTable(null, tblName, throwException);
+    return getTable(null, tblName, null, throwException);
   }
 
-  protected Table getTable(String database, String tblName, boolean throwException)
+  protected Table getTable(String database, String tblName, boolean throwException) throws SemanticException {
+    return getTable(database, tblName, null, throwException);
+  }
+
+  protected Table getTable(String database, String tblName, String metaTableName, boolean throwException)
       throws SemanticException {
     Table tab;
     try {
-      tab = database == null ? db.getTable(tblName, false)
-          : db.getTable(database, tblName, false);
+      String tableName = metaTableName == null ? tblName : tblName + "." + metaTableName;
+      tab = database == null ? db.getTable(tableName, false)
+          : db.getTable(database, tblName, metaTableName, false);
     }
     catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);
@@ -1952,6 +2001,29 @@ public abstract class BaseSemanticAnalyzer {
 
   public ParseContext getParseContext() {
     return pCtx;
+  }
+
+  public PTFInvocationSpec.OrderSpec processOrderSpec(ASTNode sortNode) {
+    PTFInvocationSpec.OrderSpec oSpec = new PTFInvocationSpec.OrderSpec();
+    int exprCnt = sortNode.getChildCount();
+    for (int i = 0; i < exprCnt; i++) {
+      PTFInvocationSpec.OrderExpression exprSpec = new PTFInvocationSpec.OrderExpression();
+      ASTNode orderSpec = (ASTNode) sortNode.getChild(i);
+      ASTNode nullOrderSpec = (ASTNode) orderSpec.getChild(0);
+      exprSpec.setExpression((ASTNode) nullOrderSpec.getChild(0));
+      if (orderSpec.getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
+        exprSpec.setOrder(ASC);
+      } else {
+        exprSpec.setOrder(DESC);
+      }
+      if (nullOrderSpec.getType() == HiveParser.TOK_NULLS_FIRST) {
+        exprSpec.setNullOrder(NULLS_FIRST);
+      } else {
+        exprSpec.setNullOrder(NULLS_LAST);
+      }
+      oSpec.addExpression(exprSpec);
+    }
+    return oSpec;
   }
 
 }

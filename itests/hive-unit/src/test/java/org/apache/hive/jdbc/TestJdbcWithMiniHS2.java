@@ -87,7 +87,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 public class TestJdbcWithMiniHS2 {
   private static MiniHS2 miniHS2 = null;
@@ -1091,7 +1091,7 @@ public class TestJdbcWithMiniHS2 {
     stopMiniHS2();
     HiveConf conf = new HiveConf();
     // Set server's idle timeout to a very low value
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME, "5");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME, "5000");
     startMiniHS2(conf, true);
     String userName = System.getProperty("user.name");
     Connection conn = getConnection(miniHS2.getJdbcURL(testDbName)+";retries=3", userName, "password");

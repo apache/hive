@@ -33,6 +33,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  *
@@ -46,6 +47,10 @@ public class ASTNode extends CommonTree implements Node,Serializable {
   private transient ASTNode rootNode;
   private transient boolean isValidASTStr;
   private transient boolean visited = false;
+  // At parsing type, the typeInfo isn't known. However, Hive has logic that converts
+  // the CBO plan back into ASTNode objects, and at this point, the typeInfo has
+  // been calculated by the optimizer.
+  private transient TypeInfo typeInfo;
 
   private static final Interner<ImmutableCommonToken> TOKEN_CACHE = Interners.newWeakInterner();
 
@@ -153,6 +158,14 @@ public class ASTNode extends CommonTree implements Node,Serializable {
    */
   public void setOrigin(ASTNodeOrigin origin) {
     this.origin = origin;
+  }
+
+  public void setTypeInfo(TypeInfo typeInfo) {
+    this.typeInfo = typeInfo;
+  }
+
+  public TypeInfo getTypeInfo() {
+    return typeInfo;
   }
 
   public String dump() {

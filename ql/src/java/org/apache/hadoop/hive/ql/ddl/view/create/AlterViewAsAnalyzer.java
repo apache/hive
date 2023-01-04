@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 
 /**
  * Analyzer for alter view ... as commands.
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 public class AlterViewAsAnalyzer extends AbstractCreateViewAnalyzer {
   public AlterViewAsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
+    queryState.setCommandType(HiveOperation.ALTERVIEW_AS);
   }
 
   @Override
@@ -61,7 +63,7 @@ public class AlterViewAsAnalyzer extends AbstractCreateViewAnalyzer {
     schema = new ArrayList<FieldSchema>(analyzer.getResultSchema());
     ParseUtils.validateColumnNameUniqueness(
         analyzer.getOriginalResultSchema() == null ? schema : analyzer.getOriginalResultSchema());
-
+    setColumnAccessInfo(analyzer.getColumnAccessInfo());
     String expandedText = ctx.getTokenRewriteStream().toString(select.getTokenStartIndex(), select.getTokenStopIndex());
 
     AlterViewAsDesc desc = new AlterViewAsDesc(fqViewName, schema, originalText, expandedText);

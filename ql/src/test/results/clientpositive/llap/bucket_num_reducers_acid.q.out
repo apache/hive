@@ -22,6 +22,7 @@ PREHOOK: query: update bucket_nr_acid set b = -1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_nr_acid
 PREHOOK: Output: default@bucket_nr_acid
+PREHOOK: Output: default@bucket_nr_acid
 PREHOOK: query: select * from bucket_nr_acid order by a, b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_nr_acid

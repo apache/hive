@@ -1692,7 +1692,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     return ret.succeed();
   }
 
-  private static RelNode stripHep(RelNode rel) {
+  static RelNode stripHep(RelNode rel) {
     if (rel instanceof HepRelVertex) {
       HepRelVertex hepRelVertex = (HepRelVertex) rel;
       rel = hepRelVertex.getCurrentRel();

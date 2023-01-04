@@ -143,6 +143,8 @@ public class SimpleFetchOptimizer extends Transform {
     if (fetch != null && checkThreshold(fetch, limit, pctx)) {
       FetchWork fetchWork = fetch.convertToWork();
       FetchTask fetchTask = (FetchTask) TaskFactory.get(fetchWork);
+      fetchTask.setCachingEnabled(HiveConf.getBoolVar(pctx.getConf(),
+              HiveConf.ConfVars.HIVEFETCHTASKCACHING));
       fetchWork.setSink(fetch.completed(pctx, fetchWork));
       fetchWork.setSource(source);
       fetchWork.setLimit(limit);
@@ -152,27 +154,31 @@ public class SimpleFetchOptimizer extends Transform {
   }
 
   private boolean checkThreshold(FetchData data, int limit, ParseContext pctx) throws Exception {
-    if (limit > 0) {
-      if (data.hasOnlyPruningFilter()) {
-        /* partitioned table + query has only pruning filters */
-        return true;
-      } else if (data.isPartitioned() == false && data.isFiltered() == false) {
-        /* unpartitioned table + no filters */
-        return true;
+    boolean cachingEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVEFETCHTASKCACHING);
+    if (!cachingEnabled) {
+      if (limit > 0) {
+        if (data.hasOnlyPruningFilter()) {
+          // partitioned table + query has only pruning filters
+          return true;
+        } else if (data.isPartitioned() == false && data.isFiltered() == false) {
+          // unpartitioned table + no filters
+          return true;
+        }
+        // fall through
       }
-      /* fall through */
+      Operator child = data.scanOp.getChildOperators().get(0);
+      if(child instanceof SelectOperator) {
+        // select *, constant and casts can be allowed without a threshold check
+        if (checkExpressions((SelectOperator)child)) {
+          return true;
+        }
+      }
     }
+    // if caching is enabled we apply the treshold in all cases
     long threshold = HiveConf.getLongVar(pctx.getConf(),
         HiveConf.ConfVars.HIVEFETCHTASKCONVERSIONTHRESHOLD);
     if (threshold < 0) {
       return true;
-    }
-    Operator child = data.scanOp.getChildOperators().get(0);
-    if(child instanceof SelectOperator) {
-      // select *, constant and casts can be allowed without a threshold check
-      if (checkExpressions((SelectOperator)child)) {
-        return true;
-      }
     }
     return data.isDataLengthWithInThreshold(pctx, threshold);
   }
@@ -539,7 +545,7 @@ public class SimpleFetchOptimizer extends Transform {
     }
 
     // This method gets the basic stats from metastore for table/partitions. This will make use of the statistics from
-    // AnnotateWithStatistics optimizer when available. If execution engine is tez or spark, AnnotateWithStatistics
+    // AnnotateWithStatistics optimizer when available. If execution engine is tez, AnnotateWithStatistics
     // optimization is applied only during physical compilation because of DPP changing the stats. In such case, we
     // we will get the basic stats from metastore. When statistics is absent in metastore we will use the fallback of
     // scanning the filesystem to get file lengths.

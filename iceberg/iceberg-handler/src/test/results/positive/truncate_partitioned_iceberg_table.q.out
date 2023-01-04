@@ -77,8 +77,8 @@ POSTHOOK: query: describe formatted test_truncate
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_truncate
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -93,18 +93,28 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	external.table.purge	true                
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
-	numRows             	0                   
+	numRows             	9                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1074                
+	totalSize           	#Masked#                
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	avro                
 	 	 
 # Storage Information	 	 
@@ -112,8 +122,6 @@ SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: select * from test_truncate
 PREHOOK: type: QUERY
@@ -162,8 +170,8 @@ POSTHOOK: query: describe formatted test_truncate
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_truncate
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -178,18 +186,28 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	external.table.purge	true                
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	avro                
 	 	 
 # Storage Information	 	 
@@ -197,8 +215,6 @@ SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: drop table if exists test_truncate
 PREHOOK: type: DROPTABLE

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -48,16 +49,23 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_EXECUTIONID;
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_STATS_TOP_EVENTS_COUNTS;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.BOOTSTRAP_TABLES_LIST;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getBootstrapTableList;
 
 @Explain(displayName = "Replication Load Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
@@ -86,6 +94,10 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   private String scheduledQueryName;
   private String executionId;
   private boolean shouldFailover;
+  public boolean isFirstFailover;
+  public boolean isSecondFailover;
+  public List<String> tablesToBootstrap = new LinkedList<>();
+  public List<String> tablesToDrop = new LinkedList<>();
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -134,6 +146,10 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       FileSystem fs = failoverReadyMarker.getFileSystem(hiveConf);
       shouldFailover = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)
               && fs.exists(failoverReadyMarker);
+      Path dumpDirParent = new Path(dumpDirectory).getParent();
+      isFirstFailover = checkFileExists(dumpDirParent, hiveConf, EVENT_ACK_FILE);
+      isSecondFailover =
+          !isFirstFailover && checkFileExists(dumpDirParent, hiveConf, BOOTSTRAP_TABLES_LIST);
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
           new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
           replStatsTracker, shouldFailover);
@@ -144,6 +160,19 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
        */
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
       if (fs.exists(incBootstrapDir)) {
+        if (isSecondFailover) {
+          String[] bootstrappedTables = getBootstrapTableList(new Path(dumpDirectory).getParent(), hiveConf);
+          LOG.info("Optimised bootstrap load for database {} with initial bootstrapped table list as {}",
+              dbNameToLoadIn, tablesToBootstrap);
+          // Get list of tables bootstrapped.
+          Path tableMetaPath = new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME + "/" + sourceDbName);
+          tablesToBootstrap =
+              Stream.of(fs.listStatus(tableMetaPath)).map(st -> st.getPath().getName()).collect(Collectors.toList());
+          List<String> tableList = Arrays.asList(bootstrappedTables);
+          tablesToDrop = ListUtils.subtract(tableList, tablesToBootstrap);
+          LOG.info("Optimised bootstrap for database {} with drop table list as {} and bootstrap table list as {}",
+              dbNameToLoadIn, tablesToDrop, tablesToBootstrap);
+        }
         this.bootstrapIterator = new BootstrapEventsIterator(
                 new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true,
           hiveConf, metricCollector);

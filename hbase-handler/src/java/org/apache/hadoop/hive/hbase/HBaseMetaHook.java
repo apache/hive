@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.util.Optional;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -41,6 +42,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTLT;
+
 /**
  * MetaHook for HBase. Updates the table data in HBase too. Not thread safe, and cleanup should
  * be used after usage.
@@ -49,6 +52,7 @@ public class HBaseMetaHook implements HiveMetaHook, Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HBaseMetaHook.class);
   private Configuration hbaseConf;
   private Admin admin;
+  private boolean isCTLT;
 
   public HBaseMetaHook(Configuration hbaseConf) {
     this.hbaseConf = hbaseConf;
@@ -124,6 +128,12 @@ public class HBaseMetaHook implements HiveMetaHook, Closeable {
     if (tbl.getSd().getLocation() != null) {
       throw new MetaException("LOCATION may not be specified for HBase.");
     }
+    // we shouldn't delete the hbase table in case of CREATE TABLE ... LIKE (CTLT) failures since we'd remove the
+    // hbase table for the original table too. Let's save the value of CTLT here, because this param will be gone
+    isCTLT = Optional.ofNullable(tbl.getParameters())
+        .map(params -> params.get(TABLE_IS_CTLT))
+        .map(Boolean::parseBoolean)
+        .orElse(false);
 
     org.apache.hadoop.hbase.client.Table htable = null;
 
@@ -187,7 +197,7 @@ public class HBaseMetaHook implements HiveMetaHook, Closeable {
     String tableName = getHBaseTableName(table);
     boolean isPurge = !MetaStoreUtils.isExternalTable(table) || MetaStoreUtils.isExternalTablePurge(table);
     try {
-      if (isPurge && getHBaseAdmin().tableExists(TableName.valueOf(tableName))) {
+      if (isPurge && getHBaseAdmin().tableExists(TableName.valueOf(tableName)) && !isCTLT) {
         // we have created an HBase table, so we delete it to roll back;
         if (getHBaseAdmin().isTableEnabled(TableName.valueOf(tableName))) {
           getHBaseAdmin().disableTable(TableName.valueOf(tableName));
