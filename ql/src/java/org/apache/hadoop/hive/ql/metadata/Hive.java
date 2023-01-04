@@ -5263,7 +5263,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static void moveAcidFilesForDelta(String deltaFileType, FileSystem fs,
                                             Path dst, Set<Path> createdDeltaDirs,
                                             List<Path> newFiles, FileStatus deltaStat) throws HiveException {
-
+    String configuredOwner = HiveConf.getVar(conf, ConfVars.HIVE_LOAD_DATA_OWNER);
     Path deltaPath = deltaStat.getPath();
     // Create the delta directory.  Don't worry if it already exists,
     // as that likely means another task got to it first.  Then move each of the buckets.
@@ -5271,6 +5271,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // harder to make race condition proof.
     Path deltaDest = new Path(dst, deltaPath.getName());
     try {
+      FileSystem destFs = deltaDest.getFileSystem(conf);
       if (!createdDeltaDirs.contains(deltaDest)) {
         try {
           // Check if the src and dest filesystems are same or not
@@ -5307,6 +5308,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (FileStatus bucketStat : bucketStats) {
         Path bucketSrc = bucketStat.getPath();
         Path bucketDest = new Path(deltaDest, bucketSrc.getName());
+        FileSystem bucketDestFs = bucketDest.getFileSystem(conf);
         LOG.info("Moving bucket " + bucketSrc.toUri().toString() + " to " +
                 bucketDest.toUri().toString());
         try {
