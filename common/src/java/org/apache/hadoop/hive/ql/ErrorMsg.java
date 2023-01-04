@@ -485,6 +485,7 @@ public enum ErrorMsg {
   CTLF_UNSUPPORTED_FORMAT(10434, "CREATE TABLE LIKE FILE is not supported by the ''{0}'' file format", true),
   NON_NATIVE_ACID_UPDATE(10435, "Update and Merge into non-native ACID table is only supported when " +
           HiveConf.ConfVars.SPLIT_UPDATE.varname + " is true."),
+  READ_ONLY_DATABASE(10436, "Database {0} is read-only", true),
 
   //========================== 20000 range starts here ========================//
 
