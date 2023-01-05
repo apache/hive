@@ -27,12 +27,6 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
-<<<<<<< HEAD
-import org.apache.hadoop.hive.common.MaterializationSnapshot;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
-=======
->>>>>>> ff5265e962 (use SnapshotContext)
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
