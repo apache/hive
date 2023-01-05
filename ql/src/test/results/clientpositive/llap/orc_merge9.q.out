@@ -92,11 +92,11 @@ POSTHOOK: Lineage: a_merge.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema
 POSTHOOK: Lineage: a_merge.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: a_merge.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: a_merge.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: load data local inpath '../../data/files/alltypesorc' into table a_merge
+PREHOOK: query: load data local inpath '../../data/files/alltypesorc_voriginal' into table a_merge
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@a_merge
-POSTHOOK: query: load data local inpath '../../data/files/alltypesorc' into table a_merge
+POSTHOOK: query: load data local inpath '../../data/files/alltypesorc_voriginal' into table a_merge
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@a_merge
@@ -178,5 +178,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_merge
 #### A masked pattern was here ####
 36864
-Found 1 items
+Found 2 items
 #### A masked pattern was here ####
