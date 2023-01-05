@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +147,9 @@ public class MRCompactor implements Compactor {
     job.setOutputKeyClass(NullWritable.class);
     job.setOutputValueClass(NullWritable.class);
     job.setJarByClass(MRCompactor.class);
-    LOG.debug("User jar set to " + job.getJar());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("User jar set to {}", job.getJar());
+    }
     job.setMapperClass(CompactorMap.class);
     job.setNumReduceTasks(0);
     job.setInputFormat(CompactorInputFormat.class);
@@ -249,10 +252,12 @@ public class MRCompactor implements Compactor {
        * Thus, force N minor compactions first to reduce number of deltas and then follow up with
        * the compaction actually requested in {@link ci} which now needs to compact a lot fewer deltas
        */
-      LOG.warn(parsedDeltas.size() + " delta files found for " + ci.getFullPartitionName()
-        + " located at " + sd.getLocation() + "! This is likely a sign of misconfiguration, " +
-        "especially if this message repeats.  Check that compaction is running properly.  Check for any " +
-        "runaway/mis-configured process writing to ACID tables, especially using Streaming Ingest API.");
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("{} delta files found for {} located at {}! This is likely a sign of misconfiguration, " +
+                "especially if this message repeats.  Check that compaction is running properly.  Check for any " +
+                "runaway/mis-configured process writing to ACID tables, especially using Streaming Ingest API.",
+            parsedDeltas.size(), ci.getFullPartitionName(), sd.getLocation());
+      }
       int numMinorCompactions = parsedDeltas.size() / maxDeltasToHandle;
       parsedDeltas.sort(AcidUtils.ParsedDeltaLight::compareTo);
 
@@ -286,20 +291,24 @@ public class MRCompactor implements Compactor {
       baseDir = dir.getBaseDirectory();
       if (baseDir == null) {
         List<HdfsFileStatusWithId> originalFiles = dir.getOriginalFiles();
-        if (!(originalFiles == null) && !(originalFiles.size() == 0)) {
+        if (originalFiles != null && !originalFiles.isEmpty()) {
           // There are original format files
           for (HdfsFileStatusWithId stat : originalFiles) {
             Path path = stat.getFileStatus().getPath();
             //note that originalFiles are all original files recursively not dirs
             dirsToSearch.add(path);
-            LOG.debug("Adding original file " + path + " to dirs to search");
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Adding original file {} to dirs to search", path);
+            }
           }
           // Set base to the location so that the input format reads the original files.
           baseDir = new Path(sd.getLocation());
         }
       } else {
         // add our base to the list of directories to search for files in.
-        LOG.debug("Adding base directory " + baseDir + " to dirs to search");
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Adding base directory {} to dirs to search", baseDir);
+        }
         dirsToSearch.add(baseDir);
       }
     }
@@ -339,7 +348,9 @@ public class MRCompactor implements Compactor {
     long minTxn = Long.MAX_VALUE;
     long maxTxn = Long.MIN_VALUE;
     for (AcidUtils.ParsedDelta delta : parsedDeltas) {
-      LOG.debug("Adding delta " + delta.getPath() + " to directories to search");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Adding delta {} to directories to search", delta.getPath());
+      }
       dirsToSearch.add(delta.getPath());
       deltaDirs.add(delta.getPath());
       minTxn = Math.min(minTxn, delta.getMinWriteId());
@@ -367,17 +378,16 @@ public class MRCompactor implements Compactor {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
       mrJob = job;
     }
-
-    LOG.info("Submitting " + compactionType + " compaction job '" +
-      job.getJobName() + "' to " + job.getQueueName() + " queue.  " +
-      "(current delta dirs count=" + curDirNumber +
-      ", obsolete delta dirs count=" + obsoleteDirNumber + ". TxnIdRange[" + minTxn + "," + maxTxn + "]");
-    JobClient jc = null;
-    try {
-      jc = new JobClient(job);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Submitting {} compaction job '{}' to {} queue. (current delta dirs count={}, obsolete delta dirs " +
+              "count={}. TxnIdRange[{},{}}]",
+          compactionType, job.getJobName(), job.getQueueName(), curDirNumber, obsoleteDirNumber, minTxn, maxTxn);
+    }
+    try (JobClient jc = new JobClient(job)) {
       RunningJob rj = jc.submitJob(job);
-      LOG.info("Submitted compaction job '" + job.getJobName() +
-          "' with jobID=" + rj.getID() + " compaction ID=" + id);
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Submitted compaction job '{}' with jobID={} compaction ID={}", job.getJobName(), rj.getID(), id);
+      }
       try {
         msc.setHadoopJobid(rj.getID().toString(), id);
       } catch (TException e) {
@@ -387,11 +397,7 @@ public class MRCompactor implements Compactor {
       rj.waitForCompletion();
       if (!rj.isSuccessful()) {
         throw new IOException((compactionType == CompactionType.MAJOR ? "Major" : "Minor") +
-               " compactor job failed for " + jobName + "! Hadoop JobId: " + rj.getID());
-      }
-    } finally {
-      if (jc!=null) {
-        jc.close();
+            " compactor job failed for " + jobName + "! Hadoop JobId: " + rj.getID());
       }
     }
   }
@@ -452,19 +458,15 @@ public class MRCompactor implements Compactor {
       bucketNum = bucket;
       this.base = base;
       this.deltas = deltas;
-      locations = new ArrayList<String>();
+      locations = new ArrayList<>();
       this.deltasToAttemptId = deltasToAttemptId;
 
       for (Path path : files) {
         FileSystem fs = path.getFileSystem(hadoopConf);
         FileStatus stat = fs.getFileStatus(path);
         length += stat.getLen();
-        BlockLocation[] locs = fs.getFileBlockLocations(stat, 0, length);
-        for (int i = 0; i < locs.length; i++) {
-          String[] hosts = locs[i].getHosts();
-          for (int j = 0; j < hosts.length; j++) {
-            locations.add(hosts[j]);
-          }
+        for (BlockLocation loc : fs.getFileBlockLocations(stat, 0, length)) {
+          Collections.addAll(locations, loc.getHosts());
         }
       }
     }
@@ -959,9 +961,9 @@ public class MRCompactor implements Compactor {
   }
 
   private static <T> T instantiate(Class<T> classType, String classname) throws IOException {
-    T t = null;
+    T t;
     try {
-      Class c = JavaUtils.loadClass(classname);
+      Class<?> c = JavaUtils.loadClass(classname);
       Object o = c.newInstance();
       if (classType.isAssignableFrom(o.getClass())) {
         t = (T)o;
@@ -1010,8 +1012,9 @@ public class MRCompactor implements Compactor {
       Path tmpLocation = new Path(conf.get(TMP_LOCATION));//this contains base_xxx or delta_xxx_yyy
       Path finalLocation = new Path(conf.get(FINAL_LOCATION));
       FileSystem fs = tmpLocation.getFileSystem(conf);
-      LOG.debug("Moving contents of " + tmpLocation.toString() + " to " +
-          finalLocation.toString());
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Moving contents of {} to {}", tmpLocation, finalLocation);
+      }
       if(!fs.exists(tmpLocation)) {
         /*
          * No 'tmpLocation' may happen if job generated created 0 splits, which happens if all
@@ -1028,8 +1031,9 @@ public class MRCompactor implements Compactor {
             .statementId(-1)
             .visibilityTxnId(Compactor.getCompactorTxnId(conf));
         Path newDeltaDir = AcidUtils.createFilename(finalLocation, options).getParent();
-        LOG.info(context.getJobID() + ": " + tmpLocation +
-            " not found.  Assuming 0 splits.  Creating " + newDeltaDir);
+        if (LOG.isInfoEnabled()) {
+          LOG.info("{}: {} not found.  Assuming 0 splits.  Creating {}", context.getJobID(), tmpLocation, newDeltaDir);
+        }
         fs.mkdirs(newDeltaDir);
         if (options.isWriteVersionFile()) {
           AcidUtils.OrcAcidVersion.writeVersionFile(newDeltaDir, fs);
@@ -1059,7 +1063,9 @@ public class MRCompactor implements Compactor {
       JobConf conf = ShimLoader.getHadoopShims().getJobConf(context);
       Path tmpLocation = new Path(conf.get(TMP_LOCATION));
       FileSystem fs = tmpLocation.getFileSystem(conf);
-      LOG.debug("Removing " + tmpLocation.toString());
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Removing {}", tmpLocation);
+      }
       fs.delete(tmpLocation, true);
     }
   }

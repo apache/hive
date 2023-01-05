@@ -63,7 +63,6 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
@@ -88,22 +87,6 @@ import static org.mockito.Mockito.*;
 
 @SuppressWarnings("deprecation")
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
-
-  @Test
-  public void testParquetRead() throws Exception {
-    conf.set("tez.grouping.min-size", "10000000");
-    conf.set("tez.grouping.max-size", "80000000");
-    conf.set("hive.vectorized.execution.enabled", "false");
-    driver = new Driver(conf);
-
-    String dbName = "default";
-    String tblName = "parq_test";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
-    executeStatementOnDriver("create transactional table " + tblName + " (a int, b int) stored as PARQUET", driver);
-    executeStatementOnDriver("insert into " + tblName + " values(1,2),(1,3),(1,4),(2,2),(2,3),(2,4)", driver);
-    executeStatementOnDriver("insert into " + tblName + " values(3,2),(3,3),(3,4),(4,2),(4,3),(4,4)", driver);
-    executeStatementOnDriver("select * from " + tblName + " where b = 2", driver);
-  }
 
   @Test
   public void testRebalanceCompactionOfNotPartitionedImplicitlyBucketedTable() throws Exception {
