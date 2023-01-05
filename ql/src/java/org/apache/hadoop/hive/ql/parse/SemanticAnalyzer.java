@@ -13979,6 +13979,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           updateDefaultTblProps(likeTable.getParameters(), tblProps, null);
         }
       }
+      if (likeTable.getTableType() == TableType.EXTERNAL_TABLE &&
+          HiveConf.getBoolVar(conf, ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
+        isExt = true;
+      }
       CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(dbDotTab, isExt, isTemporary,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location,
           storageFormat.getSerde(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
