@@ -66,7 +66,8 @@ public class CompactorTasks implements LeaderElection.LeadershipStateListener {
       if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)) {
         MetaStoreThread initiator = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Initiator");
         compactors.add(initiator);
-
+      }
+      if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON)) {
         MetaStoreThread cleaner = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Cleaner");
         compactors.add(cleaner);
       }
@@ -92,6 +93,8 @@ public class CompactorTasks implements LeaderElection.LeadershipStateListener {
       HiveMetaStore.LOG.info("Compaction HMS parameters:");
       HiveMetaStore.LOG.info("metastore.compactor.initiator.on = {}",
           MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON));
+      HiveMetaStore.LOG.info("metastore.compactor.cleaner.on = {}",
+          MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON));
       HiveMetaStore.LOG.info("metastore.compactor.worker.threads = {}",
           MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
       HiveMetaStore.LOG.info("hive.metastore.runworker.in = {}",
@@ -110,6 +113,9 @@ public class CompactorTasks implements LeaderElection.LeadershipStateListener {
       if (!MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)) {
         HiveMetaStore.LOG.warn("Compactor Initiator is turned Off. Automatic compaction will not be triggered.");
       }
+      HiveMetaStore.LOG.info(
+          "Is Compaction Cleaner enabled on this instance? " + MetastoreConf.getBoolVar(configuration,
+              MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON));
     } else {
       int numThreads = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
       if (numThreads < 1) {
