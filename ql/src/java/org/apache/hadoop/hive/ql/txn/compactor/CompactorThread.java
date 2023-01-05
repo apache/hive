@@ -54,6 +54,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
   static final private String CLASS_NAME = CompactorThread.class.getName();
   protected static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
+  private final CompactorThreadType type;
+
   protected HiveConf conf;
 
   protected AtomicBoolean stop;
@@ -67,7 +69,12 @@ public abstract class CompactorThread extends Thread implements Configurable {
 
   protected long checkInterval = 0;
 
+
   enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
+
+  CompactorThread(CompactorThreadType type) {
+    this.type = type;
+  }
 
   @Override
   public void setConf(Configuration configuration) {
@@ -86,10 +93,15 @@ public abstract class CompactorThread extends Thread implements Configurable {
 
   public void init(AtomicBoolean stop) throws Exception {
     setPriority(MIN_PRIORITY);
-    setDaemon(true); // this means the process will exit without waiting for this thread
-    this.stop = stop;
+    setDaemon(false);
     this.hostName = ServerUtils.hostname();
     this.runtimeVersion = getRuntimeVersion();
+  }
+
+  protected void checkInterrupt() throws InterruptedException {
+    if (Thread.interrupted()) {
+      throw new InterruptedException(type.name() + " execution is interrupted.");
+    }
   }
 
   /**
@@ -228,7 +240,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
     return requestBuilder.build();
   }
 
-  protected void doPostLoopActions(long elapsedTime, CompactorThreadType type) throws InterruptedException {
+  protected void doPostLoopActions(long elapsedTime) throws InterruptedException {
     String threadTypeName = type.name();
     if (elapsedTime < checkInterval && !stop.get()) {
       Thread.sleep(checkInterval - elapsedTime);

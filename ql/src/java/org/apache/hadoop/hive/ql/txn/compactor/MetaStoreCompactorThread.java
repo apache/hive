@@ -52,6 +52,10 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
   protected TxnStore txnHandler;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
 
+  MetaStoreCompactorThread(CompactorThreadType type) {
+    super(type);
+  }
+
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
