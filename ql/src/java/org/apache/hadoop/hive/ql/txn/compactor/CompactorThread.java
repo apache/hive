@@ -94,6 +94,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
   public void init(AtomicBoolean stop) throws Exception {
     setPriority(MIN_PRIORITY);
     setDaemon(false);
+    this.stop = stop;
     this.hostName = ServerUtils.hostname();
     this.runtimeVersion = getRuntimeVersion();
   }
