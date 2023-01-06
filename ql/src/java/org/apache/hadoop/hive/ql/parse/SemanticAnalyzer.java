@@ -8722,8 +8722,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // need to do some conversions here
       conversion.set(true);
       if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE) {
-        // cannot convert to complex types
-        column = null;
+        // handle array in case of complex types
+        String array_type_prefix = "array<";
+        if (tableFieldTypeInfo.getTypeName().startsWith(array_type_prefix)) {
+          // If number of nested array is unequal, then the implicit conversion cannot be done
+          if (StringUtils.countMatches(tableFieldTypeInfo.getTypeName(), array_type_prefix) !=
+                  StringUtils.countMatches(rowFieldTypeInfo.getTypeName(), array_type_prefix)) {
+            column = null;
+          }
+        } else {
+          // any other complex types cannot be converted
+          column = null;
+        }
       } else {
         column = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
             .createConversionCast(column, (PrimitiveTypeInfo)tableFieldTypeInfo);

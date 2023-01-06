@@ -1,0 +1,166 @@
+PREHOOK: query: drop table if exists aic_tab
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists aic_tab
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table aic_tab(array_type array <char(10)>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: create table aic_tab(array_type array <char(10)>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aic_tab
+PREHOOK: query: insert into table aic_tab select array(cast ('a' as char(10)))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: insert into table aic_tab select array(cast ('a' as char(10)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aic_tab
+POSTHOOK: Lineage: aic_tab.array_type EXPRESSION []
+PREHOOK: query: select * from aic_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aic_tab
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aic_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aic_tab
+#### A masked pattern was here ####
+["a         "]
+PREHOOK: query: drop table if exists aic_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@aic_tab
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: drop table if exists aic_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@aic_tab
+POSTHOOK: Output: default@aic_tab
+PREHOOK: query: create table aic_tab (c1 array<smallint>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: create table aic_tab (c1 array<smallint>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aic_tab
+PREHOOK: query: insert into aic_tab(c1) values (array(55,54))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: insert into aic_tab(c1) values (array(55,54))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aic_tab
+POSTHOOK: Lineage: aic_tab.c1 SCRIPT []
+PREHOOK: query: select * from aic_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aic_tab
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aic_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aic_tab
+#### A masked pattern was here ####
+[55,54]
+PREHOOK: query: drop table if exists aic_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@aic_tab
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: drop table if exists aic_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@aic_tab
+POSTHOOK: Output: default@aic_tab
+PREHOOK: query: create table aic_tab (c1 array<array<smallint>>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: create table aic_tab (c1 array<array<smallint>>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aic_tab
+PREHOOK: query: insert into aic_tab(c1) values (array(array(44,45),array(44,45)))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: insert into aic_tab(c1) values (array(array(44,45),array(44,45)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aic_tab
+POSTHOOK: Lineage: aic_tab.c1 SCRIPT []
+PREHOOK: query: select * from aic_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aic_tab
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aic_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aic_tab
+#### A masked pattern was here ####
+[[44,45],[44,45]]
+PREHOOK: query: drop table if exists aic_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@aic_tab
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: drop table if exists aic_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@aic_tab
+POSTHOOK: Output: default@aic_tab
+PREHOOK: query: create table aic_tab (c1 array<date>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: create table aic_tab (c1 array<date>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aic_tab
+PREHOOK: query: insert into aic_tab(c1) values(array('2006-09-25','1980-07-19','1992-02-11'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: insert into aic_tab(c1) values(array('2006-09-25','1980-07-19','1992-02-11'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aic_tab
+POSTHOOK: Lineage: aic_tab.c1 SCRIPT []
+PREHOOK: query: select * from aic_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aic_tab
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aic_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aic_tab
+#### A masked pattern was here ####
+["2006-09-25","1980-07-19","1992-02-11"]
+PREHOOK: query: drop table if exists aic_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@aic_tab
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: drop table if exists aic_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@aic_tab
+POSTHOOK: Output: default@aic_tab
+PREHOOK: query: create table aic_tab (c1 array<date>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: create table aic_tab (c1 array<date>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aic_tab
+PREHOOK: query: insert into aic_tab(c1) values(array('2002-hi-25','1980-07-19','1992-pi-11'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: insert into aic_tab(c1) values(array('2002-hi-25','1980-07-19','1992-pi-11'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aic_tab
+POSTHOOK: Lineage: aic_tab.c1 SCRIPT []
+PREHOOK: query: select * from aic_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aic_tab
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aic_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aic_tab
+#### A masked pattern was here ####
+[null,"1980-07-19",null]
