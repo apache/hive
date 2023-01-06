@@ -1659,7 +1659,7 @@ public class MetastoreConf {
     HIVE_TXN_MANAGER("hive.txn.manager", "hive.txn.manager",
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager",
         "Set to org.apache.hadoop.hive.ql.lockmgr.DbTxnManager as part of turning on Hive\n" +
-            "transactions, which also requires appropriate settings for hive.compactor.initiator.on,\n" +
+            "transactions, which also requires appropriate settings for hive.compactor.initiator.on,hive.compactor.cleaner.on,\n" +
             "hive.compactor.worker.threads, hive.support.concurrency (true),\n" +
             "and hive.exec.dynamic.partition.mode (nonstrict).\n" +
             "The default DummyTxnManager replicates pre-Hive-0.13 behavior and provides\n" +
