@@ -83,12 +83,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   private final CompactorFactory compactorFactory;
 
   public Worker() {
-    super(CompactorThreadType.WORKER);
     compactorFactory = CompactorFactory.getInstance();
   }
 
   public Worker(CompactorFactory compactorFactory) {
-    super(CompactorThreadType.WORKER);
     this.compactorFactory = compactorFactory;
   }
 
@@ -272,7 +270,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       if (ci == null) {
         return false;
       }
-      if ((runtimeVersion != null && ci.initiatorVersion != null) && !runtimeVersion.equals(ci.initiatorVersion)) {
+      if ((runtimeVersion == null && ci.initiatorVersion != null) || (runtimeVersion != null && !runtimeVersion.equals(ci.initiatorVersion))) {
         LOG.warn("Worker and Initiator versions do not match. Worker: v{}, Initiator: v{}", runtimeVersion, ci.initiatorVersion);
       }
 

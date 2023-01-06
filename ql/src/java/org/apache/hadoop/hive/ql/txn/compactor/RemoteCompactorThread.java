@@ -47,10 +47,6 @@ public class RemoteCompactorThread extends CompactorThread {
 
   private String poolName;
 
-  public RemoteCompactorThread(CompactorThreadType type) {
-    super(type);
-  }
-
   public String getPoolName() {
     return poolName;
   }

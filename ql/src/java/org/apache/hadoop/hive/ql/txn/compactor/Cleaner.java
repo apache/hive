@@ -100,10 +100,6 @@ public class Cleaner extends MetaStoreCompactorThread {
   private ReplChangeManager replChangeManager;
   private ExecutorService cleanerExecutor;
 
-  public Cleaner() {
-    super(CompactorThreadType.CLEANER);
-  }
-
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);

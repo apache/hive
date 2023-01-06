@@ -104,10 +104,6 @@ public class Initiator extends MetaStoreCompactorThread {
   private Optional<Cache<String, TBase>> metaCache = Optional.empty();
   private boolean metricsEnabled;
 
-  public Initiator() {
-    super(CompactorThreadType.INITIATOR);
-  }
-
   @Override
   public void run() {
     LOG.info("Starting Initiator thread");

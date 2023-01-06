@@ -54,8 +54,6 @@ public abstract class CompactorThread extends Thread implements Configurable {
   static final private String CLASS_NAME = CompactorThread.class.getName();
   protected static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
-  private final CompactorThreadType type;
-
   protected HiveConf conf;
 
   protected AtomicBoolean stop;
@@ -68,13 +66,6 @@ public abstract class CompactorThread extends Thread implements Configurable {
   private static final Integer MAX_WARN_LOG_TIME = 1200000; //20 min
 
   protected long checkInterval = 0;
-
-
-  enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
-
-  CompactorThread(CompactorThreadType type) {
-    this.type = type;
-  }
 
   @Override
   public void setConf(Configuration configuration) {
@@ -101,7 +92,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
 
   protected void checkInterrupt() throws InterruptedException {
     if (Thread.interrupted()) {
-      throw new InterruptedException(type.name() + " execution is interrupted.");
+      throw new InterruptedException(getClass().getName() + " execution is interrupted.");
     }
   }
 
@@ -242,7 +233,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
   }
 
   protected void doPostLoopActions(long elapsedTime) throws InterruptedException {
-    String threadTypeName = type.name();
+    String threadTypeName = getClass().getName();
     if (elapsedTime < checkInterval && !stop.get()) {
       Thread.sleep(checkInterval - elapsedTime);
     }
