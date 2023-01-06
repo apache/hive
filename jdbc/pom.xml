@@ -202,14 +202,21 @@
                     <filter>
                       <artifact>*:*</artifact>
                       <excludes>
+                        <!--
+                        Shading signed JARs will fail without this.
+                        http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar
+                        -->
                         <exclude>META-INF/*.SF</exclude>
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
+                        <!-- Exclude irrelevant webapp files of dependencies. -->
                         <exclude>core-default.xml</exclude>
                         <exclude>webapps/</exclude>
                         <exclude>hive-webapps/</exclude>
                         <exclude>hbase-webapps/</exclude>
                         <exclude>static/</exclude>
+                        <!-- Exclude dependency module descriptors, which would be incorrect in a Hive jar. -->
+                        <exclude>META-INF/versions/*/module-info.class</exclude>
                       </excludes>
                     </filter>
                   </filters>

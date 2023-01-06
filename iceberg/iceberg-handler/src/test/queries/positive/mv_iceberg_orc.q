@@ -1,3 +1,4 @@
+-- MV source tables are iceberg tables but MV is not
 -- SORT_QUERY_RESULTS
 
 set hive.support.concurrency=true;

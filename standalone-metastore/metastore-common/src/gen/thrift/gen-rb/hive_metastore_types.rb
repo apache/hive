@@ -70,8 +70,9 @@ end
 module CompactionType
   MINOR = 1
   MAJOR = 2
-  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR"}
-  VALID_VALUES = Set.new([MINOR, MAJOR]).freeze
+  REBALANCE = 3
+  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR", 3 => "REBALANCE"}
+  VALID_VALUES = Set.new([MINOR, MAJOR, REBALANCE]).freeze
 end
 
 module GrantRevokeType
@@ -1895,13 +1896,15 @@ class DoubleColumnStatsData
   NUMNULLS = 3
   NUMDVS = 4
   BITVECTORS = 5
+  HISTOGRAM = 6
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'lowValue', :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'highValue', :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
-    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true}
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true},
+    HISTOGRAM => {:type => ::Thrift::Types::STRING, :name => 'histogram', :binary => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1921,13 +1924,15 @@ class LongColumnStatsData
   NUMNULLS = 3
   NUMDVS = 4
   BITVECTORS = 5
+  HISTOGRAM = 6
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::I64, :name => 'lowValue', :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::I64, :name => 'highValue', :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
-    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true}
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true},
+    HISTOGRAM => {:type => ::Thrift::Types::STRING, :name => 'histogram', :binary => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2020,13 +2025,15 @@ class DecimalColumnStatsData
   NUMNULLS = 3
   NUMDVS = 4
   BITVECTORS = 5
+  HISTOGRAM = 6
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Decimal, :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Decimal, :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
-    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true}
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true},
+    HISTOGRAM => {:type => ::Thrift::Types::STRING, :name => 'histogram', :binary => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2063,13 +2070,15 @@ class DateColumnStatsData
   NUMNULLS = 3
   NUMDVS = 4
   BITVECTORS = 5
+  HISTOGRAM = 6
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Date, :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Date, :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
-    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true}
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true},
+    HISTOGRAM => {:type => ::Thrift::Types::STRING, :name => 'histogram', :binary => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2106,13 +2115,15 @@ class TimestampColumnStatsData
   NUMNULLS = 3
   NUMDVS = 4
   BITVECTORS = 5
+  HISTOGRAM = 6
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Timestamp, :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Timestamp, :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
-    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true}
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true},
+    HISTOGRAM => {:type => ::Thrift::Types::STRING, :name => 'histogram', :binary => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4453,6 +4464,7 @@ class CompactionRequest
   INITIATORID = 7
   INITIATORVERSION = 8
   POOLNAME = 9
+  NUMBEROFBUCKETS = 10
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4463,7 +4475,8 @@ class CompactionRequest
     PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true},
     INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
     INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true},
-    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true}
+    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true},
+    NUMBEROFBUCKETS => {:type => ::Thrift::Types::I32, :name => 'numberOfBuckets', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4499,6 +4512,7 @@ class CompactionInfoStruct
   ENQUEUETIME = 15
   RETRYRETENTION = 16
   POOLNAME = 17
+  NUMBEROFBUCKETS = 18
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -4517,7 +4531,8 @@ class CompactionInfoStruct
     HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true},
     ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true},
     RETRYRETENTION => {:type => ::Thrift::Types::I64, :name => 'retryRetention', :optional => true},
-    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolname', :optional => true}
+    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolname', :optional => true},
+    NUMBEROFBUCKETS => {:type => ::Thrift::Types::I32, :name => 'numberOfBuckets', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4662,28 +4677,28 @@ class ShowCompactRequest
   ID = 1
   POOLNAME = 2
   DBNAME = 3
-  TABLENAME = 4
-  PARTITIONNAME = 5
+  TBNAME = 4
+  PARTNAME = 5
   TYPE = 6
   STATE = 7
+  LIMIT = 8
+  ORDER = 9
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
     POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
-    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
-    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionType},
-    STATE => {:type => ::Thrift::Types::STRING, :name => 'state'}
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TBNAME => {:type => ::Thrift::Types::STRING, :name => 'tbName', :optional => true},
+    PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true},
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :optional => true, :enum_class => ::CompactionType},
+    STATE => {:type => ::Thrift::Types::STRING, :name => 'state', :optional => true},
+    LIMIT => {:type => ::Thrift::Types::I64, :name => 'limit', :optional => true},
+    ORDER => {:type => ::Thrift::Types::STRING, :name => 'order', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablename is unset!') unless @tablename
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field state is unset!') unless @state
     unless @type.nil? || ::CompactionType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end

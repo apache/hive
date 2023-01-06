@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -30,7 +31,7 @@ import org.apache.iceberg.io.CloseableIterator;
 /**
  * Iterator wrapper around Hive's VectorizedRowBatch producer (MRv1 implementing) record readers.
  */
-public final class VectorizedRowBatchIterator implements CloseableIterator<VectorizedRowBatch> {
+public final class HiveBatchIterator implements CloseableIterator<HiveBatchContext> {
 
   private final RecordReader<NullWritable, VectorizedRowBatch> recordReader;
   private final NullWritable key;
@@ -39,8 +40,9 @@ public final class VectorizedRowBatchIterator implements CloseableIterator<Vecto
   private final int[] partitionColIndices;
   private final Object[] partitionValues;
   private boolean advanced = false;
+  private long rowOffset = Long.MIN_VALUE;
 
-  VectorizedRowBatchIterator(RecordReader<NullWritable, VectorizedRowBatch> recordReader, JobConf job,
+  HiveBatchIterator(RecordReader<NullWritable, VectorizedRowBatch> recordReader, JobConf job,
       int[] partitionColIndices, Object[] partitionValues) {
     this.recordReader = recordReader;
     this.key = recordReader.createKey();
@@ -62,6 +64,11 @@ public final class VectorizedRowBatchIterator implements CloseableIterator<Vecto
         if (!recordReader.next(key, batch)) {
           batch.size = 0;
         }
+
+        if (batch.size != 0 && recordReader instanceof RowPositionAwareVectorizedRecordReader) {
+          rowOffset = ((RowPositionAwareVectorizedRecordReader) recordReader).getRowNumber();
+        }
+
         // Fill partition values
         if (partitionColIndices != null) {
           for (int i = 0; i < partitionColIndices.length; ++i) {
@@ -86,9 +93,9 @@ public final class VectorizedRowBatchIterator implements CloseableIterator<Vecto
   }
 
   @Override
-  public VectorizedRowBatch next() {
+  public HiveBatchContext next() {
     advance();
     advanced = false;
-    return batch;
+    return new HiveBatchContext(batch, vrbCtx, rowOffset);
   }
 }

@@ -19,7 +19,9 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -28,6 +30,7 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,10 +53,12 @@ public final class StatsUpdater {
      * @param userName The user to run the statistic collection with
      * @param compactionQueueName The name of the compaction queue
      */
-    public void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName) {
+    public void gatherStats(CompactionInfo ci, HiveConf conf,
+                            String userName, String compactionQueueName,
+                            IMetaStoreClient msc) {
         try {
-            if (!ci.isMajorCompaction()) {
-                return;
+            if (msc == null) {
+                throw new IllegalArgumentException("Metastore client is missing");
             }
 
             HiveConf statusUpdaterConf = new HiveConf(conf);
@@ -73,8 +78,15 @@ public final class StatsUpdater {
                 sb.append(")");
             }
             sb.append(" compute statistics");
+            if (!conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && ci.isMajorCompaction()) {
+                List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci));
+                if (!columnList.isEmpty()) {
+                    sb.append(" for columns ").append(String.join(",", columnList));
+                }
+            } else {
+                sb.append(" noscan");
+            }
             LOG.info(ci + ": running '" + sb + "'");
-            statusUpdaterConf.setVar(HiveConf.ConfVars.METASTOREURIS, "");
             if (compactionQueueName != null && compactionQueueName.length() > 0) {
                 statusUpdaterConf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
             }

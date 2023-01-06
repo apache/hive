@@ -584,6 +584,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
               }
               LOG.info("Setting failover endpoint:{} to TARGET for database: {}", ReplConst.REPL_FAILOVER_ENDPOINT, db.getName());
               params.put(ReplConst.REPL_FAILOVER_ENDPOINT, MetaStoreUtils.FailoverEndpoint.TARGET.toString());
+              LOG.info("Setting {} for database: {}", ReplConst.REPL_ENABLE_BACKGROUND_THREAD, db.getName());
+              params.put(ReplConst.REPL_ENABLE_BACKGROUND_THREAD,"true");
               getHive().alterDatabase(work.getTargetDatabase(), db);
             } catch (HiveException e) {
               throw new SemanticException(e);

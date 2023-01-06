@@ -880,6 +880,11 @@
       <scope>compile</scope>
       <version>${esri.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.roaringbitmap</groupId>
+      <artifactId>RoaringBitmap</artifactId>
+      <version>0.9.22</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -1095,15 +1100,25 @@
                   <include>org.apache.calcite:*</include>
                   <include>org.apache.calcite.avatica:avatica</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
+                  <include>org.roaringbitmap:RoaringBitmap</include>
+                  <include>org.roaringbitmap:shims</include>
                 </includes>
               </artifactSet>
               <filters>
                 <filter>
                   <artifact>org.apache.calcite.avatica:avatica</artifact>
                   <excludes>
+                    <!-- Exclude Avatica bundled SLF4J, because Hive manages its own SLF4J version. -->
                     <exclude>org/slf4j/**</exclude>
                     <exclude>META-INF/maven/org.slf4j/**</exclude>
                     <exclude>META-INF/licenses/slf4j*/**</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <!-- Exclude dependency module descriptors, which would be incorrect in a Hive jar. -->
+                    <exclude>META-INF/versions/*/module-info.class</exclude>
                   </excludes>
                 </filter>
               </filters>

@@ -100,7 +100,6 @@ public class Initiator extends MetaStoreCompactorThread {
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
 
-  private long checkInterval;
   private ExecutorService compactionExecutor;
   private Optional<Cache<String, TBase>> metaCache = Optional.empty();
   private boolean metricsEnabled;
@@ -228,11 +227,8 @@ public class Initiator extends MetaStoreCompactorThread {
         }
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
-        if (elapsedTime < checkInterval && !stop.get()) {
-          Thread.sleep(checkInterval - elapsedTime);
-        }
+        doPostLoopActions(elapsedTime, CompactorThreadType.INITIATOR);
 
-        LOG.info("Initiator thread finished one loop.");
       } while (!stop.get());
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting.", t);

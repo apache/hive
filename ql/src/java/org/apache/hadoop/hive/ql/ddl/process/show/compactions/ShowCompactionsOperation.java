@@ -80,12 +80,12 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
   private ShowCompactRequest getShowCompactioRequest(ShowCompactionsDesc desc) throws SemanticException {
     ShowCompactRequest request = new ShowCompactRequest();
     if (isBlank(desc.getDbName()) && isNotBlank(desc.getTbName())) {
-      request.setDbname(SessionState.get().getCurrentDatabase());
+      request.setDbName(SessionState.get().getCurrentDatabase());
     } else {
-      request.setDbname(desc.getDbName());
+      request.setDbName(desc.getDbName());
     }
     if (isNotBlank(desc.getTbName())) {
-      request.setTablename(desc.getTbName());
+      request.setTbName(desc.getTbName());
     }
     if (isNotBlank(desc.getPoolName())) {
       request.setPoolName(desc.getPoolName());
@@ -97,10 +97,16 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
       request.setState(compactionStateStr2Enum(desc.getCompactionStatus()).getSqlConst());
     }
     if (isNotEmpty(desc.getPartSpec())) {
-      request.setPartitionname(AcidUtils.getPartitionName(desc.getPartSpec()));
+      request.setPartName(AcidUtils.getPartitionName(desc.getPartSpec()));
     }
     if(desc.getCompactionId()>0){
      request.setId(desc.getCompactionId());
+    }
+    if (desc.getLimit()>0) {
+      request.setLimit(desc.getLimit());
+    }
+    if (isNotBlank(desc.getOrderBy())) {
+      request.setOrder(desc.getOrderBy());
     }
     return request;
   }
@@ -144,7 +150,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes("Commit Time");
     os.write(Utilities.tabCode);
-    os.writeBytes("Highest WriteID");
+    os.writeBytes("Highest WriteId");
     os.write(Utilities.newLineCode);
   }
 

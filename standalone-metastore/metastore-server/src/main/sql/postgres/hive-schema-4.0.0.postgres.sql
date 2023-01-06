@@ -580,7 +580,8 @@ CREATE TABLE "TAB_COL_STATS" (
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
  "LAST_ANALYZED" bigint NOT NULL,
- "ENGINE" character varying(128) NOT NULL
+ "ENGINE" character varying(128) NOT NULL,
+ "HISTOGRAM" bytea
 );
 
 --
@@ -619,7 +620,8 @@ CREATE TABLE "PART_COL_STATS" (
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
  "LAST_ANALYZED" bigint NOT NULL,
- "ENGINE" character varying(128) NOT NULL
+ "ENGINE" character varying(128) NOT NULL,
+ "HISTOGRAM" bytea
 );
 
 --
@@ -1811,7 +1813,8 @@ CREATE TABLE "COMPACTION_QUEUE" (
   "CQ_WORKER_VERSION" varchar(128),
   "CQ_CLEANER_START" bigint,
   "CQ_RETRY_RETENTION" bigint not null default 0,
-  "CQ_POOL_NAME" varchar(128)
+  "CQ_POOL_NAME" varchar(128),
+  "CQ_NUMBER_OF_BUCKETS" integer
 );
 
 CREATE TABLE "NEXT_COMPACTION_QUEUE_ID" (
@@ -1842,7 +1845,8 @@ CREATE TABLE "COMPLETED_COMPACTIONS" (
   "CC_INITIATOR_ID" varchar(128),
   "CC_INITIATOR_VERSION" varchar(128),
   "CC_WORKER_VERSION" varchar(128),
-  "CC_POOL_NAME" varchar(128)
+  "CC_POOL_NAME" varchar(128),
+  "CC_NUMBER_OF_BUCKETS" integer
 );
 
 CREATE INDEX "COMPLETED_COMPACTIONS_RES" ON "COMPLETED_COMPACTIONS" ("CC_DATABASE","CC_TABLE","CC_PARTITION");

@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -40,9 +41,10 @@ final class MmMinorQueryCompactor extends QueryCompactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(MmMinorQueryCompactor.class.getName());
 
-  @Override void runCompaction(HiveConf hiveConf, Table table, Partition partition,
-      StorageDescriptor storageDescriptor, ValidWriteIdList writeIds, CompactionInfo compactionInfo,
-      AcidDirectory dir) throws IOException {
+  @Override
+  public void run(HiveConf hiveConf, Table table, Partition partition,
+                     StorageDescriptor storageDescriptor, ValidWriteIdList writeIds, CompactionInfo compactionInfo,
+                     AcidDirectory dir) throws IOException {
     LOG.debug(
         "Going to delete directories for aborted transactions for MM table " + table.getDbName()
             + "." + table.getTableName());
@@ -50,8 +52,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
 
     HiveConf driverConf = setUpDriverSession(hiveConf);
 
-    String tmpPrefix = table.getDbName() + ".tmp_minor_compactor_" + table.getTableName() + "_";
-    String tmpTableName = tmpPrefix + System.currentTimeMillis();
+    String tmpTableName = getTempTableName(table);
     String resultTmpTableName = tmpTableName + "_result";
     Path resultDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds, driverConf,
         false, false, false, dir);
@@ -106,8 +107,9 @@ final class MmMinorQueryCompactor extends QueryCompactor {
   private String getCreateQuery(String newTableName, Table t, StorageDescriptor sd,
       String location, boolean isPartitioned) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.CREATE,
+        true,
         newTableName)
         .setSourceTab(t)
         .setStorageDescriptor(sd)
@@ -126,8 +128,11 @@ final class MmMinorQueryCompactor extends QueryCompactor {
    */
   private String buildAlterTableQuery(String tableName, AcidDirectory dir,
       ValidWriteIdList validWriteIdList) {
-    return new CompactionQueryBuilder(CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
-        CompactionQueryBuilder.Operation.ALTER, tableName)
+    return new CompactionQueryBuilder(
+        CompactionType.MINOR,
+        CompactionQueryBuilder.Operation.ALTER,
+        true,
+        tableName)
         .setDir(dir)
         .setValidWriteIdList(validWriteIdList)
         .build();
@@ -148,8 +153,9 @@ final class MmMinorQueryCompactor extends QueryCompactor {
       Table sourceTable) {
     return Lists.newArrayList(
         new CompactionQueryBuilder(
-            CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
+            CompactionType.MINOR,
             CompactionQueryBuilder.Operation.INSERT,
+            true,
             resultTmpTableName)
         .setSourceTabForInsert(sourceTmpTableName)
         .setSourceTab(sourceTable)
@@ -171,14 +177,14 @@ final class MmMinorQueryCompactor extends QueryCompactor {
 
   private String getDropQuery(String tableToDrop) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.DROP,
+        true,
         tableToDrop).build();
   }
 
   private HiveConf setUpDriverSession(HiveConf hiveConf) {
     HiveConf driverConf = new HiveConf(hiveConf);
-    driverConf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
     driverConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
     driverConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
     return driverConf;

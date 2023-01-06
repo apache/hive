@@ -143,7 +143,7 @@ public class TestKuduInputFormat {
         (KuduRecordReader) input.getRecordReader(split, jobConf, null);
     assertTrue(reader.nextKeyValue());
     RowResult value = reader.getCurrentValue().getRowResult();
-    verfiyRow(value);
+    verifyRow(value);
     assertFalse(reader.nextKeyValue());
   }
 
@@ -313,11 +313,11 @@ public class TestKuduInputFormat {
           (KuduRecordReader) input.getRecordReader(split, jobConf, null);
       assertTrue(reader.nextKeyValue());
       RowResult value = reader.getCurrentValue().getRowResult();
-      verfiyRow(value);
+      verifyRow(value);
       assertFalse("Extra row on column: " + col.getName(), reader.nextKeyValue());
     }
   }
-  private void verfiyRow(RowResult value) {
+  private void verifyRow(RowResult value) {
     assertEquals(SCHEMA.getColumnCount(), value.getSchema().getColumnCount());
     assertEquals(ROW.getByte(0), value.getByte(0));
     assertEquals(ROW.getShort(1), value.getShort(1));

@@ -311,7 +311,7 @@ public class MiniZooKeeperCluster {
       serverCnxnFactory = ServerCnxnFactory.createFactory();
       serverCnxnFactory.configure(new InetSocketAddress(currentClientPort),
           configuration.getInt(HConstants.ZOOKEEPER_MAX_CLIENT_CNXNS, HConstants.DEFAULT_ZOOKEPER_MAX_CLIENT_CNXNS),
-          true);
+          -1,true);
     } else {
       serverCnxnFactory = ServerCnxnFactory.createFactory();
       serverCnxnFactory.configure(new InetSocketAddress(currentClientPort),

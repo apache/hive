@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet;
 import com.google.common.base.Strings;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
@@ -40,6 +41,7 @@ import org.apache.parquet.hadoop.metadata.FileMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
+import org.apache.parquet.schema.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -196,7 +198,8 @@ public abstract class ParquetRecordReaderBase {
 
     // Create the Parquet FilterPredicate without including columns that do not exist
     // on the schema (such as partition columns).
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columns);
+    MessageType newSchema = getSchemaWithoutPartitionColumns(conf, schema);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, newSchema, columns);
     if (p != null) {
       // Filter may have sensitive information. Do not send to debug.
       LOG.debug("PARQUET predicate push down generated.");
@@ -207,6 +210,20 @@ public abstract class ParquetRecordReaderBase {
       LOG.debug("No PARQUET predicate push down is generated.");
       return null;
     }
+  }
+
+  private MessageType getSchemaWithoutPartitionColumns(JobConf conf, MessageType schema) {
+    List<String> partCols = Utilities.getPartitionColumnNames(conf);
+    if (partCols.isEmpty()) {
+      return schema;
+    }
+    List<Type> newFields = new ArrayList<>();
+    for (Type field : schema.getFields()) {
+      if (!partCols.contains(field.getName())) {
+        newFields.add(field);
+      }
+    }
+    return new MessageType(schema.getName(), newFields);
   }
 
   public List<BlockMetaData> getFilteredBlocks() {

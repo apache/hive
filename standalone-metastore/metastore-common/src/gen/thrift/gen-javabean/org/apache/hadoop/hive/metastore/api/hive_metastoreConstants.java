@@ -73,6 +73,9 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String JDBC_CONFIG_PREFIX = "hive.sql.";
 
+  /**
+   * Table is created via create table as select or create materialized view statement
+   */
   public static final java.lang.String TABLE_IS_CTAS = "created_with_ctas";
 
   public static final java.lang.String TABLE_IS_CTLT = "created_with_ctlt";

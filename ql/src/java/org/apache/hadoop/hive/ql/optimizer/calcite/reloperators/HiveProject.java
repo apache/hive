@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
 import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.calcite.plan.RelOptCluster;
@@ -37,8 +38,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.CorrelationInfoVisitor;
+import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.HiveCorrelationInfo;
 
 public class HiveProject extends Project implements HiveRelNode {
+
+  // Information about correlations within a subquery.
+  private final CorrelationInfoSupplier correlationInfos;
 
   private boolean isSysnthetic;
 
@@ -56,6 +62,7 @@ public class HiveProject extends Project implements HiveRelNode {
   public HiveProject(RelOptCluster cluster, RelTraitSet traitSet, RelNode child, List<? extends RexNode> exps,
       RelDataType rowType) {
     super(cluster, traitSet, child, exps, rowType);
+    this.correlationInfos = new CorrelationInfoSupplier(getProjects());
     assert traitSet.containsIfApplicable(HiveRelNode.CONVENTION);
   }
 
@@ -111,10 +118,6 @@ public class HiveProject extends Project implements HiveRelNode {
     return hp;
   }
 
-  @Override
-  public void implement(Implementor implementor) {
-  }
-
   // TODO: this should come through RelBuilder to the constructor as opposed to
   // set method. This requires calcite change
   public void setSynthetic() {
@@ -137,5 +140,32 @@ public class HiveProject extends Project implements HiveRelNode {
   public RelWriter explainTerms(RelWriter pw) {
     return super.explainTerms(pw)
         .itemIf("synthetic", this.isSysnthetic, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);
+  }
+
+  public List<HiveCorrelationInfo> getCorrelationInfos() {
+    return correlationInfos.get();
+  }
+
+  /**
+   * CorrelationInfoSupplier allows for a lazy fetch so that the HiveCorrelationInfo
+   * only gets retrieved on demand.
+   */
+  private static class CorrelationInfoSupplier {
+    public final List<RexNode> projects;
+    private List<HiveCorrelationInfo> correlationInfos;
+
+    public CorrelationInfoSupplier(List<RexNode> projects) {
+      this.projects = projects;
+    }
+
+    public List<HiveCorrelationInfo> get() {
+      if (correlationInfos == null) {
+        correlationInfos = new ArrayList<>();
+        for (RexNode r : projects) {
+          correlationInfos.addAll(CorrelationInfoVisitor.getCorrelationInfos(r));
+        }
+      }
+      return correlationInfos;
+    }
   }
 }

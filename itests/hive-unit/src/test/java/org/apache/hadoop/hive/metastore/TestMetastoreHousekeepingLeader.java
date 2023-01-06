@@ -34,7 +34,7 @@ public class TestMetastoreHousekeepingLeader extends MetastoreHousekeepingLeader
 
   @Before
   public void setUp() throws Exception {
-    internalSetup("localhost");
+    internalSetup("localhost", true);
   }
 
   @Test

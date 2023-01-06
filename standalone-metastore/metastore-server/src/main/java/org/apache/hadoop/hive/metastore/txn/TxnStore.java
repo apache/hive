@@ -115,6 +115,7 @@ public interface TxnStore extends Configurable {
   // Compactor types
   char MAJOR_TYPE = 'a';
   char MINOR_TYPE = 'i';
+  char REBALANCE_TYPE = 'r';
 
   String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
       SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE, REFUSED_RESPONSE };

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -156,36 +157,53 @@ public abstract class CompactorOnTezTest {
   }
 
   /**
-   * Verify that the expected number of transactions have run, and their state is "succeeded".
+   * Verify that the expected number of compactions have run, and their state matches the given state.
+   *
+   * @param expectedNumberOfCompactions number of compactions already run
+   * @param expectedState The expected state of all the compactions
+   * @throws MetaException
+   */
+  protected List<ShowCompactResponseElement> verifyCompaction(int expectedNumberOfCompactions, String expectedState) throws MetaException {
+    List<ShowCompactResponseElement> compacts =
+        TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
+    Assert.assertEquals("Compaction queue must contain " + expectedNumberOfCompactions + " element(s)",
+        expectedNumberOfCompactions, compacts.size());
+    compacts.forEach(
+        c -> Assert.assertEquals("Compaction state is not " + expectedState, expectedState, c.getState()));
+    return compacts;
+  }
+
+  /**
+   * Verify that the expected number of compactions have run, and their state is "succeeded".
    *
    * @param expectedSuccessfulCompactions number of compactions already run
    * @throws MetaException
    */
   protected void verifySuccessfulCompaction(int expectedSuccessfulCompactions) throws MetaException {
-    List<ShowCompactResponseElement> compacts =
-        TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
-    Assert.assertEquals("Completed compaction queue must contain " + expectedSuccessfulCompactions + " element(s)",
-        expectedSuccessfulCompactions, compacts.size());
-    compacts.forEach(
-        c -> Assert.assertEquals("Compaction state is not succeeded", "succeeded", c.getState()));
+    verifyCompaction(expectedSuccessfulCompactions, TxnStore.SUCCEEDED_RESPONSE);
   }
 
   protected HiveHookEvents.HiveHookEventProto getRelatedTezEvent(String dbTableName) throws Exception {
-    ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
-    HiveHookEvents.HiveHookEventProto event = reader.readEvent();
-    boolean getRelatedEvent = false;
-    while (!getRelatedEvent) {
-      while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
-        event = reader.readEvent();
+    List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+    for (ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader : readers) {
+      HiveHookEvents.HiveHookEventProto event = reader.readEvent();
+      boolean getRelatedEvent = false;
+      while (!getRelatedEvent) {
+        while (event != null && ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
+          event = reader.readEvent();
+        }
+        // Tables read is the table picked for compaction.
+        if (event.getTablesReadCount() > 0 && dbTableName.equalsIgnoreCase(event.getTablesRead(0))) {
+          getRelatedEvent = true;
+        } else {
+          event = reader.readEvent();
+        }
       }
-      // Tables read is the table picked for compaction.
-      if (event.getTablesReadCount() > 0 && dbTableName.equalsIgnoreCase(event.getTablesRead(0))) {
-        getRelatedEvent = true;
-      } else {
-        event = reader.readEvent();
+      if (getRelatedEvent) {
+        return event;
       }
     }
-    return event;
+    return null;
   }
 
   protected class TestDataProvider {

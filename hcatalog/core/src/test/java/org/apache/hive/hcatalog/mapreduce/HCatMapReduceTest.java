@@ -21,6 +21,7 @@ package org.apache.hive.hcatalog.mapreduce;
 
 import com.google.common.collect.ImmutableSet;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,6 +88,8 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public abstract class HCatMapReduceTest extends HCatBaseTest {
   private static final Logger LOG = LoggerFactory.getLogger(HCatMapReduceTest.class);
+  private static final Path TEST_TMP_DIR = new Path(System.getProperty("test.tmp.dir",
+      "target" + File.separator + "test" + File.separator + "tmp"));
 
   protected static String dbName = Warehouse.DEFAULT_DATABASE_NAME;
   protected static final String TABLE_NAME = "testHCatMapReduceTable";
@@ -310,16 +313,16 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
 
     if (asSingleMapTask) {
       // One input path would mean only one map task
-      Path path = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceInput");
+      Path path = new Path(TEST_TMP_DIR, "mapred/testHCatMapReduceInput");
       createInputFile(path, writeCount);
       TextInputFormat.setInputPaths(job, path);
     } else {
       // Create two input paths so that two map tasks get triggered. There could be other ways
       // to trigger two map tasks.
-      Path path = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceInput");
+      Path path = new Path(TEST_TMP_DIR, "mapred/testHCatMapReduceInput");
       createInputFile(path, writeCount / 2);
 
-      Path path2 = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceInput2");
+      Path path2 = new Path(TEST_TMP_DIR, "mapred/testHCatMapReduceInput2");
       createInputFile(path2, (writeCount - writeCount / 2));
 
       TextInputFormat.setInputPaths(job, path, path2);
@@ -400,7 +403,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
 
     job.setNumReduceTasks(0);
 
-    Path path = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceOutput");
+    Path path = new Path(TEST_TMP_DIR, "mapred/testHCatMapReduceOutput");
     if (fs.exists(path)) {
       fs.delete(path, true);
     }
@@ -428,6 +431,3 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
   }
 
 }
-
-
-

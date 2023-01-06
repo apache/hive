@@ -82,12 +82,20 @@
       <classifier>h2</classifier>
       <exclusions>
         <exclusion>
+          <groupId>hsqldb</groupId>
+          <artifactId>hsqldb</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.codehaus.groovy</groupId>
           <artifactId>groovy-all</artifactId>
         </exclusion>
         <exclusion>
           <groupId>tomcat</groupId>
           <artifactId>jasper-runtime</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.ivy</groupId>
+          <artifactId>ivy</artifactId>
         </exclusion>
         <exclusion>
           <groupId>tomcat</groupId>

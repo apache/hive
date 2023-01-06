@@ -97,10 +97,6 @@ public class HiveSortLimit extends Sort implements HiveRelNode {
     return this.mapOfInputRefToRexCall;
   }
 
-  @Override
-  public void implement(Implementor implementor) {
-  }
-
   public boolean isRuleCreated() {
     return ruleCreated;
   }

@@ -65,6 +65,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
@@ -306,7 +307,11 @@ public class HiveConnection implements java.sql.Connection {
     sessConfMap = connParams.getSessionVars();
     setupLoginTimeout();
     if (isKerberosAuthMode()) {
-      host = Utils.getCanonicalHostName(connParams.getHost());
+      if (isEnableCanonicalHostnameCheck()) {
+        host = Utils.getCanonicalHostName(connParams.getHost());
+      } else {
+        host = connParams.getHost();
+      }
     } else if (isBrowserAuthMode() && !isHttpTransportMode()) {
       throw new SQLException("Browser auth mode is only applicable in http mode");
     } else {
@@ -400,7 +405,7 @@ public class HiveConnection implements java.sql.Connection {
             }
             // Update with new values
             jdbcUriString = connParams.getJdbcUriString();
-            if (isKerberosAuthMode()) {
+            if (isKerberosAuthMode() && isEnableCanonicalHostnameCheck()) {
               host = Utils.getCanonicalHostName(connParams.getHost());
             } else {
               host = connParams.getHost();
@@ -1322,6 +1327,11 @@ public class HiveConnection implements java.sql.Connection {
     return !JdbcConnectionParams.AUTH_SIMPLE.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
         && !JdbcConnectionParams.AUTH_TOKEN.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
         && sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL);
+  }
+
+  private boolean isEnableCanonicalHostnameCheck() {
+    return Boolean.parseBoolean(
+        sessConfMap.getOrDefault(JdbcConnectionParams.AUTH_KERBEROS_ENABLE_CANONICAL_HOSTNAME_CHECK, "true"));
   }
 
   private boolean isBrowserAuthMode() {

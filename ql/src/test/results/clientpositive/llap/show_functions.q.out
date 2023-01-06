@@ -47,6 +47,9 @@ and
 approx_distinct
 array
 array_contains
+array_distinct
+array_max
+array_min
 ascii
 asin
 assert_true
@@ -662,6 +665,9 @@ and
 approx_distinct
 array
 array_contains
+array_distinct
+array_max
+array_min
 ascii
 asin
 assert_true

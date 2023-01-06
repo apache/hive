@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -74,7 +75,8 @@ import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionContext;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.schq.MockScheduledQueryService;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.txn.compactor.CompactorMR;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.MRCompactor;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
@@ -94,6 +96,7 @@ import org.junit.rules.ExpectedException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.powermock.api.mockito.PowerMockito.when;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
@@ -1444,18 +1447,20 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
       req.setPartitionname("p=" + partName);
     }
     txnHandler.compact(req);
-    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+    MRCompactor mrCompactor = Mockito.spy(new MRCompactor(HiveMetaStoreUtils.getHiveMetastoreClient(hiveConf)));
 
     Mockito.doAnswer((Answer<JobConf>) invocationOnMock -> {
       JobConf job = (JobConf) invocationOnMock.callRealMethod();
       job.setMapperClass(SlowCompactorMap.class);
       return job;
-    }).when(compactorMr).createBaseJobConf(any(), any(), any(), any(), any(), any());
+    }).when(mrCompactor).createBaseJobConf(any(), any(), any(), any(), any(), any());
 
-    Worker worker = Mockito.spy(new Worker());
+    CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
+    when(mockedFactory.getCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
+
+    Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
 
     CompletableFuture<Void> compactionJob = CompletableFuture.runAsync(worker);
     Thread.sleep(1000);
@@ -1501,7 +1506,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(0, status.length);
   }
 
-  static class SlowCompactorMap<V extends Writable> extends CompactorMR.CompactorMap<V>{
+  static class SlowCompactorMap<V extends Writable> extends MRCompactor.CompactorMap<V>{
     @Override
     public void cleanupTmpLocationOnTaskRetry(AcidOutputFormat.Options options, Path rootDir) throws IOException {
       try {
@@ -1573,8 +1578,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     status = fs.listStatus(new Path(getWarehouseDir() + "/" + tblName.toLowerCase()),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
     expectedDeltas = new HashSet<>();
-    expectedDeltas.add("delete_delta_0000001_0000004_v0000025");
-    expectedDeltas.add("delta_0000001_0000004_v0000025");
+    expectedDeltas.add("delete_delta_0000001_0000004_v0000026");
+    expectedDeltas.add("delta_0000001_0000004_v0000026");
     actualDeltas = new HashSet<>();
     for(FileStatus file : status) {
       actualDeltas.add(file.getPath().getName());
@@ -3334,7 +3339,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     String oldDelta4 = "delta_0000004_0000004_0000";
 
     String expectedDelta1 = p1 + "/delta_0000001_0000002_v0000021";
-    String expectedDelta2 = p2 + "/delta_0000003_0000004_v0000022";
+    String expectedDelta2 = p2 + "/delta_0000003_0000004_v0000023";
 
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(1,2)");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(3,4)");
@@ -3466,24 +3471,24 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(4, compacts.size());
     ShowCompactRequest scr = new ShowCompactRequest();
-    scr.setDbname("bar");
+    scr.setDbName("bar");
     Assert.assertEquals(1, txnHandler.showCompact(scr).getCompacts().size());
     scr = new ShowCompactRequest();
-    scr.setTablename("bar");
+    scr.setTbName("bar");
     scr.setPoolName("mypool");
     List<ShowCompactResponseElement>  compRsp =txnHandler.showCompact(scr).getCompacts();
     Assert.assertEquals(1, compRsp.size());
     Assert.assertEquals("mypool", compRsp.get(0).getPoolName());
     scr = new ShowCompactRequest();
-    scr.setTablename("bar1");
+    scr.setTbName("bar1");
     Assert.assertEquals(2, txnHandler.showCompact(scr).getCompacts().size());
     scr = new ShowCompactRequest();
-    scr.setDbname("bar22");
-    scr.setTablename("bar1");
+    scr.setDbName("bar22");
+    scr.setTbName("bar1");
     Assert.assertEquals(0, txnHandler.showCompact(scr).getCompacts().size());
     scr = new ShowCompactRequest();
-    scr.setDbname("bar");
-    scr.setTablename("bar1");
+    scr.setDbName("bar");
+    scr.setTbName("bar1");
     Assert.assertEquals(1, txnHandler.showCompact(scr).getCompacts().size());
     scr = new ShowCompactRequest();
     scr.setState("i");
@@ -3499,7 +3504,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, txnHandler.showCompact(scr).getCompacts().size());
 
     scr = new ShowCompactRequest();
-    scr.setPartitionname("ds=today");
+    scr.setPartName("ds=today");
     Assert.assertEquals(4, txnHandler.showCompact(scr).getCompacts().size());
 
   }
