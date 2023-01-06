@@ -3733,6 +3733,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             String partName = rqst.getPartitionname();
             if (partName != null) buf.append("\"CQ_PARTITION\", ");
             buf.append("\"CQ_STATE\", \"CQ_TYPE\", \"CQ_ENQUEUE_TIME\", \"CQ_POOL_NAME\"");
+            if (rqst.isSetNumberOfBuckets()) {
+              buf.append(", \"CQ_NUMBER_OF_BUCKETS\"");
+            }
             if (rqst.getProperties() != null) {
               buf.append(", \"CQ_TBLPROPERTIES\"");
             }
@@ -3765,6 +3768,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             buf.append(getEpochFn(dbProduct));
             buf.append(", ?");
             params.add(rqst.getPoolName());
+            if (rqst.isSetNumberOfBuckets()) {
+              buf.append(", ").append(rqst.getNumberOfBuckets());
+            }
             if (rqst.getProperties() != null) {
               buf.append(", ?");
               params.add(new StringableMap(rqst.getProperties()).toString());

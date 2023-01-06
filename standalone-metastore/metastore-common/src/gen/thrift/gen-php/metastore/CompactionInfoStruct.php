@@ -107,6 +107,11 @@ class CompactionInfoStruct
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        18 => array(
+            'var' => 'numberOfBuckets',
+            'isRequired' => false,
+            'type' => TType::I32,
+        ),
     );
 
     /**
@@ -177,6 +182,10 @@ class CompactionInfoStruct
      * @var string
      */
     public $poolname = null;
+    /**
+     * @var int
+     */
+    public $numberOfBuckets = null;
 
     public function __construct($vals = null)
     {
@@ -231,6 +240,9 @@ class CompactionInfoStruct
             }
             if (isset($vals['poolname'])) {
                 $this->poolname = $vals['poolname'];
+            }
+            if (isset($vals['numberOfBuckets'])) {
+                $this->numberOfBuckets = $vals['numberOfBuckets'];
             }
         }
     }
@@ -373,6 +385,13 @@ class CompactionInfoStruct
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 18:
+                    if ($ftype == TType::I32) {
+                        $xfer += $input->readI32($this->numberOfBuckets);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -470,6 +489,11 @@ class CompactionInfoStruct
         if ($this->poolname !== null) {
             $xfer += $output->writeFieldBegin('poolname', TType::STRING, 17);
             $xfer += $output->writeString($this->poolname);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->numberOfBuckets !== null) {
+            $xfer += $output->writeFieldBegin('numberOfBuckets', TType::I32, 18);
+            $xfer += $output->writeI32($this->numberOfBuckets);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

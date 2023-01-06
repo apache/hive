@@ -103,6 +103,9 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     req.setProperties(desc.getProperties());
     req.setInitiatorId(JavaUtils.hostname() + "-" + HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION);
     req.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
+    if (desc.getNumberOfBuckets() > 0) {
+      req.setNumberOfBuckets(desc.getNumberOfBuckets());
+    }
     CompactionResponse resp = context.getDb().compact(req);
     if (resp.isAccepted()) {
       context.getConsole().printInfo("Compaction enqueued with id " + resp.getId());

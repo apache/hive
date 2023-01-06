@@ -50,11 +50,14 @@ final class RebalanceQueryCompactor extends QueryCompactor {
     String tmpTableName = getTempTableName(table);
     Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
         conf, true, false, false, null);
+    int numBuckets = compactionInfo.numberOfBuckets;
+    if (numBuckets <= 0) {
+      //TODO: This is quite expensive, a better way should be found to get the number of buckets for an implicitly bucketed table
+      numBuckets = Streams.stream(new FileUtils.AdaptingIterator<>(FileUtils.listFiles(dir.getFs(), dir.getPath(), true, AcidUtils.bucketFileFilter)))
+          .map(f -> AcidUtils.parseBucketId(f.getPath()))
+          .collect(Collectors.toSet()).size();
+    }
 
-    //TODO: This is quite expensive, a better way should be found to get the number of buckets for an implicitly bucketed table
-    int numBuckets = Streams.stream(new FileUtils.AdaptingIterator<>(FileUtils.listFiles(dir.getFs(), dir.getPath(), true, AcidUtils.bucketFileFilter)))
-        .map(f -> AcidUtils.parseBucketId(f.getPath()))
-        .collect(Collectors.toSet()).size();
 
     List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
     List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName, numBuckets);

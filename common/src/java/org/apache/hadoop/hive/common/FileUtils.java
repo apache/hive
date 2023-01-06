@@ -41,14 +41,9 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import java.util.StringTokenizer;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Streams;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.ContentSummary;

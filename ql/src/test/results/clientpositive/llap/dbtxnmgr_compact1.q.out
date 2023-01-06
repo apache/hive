@@ -46,6 +46,7 @@ STAGE PLANS:
     Compact
       compaction type: major
       table name: default.T1_n153
+      numberOfBuckets: 0
       pool: test
       table name: default.T1_n153
 

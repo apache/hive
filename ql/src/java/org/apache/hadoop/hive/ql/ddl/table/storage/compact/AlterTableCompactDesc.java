@@ -39,17 +39,20 @@ public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDL
   private final String compactionType;
   private final boolean isBlocking;
   private final String poolName;
+  private final int numberOfBuckets;
   private final Map<String, String> properties;
   private Long writeId;
 
   public AlterTableCompactDesc(TableName tableName, Map<String, String> partitionSpec, String compactionType,
-      boolean isBlocking, String poolName, Map<String, String> properties) throws SemanticException{
+      boolean isBlocking, String poolName, int numberOfBuckets, Map<String, String> properties)
+      throws SemanticException{
     super(AlterTableType.COMPACT, tableName, partitionSpec, null, false, false, properties);
     this.tableName = tableName.getNotEmptyDbTable();
     this.partitionSpec = partitionSpec;
     this.compactionType = compactionType;
     this.isBlocking = isBlocking;
     this.poolName = poolName;
+    this.numberOfBuckets = numberOfBuckets;
     this.properties = properties;
   }
 
@@ -77,6 +80,11 @@ public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDL
   @Explain(displayName = "pool", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getPoolName() {
     return poolName;
+  }
+
+  @Explain(displayName = "numberOfBuckets", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public int getNumberOfBuckets() {
+    return numberOfBuckets;
   }
 
   @Explain(displayName = "properties", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

@@ -832,6 +832,7 @@ STAGE PLANS:
     Compact
       compaction type: major
       table name: default.over10k_orc_bucketed_n0
+      numberOfBuckets: 0
       properties:
         compactor.hive.tez.container.size 500
         compactor.mapreduce.map.memory.mb 500

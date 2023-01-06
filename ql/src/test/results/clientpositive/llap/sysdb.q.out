@@ -488,6 +488,7 @@ compaction_queue	cq_id
 compaction_queue	cq_initiator_id
 compaction_queue	cq_initiator_version
 compaction_queue	cq_next_txn_id
+compaction_queue	cq_number_of_buckets
 compaction_queue	cq_partition
 compaction_queue	cq_pool_name
 compaction_queue	cq_run_as
@@ -526,6 +527,7 @@ compactions	c_initiator_version
 compactions	c_initiator_version
 compactions	c_next_txn_id
 compactions	c_next_txn_id
+compactions	c_number_of_buckets
 compactions	c_partition
 compactions	c_partition
 compactions	c_pool_name
@@ -561,6 +563,7 @@ completed_compactions	cc_id
 completed_compactions	cc_initiator_id
 completed_compactions	cc_initiator_version
 completed_compactions	cc_next_txn_id
+completed_compactions	cc_number_of_buckets
 completed_compactions	cc_partition
 completed_compactions	cc_pool_name
 completed_compactions	cc_run_as
@@ -1590,8 +1593,8 @@ POSTHOOK: Input: sys@compaction_queue
 POSTHOOK: Input: sys@compactions
 POSTHOOK: Input: sys@completed_compactions
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL	NULL
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
