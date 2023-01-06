@@ -20,12 +20,12 @@
 
 package org.apache.hive.beeline;
 
+import static org.apache.hive.beeline.TestBeeLineWithArgs.OutStream;
+import static org.apache.hive.beeline.TestBeeLineWithArgs.testCommandLineScript;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -171,17 +171,213 @@ public class TestHplSqlViaBeeLine {
       "SELECT * FROM result;\n";
     testScriptFile(SCRIPT_TEXT, args(), "12345");
   }
-  
+
   @Test
-  public void testUdf() throws Throwable {
+  public void testUdfBoolean() throws Throwable {
     String SCRIPT_TEXT =
-            "DROP TABLE IF EXISTS result;\n" +
-                    "CREATE TABLE result (s string);\n" +
-                    "INSERT INTO result VALUES('alice');\n" +
-                    "INSERT INTO result VALUES('bob');\n" +
-                    "CREATE FUNCTION hello(p STRING) RETURNS STRING BEGIN RETURN 'hello ' || p; END;\n" +
-                    "SELECT hello(s) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "hello alice.*hello bob");
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_b boolean);\n" +
+            "INSERT INTO result VALUES(true);\n" +
+            "INSERT INTO result VALUES(false);\n" +
+            "CREATE FUNCTION check(b boolean)\n" +
+            "   RETURNS STRING\n" +
+            "BEGIN\n" +
+            "   RETURN 'This is ' || b;\n" +
+            "END;\n" +
+            "SELECT check(col_b) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "This is true.*This is false");
+  }
+
+  @Test
+  public void testUdfSmallInt() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_s smallint);\n" +
+            "INSERT INTO result VALUES(123);\n" +
+            "INSERT INTO result VALUES(321);\n" +
+            "CREATE FUNCTION dbl(s smallint)\n" +
+            "   RETURNS smallint\n" +
+            "BEGIN\n" +
+            "   RETURN s + s;\n" +
+            "END;\n" +
+            "SELECT dbl(col_s) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "246.*642");
+  }
+
+  @Test
+  public void testUdfInt() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_i int);\n" +
+            "INSERT INTO result VALUES(12345);\n" +
+            "INSERT INTO result VALUES(54321);\n" +
+            "CREATE FUNCTION dbl(i int)\n" +
+            "   RETURNS int\n" +
+            "BEGIN\n" +
+            "   RETURN i * 2;\n" +
+            "END;\n" +
+            "SELECT dbl(col_i) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "24690.*108642");
+  }
+
+  @Test
+  public void testUdfBigInt() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_b bigint);\n" +
+            "INSERT INTO result VALUES(123456789);\n" +
+            "INSERT INTO result VALUES(987654321);\n" +
+            "CREATE FUNCTION dbl(b bigint)\n" +
+            "   RETURNS int8\n" +
+            "BEGIN\n" +
+            "   RETURN b * 2;\n" +
+            "END;\n" +
+            "SELECT dbl(col_b) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "246913578.*1975308642");
+  }
+
+  @Test
+  public void testUdfFloat() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_f float);\n" +
+            "INSERT INTO result VALUES(12345.6789);\n" +
+            "INSERT INTO result VALUES(98765.4321);\n" +
+            "CREATE FUNCTION dbl(f float)\n" +
+            "   RETURNS float\n" +
+            "BEGIN\n" +
+            "   RETURN f * 2;\n" +
+            "END;\n" +
+            "SELECT dbl(col_f) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "24691.357421875.*197530.859375");
+  }
+
+  @Test
+  public void testUdfDouble() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_d double);\n" +
+            "INSERT INTO result VALUES(123456789.12);\n" +
+            "INSERT INTO result VALUES(987654321.98);\n" +
+            "CREATE FUNCTION dbl(d float)\n" +
+            "   RETURNS double\n" +
+            "BEGIN\n" +
+            "   RETURN d * 2;\n" +
+            "END;\n" +
+            "SELECT dbl(col_d) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "2.4691357824E8.*1.97530864396E9");
+  }
+
+  @Test
+  public void testUdfString() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_s string);\n" +
+            "INSERT INTO result VALUES('Alice');\n" +
+            "INSERT INTO result VALUES('Smith');\n" +
+            "CREATE FUNCTION hello(s string)\n" +
+            "   RETURNS string\n" +
+            "BEGIN\n" +
+            "   RETURN 'Hello ' || s || '!';\n" +
+            "END;\n" +
+            "SELECT hello(col_s) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "Hello Alice!.*Hello Smith!");
+  }
+
+  @Test
+  public void testUdfDate() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_d date);\n" +
+            "INSERT INTO result VALUES('2022-11-24');\n" +
+            "INSERT INTO result VALUES('2022-12-25');\n" +
+            "CREATE FUNCTION date_today(d date)\n" +
+            "   RETURNS date\n" +
+            "BEGIN\n" +
+            "   RETURN d;\n" +
+            "END;\n" +
+            "SELECT date_today(col_d) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "2022-11-24.*2022-12-25");
+  }
+
+  @Test
+  public void testUdfTimestamp() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_t timestamp);\n" +
+            "INSERT INTO result VALUES('2022-11-24 10:20:30');\n" +
+            "INSERT INTO result VALUES('2022-12-25 06:30:30');\n" +
+            "CREATE FUNCTION time_today(t timestamp)\n" +
+            "   RETURNS timestamp\n" +
+            "BEGIN\n" +
+            "   RETURN t;\n" +
+            "END;\n" +
+            "SELECT time_today(col_t) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "2022-11-24 10:20:30.*2022-12-25 06:30:30");
+  }
+
+  @Test
+  public void testUdfDecimal() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_d decimal(15,2));\n" +
+            "INSERT INTO result VALUES(123456789.98);\n" +
+            "INSERT INTO result VALUES(987654321.12);\n" +
+            "CREATE FUNCTION triple(d decimal(15,2))\n" +
+            "   RETURNS decimal(15,2)\n" +
+            "BEGIN\n" +
+            "   RETURN d * 3;\n" +
+            "END;\n" +
+            "SELECT triple(col_d) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "370370369.94.*2962962963.36");
+  }
+
+  @Test
+  public void testUdfVarchar() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_v varchar(20));\n" +
+            "INSERT INTO result VALUES('Smith');\n" +
+            "INSERT INTO result VALUES('Sachin');\n" +
+            "CREATE FUNCTION hello(v varchar(20))\n" +
+            "   RETURNS varchar(20)\n" +
+            "BEGIN\n" +
+            "   RETURN 'Hello ' || v || '!';\n" +
+            "END;\n" +
+            "SELECT hello(col_v) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "Hello Smith!.*Hello Sachin!");
+  }
+
+  @Test
+  public void testUdfChar() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_c char(10));\n" +
+            "INSERT INTO result VALUES('Daya');\n" +
+            "INSERT INTO result VALUES('Alice');\n" +
+            "CREATE FUNCTION hello(c char(10))\n" +
+            "   RETURNS char(10)\n" +
+            "BEGIN\n" +
+            "   RETURN 'Hello ' || c || '!';\n" +
+            "END;\n" +
+            "SELECT hello(col_c) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "Hello Daya!.*Hello Alice!");
+  }
+
+  @Test
+  public void testUdfWhenUdfParamerAndActualParamDifferent() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_d decimal(10,2));\n" +
+            "INSERT INTO result VALUES(12345.67);\n" +
+            "INSERT INTO result VALUES(98765.43);\n" +
+            "CREATE FUNCTION hello(s String)\n" +
+            "   RETURNS String\n" +
+            "BEGIN\n" +
+            "   RETURN 'Hello ' || s || '!';\n" +
+            "END;\n" +
+            "SELECT hello(col_d) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "Hello 12345.67!.*Hello 98765.43!");
   }
 
   @Test
@@ -368,27 +564,47 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "e1=1 e2=2 e3=3 e4=4 e5=5 e6=6");
   }
 
+  @Test
+  public void testDecimalCast() throws Throwable {
+    String SCRIPT_TEXT =
+        "DECLARE\n" +
+        "a DECIMAL(10,2);\n" +
+        "BEGIN\n" +
+        "SELECT CAST('10.5' AS DECIMAL(10,2)) as t INTO a;\n" +
+        "print (a);\n" +
+        "END;\n" +
+        "/";
+    testScriptFile(SCRIPT_TEXT, args(), "10.50", OutStream.ERR);
+  }
+
+  @Test
+  public void testNullCast() throws Throwable {
+    String SCRIPT_TEXT =
+        "BEGIN\n" +
+        "DECLARE a BIGINT;\n" +
+        "print('started');\n" +
+        "SELECT cast (null as BIGINT) as t INTO a\n" +
+        "print (a);\n" +
+        "print ('here');\n" +
+        "end;\n" +
+        "/";
+    // Inverted match, output should not have NPE
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(NullPointerException)))*$", OutStream.ERR);
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
   }
 
-  private static String testCommandLineScript(List<String> argList, InputStream inputStream)
-          throws Throwable {
-    BeeLine beeLine = new BeeLine();
-    ByteArrayOutputStream os = new ByteArrayOutputStream();
-    PrintStream beelineOutputStream = new PrintStream(os);
-    beeLine.setOutputStream(beelineOutputStream);
-    String[] args = argList.toArray(new String[argList.size()]);
-    beeLine.begin(args, inputStream);
-    beeLine.close();
-    beelineOutputStream.close();
-    String output = os.toString("UTF8");
-    return output;
-  }
 
   private void testScriptFile(String scriptText, List<String> argList, String expectedPattern)
           throws Throwable {
+    testScriptFile(scriptText, argList, expectedPattern, OutStream.OUT);
+  }
+
+  private void testScriptFile(String scriptText, List<String> argList, String expectedPattern,
+          TestBeeLineWithArgs.OutStream outStream) throws Throwable {
     File scriptFile = File.createTempFile(this.getClass().getSimpleName(), "temp");
     scriptFile.deleteOnExit();
     try (PrintStream os = new PrintStream(new FileOutputStream(scriptFile))) {
@@ -397,7 +613,7 @@ public class TestHplSqlViaBeeLine {
     List<String> copy = new ArrayList<>(argList);
     copy.add("-f");
     copy.add(scriptFile.getAbsolutePath());
-    String output = testCommandLineScript(copy, null);
+    String output = testCommandLineScript(copy, null, outStream);
     if (!Pattern.compile(".*" + expectedPattern + ".*", Pattern.DOTALL).matcher(output).matches()) {
       fail("Output: '" + output + "' should match " + expectedPattern);
     }

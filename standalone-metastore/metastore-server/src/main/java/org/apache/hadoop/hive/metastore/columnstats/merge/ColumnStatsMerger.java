@@ -19,8 +19,31 @@
 
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
+import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class ColumnStatsMerger {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ColumnStatsMerger.class);
+
   public abstract void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats);
+
+  protected KllHistogramEstimator mergeHistogramEstimator(
+      String columnName, KllHistogramEstimator oldEst, KllHistogramEstimator newEst) {
+    if (oldEst != null && newEst != null) {
+      if (oldEst.canMerge(newEst)) {
+        LOG.trace("Merging old sketch {} with new sketch {}...", oldEst.getSketch(), newEst.getSketch());
+        oldEst.mergeEstimators(newEst);
+        LOG.trace("Resulting sketch is {}", oldEst.getSketch());
+        return oldEst;
+      }
+      LOG.debug("Merging histograms of column {}", columnName);
+    } else if (newEst != null) {
+      LOG.trace("Old sketch is empty, the new sketch is used {}", newEst.getSketch());
+      return newEst;
+    }
+    return oldEst;
+  }
 }

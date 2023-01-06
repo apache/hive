@@ -90,7 +90,6 @@ import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.rel.rules.CoreRules;
 import org.apache.calcite.rel.rules.FilterMergeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
@@ -500,12 +499,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   public static RelOptPlanner createPlanner(HiveConf conf) {
-    return createPlanner(conf, new HashSet<>(), EmptyStatsSource.INSTANCE, false);
+    return createPlanner(conf, EmptyStatsSource.INSTANCE, false);
   }
 
   private static RelOptPlanner createPlanner(
-      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg,
-      StatsSource statsSource, boolean isExplainPlan) {
+      HiveConf conf, StatsSource statsSource, boolean isExplainPlan) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
             conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
     final Double maxMemory = (double) HiveConf.getLongVar(
@@ -524,7 +522,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean heuristicMaterializationStrategy = HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY).equals("heuristic");
     HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-        corrScalarRexSQWithAgg,
         new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy, isExplainPlan),
         statsSource);
     RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
@@ -1603,10 +1600,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // correlated vars across subqueries within same query needs to have different ID
     private int subqueryId;
 
-    // this is to keep track if a subquery is correlated and contains aggregate
-    // since this is special cased when it is rewritten in SubqueryRemoveRule
-    Set<RelNode> corrScalarRexSQWithAgg = new HashSet<RelNode>();
-
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
     LinkedHashMap<RelNode, RowResolver>                   relToHiveRR                   = new LinkedHashMap<RelNode, RowResolver>();
@@ -1638,7 +1631,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       /*
        * recreate cluster, so that it picks up the additional traitDef
        */
-      RelOptPlanner planner = createPlanner(conf, corrScalarRexSQWithAgg, statsSource, ctx.isExplainPlan());
+      RelOptPlanner planner = createPlanner(conf, statsSource, ctx.isExplainPlan());
       final RexBuilder rexBuilder = cluster.getRexBuilder();
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 
@@ -2951,7 +2944,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         List<VirtualColumn> virtualCols = new ArrayList<>();
         if (tableType == TableType.NATIVE) {
           virtualCols = VirtualColumn.getRegistry(conf);
-          if (AcidUtils.isNonNativeAcidTable(tabMetaData)) {
+          if (AcidUtils.isNonNativeAcidTable(tabMetaData, false)) {
             virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
           }
           for (VirtualColumn vc : virtualCols) {
@@ -3396,7 +3389,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
                                        Map<ASTNode, QBSubQueryParseInfo> subQueryToRelNode)
             throws CalciteSubquerySemanticException {
 
-      Set<ASTNode> corrScalarQueriesWithAgg = new HashSet<ASTNode>();
       boolean isSubQuery = false;
       boolean enableJoinReordering = false;
       try {
@@ -3420,7 +3412,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
             //disallow subqueries which HIVE doesn't currently support
             SubQueryUtils.subqueryRestrictionCheck(qb, next, srcRel, forHavingClause,
-                corrScalarQueriesWithAgg, ctx, this.relToHiveRR);
+                ctx, this.relToHiveRR);
 
             String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
             QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
@@ -3438,13 +3430,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             }
 
             subQueryToRelNode.put(next, parseInfo.setSubQueryRelNode(subQueryRelNode));
-            //keep track of subqueries which are scalar, correlated and contains aggregate
-            // subquery expression. This will later be special cased in Subquery remove rule
-            // for correlated scalar queries with aggregate we have take care of the case where
-            // inner aggregate happens on empty result
-            if (corrScalarQueriesWithAgg.contains(next)) {
-              corrScalarRexSQWithAgg.add(subQueryRelNode);
-            }
             isSubQuery = true;
             enableJoinReordering = true;
             break;

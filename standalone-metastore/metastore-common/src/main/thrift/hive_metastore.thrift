@@ -169,7 +169,7 @@ enum PartitionEventType {
   LOAD_DONE = 1,
 }
 
-// Enums for transaction and lock management 
+// Enums for transaction and lock management
 enum TxnState {
     COMMITTED = 1,
     ABORTED = 2,
@@ -199,6 +199,7 @@ enum LockType {
 enum CompactionType {
     MINOR = 1,
     MAJOR = 2,
+    REBALANCE = 3,
 }
 
 enum GrantRevokeType {
@@ -480,7 +481,8 @@ struct DoubleColumnStatsData {
 2: optional double highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 struct LongColumnStatsData {
@@ -488,7 +490,8 @@ struct LongColumnStatsData {
 2: optional i64 highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 struct StringColumnStatsData {
@@ -517,7 +520,8 @@ struct DecimalColumnStatsData {
 2: optional Decimal highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 struct Date {
@@ -529,7 +533,8 @@ struct DateColumnStatsData {
 2: optional Date highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 struct Timestamp {
@@ -541,7 +546,8 @@ struct TimestampColumnStatsData {
 2: optional Timestamp highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 union ColumnStatisticsData {
@@ -1284,6 +1290,7 @@ struct CompactionRequest {
     7: optional string initiatorId
     8: optional string initiatorVersion
     9: optional string poolName
+    10: optional i32 numberOfBuckets
 }
 
 struct CompactionInfoStruct {
@@ -1304,6 +1311,7 @@ struct CompactionInfoStruct {
     15: optional i64 enqueueTime,
     16: optional i64 retryRetention,
     17: optional string poolname
+    18: optional i32 numberOfBuckets
 }
 
 struct OptionalCompactionInfoStruct {
@@ -1347,11 +1355,13 @@ struct CompactionResponse {
 struct ShowCompactRequest {
     1: optional i64 id,
     2: optional string poolName,
-    3: required string dbname,
-    4: required string tablename,
-    5: optional string partitionname,
-    6: required CompactionType type,
-    7: required string state
+    3: optional string dbName,
+    4: optional string tbName,
+    5: optional string partName,
+    6: optional CompactionType type,
+    7: optional string state,
+    8: optional i64 limit,
+    9: optional string order
 }
 
 struct ShowCompactResponseElement {
@@ -1701,7 +1711,7 @@ struct DropDatabaseRequest {
   7: optional i64 txnId=0,
   8: optional bool deleteManagedDir=true
 }
-  
+
 // Request type for cm_recycle
 struct CmRecycleRequest {
   1: required string dataPath,
@@ -3178,7 +3188,7 @@ const string PARTITION_TRANSFORM_SPEC = "partition_transform_spec",
 const string NO_CLEANUP = "no_cleanup",
 const string CTAS_LEGACY_CONFIG = "create_table_as_external",
 const string DEFAULT_TABLE_TYPE = "defaultTableType",
-  
+
 // ACID
 const string TXN_ID = "txnId",
 const string WRITE_ID = "writeId",

@@ -161,6 +161,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.secrets.URISecretSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
@@ -4274,6 +4275,34 @@ public final class Utilities {
   }
 
   /**
+   * Sets partition column names to the configuration, if there is available info in the operator.
+   */
+  public static void setPartitionColumnNames(Configuration conf, TableScanOperator tableScanOp) {
+    TableScanDesc scanDesc = tableScanOp.getConf();
+    Table metadata = scanDesc.getTableMetadata();
+    if (metadata == null) {
+      return;
+    }
+    List<FieldSchema> partCols = metadata.getPartCols();
+    if (partCols != null && !partCols.isEmpty()) {
+      conf.set(serdeConstants.LIST_PARTITION_COLUMNS, MetaStoreUtils.getColumnNamesFromFieldSchema(partCols));
+    }
+  }
+
+  /**
+   * Returns a list with partition column names present in the configuration,
+   * or empty if there is no such information available.
+   */
+  public static List<String> getPartitionColumnNames(Configuration conf) {
+    String colNames = conf.get(serdeConstants.LIST_PARTITION_COLUMNS);
+    if (colNames != null) {
+      return splitColNames(new ArrayList<>(), colNames);
+    } else {
+      return Collections.emptyList();
+    }
+  }
+
+  /**
    * Create row key and value object inspectors for reduce vectorization.
    * The row object inspector used by ReduceWork needs to be a **standard**
    * struct object inspector, not just any struct object inspector.
@@ -5009,5 +5038,17 @@ public final class Utilities {
   public static boolean arePathsEqualOrWithin(Path p1, Path p2) {
     return ((p1.toString().toLowerCase().indexOf(p2.toString().toLowerCase()) > -1) ||
         (p2.toString().toLowerCase().indexOf(p1.toString().toLowerCase()) > -1)) ? true : false;
+  }
+
+  public static String getTableOrMVSuffix(Context context, boolean createTableOrMVUseSuffix) {
+    String suffix = "";
+    if (createTableOrMVUseSuffix) {
+      long txnId = Optional.ofNullable(context)
+              .map(ctx -> ctx.getHiveTxnManager().getCurrentTxnId()).orElse(0L);
+      if (txnId != 0) {
+        suffix = AcidUtils.getPathSuffix(txnId);
+      }
+    }
+    return suffix;
   }
 }

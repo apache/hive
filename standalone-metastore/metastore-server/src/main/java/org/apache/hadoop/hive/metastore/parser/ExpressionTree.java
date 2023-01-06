@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.parser;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -456,18 +457,22 @@ public class ExpressionTree {
       boolean isIntegralSupported = canPushDownIntegral && canJdoUseStringsWithIntegral();
       String colType = partitionKeys.get(partColIndex).getType();
       // Can only support partitions whose types are string, or maybe integers
-      if (!colType.equals(ColumnType.STRING_TYPE_NAME)
+      // Date/Timestamp data type value is considered as string hence pushing down to JDO.
+      if (!ColumnType.STRING_TYPE_NAME.equalsIgnoreCase(colType) && !ColumnType.DATE_TYPE_NAME.equalsIgnoreCase(colType)
+          && !ColumnType.TIMESTAMP_TYPE_NAME.equalsIgnoreCase(colType)
           && (!isIntegralSupported || !ColumnType.IntegralTypes.contains(colType))) {
         filterBuilder.setError("Filtering is supported only on partition keys of type " +
             "string" + (isIntegralSupported ? ", or integral types" : ""));
         return null;
       }
 
-      // There's no support for date cast in JDO. Let's convert it to string; the date
+      // There's no support for date or timestamp cast in JDO. Let's convert it to string; the date
       // columns have been excluded above, so it will either compare w/string or fail.
       Object val = value;
-      if (value instanceof Date) {
+      if (colType.equals("date") && value instanceof Date) {
         val = MetaStoreUtils.PARTITION_DATE_FORMAT.get().format((Date)value);
+      } else if (colType.equals("timestamp") && value instanceof Timestamp) {
+        val = MetaStoreUtils.PARTITION_TIMESTAMP_FORMAT.get().format(((Timestamp)value).toLocalDateTime());
       }
       boolean isStringValue = val instanceof String;
       if (!isStringValue && (!isIntegralSupported || !(val instanceof Long))) {

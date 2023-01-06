@@ -74,6 +74,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -131,19 +132,19 @@ public class TestWorker extends CompactorTest {
   @Test
   public void stringableList() throws Exception {
     // Empty list case
-    CompactorMR.StringableList ls = new CompactorMR.StringableList();
+    MRCompactor.StringableList ls = new MRCompactor.StringableList();
     String s = ls.toString();
     Assert.assertEquals("0:", s);
-    ls = new CompactorMR.StringableList(s);
+    ls = new MRCompactor.StringableList(s);
     Assert.assertEquals(0, ls.size());
 
-    ls = new CompactorMR.StringableList();
+    ls = new MRCompactor.StringableList();
     ls.add(new Path("/tmp"));
     ls.add(new Path("/usr"));
     s = ls.toString();
     Assert.assertTrue("Expected 2:4:/tmp4:/usr or 2:4:/usr4:/tmp, got " + s,
         "2:4:/tmp4:/usr".equals(s) || "2:4:/usr4:/tmp".equals(s));
-    ls = new CompactorMR.StringableList(s);
+    ls = new MRCompactor.StringableList(s);
     Assert.assertEquals(2, ls.size());
     boolean sawTmp = false, sawUsr = false;
     for (Path p : ls) {
@@ -177,8 +178,8 @@ public class TestWorker extends CompactorTest {
     deltas[0] = new Path(delta1);
     deltas[1] = new Path(delta2);
 
-    CompactorMR.CompactorInputSplit split =
-        new CompactorMR.CompactorInputSplit(conf, 3, files, new Path(basename), deltas, new HashMap<String, Integer>());
+    MRCompactor.CompactorInputSplit split =
+        new MRCompactor.CompactorInputSplit(conf, 3, files, new Path(basename), deltas, new HashMap<String, Integer>());
 
     Assert.assertEquals(520L, split.getLength());
     String[] locations = split.getLocations();
@@ -189,7 +190,7 @@ public class TestWorker extends CompactorTest {
     DataOutput out = new DataOutputStream(buf);
     split.write(out);
 
-    split = new CompactorMR.CompactorInputSplit();
+    split = new MRCompactor.CompactorInputSplit();
     DataInput in = new DataInputStream(new ByteArrayInputStream(buf.toByteArray()));
     split.readFields(in);
 
@@ -222,14 +223,14 @@ public class TestWorker extends CompactorTest {
     deltas[0] = new Path(delta1);
     deltas[1] = new Path(delta2);
 
-    CompactorMR.CompactorInputSplit split =
-        new CompactorMR.CompactorInputSplit(conf, 3, files, null, deltas, new HashMap<String, Integer>());
+    MRCompactor.CompactorInputSplit split =
+        new MRCompactor.CompactorInputSplit(conf, 3, files, null, deltas, new HashMap<String, Integer>());
 
     ByteArrayOutputStream buf = new ByteArrayOutputStream();
     DataOutput out = new DataOutputStream(buf);
     split.write(out);
 
-    split = new CompactorMR.CompactorInputSplit();
+    split = new MRCompactor.CompactorInputSplit();
     DataInput in = new DataInputStream(new ByteArrayInputStream(buf.toByteArray()));
     split.readFields(in);
 
@@ -1040,15 +1041,17 @@ public class TestWorker extends CompactorTest {
 
     txnHandler.compact(new CompactionRequest("default", "mtwb", CompactionType.MINOR));
 
-    Worker worker = Mockito.spy(new Worker());
-    Mockito.when(worker.getMrCompactor()).thenThrow(RuntimeException.class);
+    CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
+    when(mockedFactory.getCompactor(any(), any(), any(), any())).thenThrow(new RuntimeException());
+
+    Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(conf);
     worker.init(new AtomicBoolean(true));
     Worker.statsUpdater = statsUpdater;
 
     worker.findNextCompactionAndExecute(true, true);
 
-    Mockito.verify(statsUpdater, Mockito.never()).gatherStats(any(), any(), any(), any());
+    Mockito.verify(statsUpdater, Mockito.never()).gatherStats(any(), any(), any(), any(), any());
   }
 
   @Test

@@ -63,6 +63,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public long txnId = 0;
   public long commitTime = 0;
   public String poolName;
+  public int numberOfBuckets = 0;
 
   /**
    * The highest write id that the compaction job will pay attention to.
@@ -133,8 +134,13 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     }
     return fullTableName;
   }
+
   public boolean isMajorCompaction() {
     return CompactionType.MAJOR == type;
+  }
+
+  public boolean isRebalanceCompaction() {
+    return CompactionType.REBALANCE == type;
   }
 
   @Override
@@ -149,6 +155,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "state:" + state + "," +
       "type:" + type + "," +
       "enqueueTime:" + enqueueTime + "," +
+      "commitTime:" + commitTime + "," +
       "start:" + start + "," +
       "properties:" + properties + "," +
       "runAs:" + runAs + "," +
@@ -157,8 +164,14 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "highestWriteId:" + highestWriteId + "," +
       "errorMessage:" + errorMessage + "," +
       "workerId: " + workerId + "," +
+      "workerVersion: " + workerVersion + "," +
       "initiatorId: " + initiatorId + "," +
-      "retryRetention" + retryRetention;
+      "initiatorVersion: " + initiatorVersion + "," +
+      "retryRetention" + retryRetention + "," +
+      "txnId" + txnId + "," +
+      "nextTxnId" + nextTxnId + "," +
+      "poolname" + poolName + "," +
+      "numberOfBuckets" + numberOfBuckets;
   }
 
   @Override
@@ -210,6 +223,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.txnId = rs.getLong(21);
     fullCi.commitTime = rs.getLong(22);
     fullCi.poolName = rs.getString(23);
+    fullCi.numberOfBuckets = rs.getInt(24);
     return fullCi;
   }
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
@@ -236,6 +250,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setLong(21, ci.txnId);
     pStmt.setLong(22, ci.commitTime);
     pStmt.setString(23, ci.poolName);
+    pStmt.setInt(24, ci.numberOfBuckets);
   }
 
   public static CompactionInfo compactionStructToInfo(CompactionInfoStruct cr) {
@@ -273,8 +288,11 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     if (cr.isSetRetryRetention()) {
       ci.retryRetention = cr.getRetryRetention();
     }
-    if(cr.isSetPoolname()) {
+    if (cr.isSetPoolname()) {
       ci.poolName = cr.getPoolname();
+    }
+    if (cr.isSetNumberOfBuckets()) {
+      ci.numberOfBuckets = cr.getNumberOfBuckets();
     }
     return ci;
   }
@@ -297,6 +315,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setEnqueueTime(ci.enqueueTime);
     cr.setRetryRetention(ci.retryRetention);
     cr.setPoolname(ci.poolName);
+    cr.setNumberOfBuckets(ci.numberOfBuckets);
     return cr;
   }
 

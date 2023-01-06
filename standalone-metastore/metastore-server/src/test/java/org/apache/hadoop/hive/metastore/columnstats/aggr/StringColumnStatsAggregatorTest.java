@@ -126,8 +126,8 @@ public class StringColumnStatsAggregatorTest {
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     double[] tunerValues = new double[] { 0, 0.5, 0.75, 1 };
-    for (int i = 0; i < tunerValues.length; i++) {
-      aggregator.ndvTuner = tunerValues[i];
+    for (double tunerValue : tunerValues) {
+      aggregator.ndvTuner = tunerValue;
       computedStatsObj = aggregator.aggregate(statsList, partitions, true);
       Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
     }

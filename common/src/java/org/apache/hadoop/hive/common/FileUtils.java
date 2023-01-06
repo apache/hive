@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -34,10 +35,13 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
@@ -258,6 +262,11 @@ public final class FileUtils {
     }
   }
 
+  /**
+   * Hex encoding characters indexed by integer value
+   */
+  private static final char[] HEX_UPPER_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
   static boolean needsEscaping(char c) {
     return c < charToEscape.size() && charToEscape.get(c);
   }
@@ -287,12 +296,28 @@ public final class FileUtils {
       }
     }
 
-    StringBuilder sb = new StringBuilder();
+    //  Fast-path detection, no escaping and therefore no copying necessary
+    int firstEscapeIndex = -1;
     for (int i = 0; i < path.length(); i++) {
+      if (needsEscaping(path.charAt(i))) {
+        firstEscapeIndex = i;
+        break;
+      }
+    }
+    if (firstEscapeIndex == -1) {
+      return path;
+    }
+
+    // slow path, escape beyond the first required escape character into a new string
+    StringBuilder sb = new StringBuilder();
+    if (firstEscapeIndex > 0) {
+      sb.append(path, 0, firstEscapeIndex);
+    }
+
+    for (int i = firstEscapeIndex; i < path.length(); i++) {
       char c = path.charAt(i);
       if (needsEscaping(c)) {
-        sb.append('%');
-        sb.append(String.format("%1$02X", (int) c));
+        sb.append('%').append(HEX_UPPER_CHARS[(0xF0 & c) >>> 4]).append(HEX_UPPER_CHARS[(0x0F & c)]);
       } else {
         sb.append(c);
       }
@@ -301,8 +326,17 @@ public final class FileUtils {
   }
 
   public static String unescapePathName(String path) {
+    int firstUnescapeIndex = path.indexOf('%');
+    if (firstUnescapeIndex == -1) {
+      return path;
+    }
+
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < path.length(); i++) {
+    if (firstUnescapeIndex > 0) {
+      sb.append(path, 0, firstUnescapeIndex);
+    }
+
+    for (int i = firstUnescapeIndex; i < path.length(); i++) {
       char c = path.charAt(i);
       if (c == '%' && i + 2 < path.length()) {
         int code = -1;
@@ -1346,5 +1380,78 @@ public final class FileUtils {
         throws IOException {
     return RemoteIterators.filteringRemoteIterator(fs.listFiles(path, recursive),
         status -> filter.accept(status.getPath()));
+  }
+
+  public static class AdaptingIterator<T> implements Iterator<T> {
+
+    private final RemoteIterator<T> iterator;
+
+    @Override
+    public boolean hasNext() {
+      try {
+        return iterator.hasNext();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+
+    @Override
+    public T next() {
+      try {
+        if (iterator.hasNext()) {
+          return iterator.next();
+        } else {
+          throw new NoSuchElementException();
+        }
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+
+    public AdaptingIterator(RemoteIterator<T> iterator) {
+      this.iterator = iterator;
+    }
+  }
+
+  /**
+   * Checks whether the filesystem are equal, if they are equal and belongs to ozone then check if they belong to
+   * same bucket and volume.
+   * @param srcFs source filesystem
+   * @param destFs target filesystem
+   * @param src source path
+   * @param dest target path
+   * @return true if filesystems are equal, if Ozone fs, then the path belongs to same bucket-volume.
+   */
+  public static boolean isEqualFileSystemAndSameOzoneBucket(FileSystem srcFs, FileSystem destFs, Path src, Path dest) {
+    if (!equalsFileSystem(srcFs, destFs)) {
+      return false;
+    }
+    if (srcFs.getScheme().equalsIgnoreCase("ofs") || srcFs.getScheme().equalsIgnoreCase("o3fs")) {
+      return isSameOzoneBucket(src, dest);
+    }
+    return true;
+  }
+
+  public static boolean isSameOzoneBucket(Path src, Path dst) {
+    String[] src1 = getVolumeAndBucket(src);
+    String[] dst1 = getVolumeAndBucket(dst);
+
+    return ((src1[0] == null && dst1[0] == null) || (src1[0] != null && src1[0].equalsIgnoreCase(dst1[0]))) &&
+        ((src1[1] == null && dst1[1] == null) || (src1[1] != null && src1[1].equalsIgnoreCase(dst1[1])));
+  }
+
+  private static String[] getVolumeAndBucket(Path path) {
+    URI uri = path.toUri();
+    final String pathStr = uri.getPath();
+    StringTokenizer token = new StringTokenizer(pathStr, "/");
+    int numToken = token.countTokens();
+
+    if (numToken >= 2) {
+      return new String[] { token.nextToken(), token.nextToken() };
+    } else if (numToken == 1) {
+      return new String[] { token.nextToken(), null };
+    } else {
+      return new String[] { null, null };
+    }
   }
 }

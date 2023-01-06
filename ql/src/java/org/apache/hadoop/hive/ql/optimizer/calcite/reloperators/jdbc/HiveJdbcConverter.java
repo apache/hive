@@ -80,11 +80,6 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
   }
 
   @Override
-  public void implement(Implementor implementor) {
-
-  }
-
-  @Override
   public RelNode copy(
       RelTraitSet traitSet,
       List<RelNode> inputs) {

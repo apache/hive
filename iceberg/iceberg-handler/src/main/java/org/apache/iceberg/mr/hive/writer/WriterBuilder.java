@@ -47,6 +47,10 @@ public class WriterBuilder {
   // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
   private static AtomicInteger operationNum = new AtomicInteger(0);
 
+  // To specify whether to write the actual row data while writing the delete files.
+  public static final String ICEBERG_DELETE_SKIPROWDATA = "iceberg.delete.skiprowdata";
+  public static final String ICEBERG_DELETE_SKIPROWDATA_DEFAULT = "true";
+
   private WriterBuilder(Table table) {
     this.table = table;
   }
@@ -92,6 +96,9 @@ public class WriterBuilder {
     long targetFileSize = PropertyUtil.propertyAsLong(table.properties(), TableProperties.WRITE_TARGET_FILE_SIZE_BYTES,
         TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
 
+    boolean skipRowData =
+        Boolean.parseBoolean(properties.getOrDefault(ICEBERG_DELETE_SKIPROWDATA, ICEBERG_DELETE_SKIPROWDATA_DEFAULT));
+
     Schema dataSchema = table.schema();
     FileIO io = table.io();
     Map<Integer, PartitionSpec> specs = table.specs();
@@ -109,14 +116,15 @@ public class WriterBuilder {
         .operationId("delete-" + operationId)
         .build();
 
-    HiveFileWriterFactory writerFactory = new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null,
-        deleteFileFormat, null, null, null, dataSchema);
+    HiveFileWriterFactory writerFactory =
+        new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null, deleteFileFormat, null, null, null,
+            skipRowData ? null : dataSchema);
 
     HiveIcebergWriter writer;
     switch (operation) {
       case DELETE:
         writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
-            io, targetFileSize);
+            io, targetFileSize, skipRowData);
         break;
       case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.table.create;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -518,10 +517,9 @@ public class CreateTableDesc implements DDLDesc, Serializable {
 
   @Explain(displayName = "table properties")
   public Map<String, String> getTblPropsExplain() { // only for displaying plan
-    HashMap<String, String> copy = new HashMap<>(tblProps);
-    copy.remove(hive_metastoreConstants.TABLE_IS_CTAS);
-    copy.remove(hive_metastoreConstants.TABLE_BUCKETING_VERSION);
-    return copy;
+    return PlanUtils.getPropertiesForExplain(tblProps,
+            hive_metastoreConstants.TABLE_IS_CTAS,
+            hive_metastoreConstants.TABLE_BUCKETING_VERSION);
   }
 
   /**

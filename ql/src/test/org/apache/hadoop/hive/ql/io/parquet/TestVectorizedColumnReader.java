@@ -119,6 +119,11 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
     stringReadDecimal(isDictionaryEncoding);
   }
 
+  @Test
+  public void verifyBatchOffsets() throws Exception {
+    super.verifyBatchOffsets();
+  }
+
   private class TestVectorizedParquetRecordReader extends VectorizedParquetRecordReader {
     public TestVectorizedParquetRecordReader(
         org.apache.hadoop.mapred.InputSplit oldInputSplit, JobConf conf) throws IOException {

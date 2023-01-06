@@ -67,7 +67,8 @@ public class Metrics {
   private boolean hadoopMetricsStarted;
 
   public static synchronized Metrics initialize(Configuration conf) {
-    if (self == null) {
+    if (self == null && MetastoreConf.getBoolVar(conf,
+        MetastoreConf.ConfVars.METRICS_ENABLED)) {
       self = new Metrics(conf);
     }
     return self;

@@ -24,14 +24,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
+
+import static org.apache.hadoop.hive.ql.io.AcidUtils.COMPACTOR_TABLE_PROPERTY;
 
 /**
  * FileSinkDesc.
@@ -388,6 +392,17 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public boolean isCompactionTable() {
     return getTable() != null ? AcidUtils.isCompactionTable(table.getParameters())
         : AcidUtils.isCompactionTable(getTableInfo().getProperties());
+  }
+
+  /**
+   * @return true if the compaction type is 'REBALANCE', false otherwise.
+   */
+  public boolean isRebalanceRequested() {
+    String compactionType = getTable() != null
+        ? table.getParameters().get(COMPACTOR_TABLE_PROPERTY)
+        : getTableInfo().getProperties().getProperty(COMPACTOR_TABLE_PROPERTY);
+    return StringUtils.isNotBlank(compactionType) &&
+        CompactionType.valueOf(compactionType).equals(CompactionType.REBALANCE);
   }
 
   public boolean isMaterialization() {

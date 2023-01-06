@@ -897,7 +897,7 @@ public class SerializationUtilities {
     return baos.toByteArray();
   }
 
-  private static <T extends Serializable> T deserializeObjectFromKryo(byte[] bytes, Class<T> clazz) {
+  public static <T extends Serializable> T deserializeObjectFromKryo(byte[] bytes, Class<T> clazz) {
     Input inp = new Input(new ByteArrayInputStream(bytes));
     Kryo kryo = borrowKryo();
     T func = null;

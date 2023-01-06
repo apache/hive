@@ -47,6 +47,8 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
 import org.apache.hadoop.hive.metastore.events.*;
+import org.apache.hadoop.hive.metastore.leader.HouseKeepingTasks;
+import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -80,7 +82,6 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -98,7 +99,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
@@ -151,10 +151,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private StorageSchemaReader storageSchemaReader;
   private IMetaStoreMetadataTransformer transformer;
   private static DataConnectorProviderFactory dataconnectorFactory = null;
-
-  // Variables for metrics
-  // Package visible so that HMSMetricsListener can see them.
-  static AtomicInteger databaseCount, tableCount, partCount;
 
   public static final String PARTITION_NUMBER_EXCEED_LIMIT_MSG =
       "Number of partitions scanned (=%d) on table '%s' exceeds limit (=%d). This is controlled on the metastore server by %s.";
@@ -341,6 +337,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void init() throws MetaException {
+    Metrics.initialize(conf);
     initListeners = MetaStoreServerUtils.getMetaStoreListeners(
         MetaStoreInitListener.class, conf, MetastoreConf.getVar(conf, ConfVars.INIT_HOOKS));
     for (MetaStoreInitListener singleInitListener: initListeners) {
@@ -359,18 +356,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         createDefaultRoles();
         addAdminUsers();
         currentUrl = MetaStoreInit.getConnectionURL(conf);
+        updateMetrics();
       }
-    }
-
-    //Start Metrics
-    if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
-      LOG.info("Begin calculating metadata count metrics.");
-      Metrics.initialize(conf);
-      databaseCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES);
-      tableCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES);
-      partCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS);
-      updateMetrics();
-
     }
 
     preListeners = MetaStoreServerUtils.getMetaStoreListeners(MetaStorePreEventListener.class,
@@ -414,13 +401,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     // We only initialize once the tasks that need to be run periodically. For remote metastore
     // these threads are started along with the other housekeeping threads only in the leader
     // HMS.
-    String leaderHost = MetastoreConf.getVar(conf,
-            MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME);
-    if (!HiveMetaStore.isMetaStoreRemote() && ((leaderHost == null) || leaderHost.trim().isEmpty())) {
-      startAlwaysTaskThreads(conf);
-    } else if (!HiveMetaStore.isMetaStoreRemote()) {
-      LOG.info("Not starting tasks specified by " + ConfVars.TASK_THREADS_ALWAYS.getVarname() +
-          " since " + leaderHost + " is configured to run these tasks.");
+    if (!HiveMetaStore.isMetaStoreRemote()) {
+      startAlwaysTaskThreads(conf, this);
     }
     expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
     fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
@@ -441,23 +423,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     dataconnectorFactory = DataConnectorProviderFactory.getInstance(this);
   }
 
-  static void startAlwaysTaskThreads(Configuration conf) throws MetaException {
+  static void startAlwaysTaskThreads(Configuration conf, IHMSHandler handler) throws MetaException {
     if (alwaysThreadsInitialized.compareAndSet(false, true)) {
-      ThreadPool.initialize(conf);
-      Collection<String> taskNames =
-          MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_ALWAYS);
-      for (String taskName : taskNames) {
-        MetastoreTaskThread task =
-            JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
-        task.setConf(conf);
-        long freq = task.runFrequency(TimeUnit.MILLISECONDS);
-        LOG.info("Scheduling for " + task.getClass().getCanonicalName() + " service with " +
-            "frequency " + freq + "ms.");
-        // For backwards compatibility, since some threads used to be hard coded but only run if
-        // frequency was > 0
-        if (freq > 0) {
-          ThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
-        }
+      try {
+        LeaderElectionContext context = new LeaderElectionContext.ContextBuilder(conf)
+            .setTType(LeaderElectionContext.TTYPE.ALWAYS_TASKS)
+            .addListener(new HouseKeepingTasks(conf, false))
+            .setHMSHandler(handler).build();
+        context.start();
+      } catch (Exception e) {
+        throw newMetaException(e);
       }
     }
   }
@@ -9658,10 +9633,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @VisibleForTesting
   void updateMetrics() throws MetaException {
-    if (databaseCount != null) {
-      tableCount.set(getMS().getTableCount());
-      partCount.set(getMS().getPartitionCount());
-      databaseCount.set(getMS().getDatabaseCount());
+    if (Metrics.getRegistry() != null) {
+      LOG.info("Begin calculating metadata count metrics.");
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES).set(getMS().getTableCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES).set(getMS().getPartitionCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).set(getMS().getDatabaseCount());
     }
   }
 

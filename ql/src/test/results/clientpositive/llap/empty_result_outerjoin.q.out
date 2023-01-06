@@ -66,7 +66,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-a	b	c	d
+s.a	s.b	t2.c	t2.d
 PREHOOK: query: explain cbo
 select * from t1
 left join (select c, d from t2 where 1=0) s on t1.a = s.c
@@ -133,7 +133,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-a	b	c	d
+s1.a	s1.b	s2.c	s2.d
 PREHOOK: query: explain cbo
 select * from t1
 right join (select c, d from t2 where 1=0) s on t1.a = s.c
@@ -164,7 +164,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-a	b	c	d
+t1.a	t1.b	s.c	s.d
 PREHOOK: query: explain cbo
 select * from (select a, b from t1 where 0=1) s
 right join t2 on s.a = t2.c
@@ -231,7 +231,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-a	b	c	d
+s1.a	s1.b	s2.c	s2.d
 PREHOOK: query: explain cbo
 select * from (select a, b from t1 where 0=1) s
 full outer join t2 on s.a = t2.c
@@ -334,7 +334,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-a	b	c	d
+s1.a	s1.b	s2.c	s2.d
 PREHOOK: query: explain cbo
 select t1.a from t1 left join (select c, d from t2 where 1=0) s on s.c = t1.a where s.c is null
 PREHOOK: type: QUERY

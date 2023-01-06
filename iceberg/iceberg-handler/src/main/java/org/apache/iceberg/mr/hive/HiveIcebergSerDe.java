@@ -25,16 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
-import org.apache.hadoop.hive.ql.session.SessionStateUtil;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -49,7 +44,6 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -119,14 +113,11 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         this.tableSchema = hiveSchemaOrThrow(e, autoConversion);
         // This is only for table creation, it is ok to have an empty partition column list
         this.partitionColumns = ImmutableList.of();
-        // create table for CTAS
-        if (e instanceof NoSuchTableException &&
-            Boolean.parseBoolean(serDeProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
-          if (!Catalogs.hiveCatalog(configuration, serDeProperties)) {
-            throw new SerDeException(CTAS_EXCEPTION_MSG);
-          }
 
-          createTableForCTAS(configuration, serDeProperties);
+        if (e instanceof NoSuchTableException &&
+            HiveTableUtil.isCtas(serDeProperties) &&
+            !Catalogs.hiveCatalog(configuration, serDeProperties)) {
+          throw new SerDeException(CTAS_EXCEPTION_MSG);
         }
       }
     }
@@ -177,60 +168,6 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         return projectedSchema;
       }
     }
-  }
-
-  private void createTableForCTAS(Configuration configuration, Properties serDeProperties) {
-    serDeProperties.setProperty(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(tableSchema));
-
-    // Spec for the PARTITIONED BY SPEC queries (partition stored in the SessionState)
-    PartitionSpec spec = IcebergTableUtil.spec(configuration, tableSchema);
-    if (spec == null && !getPartitionColumnNames().isEmpty()) {
-      // Spec for the PARTITIONED BY queries (partitioned columns created by the compiler)
-      List<FieldSchema> partitionFields = IntStream.range(0, getPartitionColumnNames().size())
-          .mapToObj(i ->
-               new FieldSchema(getPartitionColumnNames().get(i), getPartitionColumnTypes().get(i).getTypeName(), null))
-          .collect(Collectors.toList());
-      spec = HiveSchemaUtil.spec(tableSchema, partitionFields);
-    }
-
-    if (spec != null) {
-      serDeProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
-    }
-
-    // clean up the properties for table creation (so that internal serde props don't become table props)
-    Properties createProps = getCTASTableCreationProperties(serDeProperties);
-
-    // create CTAS table
-    LOG.info("Creating table {} for CTAS with schema: {}, and spec: {}",
-        serDeProperties.get(Catalogs.NAME), tableSchema, serDeProperties.get(InputFormatConfig.PARTITION_SPEC));
-    Catalogs.createTable(configuration, createProps);
-
-    // set this in the query state so that we can rollback the table in the lifecycle hook in case of failures
-    SessionStateUtil.addResource(configuration, InputFormatConfig.CTAS_TABLE_NAME,
-        serDeProperties.getProperty(Catalogs.NAME));
-  }
-
-  private Properties getCTASTableCreationProperties(Properties serDeProperties) {
-    Properties tblProps = (Properties) serDeProperties.clone();
-
-    // remove the serialization-only related props
-    tblProps.remove(serdeConstants.LIST_PARTITION_COLUMNS);
-    tblProps.remove(serdeConstants.LIST_PARTITION_COLUMN_TYPES);
-    tblProps.remove(serdeConstants.LIST_PARTITION_COLUMN_COMMENTS);
-
-    tblProps.remove(serdeConstants.LIST_COLUMNS);
-    tblProps.remove(serdeConstants.LIST_COLUMN_TYPES);
-    tblProps.remove(serdeConstants.LIST_COLUMN_COMMENTS);
-
-    tblProps.remove(serdeConstants.COLUMN_NAME_DELIMITER);
-    tblProps.remove(serdeConstants.SERIALIZATION_LIB);
-    tblProps.remove(hive_metastoreConstants.TABLE_IS_CTAS);
-
-    // add the commonly-needed table properties
-    HiveIcebergMetaHook.COMMON_HMS_PROPERTIES.forEach(tblProps::putIfAbsent);
-    tblProps.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
-
-    return tblProps;
   }
 
   @Override
@@ -320,5 +257,9 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   @Override
   public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
     return true;
+  }
+
+  public Schema getTableSchema() {
+    return tableSchema;
   }
 }

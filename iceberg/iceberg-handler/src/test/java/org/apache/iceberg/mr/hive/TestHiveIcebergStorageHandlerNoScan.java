@@ -698,6 +698,23 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testFormatVersion() throws IOException {
+    Assume.assumeTrue(testTableType != TestTables.TestTableType.HIVE_CATALOG);
+    TableIdentifier tbl = TableIdentifier.of("default", "customers");
+    // Create the Iceberg table
+    testTables.createIcebergTable(shell.getHiveConf(), "customers", COMPLEX_SCHEMA, FileFormat.PARQUET,
+        Collections.singletonMap("format-version", "2"), Collections.emptyList());
+
+    shell.executeStatement("CREATE EXTERNAL TABLE customers " + "STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", "customers")) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+
+    String fmt = shell.executeAndStringify("show create table " + tbl);
+
+    Assert.assertTrue(fmt, fmt.contains("'format-version'='2'"));
+  }
+
+  @Test
   public void testCreatePartitionedTableWithPropertiesAndWithColumnSpecification() {
     PartitionSpec spec =
         PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name").build();
@@ -1436,6 +1453,13 @@ public class TestHiveIcebergStorageHandlerNoScan {
     HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
     storageHandler.setConf(shell.getHiveConf());
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
+
+    Assert.assertEquals("iceberg://" +
+            HiveIcebergStorageHandler.encodeString(target.namespace().toString()) + "/" +
+            HiveIcebergStorageHandler.encodeString(target.name()) + "?snapshot=" +
+            HiveIcebergStorageHandler.encodeString(
+            URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()),
+        uriForAuth.toString());
 
     Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
         URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath(),
