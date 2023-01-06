@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 final class RebalanceQueryCompactor extends QueryCompactor {
 
   @Override
-  public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+  public boolean run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
            ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir)
       throws IOException, HiveException {
     AcidUtils.setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
@@ -65,6 +65,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
     runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
         Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries,
         table.getParameters());
+    return true;
   }
 
   private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) {

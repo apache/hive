@@ -59,7 +59,7 @@ public interface Compactor {
    * @param dir provides ACID directory layout information
    * @throws IOException compaction cannot be finished.
    */
-  void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+  boolean run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
            ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir)
       throws IOException, HiveException, InterruptedException;
 

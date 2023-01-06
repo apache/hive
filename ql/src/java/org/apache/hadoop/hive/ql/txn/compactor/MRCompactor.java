@@ -119,7 +119,7 @@ public class MRCompactor implements Compactor {
   }
 
    @Override
-  public void run(HiveConf conf, Table table, Partition partition, StorageDescriptor sd,
+  public boolean run(HiveConf conf, Table table, Partition partition, StorageDescriptor sd,
                   ValidWriteIdList writeIds, CompactionInfo ci, AcidDirectory dir)
        throws IOException, HiveException, InterruptedException {
     if (ci.runAs.equals(System.getProperty("user.name"))) {
@@ -137,6 +137,7 @@ public class MRCompactor implements Compactor {
             exception);
       }
     }
+    return true;
   }
 
   @VisibleForTesting

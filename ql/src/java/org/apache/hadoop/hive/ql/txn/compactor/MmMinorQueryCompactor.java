@@ -42,7 +42,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
   private static final Logger LOG = LoggerFactory.getLogger(MmMinorQueryCompactor.class.getName());
 
   @Override
-  public void run(HiveConf hiveConf, Table table, Partition partition,
+  public boolean run(HiveConf hiveConf, Table table, Partition partition,
                      StorageDescriptor storageDescriptor, ValidWriteIdList writeIds, CompactionInfo compactionInfo,
                      AcidDirectory dir) throws IOException {
     LOG.debug(
@@ -51,14 +51,6 @@ final class MmMinorQueryCompactor extends QueryCompactor {
     QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
 
     HiveConf driverConf = setUpDriverSession(hiveConf);
-
-    if (storageDescriptor.getOutputFormat().equalsIgnoreCase("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat")
-            && Util.isMergeCompaction(hiveConf, dir, writeIds)) {
-      // Only inserts happened, it is much more performant to merge the files than running a query
-      Path outputDirPath = Util.getCompactionOutputDirPath(hiveConf, writeIds, true, storageDescriptor);
-      Util.mergeOrcFiles(hiveConf, true, dir, outputDirPath, true);
-      return;
-    }
 
     String tmpTableName = getTempTableName(table);
     String resultTmpTableName = tmpTableName + "_result";
@@ -71,6 +63,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
     List<String> dropQueries = getDropQueries(tmpTableName);
     runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
         Lists.newArrayList(resultDeltaDir), createTableQueries, compactionQueries, dropQueries, table.getParameters());
+    return true;
   }
 
   /**

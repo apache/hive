@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
@@ -30,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,22 +49,10 @@ public class OrcFileMerger {
    * @param outPath the path of output orc file
    * @throws IOException error happened during file operations
    */
-  public void mergeFiles(List<Path> files, Path outPath) throws IOException {
+  public void mergeFiles(List<Reader> readers, Path outPath) throws IOException {
     Writer writer = null;
-    List<Reader> readers = new ArrayList<>();
-    for (Path path : files) {
-      FileSystem fs = path.getFileSystem(conf);
-      readers.add(OrcFile.createReader(fs, path));
-    }
-
-    if (!checkCompatibility(readers)) {
-      return;
-    }
     try {
-      for (int i = 0; i < readers.size(); i++) {
-        Reader reader = readers.get(i);
-        Path path = files.get(i);
-        LOG.info("ORC merge file input path: {}", path);
+      for (Reader reader : readers) {
         if (writer == null) {
           writer = setupWriter(reader, outPath);
         }
@@ -110,7 +96,7 @@ public class OrcFileMerger {
    * @param readers list of readers
    * @return true, if the readers are compatible
    */
-  private boolean checkCompatibility(final List<Reader> readers) {
+  public boolean checkCompatibility(final List<Reader> readers) {
     if (readers == null || readers.isEmpty()) {
       return false;
     }

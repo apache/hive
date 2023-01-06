@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile;
+import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -301,11 +303,15 @@ abstract class QueryCompactor implements Compactor {
      * @param conf Hive configuration
      * @param directory the directory to be scanned
      * @param validWriteIdList list of valid write IDs
+     * @param storageDescriptor storage descriptor of the underlying table
      * @return true, if merge compaction must be enabled
      */
-    static boolean isMergeCompaction(HiveConf conf, AcidDirectory directory, ValidWriteIdList validWriteIdList) {
+    static boolean isMergeCompaction(HiveConf conf, AcidDirectory directory,
+                                     ValidWriteIdList validWriteIdList,
+                                     StorageDescriptor storageDescriptor) {
       return conf.getBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED)
-              && !hasDeleteOrAbortedDirectories(directory, validWriteIdList);
+              && !hasDeleteOrAbortedDirectories(directory, validWriteIdList)
+              && storageDescriptor.getOutputFormat().equalsIgnoreCase("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat");
     }
 
     /**
@@ -336,9 +342,9 @@ abstract class QueryCompactor implements Compactor {
      * @return map of bucket ID -> bucket files
      * @throws IOException an error happened during the reading of the directory/bucket file
      */
-    private static Map<Integer, List<Path>> matchBucketIdToBucketFiles(HiveConf conf, AcidDirectory dir,
+    private static Map<Integer, List<Reader>> matchBucketIdToBucketFiles(HiveConf conf, AcidDirectory dir,
                                                                        boolean includeBaseDir, boolean isMm) throws IOException {
-      Map<Integer, List<Path>> result = new HashMap<>();
+      Map<Integer, List<Reader>> result = new HashMap<>();
       if (includeBaseDir && dir.getBaseDirectory() != null) {
         getBucketFiles(conf, dir.getBaseDirectory(), isMm, result);
       }
@@ -358,7 +364,7 @@ abstract class QueryCompactor implements Compactor {
      * @param bucketIdToBucketFilePath the result of the scan
      * @throws IOException an error happened during the reading of the directory/bucket file
      */
-    private static void getBucketFiles(HiveConf conf, Path dirPath, boolean isMm, Map<Integer, List<Path>> bucketIdToBucketFilePath) throws IOException {
+    private static void getBucketFiles(HiveConf conf, Path dirPath, boolean isMm, Map<Integer, List<Reader>> bucketIdToBucketFilePath) throws IOException {
       FileSystem fs = dirPath.getFileSystem(conf);
       FileStatus[] fileStatuses =
               fs.listStatus(dirPath, isMm ? AcidUtils.originalBucketFilter : AcidUtils.bucketFileFilter);
@@ -375,7 +381,8 @@ abstract class QueryCompactor implements Compactor {
         }
         int bucketNum = matcher.groupCount() > 0 ? Integer.parseInt(matcher.group(1)) : Integer.parseInt(matcher.group());
         bucketIdToBucketFilePath.computeIfAbsent(bucketNum, ArrayList::new);
-        bucketIdToBucketFilePath.computeIfPresent(bucketNum, (k, v) -> v).add(fPath);
+        Reader reader = OrcFile.createReader(fs, fPath);
+        bucketIdToBucketFilePath.computeIfPresent(bucketNum, (k, v) -> v).add(reader);
       }
     }
 
@@ -408,15 +415,27 @@ abstract class QueryCompactor implements Compactor {
      * @param isMm merge orc files from insert only tables
      * @throws IOException error occurred during file operation
      */
-    static void mergeOrcFiles(HiveConf conf, boolean includeBaseDir, AcidDirectory dir,
+    static boolean mergeOrcFiles(HiveConf conf, boolean includeBaseDir, AcidDirectory dir,
                               Path outputDirPath, boolean isMm) throws IOException {
-      Map<Integer, List<Path>> bucketIdToBucketFiles = matchBucketIdToBucketFiles(conf, dir, includeBaseDir, isMm);
+      Map<Integer, List<Reader>> bucketIdToBucketFiles = matchBucketIdToBucketFiles(conf, dir, includeBaseDir, isMm);
       OrcFileMerger fileMerger = new OrcFileMerger(conf);
-      for (Map.Entry<Integer, List<Path>> e : bucketIdToBucketFiles.entrySet()) {
-        Path path = isMm ? new Path(outputDirPath, String.format(AcidUtils.LEGACY_FILE_BUCKET_DIGITS,
-                e.getKey()) + "_0") : new Path(outputDirPath, AcidUtils.BUCKET_PREFIX + String.format(AcidUtils.BUCKET_DIGITS,
-                e.getKey()));
-        fileMerger.mergeFiles(e.getValue(), path);
+      for (Map.Entry<Integer, List<Reader>> e : bucketIdToBucketFiles.entrySet()) {
+        fileMerger.checkCompatibility(e.getValue());
+      }
+      boolean isCompatible = true;
+      for (Map.Entry<Integer, List<Reader>> e : bucketIdToBucketFiles.entrySet()) {
+        isCompatible &= fileMerger.checkCompatibility(e.getValue());
+      }
+      if (isCompatible) {
+        for (Map.Entry<Integer, List<Reader>> e : bucketIdToBucketFiles.entrySet()) {
+          Path path = isMm ? new Path(outputDirPath, String.format(AcidUtils.LEGACY_FILE_BUCKET_DIGITS,
+                  e.getKey()) + "_0") : new Path(outputDirPath, AcidUtils.BUCKET_PREFIX + String.format(AcidUtils.BUCKET_DIGITS,
+                  e.getKey()));
+          fileMerger.mergeFiles(e.getValue(), path);
+        }
+        return true;
+      } else {
+        return false;
       }
     }
   }

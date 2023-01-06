@@ -27,6 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Simple factory class, which returns an instance of {@link QueryCompactor}.
  */
@@ -69,6 +72,7 @@ public final class CompactorFactory {
    */
   public Compactor getCompactor(Table table, HiveConf configuration, CompactionInfo compactionInfo,IMetaStoreClient msc)
       throws HiveException {
+    List<Compactor> compactors = new ArrayList<>();
     if (AcidUtils.isFullAcidTable(table.getParameters())) {
       if (!"tez".equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)) ||
           !HiveConf.getBoolVar(configuration, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
@@ -84,9 +88,13 @@ public final class CompactorFactory {
       }
       switch (compactionInfo.type) {
         case MINOR:
-          return new MinorQueryCompactor();
+          compactors.add(new MergeCompactor());
+          compactors.add(new MinorQueryCompactor());
+          return new CompactorChain(compactors);
         case MAJOR:
-          return new MajorQueryCompactor();
+          compactors.add(new MergeCompactor());
+          compactors.add(new MajorQueryCompactor());
+          return new CompactorChain(compactors);
         case REBALANCE:
           return new RebalanceQueryCompactor();
       }
@@ -97,14 +105,22 @@ public final class CompactorFactory {
       }
       switch (compactionInfo.type) {
         case MINOR:
-          return new MmMinorQueryCompactor();
+          compactors.add(new MergeCompactor());
+          compactors.add(new MmMinorQueryCompactor());
+          return new CompactorChain(compactors);
         case MAJOR:
+          compactors.add(new MergeCompactor());
+          compactors.add(new MmMajorQueryCompactor());
+          return new CompactorChain(compactors);
         case REBALANCE:
           // REBALANCE COMPACTION on an insert-only table is simply a MAJOR compaction. Since there is no ACID row data,
           // there is no acid row order to keep, and the number of buckets cannot be set at all (it will be calculated
           // and created by TEZ dynamically). Initiator won't schedule REBALANCE compactions for insert-only tables,
           // however users can request it. In these cases we simply fall back to MAJOR compaction
           return new MmMajorQueryCompactor();
+        default:
+          throw new HiveException(
+              compactionInfo.type.name() + " compaction is not supported on insert only tables.");
       }
     } else {
       throw new HiveException("Only transactional tables can be compacted, " + table.getTableName() + "is not suitable " +

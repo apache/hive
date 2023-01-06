@@ -42,7 +42,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
   private static final Logger LOG = LoggerFactory.getLogger(MmMajorQueryCompactor.class.getName());
 
   @Override
-  public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+  public boolean run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
                      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
     LOG.debug("Going to delete directories for aborted transactions for MM table " + table.getDbName() + "." + table
         .getTableName());
@@ -50,14 +50,6 @@ final class MmMajorQueryCompactor extends QueryCompactor {
 
     // Set up the session for driver.
     HiveConf driverConf = new HiveConf(hiveConf);
-
-    if (storageDescriptor.getOutputFormat().equalsIgnoreCase("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat")
-            && Util.isMergeCompaction(hiveConf, dir, writeIds)) {
-      // Only inserts happened, it is much more performant to merge the files than running a query
-      Path outputDirPath = Util.getCompactionOutputDirPath(hiveConf, writeIds, true, storageDescriptor);
-      Util.mergeOrcFiles(hiveConf, true, dir, outputDirPath, true);
-      return;
-    }
 
     // Note: we could skip creating the table and just add table type stuff directly to the
     //       "insert overwrite directory" command if there were no bucketing or list bucketing.
@@ -72,6 +64,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
         Lists.newArrayList(resultBaseDir), createTableQueries, compactionQueries, dropQueries,
             table.getParameters());
+    return true;
   }
 
   /**
