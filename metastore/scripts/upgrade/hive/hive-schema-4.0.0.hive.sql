@@ -2008,6 +2008,88 @@ JOIN
 WHERE
   SE.SCHEDULED_QUERY_ID=SQ.SCHEDULED_QUERY_ID;
 
+CREATE OR REPLACE VIEW `TRANSACTIONS` (
+  `TXN_ID`,
+  `STATE`,
+  `STARTED`,
+  `LAST_HEARTBEAT`,
+  `USER`,
+  `HOST`,
+  `AGENT_INFO`,
+  `META_INFO`,
+  `HEARTBEAT_COUNT`,
+  `TYPE`,
+  `TC_DATABASE`,
+  `TC_TABLE`,
+  `TC_PARTITION`,
+  `TC_OPERATION_TYPE`,
+  `TC_WRITEID`
+) AS
+SELECT DISTINCT
+  `TXN_ID`,
+  `STATE`,
+  `STARTED`,
+  `LAST_HEARTBEAT`,
+  `USER`,
+  `HOST`,
+  `AGENT_INFO`,
+  `META_INFO`,
+  `HEARTBEAT_COUNT`,
+  `TYPE`,
+  `TC_DATABASE`,
+  `TC_TABLE`,
+  `TC_PARTITION`,
+  `TC_OPERATION_TYPE`,
+  `TC_WRITEID`
+FROM `SYS`.`TRANSACTIONS` AS TXN JOIN `sys`.`TBLS` T ON (TXN.`TC_TABLE` = T.`TBL_NAME`)
+                                 JOIN `sys`.`DBS` D ON (TXN.`TC_DATABASE` = D.`NAME`)
+                                 LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
+WHERE
+    (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
+        AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+            OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+        AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer());
 
-
-
+CREATE OR REPLACE VIEW `LOCKS` (
+  `LOCK_EXT_ID`,
+  `LOCK_INT_ID`,
+  `TXNID`,
+  `DB`,
+  `TABLE`,
+  `PARTITION`,
+  `LOCK_STATE`,
+  `LOCK_TYPE`,
+  `LAST_HEARTBEAT`,
+  `ACQUIRED_AT`,
+  `USER`,
+  `HOST`,
+  `HEARTBEAT_COUNT`,
+  `AGENT_INFO`,
+  `BLOCKEDBY_EXT_ID`,
+  `BLOCKEDBY_INT_ID`
+) AS
+SELECT DISTINCT
+  `LOCK_EXT_ID`,
+  `LOCK_INT_ID`,
+  `TXNID`,
+  `DB`,
+  `TABLE`,
+  `PARTITION`,
+  `LOCK_STATE`,
+  `LOCK_TYPE`,
+  `LAST_HEARTBEAT`,
+  `ACQUIRED_AT`,
+  `USER`,
+  `HOST`,
+  `HEARTBEAT_COUNT`,
+  `AGENT_INFO`,
+  `BLOCKEDBY_EXT_ID`,
+  `BLOCKEDBY_INT_ID`
+FROM SYS.`LOCKS` AS L JOIN `sys`.`TBLS` T ON (L.`TABLE` = T.`TBL_NAME`)
+                               JOIN `sys`.`DBS` D ON (L.`DB` = D.`NAME`)
+                               LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
+WHERE
+    (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
+        AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+            OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+        AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer());
