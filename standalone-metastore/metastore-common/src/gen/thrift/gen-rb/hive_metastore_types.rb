@@ -4464,6 +4464,7 @@ class CompactionRequest
   INITIATORID = 7
   INITIATORVERSION = 8
   POOLNAME = 9
+  NUMBEROFBUCKETS = 10
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4474,7 +4475,8 @@ class CompactionRequest
     PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true},
     INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
     INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true},
-    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true}
+    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true},
+    NUMBEROFBUCKETS => {:type => ::Thrift::Types::I32, :name => 'numberOfBuckets', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4510,6 +4512,7 @@ class CompactionInfoStruct
   ENQUEUETIME = 15
   RETRYRETENTION = 16
   POOLNAME = 17
+  NUMBEROFBUCKETS = 18
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -4528,7 +4531,8 @@ class CompactionInfoStruct
     HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true},
     ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true},
     RETRYRETENTION => {:type => ::Thrift::Types::I64, :name => 'retryRetention', :optional => true},
-    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolname', :optional => true}
+    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolname', :optional => true},
+    NUMBEROFBUCKETS => {:type => ::Thrift::Types::I32, :name => 'numberOfBuckets', :optional => true}
   }
 
   def struct_fields; FIELDS; end

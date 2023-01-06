@@ -10606,13 +10606,14 @@ void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b);
 std::ostream& operator<<(std::ostream& out, const HeartbeatTxnRangeResponse& obj);
 
 typedef struct _CompactionRequest__isset {
-  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false) {}
+  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false), numberOfBuckets(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
   bool initiatorId :1;
   bool initiatorVersion :1;
   bool poolName :1;
+  bool numberOfBuckets :1;
 } _CompactionRequest__isset;
 
 class CompactionRequest : public virtual ::apache::thrift::TBase {
@@ -10628,7 +10629,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
                       runas(),
                       initiatorId(),
                       initiatorVersion(),
-                      poolName() {
+                      poolName(),
+                      numberOfBuckets(0) {
   }
 
   virtual ~CompactionRequest() noexcept;
@@ -10645,6 +10647,7 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   std::string initiatorId;
   std::string initiatorVersion;
   std::string poolName;
+  int32_t numberOfBuckets;
 
   _CompactionRequest__isset __isset;
 
@@ -10665,6 +10668,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   void __set_initiatorVersion(const std::string& val);
 
   void __set_poolName(const std::string& val);
+
+  void __set_numberOfBuckets(const int32_t val);
 
   bool operator == (const CompactionRequest & rhs) const
   {
@@ -10698,6 +10703,10 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.poolName && !(poolName == rhs.poolName))
       return false;
+    if (__isset.numberOfBuckets != rhs.__isset.numberOfBuckets)
+      return false;
+    else if (__isset.numberOfBuckets && !(numberOfBuckets == rhs.numberOfBuckets))
+      return false;
     return true;
   }
   bool operator != (const CompactionRequest &rhs) const {
@@ -10717,7 +10726,7 @@ void swap(CompactionRequest &a, CompactionRequest &b);
 std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj);
 
 typedef struct _CompactionInfoStruct__isset {
-  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false) {}
+  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false), numberOfBuckets(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -10731,6 +10740,7 @@ typedef struct _CompactionInfoStruct__isset {
   bool enqueueTime :1;
   bool retryRetention :1;
   bool poolname :1;
+  bool numberOfBuckets :1;
 } _CompactionInfoStruct__isset;
 
 class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
@@ -10755,7 +10765,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
                          hasoldabort(0),
                          enqueueTime(0),
                          retryRetention(0),
-                         poolname() {
+                         poolname(),
+                         numberOfBuckets(0) {
   }
 
   virtual ~CompactionInfoStruct() noexcept;
@@ -10780,6 +10791,7 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   int64_t enqueueTime;
   int64_t retryRetention;
   std::string poolname;
+  int32_t numberOfBuckets;
 
   _CompactionInfoStruct__isset __isset;
 
@@ -10816,6 +10828,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   void __set_retryRetention(const int64_t val);
 
   void __set_poolname(const std::string& val);
+
+  void __set_numberOfBuckets(const int32_t val);
 
   bool operator == (const CompactionInfoStruct & rhs) const
   {
@@ -10878,6 +10892,10 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
     if (__isset.poolname != rhs.__isset.poolname)
       return false;
     else if (__isset.poolname && !(poolname == rhs.poolname))
+      return false;
+    if (__isset.numberOfBuckets != rhs.__isset.numberOfBuckets)
+      return false;
+    else if (__isset.numberOfBuckets && !(numberOfBuckets == rhs.numberOfBuckets))
       return false;
     return true;
   }
