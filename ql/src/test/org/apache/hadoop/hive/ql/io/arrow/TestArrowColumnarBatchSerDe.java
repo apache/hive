@@ -239,7 +239,7 @@ public class TestArrowColumnarBatchSerDe {
     if (serialized == null) {
       serialized = serDe.serialize(null, rowOI);
     }
-    String s = serialized.getVectorSchemaRoot().contentToTSVString();
+
     final Object[][] deserializedRows = (Object[][]) serDe.deserialize(serialized);
 
     for (int rowIndex = 0; rowIndex < Math.min(deserializedRows.length, rows.length); rowIndex++) {
