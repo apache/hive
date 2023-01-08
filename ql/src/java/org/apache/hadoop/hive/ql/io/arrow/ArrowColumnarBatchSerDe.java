@@ -198,7 +198,7 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
         for (int i = 0; i < structSize; i++) {
           structFields.add(toField(fieldNames.get(i), fieldTypeInfos.get(i)));
         }
-        return new Field(name, FieldType.nullable(MinorType.MAP.getType()), structFields);
+        return new Field(name, FieldType.nullable(MinorType.STRUCT.getType()), structFields);
       case UNION:
         final UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
         final List<TypeInfo> objectTypeInfos = unionTypeInfo.getAllUnionObjectTypeInfos();
