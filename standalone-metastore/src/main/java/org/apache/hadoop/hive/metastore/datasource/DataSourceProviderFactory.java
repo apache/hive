@@ -29,7 +29,8 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 public abstract  class DataSourceProviderFactory {
   private static final ImmutableList<DataSourceProvider> FACTORIES = ImmutableList.of(
     new HikariCPDataSourceProvider(),
-    new BoneCPDataSourceProvider());
+    new BoneCPDataSourceProvider(),
+    new DbCPDataSourceProvider());
 
   /**
    * The data source providers declare if they are supported or not based on the config.
