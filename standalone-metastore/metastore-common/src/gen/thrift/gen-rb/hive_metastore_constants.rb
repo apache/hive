@@ -87,3 +87,7 @@ TXN_ID = %q"txnId"
 
 WRITE_ID = %q"writeId"
 
+EXPECTED_PARAMETER_KEY = %q"expected_parameter_key"
+
+EXPECTED_PARAMETER_VALUE = %q"expected_parameter_value"
+

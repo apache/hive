@@ -55,6 +55,8 @@ class hive_metastoreConstants {
   std::string DEFAULT_TABLE_TYPE;
   std::string TXN_ID;
   std::string WRITE_ID;
+  std::string EXPECTED_PARAMETER_KEY;
+  std::string EXPECTED_PARAMETER_VALUE;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;
