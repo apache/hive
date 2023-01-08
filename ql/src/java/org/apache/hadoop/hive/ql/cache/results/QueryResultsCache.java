@@ -372,7 +372,7 @@ public final class QueryResultsCache {
     fs.mkdirs(cacheDirPath, fsPermission);
 
     if (!fsPermission.equals(fsPermission.applyUMask(FsPermission.getUMask(conf)))) {
-        fs.setPermission(cacheDirPath, fsPermission);
+      fs.setPermission(cacheDirPath, fsPermission);
     }
     // Create non-existent path for 0-row results
     zeroRowsPath = new Path(cacheDirPath, "dummy_zero_rows");
