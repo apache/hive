@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,8 +106,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final String CBO_INFO_JSON_LABEL = "cboInfo";
   private static final String CBO_PLAN_JSON_LABEL = "CBOPlan";
   private static final String CBO_PLAN_TEXT_LABEL = "CBO PLAN:";
-  private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
-  private final Map<Operator<?>, Integer> visitedCnt = new HashMap<>();
+  private final Map<Operator<?>, Integer> operatorVisits = new HashMap<>();
   private boolean isLogical = false;
 
   /*
@@ -1005,11 +1003,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (work instanceof Operator) {
       Operator<? extends OperatorDesc> operator =
         (Operator<? extends OperatorDesc>) work;
-      visitedCnt.merge(operator, 1, Integer::sum);
-      int threshold = conf.getIntVar(ConfVars.HIVE_EXPLAIN_VISIT_THRESHOLD);
-      if (visitedCnt.get(operator) > threshold) {
+      final int visitCnt = operatorVisits.merge(operator, 1, Integer::sum);
+      final int limit = conf.getIntVar(ConfVars.HIVE_EXPLAIN_VISIT_LIMIT);
+      if (visitCnt == limit) {
         throw new IllegalStateException(
-            operator + " exceeded " + ConfVars.HIVE_EXPLAIN_VISIT_THRESHOLD.varname + "(" + threshold + ")");
+            operator + " reached " + ConfVars.HIVE_EXPLAIN_VISIT_LIMIT.varname + "(" + limit + ")");
       }
       if (operator.getConf() != null) {
         String appender = isLogical ? " (" + operator.getOperatorId() + ")" : "";
@@ -1031,8 +1029,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
       }
 
-      if (!visitedOps.contains(operator) || !isLogical) {
-        visitedOps.add(operator);
+      if (visitCnt == 1 || !isLogical) {
         if (operator.getChildOperators() != null) {
           int cindent = jsonOutput ? 0 : indent + 2;
           for (Operator<? extends OperatorDesc> op : operator.getChildOperators()) {

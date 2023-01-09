@@ -3710,12 +3710,12 @@ public class HiveConf extends Configuration {
     HIVE_EXPLAIN_USER("hive.explain.user", true,
         "Whether to show explain result at user level.\n" +
         "When enabled, will log EXPLAIN output for the query at user level. Tez only."),
-    HIVE_EXPLAIN_VISIT_THRESHOLD("hive.explain.visit.threshold", 256,
+    HIVE_EXPLAIN_VISIT_LIMIT("hive.explain.visit.limit", 256, new RangeValidator(1, Integer.MAX_VALUE),
         "Maximum number of times an operator/node can be visited during the construction of the EXPLAIN "
-            + "output before throwing an error. In some cases, the EXPLAIN statement visits (and prints) the same node "
-            + "multiple times. The number of visits can become exponential and make the server crash or become "
-            + "unresponsive so this threshold acts as a safety net to fail-fast a specific query and avoid bringing down"
-            + " the entire server."),
+            + "output; an error is thrown when the limit is reached. In some cases, the EXPLAIN statement visits (and "
+            + "prints) the same node multiple times. The number of visits can become exponential and make the server "
+            + "crash or become unresponsive so this limit acts as a safety net to fail-fast the problematic query and "
+            + "avoid bringing down the entire server."),
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
