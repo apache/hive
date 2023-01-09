@@ -21,6 +21,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import com.zaxxer.hikari.HikariPoolMXBean;
 import org.apache.commons.dbcp2.PoolingDataSource;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
@@ -34,7 +35,6 @@ import org.junit.experimental.categories.Category;
 
 import javax.jdo.PersistenceManagerFactory;
 import javax.sql.DataSource;
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -176,14 +176,12 @@ public class TestDataSourceProviderFactory {
         GenericObjectPool objectPool = null;
         if (isHikari) {
           poolMXBean = ((HikariDataSource) ds).getHikariPoolMXBean();
-          Assert.assertEquals(5, poolMXBean.getTotalConnections());
-          Assert.assertEquals(5, poolMXBean.getActiveConnections());
+          Assert.assertEquals(type, 5, poolMXBean.getTotalConnections());
+          Assert.assertEquals(type, 5, poolMXBean.getActiveConnections());
         } else {
-          Method getPool = PoolingDataSource.class.getDeclaredMethod("getPool");
-          getPool.setAccessible(true);
-          objectPool = (GenericObjectPool) getPool.invoke(ds);
-          Assert.assertEquals(5, objectPool.getNumActive());
-          Assert.assertEquals(5, objectPool.getMaxTotal());
+          objectPool = (GenericObjectPool) MethodUtils.invokeMethod(ds, true, "getPool");
+          Assert.assertEquals(type, 5, objectPool.getNumActive());
+          Assert.assertEquals(type, 5, objectPool.getMaxTotal());
         }
         connections.forEach(connection -> {
           try {
@@ -194,11 +192,11 @@ public class TestDataSourceProviderFactory {
         });
         Thread.sleep(isHikari ? 15000 : 7000);
         if (isHikari) {
-          Assert.assertEquals(2, poolMXBean.getTotalConnections());
-          Assert.assertEquals(2, poolMXBean.getIdleConnections());
+          Assert.assertEquals(type, 2, poolMXBean.getTotalConnections());
+          Assert.assertEquals(type, 2, poolMXBean.getIdleConnections());
         } else {
-          Assert.assertEquals(0, objectPool.getNumActive());
-          Assert.assertEquals(0, objectPool.getNumIdle());
+          Assert.assertEquals(type, 0, objectPool.getNumActive());
+          Assert.assertEquals(type, 0, objectPool.getNumIdle());
         }
       }
     }

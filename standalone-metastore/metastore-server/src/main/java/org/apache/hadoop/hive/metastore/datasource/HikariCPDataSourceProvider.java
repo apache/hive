@@ -79,7 +79,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     // so that the connection pool can retire the idle connection aggressively,
     // this will make Metastore more scalable especially if there is a leader in the warehouse.
     if ("mutex".equals(poolName)) {
-      config.setMinimumIdle(Math.min(maxPoolSize, 2));
+      int minimumIdle = Integer.valueOf(hdpConfig.get(HIKARI + ".minimumIdle", "2"));
+      config.setMinimumIdle(Math.min(maxPoolSize, minimumIdle));
     }
 
     //https://github.com/brettwooldridge/HikariCP
