@@ -504,6 +504,30 @@ public class Initiator extends MetaStoreCompactorThread {
       if (initiateMajor) return CompactionType.MAJOR;
     }
 
+    if (scheduleRebalance(ci, dir, tblproperties, baseSize, deltaSize)) {
+      return CompactionType.REBALANCE;
+    }
+
+    String deltaNumProp = tblproperties.get(COMPACTORTHRESHOLD_PREFIX +
+        HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD);
+    int deltaNumThreshold = deltaNumProp == null ?
+        HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD) :
+        Integer.parseInt(deltaNumProp);
+    boolean enough = deltas.size() > deltaNumThreshold;
+    if (!enough) {
+      LOG.debug("Not enough deltas to initiate compaction for table=" + ci.tableName + "partition=" + ci.partName
+          + ". Found: " + deltas.size() + " deltas, threshold is " + deltaNumThreshold);
+      return null;
+    }
+    // If there's no base file, do a major compaction
+    LOG.debug("Found " + deltas.size() + " delta files, and " + (noBase ? "no" : "has") + " base," +
+        "requesting " + (noBase ? "major" : "minor") + " compaction");
+
+    return noBase || !isMinorCompactionSupported(tblproperties, dir) ?
+            CompactionType.MAJOR : CompactionType.MINOR;
+  }
+
+  private boolean scheduleRebalance(CompactionInfo ci, AcidDirectory dir, Map<String, String> tblproperties, long baseSize, long deltaSize) {
     // bucket size calculation can be resource intensive if there are numerous deltas, so we check for rebalance
     // compaction only if the table is in an acceptable shape: no major compaction required. This means the number of
     // files shouldn't be too high
@@ -534,8 +558,8 @@ public class Initiator extends MetaStoreCompactorThread {
           //Relative standard deviation: If the standard deviation is larger than rsdThreshold * average_bucket_size,
           // a rebalancing compaction is initiated.
           if (standardDeviation > mean * rsdThreshold) {
-            LOG.debug("");
-            return CompactionType.REBALANCE;
+            LOG.debug("Initiating REBALANCE compaction on table {}", ci.tableName);
+            return true;
           }
         } catch (IOException e) {
           LOG.error("Error occured during checking bucket file sizes, rebalance threshold calculation is skipped.", e);
@@ -544,24 +568,7 @@ public class Initiator extends MetaStoreCompactorThread {
         LOG.debug("Table is smaller than the minimum required size for REBALANCE compaction.");
       }
     }
-
-    String deltaNumProp = tblproperties.get(COMPACTORTHRESHOLD_PREFIX +
-        HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD);
-    int deltaNumThreshold = deltaNumProp == null ?
-        HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD) :
-        Integer.parseInt(deltaNumProp);
-    boolean enough = deltas.size() > deltaNumThreshold;
-    if (!enough) {
-      LOG.debug("Not enough deltas to initiate compaction for table=" + ci.tableName + "partition=" + ci.partName
-          + ". Found: " + deltas.size() + " deltas, threshold is " + deltaNumThreshold);
-      return null;
-    }
-    // If there's no base file, do a major compaction
-    LOG.debug("Found " + deltas.size() + " delta files, and " + (noBase ? "no" : "has") + " base," +
-        "requesting " + (noBase ? "major" : "minor") + " compaction");
-
-    return noBase || !isMinorCompactionSupported(tblproperties, dir) ?
-            CompactionType.MAJOR : CompactionType.MINOR;
+    return false;
   }
 
   private long getBaseSize(AcidDirectory dir) throws IOException {
