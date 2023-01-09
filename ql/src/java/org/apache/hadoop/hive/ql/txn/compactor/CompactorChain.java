@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,18 +36,24 @@ import java.util.List;
  */
 final class CompactorChain implements Compactor {
 
-  private final List<Compactor> compactors;
+  private final List<Compactor> compactors = new ArrayList<>();
 
   CompactorChain(List<Compactor> compactors) {
-    this.compactors = compactors;
+    this.compactors.addAll(compactors);
   }
 
   @Override
   public boolean run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor, ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException, HiveException, InterruptedException {
-    int i = 0;
-    while(i < compactors.size() && !compactors.get(i).run(hiveConf, table, partition, storageDescriptor, writeIds, compactionInfo, dir)) {
-      i++;
+    if (!compactors.isEmpty()) {
+      int index = 0;
+      boolean result;
+      do {
+        result = compactors.get(index).run(hiveConf, table, partition, storageDescriptor, writeIds, compactionInfo, dir);
+        index++;
+      } while (index < compactors.size() && !result);
+      return true;
+    } else {
+      return false;
     }
-    return true;
   }
 }

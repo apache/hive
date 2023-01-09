@@ -57,6 +57,7 @@ public interface Compactor {
    * @param writeIds valid write IDs used to filter rows while they're being read for compaction
    * @param compactionInfo provides info about the type of compaction
    * @param dir provides ACID directory layout information
+   * @return Returns <code>true</code> when compaction is successful and <code>false</code> otherwise.
    * @throws IOException compaction cannot be finished.
    */
   boolean run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,

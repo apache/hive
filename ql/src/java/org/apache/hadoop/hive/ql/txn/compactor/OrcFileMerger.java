@@ -45,7 +45,7 @@ public class OrcFileMerger {
 
   /**
    * Merge orc files into a single file
-   * @param files list of orc file paths to be merged
+   * @param readers list of orc file paths to be merged
    * @param outPath the path of output orc file
    * @throws IOException error happened during file operations
    */

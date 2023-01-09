@@ -65,6 +65,10 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.txn.compactor.Compactor;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorChain;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
 import org.apache.hive.streaming.StrictDelimitedInputWriter;
@@ -80,6 +84,8 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.FieldSetter;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.execSelectAndDumpData;
@@ -107,7 +113,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     TestDataProvider testDataProvider = new TestDataProvider();
     testDataProvider.createFullAcidTable(stageTableName, true, false);
-    testDataProvider.insertTestDataPartitioned(stageTableName);
+    testDataProvider.insertTestData(stageTableName, true);
 
     executeStatementOnDriver("drop table if exists " + tableName, driver);
     executeStatementOnDriver("CREATE TABLE " + tableName + "(a string, b int) " +
@@ -356,7 +362,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     TestDataProvider testDataProvider = new TestDataProvider();
     testDataProvider.createFullAcidTable(stageTableName, true, false);
-    testDataProvider.insertTestDataPartitioned(stageTableName);
+    testDataProvider.insertTestData(stageTableName, true);
 
     executeStatementOnDriver("drop table if exists " + tableName, driver);
     executeStatementOnDriver("CREATE TABLE " + tableName + "(a string, b int) " +
@@ -847,7 +853,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     String dbTableName = dbName + "." + tblName;
     TestDataProvider testDataProvider = new TestDataProvider();
     testDataProvider.createFullAcidTable(tblName, false, false);
-    testDataProvider.insertTestData(tblName);
+    testDataProvider.insertTestData(tblName, false);
     // Find the location of the table
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     Table table = msClient.getTable(dbName, tblName);
@@ -925,7 +931,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     additionalTblProperties.put("orc.bloom.filter.columns", "b");
     additionalTblProperties.put("orc.bloom.filter.fpp", "0.02");
     testDataProvider.createFullAcidTable(dbName, tblName, false, false, additionalTblProperties);
-    testDataProvider.insertTestData(tblName);
+    testDataProvider.insertTestData(tblName, false);
     // Find the location of the table
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     Table table = msClient.getTable(dbName, tblName);
@@ -1049,7 +1055,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     String tblName = "testMajorCompaction";
     TestDataProvider testDataProvider = new TestDataProvider();
     testDataProvider.createFullAcidTable(tblName, true, false);
-    testDataProvider.insertTestDataPartitioned(tblName);
+    testDataProvider.insertTestData(tblName, true);
     // Find the location of the table
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     Table table = msClient.getTable(dbName, tblName);
@@ -1137,7 +1143,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertTestDataPartitioned(tableName);
+    dataProvider.insertTestData(tableName, true);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     // Verify deltas
@@ -1242,7 +1248,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = msClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertTestData(tableName);
+    dataProvider.insertTestData(tableName, false);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     // Verify deltas
@@ -1538,7 +1544,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertTestData(tableName);
+    dataProvider.insertTestData(tableName, false);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     // Verify deltas
@@ -1615,7 +1621,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertTestDataPartitioned(tableName);
+    dataProvider.insertTestData(tableName, true);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     // Verify deltas
@@ -1699,7 +1705,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertTestDataPartitioned(tableName);
+    dataProvider.insertTestData(tableName, true);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     // Verify deltas
@@ -1841,7 +1847,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertTestData(tableName);
+    dataProvider.insertTestData(tableName, false);
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     // Clean up resources
@@ -1849,7 +1855,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Only 1 compaction should be in the response queue with succeeded state
     verifySuccessfulCompaction(1);
     // Insert test data into test table
-    dataProvider.insertTestData(tableName);
+    dataProvider.insertTestData(tableName, false);
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     // Clean up resources
@@ -1857,7 +1863,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // 2 compactions should be in the response queue with succeeded state
     verifySuccessfulCompaction(2);
     // Insert test data into test table
-    dataProvider.insertTestData(tableName);
+    dataProvider.insertTestData(tableName, false);
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     // Clean up resources
@@ -2021,7 +2027,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertTestData(tableName);
+    dataProvider.insertTestData(tableName, false);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     Collections.sort(expectedData);
@@ -2042,7 +2048,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
     // Insert another round of test data
-    dataProvider.insertTestData(tableName);
+    dataProvider.insertTestData(tableName, false);
     expectedData = dataProvider.getAllData(tableName);
     Collections.sort(expectedData);
     // Run a compaction
@@ -2072,7 +2078,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertTestData(tableName);
+    dataProvider.insertTestData(tableName, false);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     Collections.sort(expectedData);
@@ -2090,7 +2096,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
     // Insert another round of test data
-    dataProvider.insertTestData(tableName);
+    dataProvider.insertTestData(tableName, false);
     expectedData = dataProvider.getAllData(tableName);
     Collections.sort(expectedData);
     // Run a compaction
@@ -3167,28 +3173,56 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   public void testMajorCompactionWithMergeNotPartitionedWithoutBuckets() throws Exception {
     testCompactionWithMerge(CompactionType.MAJOR, false, false, null, Collections.singletonList("bucket_00000"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("base_0000003_v0000007"), true, true);
+            Collections.singletonList("base_0000003_v0000007"), true, true, false);
+  }
+
+  @Test
+  public void testMajorCompactionWithFallbackNotPartitionedWithoutBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, false, false, null, Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, true, true);
   }
 
   @Test
   public void testMajorCompactionWithMergePartitionedWithoutBuckets() throws Exception {
     testCompactionWithMerge(CompactionType.MAJOR, true, false, "ds=today", Collections.singletonList("bucket_00000"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("base_0000003_v0000007"), true, true);
+            Collections.singletonList("base_0000003_v0000007"), true, true, false);
+  }
+
+  @Test
+  public void testMajorCompactionWithFallbackPartitionedWithoutBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, true, false, "ds=today", Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, true, true);
   }
 
   @Test
   public void testMajorCompactionWithMergeNotPartitionedWithBuckets() throws Exception {
     testCompactionWithMerge(CompactionType.MAJOR, false, true, null, Arrays.asList("bucket_00000", "bucket_00001"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("base_0000003_v0000007"), true, true);
+            Collections.singletonList("base_0000003_v0000007"), true, true, false);
   }
 
   @Test
-  public void testMajorCompactionWithMergerPartitionedWithBuckets() throws Exception {
+  public void testMajorCompactionWithFallbackNotPartitionedWithBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, false, true, null, Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, true, true);
+  }
+
+  @Test
+  public void testMajorCompactionWithMergePartitionedWithBuckets() throws Exception {
     testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today", Arrays.asList("bucket_00000", "bucket_00001"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("base_0000003_v0000007"), true, true);
+            Collections.singletonList("base_0000003_v0000007"), true, true, false);
+  }
+
+  @Test
+  public void testMajorCompactionWithFallbackPartitionedWithBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today", Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, true, true);
   }
 
   @Test
@@ -3196,7 +3230,15 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MINOR, false, false, null,
             Collections.singletonList("bucket_00000"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true);
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true, false);
+  }
+
+  @Test
+  public void testMinorCompactionWithFallbackNotPartitionedWithoutBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, false, false, null,
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true, true);
   }
 
   @Test
@@ -3204,7 +3246,15 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MINOR, true, false, "ds=today",
             Collections.singletonList("bucket_00000"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true);
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true, false);
+  }
+
+  @Test
+  public void testMinorCompactionWithFallbackPartitionedWithoutBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, true, false, "ds=today",
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true, true);
   }
 
   @Test
@@ -3212,7 +3262,15 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MINOR, false, true, null,
             Arrays.asList("bucket_00000", "bucket_00001"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true);
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true, false);
+  }
+
+  @Test
+  public void testMinorCompactionWithFallbackNotPartitionedWithBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, false, true, null,
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true, true);
   }
 
   @Test
@@ -3220,7 +3278,15 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MINOR, true, true, "ds=today",
             Arrays.asList("bucket_00000", "bucket_00001"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true);
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true, false);
+  }
+
+  @Test
+  public void testMinorCompactionWithFallbackPartitionedWithBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, true, true, "ds=today",
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true, true);
   }
 
   @Test
@@ -3228,11 +3294,23 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MINOR, true, true, "ds=today",
             Arrays.asList("bucket_00000", "bucket_00001"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("delta_0000001_0000003_v0000007"),true, false);
+            Collections.singletonList("delta_0000001_0000003_v0000007"),true, false, false);
     testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today",
             Arrays.asList("bucket_00000", "bucket_00001"),
             Arrays.asList("delta_0000001_0000003_v0000007", "delta_0000004_0000004_0000", "delta_0000005_0000005_0000",
-                    "delta_0000006_0000006_0000"), Collections.singletonList("base_0000006_v0000014"), false, true);
+                    "delta_0000006_0000006_0000"), Collections.singletonList("base_0000006_v0000014"), false, true, false);
+  }
+
+  @Test
+  public void testMajorCompactionAfterMinorWithFallback() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, true, true, "ds=today",
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"),true, false, true);
+    testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today",
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000003_v0000007", "delta_0000004_0000004_0000", "delta_0000005_0000005_0000",
+                    "delta_0000006_0000006_0000"), Collections.singletonList("base_0000006_v0000025"), false, true, true);
   }
 
   @Test
@@ -3240,11 +3318,23 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MAJOR, false, false, null,
             Collections.singletonList("bucket_00000"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("base_0000003_v0000007"), true, false);
+            Collections.singletonList("base_0000003_v0000007"), true, false, false);
     testCompactionWithMerge(CompactionType.MINOR, false, false, null,
             Collections.singletonList("bucket_00000"),
             Arrays.asList("delta_0000004_0000004_0000", "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"),
-            Collections.singletonList("delta_0000001_0000006_v0000014"), false, true);
+            Collections.singletonList("delta_0000001_0000006_v0000014"), false, true, false);
+  }
+
+  @Test
+  public void testMinorCompactionAfterMajorWithFallback() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, false, false, null,
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, false, true);
+    testCompactionWithMerge(CompactionType.MINOR, false, false, null,
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000004_0000004_0000", "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"),
+            Collections.singletonList("delta_0000004_0000006_v0000017"), false, true, true);
   }
 
   @Test
@@ -3252,11 +3342,23 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today",
             Arrays.asList("bucket_00000", "bucket_00001"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("base_0000003_v0000007"), true, false);
+            Collections.singletonList("base_0000003_v0000007"), true, false, false);
     testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today",
             Arrays.asList("bucket_00000", "bucket_00001"),
             Arrays.asList("delta_0000004_0000004_0000", "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"),
-            Collections.singletonList("base_0000006_v0000014"), false, true);
+            Collections.singletonList("base_0000006_v0000014"), false, true, false);
+  }
+
+  @Test
+  public void testMultipleMajorCompactionWithFallback() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today",
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, false, true);
+    testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today",
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000004_0000004_0000", "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"),
+            Collections.singletonList("base_0000006_v0000017"), false, true, true);
   }
 
   @Test
@@ -3264,18 +3366,32 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MINOR, false, false, null,
             Collections.singletonList("bucket_00000"),
             Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
-            Collections.singletonList("delta_0000001_0000003_v0000007"), true, false);
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, false, false);
     testCompactionWithMerge(CompactionType.MINOR, false, false, null,
             Collections.singletonList("bucket_00000"),
             Arrays.asList("delta_0000001_0000003_v0000007", "delta_0000004_0000004_0000", "delta_0000005_0000005_0000",
                     "delta_0000006_0000006_0000"),
-            Collections.singletonList("delta_0000001_0000006_v0000014"), false, true);
+            Collections.singletonList("delta_0000001_0000006_v0000014"), false, true, false);
+  }
+
+  @Test
+  public void testMultipleMinorCompactionWithFallback() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, false, false, null,
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, false, true);
+    testCompactionWithMerge(CompactionType.MINOR, false, false, null,
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000003_v0000007", "delta_0000004_0000004_0000", "delta_0000005_0000005_0000",
+                    "delta_0000006_0000006_0000"),
+            Collections.singletonList("delta_0000001_0000006_v0000025"), false, true, true);
   }
 
   private void testCompactionWithMerge(CompactionType compactionType, boolean isPartitioned, boolean isBucketed,
                                        String partitionName, List<String> bucketName, List<String> deltaDirNames, List<String> compactDirNames,
-                                       boolean createTable, boolean dropTable) throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED, true);
+                                       boolean createTable, boolean dropTable, boolean useFallback) throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED, !useFallback);
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     String dbName = "default";
     String tableName = "testCompaction";
     // Create test table
@@ -3287,8 +3403,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
-    // Insert test data into test table
-    dataProvider.insertMmTestData(tableName, isPartitioned);
+    // Insert test data into test table with only insert queries
+    dataProvider.insertOnlyTestData(tableName, isPartitioned);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     // Verify deltas
@@ -3297,12 +3413,53 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Verify delete delta
     Assert.assertTrue(CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table,
             partitionName).isEmpty());
-    // Run a compaction
+    // Run a compaction which uses only merge compactor / query-based compaction
+    CompactorFactory compactorFactory = spy(CompactorFactory.getInstance());
+    AtomicReference<Compactor> primary = new AtomicReference<>();
+    AtomicReference<Compactor> secondary = new AtomicReference<>();
+    doAnswer(invocationOnMock -> {
+      Compactor result = (Compactor) invocationOnMock.callRealMethod();
+      Assert.assertTrue(result instanceof CompactorChain);
+      // Use reflection to fetch inner list of compactors
+      CompactorChain compactorChain = (CompactorChain) result;
+      java.lang.reflect.Field field = compactorChain.getClass().getDeclaredField("compactors");
+      field.setAccessible(true);
+      List<Compactor> compactorList = (List<Compactor>) field.get(compactorChain);
+      Assert.assertTrue(compactorList.get(0) instanceof MergeCompactor);
+      if (compactionType == CompactionType.MAJOR) {
+        Assert.assertTrue(compactorList.get(1) instanceof MajorQueryCompactor);
+      } else {
+        Assert.assertTrue(compactorList.get(1) instanceof MinorQueryCompactor);
+      }
+      compactorList.set(0, spy(compactorList.get(0)));
+      compactorList.set(1, spy(compactorList.get(1)));
+      primary.set(compactorList.get(0));
+      secondary.set(compactorList.get(1));
+      return result;
+    }).when(compactorFactory).getCompactor(any(), any(), any(), any());
+
+    Worker worker = new Worker(compactorFactory);
+    worker.setConf(conf);
+    worker.init(new AtomicBoolean(true));
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    CompactionRequest cr = new CompactionRequest(dbName, tableName, compactionType);
     if (partitionName == null) {
-      CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true);
+      txnHandler.compact(cr);
+      worker.run();
     } else {
-      CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true, partitionName);
+      cr.setPartitionname(partitionName);
+      txnHandler.compact(cr);
+      worker.run();
     }
+
+    if (useFallback) {
+      verify(primary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
+      verify(secondary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
+    } else {
+      verify(primary.get(), times(1)).run(any(), any(),any(),any(),any(),any(),any());
+      verify(secondary.get(), times(0)).run(any(),any(),any(),any(),any(),any(),any());
+    }
+
     // Clean up resources
     CompactorTestUtil.runCleaner(conf);
     // Only 1 compaction should be in the response queue with succeeded state
@@ -3327,5 +3484,110 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       dataProvider.dropTable(tableName);
     }
     conf.setBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED, false);
+  }
+
+  @Test
+  public void testFallbackForMergeCompactionOnParquetTables() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED, true);
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    String dbName = "default";
+    String tableName = "testParquetFallback";
+    String partitionName = "bkt=1";
+    executeStatementOnDriver("drop table if exists " + tableName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tableName + "(a INT, b STRING) " + " PARTITIONED BY(bkt INT)" +
+            " STORED AS PARQUET TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')", driver);
+
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " PARTITION(bkt=1)" +
+            " values(57, 'Budapest')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " PARTITION(bkt=1)" +
+            " values(58, 'Milano')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " PARTITION(bkt=1)" +
+            " values(59, 'Bangalore')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " PARTITION(bkt=1)" +
+            " values(60, 'New York')", driver);
+
+    CompactorFactory compactorFactory = spy(CompactorFactory.getInstance());
+    AtomicReference<Compactor> primary = new AtomicReference<>();
+    AtomicReference<Compactor> secondary = new AtomicReference<>();
+    doAnswer(invocationOnMock -> {
+      Compactor result = (Compactor) invocationOnMock.callRealMethod();
+      Assert.assertTrue(result instanceof CompactorChain);
+      // Use reflection to fetch inner list of compactors
+      CompactorChain compactorChain = (CompactorChain) result;
+      java.lang.reflect.Field field = compactorChain.getClass().getDeclaredField("compactors");
+      field.setAccessible(true);
+      List<Compactor> compactorList = (List<Compactor>) field.get(compactorChain);
+      Assert.assertTrue(compactorList.get(0) instanceof MergeCompactor);
+      Assert.assertTrue(compactorList.get(1) instanceof MmMajorQueryCompactor);
+      compactorList.set(0, spy(compactorList.get(0)));
+      compactorList.set(1, spy(compactorList.get(1)));
+      primary.set(compactorList.get(0));
+      secondary.set(compactorList.get(1));
+      return result;
+    }).when(compactorFactory).getCompactor(any(), any(), any(), any());
+
+    Worker worker = new Worker(compactorFactory);
+    worker.setConf(conf);
+    worker.init(new AtomicBoolean(true));
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    CompactionRequest cr = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    cr.setPartitionname(partitionName);
+    txnHandler.compact(cr);
+    worker.run();
+
+    verify(primary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
+    verify(secondary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
+  }
+
+  @Test
+  public void testFallbackForMergeCompactionWhenDeleteDeltaPresent() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED, true);
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    String dbName = "default";
+    String tableName = "testParquetFallback";
+    String partitionName = "bkt=1";
+    executeStatementOnDriver("drop table if exists " + tableName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tableName + "(a INT, b STRING) " + " PARTITIONED BY(bkt INT)" +
+            " STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " PARTITION(bkt=1)" +
+            " values(57, 'Budapest')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " PARTITION(bkt=1)" +
+            " values(58, 'Milano')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " PARTITION(bkt=1)" +
+            " values(59, 'Bangalore')", driver);
+    executeStatementOnDriver("DELETE FROM " + tableName + " WHERE a = 57", driver);
+
+    CompactorFactory compactorFactory = spy(CompactorFactory.getInstance());
+    AtomicReference<Compactor> primary = new AtomicReference<>();
+    AtomicReference<Compactor> secondary = new AtomicReference<>();
+    doAnswer(invocationOnMock -> {
+      Compactor result = (Compactor) invocationOnMock.callRealMethod();
+      Assert.assertTrue(result instanceof CompactorChain);
+      // Use reflection to fetch inner list of compactors
+      CompactorChain compactorChain = (CompactorChain) result;
+      java.lang.reflect.Field field = compactorChain.getClass().getDeclaredField("compactors");
+      field.setAccessible(true);
+      List<Compactor> compactorList = (List<Compactor>) field.get(compactorChain);
+      Assert.assertTrue(compactorList.get(0) instanceof MergeCompactor);
+      Assert.assertTrue(compactorList.get(1) instanceof MajorQueryCompactor);
+      compactorList.set(0, spy(compactorList.get(0)));
+      compactorList.set(1, spy(compactorList.get(1)));
+      primary.set(compactorList.get(0));
+      secondary.set(compactorList.get(1));
+      return result;
+    }).when(compactorFactory).getCompactor(any(), any(), any(), any());
+
+    Worker worker = new Worker(compactorFactory);
+    worker.setConf(conf);
+    worker.init(new AtomicBoolean(true));
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    CompactionRequest cr = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    cr.setPartitionname(partitionName);
+    txnHandler.compact(cr);
+    worker.run();
+
+    verify(primary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
+    verify(secondary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
   }
 }
