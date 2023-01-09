@@ -52,12 +52,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -1451,7 +1446,9 @@ public class HiveStrictManagedMigration {
           result = new TxnCtx(writeId, validWriteIds, txnId);
         } finally {
           if (result == null) {
-            msc.abortTxns(Lists.newArrayList(txnId), TxnErrorMsg.ABORT_MIGRATION_TXN.getErrorCode());
+            AbortTxnsRequest abortTxnsRequest = new AbortTxnsRequest(Lists.newArrayList(txnId));
+            abortTxnsRequest.setErrorCode(TxnErrorMsg.ABORT_MIGRATION_TXN.getErrorCode());
+            msc.abortTxns(abortTxnsRequest);
           }
         }
         return result;
@@ -1467,7 +1464,9 @@ public class HiveStrictManagedMigration {
         if (isOk) {
           msc.commitTxn(txnCtx.txnId);
         } else {
-          msc.abortTxns(Lists.newArrayList(txnCtx.txnId), TxnErrorMsg.ABORT_MIGRATION_TXN.getErrorCode());
+          AbortTxnsRequest abortTxnsRequest = new AbortTxnsRequest(Lists.newArrayList(txnCtx.txnId));
+          abortTxnsRequest.setErrorCode(TxnErrorMsg.ABORT_MIGRATION_TXN.getErrorCode());
+          msc.abortTxns(abortTxnsRequest);
         }
       } catch (TException ex) {
         throw new HiveException(ex);

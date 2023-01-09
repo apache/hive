@@ -1076,6 +1076,7 @@ struct AbortTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
     3: optional TxnType txn_type,
+    4: optional i64 errorCode,
 }
 
 struct AbortTxnsRequest {

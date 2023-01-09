@@ -36,14 +36,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.MetastoreException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -303,7 +296,9 @@ public class Msck {
     } else {
       try {
         LOG.info("txnId: {} failed. Aborting..", txnId);
-        getMsc().abortTxns(Lists.newArrayList(txnId), TxnErrorMsg.ABORT_MSCK_TXN.getErrorCode());
+        AbortTxnsRequest abortTxnsRequest = new AbortTxnsRequest(Lists.newArrayList(txnId));
+        abortTxnsRequest.setErrorCode(TxnErrorMsg.ABORT_MSCK_TXN.getErrorCode());
+        getMsc().abortTxns(abortTxnsRequest);
       } catch (Exception e) {
         LOG.error("Error while aborting txnId: {} for table: {}", txnId, qualifiedTableName, e);
         ret = false;

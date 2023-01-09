@@ -1966,6 +1966,7 @@ message AbortTxnRequest {
   int64 txnid = 1;
   string repl_policy = 2;
   TxnType txn_type = 3;
+  int64 errorCode = 4;
 }
 
 message AbortTxnResponse {

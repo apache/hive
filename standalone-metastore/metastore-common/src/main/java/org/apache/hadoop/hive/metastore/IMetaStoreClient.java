@@ -3153,6 +3153,18 @@ public interface IMetaStoreClient {
   /**
    * Rollback a transaction.  This will also unlock any locks associated with
    * this transaction.
+   * @param abortTxnRequest AbortTxnRequest object containing transaction id and
+   * error codes.
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * Note that this can result from the transaction having timed out and been
+   * deleted.
+   * @throws TException
+   */
+  void rollbackTxn(AbortTxnRequest abortTxnRequest) throws NoSuchTxnException, TException;
+
+  /**
+   * Rollback a transaction.  This will also unlock any locks associated with
+   * this transaction.
    * @param srcTxnid id of transaction at source while is rolled back and to be replicated
    *                 or null in case of hive replication transactions
    * @param replPolicy Contains replication policy to uniquely identify the source cluster in case of repl replayed txns
@@ -3230,11 +3242,10 @@ public interface IMetaStoreClient {
   /**
    * Abort a list of transactions with additional information of
    * errorcodes as defined in TxnErrorMsg.java.
-   * @param txnids List of transaction ids
-   * @param errorCode Error code specifying the reason for abort.
+   * @param abortTxnsRequest Information containing txnIds and error codes
    * @throws TException
    */
-  void abortTxns(List<Long> txnids, long errorCode) throws TException;
+  void abortTxns(AbortTxnsRequest abortTxnsRequest) throws TException;
 
   /**
    * Allocate a per table write ID and associate it with the given transaction.
