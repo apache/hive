@@ -105,6 +105,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     try {
       do {
         long startedAt = System.currentTimeMillis();
+        launchedJob = true;
         Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(genericStats, mrStats));
         try {
           launchedJob = singleRun.get(timeout, TimeUnit.MILLISECONDS);
@@ -115,33 +116,31 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           singleRun.cancel(true);
           executor.shutdownNow();
           executor = getTimeoutHandlingExecutor();
-          launchedJob = true;
         } catch (ExecutionException e) {
           LOG.info("Exception during executing compaction", e);
-          launchedJob = true;
         } catch (InterruptedException ie) {
-          // Do not do anything - stop should be set anyway
-          launchedJob = true;
+          // do not ignore interruption requests
+          return;
         }
+
+        doPostLoopActions(System.currentTimeMillis() - startedAt);
 
         // If we didn't try to launch a job it either means there was no work to do or we got
         // here as the result of a communication failure with the DB.  Either way we want to wait
-        // a bit before we restart the loop.
+        // a bit before, otherwise we can start over the loop immediately.
         if (!launchedJob && !stop.get()) {
-          try {
-            Thread.sleep(SLEEP_TIME);
-          } catch (InterruptedException e) {
-          }
+          Thread.sleep(SLEEP_TIME);
         }
-        long elapsedTime = System.currentTimeMillis() - startedAt;
-        doPostLoopActions(elapsedTime, CompactorThreadType.WORKER);
       } while (!stop.get());
+    } catch (InterruptedException e) {
+      // do not ignore interruption requests
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor worker, exiting.", t);
     } finally {
-      if (executor != null) {
-        executor.shutdownNow();
+      if (Thread.currentThread().isInterrupted()) {
+        LOG.info("Interrupt received, Worker is shutting down.");
       }
+      executor.shutdownNow();
       if (msc != null) {
         msc.close();
       }
@@ -271,7 +270,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       if (ci == null) {
         return false;
       }
-      if ((runtimeVersion != null || ci.initiatorVersion != null) && !runtimeVersion.equals(ci.initiatorVersion)) {
+      if ((runtimeVersion == null && ci.initiatorVersion != null) || (runtimeVersion != null && !runtimeVersion.equals(ci.initiatorVersion))) {
         LOG.warn("Worker and Initiator versions do not match. Worker: v{}, Initiator: v{}", runtimeVersion, ci.initiatorVersion);
       }
 
@@ -560,12 +559,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
     } catch (Throwable t) {
       LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, t);
-    }
-  }
-
-  private void checkInterrupt() throws InterruptedException {
-    if (Thread.interrupted()) {
-      throw new InterruptedException("Compaction execution is interrupted");
     }
   }
 
