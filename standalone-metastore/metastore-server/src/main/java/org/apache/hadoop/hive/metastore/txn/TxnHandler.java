@@ -1059,8 +1059,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           errorMsg = TxnErrorMsg.ABORT_REPLAYED_REPL_TXN;
         } else if (isHiveReplTxn) {
           errorMsg = TxnErrorMsg.ABORT_DEFAULT_REPL_TXN;
-        } else if (rqst.isSetErrorCode() && rqst.getErrorCode() == TxnErrorMsg.ABORT_ROLLBACK.getErrorCode()) {
-          errorMsg = TxnErrorMsg.ABORT_ROLLBACK;
+        } else if (rqst.isSetErrorCode()) {
+          errorMsg = TxnErrorMsg.getErrorMsg(rqst.getErrorCode());
         }
 
         abortTxns(dbConn, Collections.singletonList(txnid), true, isReplayedReplTxn, errorMsg);
@@ -1522,7 +1522,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   if (partitionName != null) {
                     resource.append('/').append(partitionName);
                   }
-                  String msg = "Aborting " + " due to a write conflict on " + resource +
+                  String msg = "Aborting [" + JavaUtils.txnIdToString(txnid) + "," + commitId + "]" + " due to a write conflict on " + resource +
                           " committed by " + committedTxn + " " + rs.getString(7) + "/" + rs.getString(8);
                   //remove WRITE_SET info for current txn since it's about to abort
                   dbConn.rollback(undoWriteSetForCurrentTxn);
@@ -5115,7 +5115,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (txnids.isEmpty()) {
       return 0;
     }
-    LOG.debug("Trying to abort txns due to : {}. Aborted Transaction IDs : {}", errorMsg, txnids);
+    Collections.sort(txnids);
+    LOG.debug("Aborting {} transactions {} due to {}", txnids.size(), txnids, errorMsg);
     removeTxnsFromMinHistoryLevel(dbConn, txnids);
     try {
       stmt = dbConn.createStatement();
@@ -5127,7 +5128,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       // add update txns queries to query list
       prefix.append("UPDATE \"TXNS\" SET \"TXN_STATE\" = ").append(TxnStatus.ABORTED)
-              .append(" WHERE \"TXN_STATE\" = ").append(TxnStatus.OPEN).append(" AND ");
+              .append(" , ").append("\"TXN_META_INFO\" = ").append(errorMsg.toSqlString())
+              .append(" WHERE \"TXN_STATE\" = ").append(TxnStatus.OPEN)
+              .append(" AND ");
       if (checkHeartbeat) {
         suffix.append(" AND \"TXN_LAST_HEARTBEAT\" < ")
                 .append(getEpochFn(dbProduct)).append("-").append(timeout);
@@ -5166,7 +5169,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
         Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).inc(txnids.size());
       }
-      LOG.warn("Txns are aborted successfully due to : {}. Aborted Transaction IDs : {}", errorMsg, txnids);
+      LOG.warn("Aborted {} transactions {} due to {}", txnids.size(), txnids, errorMsg);
       return numAborted;
     } finally {
       closeStmt(stmt);
@@ -5793,7 +5796,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             dbConn.commit();
             numTxnsAborted += batchToAbort.size();
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
-            Collections.sort(batchToAbort);//easier to read logs
           }
           else {
             //could not abort all txns in this batch - this may happen because in parallel with this

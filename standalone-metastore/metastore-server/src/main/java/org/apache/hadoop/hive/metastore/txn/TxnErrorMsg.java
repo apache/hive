@@ -24,29 +24,29 @@ package org.apache.hadoop.hive.metastore.txn;
 public enum TxnErrorMsg {
     // Txn Errors Codes: 50000 - 59999.
     // Query runtime aborts - 50000-50999
-    NONE(50000, "None"),
-    ABORT_QUERY(50001, " Txn aborted by Abort Query Command"),
-    ABORT_CONCURRENT(50002, " Txn aborted due to concurrent committed transaction"),
-    ABORT_WRITE_CONFLICT(50003, " Txn aborted due to write conflicts"),
-    ABORT_TIMEOUT(50004, " Txn aborted due to heartbeat time-out"),
-    ABORT_ROLLBACK(50005, "Txn aborted due to rollback"),
-    ABORT_COMPACTION_TXN(50006, "Compaction txn is aborted"),
-    ABORT_MSCK_TXN(50007, "Msck txn is aborted"),
-    ABORT_MIGRATION_TXN(50008, "Managed Migration transaction is aborted"),
+    NONE(50000, "none"),
+    ABORT_QUERY(50001, "abort by Query command"),
+    ABORT_CONCURRENT(50002, "concurrent committed transaction"),
+    ABORT_WRITE_CONFLICT(50003, "write conflicts"),
+    ABORT_TIMEOUT(50004, "heartbeat time-out"),
+    ABORT_ROLLBACK(50005, "rollback"),
+    ABORT_COMPACTION_TXN(50006, "compaction transaction abort"),
+    ABORT_MSCK_TXN(50007, "msck transaction abort"),
+    ABORT_MIGRATION_TXN(50008, "managed Migration transaction abort"),
 
     // Replication related aborts - 51000 - 51099
-    ABORT_DEFAULT_REPL_TXN(51000, " Replication:" +
-            "Abort default replication transaction"),
-    ABORT_REPLAYED_REPL_TXN(51001, " Replication:" +
-            "Abort replayed replication transaction"),
-    ABORT_REPL_WRITEID_TXN(51002, " Replication:" +
-            "Abort all the allocated txns so that the mapped write ids are referred as aborted ones."),
-    ABORT_FETCH_FAILOVER_METADATA(51003, " Replication:" +
-            "Abort all transactions while trying to fetch failover metadata."),
-    ABORT_WRITE_TXN_AFTER_TIMEOUT(51004, " Replication:" +
-            "Abort only write transactions for the db under replication"),
-    ABORT_ONGOING_TXN_FOR_TARGET_DB(51005, " Replication:" +
-            "Abort the ongoing transactions(opened prior to failover) for the target database.");
+    ABORT_DEFAULT_REPL_TXN(51000, "Replication:" +
+            "default replication transaction abort"),
+    ABORT_REPLAYED_REPL_TXN(51001, "Replication:" +
+            "replayed replication transaction abort"),
+    ABORT_REPL_WRITEID_TXN(51002, "Replication:" +
+            "abort of allocated txns for referring mapped write ids as aborted ones"),
+    ABORT_FETCH_FAILOVER_METADATA(51003, "Replication:" +
+            "abort of txns while trying to fetch failover metadata"),
+    ABORT_WRITE_TXN_AFTER_TIMEOUT(51004, "Replication:" +
+            "abort of write txns for the db under replication"),
+    ABORT_ONGOING_TXN_FOR_TARGET_DB(51005, "Replication:" +
+            "abort of ongoing txns(opened prior to failover) for the target database");
 
     private final long errorCode;
     private final String txnErrorMsg;
@@ -62,9 +62,7 @@ public enum TxnErrorMsg {
 
     @Override
     public String toString() {
-      return "TxnLog: TxnErrorMsg{" +
-             "errorCode=" + errorCode +
-             ", txnErrorMsg=" + txnErrorMsg  +"}";
+      return txnErrorMsg;
     }
 
     public static TxnErrorMsg getErrorMsg(long errorCode) {
@@ -74,6 +72,10 @@ public enum TxnErrorMsg {
         }
       }
       return null;
+    }
+
+    public String toSqlString() {
+      return "'" + this.toString() + "'";
     }
 }
 
