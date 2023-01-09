@@ -152,9 +152,11 @@ public class Initiator extends MetaStoreCompactorThread {
 
           final ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
+          checkInterrupt();
+
           // Currently we invalidate all entries after each cycle, because the bootstrap replication is marked via
           // table property hive.repl.first.inc.pending which would be cached.
-          metaCache.ifPresent(c -> c.invalidateAll());
+          metaCache.ifPresent(Cache::invalidateAll);
           Set<String> skipDBs = Sets.newConcurrentHashSet();
           Set<String> skipTables = Sets.newConcurrentHashSet();
 
@@ -165,6 +167,8 @@ public class Initiator extends MetaStoreCompactorThread {
               .collect(Collectors.toSet())).get();
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
+
+          checkInterrupt();
 
           Map<String, String> tblNameOwners = new HashMap<>();
           List<CompletableFuture<Void>> compactionList = new ArrayList<>();
@@ -177,6 +181,11 @@ public class Initiator extends MetaStoreCompactorThread {
 
           for (CompactionInfo ci : potentials) {
             try {
+              //Check for interruption before scheduling each compactionInfo and return if necessary
+              if (Thread.currentThread().isInterrupted()) {
+                return;
+              }
+
               Table t = computeIfAbsent(ci.getFullTableName(),() -> resolveTable(ci));
               String poolName = getPoolName(ci, t);
               Partition p = resolvePartition(ci);
@@ -208,10 +217,14 @@ public class Initiator extends MetaStoreCompactorThread {
             }
           }
 
-          CompletableFuture.allOf(compactionList.toArray(new CompletableFuture[0])).join();
+          //Use get instead of join, so we can receive InterruptedException and shutdown gracefully
+          CompletableFuture.allOf(compactionList.toArray(new CompletableFuture[0])).get();
 
           // Check for timed out remote workers.
           recoverFailedCompactions(true);
+        } catch (InterruptedException e) {
+          // do not ignore interruption requests
+          return;
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop", t);
           exceptionally = true;
@@ -226,15 +239,16 @@ public class Initiator extends MetaStoreCompactorThread {
           stopCycleUpdater();
         }
 
-        long elapsedTime = System.currentTimeMillis() - startedAt;
-        doPostLoopActions(elapsedTime, CompactorThreadType.INITIATOR);
-
+        doPostLoopActions(System.currentTimeMillis() - startedAt);
       } while (!stop.get());
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting.", t);
     } finally {
+      if (Thread.currentThread().isInterrupted()) {
+        LOG.info("Interrupt received, Initiator is shutting down.");
+      }
       if (compactionExecutor != null) {
-        this.compactionExecutor.shutdownNow();
+        compactionExecutor.shutdownNow();
       }
     }
   }
@@ -245,12 +259,18 @@ public class Initiator extends MetaStoreCompactorThread {
     StorageDescriptor sd = resolveStorageDescriptor(t, p);
     try {
       ValidWriteIdList validWriteIds = resolveValidWriteIds(t);
+
+      checkInterrupt();
+
       CompactionType type = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs);
       if (type != null) {
         ci.type = type;
         ci.poolName = poolName;
         requestCompaction(ci, runAs);
       }
+    } catch (InterruptedException e) {
+      //Handle InterruptedException separately so the compactioninfo won't be marked as failed.
+      LOG.info("Initiator pool is being shut down, task received interruption.");
     } catch (Throwable ex) {
       String errorMessage = "Caught exception while trying to determine if we should compact " + ci + ". Marking "
           + "failed to avoid repeated failures, " + ex;
@@ -439,12 +459,8 @@ public class Initiator extends MetaStoreCompactorThread {
         UserGroupInformation.getLoginUser());
       CompactionType compactionType;
       try {
-        compactionType = ugi.doAs(new PrivilegedExceptionAction<CompactionType>() {
-          @Override
-          public CompactionType run() throws Exception {
-            return determineCompactionType(ci, acidDirectory, tblproperties, baseSize, deltaSize);
-          }
-        });
+        compactionType = ugi.doAs(
+            (PrivilegedExceptionAction<CompactionType>) () -> determineCompactionType(ci, acidDirectory, tblproperties, baseSize, deltaSize));
       } finally {
         try {
           FileSystem.closeAllForUGI(ugi);
@@ -477,7 +493,7 @@ public class Initiator extends MetaStoreCompactorThread {
           Float.parseFloat(deltaPctProp);
       boolean bigEnough =   (float)deltaSize/(float)baseSize > deltaPctThreshold;
       boolean multiBase = dir.getObsolete().stream()
-              .filter(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX)).findAny().isPresent();
+              .anyMatch(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX));
 
       boolean initiateMajor =  bigEnough || (deltaSize == 0  && multiBase);
       if (LOG.isDebugEnabled()) {
@@ -536,11 +552,10 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   private long getDirSize(FileSystem fs, ParsedDirectory dir) throws IOException {
-    long size = dir.getFiles(fs, Ref.from(false)).stream()
+    return dir.getFiles(fs, Ref.from(false)).stream()
         .map(HdfsFileStatusWithId::getFileStatus)
         .mapToLong(FileStatus::getLen)
         .sum();
-    return size;
   }
 
   private void requestCompaction(CompactionInfo ci, String runAs) throws MetaException {
