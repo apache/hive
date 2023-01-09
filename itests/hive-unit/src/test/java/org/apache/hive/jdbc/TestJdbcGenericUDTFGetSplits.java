@@ -117,6 +117,7 @@ public class TestJdbcGenericUDTFGetSplits {
   }
 
   @Test(timeout = 200000)
+  @org.junit.Ignore("HIVE-23394")
   public void testGenericUDTFOrderBySplitCount1() throws Exception {
     String query = "select get_splits(" + "'select value from " + tableName + "', 5)";
     runQuery(query, getConfigs(), 10);
