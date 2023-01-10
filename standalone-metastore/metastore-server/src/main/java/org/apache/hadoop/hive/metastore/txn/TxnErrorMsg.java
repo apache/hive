@@ -25,14 +25,14 @@ public enum TxnErrorMsg {
     // Txn Errors Codes: 50000 - 59999.
     // Query runtime aborts - 50000-50999
     NONE(50000, "none"),
-    ABORT_QUERY(50001, "abort by Query command"),
+    ABORT_QUERY(50001, "abort by query command"),
     ABORT_CONCURRENT(50002, "concurrent committed transaction"),
     ABORT_WRITE_CONFLICT(50003, "write conflicts"),
     ABORT_TIMEOUT(50004, "heartbeat time-out"),
     ABORT_ROLLBACK(50005, "rollback"),
     ABORT_COMPACTION_TXN(50006, "compaction transaction abort"),
     ABORT_MSCK_TXN(50007, "msck transaction abort"),
-    ABORT_MIGRATION_TXN(50008, "managed Migration transaction abort"),
+    ABORT_MIGRATION_TXN(50008, "managed migration transaction abort"),
 
     // Replication related aborts - 51000 - 51099
     ABORT_DEFAULT_REPL_TXN(51000, "Replication:" +
@@ -49,11 +49,11 @@ public enum TxnErrorMsg {
             "abort of ongoing txns(opened prior to failover) for the target database");
 
     private final long errorCode;
-    private final String txnErrorMsg;
+    private final String errorMsg;
 
-    TxnErrorMsg(int errorCode, String txnErrorMsg) {
+    TxnErrorMsg(int errorCode, String errorMsg) {
       this.errorCode = errorCode;
-      this.txnErrorMsg = txnErrorMsg;
+      this.errorMsg = errorMsg;
     }
 
     public long getErrorCode() {
@@ -62,16 +62,16 @@ public enum TxnErrorMsg {
 
     @Override
     public String toString() {
-      return txnErrorMsg;
+      return errorMsg;
     }
 
-    public static TxnErrorMsg getErrorMsg(long errorCode) {
-      for (TxnErrorMsg errorMsg : values()) {
-        if (errorMsg.getErrorCode() == errorCode) {
-          return errorMsg;
+    public static TxnErrorMsg getTxnErrorMsg(long errorCode) {
+      for (TxnErrorMsg txnErrorMsg : values()) {
+        if (txnErrorMsg.getErrorCode() == errorCode) {
+          return txnErrorMsg;
         }
       }
-      return null;
+      return TxnErrorMsg.NONE;
     }
 
     public String toSqlString() {

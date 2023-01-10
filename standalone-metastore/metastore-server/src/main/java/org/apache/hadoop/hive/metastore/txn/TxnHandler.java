@@ -1012,7 +1012,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.Idempotent
   public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException {
     long txnid = rqst.getTxnid();
-    TxnErrorMsg errorMsg = TxnErrorMsg.NONE;
+    TxnErrorMsg txnErrorMsg = TxnErrorMsg.NONE;
     long sourceTxnId = -1;
     boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
     boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
@@ -1056,14 +1056,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (isReplayedReplTxn) {
-          errorMsg = TxnErrorMsg.ABORT_REPLAYED_REPL_TXN;
+          txnErrorMsg = TxnErrorMsg.ABORT_REPLAYED_REPL_TXN;
         } else if (isHiveReplTxn) {
-          errorMsg = TxnErrorMsg.ABORT_DEFAULT_REPL_TXN;
+          txnErrorMsg = TxnErrorMsg.ABORT_DEFAULT_REPL_TXN;
         } else if (rqst.isSetErrorCode()) {
-          errorMsg = TxnErrorMsg.getErrorMsg(rqst.getErrorCode());
+          txnErrorMsg = TxnErrorMsg.getTxnErrorMsg(rqst.getErrorCode());
         }
 
-        abortTxns(dbConn, Collections.singletonList(txnid), true, isReplayedReplTxn, errorMsg);
+        abortTxns(dbConn, Collections.singletonList(txnid), true, isReplayedReplTxn, txnErrorMsg);
 
         if (isReplayedReplTxn) {
           deleteReplTxnMapEntry(dbConn, sourceTxnId, rqst.getReplPolicy());
@@ -1099,7 +1099,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     List<Long> txnIds = rqst.getTxn_ids();
     TxnErrorMsg txnErrorMsg = TxnErrorMsg.NONE;
     if (rqst.isSetErrorCode()) {
-      txnErrorMsg = TxnErrorMsg.getErrorMsg(rqst.getErrorCode());
+      txnErrorMsg = TxnErrorMsg.getTxnErrorMsg(rqst.getErrorCode());
     }
     try {
       Connection dbConn = null;
@@ -5091,8 +5091,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static Map<LockType, Map<LockType, Map<LockState, LockAction>>> jumpTable;
 
   private int abortTxns(Connection dbConn, List<Long> txnids,
-                        boolean skipCount, boolean isReplReplayed, TxnErrorMsg errorMsg) throws SQLException, MetaException {
-    return abortTxns(dbConn, txnids, false, skipCount, isReplReplayed, errorMsg);
+                        boolean skipCount, boolean isReplReplayed, TxnErrorMsg txnErrorMsg) throws SQLException, MetaException {
+    return abortTxns(dbConn, txnids, false, skipCount, isReplReplayed, txnErrorMsg);
   }
   /**
    * TODO: expose this as an operation to client.  Useful for streaming API to abort all remaining
@@ -5109,14 +5109,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @throws SQLException
    */
   private int abortTxns(Connection dbConn, List<Long> txnids, boolean checkHeartbeat,
-                        boolean skipCount, boolean isReplReplayed, TxnErrorMsg errorMsg)
+                        boolean skipCount, boolean isReplReplayed, TxnErrorMsg txnErrorMsg)
       throws SQLException, MetaException {
     Statement stmt = null;
     if (txnids.isEmpty()) {
       return 0;
     }
     Collections.sort(txnids);
-    LOG.debug("Aborting {} transactions {} due to {}", txnids.size(), txnids, errorMsg);
+    LOG.debug("Aborting {} transaction(s) {} due to {}", txnids.size(), txnids, txnErrorMsg);
     removeTxnsFromMinHistoryLevel(dbConn, txnids);
     try {
       stmt = dbConn.createStatement();
@@ -5128,9 +5128,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       // add update txns queries to query list
       prefix.append("UPDATE \"TXNS\" SET \"TXN_STATE\" = ").append(TxnStatus.ABORTED)
-              .append(" , ").append("\"TXN_META_INFO\" = ").append(errorMsg.toSqlString())
-              .append(" WHERE \"TXN_STATE\" = ").append(TxnStatus.OPEN)
-              .append(" AND ");
+              .append(" , \"TXN_META_INFO\" = ").append(txnErrorMsg.toSqlString())
+              .append(" WHERE \"TXN_STATE\" = ").append(TxnStatus.OPEN).append(" AND ");
       if (checkHeartbeat) {
         suffix.append(" AND \"TXN_LAST_HEARTBEAT\" < ")
                 .append(getEpochFn(dbProduct)).append("-").append(timeout);
@@ -5169,7 +5168,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
         Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).inc(txnids.size());
       }
-      LOG.warn("Aborted {} transactions {} due to {}", txnids.size(), txnids, errorMsg);
+      LOG.warn("Aborted {} transaction(s) {} due to {}", txnids.size(), txnids, txnErrorMsg);
       return numAborted;
     } finally {
       closeStmt(stmt);
@@ -5806,7 +5805,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             dbConn.rollback();
           }
         }
-        LOG.info("Aborted {} transactions due to timeout", numTxnsAborted);
+        LOG.info("Aborted {} transaction(s) due to timeout", numTxnsAborted);
         if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
           Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).inc(numTxnsAborted);
         }
