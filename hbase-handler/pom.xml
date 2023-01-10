@@ -126,6 +126,12 @@
       <version>${hadoop.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
+        <exclusions>
+            <exclusion>
+                <groupId>io.netty</groupId>
+                <artifactId>*</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
