@@ -37,6 +37,11 @@ class AbortTxnRequest
             'type' => TType::I32,
             'class' => '\metastore\TxnType',
         ),
+        4 => array(
+            'var' => 'errorCode',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -51,6 +56,10 @@ class AbortTxnRequest
      * @var int
      */
     public $txn_type = null;
+    /**
+     * @var int
+     */
+    public $errorCode = null;
 
     public function __construct($vals = null)
     {
@@ -63,6 +72,9 @@ class AbortTxnRequest
             }
             if (isset($vals['txn_type'])) {
                 $this->txn_type = $vals['txn_type'];
+            }
+            if (isset($vals['errorCode'])) {
+                $this->errorCode = $vals['errorCode'];
             }
         }
     }
@@ -107,6 +119,13 @@ class AbortTxnRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 4:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->errorCode);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -134,6 +153,11 @@ class AbortTxnRequest
         if ($this->txn_type !== null) {
             $xfer += $output->writeFieldBegin('txn_type', TType::I32, 3);
             $xfer += $output->writeI32($this->txn_type);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->errorCode !== null) {
+            $xfer += $output->writeFieldBegin('errorCode', TType::I64, 4);
+            $xfer += $output->writeI64($this->errorCode);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
