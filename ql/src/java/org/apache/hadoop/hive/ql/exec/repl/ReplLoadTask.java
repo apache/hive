@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.database.alter.owner.AlterDatabaseSetOwnerDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
@@ -878,7 +879,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (!openTxns.isEmpty()) {
       LOG.info("Rolling back write txns:" + openTxns.toString() + " for the database: " + dbName);
       //abort only write transactions for the current database if abort transactions is enabled.
-      hiveDb.abortTransactions(openTxns);
+      hiveDb.abortTransactions(openTxns, TxnErrorMsg.ABORT_ONGOING_TXN_FOR_TARGET_DB.getErrorCode());
       validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
       openTxns = ReplUtils.getOpenTxns(hiveTxnManager, validTxnList, dbName);
       if (!openTxns.isEmpty()) {
