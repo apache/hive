@@ -36,6 +36,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -55,7 +57,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 
 /**
  * Msck repairs table metadata specifically related to partition information to be in-sync with directories in table
@@ -300,9 +301,11 @@ public class Msck {
         ret = false;
       }
     } else {
+      LOG.info("txnId: {} failed. Aborting..", txnId);
+      AbortTxnRequest abortTxnRequest = new AbortTxnRequest(txnId);
+      abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_MSCK_TXN.getErrorCode());
       try {
-        LOG.info("txnId: {} failed. Aborting..", txnId);
-        getMsc().abortTxns(Lists.newArrayList(txnId));
+        getMsc().rollbackTxn(abortTxnRequest);
       } catch (Exception e) {
         LOG.error("Error while aborting txnId: {} for table: {}", txnId, qualifiedTableName, e);
         ret = false;

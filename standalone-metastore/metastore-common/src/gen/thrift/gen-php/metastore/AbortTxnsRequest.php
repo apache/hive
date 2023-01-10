@@ -30,18 +30,30 @@ class AbortTxnsRequest
                 'type' => TType::I64,
                 ),
         ),
+        2 => array(
+            'var' => 'errorCode',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
      * @var int[]
      */
     public $txn_ids = null;
+    /**
+     * @var int
+     */
+    public $errorCode = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['txn_ids'])) {
                 $this->txn_ids = $vals['txn_ids'];
+            }
+            if (isset($vals['errorCode'])) {
+                $this->errorCode = $vals['errorCode'];
             }
         }
     }
@@ -81,6 +93,13 @@ class AbortTxnsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 2:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->errorCode);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -105,6 +124,11 @@ class AbortTxnsRequest
                 $xfer += $output->writeI64($iter660);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->errorCode !== null) {
+            $xfer += $output->writeFieldBegin('errorCode', TType::I64, 2);
+            $xfer += $output->writeI64($this->errorCode);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
