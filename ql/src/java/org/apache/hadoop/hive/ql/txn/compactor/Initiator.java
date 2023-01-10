@@ -547,9 +547,8 @@ public class Initiator extends MetaStoreCompactorThread {
     // bucket size calculation can be resource intensive if there are numerous deltas, so we check for rebalance
     // compaction only if the table is in an acceptable shape: no major compaction required. This means the number of
     // files shouldn't be too high
-    if ("tez".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)) &&
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED) &&
-        AcidUtils.isFullAcidTable(tblproperties)) {
+    if (AcidUtils.isFullAcidTable(tblproperties)) {
+      // We check only full-acid tables, for insert-only tables a MAJOR compaction will also rebalance bucket data.
       long totalSize = baseSize + deltaSize;
       long minimumSize = MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_REBALANCE_MINIMUM_SIZE);
       if (totalSize > minimumSize) {
