@@ -1029,14 +1029,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
       }
 
-      if (visitCnt == 1 || !isLogical) {
-        if (operator.getChildOperators() != null) {
-          int cindent = jsonOutput ? 0 : indent + 2;
-          for (Operator<? extends OperatorDesc> op : operator.getChildOperators()) {
-            JSONObject jsonOut = outputPlan(op, out, extended, jsonOutput, cindent, "", inTest);
-            if (jsonOutput) {
-              ((JSONObject)json.get(JSONObject.getNames(json)[0])).accumulate("children", jsonOut);
-            }
+      if ((visitCnt == 1 || !isLogical) && operator.getChildOperators() != null) {
+        int cindent = jsonOutput ? 0 : indent + 2;
+        for (Operator<? extends OperatorDesc> op : operator.getChildOperators()) {
+          JSONObject jsonOut = outputPlan(op, out, extended, jsonOutput, cindent, "", inTest);
+          if (jsonOutput) {
+            ((JSONObject) json.get(JSONObject.getNames(json)[0])).accumulate("children", jsonOut);
           }
         }
       }
