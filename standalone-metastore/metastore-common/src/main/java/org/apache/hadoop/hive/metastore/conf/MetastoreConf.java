@@ -432,6 +432,15 @@ public class MetastoreConf {
         "Time after Initiator will ignore metastore.compactor.initiator.failed.compacts.threshold "
             + "and retry with compaction again. This will try to auto heal tables with previous failed compaction "
             + "without manual intervention. Setting it to 0 or negative value will disable this feature."),
+    COMPACTOR_INITIATOR_REBALANCE_MINIMUM_SIZE("metastore.compactor.initiator.rebalance.min.size",
+        "hive.compactor.initiator.rebalance.min.size", 1024*1024*100,
+        "Minimum table/partition size for which a rebalancing compaction can be initiated."),
+    COMPACTOR_INITIATOR_REBALANCE_THRESHOLD("metastore.compactor.initiator.rebalance.threshold",
+        "hive.compactor.initiator.rebalance.threshold", 0.2d,
+        "Threshold for the rebalancing compaction. If the std_dev/average_bucket_size (where std_dev is the " +
+            "standard deviation of the bucket sizes) is larger than the threshold, a rebalance compaction is initiated. " +
+            "In other words (assuming that the value is 0.2): If the standard deviation is larger than 20% of the average " +
+            "bucket size, a rebalancing compaction is initiated. "),
     COMPACTOR_RUN_AS_USER("metastore.compactor.run.as.user", "hive.compactor.run.as.user", "",
         "Specify the user to run compactor Initiator and Worker as. If empty string, defaults to table/partition " +
         "directory owner."),
