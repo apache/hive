@@ -431,6 +431,8 @@ public class QTestUtil {
     jarPath = fs.makeQualified(jarPath);
     userInstallPath = fs.makeQualified(userInstallPath);
 
+    logClassPath();
+
     conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, fsUriString);
 
     // Remote dirs
@@ -641,6 +643,13 @@ public class QTestUtil {
 
     init();
   }
+
+  private void logClassPath() {
+    String classpath = System.getProperty("java.class.path");
+    String[] classpathEntries = classpath.split(File.pathSeparator);
+    LOG.info("QTestUtil classpath: " + String.join("\n", Arrays.asList(classpathEntries)));
+  }
+
   private String getScriptsDir() {
     // Use the current directory if it is not specified
     String scriptsDir = conf.get("test.data.scripts");

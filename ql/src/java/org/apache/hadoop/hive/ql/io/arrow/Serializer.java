@@ -267,6 +267,21 @@ class Serializer {
     final ColumnVector[] hiveFieldVectors = hiveVector.fields;
     final int fieldSize = fieldTypeInfos.size();
 
+    // This is to handle following scenario -
+    // if any struct value itself is NULL, we get structVector.isNull[i]=true
+    // but we don't get the same for it's child fields which later causes exceptions while setting to arrow vectors
+    // see - https://issues.apache.org/jira/browse/HIVE-25243
+    if (hiveVector != null && hiveFieldVectors != null) {
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          for (ColumnVector fieldVector : hiveFieldVectors) {
+            fieldVector.isNull[i] = true;
+            fieldVector.noNulls = false;
+          }
+        }
+      }
+    }
+
     for (int fieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
       final TypeInfo fieldTypeInfo = fieldTypeInfos.get(fieldIndex);
       final ColumnVector hiveFieldVector = hiveFieldVectors[fieldIndex];
