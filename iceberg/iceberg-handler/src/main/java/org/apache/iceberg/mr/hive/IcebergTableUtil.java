@@ -229,4 +229,17 @@ public class IcebergTableUtil {
     }
     manageSnapshots.commit();
   }
+
+  /**
+   * Set the current snapshot for the iceberg table
+   * @param table the iceberg table
+   * @param value parameter of the rollback, that can be a timestamp in millis or a snapshot id
+   */
+  public static void setCurrentSnapshot(Table table, Long value) {
+    ManageSnapshots manageSnapshots = table.manageSnapshots();
+    LOG.debug("Setting the iceberg table {} from snapshot id {} to snapshot ID {}", table.name(),
+        table.currentSnapshot().snapshotId(), value);
+    manageSnapshots.setCurrentSnapshot(value);
+    manageSnapshots.commit();
+  }
 }
