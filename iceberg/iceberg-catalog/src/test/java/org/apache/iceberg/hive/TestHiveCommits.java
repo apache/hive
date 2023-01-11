@@ -237,11 +237,15 @@ public class TestHiveCommits extends HiveTableBaseTest {
    * and a second committer placed a commit on top of ours before the first committer was able to check
    * if their commit succeeded or not
    *
-   * Timeline:
-   *   Client 1 commits which throws an exception but suceeded
-   *   Client 1's lock expires while waiting to do the recheck for commit success
-   *   Client 2 acquires a lock, commits successfully on top of client 1's commit and release lock
-   *   Client 1 check's to see if their commit was successful
+   * <p>Timeline:
+   *
+   * <ul>
+   *   <li>Client 1 commits which throws an exception but succeeded
+   *   <li>Client 1's lock expires while waiting to do the recheck for commit success
+   *   <li>Client 2 acquires a lock, commits successfully on top of client 1's commit and release
+   *       lock
+   *   <li>Client 1 check's to see if their commit was successful
+   * </ul>
    *
    * This tests to make sure a disconnected client 1 doesn't think their commit failed just because it isn't the
    * current one during the recheck phase.
