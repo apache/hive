@@ -70,7 +70,7 @@ public class StorageHandlerMock extends DefaultStorageHandler {
     if (writeEntity.getWriteType().equals(WriteEntity.WriteType.INSERT)) {
       return LockType.SHARED_READ;
     }
-    return LockType.SHARED_WRITE;
+    return LockType.EXCLUSIVE;
   }
 
   @Override public Class<? extends OutputFormat> getOutputFormatClass() {
