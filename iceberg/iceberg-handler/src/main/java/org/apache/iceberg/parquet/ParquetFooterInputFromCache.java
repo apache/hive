@@ -25,13 +25,13 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
-import org.apache.hive.iceberg.org.apache.parquet.hadoop.ParquetFileWriter;
-import org.apache.hive.iceberg.org.apache.parquet.io.InputFile;
-import org.apache.hive.iceberg.org.apache.parquet.io.SeekableInputStream;
+import org.apache.parquet.hadoop.ParquetFileWriter;
+import org.apache.parquet.io.InputFile;
+import org.apache.parquet.io.SeekableInputStream;
 
 /**
  * Copy of ParquetFooterInputFromCache from hive-exec module to switch dependent Parquet packages
- * to the shaded version (org.apache.hive.iceberg.org.apache.parquet.io...)
+ * to the shaded version (org.apache.parquet.io...)
  *
  * The Parquet InputFile implementation that allows the reader to
  * read the footer from cache without being aware of the latter.

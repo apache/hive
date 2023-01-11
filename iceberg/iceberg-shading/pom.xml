@@ -87,10 +87,6 @@
                       <shadedPattern>${shade.relocation.package.prefix}.org.apache.orc</shadedPattern>
                     </relocation>
                     <relocation>
-                      <pattern>org.apache.parquet</pattern>
-                      <shadedPattern>${shade.relocation.package.prefix}.org.apache.parquet</shadedPattern>
-                    </relocation>
-                    <relocation>
                       <pattern>shaded.parquet</pattern>
                       <shadedPattern>${shade.relocation.package.prefix}.shaded.parquet</shadedPattern>
                     </relocation>
