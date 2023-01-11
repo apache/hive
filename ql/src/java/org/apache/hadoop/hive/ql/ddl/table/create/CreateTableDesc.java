@@ -820,25 +820,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       }
     }
 
-    Optional<List<FieldSchema>> cols = Optional.ofNullable(getCols());
-    Optional<List<FieldSchema>> partCols = Optional.ofNullable(getPartCols());
-
-    if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
-      tbl.getSd().setCols(new ArrayList<>());
-      cols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
-      if (partCols.isPresent() && !partCols.get().isEmpty()) {
-        // Add the partition columns to the normal columns and save the transform to the session state
-        tbl.getSd().getCols().addAll(partCols.get());
-        List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(partCols.get());
-        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
-          throw new HiveException("Query state attached to Session state must be not null. " +
-                                      "Partition transform metadata cannot be saved.");
-        }
-      }
-    } else {
-      cols.ifPresent(c -> tbl.setFields(c));
-      partCols.ifPresent(c -> tbl.setPartCols(c));
-    }
+    setColumnsAndStorePartitionTransformSpec(getCols(), getPartCols(), conf, tbl, storageHandler);
 
     if (getBucketCols() != null) {
       tbl.setBucketCols(getBucketCols());
@@ -956,6 +938,31 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       tbl.setOwner(ownerName);
     }
     return tbl;
+  }
+
+  public static void setColumnsAndStorePartitionTransformSpec(
+          List<FieldSchema> columns, List<FieldSchema> partitionColumns,
+          HiveConf conf, Table tbl, HiveStorageHandler storageHandler)
+          throws HiveException {
+    Optional<List<FieldSchema>> cols = Optional.ofNullable(columns);
+    Optional<List<FieldSchema>> partCols = Optional.ofNullable(partitionColumns);
+
+    if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
+      tbl.getSd().setCols(new ArrayList<>());
+      cols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
+      if (partCols.isPresent() && !partCols.get().isEmpty()) {
+        // Add the partition columns to the normal columns and save the transform to the session state
+        tbl.getSd().getCols().addAll(partCols.get());
+        List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(partCols.get());
+        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
+          throw new HiveException("Query state attached to Session state must be not null. " +
+                                      "Partition transform metadata cannot be saved.");
+        }
+      }
+    } else {
+      cols.ifPresent(tbl::setFields);
+      partCols.ifPresent(tbl::setPartCols);
+    }
   }
 
   public void setInitialWriteId(Long writeId) {

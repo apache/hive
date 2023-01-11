@@ -13720,15 +13720,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_TABLEPARTCOLSBYSPEC:
-        List<TransformSpec> partitionTransformSpec =
-            PartitionTransform.getPartitionTransformSpec(child);
-
-        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
-            partitionTransformSpec)) {
-          throw new SemanticException("Query state attached to Session state must be not null. " +
-              "Partition transform metadata cannot be saved.");
-        }
-
+        parseAndStorePartitionTransformSpec(child);
         partitionTransformSpecExists = true;
         break;
       case HiveParser.TOK_TABLEPARTCOLNAMES:
@@ -13783,30 +13775,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    HiveStorageHandler handler;
-    try {
-      handler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
-    } catch (HiveException e) {
-      throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
-    }
-
-    if (handler != null) {
-      if (partitionTransformSpecExists && !handler.supportsPartitionTransform()) {
-        throw new SemanticException("Partition transform is not supported for " + handler.getClass().getName());
-      }
-
-      String fileFormatPropertyKey = handler.getFileFormatPropertyKey();
-      if (fileFormatPropertyKey != null) {
-        if (tblProps != null && tblProps.containsKey(fileFormatPropertyKey) && storageFormat.getSerdeProps() != null &&
-            storageFormat.getSerdeProps().containsKey(fileFormatPropertyKey)) {
-          String fileFormat = tblProps.get(fileFormatPropertyKey);
-          throw new SemanticException(
-              "Provide only one of the following: STORED BY " + fileFormat + " or WITH SERDEPROPERTIES('" +
-              fileFormatPropertyKey + "'='" + fileFormat + "') or" + " TBLPROPERTIES('" + fileFormatPropertyKey
-              + "'='" + fileFormat + "')");
-        }
-      }
-    }
+    validateStorageFormat(storageFormat, tblProps, partitionTransformSpecExists);
 
     if (command_type == CREATE_TABLE || command_type == CTLT || command_type == CTT || command_type == CTLF) {
       queryState.setCommandType(HiveOperation.CREATETABLE);
@@ -14078,6 +14047,46 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
+  private void parseAndStorePartitionTransformSpec(ASTNode child) throws SemanticException {
+    List<TransformSpec> partitionTransformSpec =
+        PartitionTransform.getPartitionTransformSpec(child);
+
+    if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
+        partitionTransformSpec)) {
+      throw new SemanticException("Query state attached to Session state must be not null. " +
+          "Partition transform metadata cannot be saved.");
+    }
+  }
+
+  private void validateStorageFormat(
+          StorageFormat storageFormat, Map<String, String> tblProps, boolean partitionTransformSpecExists)
+          throws SemanticException {
+    HiveStorageHandler handler;
+    try {
+      handler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
+    } catch (HiveException e) {
+      throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
+    }
+
+    if (handler != null) {
+      if (partitionTransformSpecExists && !handler.supportsPartitionTransform()) {
+        throw new SemanticException("Partition transform is not supported for " + handler.getClass().getName());
+      }
+
+      String fileFormatPropertyKey = handler.getFileFormatPropertyKey();
+      if (fileFormatPropertyKey != null) {
+        if (tblProps != null && tblProps.containsKey(fileFormatPropertyKey) && storageFormat.getSerdeProps() != null &&
+                storageFormat.getSerdeProps().containsKey(fileFormatPropertyKey)) {
+          String fileFormat = tblProps.get(fileFormatPropertyKey);
+          throw new SemanticException(
+                  "Provide only one of the following: STORED BY " + fileFormat + " or WITH SERDEPROPERTIES('" +
+                          fileFormatPropertyKey + "'='" + fileFormat + "') or" + " TBLPROPERTIES('" + fileFormatPropertyKey
+                          + "'='" + fileFormat + "')");
+        }
+      }
+    }
+  }
+
   /** Adds entities for create table/create view. */
   private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type,
       boolean isTemporary, Map<String, String> tblProps, StorageFormat storageFormat) throws SemanticException {
@@ -14126,6 +14135,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String location = null;
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
+    boolean partitionTransformSpecExists = false;
 
     LOG.info("Creating view " + dbDotTable + " position="
         + ast.getCharPositionInLine());
@@ -14190,10 +14200,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               storageFormat.getSerdeProps());
         }
         break;
+      case HiveParser.TOK_TABLEPARTCOLSBYSPEC:
+        parseAndStorePartitionTransformSpec(child);
+        partitionTransformSpecExists = true;
+        break;
       default:
         assert false;
       }
     }
+
+    validateStorageFormat(storageFormat, tblProps, partitionTransformSpecExists);
 
     storageFormat.fillDefaultStorageFormat(false, true);
 

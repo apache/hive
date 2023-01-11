@@ -19,8 +19,10 @@
 package org.apache.hadoop.hive.ql.ddl.view.create;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -34,14 +36,18 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.PartitionTransform;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -312,17 +318,13 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     tbl.setTableType(TableType.MATERIALIZED_VIEW);
     tbl.setSerializationLib(null);
     tbl.clearSerDeInfo();
-    tbl.setFields(getSchema());
+
     if (getComment() != null) {
       tbl.setProperty("comment", getComment());
     }
 
     if (tblProps != null) {
       tbl.getParameters().putAll(tblProps);
-    }
-
-    if (!CollectionUtils.isEmpty(partCols)) {
-      tbl.setPartCols(partCols);
     }
 
     if (!CollectionUtils.isEmpty(sortColNames)) {
@@ -352,6 +354,8 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
           getStorageHandler());
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
+
+    CreateTableDesc.setColumnsAndStorePartitionTransformSpec(getSchema(), getPartCols(), conf, tbl, storageHandler);
 
     /*
      * If the user didn't specify a SerDe, we use the default.
