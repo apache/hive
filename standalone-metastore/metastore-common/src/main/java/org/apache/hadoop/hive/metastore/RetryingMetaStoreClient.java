@@ -264,15 +264,18 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     return ret;
   }
 
+  public static boolean isRecoverableMessage(String exceptionMsg) {
+    if (exceptionMsg == null) {
+      return false;
+    }
+    if (exceptionMsg.contains("java.sql.SQLIntegrityConstraintViolationException")) {
+      return false;
+    }
+    return IO_JDO_TRANSPORT_PROTOCOL_EXCEPTION_PATTERN.matcher(exceptionMsg).matches();
+  }
+
   private static boolean isRecoverableMetaException(MetaException e) {
-    String m = e.getMessage();
-    if (m == null) {
-      return false;
-    }
-    if (m.contains("java.sql.SQLIntegrityConstraintViolationException")) {
-      return false;
-    }
-    return IO_JDO_TRANSPORT_PROTOCOL_EXCEPTION_PATTERN.matcher(m).matches();
+    return isRecoverableMessage(e.getMessage());
   }
 
   /**
