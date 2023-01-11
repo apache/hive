@@ -20,6 +20,26 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:tmp
 POSTHOOK: Output: tmp@b
+PREHOOK: query: insert into b values ("a"),("b"),("c")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: tmp@b
+POSTHOOK: query: insert into b values ("a"),("b"),("c")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: tmp@b
+POSTHOOK: Lineage: b.s SCRIPT []
+PREHOOK: query: select * from b
+PREHOOK: type: QUERY
+PREHOOK: Input: tmp@b
+#### A masked pattern was here ####
+POSTHOOK: query: select * from b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tmp@b
+#### A masked pattern was here ####
+a
+b
+c
 PREHOOK: query: desc formatted b
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: tmp@b
@@ -41,10 +61,10 @@ Table Parameters:
 	TRANSLATED_TO_EXTERNAL	TRUE                
 	bucketing_version   	2                   
 	external.table.purge	TRUE                
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	0                   
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	44                  
+	totalSize           	403                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -91,10 +111,10 @@ Table Parameters:
 	bucketing_version   	2                   
 	external.table.purge	TRUE                
 #### A masked pattern was here ####
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	0                   
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	44                  
+	totalSize           	403                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -117,3 +137,11 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:tmp
 POSTHOOK: Output: tmp@b
+PREHOOK: query: select * from b
+PREHOOK: type: QUERY
+PREHOOK: Input: tmp@b
+#### A masked pattern was here ####
+POSTHOOK: query: select * from b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tmp@b
+#### A masked pattern was here ####
