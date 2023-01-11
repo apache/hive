@@ -1026,8 +1026,13 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   }
 
   List<Long> getReplCreatedTxns() throws MetaException {
-    List<TxnType> excludedTxns = Arrays.asList(TxnType.DEFAULT, TxnType.READ_ONLY, TxnType.COMPACTION,
-            TxnType.MATER_VIEW_REBUILD, TxnType.SOFT_DELETE);
-    return txnHandler.getOpenTxns(excludedTxns).getOpen_txns();
+    List<TxnType> txnListExcludingReplCreated = new ArrayList<>();
+    for (TxnType type : TxnType.values()) {
+      // exclude REPL_CREATED txn
+      if (type != TxnType.REPL_CREATED) {
+        txnListExcludingReplCreated.add(type);
+      }
+    }
+    return txnHandler.getOpenTxns(txnListExcludingReplCreated).getOpen_txns();
   }
 }
