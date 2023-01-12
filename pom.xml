@@ -150,7 +150,7 @@
     <ivy.version>2.5.1</ivy.version>
     <jackson.version>2.12.7</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
-    <jamon-runtime.version>2.3.1</jamon-runtime.version>
+    <jamon-runtime.version>2.4.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
     <javax-servlet.version>3.1.0</javax-servlet.version>
     <javax-servlet-jsp.version>2.3.1</javax-servlet-jsp.version>
