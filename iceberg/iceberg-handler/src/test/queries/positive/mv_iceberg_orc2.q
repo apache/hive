@@ -1,4 +1,4 @@
--- MV data is stored by iceberg
+-- MV data is stored by iceberg v1
 -- SORT_QUERY_RESULTS
 
 set hive.explain.user=false;
