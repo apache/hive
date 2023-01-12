@@ -58,11 +58,10 @@ class HiveWritableComparator extends WritableComparator {
 
         // The IEEE 754 floating point spec specifies that signed -0.0 and 0.0 should be treated as equal.
         // Double.compare() and Float.compare() treats -0.0 and 0.0 as different
-        if (key1 instanceof DoubleWritable && key2 instanceof DoubleWritable &&
-            ((DoubleWritable) key1).get() == 0.0d && ((DoubleWritable) key2).get() == 0.0d) {
-            return 0;
-        } else if (key1 instanceof FloatWritable && key2 instanceof FloatWritable &&
-            ((FloatWritable) key1).get() == 0.0f && ((FloatWritable) key2).get() == 0.0f) {
+        if ((key1 instanceof DoubleWritable && key2 instanceof DoubleWritable &&
+            ((DoubleWritable) key1).get() == 0.0d && ((DoubleWritable) key2).get() == 0.0d) ||
+            (key1 instanceof FloatWritable && key2 instanceof FloatWritable &&
+                ((FloatWritable) key1).get() == 0.0f && ((FloatWritable) key2).get() == 0.0f)) {
             return 0;
         }
 
