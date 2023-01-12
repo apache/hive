@@ -237,7 +237,7 @@ public class IcebergTableUtil {
    */
   public static void setCurrentSnapshot(Table table, Long value) {
     ManageSnapshots manageSnapshots = table.manageSnapshots();
-    LOG.debug("Setting the iceberg table {} from snapshot id {} to snapshot ID {}", table.name(),
+    LOG.debug("Rolling the iceberg table {} from snapshot id {} to snapshot ID {}", table.name(),
         table.currentSnapshot().snapshotId(), value);
     manageSnapshots.setCurrentSnapshot(value);
     manageSnapshots.commit();
