@@ -3120,7 +3120,7 @@ public class AcidUtils {
 
   private static LockType getLockTypeFromStorageHandler(WriteEntity output, Table t) {
     final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
-        "Thought all the non native tables have an instance of storage handler");
+        "Non-native tables must have an instance of storage handler.");
     LockType lockType = storageHandler.getLockType(output);
     if (null == LockType.findByValue(lockType.getValue())) {
       throw new IllegalArgumentException(String
