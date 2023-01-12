@@ -183,37 +183,42 @@ public class TestFileSinkOperator {
 
     JobConf jobConf2 = new JobConf(jobConf);
     jobConf2.set("mapred.task.id", "000000_1");
-    FileSinkOperator speculative = (FileSinkOperator)OperatorFactory.get(
+    FileSinkOperator op2 = (FileSinkOperator)OperatorFactory.get(
         new CompilationOpContext(), FileSinkDesc.class);
-    speculative.setConf(desc);
-    speculative.initialize(jobConf2, new ObjectInspector[]{inspector});
+    op2.setConf(desc);
+    op2.initialize(jobConf2, new ObjectInspector[]{inspector});
 
     for (Object r : rows) {
       op1.process(r, 0);
-      speculative.process(r, 0);
+      op2.process(r, 0);
     }
 
     op1.close(false);
-    // speculative task also ends successfully
-    speculative.close(false);
+    // Assume op2 also ends successfully, this happens in different containers
+    op2.close(false);
     Path[] paths = findFilesInBasePath();
     List<Path> mondays = Arrays.stream(paths)
         .filter(path -> path.getParent().toString().endsWith("partval=Monday/HIVE_UNION_SUBDIR_0"))
         .collect(Collectors.toList());
-    Assert.assertTrue(mondays.size() == 2);
+    Assert.assertEquals("Two result files were created", 2, mondays.size());
     Set<String> fileNames = new HashSet<>();
     fileNames.add(mondays.get(0).getName());
     fileNames.add(mondays.get(1).getName());
-    Assert.assertTrue(fileNames.contains("000000_1") && fileNames.contains("000000_0"));
 
+    Assert.assertTrue("000000_1 file is expected", fileNames.contains("000000_1"));
+    Assert.assertTrue("000000_0 file is expected", fileNames.contains("000000_0"));
+
+    // This happens in HiveServer2 when the job is finished, the job will call
+    // jobCloseOp to end his operators. For the FileSinkOperator, a deduplication on the
+    // output files may happen so that only one output file is left for each yarn task.
     op1.jobCloseOp(jobConf, true);
     List<Path> resultFiles = new ArrayList<Path>();
     recurseOnPath(basePath, basePath.getFileSystem(jc), resultFiles);
     mondays = resultFiles.stream()
         .filter(path -> path.getParent().toString().endsWith("partval=Monday/HIVE_UNION_SUBDIR_0"))
         .collect(Collectors.toList());
-    Assert.assertTrue(mondays.size() == 1);
-    Assert.assertTrue(mondays.get(0).getName().equals("000000_1"));
+    Assert.assertEquals("Only 1 file should be here after cleaning", 1, mondays.size());
+    Assert.assertEquals("000000_1 file is expected", "000000_1", mondays.get(0).getName());
 
     confirmOutput(DataFormat.WITH_PARTITION_VALUE, resultFiles.toArray(new Path[0]));
     // Clean out directory after testing
