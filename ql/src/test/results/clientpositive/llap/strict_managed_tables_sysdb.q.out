@@ -168,6 +168,10 @@ information_schema	compactions			hive_test_user	USER	DELETE	true	-1	hive_test_us
 information_schema	compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 information_schema	compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -188,6 +192,10 @@ information_schema	tables			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	tables			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	tables			hive_test_user	USER	SELECT	true	-1	hive_test_user
 information_schema	tables			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	transactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	transactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	transactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	transactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -600,11 +608,13 @@ PREHOOK: Output: database:information_schema
 PREHOOK: Output: information_schema@column_privileges
 PREHOOK: Output: information_schema@columns
 PREHOOK: Output: information_schema@compactions
+PREHOOK: Output: information_schema@locks
 PREHOOK: Output: information_schema@scheduled_executions
 PREHOOK: Output: information_schema@scheduled_queries
 PREHOOK: Output: information_schema@schemata
 PREHOOK: Output: information_schema@table_privileges
 PREHOOK: Output: information_schema@tables
+PREHOOK: Output: information_schema@transactions
 PREHOOK: Output: information_schema@views
 POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
 POSTHOOK: type: DROPDATABASE
@@ -613,9 +623,11 @@ POSTHOOK: Output: database:information_schema
 POSTHOOK: Output: information_schema@column_privileges
 POSTHOOK: Output: information_schema@columns
 POSTHOOK: Output: information_schema@compactions
+POSTHOOK: Output: information_schema@locks
 POSTHOOK: Output: information_schema@scheduled_executions
 POSTHOOK: Output: information_schema@scheduled_queries
 POSTHOOK: Output: information_schema@schemata
 POSTHOOK: Output: information_schema@table_privileges
 POSTHOOK: Output: information_schema@tables
+POSTHOOK: Output: information_schema@transactions
 POSTHOOK: Output: information_schema@views
