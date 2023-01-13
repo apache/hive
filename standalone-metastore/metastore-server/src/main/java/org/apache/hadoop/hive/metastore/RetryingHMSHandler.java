@@ -204,12 +204,11 @@ public class RetryingHMSHandler implements InvocationHandler {
       }
 
       Throwable rootCause = ExceptionUtils.getRootCause(caughtException);
-      String rootMsg = rootCause == null ? "" : rootCause.toString();
-      if (!RetryingMetaStoreClient.isRecoverableMessage(rootMsg) ||  retryCount >= retryLimit) {
+      String errorMessage = ExceptionUtils.getMessage(caughtException) +
+              (rootCause == null ? "" : ("\nRoot cause: " + rootCause));
+      if (!RetryingMetaStoreClient.isRecoverableMessage(errorMessage) ||  retryCount >= retryLimit) {
         LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
-        MetaException me = new MetaException(caughtException.getMessage() +
-                (rootMsg == "" ? "": "\nRoot cause: ") + rootMsg);
-        throw me;
+        throw new MetaException(errorMessage);
       }
 
       assert (retryInterval >= 0);
