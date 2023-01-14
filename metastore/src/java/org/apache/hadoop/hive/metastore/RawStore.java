@@ -77,13 +77,21 @@ public interface RawStore extends Configurable {
   public abstract void shutdown();
 
   /**
-   * Opens a new one or the one already created Every call of this function must
-   * have corresponding commit or rollback function call
+   * Opens a new one or the one already created. Every call of this function must
+   * have corresponding commit or rollback function call.
    *
    * @return an active transaction
    */
+  boolean openTransaction();
 
-  public abstract boolean openTransaction();
+  /**
+   * Opens a new one or the one already created. Every call of this function must
+   * have corresponding commit or rollback function call.
+   *
+   * @param isolationLevel The transaction isolation level. Only possible to set on the first call.
+   * @return an active transaction
+   */
+  boolean openTransaction(String isolationLevel);
 
   /**
    * if this is the commit of the first open call then an actual commit is
