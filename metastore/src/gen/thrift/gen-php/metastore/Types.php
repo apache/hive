@@ -20262,6 +20262,8 @@ final class Constant extends \Thrift\Type\TConstant {
   static protected $TABLE_IS_TRANSACTIONAL;
   static protected $TABLE_NO_AUTO_COMPACT;
   static protected $TABLE_TRANSACTIONAL_PROPERTIES;
+  static protected $EXPECTED_PARAMETER_KEY;
+  static protected $EXPECTED_PARAMETER_VALUE;
 
   static protected function init_DDL_TIME() {
     return "transient_lastDdlTime";
@@ -20357,6 +20359,14 @@ final class Constant extends \Thrift\Type\TConstant {
 
   static protected function init_TABLE_TRANSACTIONAL_PROPERTIES() {
     return "transactional_properties";
+  }
+
+  static protected function init_EXPECTED_PARAMETER_KEY() {
+    return "expected_parameter_key";
+  }
+
+  static protected function init_EXPECTED_PARAMETER_VALUE() {
+    return "expected_parameter_value";
   }
 }
 
