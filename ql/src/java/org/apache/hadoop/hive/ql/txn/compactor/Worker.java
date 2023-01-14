@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -105,6 +107,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     try {
       do {
         long startedAt = System.currentTimeMillis();
+        launchedJob = true;
         Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(genericStats, mrStats));
         try {
           launchedJob = singleRun.get(timeout, TimeUnit.MILLISECONDS);
@@ -115,33 +118,31 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           singleRun.cancel(true);
           executor.shutdownNow();
           executor = getTimeoutHandlingExecutor();
-          launchedJob = true;
         } catch (ExecutionException e) {
           LOG.info("Exception during executing compaction", e);
-          launchedJob = true;
         } catch (InterruptedException ie) {
-          // Do not do anything - stop should be set anyway
-          launchedJob = true;
+          // do not ignore interruption requests
+          return;
         }
+
+        doPostLoopActions(System.currentTimeMillis() - startedAt);
 
         // If we didn't try to launch a job it either means there was no work to do or we got
         // here as the result of a communication failure with the DB.  Either way we want to wait
-        // a bit before we restart the loop.
+        // a bit before, otherwise we can start over the loop immediately.
         if (!launchedJob && !stop.get()) {
-          try {
-            Thread.sleep(SLEEP_TIME);
-          } catch (InterruptedException e) {
-          }
+          Thread.sleep(SLEEP_TIME);
         }
-        long elapsedTime = System.currentTimeMillis() - startedAt;
-        doPostLoopActions(elapsedTime, CompactorThreadType.WORKER);
       } while (!stop.get());
+    } catch (InterruptedException e) {
+      // do not ignore interruption requests
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor worker, exiting.", t);
     } finally {
-      if (executor != null) {
-        executor.shutdownNow();
+      if (Thread.currentThread().isInterrupted()) {
+        LOG.info("Interrupt received, Worker is shutting down.");
       }
+      executor.shutdownNow();
       if (msc != null) {
         msc.close();
       }
@@ -170,7 +171,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     boolean isEnoughToCompact;
 
     if (ci.isRebalanceCompaction()) {
-      //TODO: For now, we are allowing rebalance compaction regardless of the table state. Thresholds will be added later.
+      //However thresholds are used to schedule REBALANCE compaction, manual triggering is always allowed if the
+      //table and query engine supports it
       return true;
     } else if (ci.isMajorCompaction()) {
       isEnoughToCompact =
@@ -271,7 +273,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       if (ci == null) {
         return false;
       }
-      if ((runtimeVersion != null || ci.initiatorVersion != null) && !runtimeVersion.equals(ci.initiatorVersion)) {
+      if ((runtimeVersion == null && ci.initiatorVersion != null) || (runtimeVersion != null && !runtimeVersion.equals(ci.initiatorVersion))) {
         LOG.warn("Worker and Initiator versions do not match. Worker: v{}, Initiator: v{}", runtimeVersion, ci.initiatorVersion);
       }
 
@@ -563,12 +565,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
   }
 
-  private void checkInterrupt() throws InterruptedException {
-    if (Thread.interrupted()) {
-      throw new InterruptedException("Compaction execution is interrupted");
-    }
-  }
-
   private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
     return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
         && ci.partName == null;
@@ -659,7 +655,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
      */
     private void abort() throws TException {
       if (status == TxnStatus.OPEN) {
-        msc.abortTxns(Collections.singletonList(txnId));
+        AbortTxnRequest abortTxnRequest = new AbortTxnRequest(txnId);
+        abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_COMPACTION_TXN.getErrorCode());
+        msc.rollbackTxn(abortTxnRequest);
         status = TxnStatus.ABORTED;
       }
     }

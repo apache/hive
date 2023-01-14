@@ -2755,12 +2755,11 @@ class MetaStoreDirectSql {
     List<Object> skewedStringListIdList = new ArrayList<>(0);
 
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-      List<Object[]> sqlResult = MetastoreDirectSqlUtils
-          .ensureList(executeWithArray(query.getInnerQuery(), null, queryText));
+      List<Object> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
 
       if (!sqlResult.isEmpty()) {
-        for (Object[] fields : sqlResult) {
-          skewedStringListIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[0]));
+        for (Object stringListId : sqlResult) {
+          skewedStringListIdList.add(MetastoreDirectSqlUtils.extractSqlLong(stringListId));
         }
       }
     }
@@ -2874,12 +2873,12 @@ class MetaStoreDirectSql {
             + "GROUP BY " + SDS + ".\"CD_ID\"";
     Set<Long> danglingColumnDescriptorIdSet = new HashSet<>(columnDescriptorIdList);
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-      List<Long> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
+      List<Object> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
 
       if (!sqlResult.isEmpty()) {
-        for (Long cdId : sqlResult) {
+        for (Object cdId : sqlResult) {
           // the returned CD is not dangling, so remove it from the list
-          danglingColumnDescriptorIdSet.remove(cdId);
+          danglingColumnDescriptorIdSet.remove(MetastoreDirectSqlUtils.extractSqlLong(cdId));
         }
       }
     }

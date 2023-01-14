@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.thrift.TException;
@@ -366,7 +368,9 @@ public class TransactionBatch extends AbstractStreamingTransaction {
                 ? 1 : 0), 0);
         for (currentTxnIndex = minOpenTxnIndex;
              currentTxnIndex < txnToWriteIds.size(); currentTxnIndex++) {
-          conn.getMSC().rollbackTxn(txnToWriteIds.get(currentTxnIndex).getTxnId());
+          AbortTxnRequest abortTxnRequest = new AbortTxnRequest(txnToWriteIds.get(currentTxnIndex).getTxnId());
+          abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_ROLLBACK.getErrorCode());
+          conn.getMSC().rollbackTxn(abortTxnRequest);
           txnStatus[currentTxnIndex] = HiveStreamingConnection.TxnState.ABORTED;
         }
         currentTxnIndex--; //since the loop left it == txnToWriteIds.size()
@@ -381,7 +385,9 @@ public class TransactionBatch extends AbstractStreamingTransaction {
         }
         long currTxnId = getCurrentTxnId();
         if (currTxnId > 0) {
-          conn.getMSC().rollbackTxn(currTxnId);
+          AbortTxnRequest abortTxnRequest = new AbortTxnRequest(currTxnId);
+          abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_ROLLBACK.getErrorCode());
+          conn.getMSC().rollbackTxn(abortTxnRequest);
           txnStatus[currentTxnIndex] = HiveStreamingConnection.TxnState.ABORTED;
         }
       }

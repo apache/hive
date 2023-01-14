@@ -8793,9 +8793,10 @@ void swap(OpenTxnsResponse &a, OpenTxnsResponse &b);
 std::ostream& operator<<(std::ostream& out, const OpenTxnsResponse& obj);
 
 typedef struct _AbortTxnRequest__isset {
-  _AbortTxnRequest__isset() : replPolicy(false), txn_type(false) {}
+  _AbortTxnRequest__isset() : replPolicy(false), txn_type(false), errorCode(false) {}
   bool replPolicy :1;
   bool txn_type :1;
+  bool errorCode :1;
 } _AbortTxnRequest__isset;
 
 class AbortTxnRequest : public virtual ::apache::thrift::TBase {
@@ -8806,7 +8807,8 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
   AbortTxnRequest() noexcept
                   : txnid(0),
                     replPolicy(),
-                    txn_type(static_cast<TxnType::type>(0)) {
+                    txn_type(static_cast<TxnType::type>(0)),
+                    errorCode(0) {
   }
 
   virtual ~AbortTxnRequest() noexcept;
@@ -8817,6 +8819,7 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
    * @see TxnType
    */
   TxnType::type txn_type;
+  int64_t errorCode;
 
   _AbortTxnRequest__isset __isset;
 
@@ -8825,6 +8828,8 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
   void __set_replPolicy(const std::string& val);
 
   void __set_txn_type(const TxnType::type val);
+
+  void __set_errorCode(const int64_t val);
 
   bool operator == (const AbortTxnRequest & rhs) const
   {
@@ -8837,6 +8842,10 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
     if (__isset.txn_type != rhs.__isset.txn_type)
       return false;
     else if (__isset.txn_type && !(txn_type == rhs.txn_type))
+      return false;
+    if (__isset.errorCode != rhs.__isset.errorCode)
+      return false;
+    else if (__isset.errorCode && !(errorCode == rhs.errorCode))
       return false;
     return true;
   }
@@ -8856,23 +8865,37 @@ void swap(AbortTxnRequest &a, AbortTxnRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const AbortTxnRequest& obj);
 
+typedef struct _AbortTxnsRequest__isset {
+  _AbortTxnsRequest__isset() : errorCode(false) {}
+  bool errorCode :1;
+} _AbortTxnsRequest__isset;
 
 class AbortTxnsRequest : public virtual ::apache::thrift::TBase {
  public:
 
   AbortTxnsRequest(const AbortTxnsRequest&);
   AbortTxnsRequest& operator=(const AbortTxnsRequest&);
-  AbortTxnsRequest() noexcept {
+  AbortTxnsRequest() noexcept
+                   : errorCode(0) {
   }
 
   virtual ~AbortTxnsRequest() noexcept;
   std::vector<int64_t>  txn_ids;
+  int64_t errorCode;
+
+  _AbortTxnsRequest__isset __isset;
 
   void __set_txn_ids(const std::vector<int64_t> & val);
+
+  void __set_errorCode(const int64_t val);
 
   bool operator == (const AbortTxnsRequest & rhs) const
   {
     if (!(txn_ids == rhs.txn_ids))
+      return false;
+    if (__isset.errorCode != rhs.__isset.errorCode)
+      return false;
+    else if (__isset.errorCode && !(errorCode == rhs.errorCode))
       return false;
     return true;
   }
@@ -18054,13 +18077,15 @@ void swap(RenamePartitionResponse &a, RenamePartitionResponse &b);
 std::ostream& operator<<(std::ostream& out, const RenamePartitionResponse& obj);
 
 typedef struct _AlterTableRequest__isset {
-  _AlterTableRequest__isset() : catName(false), environmentContext(false), writeId(true), validWriteIdList(false), processorCapabilities(false), processorIdentifier(false) {}
+  _AlterTableRequest__isset() : catName(false), environmentContext(false), writeId(true), validWriteIdList(false), processorCapabilities(false), processorIdentifier(false), expectedParameterKey(false), expectedParameterValue(false) {}
   bool catName :1;
   bool environmentContext :1;
   bool writeId :1;
   bool validWriteIdList :1;
   bool processorCapabilities :1;
   bool processorIdentifier :1;
+  bool expectedParameterKey :1;
+  bool expectedParameterValue :1;
 } _AlterTableRequest__isset;
 
 class AlterTableRequest : public virtual ::apache::thrift::TBase {
@@ -18074,7 +18099,9 @@ class AlterTableRequest : public virtual ::apache::thrift::TBase {
                       tableName(),
                       writeId(-1LL),
                       validWriteIdList(),
-                      processorIdentifier() {
+                      processorIdentifier(),
+                      expectedParameterKey(),
+                      expectedParameterValue() {
   }
 
   virtual ~AlterTableRequest() noexcept;
@@ -18087,6 +18114,8 @@ class AlterTableRequest : public virtual ::apache::thrift::TBase {
   std::string validWriteIdList;
   std::vector<std::string>  processorCapabilities;
   std::string processorIdentifier;
+  std::string expectedParameterKey;
+  std::string expectedParameterValue;
 
   _AlterTableRequest__isset __isset;
 
@@ -18107,6 +18136,10 @@ class AlterTableRequest : public virtual ::apache::thrift::TBase {
   void __set_processorCapabilities(const std::vector<std::string> & val);
 
   void __set_processorIdentifier(const std::string& val);
+
+  void __set_expectedParameterKey(const std::string& val);
+
+  void __set_expectedParameterValue(const std::string& val);
 
   bool operator == (const AlterTableRequest & rhs) const
   {
@@ -18139,6 +18172,14 @@ class AlterTableRequest : public virtual ::apache::thrift::TBase {
     if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
       return false;
     else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
+      return false;
+    if (__isset.expectedParameterKey != rhs.__isset.expectedParameterKey)
+      return false;
+    else if (__isset.expectedParameterKey && !(expectedParameterKey == rhs.expectedParameterKey))
+      return false;
+    if (__isset.expectedParameterValue != rhs.__isset.expectedParameterValue)
+      return false;
+    else if (__isset.expectedParameterValue && !(expectedParameterValue == rhs.expectedParameterValue))
       return false;
     return true;
   }
