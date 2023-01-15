@@ -59,6 +59,10 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties";
 
+  EXPECTED_PARAMETER_KEY = "expected_parameter_key";
+
+  EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
+
 }
 
 }}} // namespace

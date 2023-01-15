@@ -84,4 +84,8 @@ public class hive_metastoreConstants {
 
   public static final String TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties";
 
+  public static final String EXPECTED_PARAMETER_KEY = "expected_parameter_key";
+
+  public static final String EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
+
 }
