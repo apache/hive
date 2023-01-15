@@ -704,17 +704,31 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /**
-   * Opens a new one or the one already created Every call of this function must
-   * have corresponding commit or rollback function call
+   * Opens a new one or the one already created. Every call of this function must
+   * have corresponding commit or rollback function call.
    *
    * @return an active transaction
    */
-
   @Override
   public boolean openTransaction() {
+    return openTransaction(null);
+  }
+
+  /**
+   * Opens a new one or the one already created. Every call of this function must
+   * have corresponding commit or rollback function call.
+   *
+   * @param isolationLevel The transaction isolation level. Only possible to set on the first call.
+   * @return an active transaction
+   */
+  @Override
+  public boolean openTransaction(String isolationLevel) {
     openTrasactionCalls++;
     if (openTrasactionCalls == 1) {
       currentTransaction = pm.currentTransaction();
+      if (isolationLevel != null) {
+        currentTransaction.setIsolationLevel(isolationLevel);
+      }
       currentTransaction.begin();
       transactionStatus = TXN_STATUS.OPEN;
     } else {
@@ -724,10 +738,16 @@ public class ObjectStore implements RawStore, Configurable {
         throw new RuntimeException("openTransaction called in an interior"
             + " transaction scope, but currentTransaction is not active.");
       }
+
+      // Can not change the isolation level on an already open transaction
+      if (isolationLevel != null && !isolationLevel.equals(currentTransaction.getIsolationLevel())) {
+        throw new RuntimeException("Can not set isolation level on an open transaction");
+      }
     }
 
     boolean result = currentTransaction.isActive();
-    debugLog("Open transaction: count = " + openTrasactionCalls + ", isActive = " + result);
+    debugLog("Open transaction: count = " + openTrasactionCalls + ", isActive = " + result + ", isolationLevel = "
+            + currentTransaction.getIsolationLevel());
     return result;
   }
 

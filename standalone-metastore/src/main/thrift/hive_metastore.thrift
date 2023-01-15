@@ -2243,3 +2243,6 @@ const string TABLE_NO_AUTO_COMPACT = "no_auto_compaction",
 const string TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties",
 const string TABLE_BUCKETING_VERSION = "bucketing_version",
 
+// Keys for alter table environment context parameters
+const string EXPECTED_PARAMETER_KEY = "expected_parameter_key",
+const string EXPECTED_PARAMETER_VALUE = "expected_parameter_value",
