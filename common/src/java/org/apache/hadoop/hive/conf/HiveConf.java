@@ -6880,6 +6880,7 @@ public class HiveConf extends Configuration {
     restrictList.add(ConfVars.HIVE_IN_TEST.varname);
     restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
+    restrictList.add(ConfVars.HIVE_CONF_IGNORE_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST.varname);
   }
 

@@ -256,8 +256,8 @@ public class SetProcessor implements CommandProcessor {
     }
     if (conf.isIgnoredConfig(key)) {
       result = HiveConf.generateIgnoredConfigWarning(key);
-      ss.out.println(result);
       LOG.warn(result);
+      ss.out.println(result);
       return result;
     }
     conf.verifyAndSet(key, value);
