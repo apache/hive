@@ -86,4 +86,8 @@ import org.slf4j.LoggerFactory;
 
   public static final String TABLE_BUCKETING_VERSION = "bucketing_version";
 
+  public static final String EXPECTED_PARAMETER_KEY = "expected_parameter_key";
+
+  public static final String EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
+
 }

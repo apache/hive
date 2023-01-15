@@ -61,6 +61,10 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   TABLE_BUCKETING_VERSION = "bucketing_version";
 
+  EXPECTED_PARAMETER_KEY = "expected_parameter_key";
+
+  EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
+
 }
 
 }}} // namespace
