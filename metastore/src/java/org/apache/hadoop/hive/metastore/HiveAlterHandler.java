@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hive.common.util.HiveStringUtils;
 
+import javax.jdo.Constants;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -126,7 +127,18 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     try {
-      msdb.openTransaction();
+      String expectedKey = environmentContext != null && environmentContext.getProperties() != null ?
+              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_KEY) : null;
+      String expectedValue = environmentContext != null && environmentContext.getProperties() != null ?
+              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE) : null;
+
+      if (expectedKey != null) {
+        // If we have to check the expected state of the table we have to prevent nonrepeatable reads.
+        msdb.openTransaction(Constants.TX_REPEATABLE_READ);
+      } else {
+        msdb.openTransaction();
+      }
+
       name = name.toLowerCase();
       dbname = dbname.toLowerCase();
 
@@ -144,6 +156,12 @@ public class HiveAlterHandler implements AlterHandler {
       oldt = msdb.getTable(dbname, name);
       if (oldt == null) {
         throw new InvalidOperationException("table " + dbname + "." + name + " doesn't exist");
+      }
+
+      if (expectedKey != null && expectedValue != null
+              && !expectedValue.equals(oldt.getParameters().get(expectedKey))) {
+        throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is '"
+                + oldt.getParameters().get(expectedKey) + "'. The expected was value was '" + expectedValue + "'");
       }
 
       // Views derive the column type from the base table definition.  So the view definition
