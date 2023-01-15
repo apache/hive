@@ -44,6 +44,7 @@ import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ROLLBACK;
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.SET_CURRENT_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.TIME;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.VERSION;
 
@@ -90,6 +91,12 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
           .getLocalTimeZone();
       TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(child.getText()), timeZone);
       spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
+      desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+    } else if (HiveParser.KW_SET_CURRENT_SNAPSHOT == executeCommandType.getType()) {
+      ASTNode child = (ASTNode) command.getChild(1);
+      AlterTableExecuteSpec<AlterTableExecuteSpec.SetCurrentSnapshotSpec> spec =
+          new AlterTableExecuteSpec(SET_CURRENT_SNAPSHOT,
+              new AlterTableExecuteSpec.SetCurrentSnapshotSpec(Long.valueOf(child.getText())));
       desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
     }
 

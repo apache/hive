@@ -465,6 +465,8 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_ROLLBACK $rollbackParam)
     | KW_EXECUTE KW_EXPIRE_SNAPSHOTS LPAREN (expireParam=StringLiteral) RPAREN
     -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam)
+    | KW_EXECUTE KW_SET_CURRENT_SNAPSHOT LPAREN (snapshotParam=Number) RPAREN
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_SET_CURRENT_SNAPSHOT $snapshotParam)
     ;
 
 fileFormat

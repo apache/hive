@@ -33,7 +33,8 @@ public class AlterTableExecuteSpec<T> {
 
   public enum ExecuteOperationType {
     ROLLBACK,
-    EXPIRE_SNAPSHOT
+    EXPIRE_SNAPSHOT,
+    SET_CURRENT_SNAPSHOT
   }
 
   private final ExecuteOperationType operationType;
@@ -114,6 +115,29 @@ public class AlterTableExecuteSpec<T> {
     @Override
     public String toString() {
       return MoreObjects.toStringHelper(this).add("timestampMillis", timestampMillis).toString();
+    }
+  }
+
+  /**
+   * Value object class, that stores the set snapshot version operation specific parameters
+   * <ul>
+   *   <li>snapshot Id: it should be a valid snapshot version</li>
+   * </ul>
+   */
+  public static class SetCurrentSnapshotSpec {
+    private final long snapshotId;
+
+    public SetCurrentSnapshotSpec(Long snapshotId) {
+      this.snapshotId = snapshotId;
+    }
+
+    public Long getSnapshotId() {
+      return snapshotId;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
     }
   }
 }
