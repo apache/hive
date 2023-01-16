@@ -315,13 +315,15 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return false;
       }
 
-      boolean insertOnly = AcidUtils.isInsertOnlyTable(table.getParameters());
-      if (LOG.isWarnEnabled() && ci.type.equals(CompactionType.REBALANCE) && insertOnly) {
-        LOG.warn("REBALANCE compaction requested on an insert-only table ({}). Falling back to MAJOR compaction as " +
-            "REBALANCE compaction is supported only on full-acid tables", table.getTableName());
-        if (ci.numberOfBuckets > 0) {
+      if (LOG.isWarnEnabled()) {
+        boolean insertOnly = AcidUtils.isInsertOnlyTable(table.getParameters());
+        if (ci.type.equals(CompactionType.REBALANCE) && insertOnly) {
+          LOG.warn("REBALANCE compaction requested on an insert-only table ({}). Falling back to MAJOR compaction as " +
+              "REBALANCE compaction is supported only on full-acid tables", table.getTableName());
+        }
+        if ((!ci.type.equals(CompactionType.REBALANCE) || insertOnly) && ci.numberOfBuckets > 0) {
           LOG.warn("Only REBALANCE compaction on a full-acid table accepts the number of buckets clause " +
-              "(CLUSTERED INTO {N} BUCKETS). Since the compaction request is {} and the table is {}, it will be ignored.",
+                  "(CLUSTERED INTO {N} BUCKETS). Since the compaction request is {} and the table is {}, it will be ignored.",
               ci.type, insertOnly ? "insert-only" : "full-acid");
         }
       }
