@@ -96,6 +96,10 @@ public class SyntheticJoinPredicate extends Transform {
     SyntheticContext context = new SyntheticContext(pctx);
     SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, context);
     PreOrderOnceWalker ogw = new PreOrderOnceWalker(disp);
+    // The PreOrderOnceWalker traversal tries to cover all possible paths from the root to every other node. A plan
+    // graph with lateral view operators has a particular structure that makes the number of paths exponentially big
+    // and the traversal of such graphs prohibitively expensive. For this reason, we exclude lateral view operators
+    // from the traversal and essentially disable the synthetic predicate generation for such branches.
     ogw.excludeNode(LateralViewForwardOperator.class);
     // Create a list of top op nodes
     List<Node> topNodes = new ArrayList<Node>();
