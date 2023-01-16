@@ -106,9 +106,11 @@ public final class CompactorFactory {
           // however users can request it. In these cases we simply fall back to MAJOR compaction
           return new MmMajorQueryCompactor();
       }
+    } else {
+      throw new HiveException("Only transactional tables can be compacted, " + table.getTableName() + "is not suitable " +
+          "for compaction!");
     }
-    throw new HiveException("Only transactional tables can be compacted, " + table.getTableName() + "is not suitable " +
-        "for compaction!");
+    throw new HiveException("No suitable compactor found for table: " + table.getTableName());
   }
 
 }
