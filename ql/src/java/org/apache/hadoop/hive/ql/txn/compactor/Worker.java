@@ -107,6 +107,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     try {
       do {
         long startedAt = System.currentTimeMillis();
+        boolean err = false;
         launchedJob = true;
         Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(genericStats, mrStats));
         try {
@@ -118,19 +119,23 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           singleRun.cancel(true);
           executor.shutdownNow();
           executor = getTimeoutHandlingExecutor();
+          err = true;
         } catch (ExecutionException e) {
           LOG.info("Exception during executing compaction", e);
+          err = true;
         } catch (InterruptedException ie) {
           // do not ignore interruption requests
           return;
+        } catch (Throwable t) {
+          err = true;
         }
 
         doPostLoopActions(System.currentTimeMillis() - startedAt);
 
         // If we didn't try to launch a job it either means there was no work to do or we got
-        // here as the result of a communication failure with the DB.  Either way we want to wait
+        // here as the result of an error like communication failure with the DB, schema failures etc.  Either way we want to wait
         // a bit before, otherwise we can start over the loop immediately.
-        if (!launchedJob && !stop.get()) {
+        if ((!launchedJob || err) && !stop.get()) {
           Thread.sleep(SLEEP_TIME);
         }
       } while (!stop.get());
