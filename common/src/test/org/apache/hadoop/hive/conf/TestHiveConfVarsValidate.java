@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_EXPLAIN_VISIT_LIMIT;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_EXPLAIN_NODE_VISIT_LIMIT;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -47,15 +47,15 @@ public class TestHiveConfVarsValidate {
   @Parameterized.Parameters(name = "{0} {1}")
   public static Collection<Object[]> generateParameters() {
     List<Object[]> list = new ArrayList<>();
-    list.add(new Object[] { HIVE_EXPLAIN_VISIT_LIMIT, String.valueOf(Integer.MIN_VALUE),
+    list.add(new Object[] { HIVE_EXPLAIN_NODE_VISIT_LIMIT, String.valueOf(Integer.MIN_VALUE),
         "Invalid value  -2147483648, which should be in between 1 and 2147483647" });
-    list.add(new Object[] { HIVE_EXPLAIN_VISIT_LIMIT, "-10",
+    list.add(new Object[] { HIVE_EXPLAIN_NODE_VISIT_LIMIT, "-10",
         "Invalid value  -10, which should be in between 1 and 2147483647" });
-    list.add(new Object[] { HIVE_EXPLAIN_VISIT_LIMIT, "0",
+    list.add(new Object[] { HIVE_EXPLAIN_NODE_VISIT_LIMIT, "0",
         "Invalid value  0, which should be in between 1 and 2147483647" });
-    list.add(new Object[] { HIVE_EXPLAIN_VISIT_LIMIT, "1", null });
-    list.add(new Object[] { HIVE_EXPLAIN_VISIT_LIMIT, "14", null });
-    list.add(new Object[] { HIVE_EXPLAIN_VISIT_LIMIT, String.valueOf(Integer.MAX_VALUE), null });
+    list.add(new Object[] { HIVE_EXPLAIN_NODE_VISIT_LIMIT, "1", null });
+    list.add(new Object[] { HIVE_EXPLAIN_NODE_VISIT_LIMIT, "14", null });
+    list.add(new Object[] { HIVE_EXPLAIN_NODE_VISIT_LIMIT, String.valueOf(Integer.MAX_VALUE), null });
     return list;
   }
 
