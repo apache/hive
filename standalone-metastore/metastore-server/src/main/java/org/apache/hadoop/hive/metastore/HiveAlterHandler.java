@@ -288,7 +288,13 @@ public class HiveAlterHandler implements AlterHandler {
             // get new location
             assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
             if (renamedTranslatedToExternalTable) {
-              destPath = new Path(newt.getSd().getLocation());
+              if (!tableInSpecifiedLoc) {
+                destPath = new Path(newt.getSd().getLocation());
+              } else {
+                Path databasePath = constructRenamedPath(wh.getDatabaseExternalPath(db), srcPath);
+                destPath = new Path(databasePath, newTblName);
+                newt.getSd().setLocation(destPath.toString());
+              }
             } else {
               Path databasePath = constructRenamedPath(wh.getDatabaseManagedPath(db), srcPath);
               destPath = new Path(databasePath, newTblName);
