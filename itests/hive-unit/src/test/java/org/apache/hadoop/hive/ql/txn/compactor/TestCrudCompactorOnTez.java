@@ -537,7 +537,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Wrong compactor were chosen.", MmMajorQueryCompactor.class, reference.get().getClass());
 
     //Check if the compaction succeed
-    verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
+    List<ShowCompactResponseElement> compactions = verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
+    Assert.assertTrue("no senor", compactions.get(0).getErrorMessage()
+        .contains("Falling back to MAJOR compaction as REBALANCE compaction is supported only on full-acid tables."));
 
     // Verify buckets and their content after rebalance
     basePath = new Path(table.getSd().getLocation(), "base_0000007_v0000017");
