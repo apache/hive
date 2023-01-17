@@ -84,16 +84,16 @@ class GetFileMetadataResult
                 case 1:
                     if ($ftype == TType::MAP) {
                         $this->metadata = array();
-                        $_size898 = 0;
-                        $_ktype899 = 0;
-                        $_vtype900 = 0;
-                        $xfer += $input->readMapBegin($_ktype899, $_vtype900, $_size898);
-                        for ($_i902 = 0; $_i902 < $_size898; ++$_i902) {
-                            $key903 = 0;
-                            $val904 = '';
-                            $xfer += $input->readI64($key903);
-                            $xfer += $input->readString($val904);
-                            $this->metadata[$key903] = $val904;
+                        $_size900 = 0;
+                        $_ktype901 = 0;
+                        $_vtype902 = 0;
+                        $xfer += $input->readMapBegin($_ktype901, $_vtype902, $_size900);
+                        for ($_i904 = 0; $_i904 < $_size900; ++$_i904) {
+                            $key905 = 0;
+                            $val906 = '';
+                            $xfer += $input->readI64($key905);
+                            $xfer += $input->readString($val906);
+                            $this->metadata[$key905] = $val906;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -127,9 +127,9 @@ class GetFileMetadataResult
             }
             $xfer += $output->writeFieldBegin('metadata', TType::MAP, 1);
             $output->writeMapBegin(TType::I64, TType::STRING, count($this->metadata));
-            foreach ($this->metadata as $kiter905 => $viter906) {
-                $xfer += $output->writeI64($kiter905);
-                $xfer += $output->writeString($viter906);
+            foreach ($this->metadata as $kiter907 => $viter908) {
+                $xfer += $output->writeI64($kiter907);
+                $xfer += $output->writeString($viter908);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();

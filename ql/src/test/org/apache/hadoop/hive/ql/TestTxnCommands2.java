@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -3457,14 +3458,14 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table mydb1.tbl1" + " PARTITION(ds='today') compact 'MAJOR'");
     TestTxnCommands2.runWorker(hiveConf);
 
-    runStatementOnDriver("drop table if exists T");
-    runStatementOnDriver("create table T (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
-    runStatementOnDriver("insert into T values(0,2)");//makes delta_1_1 in T1
-    runStatementOnDriver("insert into T values(1,4)");//makes delta_2_2 in T2
+    runStatementOnDriver("drop table if exists T1");
+    runStatementOnDriver("create table T1 (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into T1 values(0,2)");//makes delta_1_1 in T1
+    runStatementOnDriver("insert into T1 values(1,4)");//makes delta_2_2 in T2
 
     //create failed compaction attempt so that compactor txn is aborted
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
-    runStatementOnDriver("alter table T compact 'minor'");
+    runStatementOnDriver("alter table T1 compact 'minor'");
     TestTxnCommands2.runWorker(hiveConf);
     // Verify  compaction order
     List<ShowCompactResponseElement> compacts =
@@ -3482,11 +3483,11 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     rqst.setCompactionIds(compactionsToAbort);
     AbortCompactResponse resp = txnHandler.abortCompactions(rqst);
     Assert.assertEquals(3,resp.getAbortedcompactsSize());
-    List<AbortCompactionResponseElement> respList = resp.getAbortedcompacts();
-    Assert.assertEquals("Successfully Aborted Compaction ",respList.get(0).getMessage());
-    Assert.assertEquals("Compaction element not eligible for cancellation",respList.get(1).getMessage());
-    Assert.assertEquals("Compaction element not eligible for cancellation",respList.get(2).getMessage());
-
+    Map<Long,AbortCompactionResponseElement> res = resp.getAbortedcompacts();
+    List<AbortCompactionResponseElement> respList = res.values().stream().collect(Collectors.toList());
+    Assert.assertEquals("Not Eligible",respList.get(0).getMessage());
+    Assert.assertEquals("Not Eligible",respList.get(1).getMessage());
+    Assert.assertEquals("Successfully aborted Compaction",respList.get(2).getMessage());
   }
   private void compactPartition(String table, CompactionType type, String partition)
       throws Exception {

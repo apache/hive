@@ -11722,19 +11722,19 @@ class AbortCompactionResponseElement : public virtual ::apache::thrift::TBase {
   AbortCompactionResponseElement(const AbortCompactionResponseElement&);
   AbortCompactionResponseElement& operator=(const AbortCompactionResponseElement&);
   AbortCompactionResponseElement() noexcept
-                                 : compactionIds(0),
+                                 : compactionId(0),
                                    status(),
                                    message() {
   }
 
   virtual ~AbortCompactionResponseElement() noexcept;
-  int64_t compactionIds;
+  int64_t compactionId;
   std::string status;
   std::string message;
 
   _AbortCompactionResponseElement__isset __isset;
 
-  void __set_compactionIds(const int64_t val);
+  void __set_compactionId(const int64_t val);
 
   void __set_status(const std::string& val);
 
@@ -11742,7 +11742,7 @@ class AbortCompactionResponseElement : public virtual ::apache::thrift::TBase {
 
   bool operator == (const AbortCompactionResponseElement & rhs) const
   {
-    if (!(compactionIds == rhs.compactionIds))
+    if (!(compactionId == rhs.compactionId))
       return false;
     if (__isset.status != rhs.__isset.status)
       return false;
@@ -11780,9 +11780,9 @@ class AbortCompactResponse : public virtual ::apache::thrift::TBase {
   }
 
   virtual ~AbortCompactResponse() noexcept;
-  std::vector<AbortCompactionResponseElement>  abortedcompacts;
+  std::map<int64_t, AbortCompactionResponseElement>  abortedcompacts;
 
-  void __set_abortedcompacts(const std::vector<AbortCompactionResponseElement> & val);
+  void __set_abortedcompacts(const std::map<int64_t, AbortCompactionResponseElement> & val);
 
   bool operator == (const AbortCompactResponse & rhs) const
   {

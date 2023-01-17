@@ -47,12 +47,12 @@ public class AbortCompactionsOperation extends DDLOperation<AbortCompactionsDesc
         try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
             writeHeader(os);
             if (response.getAbortedcompacts() != null) {
-                for (AbortCompactionResponseElement e : response.getAbortedcompacts()) {
+                for (AbortCompactionResponseElement e : response.getAbortedcompacts().values()) {
                     writeRow(os, e);
                 }
             }
         } catch (Exception e) {
-            LOG.warn("show compactions: ", e);
+            LOG.warn("abort compactions: ", e);
             return 1;
         }
         return 0;
@@ -69,12 +69,11 @@ public class AbortCompactionsOperation extends DDLOperation<AbortCompactionsDesc
     }
 
     private void writeRow(DataOutputStream os, AbortCompactionResponseElement e) throws IOException {
-        os.writeBytes(Long.toString(e.getCompactionIds()));
+        os.writeBytes(Long.toString(e.getCompactionId()));
         os.write(Utilities.tabCode);
         os.writeBytes(e.getStatus());
         os.write(Utilities.tabCode);
         os.writeBytes(e.getMessage());
-        os.write(Utilities.tabCode);
         os.write(Utilities.newLineCode);
 
     }

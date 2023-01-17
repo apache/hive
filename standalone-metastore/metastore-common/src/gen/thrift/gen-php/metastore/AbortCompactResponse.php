@@ -24,9 +24,13 @@ class AbortCompactResponse
         1 => array(
             'var' => 'abortedcompacts',
             'isRequired' => true,
-            'type' => TType::LST,
-            'etype' => TType::STRUCT,
-            'elem' => array(
+            'type' => TType::MAP,
+            'ktype' => TType::I64,
+            'vtype' => TType::STRUCT,
+            'key' => array(
+                'type' => TType::I64,
+            ),
+            'val' => array(
                 'type' => TType::STRUCT,
                 'class' => '\metastore\AbortCompactionResponseElement',
                 ),
@@ -34,7 +38,7 @@ class AbortCompactResponse
     );
 
     /**
-     * @var \metastore\AbortCompactionResponseElement[]
+     * @var array
      */
     public $abortedcompacts = null;
 
@@ -67,18 +71,21 @@ class AbortCompactResponse
             }
             switch ($fid) {
                 case 1:
-                    if ($ftype == TType::LST) {
+                    if ($ftype == TType::MAP) {
                         $this->abortedcompacts = array();
                         $_size777 = 0;
-                        $_etype780 = 0;
-                        $xfer += $input->readListBegin($_etype780, $_size777);
+                        $_ktype778 = 0;
+                        $_vtype779 = 0;
+                        $xfer += $input->readMapBegin($_ktype778, $_vtype779, $_size777);
                         for ($_i781 = 0; $_i781 < $_size777; ++$_i781) {
-                            $elem782 = null;
-                            $elem782 = new \metastore\AbortCompactionResponseElement();
-                            $xfer += $elem782->read($input);
-                            $this->abortedcompacts []= $elem782;
+                            $key782 = 0;
+                            $val783 = new \metastore\AbortCompactionResponseElement();
+                            $xfer += $input->readI64($key782);
+                            $val783 = new \metastore\AbortCompactionResponseElement();
+                            $xfer += $val783->read($input);
+                            $this->abortedcompacts[$key782] = $val783;
                         }
-                        $xfer += $input->readListEnd();
+                        $xfer += $input->readMapEnd();
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -101,12 +108,13 @@ class AbortCompactResponse
             if (!is_array($this->abortedcompacts)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('abortedcompacts', TType::LST, 1);
-            $output->writeListBegin(TType::STRUCT, count($this->abortedcompacts));
-            foreach ($this->abortedcompacts as $iter783) {
-                $xfer += $iter783->write($output);
+            $xfer += $output->writeFieldBegin('abortedcompacts', TType::MAP, 1);
+            $output->writeMapBegin(TType::I64, TType::STRUCT, count($this->abortedcompacts));
+            foreach ($this->abortedcompacts as $kiter784 => $viter785) {
+                $xfer += $output->writeI64($kiter784);
+                $xfer += $viter785->write($output);
             }
-            $output->writeListEnd();
+            $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

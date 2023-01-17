@@ -1405,13 +1405,13 @@ struct AbortCompactionRequest {
 }
 
 struct AbortCompactionResponseElement {
-    1: required i64 compactionIds,
+    1: required i64 compactionId,
     2: optional string status,
     3: optional string message
 }
 
 struct AbortCompactResponse {
-    1: required list<AbortCompactionResponseElement> abortedcompacts,
+    1: required map<i64, AbortCompactionResponseElement> abortedcompacts,
 }
 
 struct GetLatestCommittedCompactionInfoRequest {

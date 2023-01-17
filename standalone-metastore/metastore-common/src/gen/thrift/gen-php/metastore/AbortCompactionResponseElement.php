@@ -22,7 +22,7 @@ class AbortCompactionResponseElement
 
     static public $_TSPEC = array(
         1 => array(
-            'var' => 'compactionIds',
+            'var' => 'compactionId',
             'isRequired' => true,
             'type' => TType::I64,
         ),
@@ -41,7 +41,7 @@ class AbortCompactionResponseElement
     /**
      * @var int
      */
-    public $compactionIds = null;
+    public $compactionId = null;
     /**
      * @var string
      */
@@ -54,8 +54,8 @@ class AbortCompactionResponseElement
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['compactionIds'])) {
-                $this->compactionIds = $vals['compactionIds'];
+            if (isset($vals['compactionId'])) {
+                $this->compactionId = $vals['compactionId'];
             }
             if (isset($vals['status'])) {
                 $this->status = $vals['status'];
@@ -87,7 +87,7 @@ class AbortCompactionResponseElement
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::I64) {
-                        $xfer += $input->readI64($this->compactionIds);
+                        $xfer += $input->readI64($this->compactionId);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -120,9 +120,9 @@ class AbortCompactionResponseElement
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('AbortCompactionResponseElement');
-        if ($this->compactionIds !== null) {
-            $xfer += $output->writeFieldBegin('compactionIds', TType::I64, 1);
-            $xfer += $output->writeI64($this->compactionIds);
+        if ($this->compactionId !== null) {
+            $xfer += $output->writeFieldBegin('compactionId', TType::I64, 1);
+            $xfer += $output->writeI64($this->compactionId);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->status !== null) {

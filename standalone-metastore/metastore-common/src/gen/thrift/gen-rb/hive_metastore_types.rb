@@ -4830,12 +4830,12 @@ end
 
 class AbortCompactionResponseElement
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  COMPACTIONIDS = 1
+  COMPACTIONID = 1
   STATUS = 2
   MESSAGE = 3
 
   FIELDS = {
-    COMPACTIONIDS => {:type => ::Thrift::Types::I64, :name => 'compactionIds'},
+    COMPACTIONID => {:type => ::Thrift::Types::I64, :name => 'compactionId'},
     STATUS => {:type => ::Thrift::Types::STRING, :name => 'status', :optional => true},
     MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message', :optional => true}
   }
@@ -4843,7 +4843,7 @@ class AbortCompactionResponseElement
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field compactionIds is unset!') unless @compactionIds
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field compactionId is unset!') unless @compactionId
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -4854,7 +4854,7 @@ class AbortCompactResponse
   ABORTEDCOMPACTS = 1
 
   FIELDS = {
-    ABORTEDCOMPACTS => {:type => ::Thrift::Types::LIST, :name => 'abortedcompacts', :element => {:type => ::Thrift::Types::STRUCT, :class => ::AbortCompactionResponseElement}}
+    ABORTEDCOMPACTS => {:type => ::Thrift::Types::MAP, :name => 'abortedcompacts', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::AbortCompactionResponseElement}}
   }
 
   def struct_fields; FIELDS; end

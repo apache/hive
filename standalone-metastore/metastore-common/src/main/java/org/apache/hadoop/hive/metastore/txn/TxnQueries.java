@@ -57,7 +57,9 @@ public class TxnQueries {
     + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
     + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
     + "\"CQ_RETRY_RETENTION\", \"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\", \"CQ_POOL_NAME\" "
-    + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ? AND \"CQ_STATE\" ='i'";
+    + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" in (\" + requestedCompId + \") AND \"CQ_STATE\" ='i'";
+
+
 
   public static final String INSERT_INTO_COMPLETED_COMPACTION = "INSERT INTO \"COMPLETED_COMPACTIONS\" "
     + "(\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", "

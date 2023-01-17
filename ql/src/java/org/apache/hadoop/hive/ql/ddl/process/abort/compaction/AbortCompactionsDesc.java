@@ -31,7 +31,7 @@ public class AbortCompactionsDesc implements DDLDesc, Serializable {
     private static final long serialVersionUID = 1L;
 
     private final List<Long> compactionIds;
-    private String resFile;
+    private final String resFile;
 
     public AbortCompactionsDesc(Path resFile,List<Long> compactionIds) {
         this.compactionIds = compactionIds;

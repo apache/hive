@@ -11,20 +11,20 @@ package org.apache.hadoop.hive.metastore.api;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class AbortCompactionResponseElement implements org.apache.thrift.TBase<AbortCompactionResponseElement, AbortCompactionResponseElement._Fields>, java.io.Serializable, Cloneable, Comparable<AbortCompactionResponseElement> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("AbortCompactionResponseElement");
 
-  private static final org.apache.thrift.protocol.TField COMPACTION_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("compactionIds", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField COMPACTION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("compactionId", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("status", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("message", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AbortCompactionResponseElementStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new AbortCompactionResponseElementTupleSchemeFactory();
 
-  private long compactionIds; // required
+  private long compactionId; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String status; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String message; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    COMPACTION_IDS((short)1, "compactionIds"),
+    COMPACTION_ID((short)1, "compactionId"),
     STATUS((short)2, "status"),
     MESSAGE((short)3, "message");
 
@@ -42,8 +42,8 @@ package org.apache.hadoop.hive.metastore.api;
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // COMPACTION_IDS
-          return COMPACTION_IDS;
+        case 1: // COMPACTION_ID
+          return COMPACTION_ID;
         case 2: // STATUS
           return STATUS;
         case 3: // MESSAGE
@@ -89,13 +89,13 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final int __COMPACTIONIDS_ISSET_ID = 0;
+  private static final int __COMPACTIONID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
   private static final _Fields optionals[] = {_Fields.STATUS,_Fields.MESSAGE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.COMPACTION_IDS, new org.apache.thrift.meta_data.FieldMetaData("compactionIds", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.COMPACTION_ID, new org.apache.thrift.meta_data.FieldMetaData("compactionId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.STATUS, new org.apache.thrift.meta_data.FieldMetaData("status", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -109,11 +109,19 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public AbortCompactionResponseElement(
-    long compactionIds)
+    long compactionId)
   {
     this();
-    this.compactionIds = compactionIds;
-    setCompactionIdsIsSet(true);
+    this.compactionId = compactionId;
+    setCompactionIdIsSet(true);
+  }
+
+  public AbortCompactionResponseElement(long compactionId, String status,String message ) {
+
+    this.compactionId = compactionId;
+    setCompactionIdIsSet(true);
+    this.status = status;
+    this.message = message;
   }
 
   /**
@@ -121,7 +129,7 @@ package org.apache.hadoop.hive.metastore.api;
    */
   public AbortCompactionResponseElement(AbortCompactionResponseElement other) {
     __isset_bitfield = other.__isset_bitfield;
-    this.compactionIds = other.compactionIds;
+    this.compactionId = other.compactionId;
     if (other.isSetStatus()) {
       this.status = other.status;
     }
@@ -136,32 +144,32 @@ package org.apache.hadoop.hive.metastore.api;
 
   @Override
   public void clear() {
-    setCompactionIdsIsSet(false);
-    this.compactionIds = 0;
+    setCompactionIdIsSet(false);
+    this.compactionId = 0;
     this.status = null;
     this.message = null;
   }
 
-  public long getCompactionIds() {
-    return this.compactionIds;
+  public long getCompactionId() {
+    return this.compactionId;
   }
 
-  public void setCompactionIds(long compactionIds) {
-    this.compactionIds = compactionIds;
-    setCompactionIdsIsSet(true);
+  public void setCompactionId(long compactionId) {
+    this.compactionId = compactionId;
+    setCompactionIdIsSet(true);
   }
 
-  public void unsetCompactionIds() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __COMPACTIONIDS_ISSET_ID);
+  public void unsetCompactionId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __COMPACTIONID_ISSET_ID);
   }
 
-  /** Returns true if field compactionIds is set (has been assigned a value) and false otherwise */
-  public boolean isSetCompactionIds() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __COMPACTIONIDS_ISSET_ID);
+  /** Returns true if field compactionId is set (has been assigned a value) and false otherwise */
+  public boolean isSetCompactionId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __COMPACTIONID_ISSET_ID);
   }
 
-  public void setCompactionIdsIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __COMPACTIONIDS_ISSET_ID, value);
+  public void setCompactionIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __COMPACTIONID_ISSET_ID, value);
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -214,11 +222,11 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case COMPACTION_IDS:
+    case COMPACTION_ID:
       if (value == null) {
-        unsetCompactionIds();
+        unsetCompactionId();
       } else {
-        setCompactionIds((java.lang.Long)value);
+        setCompactionId((java.lang.Long)value);
       }
       break;
 
@@ -244,8 +252,8 @@ package org.apache.hadoop.hive.metastore.api;
   @org.apache.thrift.annotation.Nullable
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case COMPACTION_IDS:
-      return getCompactionIds();
+    case COMPACTION_ID:
+      return getCompactionId();
 
     case STATUS:
       return getStatus();
@@ -264,8 +272,8 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     switch (field) {
-    case COMPACTION_IDS:
-      return isSetCompactionIds();
+    case COMPACTION_ID:
+      return isSetCompactionId();
     case STATUS:
       return isSetStatus();
     case MESSAGE:
@@ -287,12 +295,12 @@ package org.apache.hadoop.hive.metastore.api;
     if (this == that)
       return true;
 
-    boolean this_present_compactionIds = true;
-    boolean that_present_compactionIds = true;
-    if (this_present_compactionIds || that_present_compactionIds) {
-      if (!(this_present_compactionIds && that_present_compactionIds))
+    boolean this_present_compactionId = true;
+    boolean that_present_compactionId = true;
+    if (this_present_compactionId || that_present_compactionId) {
+      if (!(this_present_compactionId && that_present_compactionId))
         return false;
-      if (this.compactionIds != that.compactionIds)
+      if (this.compactionId != that.compactionId)
         return false;
     }
 
@@ -321,7 +329,7 @@ package org.apache.hadoop.hive.metastore.api;
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(compactionIds);
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(compactionId);
 
     hashCode = hashCode * 8191 + ((isSetStatus()) ? 131071 : 524287);
     if (isSetStatus())
@@ -342,12 +350,12 @@ package org.apache.hadoop.hive.metastore.api;
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.compare(isSetCompactionIds(), other.isSetCompactionIds());
+    lastComparison = java.lang.Boolean.compare(isSetCompactionId(), other.isSetCompactionId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetCompactionIds()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.compactionIds, other.compactionIds);
+    if (isSetCompactionId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.compactionId, other.compactionId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -393,8 +401,8 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("AbortCompactionResponseElement(");
     boolean first = true;
 
-    sb.append("compactionIds:");
-    sb.append(this.compactionIds);
+    sb.append("compactionId:");
+    sb.append(this.compactionId);
     first = false;
     if (isSetStatus()) {
       if (!first) sb.append(", ");
@@ -422,8 +430,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetCompactionIds()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'compactionIds' is unset! Struct:" + toString());
+    if (!isSetCompactionId()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'compactionId' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -465,10 +473,10 @@ package org.apache.hadoop.hive.metastore.api;
           break;
         }
         switch (schemeField.id) {
-          case 1: // COMPACTION_IDS
+          case 1: // COMPACTION_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.compactionIds = iprot.readI64();
-              struct.setCompactionIdsIsSet(true);
+              struct.compactionId = iprot.readI64();
+              struct.setCompactionIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -502,8 +510,8 @@ package org.apache.hadoop.hive.metastore.api;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(COMPACTION_IDS_FIELD_DESC);
-      oprot.writeI64(struct.compactionIds);
+      oprot.writeFieldBegin(COMPACTION_ID_FIELD_DESC);
+      oprot.writeI64(struct.compactionId);
       oprot.writeFieldEnd();
       if (struct.status != null) {
         if (struct.isSetStatus()) {
@@ -536,7 +544,7 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, AbortCompactionResponseElement struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeI64(struct.compactionIds);
+      oprot.writeI64(struct.compactionId);
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetStatus()) {
         optionals.set(0);
@@ -556,8 +564,8 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, AbortCompactionResponseElement struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.compactionIds = iprot.readI64();
-      struct.setCompactionIdsIsSet(true);
+      struct.compactionId = iprot.readI64();
+      struct.setCompactionIdIsSet(true);
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.status = iprot.readString();
