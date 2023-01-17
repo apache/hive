@@ -14,3 +14,8 @@ select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
 describe formatted mat1;
 
 select * from mat1;
+
+create materialized view mat2 partitioned on spec (bucket(16, b), truncate(3, c)) stored by iceberg stored as orc tblproperties ('format-version'='2') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
+
+describe formatted mat2;

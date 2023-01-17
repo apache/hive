@@ -101,3 +101,75 @@ POSTHOOK: Input: default@mat1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 five	54
 four	53
+PREHOOK: query: create materialized view mat2 partitioned on spec (bucket(16, b), truncate(3, c)) stored by iceberg stored as orc tblproperties ('format-version'='2') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: create materialized view mat2 partitioned on spec (bucket(16, b), truncate(3, c)) stored by iceberg stored as orc tblproperties ('format-version'='2') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: mat2.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: mat2.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: describe formatted mat2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mat2
+POSTHOOK: query: describe formatted mat2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mat2
+# col_name            	data_type           	comment             
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	BUCKET[16]          	 
+c                   	TRUNCATE[3]         	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"c\":\"true\"}}
+	bucketing_version   	2                   
+	engine.hive.enabled 	true                
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	2                   
+	numRows             	2                   
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	1282                
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52	 
+Expanded Query:     	select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.tbl_ice	0/0/0               	 
