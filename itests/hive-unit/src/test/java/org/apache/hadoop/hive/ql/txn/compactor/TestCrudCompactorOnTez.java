@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -77,6 +78,7 @@ import org.apache.orc.impl.RecordReaderImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.FieldSetter;
 
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
@@ -453,6 +455,112 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     for(int i = 0; i < expectedBuckets.length; i++) {
       Assert.assertEquals("rebalanced bucket " + i, Arrays.asList(expectedBuckets[i]),
           testDataProvider.getBucketData(tableName, BucketCodec.V1.encode(options.bucket(i)) + ""));
+    }
+  }
+
+  @Test
+  public void testMMRebalanceCompactionOfNotPartitionedImplicitlyBucketedTable() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+
+    //set grouping size to have 3 buckets, and re-create driver with the new config
+    conf.set("tez.grouping.min-size", "200");
+    conf.set("tez.grouping.max-size", "80000");
+    driver = new Driver(conf);
+
+    final String stageTableName = "stage_rebalance_test";
+    final String tableName = "rebalance_test";
+
+    TestDataProvider testDataProvider = new TestDataProvider();
+    testDataProvider.createFullAcidTable(stageTableName, true, false);
+    testDataProvider.insertTestDataPartitioned(stageTableName);
+
+    executeStatementOnDriver("drop table if exists " + tableName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tableName + "(a string, b int) " +
+        "STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')", driver);
+    executeStatementOnDriver("INSERT OVERWRITE TABLE " + tableName + " select a, b from " + stageTableName, driver);
+
+    //do some single inserts to have more data in the first bucket.
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('12',12)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('13',13)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('14',14)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('15',15)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('16',16)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('17',17)", driver);
+
+    Table table = msClient.getTable("default", tableName);
+    FileSystem fs = FileSystem.get(conf);
+
+    // Verify buckets and their content before rebalance
+    Path basePath = new Path(table.getSd().getLocation(), "base_0000001");
+    List<String> bucketFileNames = CompactorTestUtil.getBucketFileNames(fs, table, null, "base_0000001");
+
+    Assert.assertEquals("Test setup does not match the expected: different buckets",
+        Arrays.asList("000000_0", "000001_0", "000002_0", "000003_0", "000004_0", "000005_0", "000006_0"),
+        bucketFileNames);
+
+    Map<String, Integer> expectedRowCount = new HashMap<String, Integer>() {{
+      put("000000_0", 4);
+      put("000001_0", 2);
+      put("000002_0", 1);
+      put("000003_0", 2);
+      put("000004_0", 1);
+      put("000005_0", 1);
+      put("000006_0", 1);
+    }};
+    for (String bucketFileName : bucketFileNames) {
+      try(Reader reader = OrcFile.createReader(new Path(basePath, bucketFileName), OrcFile.readerOptions(conf))) {
+        Assert.assertEquals("Row count in bucket " + bucketFileName + " does not match before compaction",
+            (int) expectedRowCount.get(bucketFileName), (int) reader.getNumberOfRows());
+      }
+    }
+
+    //Try to do a rebalancing compaction
+    executeStatementOnDriver("ALTER TABLE " + tableName + " COMPACT 'rebalance'", driver);
+
+    CompactorFactory factory = Mockito.spy(CompactorFactory.getInstance());
+    AtomicReference<QueryCompactor> reference = new AtomicReference<>();
+    doAnswer(invocation -> {
+      QueryCompactor result = (QueryCompactor)invocation.callRealMethod();
+      reference.set(result);
+      return result;
+    }).when(factory).getCompactor(any(), any(), any(), any());
+
+
+    Worker worker = new Worker(factory);
+    worker.setConf(conf);
+    worker.init(new AtomicBoolean(true));
+    worker.run();
+
+    //Check if MmMajorQueryCompactor was used as fallback.
+    Assert.assertEquals("Wrong compactor were chosen.", MmMajorQueryCompactor.class, reference.get().getClass());
+
+    //Check if the compaction succeed
+    List<ShowCompactResponseElement> compactions = verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
+    Assert.assertTrue("no senor", compactions.get(0).getErrorMessage()
+        .contains("Falling back to MAJOR compaction as REBALANCE compaction is supported only on full-acid tables."));
+
+    // Verify buckets and their content after rebalance
+    basePath = new Path(table.getSd().getLocation(), "base_0000007_v0000017");
+    bucketFileNames = CompactorTestUtil.getBucketFileNames(fs, table, null, "base_0000007_v0000017");
+
+    Assert.assertEquals("Buckets does not match after compaction",
+        Arrays.asList("000000_0", "000001_0", "000002_0", "000003_0", "000004_0"),
+        bucketFileNames);
+
+    expectedRowCount = new HashMap<String, Integer>() {{
+      put("000000_0", 4);
+      put("000001_0", 4);
+      put("000002_0", 4);
+      put("000003_0", 4);
+      put("000004_0", 2);
+    }};
+    for (String bucketFileName : bucketFileNames) {
+      try(Reader reader = OrcFile.createReader(new Path(basePath, bucketFileName), OrcFile.readerOptions(conf))) {
+        Assert.assertEquals("Row count in bucket " + bucketFileName + " does not match before compaction",
+            (int) expectedRowCount.get(bucketFileName), (int) reader.getNumberOfRows());
+      }
     }
   }
 
