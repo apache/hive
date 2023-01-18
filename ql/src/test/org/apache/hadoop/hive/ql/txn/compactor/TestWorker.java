@@ -1186,13 +1186,13 @@ public class TestWorker extends CompactorTest {
   }
 
   // With low timeout, but slow run we should finish without a problem
-  @Test(timeout=25000)
+  @Test(timeout=1000)
   public void testTimeoutWithInterrupt() throws Exception {
     runTimeoutTest(1, true, false);
   }
 
   // With low timeout, but slow run we should finish without a problem, even if the interrupt is swallowed
-  @Test(timeout=50000)
+  @Test(timeout=1000)
   public void testTimeoutWithoutInterrupt() throws Exception {
     runTimeoutTest(1, true, true);
   }
@@ -1201,6 +1201,7 @@ public class TestWorker extends CompactorTest {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     HiveConf timeoutConf = new HiveConf(conf);
     timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, timeout, TimeUnit.MILLISECONDS);
+    timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_SLEEP_TIME, 20, TimeUnit.MILLISECONDS);
 
     TimeoutWorker timeoutWorker = getTimeoutWorker(timeoutConf, executor,
         runForever, swallowInterrupt, new CountDownLatch(2));

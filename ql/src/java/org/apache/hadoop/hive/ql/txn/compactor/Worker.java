@@ -79,7 +79,7 @@ import java.util.stream.Collectors;
 public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private String CLASS_NAME = Worker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-  static final private long SLEEP_TIME = 10000;
+  static private long SLEEP_TIME;
 
   private String workerName;
   private final CompactorFactory compactorFactory;
@@ -157,6 +157,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
+    SLEEP_TIME = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_SLEEP_TIME, TimeUnit.MILLISECONDS);
     this.workerName = getWorkerId();
     setName(workerName);
   }
