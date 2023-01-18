@@ -12,11 +12,13 @@ create external table tbl_ice_v2(d int, e string, f int) stored by iceberg store
 
 insert into tbl_ice_v2 values (1, 'one v2', 50), (4, 'four v2', 53), (5, 'five v2', 54);
 
-create materialized view mat1 as
+create materialized view mat1 disable rewrite as
 select tbl_ice.b, tbl_ice.c, tbl_ice_v2.e from tbl_ice join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52;
 
 -- view should be empty
 select * from mat1;
+
+alter materialized view mat1 enable rewrite;
 
 -- view is up-to-date, use it
 explain cbo
