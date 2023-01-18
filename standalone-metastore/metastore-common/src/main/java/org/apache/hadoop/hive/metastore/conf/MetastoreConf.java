@@ -755,12 +755,6 @@ public class MetastoreConf {
             "SQL. For some DBs like Oracle and MSSQL, there are hardcoded or perf-based limitations\n" +
             "that necessitate this. For DBs that can handle the queries, this isn't necessary and\n" +
             "may impede performance. -1 means no batching, 0 means automatic batching."),
-    DIRECT_SQL_MAX_PARAMS_IN_INSERT("metastore.direct.sql.max.parameters.in.insert",
-        "hive.metastore.direct.sql.max.parameters.in.insert", 200,
-        "Maximum number of parameters in an insert query to underlying DB in direct SQL. \n" +
-            "This configuration controls the maximum number of rows in a multiple row insert query. \n" +
-            "Maximum rows in a multiple row insert query is calculated as maximum number of parameters divided by \n" +
-            "number of columns in the respective table. It can be tuned according to the performance of DB."),
     DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES("metastore.disallow.incompatible.col.type.changes",
         "hive.metastore.disallow.incompatible.col.type.changes", true,
         "If true, ALTER TABLE operations which change the type of a\n" +
