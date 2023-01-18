@@ -927,9 +927,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     MetricCollector collector = MetricCollector.getInstance();
     ReplicationMetric metric = collector.getMetrics().getLast();
     Stage stage = metric.getProgress().getStageByName("REPL_DUMP");
-    assertNotNull(stage != null);
     Metric tableMetric = stage.getMetricByName(ReplUtils.MetricName.TABLES.name());
-    assertNotNull(tableMetric != null);
     assertEquals(tableMetric.getTotalCount(), tableDiffEntries.size());
   }
 
