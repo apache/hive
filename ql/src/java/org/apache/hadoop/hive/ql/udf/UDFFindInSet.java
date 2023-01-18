@@ -47,9 +47,7 @@ public class UDFFindInSet extends UDF {
 
     byte[] search_bytes = s.getBytes();
 
-    int search_length = s.getLength();
-
-    for (int i = 0; i < search_length; i++) {
+    for (int i = 0; i < s.getLength(); i++) {
       if (search_bytes[i] == ',') {
         result.set(0);
         return result;
@@ -58,6 +56,7 @@ public class UDFFindInSet extends UDF {
     }
 
     byte[] data = txtarray.getBytes();
+    int search_length = s.getLength();
 
     int cur_pos_in_array = 0;
     int cur_length = 0;
