@@ -68,10 +68,12 @@ public class AlterMaterializedViewRewriteAnalyzer extends BaseSemanticAnalyzer {
     Table materializedViewTable = getTable(tableName, true);
 
     // One last test: if we are enabling the rewrite, we need to check that query
-    // only uses transactional (MM and ACID) tables
+    // only uses transactional (MM and ACID and Iceberg) tables
     if (rewriteEnable) {
       for (SourceTable sourceTable : materializedViewTable.getMVMetadata().getSourceTables()) {
-        if (!AcidUtils.isTransactionalTable(sourceTable.getTable())) {
+        Table table = new Table(sourceTable.getTable());
+        if (!AcidUtils.isTransactionalTable(sourceTable.getTable()) &&
+                !(table.isNonNative() && table.getStorageHandler().areSnapshotsSupported())) {
           throw new SemanticException("Automatic rewriting for materialized view cannot be enabled if the " +
               "materialized view uses non-transactional tables");
         }
