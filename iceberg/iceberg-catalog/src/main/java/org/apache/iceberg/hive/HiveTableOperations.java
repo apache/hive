@@ -299,7 +299,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
 
     Table newTable = new Table(tableName,
         database,
-        metadata.property(HiveCatalog.HMS_TABLE_OWNER, System.getProperty("user.name")),
+        metadata.property(HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()),
         (int) currentTimeMillis / 1000,
         (int) currentTimeMillis / 1000,
         Integer.MAX_VALUE,
