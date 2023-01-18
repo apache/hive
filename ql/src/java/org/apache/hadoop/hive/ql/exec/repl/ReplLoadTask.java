@@ -721,6 +721,10 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Database targetDb = getHive().getDatabase(work.dbNameToLoadIn);
     Map<String, String> props = new HashMap<>();
 
+    if (targetDb == null) {
+      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, work.dbNameToLoadIn);
+    }
+
     // Check if it is a optimised bootstrap failover.
     if (work.isFirstFailover) {
       // Check it should be marked as target of replication & not source of replication.
