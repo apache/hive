@@ -499,7 +499,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
 
     database.setName(namespace.level(0));
     database.setLocationUri(new Path(getExternalWarehouseLocation(), namespace.level(0)).toString() + ".db");
-    database.setLocationUri(databaseLocation(namespace.level(0)));
+    database.setManagedLocationUri(databaseLocation(namespace.level(0)));
 
     meta.forEach((key, value) -> {
       if (key.equals("comment")) {
