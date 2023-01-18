@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
+import java.util.Objects;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
@@ -192,18 +193,19 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String dbName : databases) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
+        Map<String, String> dbParams = database.getParameters();
         if (MetaStoreUtils.isTargetOfReplication(database)) {
-          if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(database, MetaStoreUtils.FailoverEndpoint.TARGET)) {
-            LOG.info("Proceeding with dump operation as database: {} is target of replication and" +
-                    "{} is set to TARGET.", dbName, ReplConst.REPL_FAILOVER_ENDPOINT);
-            ReplUtils.unsetDbPropIfSet(database, ReplConst.TARGET_OF_REPLICATION, db);
-          } else {
-            LOG.warn("Database " + dbNameOrPattern + " is marked as target of replication (repl.target.for), Will "
-                + "trigger failover.");
-          }
+          LOG.info("Triggering optimized bootstrap for database {} since it " +
+                          "is marked as target of replication (repl.target.for) " +
+                          "with {} set to {}",
+                  dbName, ReplConst.REPL_FAILOVER_ENDPOINT,
+                  Objects.nonNull(dbParams) ?
+                          dbParams.get(ReplConst.REPL_FAILOVER_ENDPOINT)
+                          : null
+          );
         }
       } else {
-        throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
+        throw new SemanticException("Cannot dump database " + dbName + " as it does not exist");
       }
     }
   }
