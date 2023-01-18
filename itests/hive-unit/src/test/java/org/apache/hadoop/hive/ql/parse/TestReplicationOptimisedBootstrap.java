@@ -70,6 +70,7 @@ import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.KEY.CURR_STATE_ID_
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -482,6 +483,62 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(new Path(tuple.dumpLocation), conf);
     assertTrue("Table Diff Contains " + tableDiffEntries,
         tableDiffEntries.containsAll(Arrays.asList("t1_managed", "t2_managed")));
+  }
+
+  @Test
+  public void testReverseReplicationFailureWhenSourceDbIsDropped() throws Throwable {
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+
+    // Do a bootstrap cycle.
+    primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // Create 1 managed table and do a dump & load.
+    WarehouseInstance.Tuple tuple =
+      primary.run("use " + primaryDbName)
+        .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+          "tblproperties (\"transactional\"=\"true\")")
+        .run("insert into table t1 values (1)")
+        .dump(primaryDbName, withClause);
+
+    // Do the load and check tables is present.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+          .run("repl status " + replicatedDbName)
+          .verifyResult(tuple.lastReplicationId)
+          .run("use " + replicatedDbName)
+          .run("show tables like 't1'")
+          .verifyResult("t1")
+          .verifyReplTargetProperty(replicatedDbName);
+
+    // suppose source database got dropped before initiating reverse replication( B -> A )
+    primary.run("alter database " + primaryDbName + " set dbproperties('repl.source.for'='')")
+           .run("drop database "+ primaryDbName +" cascade");
+
+    // Do some modifications on the target cluster. (t1)
+    replica.run("use " + replicatedDbName)
+           .run("insert into table t1 values (101)")
+           .run("insert into table t1 values (210),(321)");
+
+    // Prepare for reverse replication.
+    DistributedFileSystem replicaFs = replica.miniDFSCluster.getFileSystem();
+    Path newReplDir = new Path(replica.repldDir + "1");
+    replicaFs.mkdirs(newReplDir);
+    withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+
+    // Do a reverse dump, this should create event_ack file
+    tuple = replica.dump(replicatedDbName, withClause);
+
+    // Check the event ack file got created.
+    assertTrue(new Path(tuple.dumpLocation, EVENT_ACK_FILE).toString() + " doesn't exist",
+      replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
+
+    // this load should throw exception
+    List<String> finalWithClause = withClause;
+    assertThrows("Should fail with db doesn't exist exception", HiveException.class, () -> {
+      primary.load(primaryDbName, replicatedDbName, finalWithClause);
+    });
   }
 
   @Test
