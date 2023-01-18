@@ -867,6 +867,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)) {
         work.getMetricCollector().reportFailoverStart(getName(), metricMap, work.getFailoverMetadata());
       } else {
+        int size = tablesForBootstrap.size();
+        if(size > 0) {
+          metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) tablesForBootstrap.size());
+        }
         work.getMetricCollector().reportStageStart(getName(), metricMap);
       }
       long dumpedCount = resumeFrom - work.eventFrom;
