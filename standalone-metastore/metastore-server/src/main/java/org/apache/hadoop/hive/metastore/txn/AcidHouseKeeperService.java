@@ -44,7 +44,9 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
   @Override
   public void setConf(Configuration configuration) {
     conf = configuration;
-    isCompactorEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON);
+    isCompactorEnabled =
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON) || MetastoreConf.getBoolVar(conf,
+            MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 
