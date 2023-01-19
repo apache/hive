@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.ddl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.hadoop.hive.common.TableName;
@@ -26,16 +29,22 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
@@ -185,5 +194,31 @@ public final class DDLUtils {
     table.setTableType(type);
     table.setTemporary(isTemporary);
     outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
+  }
+
+  public static void setColumnsAndStorePartitionTransformSpec(
+          List<FieldSchema> columns, List<FieldSchema> partitionColumns,
+          HiveConf conf, Table tbl)
+          throws HiveException {
+    Optional<List<FieldSchema>> cols = Optional.ofNullable(columns);
+    Optional<List<FieldSchema>> partCols = Optional.ofNullable(partitionColumns);
+    HiveStorageHandler storageHandler = tbl.getStorageHandler();
+
+    if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
+      tbl.getSd().setCols(new ArrayList<>());
+      cols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
+      if (partCols.isPresent() && !partCols.get().isEmpty()) {
+        // Add the partition columns to the normal columns and save the transform to the session state
+        tbl.getSd().getCols().addAll(partCols.get());
+        List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(partCols.get());
+        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
+          throw new HiveException("Query state attached to Session state must be not null. " +
+                  "Partition transform metadata cannot be saved.");
+        }
+      }
+    } else {
+      cols.ifPresent(tbl::setFields);
+      partCols.ifPresent(tbl::setPartCols);
+    }
   }
 }

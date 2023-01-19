@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.ql.ddl.DDLUtils.setColumnsAndStorePartitionTransformSpec;
+
 /**
  * DDL task description for CREATE VIEW commands.
  */
@@ -350,7 +352,7 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
 
-    CreateTableDesc.setColumnsAndStorePartitionTransformSpec(getSchema(), getPartCols(), conf, tbl, storageHandler);
+    setColumnsAndStorePartitionTransformSpec(getSchema(), getPartCols(), conf, tbl);
 
     /*
      * If the user didn't specify a SerDe, we use the default.
