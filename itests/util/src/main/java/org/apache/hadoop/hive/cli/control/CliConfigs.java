@@ -20,7 +20,10 @@ package org.apache.hadoop.hive.cli.control;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestMiniClusters;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
@@ -222,7 +225,8 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "hive.kafka.query.files");
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
         excludesFrom(testConfigProps, "beeline.positive.include");
-
+        excludesFrom(testConfigProps, "compaction.query.files");
+        
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
 
@@ -236,7 +240,38 @@ public class CliConfigs {
       }
     }
   }
+  
+  public static class MiniLlapLocalCompactorCliConfig extends AbstractCliConfig {
 
+    public MiniLlapLocalCompactorCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "compaction.query.files");
+        setResultsDir("ql/src/test/results/clientpositive/llap");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive");
+
+        setInitScript("q_test_init.sql");
+        setCleanupScript("q_test_cleanup.sql");
+
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+        setCustomConfigValueMap(createConfVarsStringMap());
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+
+    private static Map<HiveConf.ConfVars, String> createConfVarsStringMap() {
+      Map<HiveConf.ConfVars,String> customConfigValueMap = new HashMap<>();
+      customConfigValueMap.put(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, "true");
+      customConfigValueMap.put(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, "true");
+      customConfigValueMap.put(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+      customConfigValueMap.put(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, "false");
+      return customConfigValueMap;
+    }
+  }
   public static class EncryptedHDFSCliConfig extends AbstractCliConfig {
     public EncryptedHDFSCliConfig() {
       super(CoreCliDriver.class);
