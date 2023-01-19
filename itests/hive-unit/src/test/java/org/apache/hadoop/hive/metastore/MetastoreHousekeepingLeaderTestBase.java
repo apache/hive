@@ -61,6 +61,7 @@ class MetastoreHousekeepingLeaderTestBase {
     MetastoreConf.setVar(conf, ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION,
         configuredLeader ? "host" : "lock");
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
 
     addHouseKeepingThreadConfigs();
 
@@ -115,6 +116,7 @@ class MetastoreHousekeepingLeaderTestBase {
 
   private void addCompactorConfigs() {
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEANER_ON, true);
     MetastoreConf.setVar(conf, ConfVars.HIVE_METASTORE_RUNWORKER_IN, "metastore");
     MetastoreConf.setLongVar(conf, ConfVars.COMPACTOR_WORKER_THREADS, 1);
     threadClasses.put(Initiator.class, false);
