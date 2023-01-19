@@ -198,8 +198,7 @@ public final class DDLUtils {
 
   public static void setColumnsAndStorePartitionTransformSpecOfTable(
           List<FieldSchema> columns, List<FieldSchema> partitionColumns,
-          HiveConf conf, Table tbl)
-          throws HiveException {
+          HiveConf conf, Table tbl) {
     Optional<List<FieldSchema>> cols = Optional.ofNullable(columns);
     Optional<List<FieldSchema>> partCols = Optional.ofNullable(partitionColumns);
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
