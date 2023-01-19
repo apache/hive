@@ -74,7 +74,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
   @Override
   protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    Util.cleanupEmptyDir(conf, tmpTableName);
+    Util.cleanupEmptyTableDir(conf, tmpTableName);
   }
 
   private List<String> getCreateQueries(String tmpTableName, Table table,

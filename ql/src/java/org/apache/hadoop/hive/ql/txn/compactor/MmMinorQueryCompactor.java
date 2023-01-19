@@ -66,11 +66,11 @@ final class MmMinorQueryCompactor extends QueryCompactor {
   }
 
   /**
-   * Move files from "result table" directory to table/partition to compact's directory.
+   * Clean up the empty table dir of 'tmpTableName'.
    */
   @Override protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    Util.cleanupEmptyDir(conf, tmpTableName);
+    Util.cleanupEmptyTableDir(conf, tmpTableName);
   }
 
   /**

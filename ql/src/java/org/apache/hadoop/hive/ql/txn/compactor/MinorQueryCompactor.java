@@ -76,8 +76,8 @@ final class MinorQueryCompactor extends QueryCompactor {
   @Override
   protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    Util.cleanupEmptyDir(conf, AcidUtils.DELTA_PREFIX + tmpTableName + "_result");
-    Util.cleanupEmptyDir(conf, AcidUtils.DELETE_DELTA_PREFIX + tmpTableName + "_result");
+    Util.cleanupEmptyTableDir(conf, AcidUtils.DELTA_PREFIX + tmpTableName + "_result");
+    Util.cleanupEmptyTableDir(conf, AcidUtils.DELETE_DELTA_PREFIX + tmpTableName + "_result");
   }
 
   /**
