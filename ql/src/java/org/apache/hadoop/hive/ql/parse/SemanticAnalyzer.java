@@ -13720,7 +13720,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_TABLEPARTCOLSBYSPEC:
-        parseAndStorePartitionTransformSpec(child);
+        SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
+                PartitionTransform.getPartitionTransformSpec(child));
         partitionTransformSpecExists = true;
         break;
       case HiveParser.TOK_TABLEPARTCOLNAMES:
@@ -14044,14 +14045,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
-  private void parseAndStorePartitionTransformSpec(ASTNode child) throws SemanticException {
-    List<TransformSpec> partitionTransformSpec =
-        PartitionTransform.getPartitionTransformSpec(child);
-
-    SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
-            partitionTransformSpec);
-  }
-
   private void validateStorageFormat(
           StorageFormat storageFormat, Map<String, String> tblProps, boolean partitionTransformSpecExists)
           throws SemanticException {
@@ -14195,7 +14188,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_TABLEPARTCOLSBYSPEC:
-        parseAndStorePartitionTransformSpec(child);
+        SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
+                PartitionTransform.getPartitionTransformSpec(child));
         partitionTransformSpecExists = true;
         break;
       default:
