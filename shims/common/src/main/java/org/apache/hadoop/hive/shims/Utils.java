@@ -56,6 +56,10 @@ public class Utils {
   public static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
 
   public static UserGroupInformation getUGI() throws LoginException, IOException {
+    if (UserGroupInformation.isSecurityEnabled()) {
+      return UserGroupInformation.getCurrentUser();
+    }
+
     String doAs = System.getenv("HADOOP_USER_NAME");
     if(doAs != null && doAs.length() > 0) {
      /*
