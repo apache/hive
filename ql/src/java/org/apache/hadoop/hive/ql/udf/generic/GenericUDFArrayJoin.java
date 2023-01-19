@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import com.google.common.base.Joiner;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
 import java.util.List;
@@ -39,7 +41,12 @@ import java.util.List;
   private final Text result = new Text();
 
   public GenericUDFArrayJoin() {
-    super("ARRAY_JOIN", 2, 3, ObjectInspector.Category.PRIMITIVE, PrimitiveObjectInspector.PrimitiveCategory.STRING);
+    super("ARRAY_JOIN", 2, 3, ObjectInspector.Category.PRIMITIVE);
+  }
+
+  @Override public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+    super.initialize(arguments);
+    return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
   }
 
   @Override public Object evaluate(DeferredObject[] arguments) throws HiveException {

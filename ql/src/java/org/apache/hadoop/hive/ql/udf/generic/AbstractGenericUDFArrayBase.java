@@ -38,7 +38,6 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
     private final int minArgCount;
     private final int maxArgCount;
     private final ObjectInspector.Category outputCategory;
-    private PrimitiveObjectInspector.PrimitiveCategory outputPrimitiveCategory;
 
     private final String functionName;
 
@@ -52,12 +51,6 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         this.minArgCount = minArgCount;
         this.maxArgCount = maxArgCount;
         this.outputCategory = outputCategory;
-        this.outputPrimitiveCategory = null;
-    }
-
-    public AbstractGenericUDFArrayBase(String functionName, int minArgCount, int maxArgCount, ObjectInspector.Category outputCategory, PrimitiveObjectInspector.PrimitiveCategory outputPrimitiveCategory) {
-        this(functionName,minArgCount,maxArgCount,outputCategory);
-        this.outputPrimitiveCategory = outputPrimitiveCategory;
     }
 
     @Override
@@ -76,8 +69,6 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         argumentOIs = arguments;
         if (outputCategory == ObjectInspector.Category.LIST) {
             return initListOI(arguments);
-        } else if (outputCategory == ObjectInspector.Category.PRIMITIVE && outputPrimitiveCategory == PrimitiveObjectInspector.PrimitiveCategory.STRING) {
-            return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
         } else {
             return initOI(arguments);
         }
