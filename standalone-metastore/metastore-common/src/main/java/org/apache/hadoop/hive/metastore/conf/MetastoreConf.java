@@ -613,7 +613,12 @@ public class MetastoreConf {
         "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
             "count as small deltas. Default 0.01 = 1%.)"),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
-        "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
+        "Whether to run the initiator thread on this metastore instance or not.\n" +
+            "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
+            "on Hive transactions. For a complete list of parameters required for turning on\n" +
+            "transactions, see hive.txn.manager."),
+    COMPACTOR_CLEANER_ON("metastore.compactor.cleaner.on", "hive.compactor.cleaner.on", false,
+        "Whether to run the cleaner thread on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
             "transactions, see hive.txn.manager."),
@@ -1663,7 +1668,7 @@ public class MetastoreConf {
     HIVE_TXN_MANAGER("hive.txn.manager", "hive.txn.manager",
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager",
         "Set to org.apache.hadoop.hive.ql.lockmgr.DbTxnManager as part of turning on Hive\n" +
-            "transactions, which also requires appropriate settings for hive.compactor.initiator.on,\n" +
+            "transactions, which also requires appropriate settings for hive.compactor.initiator.on,hive.compactor.cleaner.on,\n" +
             "hive.compactor.worker.threads, hive.support.concurrency (true),\n" +
             "and hive.exec.dynamic.partition.mode (nonstrict).\n" +
             "The default DummyTxnManager replicates pre-Hive-0.13 behavior and provides\n" +
