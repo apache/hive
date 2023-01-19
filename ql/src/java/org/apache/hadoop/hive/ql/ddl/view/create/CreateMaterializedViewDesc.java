@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
-import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -46,7 +45,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.ql.ddl.DDLUtils.setColumnsAndStorePartitionTransformSpec;
+import static org.apache.hadoop.hive.ql.ddl.DDLUtils.setColumnsAndStorePartitionTransformSpecOfTable;
 
 /**
  * DDL task description for CREATE VIEW commands.
@@ -352,7 +351,7 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
 
-    setColumnsAndStorePartitionTransformSpec(getSchema(), getPartCols(), conf, tbl);
+    setColumnsAndStorePartitionTransformSpecOfTable(getSchema(), getPartCols(), conf, tbl);
 
     /*
      * If the user didn't specify a SerDe, we use the default.
