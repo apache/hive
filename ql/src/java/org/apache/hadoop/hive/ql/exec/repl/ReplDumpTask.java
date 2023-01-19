@@ -162,7 +162,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private Set<String> tablesForBootstrap = new HashSet<>();
   private List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
   private boolean createEventMarker = false;
-  private boolean unsetDbPropertiesForOptimisedBootstrap;
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -264,8 +263,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
               assert isTableDiffDirectoryPresent;
 
-              // Set boolean to determine the db properties need to sorted once dump is complete
-              unsetDbPropertiesForOptimisedBootstrap = true;
+              work.setSecondDumpAfterFailover(true);
 
               long fromEventId = Long.parseLong(getEventIdFromFile(previousValidHiveDumpPath.getParent(), conf)[1]);
               LOG.info("Starting optimised bootstrap from event id {} for database {}", fromEventId,
@@ -474,7 +472,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                     + ReplAck.DUMP_ACKNOWLEDGEMENT);
 
     // Check if we need to unset database properties after successful optimised bootstrap.
-    if (unsetDbPropertiesForOptimisedBootstrap) {
+    if (work.isSecondDumpAfterFailover()) {
       Hive hiveDb = getHive();
       Database database = hiveDb.getDatabase(work.dbNameOrPattern);
       LinkedHashMap<String, String> dbParams = new LinkedHashMap<>(database.getParameters());

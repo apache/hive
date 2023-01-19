@@ -73,4 +73,6 @@ public class ReplConst {
   public static final String REPL_IS_CUSTOM_DB_MANAGEDLOC = "hive.repl.is.custom.db.managedloc";
 
   public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = "bootstrap.dump.state.";
+
+  public static final String READ_ONLY_HOOK = "org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook";
 }

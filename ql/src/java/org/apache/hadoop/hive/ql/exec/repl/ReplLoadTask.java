@@ -97,6 +97,8 @@ import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.Set;
 
+import static org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook.READONLY;
+import static org.apache.hadoop.hive.common.repl.ReplConst.READ_ONLY_HOOK;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
@@ -421,7 +423,38 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         // Ignore if no file.
       }
     }
+
+    if (isReadOnlyHookRegistered()) {
+      LOG.info("Setting database {} read-only", work.dbNameToLoadIn);
+      setDbReadOnly();
+    }
     return 0;
+  }
+
+  private boolean isReadOnlyHookRegistered() {
+    return conf.get(HiveConf.ConfVars.PREEXECHOOKS.varname) != null &&
+      conf.get(HiveConf.ConfVars.PREEXECHOOKS.varname).contains(READ_ONLY_HOOK);
+  }
+
+  /**
+   * Following hook should be registered before using readonly feature.
+   * 1. SET hive.exec.pre.hooks = "org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook";
+   * If not set 'readonly' has no effect on the database.
+   */
+  private void setDbReadOnly() {
+    Map<String, String> props = new HashMap<>();
+    props.put(READONLY, Boolean.TRUE.toString());
+
+    AlterDatabaseSetPropertiesDesc setTargetReadOnly =
+      new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);
+    DDLWork alterDbPropWork = new DDLWork(new HashSet<>(), new HashSet<>(), setTargetReadOnly, true,
+      work.dumpDirectory, work.getMetricCollector());
+
+    Task<?> addReadOnlyTargetPropTask = TaskFactory.get(alterDbPropWork, conf);
+    if (this.childTasks == null) {
+      this.childTasks = new ArrayList<>();
+    }
+    this.childTasks.add(addReadOnlyTargetPropTask);
   }
 
   private void addLazyDataCopyTask(TaskTracker loadTaskTracker, ReplLogger replLogger) throws IOException {
@@ -721,6 +754,15 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Database targetDb = getHive().getDatabase(work.dbNameToLoadIn);
     Map<String, String> props = new HashMap<>();
 
+    if (targetDb == null) {
+      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, work.dbNameToLoadIn);
+    }
+
+    // check if db is set READ_ONLY, if not then set it. Basically this ensures backward
+    // compatibility.
+    if (!isDbReadOnly(targetDb) && isReadOnlyHookRegistered()) {
+      setDbReadOnly();
+    }
     // Check if it is a optimised bootstrap failover.
     if (work.isFirstFailover) {
       // Check it should be marked as target of replication & not source of replication.
@@ -871,6 +913,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     ((IncrementalLoadLogger)work.incrementalLoadTasksBuilder().getReplLogger()).initiateEventTimestamp(currentTimestamp);
     LOG.info("REPL_INCREMENTAL_LOAD stage duration : {} ms", currentTimestamp - loadStartTime);
     return 0;
+  }
+
+  private boolean isDbReadOnly(Database db) {
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null && Boolean.parseBoolean(dbParameters.get(READONLY)) ;
   }
 
   private void abortOpenTxnsForDatabase(HiveTxnManager hiveTxnManager, ValidTxnList validTxnList, String dbName,
