@@ -185,3 +185,45 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
+PREHOOK: query: insert into tbl_ice values (10, 'ten', 60)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: insert into tbl_ice values (10, 'ten', 60)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: explain cbo
+alter materialized view mat1 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: default@mat1
+POSTHOOK: query: explain cbo
+alter materialized view mat1 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: default@mat1
+CBO PLAN:
+HiveProject(b=[$1], c=[$2])
+  HiveFilter(condition=[>($2, 52)])
+    HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice])
+
+PREHOOK: query: alter materialized view mat1 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: default@mat1
+POSTHOOK: query: alter materialized view mat1 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: default@mat1
+PREHOOK: query: select * from mat1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mat1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+five	54
+four	53
+ten	60
