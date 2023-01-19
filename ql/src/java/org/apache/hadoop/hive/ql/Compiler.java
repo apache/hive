@@ -263,7 +263,7 @@ public class Compiler {
 
   private void openTransaction(TxnType txnType) throws LockException, CommandProcessorException {
     if (DriverUtils.checkConcurrency(driverContext) && startImplicitTxn(driverContext.getTxnManager()) &&
-        !driverContext.getTxnManager().isTxnOpen() && txnType != TxnType.COMPACTION) {
+        !driverContext.getTxnManager().isTxnOpen() && txnType != TxnType.COMPACTION && txnType != TxnType.REBALANCE_COMPACTION) {
       String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
       if (HiveOperation.REPLDUMP.equals(driverContext.getQueryState().getHiveOperation())
          || HiveOperation.REPLLOAD.equals(driverContext.getQueryState().getHiveOperation())) {

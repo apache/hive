@@ -1005,7 +1005,8 @@ enum TxnType {
     READ_ONLY    = 2,
     COMPACTION   = 3,
     MATER_VIEW_REBUILD = 4,
-    SOFT_DELETE  = 5
+    SOFT_DELETE  = 5,
+    REBALANCE_COMPACTION = 6
 }
 
 // specifies which info to return with GetTablesExtRequest
@@ -1293,6 +1294,7 @@ struct CompactionRequest {
     8: optional string initiatorVersion
     9: optional string poolName
     10: optional i32 numberOfBuckets
+    11: optional string orderByClause;
 }
 
 struct CompactionInfoStruct {
@@ -1314,6 +1316,7 @@ struct CompactionInfoStruct {
     16: optional i64 retryRetention,
     17: optional string poolname
     18: optional i32 numberOfBuckets
+    19: optional string orderByClause;
 }
 
 struct OptionalCompactionInfoStruct {

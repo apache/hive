@@ -1561,7 +1561,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           assert true;
         }
 
-        if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn) {
+        if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn && txnType != TxnType.COMPACTION && txnType != TxnType.REBALANCE_COMPACTION) {
           moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
         } else if (isReplayedReplTxn) {
           if (rqst.isSetWriteEventInfos()) {
@@ -3756,6 +3756,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             if (rqst.isSetNumberOfBuckets()) {
               buf.append(", \"CQ_NUMBER_OF_BUCKETS\"");
             }
+            if (rqst.isSetOrderByClause()) {
+              buf.append(", \"CQ_ORDER_BY_CLAUSE\"");
+            }
             if (rqst.getProperties() != null) {
               buf.append(", \"CQ_TBLPROPERTIES\"");
             }
@@ -3790,6 +3793,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             params.add(rqst.getPoolName());
             if (rqst.isSetNumberOfBuckets()) {
               buf.append(", ").append(rqst.getNumberOfBuckets());
+            }
+            if (rqst.isSetOrderByClause()) {
+              buf.append(", ?");
+              params.add(rqst.getOrderByClause());
             }
             if (rqst.getProperties() != null) {
               buf.append(", ?");

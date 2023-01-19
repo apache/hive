@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.ColumnType;
@@ -37,7 +38,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +73,7 @@ class CompactionQueryBuilder {
   private Partition sourcePartition; // for Insert in major and insert-only minor
   private String sourceTabForInsert; // for Insert
   private int numberOfBuckets;  //for rebalance
+  private String orderByClause;  //for rebalance
 
   // settable booleans
   private boolean isPartitioned; // for Create
@@ -173,6 +174,16 @@ class CompactionQueryBuilder {
   }
 
   /**
+   * Sets the order by clause for a rebalancing compaction. It will be used to re-order the data in the table during
+   * the compaction.
+   * @param orderByClause The ORDER BY clause to use for data reordering.
+   */
+  public CompactionQueryBuilder setOrderByClause(String orderByClause) {
+    this.orderByClause = orderByClause;
+    return this;
+  }
+
+  /**
    * If true, Create operations will result in a table with partition column `file_name`.
    */
   CompactionQueryBuilder setPartitioned(boolean partitioned) {
@@ -237,7 +248,11 @@ class CompactionQueryBuilder {
       query.append(" temporary external");
     }
     if (operation == Operation.INSERT) {
-      query.append(" into");
+      if (compactionType.equals(CompactionType.REBALANCE)) {
+        query.append(" overwrite");
+      } else {
+        query.append(" into");
+      }
     }
     query.append(" table ");
 
@@ -306,12 +321,18 @@ class CompactionQueryBuilder {
     }
     switch (compactionType) {
       case REBALANCE: {
-        query.append("0, t2.writeId, t2.rowId / CEIL(numRows / ");
-        query.append(numberOfBuckets);
-        query.append("), t2.rowId, t2.writeId, t2.data from (select ");
-        query.append("count(ROW__ID.writeId) over() as numRows, ROW__ID.writeId as writeId, " +
-            "(row_number() OVER (order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC)) -1 AS rowId, " +
-            "NAMED_STRUCT(");
+        query.append("0, t2.writeId, t2.rowId DIV CEIL(numRows / ")
+            .append(numberOfBuckets)
+            .append("), t2.rowId, t2.writeId, t2.data from (select ")
+            .append("count(ROW__ID.writeId) over() as numRows, ");
+        if (StringUtils.isNotBlank(orderByClause)) {
+          // in case of reordering the data the writeids cannot be kept.
+          query.append("MAX(ROW__ID.writeId) over() as writeId, row_number() OVER (")
+            .append(orderByClause);
+        } else {
+          query.append("ROW__ID.writeId as writeId, row_number() OVER (order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC");
+        }
+        query.append(") - 1 AS rowId, NAMED_STRUCT(");
         for (int i = 0; i < cols.size(); ++i) {
           query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', `")
               .append(cols.get(i).getName()).append("`");
@@ -368,8 +389,16 @@ class CompactionQueryBuilder {
     } else {
       query.append(sourceTab.getDbName()).append(".").append(sourceTab.getTableName());
     }
+    query.append(" ");
     if (CompactionType.REBALANCE.equals(compactionType)) {
-      query.append(" order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC) t2");
+      if (StringUtils.isNotBlank(orderByClause)) {
+        query.append(orderByClause);
+      } else {
+        query.append("order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC");
+      }
+      query.append(") t2");
+    } else if (CompactionType.MAJOR.equals(compactionType) && insertOnly && StringUtils.isNotBlank(orderByClause)) {
+      query.append(orderByClause);
     }
   }
 
@@ -399,7 +428,7 @@ class CompactionQueryBuilder {
       long[] invalidWriteIds = validWriteIdList.getInvalidWriteIds();
       if (invalidWriteIds.length > 0) {
         query.append(" where `originalTransaction` not in (").append(
-            org.apache.commons.lang3.StringUtils.join(ArrayUtils.toObject(invalidWriteIds), ","))
+            StringUtils.join(ArrayUtils.toObject(invalidWriteIds), ","))
             .append(")");
       }
     }
@@ -462,7 +491,7 @@ class CompactionQueryBuilder {
       String columnDesc = "`" + col.getName() + "` " + (!insertOnly ? ":" : "") + columnType;
       columnDescs.add(columnDesc);
     }
-    query.append(StringUtils.join(',',columnDescs));
+    query.append(StringUtils.join(columnDescs, ','));
     query.append(!insertOnly ? ">" : "");
     query.append(") ");
   }
@@ -477,7 +506,7 @@ class CompactionQueryBuilder {
     boolean isFirst;
     List<String> buckCols = sourceTab.getSd().getBucketCols();
     if (buckCols.size() > 0) {
-      query.append("CLUSTERED BY (").append(StringUtils.join(",", buckCols)).append(") ");
+      query.append("CLUSTERED BY (").append(StringUtils.join(buckCols, ",")).append(") ");
       List<Order> sortCols = sourceTab.getSd().getSortCols();
       if (sortCols.size() > 0) {
         query.append("SORTED BY (");
@@ -531,14 +560,14 @@ class CompactionQueryBuilder {
       SkewedInfo skewedInfo = sourceTab.getSd().getSkewedInfo();
       if (skewedInfo != null && !skewedInfo.getSkewedColNames().isEmpty()) {
         query.append(" SKEWED BY (")
-            .append(StringUtils.join(", ", skewedInfo.getSkewedColNames())).append(") ON ");
+            .append(StringUtils.join(skewedInfo.getSkewedColNames(), ", ")).append(") ON ");
         isFirst = true;
         for (List<String> colValues : skewedInfo.getSkewedColValues()) {
           if (!isFirst) {
             query.append(", ");
           }
           isFirst = false;
-          query.append("('").append(StringUtils.join("','", colValues)).append("')");
+          query.append("('").append(StringUtils.join(colValues, "','")).append("')");
         }
         query.append(") STORED AS DIRECTORIES");
       }
