@@ -73,6 +73,7 @@ public class ReplDumpWork implements Serializable {
   private ReplLogger replLogger;
   private FailoverMetaData fmd;
   private boolean firstDumpAfterFailover;
+  private boolean secondDumpAfterFailover;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     injectNextDumpDirForTest(dumpDir, false);
@@ -354,5 +355,13 @@ public class ReplDumpWork implements Serializable {
 
   public void setReplLogger(ReplLogger replLogger) {
     this.replLogger = replLogger;
+  }
+
+  public boolean isSecondDumpAfterFailover() {
+    return secondDumpAfterFailover;
+  }
+
+  public void setSecondDumpAfterFailover(boolean secondDumpAfterFailover) {
+    this.secondDumpAfterFailover = secondDumpAfterFailover;
   }
 }
