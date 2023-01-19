@@ -4207,7 +4207,6 @@ public class ObjectStore implements RawStore, Configurable {
 
         try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
           query.setResultClass(MPartition.class);
-          query.setClass(MPartition.class);
           query.setOrdering("partitionName ascending");
 
           List<MPartition> mparts = (List<MPartition>) query.executeWithMap(queryWithParams.getRight());
@@ -4223,7 +4222,6 @@ public class ObjectStore implements RawStore, Configurable {
     Pair<Query, Map<String, String>> queryWithParams =
         getPartQueryWithParams(catName, dbName, tblName, partNames);
     try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
-      query.setClass(MPartition.class);
       long deleted = query.deletePersistentAll(queryWithParams.getRight());
       LOG.debug("Deleted {} partition from store", deleted);
     }
@@ -4240,7 +4238,6 @@ public class ObjectStore implements RawStore, Configurable {
     Pair<Query, Map<String, String>> queryWithParams =
         getPartQueryWithParams(catName, dbName, tblName, partNames);
     try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
-      query.setClass(MPartition.class);
       query.setResult("sd");
       List<MStorageDescriptor> sds = (List<MStorageDescriptor>) query.executeWithMap(
           queryWithParams.getRight());
@@ -4289,7 +4286,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private Pair<Query, Map<String, String>> getPartQueryWithParams(
       String catName, String dbName, String tblName, List<String> partNames) {
-    Query query = pm.newQuery();
+    Query query = pm.newQuery(MPartition.class);
     Map<String, String> params = new HashMap<>();
     String filterStr = getJDOFilterStrForPartitionNames(catName, dbName, tblName, partNames, params);
     query.setFilter(filterStr);
@@ -5239,12 +5236,9 @@ public class ObjectStore implements RawStore, Configurable {
       tblName = normalizeIdentifier(tblName);
       List<MPartition> mPartitionList;
 
-      try (Query query = pm.newQuery(MPartition.class,
-              "table.tableName == t1 && table.database.name == t2 && t3.contains(partitionName) " +
-                      " && table.database.catalogName == t4")) {
-        query.declareParameters("java.lang.String t1, java.lang.String t2, java.util.Collection t3, "
-                + "java.lang.String t4");
-        mPartitionList = (List<MPartition>) query.executeWithArray(tblName, dbName, partNames, catName);
+      Pair<Query, Map<String, String>> queryWithParams = getPartQueryWithParams(catName, dbName, tblName, partNames);
+      try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
+        mPartitionList = (List<MPartition>) query.executeWithMap(queryWithParams.getRight());
         pm.retrieveAll(mPartitionList);
 
         if (mPartitionList.size() > newParts.size()) {
