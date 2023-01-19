@@ -23,7 +23,9 @@ import java.util.Map;
 import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +72,12 @@ public class SessionStateUtil {
     } else {
       return false;
     }
+  }
+
+  public static void addResourceOrThrow(Configuration conf, String key, Object resource) {
+    getQueryState(conf)
+            .orElseThrow(() -> new IllegalStateException("Query state is missing; failed to add resource for " + key))
+            .addResource(key, resource);
   }
 
   /**

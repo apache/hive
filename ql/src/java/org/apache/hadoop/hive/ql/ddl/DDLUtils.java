@@ -211,10 +211,7 @@ public final class DDLUtils {
         // Add the partition columns to the normal columns and save the transform to the session state
         tbl.getSd().getCols().addAll(partCols.get());
         List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(partCols.get());
-        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
-          throw new HiveException("Query state attached to Session state must be not null. " +
-                  "Partition transform metadata cannot be saved.");
-        }
+        SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec);
       }
     } else {
       cols.ifPresent(tbl::setFields);

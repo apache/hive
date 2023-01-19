@@ -13895,10 +13895,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(e);
         }
       }
-      if (!SessionStateUtil.addResource(conf, META_TABLE_LOCATION, tblLocation)) {
-        throw new SemanticException(
-            "Query state attached to Session state must be not null. Table location cannot be saved.");
-      }
+      SessionStateUtil.addResourceOrThrow(conf, META_TABLE_LOCATION, tblLocation);
       break;
     case CTT: // CREATE TRANSACTIONAL TABLE
       if (isExt && !isDefaultTableTypeChanged) {
@@ -14051,11 +14048,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<TransformSpec> partitionTransformSpec =
         PartitionTransform.getPartitionTransformSpec(child);
 
-    if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
-        partitionTransformSpec)) {
-      throw new SemanticException("Query state attached to Session state must be not null. " +
-          "Partition transform metadata cannot be saved.");
-    }
+    SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
+            partitionTransformSpec);
   }
 
   private void validateStorageFormat(
