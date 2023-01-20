@@ -363,10 +363,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           db.dropPartitions(hmsTable.getDbName(), hmsTable.getTableName(), EMPTY_FILTER, DROP_OPTIONS);
 
           List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(hmsTable.getPartitionKeys());
-          if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
-            throw new MetaException("Query state attached to Session state must be not null. " +
-                "Partition transform metadata cannot be saved.");
-          }
+          SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec);
           hmsTable.getSd().getCols().addAll(hmsTable.getPartitionKeys());
           hmsTable.setPartitionKeysIsSet(false);
         }

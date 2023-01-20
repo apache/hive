@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -55,8 +54,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
-import org.apache.hadoop.hive.ql.parse.PartitionTransform;
-import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -64,13 +61,14 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ValidationUtility;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.ql.ddl.DDLUtils.setColumnsAndStorePartitionTransformSpecOfTable;
 
 /**
  * DDL task description for CREATE TABLE commands.
@@ -820,25 +818,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       }
     }
 
-    Optional<List<FieldSchema>> cols = Optional.ofNullable(getCols());
-    Optional<List<FieldSchema>> partCols = Optional.ofNullable(getPartCols());
-
-    if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
-      tbl.getSd().setCols(new ArrayList<>());
-      cols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
-      if (partCols.isPresent() && !partCols.get().isEmpty()) {
-        // Add the partition columns to the normal columns and save the transform to the session state
-        tbl.getSd().getCols().addAll(partCols.get());
-        List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(partCols.get());
-        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
-          throw new HiveException("Query state attached to Session state must be not null. " +
-                                      "Partition transform metadata cannot be saved.");
-        }
-      }
-    } else {
-      cols.ifPresent(c -> tbl.setFields(c));
-      partCols.ifPresent(c -> tbl.setPartCols(c));
-    }
+    setColumnsAndStorePartitionTransformSpecOfTable(getCols(), getPartCols(), conf, tbl);
 
     if (getBucketCols() != null) {
       tbl.setBucketCols(getBucketCols());
