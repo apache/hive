@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 
 /**
  * A constant expression.
@@ -124,7 +125,12 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     if (typeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME) || typeInfo instanceof BaseCharTypeInfo) {
       return "'" + value.toString() + "'";
     } else if (typeInfo.getTypeName().equals(serdeConstants.BINARY_TYPE_NAME)) {
-      byte[] bytes = (byte[]) value;
+      byte[] bytes;
+      if(value instanceof BytesWritable){
+         bytes =  ((BytesWritable)value).getBytes();
+      } else {
+         bytes = (byte[]) value;
+      }
       char[] hexChars = new char[bytes.length * 2];
       for (int j = 0; j < bytes.length; j++) {
         int v = bytes[j] & 0xFF;
