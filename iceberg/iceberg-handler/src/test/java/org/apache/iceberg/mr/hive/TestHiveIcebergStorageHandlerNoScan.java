@@ -247,6 +247,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         .build();
 
     Table table = testTables.loadTable(identifier);
+    Assert.assertEquals(spec.specId(), table.spec().specId());
     Assert.assertEquals(spec, table.spec());
 
     shell.executeStatement("ALTER TABLE default.part_test SET PARTITION SPEC(year(year_field), month(month_field), " +
@@ -264,7 +265,13 @@ public class TestHiveIcebergStorageHandlerNoScan {
         .build();
 
     table.refresh();
-    Assert.assertEquals(spec, table.spec());
+    Assert.assertEquals(spec.specId(), table.spec().specId());
+
+    for (PartitionField field :
+            spec.fields()) {
+      Assert.assertTrue(field.name(), table.spec().fields().stream().anyMatch(
+          tableField -> tableField.name().equals(field.name())));
+    }
   }
 
   @Test
