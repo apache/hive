@@ -1087,7 +1087,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           if (fs.exists(eventRoot)) {
             fs.delete(eventRoot, true);
           }
-        } catch (FileNotFoundException e) {
+          } catch (FileNotFoundException e) {
           // no worries
         }
         return null;
