@@ -1115,7 +1115,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       Map<String, String> origParams) {
     // Preserve the format-version of the iceberg table and filter out rest.
     String formatVersion = origParams.get(TableProperties.FORMAT_VERSION);
-    if (formatVersion.equals("2")) {
+    if ("2".equals(formatVersion)) {
       tbl.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
       tbl.getParameters().put(TableProperties.DELETE_MODE, "merge-on-read");
       tbl.getParameters().put(TableProperties.UPDATE_MODE, "merge-on-read");
@@ -1126,9 +1126,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (!desc.isExternal()) {
       tbl.getParameters().put("TRANSLATED_TO_EXTERNAL", "TRUE");
       desc.setIsExternal(true);
-    }
-    if (desc.getTblProps() != null) {
-      tbl.getParameters().putAll(desc.getTblProps());
     }
   }
 }
