@@ -72,6 +72,12 @@ public class SessionStateUtil {
     }
   }
 
+  public static void addResourceOrThrow(Configuration conf, String key, Object resource) {
+    getQueryState(conf)
+            .orElseThrow(() -> new IllegalStateException("Query state is missing; failed to add resource for " + key))
+            .addResource(key, resource);
+  }
+
   /**
    * @param conf Configuration object used for getting the query state, should contain the query id
    * @param tableName Name of the table for which the commit info should be retrieved
