@@ -111,6 +111,7 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATT
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_DIGITS;
 
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
@@ -1507,7 +1508,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private boolean isReplicationEventIdUpdate(Database oldDb, Database newDb) {
     Map<String, String> oldDbProp = oldDb.getParameters();
     Map<String, String> newDbProp = newDb.getParameters();
-    if (newDbProp == null || newDbProp.isEmpty()) {
+    if (newDbProp == null || newDbProp.isEmpty() ||
+      Boolean.parseBoolean(newDbProp.get(REPL_RESUME_STARTED_AFTER_FAILOVER))) {
       return false;
     }
     String newReplId = newDbProp.get(ReplConst.REPL_TARGET_TABLE_PROPERTY);
