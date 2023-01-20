@@ -676,6 +676,27 @@ public enum ETypeConverter {
               return logicalType.getScale();
             }
           };
+        case serdeConstants.CHAR_TYPE_NAME:
+          return new BinaryConverterForDecimalType<HiveCharWritable>(type, parent, index, hiveTypeInfo) {
+            @Override
+            protected HiveCharWritable convert(Binary binary) {
+              return new HiveCharWritable(convertToBytes(binary), ((CharTypeInfo) hiveTypeInfo).getLength());
+            }
+          };
+        case serdeConstants.VARCHAR_TYPE_NAME:
+          return new BinaryConverterForDecimalType<HiveVarcharWritable>(type, parent, index, hiveTypeInfo) {
+            @Override
+            protected HiveVarcharWritable convert(Binary binary) {
+              return new HiveVarcharWritable(convertToBytes(binary), ((VarcharTypeInfo) hiveTypeInfo).getLength());
+            }
+          };
+        case serdeConstants.STRING_TYPE_NAME:
+          return new BinaryConverterForDecimalType<BytesWritable>(type, parent, index, hiveTypeInfo) {
+            @Override
+            protected BytesWritable convert(Binary binary) {
+              return new BytesWritable(convertToBytes(binary));
+            }
+          };
         default:
           return new BinaryConverter<HiveDecimalWritable>(type, parent, index, hiveTypeInfo) {
             @Override
@@ -961,4 +982,16 @@ public enum ETypeConverter {
     }
   }
 
+  public abstract static class BinaryConverterForDecimalType<T extends Writable> extends BinaryConverter<T> {
+
+    public BinaryConverterForDecimalType(PrimitiveType type, ConverterParent parent, int index, TypeInfo hiveTypeInfo) {
+      super(type, parent, index, hiveTypeInfo);
+    }
+
+    protected byte[] convertToBytes(Binary binary) {
+      DecimalLogicalTypeAnnotation logicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+      return HiveDecimalUtils.enforcePrecisionScale(new HiveDecimalWritable(binary.getBytes(), logicalType.getScale()),
+                      new DecimalTypeInfo(logicalType.getPrecision(), logicalType.getScale())).toString().getBytes();
+    }
+  }
 }
