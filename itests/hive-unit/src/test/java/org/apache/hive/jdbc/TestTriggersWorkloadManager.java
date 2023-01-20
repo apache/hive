@@ -35,11 +35,13 @@ import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
 import com.google.common.collect.Lists;
 
+@Ignore("Disabled in HIVE-20074 temporary as it is unstable, Will re-enable in HIVE-20075.")
 public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManager {
   @Rule
   public TestName testName = new TestName();
