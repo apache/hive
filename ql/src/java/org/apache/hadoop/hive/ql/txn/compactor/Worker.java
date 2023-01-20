@@ -79,6 +79,7 @@ import java.util.stream.Collectors;
 public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private String CLASS_NAME = Worker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  private static long SLEEP_TIME_MAX;
   static private long SLEEP_TIME;
 
   private String workerName;
@@ -137,6 +138,15 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         // a bit before, otherwise we can start over the loop immediately.
         if ((!launchedJob || err) && !stop.get()) {
           Thread.sleep(SLEEP_TIME);
+          //Backoff mechanism
+          //Increase sleep time if error persist
+          if(err && SLEEP_TIME < SLEEP_TIME_MAX) {
+            SLEEP_TIME *= 2;
+          }
+        }
+        //Reset sleep time to default once error is resolved
+        if (!err) {
+          SLEEP_TIME = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_SLEEP_TIME, TimeUnit.MILLISECONDS);
         }
       } while (!stop.get());
     } catch (InterruptedException e) {
@@ -158,6 +168,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     SLEEP_TIME = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_SLEEP_TIME, TimeUnit.MILLISECONDS);
+    SLEEP_TIME_MAX = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_MAX_SLEEP_TIME, TimeUnit.MILLISECONDS);
     this.workerName = getWorkerId();
     setName(workerName);
   }

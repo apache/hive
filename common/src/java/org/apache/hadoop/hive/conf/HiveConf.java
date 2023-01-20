@@ -3215,10 +3215,15 @@ public class HiveConf extends Configuration {
         "Time in seconds after which a compaction job will be declared failed and the\n" +
         "compaction re-queued."),
 
-    HIVE_COMPACTOR_WORKER_SLEEP_TIME("hive.compactor.worker.sleep.time", "10000ms",
+    HIVE_COMPACTOR_WORKER_SLEEP_TIME("hive.compactor.worker.sleep.time", "10800ms",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Time in milliseconds for which a worker threads goes into sleep before starting another iteration " +
                 "in case of no launched job or error"),
+
+    HIVE_COMPACTOR_WORKER_MAX_SLEEP_TIME("hive.compactor.worker.max.sleep.time", "320000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Max time in milliseconds for which a worker threads goes into sleep before starting another iteration " +
+                "used for backoff in case of no launched job or error"),
     HIVE_COMPACTOR_CHECK_INTERVAL("hive.compactor.check.interval", "300s",
         new TimeValidator(TimeUnit.SECONDS),
         "Time in seconds between checks to see if any tables or partitions need to be\n" +
