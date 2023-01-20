@@ -23,7 +23,9 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -65,15 +68,21 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for IMetaStoreClient API. Testing the Table related functions for metadata
@@ -1073,6 +1082,99 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     } catch (InvalidOperationException exception) {
       // Expected exception
     }
+  }
+
+  @Test
+  public void testAlterTableExpectedPropertyMatch() throws Exception {
+    Table originalTable = testTables[0];
+
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "transient_lastDdlTime");
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE,
+            originalTable.getParameters().get("transient_lastDdlTime"));
+
+    client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
+            originalTable, context);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testAlterTableExpectedPropertyDifferent() throws Exception {
+    Table originalTable = testTables[0];
+
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "transient_lastDdlTime");
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, "alma");
+
+    client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
+            originalTable, context);
+  }
+
+  /**
+   * This tests ensures that concurrent Iceberg commits will fail. Acceptable as a first sanity check.
+   * <p>
+   * I have not found a good way to check that HMS side database commits are parallel in the
+   * {@link org.apache.hadoop.hive.metastore.HiveAlterHandler#alterTable(RawStore, Warehouse, String, String, String, Table, EnvironmentContext)}
+   * call, but this test could be used to manually ensure that using breakpoints.
+   */
+  @Test
+  public void testAlterTableExpectedPropertyConcurrent() throws Exception {
+    Table originalTable = testTables[0];
+
+    originalTable.getParameters().put("snapshot", "0");
+    client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
+            originalTable, null);
+
+    ExecutorService threads = null;
+    try {
+      threads = Executors.newFixedThreadPool(2);
+      for (int i = 0; i < 3; i++) {
+        EnvironmentContext context = new EnvironmentContext();
+        context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "snapshot");
+        context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, String.valueOf(i));
+
+        Table newTable = originalTable.deepCopy();
+        newTable.getParameters().put("snapshot", String.valueOf(i + 1));
+
+        IMetaStoreClient client1 = metaStore.getClient();
+        IMetaStoreClient client2 = metaStore.getClient();
+
+        Collection<Callable<Boolean>> concurrentTasks = new ArrayList<>(2);
+        concurrentTasks.add(alterTask(client1, newTable, context));
+        concurrentTasks.add(alterTask(client2, newTable, context));
+
+        Collection<Future<Boolean>> results = threads.invokeAll(concurrentTasks);
+
+        boolean foundSuccess = false;
+        boolean foundFailure = false;
+
+        for (Future<Boolean> result : results) {
+          if (result.get()) {
+            foundSuccess = true;
+          } else {
+            foundFailure = true;
+          }
+        }
+
+        assertTrue("At least one success is expected", foundSuccess);
+        assertTrue("At least one failure is expected", foundFailure);
+      }
+    } finally {
+      if (threads != null) {
+        threads.shutdown();
+      }
+    }
+  }
+
+  private Callable<Boolean> alterTask(IMetaStoreClient hmsClient, Table newTable, EnvironmentContext context) {
+    return () -> {
+      try {
+        hmsClient.alter_table(newTable.getCatName(), newTable.getDbName(), newTable.getTableName(),
+                newTable, context);
+      } catch (Throwable e) {
+        return false;
+      }
+      return true;
+    };
   }
 
   @Test
