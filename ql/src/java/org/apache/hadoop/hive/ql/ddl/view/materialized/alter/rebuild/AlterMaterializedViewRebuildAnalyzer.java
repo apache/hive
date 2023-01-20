@@ -89,6 +89,8 @@ import static java.util.Collections.singletonList;
 public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
   private static final Logger LOG = LoggerFactory.getLogger(AlterMaterializedViewRebuildAnalyzer.class);
 
+  protected Table mvTable;
+
   public AlterMaterializedViewRebuildAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
@@ -110,7 +112,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     }
 
     try {
-      Boolean outdated = db.isOutdatedMaterializedView(getTxnMgr(), tableName);
+      mvTable = db.getTable(tableName.getDb(), tableName.getTable());
+      Boolean outdated = db.isOutdatedMaterializedView(getTxnMgr(), mvTable);
       if (outdated != null && !outdated) {
         String msg = String.format("Materialized view %s.%s is up to date. Skipping rebuild.",
                 tableName.getDb(), tableName.getTable());
@@ -125,8 +128,6 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     ASTNode rewrittenAST = getRewrittenAST(tableName);
 
     mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
-    mvRebuildDbName = tableName.getDb();
-    mvRebuildName = tableName.getTable();
 
     LOG.debug("Rebuilding materialized view " + tableName.getNotEmptyDbTable());
     super.analyzeInternal(rewrittenAST);
@@ -210,7 +211,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         // we pass 'true' for the forceMVContentsUpToDate parameter, as we cannot allow the
         // materialization contents to be stale for a rebuild if we want to use it.
         materialization = db.getMaterializedViewForRebuild(
-                mvRebuildDbName, mvRebuildName, tablesUsedQuery, getTxnMgr());
+                mvTable.getDbName(), mvTable.getTableName(), tablesUsedQuery, getTxnMgr());
         if (materialization == null) {
           // There is no materialization, we can return the original plan
           return calcitePreMVRewritingPlan;
@@ -293,7 +294,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       // First we need to check if it is valid to convert to MERGE/INSERT INTO.
       // If we succeed, we modify the plan and afterwards the AST.
       // MV should be an acid table.
-      MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor();
+      boolean fullAcidView = AcidUtils.isFullAcidTable(mvTable.getTTable());
+      MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor(fullAcidView);
       visitor.go(basePlan);
       if (visitor.isRewritingAllowed()) {
         if (!materialization.isSourceTablesUpdateDeleteModified()) {
@@ -303,20 +305,22 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
           } else {
             return applyJoinInsertIncremental(basePlan, mdProvider, executorProvider);
           }
-        } else if (visitor.isFullAcidView()) {
-          if (visitor.isContainsAggregate()) {
-            if (visitor.getCountIndex() < 0) {
-              // count(*) is necessary for determine which rows should be deleted from the view
-              // if view definition does not have it incremental rebuild can not be performed, bail out
-              return calcitePreMVRewritingPlan;
-            }
-            return applyAggregateInsertDeleteIncremental(basePlan, mdProvider, executorProvider);
-          } else {
-            return applyJoinInsertDeleteIncremental(
-                    basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
-          }
         } else {
-          return calcitePreMVRewritingPlan;
+          if (fullAcidView) {
+            if (visitor.isContainsAggregate()) {
+              if (visitor.getCountIndex() < 0) {
+                // count(*) is necessary for determine which rows should be deleted from the view
+                // if view definition does not have it incremental rebuild can not be performed, bail out
+                return calcitePreMVRewritingPlan;
+              }
+              return applyAggregateInsertDeleteIncremental(basePlan, mdProvider, executorProvider);
+            } else {
+              return applyJoinInsertDeleteIncremental(
+                      basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
+            }
+          } else {
+            return calcitePreMVRewritingPlan;
+          }
         }
       } else if (materialization.isSourceTablesUpdateDeleteModified()) {
         // calcitePreMVRewritingPlan is already got the optimizations by applyPreJoinOrderingTransforms prior calling

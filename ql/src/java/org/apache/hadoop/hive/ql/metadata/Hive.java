@@ -2024,9 +2024,7 @@ public class Hive {
    * (false), or it cannot be determined (null). The latest case may happen e.g. when the
    * materialized view definition uses external tables.
    */
-  public Boolean isOutdatedMaterializedView(HiveTxnManager txnManager, TableName tableName) throws HiveException {
-
-    Table table = getTable(tableName.getDb(), tableName.getTable());
+  public Boolean isOutdatedMaterializedView(HiveTxnManager txnManager, Table table) throws HiveException {
 
     String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if (validTxnsList == null) {
