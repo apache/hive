@@ -90,11 +90,11 @@ public class AlterMaterializedViewRewriteAnalyzer extends BaseSemanticAnalyzer {
     inputs.add(new ReadEntity(materializedViewTable));
     WriteEntity.WriteType type;
     if (MetaStoreUtils.isNonNativeTable(materializedViewTable.getTTable())
-            && materializedViewTable.getStorageHandler().areSnapshotsSupported()) {
+        && materializedViewTable.getStorageHandler().areSnapshotsSupported()) {
       type = WriteEntity.WriteType.DDL_SHARED;
     } else {
-       type = AcidUtils.isLocklessReadsEnabled(materializedViewTable, conf) ?
-              WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
+      type = AcidUtils.isLocklessReadsEnabled(materializedViewTable, conf) ?
+          WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
     }
     outputs.add(new WriteEntity(materializedViewTable, type));
 
