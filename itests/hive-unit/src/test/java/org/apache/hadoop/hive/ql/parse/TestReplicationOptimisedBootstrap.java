@@ -913,7 +913,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   }
 
   @Test
-  public void testTblMetricRegisterDuringSecondCycleOfOptimizedBootstrap() throws Throwable{
+  public void testTblMetricRegisterDuringSecondCycleOfOptimizedBootstrap() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(false);
     withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
