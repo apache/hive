@@ -116,4 +116,6 @@ public interface LlapIo<T> {
    */
   void loadDataIntoCache(LlapDaemonProtocolProtos.CacheEntryList metadata);
 
+  boolean usingLowLevelCache();
+
 }
