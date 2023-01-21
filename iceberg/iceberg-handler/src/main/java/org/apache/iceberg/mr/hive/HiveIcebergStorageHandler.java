@@ -533,6 +533,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             (AlterTableExecuteSpec.ExpireSnapshotsSpec) executeSpec.getOperationParams();
         icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
         break;
+      case SET_CURRENT_SNAPSHOT:
+        AlterTableExecuteSpec.SetCurrentSnapshotSpec setSnapshotVersionSpec =
+            (AlterTableExecuteSpec.SetCurrentSnapshotSpec) executeSpec.getOperationParams();
+        LOG.debug("Executing set current snapshot operation on iceberg table {}.{} to version {}", hmsTable.getDbName(),
+            hmsTable.getTableName(), setSnapshotVersionSpec.getSnapshotId());
+        IcebergTableUtil.setCurrentSnapshot(icebergTable, setSnapshotVersionSpec.getSnapshotId());
+        break;
       default:
         throw new UnsupportedOperationException(
             String.format("Operation type %s is not supported", executeSpec.getOperationType().name()));
