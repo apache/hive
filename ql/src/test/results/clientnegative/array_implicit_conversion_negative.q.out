@@ -1,0 +1,13 @@
+PREHOOK: query: drop table if exists aic_tab
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists aic_tab
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table aic_tab (c1 array<array<smallint>>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aic_tab
+POSTHOOK: query: create table aic_tab (c1 array<array<smallint>>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aic_tab
+FAILED: SemanticException Line 0:-1 Cannot insert into target table because column number/types are different 'TOK_TMP_FILE': Cannot convert column 0 from array<int> to array<array<smallint>>.
