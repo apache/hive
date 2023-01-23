@@ -118,22 +118,24 @@ public class MRCompactor implements Compactor {
     this.msc = msc;
   }
 
-   @Override
-  public boolean run(HiveConf conf, Table table, Partition partition, StorageDescriptor sd,
-                  ValidWriteIdList writeIds, CompactionInfo ci, AcidDirectory dir)
+  @Override
+  public boolean run(CompactorContext context)
        throws IOException, HiveException, InterruptedException {
-    if (ci.runAs.equals(System.getProperty("user.name"))) {
-      run(conf, table, sd, writeIds, ci, dir);
+    if (context.getCompactionInfo().runAs.equals(System.getProperty("user.name"))) {
+      run(context.getConf(), context.getTable(), context.getSd(),
+              context.getValidWriteIdList(), context.getCompactionInfo(), context.getAcidDirectory());
     } else {
-      UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
+      UserGroupInformation ugi = UserGroupInformation.createProxyUser(context.getCompactionInfo().runAs,
+              UserGroupInformation.getLoginUser());
       ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-        run(conf, table, sd, writeIds, ci, dir);
+        run(context.getConf(), context.getTable(), context.getSd(),
+                context.getValidWriteIdList(), context.getCompactionInfo(), context.getAcidDirectory());
         return null;
       });
       try {
         FileSystem.closeAllForUGI(ugi);
       } catch (IOException exception) {
-        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + context.getCompactionInfo().getFullPartitionName(),
             exception);
       }
     }

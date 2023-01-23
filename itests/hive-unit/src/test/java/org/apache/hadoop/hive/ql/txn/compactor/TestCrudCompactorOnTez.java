@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,8 +67,9 @@ import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.txn.compactor.Compactor;
-import org.apache.hadoop.hive.ql.txn.compactor.CompactorChain;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
@@ -526,12 +528,17 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     executeStatementOnDriver("ALTER TABLE " + tableName + " COMPACT 'rebalance'", driver);
 
     CompactorFactory factory = Mockito.spy(CompactorFactory.getInstance());
-    AtomicReference<QueryCompactor> reference = new AtomicReference<>();
+    AtomicReference<Compactor> reference = new AtomicReference<>();
     doAnswer(invocation -> {
-      QueryCompactor result = (QueryCompactor)invocation.callRealMethod();
-      reference.set(result);
+      CompactorPipeline result = (CompactorPipeline)invocation.callRealMethod();
+      // Use reflection to fetch inner compactors
+      CompactorPipeline compactorPipeline = (CompactorPipeline) result;
+      Field field = compactorPipeline.getClass().getDeclaredField("compactor");
+      field.setAccessible(true);
+      Compactor compactor = (Compactor) field.get(compactorPipeline);
+      reference.set(compactor);
       return result;
-    }).when(factory).getCompactor(any(), any(), any(), any());
+    }).when(factory).getCompactorPipeline(any(), any(), any(), any());
 
 
     Worker worker = new Worker(factory);
@@ -2705,8 +2712,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Setup
     QueryCompactor qc = new QueryCompactor() {
       @Override
-      public boolean run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-               ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+      public boolean run(CompactorContext context) throws IOException {
         return true;
       }
     };
@@ -3418,25 +3424,36 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     AtomicReference<Compactor> primary = new AtomicReference<>();
     AtomicReference<Compactor> secondary = new AtomicReference<>();
     doAnswer(invocationOnMock -> {
-      Compactor result = (Compactor) invocationOnMock.callRealMethod();
-      Assert.assertTrue(result instanceof CompactorChain);
-      // Use reflection to fetch inner list of compactors
-      CompactorChain compactorChain = (CompactorChain) result;
-      java.lang.reflect.Field field = compactorChain.getClass().getDeclaredField("compactors");
+      Object result = invocationOnMock.callRealMethod();
+      Assert.assertTrue(result instanceof CompactorPipeline);
+      // Use reflection to fetch inner compactors
+      CompactorPipeline compactorPipeline = (CompactorPipeline) result;
+      Field field = compactorPipeline.getClass().getDeclaredField("compactor");
       field.setAccessible(true);
-      List<Compactor> compactorList = (List<Compactor>) field.get(compactorChain);
-      Assert.assertTrue(compactorList.get(0) instanceof MergeCompactor);
+      Compactor compactor = (Compactor) field.get(compactorPipeline);
+      Assert.assertTrue(compactor instanceof FallbackCompactor);
+      FallbackCompactor fallbackCompactor = spy((FallbackCompactor) compactor);
+      field.set(compactorPipeline, fallbackCompactor);
+      field = fallbackCompactor.getClass().getDeclaredField("primaryCompactor");
+      field.setAccessible(true);
+      Compactor compactor1 = (Compactor) field.get(fallbackCompactor);
+      Assert.assertTrue(compactor1 instanceof MergeCompactor);
+      compactor1 = spy(compactor1);
+      field.set(fallbackCompactor, compactor1);
+      field = fallbackCompactor.getClass().getDeclaredField("secondaryCompactor");
+      field.setAccessible(true);
+      Compactor compactor2 = (Compactor) field.get(fallbackCompactor);
       if (compactionType == CompactionType.MAJOR) {
-        Assert.assertTrue(compactorList.get(1) instanceof MajorQueryCompactor);
+        Assert.assertTrue(compactor2 instanceof MajorQueryCompactor);
       } else {
-        Assert.assertTrue(compactorList.get(1) instanceof MinorQueryCompactor);
+        Assert.assertTrue(compactor2 instanceof MinorQueryCompactor);
       }
-      compactorList.set(0, spy(compactorList.get(0)));
-      compactorList.set(1, spy(compactorList.get(1)));
-      primary.set(compactorList.get(0));
-      secondary.set(compactorList.get(1));
+      compactor2 = spy(compactor2);
+      field.set(fallbackCompactor, compactor2);
+      primary.set(compactor1);
+      secondary.set(compactor2);
       return result;
-    }).when(compactorFactory).getCompactor(any(), any(), any(), any());
+    }).when(compactorFactory).getCompactorPipeline(any(), any(), any(), any());
 
     Worker worker = new Worker(compactorFactory);
     worker.setConf(conf);
@@ -3453,11 +3470,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     }
 
     if (useFallback) {
-      verify(primary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
-      verify(secondary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
+      verify(primary.get(), times(1)).run(any());
+      verify(secondary.get(), times(1)).run(any());
     } else {
-      verify(primary.get(), times(1)).run(any(), any(),any(),any(),any(),any(),any());
-      verify(secondary.get(), times(0)).run(any(),any(),any(),any(),any(),any(),any());
+      verify(primary.get(), times(1)).run(any());
+      verify(secondary.get(), times(0)).run(any());
     }
 
     // Clean up resources
@@ -3510,21 +3527,32 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     AtomicReference<Compactor> primary = new AtomicReference<>();
     AtomicReference<Compactor> secondary = new AtomicReference<>();
     doAnswer(invocationOnMock -> {
-      Compactor result = (Compactor) invocationOnMock.callRealMethod();
-      Assert.assertTrue(result instanceof CompactorChain);
-      // Use reflection to fetch inner list of compactors
-      CompactorChain compactorChain = (CompactorChain) result;
-      java.lang.reflect.Field field = compactorChain.getClass().getDeclaredField("compactors");
+      Object result = invocationOnMock.callRealMethod();
+      Assert.assertTrue(result instanceof CompactorPipeline);
+      // Use reflection to fetch inner compactors
+      CompactorPipeline compactorPipeline = (CompactorPipeline) result;
+      Field field = compactorPipeline.getClass().getDeclaredField("compactor");
       field.setAccessible(true);
-      List<Compactor> compactorList = (List<Compactor>) field.get(compactorChain);
-      Assert.assertTrue(compactorList.get(0) instanceof MergeCompactor);
-      Assert.assertTrue(compactorList.get(1) instanceof MmMajorQueryCompactor);
-      compactorList.set(0, spy(compactorList.get(0)));
-      compactorList.set(1, spy(compactorList.get(1)));
-      primary.set(compactorList.get(0));
-      secondary.set(compactorList.get(1));
+      Compactor compactor = (Compactor) field.get(compactorPipeline);
+      Assert.assertTrue(compactor instanceof FallbackCompactor);
+      FallbackCompactor fallbackCompactor = spy((FallbackCompactor) compactor);
+      field.set(compactorPipeline, fallbackCompactor);
+      field = fallbackCompactor.getClass().getDeclaredField("primaryCompactor");
+      field.setAccessible(true);
+      Compactor compactor1 = (Compactor) field.get(fallbackCompactor);
+      Assert.assertTrue(compactor1 instanceof MergeCompactor);
+      compactor1 = spy(compactor1);
+      field.set(fallbackCompactor, compactor1);
+      field = fallbackCompactor.getClass().getDeclaredField("secondaryCompactor");
+      field.setAccessible(true);
+      Compactor compactor2 = (Compactor) field.get(fallbackCompactor);
+      Assert.assertTrue(compactor2 instanceof MmMajorQueryCompactor);
+      compactor2 = spy(compactor2);
+      field.set(fallbackCompactor, compactor2);
+      primary.set(compactor1);
+      secondary.set(compactor2);
       return result;
-    }).when(compactorFactory).getCompactor(any(), any(), any(), any());
+    }).when(compactorFactory).getCompactorPipeline(any(), any(), any(), any());
 
     Worker worker = new Worker(compactorFactory);
     worker.setConf(conf);
@@ -3535,8 +3563,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     txnHandler.compact(cr);
     worker.run();
 
-    verify(primary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
-    verify(secondary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
+    verify(primary.get(), times(1)).run(any());
+    verify(secondary.get(), times(1)).run(any());
   }
 
   @Test
@@ -3544,7 +3572,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED, true);
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     String dbName = "default";
-    String tableName = "testParquetFallback";
+    String tableName = "testOrcFallback";
     String partitionName = "bkt=1";
     executeStatementOnDriver("drop table if exists " + tableName, driver);
     executeStatementOnDriver("CREATE TABLE " + tableName + "(a INT, b STRING) " + " PARTITIONED BY(bkt INT)" +
@@ -3562,21 +3590,32 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     AtomicReference<Compactor> primary = new AtomicReference<>();
     AtomicReference<Compactor> secondary = new AtomicReference<>();
     doAnswer(invocationOnMock -> {
-      Compactor result = (Compactor) invocationOnMock.callRealMethod();
-      Assert.assertTrue(result instanceof CompactorChain);
-      // Use reflection to fetch inner list of compactors
-      CompactorChain compactorChain = (CompactorChain) result;
-      java.lang.reflect.Field field = compactorChain.getClass().getDeclaredField("compactors");
+      Object result = invocationOnMock.callRealMethod();
+      Assert.assertTrue(result instanceof CompactorPipeline);
+      // Use reflection to fetch inner compactors
+      CompactorPipeline compactorPipeline = (CompactorPipeline) result;
+      Field field = compactorPipeline.getClass().getDeclaredField("compactor");
       field.setAccessible(true);
-      List<Compactor> compactorList = (List<Compactor>) field.get(compactorChain);
-      Assert.assertTrue(compactorList.get(0) instanceof MergeCompactor);
-      Assert.assertTrue(compactorList.get(1) instanceof MajorQueryCompactor);
-      compactorList.set(0, spy(compactorList.get(0)));
-      compactorList.set(1, spy(compactorList.get(1)));
-      primary.set(compactorList.get(0));
-      secondary.set(compactorList.get(1));
+      Compactor compactor = (Compactor) field.get(compactorPipeline);
+      Assert.assertTrue(compactor instanceof FallbackCompactor);
+      FallbackCompactor fallbackCompactor = spy((FallbackCompactor) compactor);
+      field.set(compactorPipeline, fallbackCompactor);
+      field = fallbackCompactor.getClass().getDeclaredField("primaryCompactor");
+      field.setAccessible(true);
+      Compactor compactor1 = (Compactor) field.get(fallbackCompactor);
+      Assert.assertTrue(compactor1 instanceof MergeCompactor);
+      compactor1 = spy(compactor1);
+      field.set(fallbackCompactor, compactor1);
+      field = fallbackCompactor.getClass().getDeclaredField("secondaryCompactor");
+      field.setAccessible(true);
+      Compactor compactor2 = (Compactor) field.get(fallbackCompactor);
+      Assert.assertTrue(compactor2 instanceof MajorQueryCompactor);
+      compactor2 = spy(compactor2);
+      field.set(fallbackCompactor, compactor2);
+      primary.set(compactor1);
+      secondary.set(compactor2);
       return result;
-    }).when(compactorFactory).getCompactor(any(), any(), any(), any());
+    }).when(compactorFactory).getCompactorPipeline(any(), any(), any(), any());
 
     Worker worker = new Worker(compactorFactory);
     worker.setConf(conf);
@@ -3587,7 +3626,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     txnHandler.compact(cr);
     worker.run();
 
-    verify(primary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
-    verify(secondary.get(), times(1)).run(any(), any(), any(), any(), any(), any(), any());
+    verify(primary.get(), times(1)).run(any());
+    verify(secondary.get(), times(1)).run(any());
   }
 }

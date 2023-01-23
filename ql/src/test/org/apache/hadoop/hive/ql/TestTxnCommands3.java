@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.io.orc.TestVectorizedOrcAcidRowBatchReader;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
 import org.apache.hadoop.hive.ql.txn.compactor.MRCompactor;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.Assert;
@@ -491,10 +492,10 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
       invocationOnMock.callRealMethod();
       throw new RuntimeException(
         "Will cause CompactorMR to fail all opening txn and creating directories for compaction.");
-    }).when(mrCompactor).run(any(), any(), any(), any(), any(), any(), any());
+    }).when(mrCompactor).run(any());
 
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
-    when(mockedFactory.getCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
+    when(mockedFactory.getCompactorPipeline(any(), any(), any(), any())).thenReturn(new CompactorPipeline(mrCompactor));
 
     Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);
@@ -548,10 +549,10 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
       invocationOnMock.callRealMethod();
       throw new RuntimeException(
         "Will cause CompactorMR to fail all opening txn and creating directories for compaction.");
-    }).when(mrCompactor).run(any(), any(), any(), any(), any(), any(), any());
+    }).when(mrCompactor).run(any());
 
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
-    when(mockedFactory.getCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
+    when(mockedFactory.getCompactorPipeline(any(), any(), any(), any())).thenReturn(new CompactorPipeline(mrCompactor));
 
     Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);

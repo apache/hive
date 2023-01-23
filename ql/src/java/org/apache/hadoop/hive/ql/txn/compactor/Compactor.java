@@ -50,18 +50,10 @@ public interface Compactor {
 
   /**
    * Start a compaction.
-   * @param hiveConf hive configuration
-   * @param table the table, where the compaction should run
-   * @param partition the partition, where the compaction should run
-   * @param storageDescriptor this is the resolved storage descriptor
-   * @param writeIds valid write IDs used to filter rows while they're being read for compaction
-   * @param compactionInfo provides info about the type of compaction
-   * @param dir provides ACID directory layout information
-   * @return Returns <code>true</code> when compaction is successful and <code>false</code> otherwise.
+   * @param context CompactionContext which contains information to perform compaction.
    * @throws IOException compaction cannot be finished.
    */
-  boolean run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-           ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir)
+  boolean run(CompactorContext context)
       throws IOException, HiveException, InterruptedException;
 
 }

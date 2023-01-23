@@ -22,7 +22,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
@@ -40,6 +39,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.regex.Matcher;
 
 final class MergeCompactor extends QueryCompactor {
@@ -47,14 +48,19 @@ final class MergeCompactor extends QueryCompactor {
   private static final Logger LOG = LoggerFactory.getLogger(MergeCompactor.class.getName());
 
   @Override
-  public boolean run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-                  ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException, HiveException, InterruptedException {
+  public boolean run(CompactorContext context) throws IOException, HiveException, InterruptedException {
+    HiveConf hiveConf = context.getConf();
+    Table table = context.getTable();
+    AcidDirectory dir = context.getAcidDirectory();
+    ValidWriteIdList writeIds = context.getValidWriteIdList();
+    StorageDescriptor storageDescriptor = context.getSd();
+    CompactionInfo compactionInfo = context.getCompactionInfo();
     if (isMergeCompaction(hiveConf, dir, writeIds, storageDescriptor)) {
       // Only inserts happened, it is much more performant to merge the files than running a query
-      Path outputDirPath = getCompactionOutputDirPath(hiveConf, writeIds,
+      Path outputDirPath = getOutputDirPath(hiveConf, writeIds,
               compactionInfo.isMajorCompaction(), storageDescriptor);
       try {
-        return mergeOrcFiles(hiveConf, compactionInfo.isMajorCompaction(),
+        return mergeFiles(hiveConf, compactionInfo.isMajorCompaction(),
                 dir, outputDirPath, AcidUtils.isInsertOnlyTable(table.getParameters()));
       } catch (Throwable t) {
         // Error handling, just delete the output directory,
@@ -81,7 +87,7 @@ final class MergeCompactor extends QueryCompactor {
   private boolean isMergeCompaction(HiveConf conf, AcidDirectory directory,
                                    ValidWriteIdList validWriteIdList,
                                    StorageDescriptor storageDescriptor) {
-    return conf.getBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED)
+    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED)
             && storageDescriptor.getOutputFormat().equalsIgnoreCase("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat")
             && !hasDeleteOrAbortedDirectories(directory, validWriteIdList);
   }
@@ -94,7 +100,7 @@ final class MergeCompactor extends QueryCompactor {
    */
   private boolean hasDeleteOrAbortedDirectories(AcidDirectory directory, ValidWriteIdList validWriteIdList) {
     if (!directory.getCurrentDirectories().isEmpty()) {
-      final long minWriteId = validWriteIdList.getMinOpenWriteId() == null ? 1 : validWriteIdList.getMinOpenWriteId();
+      final long minWriteId = Optional.ofNullable(validWriteIdList.getMinOpenWriteId()).orElse(1L);
       final long maxWriteId = validWriteIdList.getHighWatermark();
       return directory.getCurrentDirectories().stream()
               .filter(AcidUtils.ParsedDeltaLight::isDeleteDelta)
@@ -110,7 +116,7 @@ final class MergeCompactor extends QueryCompactor {
    * @param conf hive configuration, must be not null
    * @param dir the root directory of delta dirs
    * @param includeBaseDir true, if the base directory should be scanned
-   * @param isMm
+   * @param isMm true, if the table is an insert only table
    * @return map of bucket ID -> bucket files
    * @throws IOException an error happened during the reading of the directory/bucket file
    */
@@ -118,11 +124,18 @@ final class MergeCompactor extends QueryCompactor {
                                                                        boolean includeBaseDir, boolean isMm) throws IOException {
     Map<Integer, List<Reader>> result = new HashMap<>();
     if (includeBaseDir && dir.getBaseDirectory() != null) {
-      getBucketFiles(conf, dir.getBaseDirectory(), isMm, result);
+      result.putAll(getBucketFiles(conf, dir.getBaseDirectory(), isMm));
     }
     for (AcidUtils.ParsedDelta deltaDir : dir.getCurrentDirectories()) {
       Path deltaDirPath = deltaDir.getPath();
-      getBucketFiles(conf, deltaDirPath, isMm, result);
+      Map<Integer, List<Reader>> intermediateResult = getBucketFiles(conf, deltaDirPath, isMm);
+      intermediateResult.forEach((k, v) -> {
+        if (result.containsKey(k)) {
+          result.get(k).addAll(v);
+        } else {
+          result.put(k, v);
+        }
+      });
     }
     return result;
   }
@@ -133,10 +146,10 @@ final class MergeCompactor extends QueryCompactor {
    * @param conf hive configuration, must be not null
    * @param dirPath the directory to be scanned.
    * @param isMm collect bucket files fron insert only directories
-   * @param bucketIdToBucketFilePath the result of the scan
    * @throws IOException an error happened during the reading of the directory/bucket file
    */
-  private void getBucketFiles(HiveConf conf, Path dirPath, boolean isMm, Map<Integer, List<Reader>> bucketIdToBucketFilePath) throws IOException {
+  private Map<Integer, List<Reader>> getBucketFiles(HiveConf conf, Path dirPath, boolean isMm) throws IOException {
+    Map<Integer, List<Reader>> bucketIdToBucketFilePath = new HashMap<>();
     FileSystem fs = dirPath.getFileSystem(conf);
     FileStatus[] fileStatuses =
             fs.listStatus(dirPath, isMm ? AcidUtils.originalBucketFilter : AcidUtils.bucketFileFilter);
@@ -156,6 +169,7 @@ final class MergeCompactor extends QueryCompactor {
       Reader reader = OrcFile.createReader(fs, fPath);
       bucketIdToBucketFilePath.computeIfPresent(bucketNum, (k, v) -> v).add(reader);
     }
+    return bucketIdToBucketFilePath;
   }
 
   /**
@@ -166,7 +180,7 @@ final class MergeCompactor extends QueryCompactor {
    * @param sd the resolved storadge descriptor
    * @return output path, always non-null
    */
-  private Path getCompactionOutputDirPath(HiveConf conf, ValidWriteIdList writeIds, boolean isBaseDir,
+  private Path getOutputDirPath(HiveConf conf, ValidWriteIdList writeIds, boolean isBaseDir,
                                          StorageDescriptor sd) {
     long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
     long highWatermark = writeIds.getHighWatermark();
@@ -187,7 +201,7 @@ final class MergeCompactor extends QueryCompactor {
    * @param isMm merge orc files from insert only tables
    * @throws IOException error occurred during file operation
    */
-  private boolean mergeOrcFiles(HiveConf conf, boolean includeBaseDir, AcidDirectory dir,
+  private boolean mergeFiles(HiveConf conf, boolean includeBaseDir, AcidDirectory dir,
                                Path outputDirPath, boolean isMm) throws IOException {
     Map<Integer, List<Reader>> bucketIdToBucketFiles = matchBucketIdToBucketFiles(conf, dir, includeBaseDir, isMm);
     OrcFileMerger fileMerger = new OrcFileMerger(conf);

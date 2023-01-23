@@ -24,36 +24,55 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Runs different compactions based on the order provided in the list.
- * Mainly used for fall back mechanism for Merge compaction.
+ * A class which contains all information required for MR/Query based compaction.
  */
-final class CompactorChain implements Compactor {
+public class CompactorContext {
 
-  private final List<Compactor> compactors = new ArrayList<>();
+  private final HiveConf conf;
+  private final Table table;
+  private final Partition partition;
+  private final StorageDescriptor sd;
+  private final ValidWriteIdList validWriteIdList;
+  private final CompactionInfo compactionInfo;
+  private final AcidDirectory dir;
 
-  CompactorChain(List<Compactor> compactors) {
-    this.compactors.addAll(compactors);
+  CompactorContext(HiveConf conf, Table table, Partition p, StorageDescriptor sd, ValidWriteIdList tblValidWriteIds, CompactionInfo ci, AcidDirectory dir) {
+    this.conf = conf;
+    this.table = table;
+    this.partition = p;
+    this.sd = sd;
+    this.validWriteIdList = tblValidWriteIds;
+    this.compactionInfo = ci;
+    this.dir = dir;
   }
 
-  @Override
-  public boolean run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor, ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException, HiveException, InterruptedException {
-    if (!compactors.isEmpty()) {
-      int index = 0;
-      boolean result;
-      do {
-        result = compactors.get(index).run(hiveConf, table, partition, storageDescriptor, writeIds, compactionInfo, dir);
-        index++;
-      } while (index < compactors.size() && !result);
-      return true;
-    } else {
-      return false;
-    }
+  public HiveConf getConf() {
+    return conf;
+  }
+
+  public Table getTable() {
+    return table;
+  }
+
+  public Partition getPartition() {
+    return partition;
+  }
+
+  public StorageDescriptor getSd() {
+    return sd;
+  }
+
+  public ValidWriteIdList getValidWriteIdList() {
+    return validWriteIdList;
+  }
+
+  public CompactionInfo getCompactionInfo() {
+    return compactionInfo;
+  }
+
+  public AcidDirectory getAcidDirectory() {
+    return dir;
   }
 }

@@ -44,11 +44,15 @@ final class MinorQueryCompactor extends QueryCompactor {
   private static final Logger LOG = LoggerFactory.getLogger(MinorQueryCompactor.class.getName());
 
   @Override
-  public boolean run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-           ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+  public boolean run(CompactorContext context) throws IOException {
     LOG.info("Running query based minor compaction");
+    HiveConf hiveConf = context.getConf();
+    Table table = context.getTable();
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
+    StorageDescriptor storageDescriptor = context.getSd();
+    AcidDirectory dir = context.getAcidDirectory();
+    ValidWriteIdList writeIds = context.getValidWriteIdList();
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
     conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
@@ -68,7 +72,7 @@ final class MinorQueryCompactor extends QueryCompactor {
     List<String> compactionQueries = getCompactionQueries(tmpTableName, table, writeIds);
     List<String> dropQueries = getDropQueries(tmpTableName);
 
-    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
+    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
         Lists.newArrayList(resultDeltaDir, resultDeleteDeltaDir), createQueries,
         compactionQueries, dropQueries, table.getParameters());
     return true;
