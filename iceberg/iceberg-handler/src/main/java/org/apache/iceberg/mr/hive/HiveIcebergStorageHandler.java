@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -1106,6 +1107,25 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         alterTableDesc.getProps().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
       // signal manual iceberg metadata location updated by user
       environmentContext.putToProperties(HiveIcebergMetaHook.MANUAL_ICEBERG_METADATA_LOCATION_CHANGE, "true");
+    }
+  }
+
+  @Override
+  public void setTableParametersForCTLT(org.apache.hadoop.hive.ql.metadata.Table tbl, CreateTableLikeDesc desc,
+      Map<String, String> origParams) {
+    // Preserve the format-version of the iceberg table and filter out rest.
+    String formatVersion = origParams.get(TableProperties.FORMAT_VERSION);
+    if ("2".equals(formatVersion)) {
+      tbl.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+      tbl.getParameters().put(TableProperties.DELETE_MODE, "merge-on-read");
+      tbl.getParameters().put(TableProperties.UPDATE_MODE, "merge-on-read");
+      tbl.getParameters().put(TableProperties.MERGE_MODE, "merge-on-read");
+    }
+
+    // check if the table is being created as managed table, in that case we translate it to external
+    if (!desc.isExternal()) {
+      tbl.getParameters().put("TRANSLATED_TO_EXTERNAL", "TRUE");
+      desc.setIsExternal(true);
     }
   }
 }
