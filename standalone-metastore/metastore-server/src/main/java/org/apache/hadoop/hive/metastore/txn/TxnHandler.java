@@ -248,8 +248,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
 
-  Map<Long, AbortCompactionResponseElement> abortCompactionResponseElements = new HashMap<>();
-
   private static DataSource connPool;
   private static DataSource connPoolMutex;
 
@@ -6272,38 +6270,40 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.SafeToRetry
   public AbortCompactResponse abortCompactions(AbortCompactionRequest reqst) throws MetaException, NoSuchCompactionException {
-
+    Map<Long, AbortCompactionResponseElement> abortCompactionResponseElements = new HashMap<>();
     AbortCompactResponse response = new AbortCompactResponse(new HashMap<>());
     response.setAbortedcompacts(abortCompactionResponseElements);
+
     List<Long> compactionIdsToAbort = reqst.getCompactionIds();
     if (compactionIdsToAbort.isEmpty()) {
       LOG.info("Compaction ids are missing in request. No compactions to abort");
       throw new NoSuchCompactionException("Compaction ids missing in request. No compactions to abort");
     }
     reqst.getCompactionIds().forEach(x -> {
-      abortCompactionResponseElements.put(x, new AbortCompactionResponseElement(x, "Error", "Not Eligible"));
+      addAbortCompactionResponse(abortCompactionResponseElements,x,  "No Such Compaction Id Available","Error");
     });
-    List<CompactionInfo> eligibleCompactionsToAbort = findEligibleCompactionsToAbort(compactionIdsToAbort);
+
+    List<CompactionInfo> eligibleCompactionsToAbort = findEligibleCompactionsToAbort(abortCompactionResponseElements,compactionIdsToAbort);
     for (int x = 0; x < eligibleCompactionsToAbort.size(); x++) {
-      abortCompaction(eligibleCompactionsToAbort.get(x));
+      abortCompaction(abortCompactionResponseElements, eligibleCompactionsToAbort.get(x));
     }
     return response;
   }
 
-  private void addAbortCompactionResponse(long id, String message, String status) {
-    abortCompactionResponseElements.put(id, new AbortCompactionResponseElement(id, status, message));
-  }
-
   @RetrySemantics.SafeToRetry
-  public void abortCompaction(CompactionInfo compactionInfo) throws MetaException {
+  public void abortCompaction(Map<Long, AbortCompactionResponseElement> abortCompactionResponseElements,
+                              CompactionInfo compactionInfo) throws MetaException {
     try {
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex);
            PreparedStatement pStmt = dbConn.prepareStatement(TxnQueries.INSERT_INTO_COMPLETED_COMPACTION)) {
+
         CompactionInfo.insertIntoCompletedCompactions(pStmt, compactionInfo, getDbTime(dbConn));
         int updCount = pStmt.executeUpdate();
         if (updCount != 1) {
           LOG.error("Unable to update compaction record: {}. updCnt={}", compactionInfo, updCount);
           dbConn.rollback();
+          addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id,
+                  "Error while aborting compaction:Unable to update compaction record", "Error");
         } else {
           LOG.debug("Inserted {} entries into COMPLETED_COMPACTIONS", updCount);
           try (PreparedStatement stmt = dbConn.prepareStatement("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?")) {
@@ -6313,47 +6313,63 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             if (updCount != 1) {
               LOG.error("Unable to update compaction record: {}. updCnt={}", compactionInfo, updCount);
               dbConn.rollback();
-              addAbortCompactionResponse(compactionInfo.id, "Error while aborting compaction ", "Error");
+              addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id,
+                      "Error while aborting compaction: Unable to update compaction record in COMPACTION_QUEUE", "Error");
             } else {
               dbConn.commit();
-              addAbortCompactionResponse(compactionInfo.id, "Successfully aborted compaction ", "Success");
+              addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id, "Successfully aborted compaction",
+                      "Success");
             }
           } catch (SQLException e) {
             dbConn.rollback();
-            addAbortCompactionResponse(compactionInfo.id, "Error while aborting compaction ", "Error");
+            addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id,
+                    "Error while aborting compaction:"+e.getMessage(), "Error");
           }
         }
       } catch (SQLException e) {
         LOG.error("Unable to connect to transaction database: " + e.getMessage());
         checkRetryable(e, "abortCompaction(" + compactionInfo + ")");
-        addAbortCompactionResponse(compactionInfo.id, "Error while aborting compaction ", "Error");
+        addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id,
+                "Error while aborting compaction:"+ e.getMessage(), "Error" );
       }
     } catch (RetryException e) {
-      abortCompaction(compactionInfo);
+      abortCompaction(abortCompactionResponseElements, compactionInfo);
     }
   }
 
-  private List<CompactionInfo> findEligibleCompactionsToAbort(List<Long> requestedCompId) throws MetaException {
+  private List<CompactionInfo> findEligibleCompactionsToAbort(Map<Long,
+          AbortCompactionResponseElement> abortCompactionResponseElements, List<Long> requestedCompId) throws MetaException {
+
     List<CompactionInfo> compactionInfoList = new ArrayList<>();
-    String queryText = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
-        + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
-        + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
-        + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
-        + "\"CQ_RETRY_RETENTION\", \"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\", \"CQ_POOL_NAME\" "
-        + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" in " +
-        "(" + Joiner.on(',').join(requestedCompId) + ") AND \"CQ_STATE\" ='i'";
+    String queryText = TxnQueries.SELECT_COMPACTION_QUEUE_BY_COMPID + "  WHERE \"CC_ID\" IN " +
+            "(" + Joiner.on(',').join(requestedCompId) + ") ";
     try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
          PreparedStatement pStmt = dbConn.prepareStatement(queryText)) {
       try (ResultSet rs = pStmt.executeQuery()) {
-        if (rs.next()) {
-          compactionInfoList.add(CompactionInfo.loadFullFromCompactionQueue(rs));
+        while (rs.next()) {
+          if (checkIfCompactionEligibleToAbort(rs.getString(5).charAt(0))) {
+            compactionInfoList.add(CompactionInfo.loadFullFromCompactionQueue(rs));
+          } else {
+            addAbortCompactionResponse(abortCompactionResponseElements, rs.getLong(1),
+              "Error while aborting compaction as compaction is in state-" +
+                      CompactionState.fromSqlConst(rs.getString(5).charAt(0)), "Error");
+          }
         }
       }
     } catch (SQLException e) {
-      throw new MetaException("Unable to select from transaction database " + StringUtils.stringifyException(e));
+      throw new MetaException("Unable to select from transaction database-" + StringUtils.stringifyException(e));
     }
     return compactionInfoList;
   }
 
+  private boolean checkIfCompactionEligibleToAbort(char state) {
 
+    return CompactionState.INITIATED.equals(CompactionState.fromSqlConst(state));
+  }
+
+  private void addAbortCompactionResponse(Map<Long, AbortCompactionResponseElement> abortCompactionResponseElements,
+                                          long id, String message, String status) {
+
+    abortCompactionResponseElements.put(id, new AbortCompactionResponseElement(id, status, message));
+  }
 }

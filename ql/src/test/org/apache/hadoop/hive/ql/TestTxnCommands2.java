@@ -3477,18 +3477,33 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, compacts.get(3).getState());
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(4).getState());
     Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(5).getState());
-
-    List<Long> compactionsToAbort =  Arrays.asList(compacts.get(0).getId(),compacts.get(1).getId(),compacts.get(3).getId());
-    AbortCompactionRequest rqst=  new AbortCompactionRequest();
+    long initiatedStateCompId = compacts.get(0).getId();
+    List<Long> refusedStateCompIds = Arrays.asList(compacts.get(1).getId(),compacts.get(5).getId());
+    List<Long> compactionsToAbort = Arrays.asList(Long.parseLong("12"), compacts.get(0).getId(),
+            compacts.get(1).getId(), compacts.get(2).getId(), compacts.get(3).getId(), compacts.get(4).getId(),
+            compacts.get(5).getId());
+    AbortCompactionRequest rqst = new AbortCompactionRequest();
     rqst.setCompactionIds(compactionsToAbort);
     AbortCompactResponse resp = txnHandler.abortCompactions(rqst);
-    Assert.assertEquals(3,resp.getAbortedcompactsSize());
-    Map<Long,AbortCompactionResponseElement> res = resp.getAbortedcompacts();
+    Assert.assertEquals(7, resp.getAbortedcompactsSize());
+    Map<Long, AbortCompactionResponseElement> res = resp.getAbortedcompacts();
     List<AbortCompactionResponseElement> respList = res.values().stream().collect(Collectors.toList());
-    Assert.assertEquals("Not Eligible",respList.get(0).getMessage());
-    Assert.assertEquals("Not Eligible",respList.get(1).getMessage());
-    Assert.assertEquals("Successfully aborted Compaction",respList.get(2).getMessage());
+    respList.stream().forEach(x -> {
+      if (x.getCompactionId() == initiatedStateCompId) {
+        Assert.assertEquals("Successfully aborted compaction", x.getMessage());
+      }
+      if (x.getCompactionId() == 12) {
+        Assert.assertEquals("No Such Compaction Id Available", x.getMessage());
+        Assert.assertEquals("Error", x.getStatus());
+      }
+      if(refusedStateCompIds.contains(x.getCompactionId())) {
+        Assert.assertEquals("Error while aborting compaction as compaction is in state-refused", x.getMessage());
+        Assert.assertEquals("Error", x.getStatus());
+      }
+    });
+
   }
+
   private void compactPartition(String table, CompactionType type, String partition)
       throws Exception {
     CompactionRequest compactionRequest = new CompactionRequest("default", table, type);
