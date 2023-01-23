@@ -200,7 +200,7 @@ public class TestFileSinkOperator {
     List<Path> mondays = Arrays.stream(paths)
         .filter(path -> path.getParent().toString().endsWith("partval=Monday/HIVE_UNION_SUBDIR_0"))
         .collect(Collectors.toList());
-    Assert.assertEquals("Two result files were created", 2, mondays.size());
+    Assert.assertEquals("Two result files are expected", 2, mondays.size());
     Set<String> fileNames = new HashSet<>();
     fileNames.add(mondays.get(0).getName());
     fileNames.add(mondays.get(1).getName());
