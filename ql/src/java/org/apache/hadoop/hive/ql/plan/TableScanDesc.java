@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -140,7 +141,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private int numBuckets = -1;
 
   private String asOfVersion = null;
-  private String versionIntervalFrom = null;
+  private SnapshotContext versionIntervalFrom = null;
 
   private String asOfTimestamp = null;
 
@@ -534,7 +535,11 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   }
 
   @Explain(displayName = "Version internal from")
-  public String getVersionIntervalFrom() {
+  public String getVersionIntervalFromExplain() {
+    return versionIntervalFrom.toString();
+  }
+
+  public SnapshotContext getVersionIntervalFrom() {
     return versionIntervalFrom;
   }
 

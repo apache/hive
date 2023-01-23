@@ -995,7 +995,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     if (scanDesc.getVersionIntervalFrom() != null) {
-      jobConf.set(TableScanDesc.VERSION_INTERVAL_FROM, scanDesc.getVersionIntervalFrom());
+      jobConf.set(TableScanDesc.VERSION_INTERVAL_FROM,
+          Long.toString(scanDesc.getVersionIntervalFrom().getSnapshotId()));
     }
   }
 

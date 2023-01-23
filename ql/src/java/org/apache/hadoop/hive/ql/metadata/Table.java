@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -134,7 +135,7 @@ public class Table implements Serializable {
    * The version of the table. For Iceberg tables this is the snapshotId.
    */
   private String asOfVersion = null;
-  private String versionIntervalFrom = null;
+  private SnapshotContext versionIntervalFrom = null;
 
   /**
    * The version of the table at the given timestamp. The format will be parsed with
@@ -1332,11 +1333,11 @@ public class Table implements Serializable {
     this.asOfVersion = asOfVersion;
   }
 
-  public String getVersionIntervalFrom() {
+  public SnapshotContext getVersionIntervalFrom() {
     return versionIntervalFrom;
   }
 
-  public void setVersionIntervalFrom(String versionIntervalFrom) {
+  public void setVersionIntervalFrom(SnapshotContext versionIntervalFrom) {
     this.versionIntervalFrom = versionIntervalFrom;
   }
 

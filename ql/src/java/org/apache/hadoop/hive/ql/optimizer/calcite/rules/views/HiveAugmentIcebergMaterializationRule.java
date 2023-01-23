@@ -81,6 +81,8 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
       return;
     }
 
+    table.setVersionIntervalFrom(tableSnapshot);
+
     int rowIDPos = tableScan.getTable().getRowType().getField(
         VirtualColumn.ROWID.getName(), false, false).getIndex();
     RexNode rowIDFieldAccess = rexBuilder.makeFieldAccess(
