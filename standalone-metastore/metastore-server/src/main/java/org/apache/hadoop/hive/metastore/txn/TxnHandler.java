@@ -6308,7 +6308,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           LOG.error("Unable to update compaction record: {}. updCnt={}", compactionInfo, updCount);
           dbConn.rollback();
           addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id,
-                  "Error while aborting compaction:Unable to update compaction record", "Error");
+                  "Error while aborting compaction:Unable to update compaction record in COMPLETED_COMPACTIONS", "Error");
         } else {
           LOG.debug("Inserted {} entries into COMPLETED_COMPACTIONS", updCount);
           try (PreparedStatement stmt = dbConn.prepareStatement("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?")) {
