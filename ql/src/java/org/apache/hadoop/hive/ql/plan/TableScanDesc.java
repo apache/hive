@@ -141,7 +141,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private int numBuckets = -1;
 
   private String asOfVersion = null;
-  private SnapshotContext versionIntervalFrom = null;
+  private String versionIntervalFrom = null;
 
   private String asOfTimestamp = null;
 
@@ -539,7 +539,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return versionIntervalFrom.toString();
   }
 
-  public SnapshotContext getVersionIntervalFrom() {
+  public String getVersionIntervalFrom() {
     return versionIntervalFrom;
   }
 

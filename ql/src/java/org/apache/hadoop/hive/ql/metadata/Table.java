@@ -135,7 +135,7 @@ public class Table implements Serializable {
    * The version of the table. For Iceberg tables this is the snapshotId.
    */
   private String asOfVersion = null;
-  private SnapshotContext versionIntervalFrom = null;
+  private String versionIntervalFrom = null;
 
   /**
    * The version of the table at the given timestamp. The format will be parsed with
@@ -1333,11 +1333,11 @@ public class Table implements Serializable {
     this.asOfVersion = asOfVersion;
   }
 
-  public SnapshotContext getVersionIntervalFrom() {
+  public String getVersionIntervalFrom() {
     return versionIntervalFrom;
   }
 
-  public void setVersionIntervalFrom(SnapshotContext versionIntervalFrom) {
+  public void setVersionIntervalFrom(String versionIntervalFrom) {
     this.versionIntervalFrom = versionIntervalFrom;
   }
 

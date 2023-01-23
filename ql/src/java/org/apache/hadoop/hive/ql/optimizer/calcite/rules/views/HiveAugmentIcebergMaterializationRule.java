@@ -81,7 +81,7 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
       return;
     }
 
-    table.setVersionIntervalFrom(tableSnapshot);
+    table.setVersionIntervalFrom(tableSnapshot.toString());
 
     int rowIDPos = tableScan.getTable().getRowType().getField(
         VirtualColumn.ROWID.getName(), false, false).getIndex();
