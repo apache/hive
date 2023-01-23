@@ -125,8 +125,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           LOG.info("Exception during executing compaction", e);
           err = true;
         } catch (InterruptedException ie) {
-          // do not ignore interruption requests
-          return;
+          Thread.currentThread().interrupt();
         } catch (Throwable t) {
           err = true;
         }
@@ -150,7 +149,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         }
       } while (!stop.get());
     } catch (InterruptedException e) {
-      // do not ignore interruption requests
+      Thread.currentThread().interrupt();
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor worker, exiting.", t);
     } finally {
