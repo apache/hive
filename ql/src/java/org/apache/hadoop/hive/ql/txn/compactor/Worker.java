@@ -109,7 +109,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       do {
         long startedAt = System.currentTimeMillis();
         boolean err = false;
-        launchedJob = true;
+        launchedJob = false;
         Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(genericStats, mrStats));
         try {
           launchedJob = singleRun.get(timeout, TimeUnit.MILLISECONDS);
