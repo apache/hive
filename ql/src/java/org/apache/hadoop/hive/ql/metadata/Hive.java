@@ -3598,8 +3598,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     try {
+      String userName = getUserName();
       tpart = getSynchronizedMSC().getPartitionWithAuthInfo(tbl.getDbName(),
-          tbl.getTableName(), pvals, getUserName(), getGroupNames());
+          tbl.getTableName(), pvals, userName, getGroupNames());
     } catch (NoSuchObjectException nsoe) {
       // this means no partition exists for the given partition
       // key value pairs - thrift cannot handle null return values, hence
@@ -3618,8 +3619,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
             tpart = getSynchronizedMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
           } catch (AlreadyExistsException aee) {
             LOG.debug("Caught already exists exception, trying to alter partition instead");
+            String userName = getUserName();
             tpart = getSynchronizedMSC().getPartitionWithAuthInfo(tbl.getDbName(),
-              tbl.getTableName(), pvals, getUserName(), getGroupNames());
+              tbl.getTableName(), pvals, userName, getGroupNames());
             alterPartitionSpec(tbl, partSpec, tpart, inheritTableSpecs, partPath);
           } catch (Exception e) {
             if (CheckJDOException.isJDODataStoreException(e)) {
@@ -3627,8 +3629,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
               // have to be used here. This helps avoid adding jdo dependency for
               // hcatalog client uses
               LOG.debug("Caught JDO exception, trying to alter partition instead");
+              String userName = getUserName();
               tpart = getSynchronizedMSC().getPartitionWithAuthInfo(tbl.getDbName(),
-                tbl.getTableName(), pvals, getUserName(), getGroupNames());
+                tbl.getTableName(), pvals, userName, getGroupNames());
               if (tpart == null) {
                 // This means the exception was caused by something other than a race condition
                 // in creating the partition, since the partition still doesn't exist.
@@ -4060,8 +4063,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions = null;
       try {
+        String userName = getUserName();
         partitions = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(),
-                partialPvals, limit, getUserName(), getGroupNames());
+                partialPvals, limit, userName, getGroupNames());
       } catch (Exception e) {
         throw new HiveException(e);
       }

@@ -19,12 +19,16 @@ package org.apache.hadoop.hive.ql.lib;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Graph walker this class takes list of starting nodes and walks them in pre-order.
  * If a rule fires up against a given node, we do not try to apply the rule
  * on its children.
  */
 public class PreOrderOnceWalker extends PreOrderWalker {
+  private final Set<Class<? extends Node>> excludeNodes = new HashSet<>();
 
   public PreOrderOnceWalker(SemanticDispatcher disp) {
     super(disp);
@@ -39,6 +43,9 @@ public class PreOrderOnceWalker extends PreOrderWalker {
    */
   @Override
   public void walk(Node nd) throws SemanticException {
+    if (excludeNodes.contains(nd.getClass())) {
+      return;
+    }
     opStack.push(nd);
     dispatch(nd, opStack);
 
@@ -58,4 +65,15 @@ public class PreOrderOnceWalker extends PreOrderWalker {
     opStack.pop();
   }
 
+  /**
+   * Excludes the nodes with the specified type from the graph traversal.
+   * <p>
+   * The traversal of a path will stop if it encounters a node with an excluded type.
+   * </p>
+   *
+   * @param type the type of the nodes to exclude from the graph traversal.
+   */
+  public void excludeNode(Class<? extends Node> type) {
+    excludeNodes.add(type);
+  }
 }
