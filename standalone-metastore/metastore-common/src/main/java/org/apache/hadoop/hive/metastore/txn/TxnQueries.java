@@ -50,4 +50,12 @@ public class TxnQueries {
     "  \"CC_HIGHEST_WRITE_ID\"" +
     "FROM " +
     "  \"COMPLETED_COMPACTIONS\" ) XX ";
+
+
+  public static final String SELECT_COMPACTION_QUEUE_BY_COMPID = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+    + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
+    + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
+    + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
+    + "\"CQ_RETRY_RETENTION\", \"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\", \"CQ_POOL_NAME\" "
+    + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ? AND \"CQ_STATE\" ='i'";
 }

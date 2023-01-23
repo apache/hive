@@ -25,7 +25,11 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.NoSuchCompactionException;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
+import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionAbortedException;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
@@ -91,6 +95,7 @@ public interface TxnStore extends Configurable {
   String TXN_KEY_START = "_meta";
 
 
+
   enum MUTEX_KEY {
     Initiator, Cleaner, HouseKeeper, TxnCleaner,
     CompactionScheduler, MaterializationRebuild
@@ -111,6 +116,8 @@ public interface TxnStore extends Configurable {
   char SUCCEEDED_STATE = 's';
   char DID_NOT_INITIATE = 'a';
   char REFUSED_STATE = 'c';
+
+  char ABORTED_STATE = 'x';
 
   // Compactor types
   char MAJOR_TYPE = 'a';
@@ -368,6 +375,18 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException;
+
+  /**
+   * Abort (rollback) a compaction.
+   *
+   * @param rqst info on compaction to abort
+   * @return
+   * @throws NoSuchCompactionException
+   * @throws MetaException
+   * @throws CompactionAbortedException
+   */
+  @RetrySemantics.Idempotent
+  AbortCompactResponse abortCompactions(AbortCompactionRequest rqst) throws NoSuchCompactionException, MetaException;
 
   /**
    * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.

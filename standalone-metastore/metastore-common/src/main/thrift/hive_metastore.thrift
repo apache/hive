@@ -1398,6 +1398,22 @@ struct ShowCompactResponse {
     1: required list<ShowCompactResponseElement> compacts,
 }
 
+struct AbortCompactionRequest {
+    1: required list<i64> compactionIds,
+    2: optional string type,
+    3: optional string poolName
+}
+
+struct AbortCompactionResponseElement {
+    1: required i64 compactionIds,
+    2: optional string status,
+    3: optional string message
+}
+
+struct AbortCompactResponse {
+    1: required list<AbortCompactionResponseElement> abortedcompacts,
+}
+
 struct GetLatestCommittedCompactionInfoRequest {
     1: required string dbname,
     2: required string tablename,
@@ -2436,11 +2452,19 @@ exception NoSuchLockException {
     1: string message
 }
 
+exception CompactionAbortedException {
+    1: string message
+}
+
+exception NoSuchCompactionException {
+    1: string message
+}
 /**
 * This interface is live.
 */
 service ThriftHiveMetastore extends fb303.FacebookService
 {
+  AbortCompactResponse abort_Compactions(1: AbortCompactionRequest rqst)
   string getMetaConf(1:string key) throws(1:MetaException o1)
   void setMetaConf(1:string key, 2:string value) throws(1:MetaException o1)
 

@@ -22,6 +22,11 @@ use Thrift\Exception\TApplicationException;
 interface ThriftHiveMetastoreIf extends \FacebookServiceIf
 {
     /**
+     * @param \metastore\AbortCompactionRequest $rqst
+     * @return \metastore\AbortCompactResponse
+     */
+    public function abort_Compactions(\metastore\AbortCompactionRequest $rqst);
+    /**
      * @param string $key
      * @return string
      * @throws \metastore\MetaException

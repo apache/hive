@@ -83,6 +83,10 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.LockTypeComparator;
+import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
+import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
+import org.apache.hadoop.hive.metastore.api.AbortCompactionResponseElement;
+import org.apache.hadoop.hive.metastore.api.NoSuchCompactionException;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
@@ -6265,5 +6269,90 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       throw new UnsupportedOperationException();
     }
   }
+
+  @Override
+  @RetrySemantics.SafeToRetry
+  public AbortCompactResponse abortCompactions(AbortCompactionRequest reqst) throws MetaException, NoSuchCompactionException {
+    AbortCompactResponse response = new AbortCompactResponse(new ArrayList<>());
+    List<Long> requestedCompId = reqst.getCompactionIds();
+    if (requestedCompId.isEmpty()) {
+      LOG.info("Compaction ids missing in request. No compactions to abort");
+      throw new NoSuchCompactionException("ompaction ids missing in request. No compactions to abort");
+    }
+    List<AbortCompactionResponseElement> abortCompactionResponseElementList = new ArrayList<>();
+    for (int i = 0; i < requestedCompId.size(); i++) {
+      AbortCompactionResponseElement responseEle = abortCompaction(requestedCompId.get(i));
+      abortCompactionResponseElementList.add(responseEle);
+    }
+    response.setAbortedcompacts(abortCompactionResponseElementList);
+    return response;
+  }
+
+  @RetrySemantics.SafeToRetry
+  public AbortCompactionResponseElement abortCompaction(Long compId) throws MetaException {
+    try {
+      Connection dbConn = null;
+      PreparedStatement pStmt = null;
+      AbortCompactionResponseElement responseEle = new AbortCompactionResponseElement();
+      responseEle.setCompactionIds(compId);
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex);
+        Optional<CompactionInfo> compactionInfo = getCompactionByCompId(dbConn, compId);
+        if (compactionInfo.isPresent()) {
+          pStmt = dbConn.prepareStatement("INSERT INTO \"COMPLETED_COMPACTIONS\" "
+                  + "(\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", "
+                  + "\"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", \"CC_START\", \"CC_END\", \"CC_RUN_AS\", "
+                  + "\"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", "
+                  + "\"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\","
+                  + "\"CC_NEXT_TXN_ID\", \"CC_TXN_ID\", \"CC_COMMIT_TIME\", \"CC_POOL_NAME\") "
+                  + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?,?,?,?,?)");
+          CompactionInfo ci = compactionInfo.get();
+          ci.errorMessage = "Compaction aborted by user";
+          ci.state = TxnStore.ABORTED_STATE;
+          CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
+          int updCount = pStmt.executeUpdate();
+          LOG.debug("Inserted {} entries into COMPLETED_COMPACTIONS", updCount);
+          String s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
+          pStmt = dbConn.prepareStatement(s);
+          pStmt.setLong(1, ci.id);
+          LOG.debug("Going to execute update on COMPACTION_QUEUE <{}>", s);
+          pStmt.executeUpdate();
+          responseEle.setMessage("Successfully Aborted Compaction ");
+          responseEle.setStatus("Success");
+          closeStmt(pStmt);
+          dbConn.commit();
+        } else {
+          responseEle.setMessage("Compaction element not eligible for cancellation");
+          responseEle.setStatus("Error");
+        }
+      } catch (SQLException e) {
+        LOG.error("Failed to abort compaction request");
+        rollbackDBConn(dbConn);
+        checkRetryable(e, "abortCompaction(" + compId + ")");
+        responseEle.setMessage("Error while aborting compaction");
+        responseEle.setStatus("Error");
+      } finally {
+        close(null, pStmt, dbConn);
+      }
+      return responseEle;
+    } catch (RetryException e) {
+      return abortCompaction(compId);
+    }
+
+  }
+
+  private Optional<CompactionInfo> getCompactionByCompId(Connection dbConn, Long compId) throws SQLException, MetaException {
+    CompactionInfo info = null;
+    try (PreparedStatement pStmt = dbConn.prepareStatement(TxnQueries.SELECT_COMPACTION_QUEUE_BY_COMPID)) {
+      pStmt.setLong(1, compId);
+      try (ResultSet rs = pStmt.executeQuery()) {
+        if (rs.next()) {
+          info = CompactionInfo.loadFullFromCompactionQueue(rs);
+        }
+      }
+    }
+    return Optional.ofNullable(info);
+  }
+
 
 }

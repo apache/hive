@@ -189,13 +189,13 @@ class GetPartitionsPsWithAuthRequest
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->partVals = array();
-                        $_size1217 = 0;
-                        $_etype1220 = 0;
-                        $xfer += $input->readListBegin($_etype1220, $_size1217);
-                        for ($_i1221 = 0; $_i1221 < $_size1217; ++$_i1221) {
-                            $elem1222 = null;
-                            $xfer += $input->readString($elem1222);
-                            $this->partVals []= $elem1222;
+                        $_size1231 = 0;
+                        $_etype1234 = 0;
+                        $xfer += $input->readListBegin($_etype1234, $_size1231);
+                        for ($_i1235 = 0; $_i1235 < $_size1231; ++$_i1235) {
+                            $elem1236 = null;
+                            $xfer += $input->readString($elem1236);
+                            $this->partVals []= $elem1236;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -219,13 +219,13 @@ class GetPartitionsPsWithAuthRequest
                 case 7:
                     if ($ftype == TType::LST) {
                         $this->groupNames = array();
-                        $_size1223 = 0;
-                        $_etype1226 = 0;
-                        $xfer += $input->readListBegin($_etype1226, $_size1223);
-                        for ($_i1227 = 0; $_i1227 < $_size1223; ++$_i1227) {
-                            $elem1228 = null;
-                            $xfer += $input->readString($elem1228);
-                            $this->groupNames []= $elem1228;
+                        $_size1237 = 0;
+                        $_etype1240 = 0;
+                        $xfer += $input->readListBegin($_etype1240, $_size1237);
+                        for ($_i1241 = 0; $_i1241 < $_size1237; ++$_i1241) {
+                            $elem1242 = null;
+                            $xfer += $input->readString($elem1242);
+                            $this->groupNames []= $elem1242;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -281,8 +281,8 @@ class GetPartitionsPsWithAuthRequest
             }
             $xfer += $output->writeFieldBegin('partVals', TType::LST, 4);
             $output->writeListBegin(TType::STRING, count($this->partVals));
-            foreach ($this->partVals as $iter1229) {
-                $xfer += $output->writeString($iter1229);
+            foreach ($this->partVals as $iter1243) {
+                $xfer += $output->writeString($iter1243);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -303,8 +303,8 @@ class GetPartitionsPsWithAuthRequest
             }
             $xfer += $output->writeFieldBegin('groupNames', TType::LST, 7);
             $output->writeListBegin(TType::STRING, count($this->groupNames));
-            foreach ($this->groupNames as $iter1230) {
-                $xfer += $output->writeString($iter1230);
+            foreach ($this->groupNames as $iter1244) {
+                $xfer += $output->writeString($iter1244);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
