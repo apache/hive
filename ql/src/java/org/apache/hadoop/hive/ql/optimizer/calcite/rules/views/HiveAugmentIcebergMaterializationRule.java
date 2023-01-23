@@ -92,7 +92,7 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
     List<RexNode> conds = new ArrayList<>();
     RelDataType varcharType = relBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR);
     final RexNode literalHighWatermark = rexBuilder.makeLiteral(
-        tableSnapshot, varcharType, false);
+        tableSnapshot.toString(), varcharType, false);
     conds.add(
         rexBuilder.makeCall(
             SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
