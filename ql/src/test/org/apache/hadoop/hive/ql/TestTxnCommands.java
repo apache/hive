@@ -2551,14 +2551,17 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     r = runStatementOnDriver(abortCompactionCmd);
     Assert.assertEquals(3,r.size());
     Assert.assertEquals("CompactionId\tStatus\tMessage", r.get(0));
-    Assert.assertTrue(r.get(1).contains("Successfully Aborted Compaction"));
-    Assert.assertTrue(r.get(2).contains("Successfully Aborted Compaction"));
+    Assert.assertTrue(r.get(1).contains("Successfully aborted compaction"));
+    Assert.assertTrue(r.get(2).contains("Successfully aborted compaction"));
 
     abortCompactionCmd = "ABORT COMPACTIONS " +compIdsToAbort.get(0)+"\t"+compIdsToAbort.get(1);
     r = runStatementOnDriver(abortCompactionCmd);
     Assert.assertEquals(3,r.size());
     Assert.assertEquals("CompactionId\tStatus\tMessage", r.get(0));
     Assert.assertTrue(r.get(1).contains("Error"));
+
+    r =  runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 STATUS 'aborted'");
+    Assert.assertEquals(3,r.size());
 
   }
 
