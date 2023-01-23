@@ -108,6 +108,7 @@ public interface TxnStore extends Configurable {
   String SUCCEEDED_RESPONSE = "succeeded";
   String DID_NOT_INITIATE_RESPONSE = "did not initiate";
   String REFUSED_RESPONSE = "refused";
+  String ABORTED_RESPONSE = "aborted";
 
   char INITIATED_STATE = 'i';
   char WORKING_STATE = 'w';

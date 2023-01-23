@@ -3477,13 +3477,16 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, compacts.get(3).getState());
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(4).getState());
     Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(5).getState());
+
     long initiatedStateCompId = compacts.get(0).getId();
     List<Long> refusedStateCompIds = Arrays.asList(compacts.get(1).getId(),compacts.get(5).getId());
     List<Long> compactionsToAbort = Arrays.asList(Long.parseLong("12"), compacts.get(0).getId(),
             compacts.get(1).getId(), compacts.get(2).getId(), compacts.get(3).getId(), compacts.get(4).getId(),
             compacts.get(5).getId());
+
     AbortCompactionRequest rqst = new AbortCompactionRequest();
     rqst.setCompactionIds(compactionsToAbort);
+
     AbortCompactResponse resp = txnHandler.abortCompactions(rqst);
     Assert.assertEquals(7, resp.getAbortedcompactsSize());
     Map<Long, AbortCompactionResponseElement> res = resp.getAbortedcompacts();
@@ -3501,6 +3504,15 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         Assert.assertEquals("Error", x.getStatus());
       }
     });
+
+    compacts = txnHandler.showCompact(new ShowCompactRequest()).getCompacts();
+    Assert.assertEquals(6, compacts.size());
+    Assert.assertEquals(TxnStore.ABORTED_RESPONSE, compacts.get(0).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(1).getState());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, compacts.get(2).getState());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, compacts.get(3).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(4).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(5).getState());
 
   }
 
