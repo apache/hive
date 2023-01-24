@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricColle
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.PreOptimizedBootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
@@ -533,14 +534,19 @@ public class ReplUtils {
   }
 
   public static void reportStatusInReplicationMetrics(String stageName, Status status, String errorLogPath,
-                                                      HiveConf conf)
+                                                      HiveConf conf, boolean isFailover)
           throws SemanticException {
-    ReplicationMetricCollector metricCollector =
-            new ReplicationMetricCollector(null, null, null, 0, conf) {};
+    ReplicationMetricCollector metricCollector;
+    if (isFailover) {
+      metricCollector =
+              new PreOptimizedBootstrapLoadMetricCollector(null, null, -1, conf) {};
+    } else {
+      metricCollector =
+              new ReplicationMetricCollector(null, null, null, 0, conf) {};
+    }
     metricCollector.reportStageStart(stageName, new HashMap<>());
     metricCollector.reportStageEnd(stageName, status, errorLogPath);
   }
-
   public static boolean isErrorRecoverable(Throwable e) {
     int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     return errorCode > ErrorMsg.GENERIC_ERROR.getErrorCode();

@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.thrift.TException;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
@@ -799,7 +801,10 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (this.childTasks == null) {
         this.childTasks = new ArrayList<>();
       }
+      work.getMetricCollector().reportStageStart("PRE_OPTIMIZED_BOOTSTRAP", new HashMap<>());
       createReplLoadCompleteAckTask();
+      work.getMetricCollector().reportStageEnd("PRE_OPTIMIZED_BOOTSTRAP", Status.SUCCESS);
+      work.getMetricCollector().reportEnd(Status.SUCCESS);
       return 0;
     } else if (work.isSecondFailover) {
       // DROP the tables extra on target, which are not on source cluster.
