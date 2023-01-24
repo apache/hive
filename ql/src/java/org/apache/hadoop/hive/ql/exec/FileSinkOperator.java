@@ -1596,7 +1596,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           Utilities.FILE_OP_LOGGER.trace("jobCloseOp using specPath " + specPath);
         }
         if (!conf.isMmTable() && !conf.isDirectInsert()) {
-          Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf, reporter);
+          Utilities.mvFileToFinalPath(specPath, unionSuffix, hconf, success, LOG, dpCtx, conf, reporter);
         } else {
           int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
               lbLevels = lbCtx == null ? 0 : lbCtx.calculateListBucketingLevel();

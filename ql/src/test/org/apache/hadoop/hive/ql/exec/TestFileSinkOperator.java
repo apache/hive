@@ -76,11 +76,15 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Tests for {@link org.apache.hadoop.hive.ql.exec.FileSinkOperator}
@@ -162,6 +166,64 @@ public class TestFileSinkOperator {
     confirmOutput(DataFormat.WITH_PARTITION_VALUE);
   }
 
+  @Test
+  public void testNonAcidRemoveDuplicate() throws Exception {
+    setBasePath("writeDuplicate");
+    setupData(DataFormat.WITH_PARTITION_VALUE);
+
+    FileSinkDesc desc = (FileSinkDesc) getFileSink(AcidUtils.Operation.NOT_ACID, true, 0).getConf().clone();
+    desc.setLinkedFileSink(true);
+    desc.setDirName(new Path(desc.getDirName(), AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + "0"));
+    JobConf jobConf = new JobConf(jc);
+    jobConf.set("hive.execution.engine", "tez");
+    jobConf.set("mapred.task.id", "000000_0");
+    FileSinkOperator op1 = (FileSinkOperator)OperatorFactory.get(new CompilationOpContext(), FileSinkDesc.class);
+    op1.setConf(desc);
+    op1.initialize(jobConf, new ObjectInspector[]{inspector});
+
+    JobConf jobConf2 = new JobConf(jobConf);
+    jobConf2.set("mapred.task.id", "000000_1");
+    FileSinkOperator op2 = (FileSinkOperator)OperatorFactory.get(
+        new CompilationOpContext(), FileSinkDesc.class);
+    op2.setConf(desc);
+    op2.initialize(jobConf2, new ObjectInspector[]{inspector});
+
+    for (Object r : rows) {
+      op1.process(r, 0);
+      op2.process(r, 0);
+    }
+
+    op1.close(false);
+    // Assume op2 also ends successfully, this happens in different containers
+    op2.close(false);
+    Path[] paths = findFilesInBasePath();
+    List<Path> mondays = Arrays.stream(paths)
+        .filter(path -> path.getParent().toString().endsWith("partval=Monday/HIVE_UNION_SUBDIR_0"))
+        .collect(Collectors.toList());
+    Assert.assertEquals("Two result files are expected", 2, mondays.size());
+    Set<String> fileNames = new HashSet<>();
+    fileNames.add(mondays.get(0).getName());
+    fileNames.add(mondays.get(1).getName());
+
+    Assert.assertTrue("000000_1 file is expected", fileNames.contains("000000_1"));
+    Assert.assertTrue("000000_0 file is expected", fileNames.contains("000000_0"));
+
+    // This happens in HiveServer2 when the job is finished, the job will call
+    // jobCloseOp to end his operators. For the FileSinkOperator, a deduplication on the
+    // output files may happen so that only one output file is left for each yarn task.
+    op1.jobCloseOp(jobConf, true);
+    List<Path> resultFiles = new ArrayList<Path>();
+    recurseOnPath(basePath, basePath.getFileSystem(jc), resultFiles);
+    mondays = resultFiles.stream()
+        .filter(path -> path.getParent().toString().endsWith("partval=Monday/HIVE_UNION_SUBDIR_0"))
+        .collect(Collectors.toList());
+    Assert.assertEquals("Only 1 file should be here after cleaning", 1, mondays.size());
+    Assert.assertEquals("000000_1 file is expected", "000000_1", mondays.get(0).getName());
+
+    confirmOutput(DataFormat.WITH_PARTITION_VALUE, resultFiles.toArray(new Path[0]));
+    // Clean out directory after testing
+    basePath.getFileSystem(jc).delete(basePath, true);
+  }
 
   @Test
   public void testInsertDynamicPartitioning() throws Exception {
@@ -290,6 +352,7 @@ public class TestFileSinkOperator {
     } else {
       desc = new FileSinkDesc(basePath, tableDesc, false);
     }
+    desc.setStatsAggPrefix(basePath.toString());
     desc.setWriteType(writeType);
     desc.setGatherStats(true);
     if (writeId > 0) {
@@ -313,7 +376,10 @@ public class TestFileSinkOperator {
   }
 
   private void confirmOutput(DataFormat rType) throws IOException, SerDeException, CloneNotSupportedException {
-    Path[] paths = findFilesInBasePath();
+    confirmOutput(rType, findFilesInBasePath());
+  }
+
+  private void confirmOutput(DataFormat rType, Path[] paths) throws IOException, SerDeException, CloneNotSupportedException {
     TFSOInputFormat input = new TFSOInputFormat(rType);
     FileInputFormat.setInputPaths(jc, paths);
 
