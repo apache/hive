@@ -87,8 +87,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.FieldSetter;
 
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
-
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.execSelectAndDumpData;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
@@ -3431,8 +3429,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       Field field = compactorPipeline.getClass().getDeclaredField("compactor");
       field.setAccessible(true);
       Compactor compactor = (Compactor) field.get(compactorPipeline);
-      Assert.assertTrue(compactor instanceof FallbackCompactor);
-      FallbackCompactor fallbackCompactor = spy((FallbackCompactor) compactor);
+      Assert.assertTrue(compactor instanceof CompactorPipeline.FallbackCompactor);
+      CompactorPipeline.FallbackCompactor fallbackCompactor = spy((CompactorPipeline.FallbackCompactor) compactor);
       field.set(compactorPipeline, fallbackCompactor);
       field = fallbackCompactor.getClass().getDeclaredField("primaryCompactor");
       field.setAccessible(true);
@@ -3534,8 +3532,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       Field field = compactorPipeline.getClass().getDeclaredField("compactor");
       field.setAccessible(true);
       Compactor compactor = (Compactor) field.get(compactorPipeline);
-      Assert.assertTrue(compactor instanceof FallbackCompactor);
-      FallbackCompactor fallbackCompactor = spy((FallbackCompactor) compactor);
+      Assert.assertTrue(compactor instanceof CompactorPipeline.FallbackCompactor);
+      CompactorPipeline.FallbackCompactor fallbackCompactor = spy((CompactorPipeline.FallbackCompactor) compactor);
       field.set(compactorPipeline, fallbackCompactor);
       field = fallbackCompactor.getClass().getDeclaredField("primaryCompactor");
       field.setAccessible(true);
@@ -3597,8 +3595,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       Field field = compactorPipeline.getClass().getDeclaredField("compactor");
       field.setAccessible(true);
       Compactor compactor = (Compactor) field.get(compactorPipeline);
-      Assert.assertTrue(compactor instanceof FallbackCompactor);
-      FallbackCompactor fallbackCompactor = spy((FallbackCompactor) compactor);
+      Assert.assertTrue(compactor instanceof CompactorPipeline.FallbackCompactor);
+      CompactorPipeline.FallbackCompactor fallbackCompactor = spy((CompactorPipeline.FallbackCompactor) compactor);
       field.set(compactorPipeline, fallbackCompactor);
       field = fallbackCompactor.getClass().getDeclaredField("primaryCompactor");
       field.setAccessible(true);

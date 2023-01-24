@@ -27,9 +27,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Simple factory class, which returns an instance of {@link QueryCompactor}.
  */

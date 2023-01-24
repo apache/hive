@@ -46,24 +46,24 @@ public class CompactorPipeline {
   public Boolean execute(CompactorContext input) throws IOException, HiveException, InterruptedException {
     return compactor.run(input);
   }
-}
 
-/**
- * This class defines a way of handling fallback given any number of fallback compactors.<br>
- * It can encapsulate other fallback compactors within itself.
- */
-class FallbackCompactor implements Compactor {
-  private final Compactor primaryCompactor;
-  private final Compactor secondaryCompactor;
+  /**
+   * This class defines a way of handling fallback given any number of fallback compactors.<br>
+   * It can encapsulate other fallback compactors within itself.
+   */
+  static final class FallbackCompactor implements Compactor {
+    private final Compactor primaryCompactor;
+    private final Compactor secondaryCompactor;
 
-  FallbackCompactor(Compactor primaryCompactor, Compactor secondaryCompactor) {
-    this.primaryCompactor = primaryCompactor;
-    this.secondaryCompactor = secondaryCompactor;
-  }
+    FallbackCompactor(Compactor primaryCompactor, Compactor secondaryCompactor) {
+      this.primaryCompactor = primaryCompactor;
+      this.secondaryCompactor = secondaryCompactor;
+    }
 
-  @Override
-  public boolean run(CompactorContext context) throws IOException, HiveException, InterruptedException {
-    boolean result = primaryCompactor.run(context);
-    return !result ? secondaryCompactor.run(context) : result;
+    @Override
+    public boolean run(CompactorContext context) throws IOException, HiveException, InterruptedException {
+      boolean result = primaryCompactor.run(context);
+      return !result ? secondaryCompactor.run(context) : result;
+    }
   }
 }

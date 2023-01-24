@@ -39,8 +39,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.regex.Matcher;
 
 final class MergeCompactor extends QueryCompactor {
@@ -55,7 +53,8 @@ final class MergeCompactor extends QueryCompactor {
     ValidWriteIdList writeIds = context.getValidWriteIdList();
     StorageDescriptor storageDescriptor = context.getSd();
     CompactionInfo compactionInfo = context.getCompactionInfo();
-    if (isMergeCompaction(hiveConf, dir, writeIds, storageDescriptor)) {
+
+    if (isMergeCompaction(hiveConf, dir, storageDescriptor)) {
       // Only inserts happened, it is much more performant to merge the files than running a query
       Path outputDirPath = getOutputDirPath(hiveConf, writeIds,
               compactionInfo.isMajorCompaction(), storageDescriptor);
@@ -80,32 +79,25 @@ final class MergeCompactor extends QueryCompactor {
    * Returns whether merge compaction must be enabled or not.
    * @param conf Hive configuration
    * @param directory the directory to be scanned
-   * @param validWriteIdList list of valid write IDs
    * @param storageDescriptor storage descriptor of the underlying table
    * @return true, if merge compaction must be enabled
    */
   private boolean isMergeCompaction(HiveConf conf, AcidDirectory directory,
-                                   ValidWriteIdList validWriteIdList,
                                    StorageDescriptor storageDescriptor) {
     return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED)
             && storageDescriptor.getOutputFormat().equalsIgnoreCase("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat")
-            && !hasDeleteOrAbortedDirectories(directory, validWriteIdList);
+            && !hasDeleteOrAbortedDirectories(directory);
   }
 
   /**
    * Scan a directory for delete deltas or aborted directories.
    * @param directory the directory to be scanned
-   * @param validWriteIdList list of valid write IDs
    * @return true, if delete or aborted directory found
    */
-  private boolean hasDeleteOrAbortedDirectories(AcidDirectory directory, ValidWriteIdList validWriteIdList) {
+  private boolean hasDeleteOrAbortedDirectories(AcidDirectory directory) {
     if (!directory.getCurrentDirectories().isEmpty()) {
-      final long minWriteId = Optional.ofNullable(validWriteIdList.getMinOpenWriteId()).orElse(1L);
-      final long maxWriteId = validWriteIdList.getHighWatermark();
       return directory.getCurrentDirectories().stream()
-              .filter(AcidUtils.ParsedDeltaLight::isDeleteDelta)
-              .filter(delta -> delta.getMinWriteId() >= minWriteId)
-              .anyMatch(delta -> delta.getMaxWriteId() <= maxWriteId) || !directory.getAbortedDirectories().isEmpty();
+              .anyMatch(AcidUtils.ParsedDeltaLight::isDeleteDelta) || !directory.getAbortedDirectories().isEmpty();
     }
     return true;
   }
@@ -129,13 +121,10 @@ final class MergeCompactor extends QueryCompactor {
     for (AcidUtils.ParsedDelta deltaDir : dir.getCurrentDirectories()) {
       Path deltaDirPath = deltaDir.getPath();
       Map<Integer, List<Reader>> intermediateResult = getBucketFiles(conf, deltaDirPath, isMm);
-      intermediateResult.forEach((k, v) -> {
-        if (result.containsKey(k)) {
-          result.get(k).addAll(v);
-        } else {
-          result.put(k, v);
-        }
-      });
+      intermediateResult.forEach((k, v) -> result.merge(k, v, (v1, v2) -> {
+        v1.addAll(v2);
+        return v1;
+      }));
     }
     return result;
   }
@@ -185,14 +174,16 @@ final class MergeCompactor extends QueryCompactor {
     long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
     long highWatermark = writeIds.getHighWatermark();
     long compactorTxnId = Compactor.getCompactorTxnId(conf);
-    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).writingBase(isBaseDir)
-            .writingDeleteDelta(false).isCompressed(false).minimumWriteId(minOpenWriteId)
-            .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId);
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
+            .writingBase(isBaseDir).writingDeleteDelta(false)
+            .isCompressed(false)
+            .minimumWriteId(minOpenWriteId).maximumWriteId(highWatermark)
+            .statementId(-1).visibilityTxnId(compactorTxnId);
     return AcidUtils.baseOrDeltaSubdirPath(new Path(sd.getLocation()), options);
   }
 
   /**
-   * Merge ORC files from base/delta directories. If the directories contains multiple buckets, the result will also
+   * Merge files from base/delta directories. If the directories contains multiple buckets, the result will also
    * contain the same amount.
    * @param conf hive configuration
    * @param includeBaseDir if base directory should be scanned for orc files
@@ -205,10 +196,7 @@ final class MergeCompactor extends QueryCompactor {
                                Path outputDirPath, boolean isMm) throws IOException {
     Map<Integer, List<Reader>> bucketIdToBucketFiles = matchBucketIdToBucketFiles(conf, dir, includeBaseDir, isMm);
     OrcFileMerger fileMerger = new OrcFileMerger(conf);
-    boolean isCompatible = true;
-    for (Map.Entry<Integer, List<Reader>> e : bucketIdToBucketFiles.entrySet()) {
-      isCompatible &= fileMerger.checkCompatibility(e.getValue());
-    }
+    boolean isCompatible = bucketIdToBucketFiles.values().stream().allMatch(fileMerger::checkCompatibility);
     if (isCompatible) {
       for (Map.Entry<Integer, List<Reader>> e : bucketIdToBucketFiles.entrySet()) {
         Path path = isMm ? new Path(outputDirPath, String.format(AcidUtils.LEGACY_FILE_BUCKET_DIGITS,
