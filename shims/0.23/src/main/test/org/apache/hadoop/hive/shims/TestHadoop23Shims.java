@@ -23,6 +23,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.mapreduce.MRJobConfig;
+import org.apache.hadoop.tools.DistCp;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
@@ -190,4 +193,28 @@ public class TestHadoop23Shims {
     shims.getFileId(fs, "badpath");
   }
 
+  @Test
+  public void testMapReduceQueueIsSetToTezQueue() throws Exception {
+    Configuration conf = new Configuration();
+    // there is a tez.queue.name
+    conf.set(TezConfiguration.TEZ_QUEUE_NAME, "helloQ");
+    DistCp distCp = runMockDistCp(conf);
+    assertEquals("helloQ", distCp.getConf().get(MRJobConfig.QUEUE_NAME));
+
+    // there is no tez.queue.name
+    conf = new Configuration();
+    distCp = runMockDistCp(conf);
+    assertEquals("default", distCp.getConf().get(MRJobConfig.QUEUE_NAME));
+  }
+
+  private DistCp runMockDistCp(Configuration conf) throws Exception {
+    Path copySrc = getMockedPath(false);
+    Path copyDst = getMockedPath(false);
+    Hadoop23Shims shims = new Hadoop23Shims();
+    List<String> params = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
+
+    DistCp distCp = new DistCp(conf, null);
+    shims.runDistCpInternal(distCp, params);
+    return distCp;
+  }
 }
