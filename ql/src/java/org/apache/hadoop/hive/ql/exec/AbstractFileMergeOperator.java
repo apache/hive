@@ -324,7 +324,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       if (!isMmTable) {
         Path backupPath = backupOutputPath(fs, outputDir);
         Utilities.mvFileToFinalPath(
-            outputDir, hconf, success, LOG, conf.getDpCtx(), null, reporter);
+            outputDir, null, hconf, success, LOG, conf.getDpCtx(), null, reporter);
         if (success) {
           LOG.info("jobCloseOp moved merged files to output dir: " + outputDir);
         }
