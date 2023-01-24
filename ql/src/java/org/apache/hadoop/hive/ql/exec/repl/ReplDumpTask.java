@@ -873,12 +873,17 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (dumpedCount > 0) {
         LOG.info("Event id {} to {} are already dumped, skipping {} events", work.eventFrom, resumeFrom, dumpedCount);
       }
-      cleanFailedEventDirIfExists(dumpRoot, resumeFrom);
+      boolean isStagingDirCheckedForFailedEvents = false;
       while (evIter.hasNext()) {
         NotificationEvent ev = evIter.next();
         lastReplId = ev.getEventId();
         if (ev.getEventId() <= resumeFrom) {
           continue;
+        }
+        // Checking and removing remnant file from staging directory if previous incremental repl dump is failed
+        if (!isStagingDirCheckedForFailedEvents) {
+          cleanFailedEventDirIfExists(dumpRoot, ev.getEventId());
+          isStagingDirCheckedForFailedEvents = true;
         }
 
         //disable materialized-view replication if not configured
@@ -1069,16 +1074,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return currentEventMaxLimit;
   }
 
-  private void cleanFailedEventDirIfExists(Path dumpDir, long resumeFrom) throws SemanticException {
-    Path nextEventRoot = new Path(dumpDir, String.valueOf(resumeFrom + 1));
+  private void cleanFailedEventDirIfExists(Path dumpDir, long eventId) throws SemanticException {
+    Path eventRoot = new Path(dumpDir, String.valueOf(eventId));
     Retryable retryable = Retryable.builder()
       .withHiveConf(conf)
       .withRetryOnException(IOException.class).build();
     try {
       retryable.executeCallable((Callable<Void>) () -> {
-        FileSystem fs = FileSystem.get(nextEventRoot.toUri(), conf);
         try {
-          fs.delete(nextEventRoot, true);
+          FileSystem fs = FileSystem.get(eventRoot.toUri(), conf);
+          if (fs.exists(eventRoot))  {
+            fs.delete(eventRoot, true);
+          }
         } catch (FileNotFoundException e) {
           // no worries
         }
