@@ -1112,6 +1112,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int ssampleIndex = indexes[3];
     int asOfTimeIndex = indexes[4];
     int asOfVersionIndex = indexes[5];
+    int asOfVersionFromIndex = indexes[6];
 
     ASTNode tableTree = (ASTNode) (tabref.getChild(0));
 
@@ -1129,7 +1130,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qb.setTabProps(alias, props);
     }
 
-    if (asOfTimeIndex != -1 || asOfVersionIndex != -1) {
+    if (asOfTimeIndex != -1 || asOfVersionIndex != -1 || asOfVersionFromIndex != -1) {
       String asOfVersion = asOfVersionIndex == -1 ? null : tabref.getChild(asOfVersionIndex).getChild(0).getText();
       String asOfTime = null;
       
@@ -2268,13 +2269,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      Pair<String, String> asOf = qb.getAsOfForAlias(alias);
+      QBAsOf asOf = qb.getAsOfForAlias(alias);
       if (asOf != null) {
         if (!Optional.ofNullable(tab.getStorageHandler()).map(HiveStorageHandler::isTimeTravelAllowed).orElse(false)) {
           throw new SemanticException(ErrorMsg.TIME_TRAVEL_NOT_ALLOWED, alias);
         }
-        tab.setAsOfVersion(asOf.getLeft());
-        tab.setAsOfTimestamp(asOf.getRight());
+        tab.setAsOfVersion(asOf.getAsOfVersion());
+        tab.setVersionIntervalFrom(asOf.getAsOfVersionFrom());
+        tab.setAsOfTimestamp(asOf.getAsOfTime());
       }
 
       if (tab.isView()) {

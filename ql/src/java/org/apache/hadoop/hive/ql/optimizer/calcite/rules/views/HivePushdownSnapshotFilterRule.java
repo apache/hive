@@ -79,6 +79,9 @@ public class HivePushdownSnapshotFilterRule extends RelOptRule {
       return;
     }
 
+    snapshotContextText = snapshotContextText.substring(snapshotContextText.indexOf('=') + 1);
+    snapshotContextText = snapshotContextText.substring(0, snapshotContextText.length() - 1);
+
     TableScan tableScan = call.rel(1);
     RelOptHiveTable hiveTable = (RelOptHiveTable) tableScan.getTable();
     Table table = hiveTable.getHiveTableMD();

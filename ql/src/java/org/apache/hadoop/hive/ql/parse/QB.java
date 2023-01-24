@@ -51,7 +51,7 @@ public class QB {
   private HashMap<String, QBExpr> aliasToSubqExpr;
   private HashMap<String, Table> viewAliasToViewSchema;
   private HashMap<String, Map<String, String>> aliasToProps;
-  private HashMap<String, Pair<String, String>> aliasToAsOf;
+  private HashMap<String, QBAsOf> aliasToAsOf;
   private List<String> aliases;
   private QBParseInfo qbp;
   private QBMetaData qbm;
@@ -195,7 +195,7 @@ public class QB {
     aliasToProps.put(alias.toLowerCase(), props);
   }
 
-  public void setAsOf(String alias, Pair<String, String> asOf) {
+  public void setAsOf(String alias, QBAsOf asOf) {
     aliasToAsOf.put(alias.toLowerCase(), asOf);
   }
 
@@ -257,7 +257,7 @@ public class QB {
     return aliasToProps.get(alias.toLowerCase());
   }
 
-  public Pair<String, String> getAsOfForAlias(String alias) {
+  public QBAsOf getAsOfForAlias(String alias) {
     return aliasToAsOf.get(alias.toLowerCase());
   }
 
