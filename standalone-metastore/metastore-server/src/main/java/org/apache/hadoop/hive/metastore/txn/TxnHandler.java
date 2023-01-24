@@ -6284,19 +6284,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       throw new NoSuchCompactionException("Compaction ids missing in request. No compactions to abort");
     }
     reqst.getCompactionIds().forEach(x -> {
-      addAbortCompactionResponse(abortCompactionResponseElements,x,  "No Such Compaction Id Available","Error");
+      abortCompactionResponseElements.put(x, new AbortCompactionResponseElement(x, "Error",
+              "No Such Compaction Id Available"));
     });
 
-    List<CompactionInfo> eligibleCompactionsToAbort = findEligibleCompactionsToAbort(abortCompactionResponseElements,compactionIdsToAbort);
+    List<CompactionInfo> eligibleCompactionsToAbort = findEligibleCompactionsToAbort(abortCompactionResponseElements,
+            compactionIdsToAbort);
     for (int x = 0; x < eligibleCompactionsToAbort.size(); x++) {
-      abortCompaction(abortCompactionResponseElements, eligibleCompactionsToAbort.get(x));
+      abortCompactionResponseElements.put(eligibleCompactionsToAbort.get(x).id, abortCompaction(eligibleCompactionsToAbort.get(x)));
     }
     return response;
   }
 
   @RetrySemantics.SafeToRetry
-  public void abortCompaction(Map<Long, AbortCompactionResponseElement> abortCompactionResponseElements,
-                              CompactionInfo compactionInfo) throws MetaException {
+  public AbortCompactionResponseElement abortCompaction(CompactionInfo compactionInfo) throws MetaException {
     try {
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex);
            PreparedStatement pStmt = dbConn.prepareStatement(TxnQueries.INSERT_INTO_COMPLETED_COMPACTION)) {
@@ -6307,8 +6308,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (updCount != 1) {
           LOG.error("Unable to update compaction record: {}. updCnt={}", compactionInfo, updCount);
           dbConn.rollback();
-          addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id,
-                  "Error while aborting compaction:Unable to update compaction record in COMPLETED_COMPACTIONS", "Error");
+          return new AbortCompactionResponseElement(compactionInfo.id,
+                  "Error", "Error while aborting compaction:Unable to update compaction record in COMPLETED_COMPACTIONS");
         } else {
           LOG.debug("Inserted {} entries into COMPLETED_COMPACTIONS", updCount);
           try (PreparedStatement stmt = dbConn.prepareStatement("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?")) {
@@ -6318,27 +6319,27 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             if (updCount != 1) {
               LOG.error("Unable to update compaction record: {}. updCnt={}", compactionInfo, updCount);
               dbConn.rollback();
-              addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id,
-                      "Error while aborting compaction: Unable to update compaction record in COMPACTION_QUEUE", "Error");
+              return new AbortCompactionResponseElement(compactionInfo.id,
+                      "Error", "Error while aborting compaction: Unable to update compaction record in COMPACTION_QUEUE");
             } else {
               dbConn.commit();
-              addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id, "Successfully aborted compaction",
-                      "Success");
+              return new AbortCompactionResponseElement(compactionInfo.id,
+                      "Success", "Successfully aborted compaction");
             }
           } catch (SQLException e) {
             dbConn.rollback();
-            addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id,
-                    "Error while aborting compaction:"+e.getMessage(), "Error");
+            return new AbortCompactionResponseElement(compactionInfo.id,
+                    "Error", "Error while aborting compaction:" + e.getMessage());
           }
         }
       } catch (SQLException e) {
         LOG.error("Unable to connect to transaction database: " + e.getMessage());
         checkRetryable(e, "abortCompaction(" + compactionInfo + ")");
-        addAbortCompactionResponse(abortCompactionResponseElements, compactionInfo.id,
-                "Error while aborting compaction:"+ e.getMessage(), "Error" );
+        return new AbortCompactionResponseElement(compactionInfo.id,
+                "Error", "Error while aborting compaction:" + e.getMessage());
       }
     } catch (RetryException e) {
-      abortCompaction(abortCompactionResponseElements, compactionInfo);
+      return abortCompaction(compactionInfo);
     }
   }
 
@@ -6352,12 +6353,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          PreparedStatement pStmt = dbConn.prepareStatement(queryText)) {
       try (ResultSet rs = pStmt.executeQuery()) {
         while (rs.next()) {
-          if (checkIfCompactionEligibleToAbort(rs.getString(5).charAt(0))) {
+          char compState = rs.getString(5).charAt(0);
+          long compID = rs.getLong(1);
+          if (CompactionState.INITIATED.equals(CompactionState.fromSqlConst(compState))) {
             compactionInfoList.add(CompactionInfo.loadFullFromCompactionQueue(rs));
           } else {
-            addAbortCompactionResponse(abortCompactionResponseElements, rs.getLong(1),
-              "Error while aborting compaction as compaction is in state-" +
-                      CompactionState.fromSqlConst(rs.getString(5).charAt(0)), "Error");
+            abortCompactionResponseElements.put(compID, new AbortCompactionResponseElement(compID, "Error",
+                    "Error while aborting compaction as compaction is in state-" + CompactionState.fromSqlConst(compState)));
           }
         }
       }
@@ -6367,14 +6369,4 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return compactionInfoList;
   }
 
-  private boolean checkIfCompactionEligibleToAbort(char state) {
-
-    return CompactionState.INITIATED.equals(CompactionState.fromSqlConst(state));
-  }
-
-  private void addAbortCompactionResponse(Map<Long, AbortCompactionResponseElement> abortCompactionResponseElements,
-                                          long id, String message, String status) {
-
-    abortCompactionResponseElements.put(id, new AbortCompactionResponseElement(id, status, message));
-  }
 }

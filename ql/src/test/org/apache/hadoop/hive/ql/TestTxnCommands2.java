@@ -3477,34 +3477,36 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, compacts.get(3).getState());
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(4).getState());
     Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(5).getState());
+    Map<Long, AbortCompactionResponseElement> expectedResponseMap = new HashMap<Long, AbortCompactionResponseElement>() {{
+      put(Long.parseLong("6"),new AbortCompactionResponseElement(Long.parseLong("6"), "Success",
+              "Successfully aborted compaction"));
+      put(Long.parseLong("1") ,new AbortCompactionResponseElement(Long.parseLong("1"), "Error",
+              "Error while aborting compaction as compaction is in state-refused"));
+      put(Long.parseLong("2"),new AbortCompactionResponseElement(Long.parseLong("2"), "Error",
+              "Error while aborting compaction as compaction is in state-succeeded"));
+      put(Long.parseLong("3"),new AbortCompactionResponseElement(Long.parseLong("3"), "Error",
+              "Error while aborting compaction as compaction is in state-ready for cleaning"));
+      put(Long.parseLong("4"),new AbortCompactionResponseElement(Long.parseLong("4"), "Error",
+              "Error while aborting compaction as compaction is in state-ready for cleaning"));
+      put(Long.parseLong("5"),new AbortCompactionResponseElement(Long.parseLong("5"), "Error",
+              "Error while aborting compaction as compaction is in state-refused"));
+      put(Long.parseLong("12"),new AbortCompactionResponseElement(Long.parseLong("12"), "Error",
+              "No Such Compaction Id Available"));
+    }};
 
-    long initiatedStateCompId = compacts.get(0).getId();
-    List<Long> refusedStateCompIds = Arrays.asList(compacts.get(1).getId(),compacts.get(5).getId());
     List<Long> compactionsToAbort = Arrays.asList(Long.parseLong("12"), compacts.get(0).getId(),
             compacts.get(1).getId(), compacts.get(2).getId(), compacts.get(3).getId(), compacts.get(4).getId(),
             compacts.get(5).getId());
 
     AbortCompactionRequest rqst = new AbortCompactionRequest();
     rqst.setCompactionIds(compactionsToAbort);
-
     AbortCompactResponse resp = txnHandler.abortCompactions(rqst);
     Assert.assertEquals(7, resp.getAbortedcompactsSize());
-    Map<Long, AbortCompactionResponseElement> res = resp.getAbortedcompacts();
-    List<AbortCompactionResponseElement> respList = res.values().stream().collect(Collectors.toList());
-    respList.stream().forEach(x -> {
-      if (x.getCompactionId() == initiatedStateCompId) {
-        Assert.assertEquals("Successfully aborted compaction", x.getMessage());
-      }
-      if (x.getCompactionId() == 12) {
-        Assert.assertEquals("No Such Compaction Id Available", x.getMessage());
-        Assert.assertEquals("Error", x.getStatus());
-      }
-      if(refusedStateCompIds.contains(x.getCompactionId())) {
-        Assert.assertEquals("Error while aborting compaction as compaction is in state-refused", x.getMessage());
-        Assert.assertEquals("Error", x.getStatus());
-      }
-    });
+    Map<Long, AbortCompactionResponseElement> testResp = resp.getAbortedcompacts();
 
+    Assert.assertEquals(expectedResponseMap, testResp);
+
+    //assert aborted compaction state
     compacts = txnHandler.showCompact(new ShowCompactRequest()).getCompacts();
     Assert.assertEquals(6, compacts.size());
     Assert.assertEquals(TxnStore.ABORTED_RESPONSE, compacts.get(0).getState());
