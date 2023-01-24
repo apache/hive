@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
@@ -30,25 +29,14 @@ import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.ManageSnapshots;
-import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
-import org.apache.iceberg.exceptions.ValidationException;
-import org.apache.iceberg.expressions.BoundReference;
-import org.apache.iceberg.expressions.BoundTerm;
-import org.apache.iceberg.expressions.BoundTransform;
 import org.apache.iceberg.expressions.Expressions;
-import org.apache.iceberg.expressions.Term;
-import org.apache.iceberg.expressions.UnboundTerm;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
-import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.iceberg.transforms.Transform;
-import org.apache.iceberg.transforms.Transforms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,25 +163,6 @@ public class IcebergTableUtil {
     return builder.build();
   }
 
-  private static Transform<?, ?> resolve(Term term, Schema schema) {
-    Preconditions.checkArgument(term instanceof UnboundTerm, "Term must be unbound");
-
-    BoundTerm<?> boundTerm = ((UnboundTerm<?>) term).bind(schema.asStruct(), false);
-    Transform<?, ?> transform = toTransform(boundTerm);
-
-    return transform;
-  }
-
-  private static Transform<?, ?> toTransform(BoundTerm<?> term) {
-    if (term instanceof BoundReference) {
-      return Transforms.identity(term.type());
-    } else if (term instanceof BoundTransform) {
-      return ((BoundTransform<?, ?>) term).transform();
-    } else {
-      throw new ValidationException("Invalid term: %s, expected either a bound reference or transform", term);
-    }
-  }
-
   public static void updateSpec(Configuration configuration, Table table) {
     // get the new partition transform spec
     PartitionSpec newPartitionSpec = spec(configuration, table.schema());
@@ -202,15 +171,10 @@ public class IcebergTableUtil {
       return;
     }
 
+    // delete every field from the old partition spec
     UpdatePartitionSpec updatePartitionSpec = table.updateSpec().caseSensitive(false);
+    table.spec().fields().forEach(field -> updatePartitionSpec.removeField(field.name()));
 
-    // Maintain a map of existing fields to avoid removing and adding the same field again
-    Map<String, String> fields = Maps.newHashMap();
-    for (PartitionField existingField :  table.spec().fields()) {
-      fields.put(existingField.transform().toString(), existingField.name());
-    }
-
-    Schema schema = table.spec().schema();
     List<TransformSpec> partitionTransformSpecList = SessionStateUtil
         .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
         .map(o -> (List<TransformSpec>) o).orElseGet(() -> null);
@@ -218,58 +182,28 @@ public class IcebergTableUtil {
     partitionTransformSpecList.forEach(spec -> {
       switch (spec.getTransformType()) {
         case IDENTITY:
-          if (fields.remove(resolve(Expressions.ref(spec.getColumnName()), schema).toString()) != null) {
-            break;
-          }
-          updatePartitionSpec.addField(Expressions.ref(spec.getColumnName()));
+          updatePartitionSpec.addField(spec.getColumnName());
           break;
         case YEAR:
-          if (fields.remove(resolve(Expressions.year(spec.getColumnName()), schema).toString()) != null) {
-            break;
-          }
           updatePartitionSpec.addField(Expressions.year(spec.getColumnName()));
           break;
         case MONTH:
-          if (fields.remove(resolve(Expressions.month(spec.getColumnName()), schema).toString()) != null) {
-            break;
-          }
           updatePartitionSpec.addField(Expressions.month(spec.getColumnName()));
           break;
         case DAY:
-          if (fields.remove(resolve(Expressions.day(spec.getColumnName()), schema).toString()) != null) {
-            break;
-          }
           updatePartitionSpec.addField(Expressions.day(spec.getColumnName()));
           break;
         case HOUR:
-          if (fields.remove(resolve(Expressions.hour(spec.getColumnName()), schema).toString()) != null) {
-            break;
-          }
           updatePartitionSpec.addField(Expressions.hour(spec.getColumnName()));
           break;
         case TRUNCATE:
-          if (fields.remove(
-              resolve(Expressions.truncate(spec.getColumnName(), spec.getTransformParam().get()), schema).toString()) !=
-              null) {
-            break;
-          }
           updatePartitionSpec.addField(Expressions.truncate(spec.getColumnName(), spec.getTransformParam().get()));
           break;
         case BUCKET:
-          if (fields.remove(
-              resolve(Expressions.bucket(spec.getColumnName(), spec.getTransformParam().get()), schema).toString()) !=
-              null) {
-            break;
-          }
           updatePartitionSpec.addField(Expressions.bucket(spec.getColumnName(), spec.getTransformParam().get()));
           break;
       }
     });
-
-    // remove the remaining fields where weren't added
-    for (Map.Entry<String, String> entry : fields.entrySet()) {
-      updatePartitionSpec.removeField(entry.getValue());
-    }
 
     updatePartitionSpec.commit();
   }

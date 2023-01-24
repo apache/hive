@@ -76,6 +76,7 @@
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
                   <excludes>
                       **/HadoopInputFile.class
+                      **/BaseUpdatePartitionSpec.class
                   </excludes>
                 </artifactItem>
               </artifactItems>
