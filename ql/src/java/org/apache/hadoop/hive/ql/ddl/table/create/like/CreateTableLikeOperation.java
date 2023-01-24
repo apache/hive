@@ -55,7 +55,11 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     if (oldTable.getTableType() == TableType.VIRTUAL_VIEW || oldTable.getTableType() == TableType.MATERIALIZED_VIEW) {
       tbl = createViewLikeTable(oldTable);
     } else {
-      tbl = createTableLikeTable(oldTable);
+      Map<String, String> originalProperties = new HashMap<>();
+      if (oldTable.getStorageHandler() != null) {
+        originalProperties = new HashMap<>(oldTable.getStorageHandler().getNativeProperties(oldTable));
+      }
+      tbl = createTableLikeTable(oldTable, originalProperties);
     }
 
     // If location is specified - ensure that it is a full qualified name
@@ -104,7 +108,8 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     return table;
   }
 
-  private Table createTableLikeTable(Table table) throws SemanticException, HiveException {
+  private Table createTableLikeTable(Table table, Map<String, String> originalProperties)
+      throws SemanticException, HiveException {
     String[] names = Utilities.getDbTableName(desc.getTableName());
     table.setDbName(names[0]);
     table.setTableName(names[1]);
@@ -112,7 +117,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
 
     setUserSpecifiedLocation(table);
 
-    setTableParameters(table);
+    setTableParameters(table, originalProperties);
 
     if (desc.isUserStorageFormat() || (table.getInputFormatClass() == null) || (table.getOutputFormatClass() == null)) {
       setStorage(table);
@@ -139,18 +144,18 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     }
   }
 
-  private void setTableParameters(Table tbl) throws HiveException {
+  private void setTableParameters(Table tbl, Map<String, String> originalProperties) throws HiveException {
     // With Hive-25813, we'll not copy over table properties from the source.
     // CTLT should should copy column schema but not table properties. It is also consistent
     // with other query engines like mysql, redshift.
-    Map<String, String> origParams = new HashMap<>(tbl.getParameters());
+    originalProperties.putAll(tbl.getParameters());
     tbl.getParameters().clear();
     if (desc.getTblProps() != null) {
       tbl.setParameters(desc.getTblProps());
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
     if (storageHandler != null) {
-      storageHandler.setTableParametersForCTLT(tbl, desc, origParams);
+      storageHandler.setTableParametersForCTLT(tbl, desc, originalProperties);
     }
   }
 
