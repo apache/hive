@@ -255,6 +255,9 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
+import org.datanucleus.ExecutionContext;
+import org.datanucleus.api.jdo.JDOPersistenceManager;
+import org.datanucleus.api.jdo.JDOTransaction;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -665,6 +668,20 @@ public class ObjectStore implements RawStore, Configurable {
       // being rolled back they are no longer relevant, and this prevents them
       // from reattaching in future transactions
       pm.evictAll();
+    }
+  }
+
+  private void setTransactionSavePoint(String savePoint) {
+    if (savePoint != null) {
+      ExecutionContext ec = ((JDOPersistenceManager) pm).getExecutionContext();
+      ec.getStoreManager().getConnectionManager().getConnection(ec);
+      ((JDOTransaction) currentTransaction).setSavepoint(savePoint);
+    }
+  }
+
+  private void rollbackTransactionToSavePoint(String savePoint) {
+    if (savePoint != null) {
+      ((JDOTransaction) currentTransaction).rollbackToSavepoint(savePoint);
     }
   }
 
@@ -4366,13 +4383,15 @@ public class ObjectStore implements RawStore, Configurable {
     public T run(boolean initTable) throws MetaException, NoSuchObjectException {
       try {
         start(initTable);
+        String savePoint = isInTxn && allowJdo ? "rollback_" + System.nanoTime() : null;
         if (doUseDirectSql) {
           try {
             directSql.prepareTxn();
+            setTransactionSavePoint(savePoint);
             this.results = getSqlResult(this);
             LOG.debug("Using direct SQL optimization.");
           } catch (Exception ex) {
-            handleDirectSqlError(ex);
+            handleDirectSqlError(ex, savePoint);
           }
         }
         // Note that this will be invoked in 2 cases:
@@ -4402,7 +4421,7 @@ public class ObjectStore implements RawStore, Configurable {
       doUseDirectSql = doUseDirectSql && canUseDirectSql(this);
     }
 
-    private void handleDirectSqlError(Exception ex) throws MetaException, NoSuchObjectException {
+    private void handleDirectSqlError(Exception ex, String savePoint) throws MetaException, NoSuchObjectException {
       String message = null;
       try {
         message = generateShorterMessage(ex);
@@ -4438,6 +4457,7 @@ public class ObjectStore implements RawStore, Configurable {
           table = ensureGetTable(catName, dbName, tblName);
         }
       } else {
+        rollbackTransactionToSavePoint(savePoint);
         start = doTrace ? System.nanoTime() : 0;
       }
 
