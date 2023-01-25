@@ -22,10 +22,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.slf4j.Logger;
@@ -42,13 +40,16 @@ final class MmMinorQueryCompactor extends QueryCompactor {
   private static final Logger LOG = LoggerFactory.getLogger(MmMinorQueryCompactor.class.getName());
 
   @Override
-  public void run(HiveConf hiveConf, Table table, Partition partition,
-                     StorageDescriptor storageDescriptor, ValidWriteIdList writeIds, CompactionInfo compactionInfo,
-                     AcidDirectory dir) throws IOException {
+  public boolean run(CompactorContext context) throws IOException {
+    HiveConf hiveConf = context.getConf();
+    Table table = context.getTable();
+    AcidDirectory dir = context.getAcidDirectory();
     LOG.debug(
         "Going to delete directories for aborted transactions for MM table " + table.getDbName()
             + "." + table.getTableName());
     QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
+    StorageDescriptor storageDescriptor = context.getSd();
+    ValidWriteIdList writeIds = context.getValidWriteIdList();
 
     HiveConf driverConf = setUpDriverSession(hiveConf);
 
@@ -61,8 +62,9 @@ final class MmMinorQueryCompactor extends QueryCompactor {
         writeIds, resultDeltaDir);
     List<String> compactionQueries = getCompactionQueries(tmpTableName, resultTmpTableName, table);
     List<String> dropQueries = getDropQueries(tmpTableName);
-    runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
+    runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
         Lists.newArrayList(resultDeltaDir), createTableQueries, compactionQueries, dropQueries, table.getParameters());
+    return true;
   }
 
   /**

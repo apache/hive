@@ -3277,6 +3277,9 @@ public class HiveConf extends Configuration {
         "If the number of small delta directories under a table/partition passes this threshold, a " +
             "warning message will be logged."),
 
+    HIVE_MERGE_COMPACTION_ENABLED("hive.compaction.merge.enabled", false,
+            "Enables merge-based compaction which is a compaction optimization when few ORC delta files are present"),
+
     /**
      * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_LOGGER_FREQUENCY
      */
