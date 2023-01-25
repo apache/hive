@@ -82,6 +82,7 @@ concat
 concat_ws
 context_ngrams
 conv
+convertcharset
 corr
 cos
 cosh
@@ -528,6 +529,7 @@ concat
 concat_ws
 context_ngrams
 conv
+convertcharset
 corr
 cos
 cosh
@@ -700,6 +702,7 @@ concat
 concat_ws
 context_ngrams
 conv
+convertcharset
 corr
 cos
 cosh
