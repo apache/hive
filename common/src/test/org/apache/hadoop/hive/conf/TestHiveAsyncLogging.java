@@ -36,7 +36,7 @@ public class TestHiveAsyncLogging {
   // this test requires disruptor jar in classpath
   @Test
   public void testAsyncLoggingInitialization() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setBoolVar(ConfVars.HIVE_ASYNC_LOG_ENABLED, false);
     LogUtils.initHiveLog4jCommon(conf, ConfVars.HIVE_LOG4J_FILE);
     Log4jContextFactory log4jContextFactory = (Log4jContextFactory) LogManager.getFactory();

@@ -648,7 +648,7 @@ public class HCatUtil {
   public static HiveConf getHiveConf(Configuration conf)
     throws IOException {
 
-    HiveConf hiveConf = new HiveConf(conf, HCatUtil.class);
+    HiveConf hiveConf = HiveConf.create(conf, HCatUtil.class);
 
     //copy the hive conf into the job conf and restore it
     //in the backend context

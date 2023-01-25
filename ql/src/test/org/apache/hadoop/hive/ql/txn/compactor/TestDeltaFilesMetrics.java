@@ -65,7 +65,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
   @Override
   @Before
   public void setup() throws Exception {
-    this.conf = new HiveConf();
+    this.conf = HiveConf.create();
     setUpHiveConf();
     setup(conf);
     MetricsFactory.init(conf);

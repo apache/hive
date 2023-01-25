@@ -90,14 +90,14 @@ public class TestSessionGlobalInitFile {
     FileUtils.writeLines(initFile, Arrays.asList(fileContent));
 
     // set up service and client
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION,
         initFile.getParentFile().getAbsolutePath());
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     service = new FakeEmbeddedThriftBinaryCLIService(hiveConf);
-    service.init(new HiveConf());
+    service.init(HiveConf.create());
     client = new ThriftCLIServiceClient(service);
   }
 

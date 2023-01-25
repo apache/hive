@@ -67,7 +67,7 @@ public class TestThriftCliServiceWithInfoMessage {
     while (cliPort == webuiPort) {
       webuiPort = MetaStoreTestUtils.findFreePort();
     }
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_USE_SSL, false);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, host);

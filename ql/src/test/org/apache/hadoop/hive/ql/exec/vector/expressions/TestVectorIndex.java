@@ -438,7 +438,7 @@ public class TestVectorIndex {
         " exprDesc " + exprDesc.toString());
     */
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     ExprNodeEvaluator evaluator =
         ExprNodeEvaluatorFactory.get(exprDesc, hiveConf);
     try {
@@ -495,7 +495,7 @@ public class TestVectorIndex {
       TypeInfo outputTypeInfo, Object[] resultObjects)
           throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     if (indexTestMode == IndexTestMode.ADAPTOR) {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE, true);
     }

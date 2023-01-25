@@ -49,7 +49,7 @@ public class TestHiveLogging {
 
     LogUtils.initHiveLog4j();
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     assertEquals(expectedLog4jTestPath, conf.getVar(ConfVars.HIVE_LOG4J_FILE));
     assertEquals(expectedLog4jExecPath, conf.getVar(ConfVars.HIVE_EXEC_LOG4J_FILE));
   }

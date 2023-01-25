@@ -93,7 +93,7 @@ public class LogUtils {
 
   private static String initHiveLog4jCommon(ConfVars confVarName)
       throws LogInitializationException {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     return initHiveLog4jCommon(conf, confVarName);
   }
 

@@ -49,7 +49,7 @@ public class TestHiveSessionImpl {
     TProtocolVersion protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2;
     String username = "";
     String password = "";
-    HiveConf serverhiveConf = new HiveConf();
+    HiveConf serverhiveConf = HiveConf.create();
     String ipAddress = null;
     HiveSessionImpl session = new HiveSessionImpl(null, protocol, username, password,
       serverhiveConf, ipAddress, null) {

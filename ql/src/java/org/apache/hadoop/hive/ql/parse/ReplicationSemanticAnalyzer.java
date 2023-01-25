@@ -83,7 +83,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
     this.db = super.db;
-    this.conf = new HiveConf(super.conf);
+    this.conf = HiveConf.create(super.conf);
   }
 
   @Override

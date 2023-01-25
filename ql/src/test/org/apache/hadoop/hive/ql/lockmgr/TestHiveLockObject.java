@@ -26,7 +26,7 @@ import org.junit.Test;
 
 public class TestHiveLockObject {
 
-  private HiveConf conf = new HiveConf();
+  private HiveConf conf = HiveConf.create();
 
   @Test
   public void testEqualsAndHashCode() {

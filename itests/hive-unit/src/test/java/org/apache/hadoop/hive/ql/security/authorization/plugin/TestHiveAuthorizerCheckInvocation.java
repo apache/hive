@@ -97,7 +97,7 @@ public class TestHiveAuthorizerCheckInvocation {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
 
     // Turn on mocked authorization
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, MockedHiveAuthorizerFactory.class.getName());

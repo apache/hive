@@ -49,7 +49,7 @@ public class TestSetProcessor {
     env.put(TEST_ENV_VAR_PASSWORD, TEST_ENV_VAR_PASSWORD_VALUE);
     setEnv(env);
     System.setProperty(TEST_SYSTEM_PROPERTY, TEST_SYSTEM_PROPERTY_VALUE);
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     SessionState.start(conf);
     state = SessionState.get();
   }

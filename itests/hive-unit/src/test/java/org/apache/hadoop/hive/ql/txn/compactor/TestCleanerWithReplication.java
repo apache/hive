@@ -50,7 +50,7 @@ public class TestCleanerWithReplication extends CompactorTest {
 
   @Before
   public void setup() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.set("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
     conf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
     setup(conf);

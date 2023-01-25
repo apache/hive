@@ -79,7 +79,7 @@ public class TestGetInputSummary {
   @Before
   public void setup() throws Exception {
     // creates scratch directories needed by the Context object
-    SessionState.start(new HiveConf());
+    SessionState.start(HiveConf.create());
 
     this.jobConf = new JobConf();
     this.properties = new Properties();

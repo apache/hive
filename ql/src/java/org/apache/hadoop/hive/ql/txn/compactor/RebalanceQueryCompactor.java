@@ -48,7 +48,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
     ValidWriteIdList writeIds = context.getValidWriteIdList();
 
     // Set up the session for driver.
-    HiveConf conf = new HiveConf(hiveConf);
+    HiveConf conf = HiveConf.create(hiveConf);
 
     String tmpTableName = getTempTableName(table);
     Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,

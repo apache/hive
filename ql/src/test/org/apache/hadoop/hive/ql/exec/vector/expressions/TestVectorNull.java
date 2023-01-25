@@ -314,7 +314,7 @@ public class TestVectorNull {
         " exprDesc " + exprDesc.toString());
     */
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     ExprNodeEvaluator evaluator =
         ExprNodeEvaluatorFactory.get(exprDesc, hiveConf);
     try {
@@ -365,7 +365,7 @@ public class TestVectorNull {
       TypeInfo outputTypeInfo, Object[] resultObjects)
           throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     if (nullTestMode == NullTestMode.ADAPTOR) {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE, true);
     }

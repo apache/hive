@@ -30,7 +30,7 @@ public class TestQueryFactory {
 
   @Before
   public void setup() {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GUIDKEY, "guid");
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPCLASS_KEY, "superGroups");
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPMEMBERSHIP_KEY, "member");
@@ -89,7 +89,7 @@ public class TestQueryFactory {
 
   @Test(expected = IllegalStateException.class)
   public void testIsUserMemberOfGroupWhenMisconfigured() {
-    QueryFactory misconfiguredQueryFactory = new QueryFactory(new HiveConf());
+    QueryFactory misconfiguredQueryFactory = new QueryFactory(HiveConf.create());
     misconfiguredQueryFactory.isUserMemberOfGroup("user", "cn=MyGroup");
   }
 

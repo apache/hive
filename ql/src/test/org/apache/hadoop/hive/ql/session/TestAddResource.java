@@ -49,7 +49,7 @@ public class TestAddResource {
 
   @Before
   public void setup() throws IOException {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     t = ResourceType.JAR;
 
     //Generate test jar files
@@ -166,7 +166,7 @@ public class TestAddResource {
   @Test
   public void testUnion() throws URISyntaxException, IOException {
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     SessionState ss = Mockito.spy(SessionState.start(conf).get());
     ResourceType t = ResourceType.JAR;
     String query1 = "testQuery1";

@@ -42,7 +42,7 @@ public class TestTxnHandlerNoConnectionPool {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestTxnHandlerNoConnectionPool.class.getName());
 
-  private HiveConf conf = new HiveConf();
+  private HiveConf conf = HiveConf.create();
   private TxnStore txnHandler;
 
   @Before

@@ -67,7 +67,7 @@ public class TestSSL {
   private static final String KEY_MANAGER_FACTORY_ALGORITHM = "SunX509";
 
   private MiniHS2 miniHS2 = null;
-  private static HiveConf conf = new HiveConf();
+  private static HiveConf conf = HiveConf.create();
   private Connection hs2Conn = null;
   private String dataFileDir = SSLTestUtils.getDataFileDir();
   private Map<String, String> confOverlay;

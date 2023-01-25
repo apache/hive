@@ -131,7 +131,7 @@ public final class HiveMaterializedViewsRegistry {
     try {
       // Create a new conf object to bypass metastore authorization, as we need to
       // retrieve all materialized views from all databases
-      HiveConf conf = new HiveConf();
+      HiveConf conf = HiveConf.create();
       conf.set(MetastoreConf.ConfVars.FILTER_HOOK.getVarname(),
           DefaultMetaStoreFilterHookImpl.class.getName());
       init(Hive.get(conf));

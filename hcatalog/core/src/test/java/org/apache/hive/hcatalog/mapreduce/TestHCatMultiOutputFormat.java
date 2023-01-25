@@ -155,7 +155,7 @@ public class TestHCatMultiOutputFormat {
 
     warehousedir = new Path(System.getProperty("test.warehouse.dir"));
 
-    HiveConf metastoreConf = new HiveConf();
+    HiveConf metastoreConf = HiveConf.create();
     metastoreConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, warehousedir.toString());
 
     // Run hive metastore server
@@ -182,7 +182,7 @@ public class TestHCatMultiOutputFormat {
 
   private static void initializeSetup(HiveConf metastoreConf) throws Exception {
 
-    hiveConf = new HiveConf(metastoreConf, TestHCatMultiOutputFormat.class);
+    hiveConf = HiveConf.create(metastoreConf, TestHCatMultiOutputFormat.class);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,

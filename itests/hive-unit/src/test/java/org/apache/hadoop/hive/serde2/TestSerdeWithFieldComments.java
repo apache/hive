@@ -68,7 +68,7 @@ public class TestSerdeWithFieldComments {
     Deserializer mockDe = mock(Deserializer.class);
     when(mockDe.getObjectInspector()).thenReturn(mockSOI);
     List<FieldSchema> result =
-        HiveMetaStoreUtils.getFieldsFromDeserializer("testTable", mockDe, new HiveConf());
+        HiveMetaStoreUtils.getFieldsFromDeserializer("testTable", mockDe, HiveConf.create());
 
     assertEquals(2, result.size());
     assertEquals("first", result.get(0).getName());

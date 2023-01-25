@@ -45,7 +45,7 @@ public class TestSQLStdHiveAccessControllerCLI {
    */
   @Test
   public void testConfigProcessing() throws HiveAuthzPluginException {
-    HiveConf processedConf = new HiveConf();
+    HiveConf processedConf = HiveConf.create();
     SQLStdHiveAccessController accessController = new SQLStdHiveAccessController(null,
         processedConf, new HadoopDefaultAuthenticator(), getCLISessionCtx()
         );
@@ -73,7 +73,7 @@ public class TestSQLStdHiveAccessControllerCLI {
    */
   @Test
   public void testAuthEnable() throws Exception {
-    HiveConf processedConf = new HiveConf();
+    HiveConf processedConf = HiveConf.create();
     processedConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     HiveAuthorizerFactory authorizerFactory = new SQLStdHiveAuthorizerFactory();
     HiveAuthorizer authorizer = authorizerFactory.createHiveAuthorizer(null, processedConf,

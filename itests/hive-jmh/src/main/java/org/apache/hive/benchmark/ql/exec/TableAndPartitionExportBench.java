@@ -47,7 +47,7 @@ public class TableAndPartitionExportBench {
   public static class BaseBench {
 
     protected static final Logger LOG = LoggerFactory.getLogger(BaseBench.class);
-    final HiveConf conf = new HiveConf();
+    final HiveConf conf = HiveConf.create();
     final int nTables = 500;
 
     @Benchmark

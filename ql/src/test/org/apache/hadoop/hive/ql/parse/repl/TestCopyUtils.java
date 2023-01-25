@@ -71,7 +71,7 @@ public class TestCopyUtils {
     mockStatic(UserGroupInformation.class);
     when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
 
-    HiveConf conf = Mockito.spy(new HiveConf());
+    HiveConf conf = Mockito.spy(HiveConf.create());
     doReturn(1L).when(conf).getLong(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname, 32L * 1024 * 1024);
     CopyUtils copyUtils = new CopyUtils("", conf, null);
     long MB_128 = 128 * 1024 * 1024;
@@ -83,7 +83,7 @@ public class TestCopyUtils {
     mockStatic(UserGroupInformation.class);
     when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
 
-    HiveConf conf = Mockito.spy(new HiveConf());
+    HiveConf conf = Mockito.spy(HiveConf.create());
     CopyUtils copyUtils = new CopyUtils("", conf, null);
     long MB_16 = 16 * 1024 * 1024;
     assertFalse(copyUtils.limitReachedForLocalCopy(MB_16, 100L));
@@ -210,7 +210,7 @@ public class TestCopyUtils {
   public void testParallelCopySuccess() throws Exception {
     mockStatic(UserGroupInformation.class);
     when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
-    HiveConf conf = Mockito.spy(new HiveConf());
+    HiveConf conf = Mockito.spy(HiveConf.create());
     when(conf.getIntVar(HiveConf.ConfVars.REPL_PARALLEL_COPY_TASKS)).thenReturn(2);
     when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
     FileSystem destFs = mock(FileSystem.class);

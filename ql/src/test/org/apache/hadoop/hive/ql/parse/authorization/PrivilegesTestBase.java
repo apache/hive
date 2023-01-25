@@ -37,7 +37,7 @@ public class PrivilegesTestBase {
 
   public static void grantUserTable(String privStr, PrivilegeType privType, QueryState queryState, Hive db)
       throws Exception {
-    Context ctx=new Context(new HiveConf());
+    Context ctx=new Context(HiveConf.create());
     DDLWork work = AuthorizationTestUtil.analyze(
         "GRANT " + privStr + " ON TABLE " + TABLE + " TO USER " + USER, queryState, db, ctx);
     GrantDesc grantDesc = (GrantDesc)work.getDDLDesc();

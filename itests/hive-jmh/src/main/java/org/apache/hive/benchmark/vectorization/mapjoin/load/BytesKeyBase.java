@@ -41,7 +41,7 @@ public class BytesKeyBase extends AbstractHTLoadBench {
       MapJoinTestConfig.MapJoinTestImplementation mapJoinImplementation, int rows) throws Exception {
     long seed = 2543;
     int rowCount = rows;
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     int[] bigTableKeyColumnNums = new int[] { 0 };
     String[] bigTableColumnNames = new String[] { "b1" };
     TypeInfo[] bigTableTypeInfos = new TypeInfo[] { TypeInfoFactory.stringTypeInfo };

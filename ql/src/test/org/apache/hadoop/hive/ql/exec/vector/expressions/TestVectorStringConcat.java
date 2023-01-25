@@ -319,7 +319,7 @@ public class TestVectorStringConcat {
     ExprNodeGenericFuncDesc exprDesc =
         new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo, genericUdf, children);
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     ExprNodeEvaluator evaluator =
         ExprNodeEvaluatorFactory.get(exprDesc, hiveConf);
     evaluator.initialize(rowInspector);
@@ -364,7 +364,7 @@ public class TestVectorStringConcat {
       GenericUDF genericUdf, Object[] resultObjects)
           throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     if (stringConcatTestMode == StringConcatTestMode.ADAPTOR) {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE, true);
     }

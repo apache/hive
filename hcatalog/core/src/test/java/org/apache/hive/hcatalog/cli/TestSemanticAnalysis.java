@@ -61,7 +61,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   @Before
   public void setUpHCatDriver() throws IOException {
     if (hcatDriver == null) {
-      HiveConf hcatConf = new HiveConf(hiveConf);
+      HiveConf hcatConf = HiveConf.create(hiveConf);
       hcatConf
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
           "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

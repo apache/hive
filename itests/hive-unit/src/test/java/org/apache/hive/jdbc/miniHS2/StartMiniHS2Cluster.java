@@ -61,7 +61,7 @@ public class StartMiniHS2Cluster {
       HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confFile).toURI().getPath()));
       break;
     }
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_RPC_QUERY_PLAN, true);
 

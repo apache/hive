@@ -64,7 +64,7 @@ public class GenericUDTFGetSQLSchema extends GenericUDTF {
 
     String query = stringOI.getPrimitiveJavaObject(arguments[0]);
     LOG.debug("Getting schema for Query: {}", query);
-    HiveConf conf = new HiveConf(SessionState.get().getConf());
+    HiveConf conf = HiveConf.create(SessionState.get().getConf());
     List<FieldSchema> fieldSchemas = null;
     try {
       fieldSchemas = ParseUtils.parseQueryAndGetSchema(conf, query);

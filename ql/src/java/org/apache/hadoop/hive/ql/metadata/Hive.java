@@ -370,7 +370,7 @@ public class Hive {
   }
 
   public static Hive get(Configuration c, Class<?> clazz) throws HiveException {
-    return get(c instanceof HiveConf ? (HiveConf)c : new HiveConf(c, clazz));
+    return get(c instanceof HiveConf ? (HiveConf)c : HiveConf.create(c, clazz));
   }
 
   /**
@@ -461,7 +461,7 @@ public class Hive {
 
   private static HiveConf createHiveConf() {
     SessionState session = SessionState.get();
-    return (session == null) ? new HiveConf(Hive.class) : session.getConf();
+    return (session == null) ? HiveConf.create(Hive.class) : session.getConf();
   }
 
   public void setHMSClientCapabilities(String[] capabilities) {

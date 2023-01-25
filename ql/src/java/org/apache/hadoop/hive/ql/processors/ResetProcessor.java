@@ -93,7 +93,7 @@ public class ResetProcessor implements CommandProcessor {
     if (ss.getOverriddenConfigurations().isEmpty()) {
       return;
     }
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     for (String key : ss.getOverriddenConfigurations().keySet()) {
       setSessionVariableFromConf(ss, key, conf);
     }
@@ -104,7 +104,7 @@ public class ResetProcessor implements CommandProcessor {
     if (!ss.getOverriddenConfigurations().containsKey(varname)) {
       return;
     }
-    setSessionVariableFromConf(ss, varname, new HiveConf());
+    setSessionVariableFromConf(ss, varname, HiveConf.create());
     ss.getOverriddenConfigurations().remove(varname);
   }
 

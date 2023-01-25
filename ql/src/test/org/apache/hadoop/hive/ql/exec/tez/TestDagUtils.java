@@ -76,7 +76,7 @@ public class TestDagUtils {
   @Test
   public void outputCommitterSetToDefaultIfNotPresent() throws IOException {
     DagUtils dagUtils = DagUtils.getInstance();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
 
     JobConf configuration = dagUtils.createConfiguration(conf);
 
@@ -87,7 +87,7 @@ public class TestDagUtils {
   @Test
   public void outputCommitterNotOverriddenIfPresent() throws IOException {
     DagUtils dagUtils = DagUtils.getInstance();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.set("mapred.output.committer.class", TestTezOutputCommitter.CountingOutputCommitter.class.getName());
 
     JobConf configuration = dagUtils.createConfiguration(conf);
@@ -101,7 +101,7 @@ public class TestDagUtils {
     final DagUtils dagUtils = DagUtils.getInstance();
 
     Vertex map = Vertex.create("mapWorkName", null);
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     Assert.assertNull(map.getTaskEnvironment().get("key"));
 
     conf.set(JobConf.MAPRED_MAP_TASK_ENV, "key=value");
@@ -115,7 +115,7 @@ public class TestDagUtils {
     final DagUtils dagUtils = DagUtils.getInstance();
 
     Vertex reduce = Vertex.create("reduceWorkName", null);
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     Assert.assertNull(reduce.getTaskEnvironment().get("key"));
 
     conf.set(JobConf.MAPRED_REDUCE_TASK_ENV, "key=value");

@@ -193,7 +193,7 @@ public class TestReplicationScenarios {
 
   static void internalBeforeClassSetup(Map<String, String> additionalProperties)
       throws Exception {
-    hconf = new HiveConf(TestReplicationScenarios.class);
+    hconf = HiveConf.create(TestReplicationScenarios.class);
     String metastoreUri = System.getProperty("test."+MetastoreConf.ConfVars.THRIFT_URIS.getHiveName());
     if (metastoreUri != null) {
       hconf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);
@@ -245,10 +245,10 @@ public class TestReplicationScenarios {
     metaStoreClient = new HiveMetaStoreClient(hconf);
 
     FileUtils.deleteDirectory(new File("metastore_db2"));
-    HiveConf hconfMirrorServer = new HiveConf();
+    HiveConf hconfMirrorServer = HiveConf.create();
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
     MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
-    hconfMirror = new HiveConf(hconf);
+    hconfMirror = HiveConf.create(hconf);
     MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     hconfMirrorServer.set(proxySettingName, "*");
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
@@ -2533,7 +2533,7 @@ public class TestReplicationScenarios {
   @Test
   public void testCleanerThreadStartupWait() throws Exception {
     int eventsTtl = 20;
-    HiveConf newConf = new HiveConf(hconf);
+    HiveConf newConf = HiveConf.create(hconf);
 
     // Set TTL short enough for testing.
     MetastoreConf.setTimeVar(newConf, REPL_EVENT_DB_LISTENER_TTL, eventsTtl, TimeUnit.SECONDS);

@@ -60,7 +60,7 @@ public final class StatsUpdater {
                 throw new IllegalArgumentException("Metastore client is missing");
             }
 
-            HiveConf statusUpdaterConf = new HiveConf(conf);
+            HiveConf statusUpdaterConf = HiveConf.create(conf);
             statusUpdaterConf.unset(ValidTxnList.VALID_TXNS_KEY);
 
             //e.g. analyze table page_view partition(dt='10/15/2014',country=’US’)

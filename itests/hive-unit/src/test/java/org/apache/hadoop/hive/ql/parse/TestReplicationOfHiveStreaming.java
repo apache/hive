@@ -69,7 +69,7 @@ public class TestReplicationOfHiveStreaming {
   static void internalBeforeClassSetup(Map<String, String> overrides,
       Class clazz) throws Exception {
 
-    HiveConf conf = new HiveConf(clazz);
+    HiveConf conf = HiveConf.create(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

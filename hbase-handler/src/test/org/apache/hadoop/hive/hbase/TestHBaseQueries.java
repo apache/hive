@@ -52,7 +52,7 @@ public class TestHBaseQueries {
    * databases, etc.), otherwise those will be visible for subsequent test methods too.
    */
   public TestHBaseQueries() throws Exception {
-    baseConf = new HiveConf(HBaseConfiguration.create(), TestHBaseQueries.class);
+    baseConf = HiveConf.create(HBaseConfiguration.create(), TestHBaseQueries.class);
     baseConf.set(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.varname, SQLStdHiveAuthorizerFactory.class.getName());
 
     // set up Zookeeper
@@ -99,7 +99,7 @@ public class TestHBaseQueries {
 
   @Test
   public void testRollbackDoesNotDeleteOriginTableWhenCTLTFails() throws CommandProcessorException {
-    HiveConf conf = new HiveConf(baseConf);
+    HiveConf conf = HiveConf.create(baseConf);
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES, true);

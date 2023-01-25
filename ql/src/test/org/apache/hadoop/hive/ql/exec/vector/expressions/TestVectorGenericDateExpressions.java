@@ -48,7 +48,7 @@ import java.util.TimeZone;
 public class TestVectorGenericDateExpressions {
 
   private Charset utf8 = StandardCharsets.UTF_8;
-  private HiveConf hiveConf = new HiveConf();
+  private HiveConf hiveConf = HiveConf.create();
   private int size = 200;
   private Random random = new Random();
   private SimpleDateFormat formatter = getFormatter();

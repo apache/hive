@@ -44,7 +44,7 @@ public class TestKeyWrapperFactory {
 
   @Before
   public void setup() throws Exception {
-    SessionState ss = new SessionState(new HiveConf());
+    SessionState ss = new SessionState(HiveConf.create());
     SessionState.setCurrentSessionState(ss);
 
     ArrayList<Text> col1 = new ArrayList<Text>();

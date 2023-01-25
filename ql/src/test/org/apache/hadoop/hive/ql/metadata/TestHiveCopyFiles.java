@@ -62,7 +62,7 @@ public class TestHiveCopyFiles {
 
   @BeforeClass
   public static void setUp() {
-    hiveConf = new HiveConf(TestHiveCopyFiles.class);
+    hiveConf = HiveConf.create(TestHiveCopyFiles.class);
     SessionState.start(hiveConf);
   }
 

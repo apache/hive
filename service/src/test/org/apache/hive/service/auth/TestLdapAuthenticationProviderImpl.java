@@ -53,7 +53,7 @@ public class TestLdapAuthenticationProviderImpl {
 
   @Before
   public void setup() throws AuthenticationException {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.set("hive.root.logger", "DEBUG,console");
     conf.set("hive.server2.authentication.ldap.url", "localhost");
     when(factory.getInstance(any(HiveConf.class), anyString(), anyString())).thenReturn(search);

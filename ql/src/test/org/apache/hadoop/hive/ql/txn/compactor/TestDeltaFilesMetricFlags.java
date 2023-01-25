@@ -42,7 +42,7 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
   public void testDeltaFilesMetricFromInitiatorWithMetricsDisabled() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), false);
     setup(conf);
     startInitiator();
@@ -53,7 +53,7 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
   public void testDeltaFilesMetricFromWorkerWithMetricsDisabled() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), false);
     setup(conf);
     startWorker();
@@ -64,7 +64,7 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
   public void testDeltaFilesMetricFromCleanerWithMetricsDisabled() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), false);
     setup(conf);
     startCleaner();
@@ -75,7 +75,7 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
   public void testDeltaFilesMetricFromInitiatorWithAcidMetricsThreadDisabled() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setBoolean(MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_THREAD_ON.getVarname(), false);
     setup(conf);
     startInitiator();
@@ -86,7 +86,7 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
   public void testDeltaFilesMetricFromWorkerWithAcidMetricsThreadDisabled() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setBoolean(MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_THREAD_ON.getVarname(), false);
     setup(conf);
     startWorker();
@@ -97,7 +97,7 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
   public void testDeltaFilesMetricFromCleanerWithAcidMetricsThreadDisabled() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setBoolean(MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_THREAD_ON.getVarname(), false);
     setup(conf);
     startCleaner();

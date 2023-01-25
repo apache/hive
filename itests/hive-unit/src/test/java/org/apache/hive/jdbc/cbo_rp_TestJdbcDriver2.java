@@ -98,7 +98,7 @@ public class cbo_rp_TestJdbcDriver2 {
   private static final float floatCompareDelta = 0.0001f;
 
   public cbo_rp_TestJdbcDriver2() {
-    conf = new HiveConf(cbo_rp_TestJdbcDriver2.class);
+    conf = HiveConf.create(cbo_rp_TestJdbcDriver2.class);
     dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");

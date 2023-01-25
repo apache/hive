@@ -36,7 +36,7 @@ public class TestCommandWithSpace {
     @Test
     public void testCommandWithPrefixSpace() throws IllegalAccessException, ClassNotFoundException, InstantiationException, HiveSQLException {
         String query = " dfs -ls /";
-        HiveConf conf = new HiveConf();
+        HiveConf conf = HiveConf.create();
         conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
         conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
                 "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

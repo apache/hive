@@ -29,7 +29,7 @@ public class TestLdapUtils {
 
   @Test
   public void testCreateCandidatePrincipalsForUserDn() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     String userDn = "cn=user1,ou=CORP,dc=mycompany,dc=com";
     List<String> expected = Arrays.asList(userDn);
     List<String> actual = LdapUtils.createCandidatePrincipals(conf, userDn);
@@ -38,7 +38,7 @@ public class TestLdapUtils {
 
   @Test
   public void testCreateCandidatePrincipalsForUserWithDomain() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     String userWithDomain = "user1@mycompany.com";
     List<String> expected = Arrays.asList(userWithDomain);
     List<String> actual = LdapUtils.createCandidatePrincipals(conf, userWithDomain);
@@ -47,7 +47,7 @@ public class TestLdapUtils {
 
   @Test
   public void testCreateCandidatePrincipalsLdapDomain() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_DOMAIN, "mycompany.com");
     List<String> expected = Arrays.asList("user1@mycompany.com");
     List<String> actual = LdapUtils.createCandidatePrincipals(conf, "user1");
@@ -56,7 +56,7 @@ public class TestLdapUtils {
 
   @Test
   public void testCreateCandidatePrincipalsUserPatternsDefaultBaseDn() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GUIDKEY, "sAMAccountName");
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN, "dc=mycompany,dc=com");
     List<String> expected = Arrays.asList("sAMAccountName=user1,dc=mycompany,dc=com");
@@ -66,7 +66,7 @@ public class TestLdapUtils {
 
   @Test
   public void testCreateCandidatePrincipals() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN, "dc=mycompany,dc=com");
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN,
         "cn=%s,ou=CORP1,dc=mycompany,dc=com:cn=%s,ou=CORP2,dc=mycompany,dc=com");

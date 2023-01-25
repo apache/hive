@@ -49,7 +49,7 @@ public class TestOptionsProcessor {
     assertEquals("D", processor.getHiveVariables().get("C"));
     assertEquals("Y", processor.getHiveVariables().get("X"));
 
-    CliSessionState sessionState = new CliSessionState(new HiveConf());
+    CliSessionState sessionState = new CliSessionState(HiveConf.create());
     // stage 2
     processor.process_stage2(sessionState);
     assertEquals("testDb", sessionState.database);
@@ -69,7 +69,7 @@ public class TestOptionsProcessor {
     String[] args = {"-i", "f1", "-i", "f2","-f", "fileName",};
     assertTrue(processor.process_stage1(args));
 
-    CliSessionState sessionState = new CliSessionState(new HiveConf());
+    CliSessionState sessionState = new CliSessionState(HiveConf.create());
     processor.process_stage2(sessionState);
     assertEquals("fileName", sessionState.fileName);
     assertEquals(2, sessionState.initFiles.size());

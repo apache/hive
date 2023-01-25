@@ -71,7 +71,7 @@ public class TestVectorNegative {
 
   public TestVectorNegative() {
     // Arithmetic operations rely on getting conf from SessionState, need to initialize here.
-    SessionState ss = new SessionState(new HiveConf());
+    SessionState ss = new SessionState(HiveConf.create());
     ss.getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");
     SessionState.setCurrentSessionState(ss);
   }
@@ -321,7 +321,7 @@ public class TestVectorNegative {
         " exprDesc " + exprDesc.toString());
     */
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     ExprNodeEvaluator evaluator =
         ExprNodeEvaluatorFactory.get(exprDesc, hiveConf);
     evaluator.initialize(rowInspector);
@@ -375,7 +375,7 @@ public class TestVectorNegative {
       TypeInfo outputTypeInfo, Object[] resultObjects)
           throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     if (negativeTestMode == NegativeTestMode.ADAPTOR) {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE, true);
     }

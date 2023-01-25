@@ -69,7 +69,7 @@ public class TestBasicStats {
   public void testDataSizeEstimator() {
     Partish p1 = new LocalPartishBuilder().totalSize(10).buildPartition();
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setFloatVar(ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR, 13.0f);
     BasicStats.Factory factory = new BasicStats.Factory(new BasicStats.DataSizeEstimator(conf));
 
@@ -81,7 +81,7 @@ public class TestBasicStats {
   @Test
   public void mergeWithEmpty() {
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     int avgRowSize = 100;
     int r0 = 13;
     int r1 = 15;
@@ -107,7 +107,7 @@ public class TestBasicStats {
     Partish p0 = new LocalPartishBuilder().numRows(10).rawDataSize(100).buildPartition();
     Partish p1 = new LocalPartishBuilder().totalSize(10).buildPartition();
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     BasicStats.Factory factory =
         new BasicStats.Factory(new BasicStats.DataSizeEstimator(conf), new BasicStats.RowNumEstimator(10));
 

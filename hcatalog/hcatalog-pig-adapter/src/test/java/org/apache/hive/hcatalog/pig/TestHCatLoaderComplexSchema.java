@@ -105,7 +105,7 @@ public class TestHCatLoaderComplexSchema {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    HiveConf hiveConf = new HiveConf(TestHCatLoaderComplexSchema.class);
+    HiveConf hiveConf = HiveConf.create(TestHCatLoaderComplexSchema.class);
     Path workDir = new Path(System.getProperty("test.tmp.dir",
         "target" + File.separator + "test" + File.separator + "tmp"));
     hiveConf.set("mapred.local.dir", workDir + File.separator + "TestHCatLoaderComplexSchema"

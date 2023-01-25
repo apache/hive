@@ -49,7 +49,7 @@ public class TestQueryDisplay {
 
   @Before
   public void setup() {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.set("hive.support.concurrency", "false");
 
     sessionManager = new SessionManager(null, true);

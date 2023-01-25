@@ -560,7 +560,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected void cloneConf() {
     if (!clonedConf) {
       clonedConf = true;
-      conf = new HiveConf(conf);
+      conf = HiveConf.create(conf);
     }
   }
 

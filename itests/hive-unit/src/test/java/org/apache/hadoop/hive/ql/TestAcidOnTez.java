@@ -112,7 +112,7 @@ public class TestAcidOnTez {
 
   @Before
   public void setUp() throws Exception {
-    hiveConf = new HiveConf(this.getClass());
+    hiveConf = HiveConf.create(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
@@ -209,7 +209,7 @@ public class TestAcidOnTez {
   @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testNonStandardConversion01() throws Exception {
-    HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
+    HiveConf confForTez = HiveConf.create(hiveConf); // make a clone of existing hive conf
     setupTez(confForTez);
     //CTAS with non-ACID target table
     runStatementOnDriver("create table " + Table.NONACIDNONBUCKET + " stored as ORC TBLPROPERTIES('transactional'='false') as " +
@@ -350,7 +350,7 @@ public class TestAcidOnTez {
   @Ignore("HIVE-17214")//this consistently works locally but never in ptest....
   @Test
   public void testNonStandardConversion02() throws Exception {
-    HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
+    HiveConf confForTez = HiveConf.create(hiveConf); // make a clone of existing hive conf
     confForTez.setBoolean("mapred.input.dir.recursive", true);
     setupTez(confForTez);
     runStatementOnDriver("create table " + Table.NONACIDNONBUCKET + " stored as ORC " +
@@ -455,7 +455,7 @@ public class TestAcidOnTez {
    */
   @Test
   public void testCtasTezUnion() throws Exception {
-    HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
+    HiveConf confForTez = HiveConf.create(hiveConf); // make a clone of existing hive conf
     confForTez.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
     setupTez(confForTez);
     //CTAS with ACID target table
@@ -584,7 +584,7 @@ public class TestAcidOnTez {
   @Test
   public void testInsertWithRemoveUnion() throws Exception {
     int[][] values = {{1,2},{3,4},{5,6},{7,8},{9,10}};
-    HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
+    HiveConf confForTez = HiveConf.create(hiveConf); // make a clone of existing hive conf
     setupTez(confForTez);
     runStatementOnDriver("drop table if exists T", confForTez);
     runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='false')", confForTez);
@@ -659,7 +659,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
    */
   @Test
   public void testAcidInsertWithRemoveUnion() throws Exception {
-    HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
+    HiveConf confForTez = HiveConf.create(hiveConf); // make a clone of existing hive conf
     setupTez(confForTez);
     runStatementOnDriver("drop table if exists T", confForTez);
     runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='true')", confForTez);
@@ -706,7 +706,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   }
   @Test
   public void testBucketedAcidInsertWithRemoveUnion() throws Exception {
-    HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
+    HiveConf confForTez = HiveConf.create(hiveConf); // make a clone of existing hive conf
     setupTez(confForTez);
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("delete from " + Table.ACIDTBL, confForTez);
@@ -754,7 +754,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   @Test
   public void testGetSplitsLocks() throws Exception {
     // Need to test this with LLAP settings, which requires some additional configurations set.
-    HiveConf modConf = new HiveConf(hiveConf);
+    HiveConf modConf = HiveConf.create(hiveConf);
     setupTez(modConf);
     modConf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     modConf.setVar(ConfVars.HIVEFETCHTASKCONVERSION, "more");
@@ -815,7 +815,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   @Test
   public void testGetSplitsLocksWithMaterializedView() throws Exception {
     // Need to test this with LLAP settings, which requires some additional configurations set.
-    HiveConf modConf = new HiveConf(hiveConf);
+    HiveConf modConf = HiveConf.create(hiveConf);
     setupTez(modConf);
     modConf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     modConf.setVar(ConfVars.HIVEFETCHTASKCONVERSION, "more");
@@ -866,7 +866,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   public void testCrudMajorCompactionSplitGrouper() throws Exception {
     String tblName = "test_split_grouper";
     // make a clone of existing hive conf
-    HiveConf confForTez = new HiveConf(hiveConf);
+    HiveConf confForTez = HiveConf.create(hiveConf);
     setupTez(confForTez); // one-time setup to make query able to run with Tez
     HiveConf.setVar(confForTez, HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
     runStatementOnDriver("create transactional table " + tblName + " (a int, b int) clustered by (a) into 2 buckets "
@@ -945,8 +945,8 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   // Ideally test like this should be a qfile test. However, the explain output from qfile is always
   // slightly different depending on where the test is run, specifically due to file size estimation
   private void testJoin(String engine, String joinType) throws Exception {
-    HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
-    HiveConf confForMR = new HiveConf(hiveConf);  // make a clone of existing hive conf
+    HiveConf confForTez = HiveConf.create(hiveConf); // make a clone of existing hive conf
+    HiveConf confForMR = HiveConf.create(hiveConf);  // make a clone of existing hive conf
 
     if (engine.equals("tez")) {
       setupTez(confForTez); // one-time setup to make query able to run with Tez

@@ -55,7 +55,7 @@ public class TestMRCompactorJobQueueConfiguration {
     MRCompactor compactor = new MRCompactor(null);
     CompactionInfo ci = new CompactionInfo(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MAJOR);
     ci.properties = new StringableMap(input.compactionProperties).toString();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     input.confProperties.forEach(conf::set);
     JobConf c = compactor.createBaseJobConf(conf, "test-job", tbl, tbl.getSd(), new ValidReaderWriteIdList(), ci);
     assertEquals(input.expectedQueue, c.getQueueName(), "Test failed for the following input:" + input);

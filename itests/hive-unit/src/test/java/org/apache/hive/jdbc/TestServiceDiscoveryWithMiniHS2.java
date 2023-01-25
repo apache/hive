@@ -55,7 +55,7 @@ public class TestServiceDiscoveryWithMiniHS2 {
     MiniHS2.cleanupLocalDir();
     zkServer = new TestingServer();
     Class.forName(MiniHS2.getJdbcDriverName());
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     // Set up zookeeper dynamic service discovery configs
     enableZKServiceDiscoveryConfigs(hiveConf);

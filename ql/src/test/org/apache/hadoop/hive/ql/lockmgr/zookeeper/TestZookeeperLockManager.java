@@ -62,7 +62,7 @@ public class TestZookeeperLockManager {
 
   @Before
   public void setup() {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setVar(ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, "100ms");
     lockObjData = new HiveLockObjectData("1", "10", "SHARED", "show tables", conf);
     hiveLock = new HiveLockObject(TABLE, lockObjData);

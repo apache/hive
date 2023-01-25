@@ -69,7 +69,7 @@ public class TestReplicationMetricUpdateOnFailure {
   @Before
   public void setup() throws Exception {
     
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.set(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
     conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, "repl");
     conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "1");

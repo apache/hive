@@ -32,7 +32,7 @@ public class TestReplicationSemanticAnalyzer {
   private static HiveConf hiveConf = buildHiveConf();
 
   public static HiveConf buildHiveConf() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setVar(HIVE_QUOTEDID_SUPPORT, Quotation.NONE.stringValue());
     return conf;
   }

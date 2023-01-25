@@ -65,7 +65,7 @@ public class TestMetaStoreLimitPartitionRequest {
   @BeforeClass
   public static void beforeTest() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
-    conf = new HiveConf();
+    conf = HiveConf.create();
     DriverManager.setLoginTimeout(0);
 
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

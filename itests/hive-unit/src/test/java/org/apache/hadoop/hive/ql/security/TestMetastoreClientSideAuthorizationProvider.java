@@ -54,7 +54,7 @@ public class TestMetastoreClientSideAuthorizationProvider {
 
         int port = MetaStoreTestUtils.startMetaStoreWithRetry();
 
-        clientHiveConf = new HiveConf(this.getClass());
+        clientHiveConf = HiveConf.create(this.getClass());
 
         // Turn on client-side authorization
         clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,true);

@@ -39,7 +39,7 @@ public class TestJdbcWithDBTokenStore extends TestJdbcWithMiniKdc{
     confOverlay.put(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED.varname, "false");
 
     miniHiveKdc = new MiniHiveKdc();
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     //using old config value tests backwards compatibility
     hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerbWithRemoteHMSWithKerb(miniHiveKdc, hiveConf);

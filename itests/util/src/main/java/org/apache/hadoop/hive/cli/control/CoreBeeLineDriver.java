@@ -100,7 +100,7 @@ public class CoreBeeLineDriver extends CliAdapter {
   }
 
   private static MiniHS2 createMiniServer() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     // We do not need Zookeeper at the moment
     hiveConf.set(HiveConf.ConfVars.HIVE_LOCK_MANAGER.varname,
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");

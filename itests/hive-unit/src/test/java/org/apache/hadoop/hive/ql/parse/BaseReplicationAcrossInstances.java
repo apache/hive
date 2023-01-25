@@ -54,7 +54,7 @@ public class BaseReplicationAcrossInstances {
 
   static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz)
       throws Exception {
-    conf = new HiveConf(clazz);
+    conf = HiveConf.create(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hive.repl.cmrootdir", "/tmp/");
     conf.set("dfs.namenode.acls.enabled", "true");
@@ -86,7 +86,7 @@ public class BaseReplicationAcrossInstances {
           throws Exception {
     // Setup replica HDFS.
     String replicaBaseDir = Files.createTempDirectory("replica").toFile().getAbsolutePath();
-    replicaConf = new HiveConf(clazz);
+    replicaConf = HiveConf.create(clazz);
     replicaConf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, replicaBaseDir);
     replicaConf.set("dfs.client.use.datanode.hostname", "true");
     MiniDFSCluster miniReplicaDFSCluster =
@@ -94,7 +94,7 @@ public class BaseReplicationAcrossInstances {
 
     // Setup primary HDFS.
     String primaryBaseDir = Files.createTempDirectory("base").toFile().getAbsolutePath();
-    conf = new HiveConf(clazz);
+    conf = HiveConf.create(clazz);
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, primaryBaseDir);
     conf.set("dfs.client.use.datanode.hostname", "true");
     MiniDFSCluster miniPrimaryDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();

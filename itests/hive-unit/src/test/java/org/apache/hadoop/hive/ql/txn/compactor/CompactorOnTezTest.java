@@ -82,7 +82,7 @@ public abstract class CompactorOnTezTest {
   @Before
   // Note: we create a new conf and driver object before every test
   public void setup() throws Exception {
-    HiveConf hiveConf = new HiveConf(this.getClass());
+    HiveConf hiveConf = HiveConf.create(this.getClass());
     setupWithConf(hiveConf);
   }
 

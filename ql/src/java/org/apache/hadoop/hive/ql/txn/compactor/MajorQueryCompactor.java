@@ -44,7 +44,7 @@ final class MajorQueryCompactor extends QueryCompactor {
     StorageDescriptor storageDescriptor = context.getSd();
     ValidWriteIdList writeIds = context.getValidWriteIdList();
 
-    HiveConf conf = new HiveConf(hiveConf);
+    HiveConf conf = HiveConf.create(hiveConf);
     /*
      * For now, we will group splits on tez so that we end up with all bucket files,
      * with same bucket number in one map task.

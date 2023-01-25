@@ -88,7 +88,7 @@ public class TestUtils {
     LlapServiceInstance inactive = new InactiveServiceInstance(INACTIVE);
     instances.add(inactive);
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.set(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, "localhost");
     LlapZookeeperRegistryImpl dynRegistry = new LlapZookeeperRegistryImpl("dyn", conf);
     Endpoint rpcEndpoint = RegistryTypeUtils.ipcEndpoint("llap", new InetSocketAddress(ACTIVE, 4000));
@@ -126,7 +126,7 @@ public class TestUtils {
     assertLocations((HostAffinitySplitLocationProvider)provider, new String[] {ACTIVE});
 
     // Check if fixed stuff is working as well
-    LlapFixedRegistryImpl fixRegistry = new LlapFixedRegistryImpl("llap", new HiveConf());
+    LlapFixedRegistryImpl fixRegistry = new LlapFixedRegistryImpl("llap", HiveConf.create());
 
     // Instance for testing fixed registry instances
     LlapServiceInstance fixed = fixRegistry.new FixedServiceInstance(FIXED);
@@ -194,7 +194,7 @@ public class TestUtils {
 
   @Test
   public void testCustomSplitLocationProvider() throws IOException {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE, "llap");
 
     conf.setVar(HiveConf.ConfVars.LLAP_SPLIT_LOCATION_PROVIDER_CLASS, NoConstructorSplitLocationProvider.class.getName());

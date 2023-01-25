@@ -144,7 +144,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     fs = new LocalFileSystem();
     fs.initialize(fs.getWorkingDirectory().toUri(), new Configuration());
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setInt(HCatConstants.HCAT_HIVE_CLIENT_EXPIRY_TIME, 0);
     // Hack to initialize cache with 0 expiry time causing it to return a new hive client every time
     // Otherwise the cache doesn't play well with the second test method with the client gets closed() in the
@@ -164,7 +164,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
       // in case of external table, drop the table contents as well
       if (isTableExternal() && (externalTableLocation != null)) {
         Path extPath = new Path(externalTableLocation);
-        FileSystem fileSystem = extPath.getFileSystem(new HiveConf());
+        FileSystem fileSystem = extPath.getFileSystem(HiveConf.create());
         if (fileSystem.exists(extPath)) {
           fileSystem.delete(extPath, true);
         }

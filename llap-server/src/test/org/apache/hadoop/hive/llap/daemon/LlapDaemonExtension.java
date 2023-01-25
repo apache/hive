@@ -59,7 +59,7 @@ public class LlapDaemonExtension implements ParameterResolver, BeforeEachCallbac
       throw new IllegalStateException("Lock acquisition failed cause another test is using the LlapDaemon.");
     }
     final String appName = "testLlapDaemon" + context.getUniqueId();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "llap");
     LlapDaemonInfo.initialize(appName, conf);
     daemon =

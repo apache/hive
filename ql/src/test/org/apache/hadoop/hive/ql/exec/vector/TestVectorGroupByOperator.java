@@ -101,7 +101,7 @@ import org.mockito.Mockito;
  */
 public class TestVectorGroupByOperator {
 
-  HiveConf hconf = new HiveConf();
+  HiveConf hconf = HiveConf.create();
 
   private static ExprNodeDesc buildColumnDesc(
       VectorizationContext ctx,

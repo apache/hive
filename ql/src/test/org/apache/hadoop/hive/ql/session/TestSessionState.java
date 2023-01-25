@@ -86,7 +86,7 @@ public class TestSessionState {
 
   @Before
   public void setUp() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     String tmp = System.getProperty("java.io.tmpdir");
     File tmpDir = new File(tmp);
     if (!tmpDir.exists()) {
@@ -134,7 +134,7 @@ public class TestSessionState {
         SessionState.get().getCurrentDatabase());
 
     //verify that a new sessionstate has default db
-    SessionState.start(new HiveConf());
+    SessionState.start(HiveConf.create());
     assertEquals(Warehouse.DEFAULT_DATABASE_NAME,
         SessionState.get().getCurrentDatabase());
 
@@ -167,7 +167,7 @@ public class TestSessionState {
 
   @Test
   public void testClassLoaderEquality() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     final SessionState ss1 = new SessionState(conf);
     RegisterJarRunnable otherThread = new RegisterJarRunnable("./build/contrib/test/test-udfs.jar", ss1);
     Thread th1 = new Thread(otherThread);
@@ -204,7 +204,7 @@ public class TestSessionState {
 
   @Test
   public void testReloadAuxJars2() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     HiveConf.setVar(conf, ConfVars.HIVERELOADABLEJARS, hiveReloadPath);
     SessionState ss = new SessionState(conf);
     SessionState.start(ss);
@@ -274,7 +274,7 @@ public class TestSessionState {
 
   @Test
   public void testReloadExistingAuxJars2() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     HiveConf.setVar(conf, ConfVars.HIVERELOADABLEJARS, hiveReloadPath);
 
     SessionState ss = new SessionState(conf);
@@ -320,7 +320,7 @@ public class TestSessionState {
    */
   @Test
   public void testCreatePath() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     LocalFileSystem localFileSystem = FileSystem.getLocal(conf);
 
     Path repeatedCreate = new Path("repeatedCreate");

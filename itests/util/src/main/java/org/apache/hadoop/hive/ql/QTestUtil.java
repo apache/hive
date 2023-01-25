@@ -214,7 +214,7 @@ public class QTestUtil {
     // For testing configurations set by System.setProperties
     System.setProperty("hive.query.max.length", "100Mb");
 
-    conf = new HiveConf(IDriver.class);
+    conf = HiveConf.create(IDriver.class);
     setCustomConfs(conf, testArgs.getCustomConfs());
     setMetaStoreProperties();
 
@@ -241,7 +241,7 @@ public class QTestUtil {
     this.initScript = scriptsDir + File.separator + testArgs.getInitScript();
     this.cleanupScript = scriptsDir + File.separator + testArgs.getCleanupScript();
 
-    savedConf = new HiveConf(conf);
+    savedConf = HiveConf.create(conf);
 
   }
 
@@ -429,7 +429,7 @@ public class QTestUtil {
   public void newSession(boolean canReuseSession) throws Exception {
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
-    conf = new HiveConf(savedConf);
+    conf = HiveConf.create(savedConf);
     initConf();
     initConfFromSetup();
 

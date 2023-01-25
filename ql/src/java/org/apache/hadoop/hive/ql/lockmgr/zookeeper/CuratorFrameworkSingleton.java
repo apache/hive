@@ -43,7 +43,7 @@ public class CuratorFrameworkSingleton {
     if (sharedClient == null) {
       // Create a client instance
       if (hiveConf == null) {
-        conf = new HiveConf();
+        conf = HiveConf.create();
       } else {
         conf = hiveConf;
       }

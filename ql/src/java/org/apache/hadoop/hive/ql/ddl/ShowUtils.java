@@ -286,7 +286,7 @@ public final class ShowUtils {
   }
 
   private static ZoneId getZoneIdFromConf() {
-    return SessionState.get() == null ? new HiveConf().getLocalTimeZone()
+    return SessionState.get() == null ? HiveConf.create().getLocalTimeZone()
         : SessionState.get().getConf().getLocalTimeZone();
   }
 

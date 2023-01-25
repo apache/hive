@@ -99,7 +99,7 @@ public class TestWarehouseExternalDir {
   }
 
   public TestWarehouseExternalDir() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
 
     // Specify the external warehouse root
     conf.setVar(ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, whRootExternal);

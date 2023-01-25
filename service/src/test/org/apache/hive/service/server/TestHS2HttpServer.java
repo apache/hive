@@ -75,7 +75,7 @@ public class TestHS2HttpServer {
     webUIPort = MetaStoreTestUtils.findFreePortExcepting(
         Integer.valueOf(ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue()));
     apiBaseURL = "http://localhost:" + webUIPort + "/api/v1";
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     hiveConf.set(ConfVars.METASTOREPWD.varname, metastorePasswd);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,

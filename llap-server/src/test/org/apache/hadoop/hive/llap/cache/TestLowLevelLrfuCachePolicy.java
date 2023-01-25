@@ -460,7 +460,7 @@ public class TestLowLevelLrfuCachePolicy {
   private void testProactiveEviction(float lambda, boolean isInstantDealloc) throws Exception {
     closeSweeperExecutorForTest();
     int lrfuMaxSize = 10;
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     // This is to make sure no sweep happens automatically in the background, the test here will call evictProactively()
     // on the policy
     conf.setTimeVar(HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_SWEEP_INTERVAL, 1, TimeUnit.HOURS);

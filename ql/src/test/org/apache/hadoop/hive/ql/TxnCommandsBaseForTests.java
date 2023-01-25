@@ -105,7 +105,7 @@ public abstract class TxnCommandsBaseForTests {
     }
   }
   void initHiveConf() {
-    hiveConf = new HiveConf(this.getClass());
+    hiveConf = HiveConf.create(this.getClass());
   }
   void setUpInternal() throws Exception {
     initHiveConf();

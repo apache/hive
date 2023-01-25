@@ -56,7 +56,7 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public abstract class BeelineWithHS2ConnectionFileTestBase {
   protected MiniHS2 miniHS2;
-  protected HiveConf hiveConf = new HiveConf();
+  protected HiveConf hiveConf = HiveConf.create();
   protected final String tableName = "testBeelineTable";
   protected String dataFileDir = hiveConf.get("test.data.files");
   protected static final String LOCALHOST_KEY_STORE_NAME = "keystore.jks";
@@ -169,7 +169,7 @@ public abstract class BeelineWithHS2ConnectionFileTestBase {
       dataFileDir = System.getProperty("test.data.files");
     }
     dataFileDir = dataFileDir.replace('\\', '/').replace("c:", "");
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     miniHS2 = getNewMiniHS2();
     confOverlay = new HashMap<String, String>();
     confOverlay.put(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");

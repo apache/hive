@@ -72,7 +72,7 @@ public class TestEximReplicationTasks{
   @BeforeClass
   public static void setUpBeforeClass() throws HCatException {
 
-    client = HCatClient.create(new HiveConf());
+    client = HCatClient.create(HiveConf.create());
 
     ReplicationTask.resetFactory(EximReplicationTaskFactory.class);
   }

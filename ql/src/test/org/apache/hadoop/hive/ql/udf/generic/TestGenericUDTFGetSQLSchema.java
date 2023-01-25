@@ -41,7 +41,7 @@ public class TestGenericUDTFGetSQLSchema {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.set("hive.security.authorization.manager",
         "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
     sessionState = SessionState.start(conf);

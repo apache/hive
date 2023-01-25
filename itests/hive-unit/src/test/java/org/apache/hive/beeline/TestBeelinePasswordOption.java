@@ -52,7 +52,7 @@ public class TestBeelinePasswordOption {
    */
   @BeforeClass
   public static void preTests() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     // Set to non-zk lock manager to prevent HS2 from trying to connect
     hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER,
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");

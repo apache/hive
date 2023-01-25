@@ -65,7 +65,7 @@ import java.util.concurrent.Future;
 public class TestHiveClientCache {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveClientCache.class);
-  final HiveConf hiveConf = new HiveConf();
+  final HiveConf hiveConf = HiveConf.create();
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -226,7 +226,7 @@ public class TestHiveClientCache {
     public LocalMetaServer() {
       securityManager = System.getSecurityManager();
       System.setSecurityManager(new NoExitSecurityManager());
-      hiveConf = new HiveConf(TestHiveClientCache.class);
+      hiveConf = HiveConf.create(TestHiveClientCache.class);
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
           + MS_PORT);
       hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

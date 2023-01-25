@@ -162,7 +162,7 @@ public class TestWorker extends CompactorTest {
     String delta1 = "/warehouse/foo/delta_2_3";
     String delta2 = "/warehouse/foo/delta_4_7";
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     Path file = new Path(System.getProperty("java.io.tmpdir") +
         System.getProperty("file.separator") + "newWriteInputSplitTest");
     FileSystem fs = FileSystem.get(conf);
@@ -207,7 +207,7 @@ public class TestWorker extends CompactorTest {
     String delta1 = "/warehouse/foo/delta_2_3";
     String delta2 = "/warehouse/foo/delta_4_7";
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     Path file = new Path(System.getProperty("java.io.tmpdir") +
         System.getProperty("file.separator") + "newWriteInputSplitTest");
     FileSystem fs = FileSystem.get(conf);
@@ -1199,7 +1199,7 @@ public class TestWorker extends CompactorTest {
 
   private void runTimeoutTest(long timeout, boolean runForever, boolean swallowInterrupt) throws Exception {
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    HiveConf timeoutConf = new HiveConf(conf);
+    HiveConf timeoutConf = HiveConf.create(conf);
     timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, timeout, TimeUnit.MILLISECONDS);
     timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_SLEEP_TIME, 20, TimeUnit.MILLISECONDS);
     timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_MAX_SLEEP_TIME, 20, TimeUnit.MILLISECONDS);

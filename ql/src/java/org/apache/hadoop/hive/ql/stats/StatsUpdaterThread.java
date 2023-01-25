@@ -651,7 +651,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     private final String user;
 
     public WorkerRunnable(Configuration conf, String user) {
-      this.conf = new HiveConf(conf, HiveConf.class);
+      this.conf = HiveConf.create(conf, HiveConf.class);
       this.user = user;
     }
 

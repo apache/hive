@@ -41,7 +41,7 @@ public class TestQueryHooks {
 
   @BeforeClass
   public static void setUpBeforeClass() {
-    conf = new HiveConf(TestQueryHooks.class);
+    conf = HiveConf.create(TestQueryHooks.class);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

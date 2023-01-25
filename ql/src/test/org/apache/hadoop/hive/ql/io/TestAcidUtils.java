@@ -698,7 +698,7 @@ public class TestAcidUtils {
     Table table = new Table("dummy", "test_acid");
     table.setTableType(TableType.MANAGED_TABLE);
     
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, true);
     
     Map<String, String> parameters = new HashMap<>();

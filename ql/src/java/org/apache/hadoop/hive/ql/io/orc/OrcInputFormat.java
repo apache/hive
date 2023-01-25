@@ -1966,7 +1966,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     Configuration conf = job;
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED)) {
       // Create HiveConf once, since this is expensive.
-      conf = new HiveConf(conf, OrcInputFormat.class);
+      conf = HiveConf.create(conf, OrcInputFormat.class);
     }
     List<OrcSplit> result = generateSplitsInfo(conf,
         new Context(conf, numSplits, createExternalCaches()));

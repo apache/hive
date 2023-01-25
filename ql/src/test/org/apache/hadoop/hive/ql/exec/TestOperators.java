@@ -421,7 +421,7 @@ public class TestOperators {
 
   @Test
   public void testFetchOperatorContext() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.set("hive.support.concurrency", "false");
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -458,7 +458,7 @@ public class TestOperators {
   public void testNoConditionalTaskSizeForLlap() {
     ConvertJoinMapJoin convertJoinMapJoin = new ConvertJoinMapJoin();
     long defaultNoConditionalTaskSize = 1024L * 1024L * 1024L;
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD, defaultNoConditionalTaskSize);
 
     LlapClusterStateForCompile llapInfo = null;
@@ -510,7 +510,7 @@ public class TestOperators {
   @Test
   public void testLlapMemoryOversubscriptionMaxExecutorsPerQueryCalculation() {
     ConvertJoinMapJoin convertJoinMapJoin = new ConvertJoinMapJoin();
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
 
     LlapClusterStateForCompile llapInfo = Mockito.mock(LlapClusterStateForCompile.class);
 
@@ -576,7 +576,7 @@ public class TestOperators {
     desc.setMinReductionHashAggr(0.5f);
 
     // 5. Configure hive conf and  Build group by operator
-    HiveConf hconf = new HiveConf();
+    HiveConf hconf = HiveConf.create();
     HiveConf.setIntVar(hconf, HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL, 1);
 
     // 6. test hash aggr without grouping sets

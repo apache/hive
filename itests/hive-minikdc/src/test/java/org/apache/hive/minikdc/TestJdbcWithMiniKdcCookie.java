@@ -71,7 +71,7 @@ public class TestJdbcWithMiniKdcCookie {
   public void setUp() throws Exception {
     miniHiveKdc = new MiniHiveKdc();
     DriverManager.setLoginTimeout(0);
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, transportMode);
     System.err.println("Testing using HS2 mode : "
         + hiveConf.getVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE));

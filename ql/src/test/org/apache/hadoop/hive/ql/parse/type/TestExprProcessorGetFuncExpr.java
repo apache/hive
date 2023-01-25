@@ -47,7 +47,7 @@ public class TestExprProcessorGetFuncExpr {
 
   @Before
   public void setUp() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ALLOW_UDF_LOAD_ON_DEMAND, true);
     SessionState sessionState = new SessionState(hiveConf, System.getProperty("user.name"));
     SessionState.setCurrentSessionState(sessionState);

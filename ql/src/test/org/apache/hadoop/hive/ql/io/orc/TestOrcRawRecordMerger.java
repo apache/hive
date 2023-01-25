@@ -279,7 +279,7 @@ public class TestOrcRawRecordMerger {
     RecordIdentifier minKey = new RecordIdentifier(10, 20, 30);
     RecordIdentifier maxKey = new RecordIdentifier(40, 50, 60);
     ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, minKey, maxKey,
-        new Reader.Options(), new HiveConf());
+        new Reader.Options(), HiveConf.create());
     RecordReader recordReader = pair.getRecordReader();
     checkReaderRecord(10, 20, 40, 120, "third", key, pair);
 
@@ -298,7 +298,7 @@ public class TestOrcRawRecordMerger {
 
     // null min and max keys forces a full scan of all records
     ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, null, null,
-        new Reader.Options(), new HiveConf());
+        new Reader.Options(), HiveConf.create());
     RecordReader recordReader = pair.getRecordReader();
     checkReaderRecord(10, 20, 20, 100, "first", key, pair);
 

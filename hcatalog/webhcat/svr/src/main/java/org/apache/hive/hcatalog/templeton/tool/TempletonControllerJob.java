@@ -186,7 +186,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
   }
   private String buildHcatDelegationToken(String user) throws IOException, InterruptedException,
           TException {
-    final HiveConf c = new HiveConf();
+    final HiveConf c = HiveConf.create();
     LOG.debug("Creating hive metastore delegation token for user " + user);
     final UserGroupInformation ugi = UgiFactory.getUgi(user);
     UserGroupInformation real = ugi.getRealUser();
@@ -207,7 +207,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
 
   private String buildHS2DelegationToken(String user) throws IOException, InterruptedException,
           TException {
-    final HiveConf c = new HiveConf();
+    final HiveConf c = HiveConf.create();
     LOG.debug("Creating hiveserver2 delegation token for user " + user);
     final UserGroupInformation ugi = UgiFactory.getUgi(user);
     UserGroupInformation real = ugi.getRealUser();

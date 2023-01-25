@@ -73,7 +73,7 @@ public class TestHs2Metrics {
 
   @BeforeClass
   public static void setup() throws Exception {
-    miniHS2 = new MiniHS2(new HiveConf());
+    miniHS2 = new MiniHS2(HiveConf.create());
     confOverlay = new HashMap<String, String>();
     confOverlay.put(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     confOverlay.put(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname, MetricCheckingHook.class.getName());
@@ -85,7 +85,7 @@ public class TestHs2Metrics {
 
   @Before
   public void before() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     MetricsFactory.close();
     MetricsFactory.init(conf);
   }

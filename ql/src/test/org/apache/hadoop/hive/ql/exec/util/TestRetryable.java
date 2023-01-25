@@ -299,7 +299,7 @@ public class TestRetryable {
 
   @Test
   public void testRetryFailureWithHiveConf() throws Throwable {
-    HiveConf conf = new HiveConf(TestRetryable.class);
+    HiveConf conf = HiveConf.create(TestRetryable.class);
     conf.set(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.varname, "1s");
     conf.setFloat(HiveConf.ConfVars.REPL_RETRY_BACKOFF_COEFFICIENT.varname, 1.0f);
     conf.set(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION.varname, "60s");

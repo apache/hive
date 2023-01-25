@@ -184,7 +184,7 @@ public class UpgradeTool {
    */
   private void performUpgradeInternal(String scriptLocation, boolean execute)
       throws HiveException, TException, IOException {
-    HiveConf conf = hiveConf != null ? hiveConf : new HiveConf();
+    HiveConf conf = hiveConf != null ? hiveConf : HiveConf.create();
     boolean isAcidEnabled = isAcidEnabled(conf);
     IMetaStoreClient hms = getHMS(conf);
     LOG.debug("Looking for databases");

@@ -832,7 +832,7 @@ public class TestVectorBetweenIn {
         " exprDesc " + exprDesc.toString());
     */
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     ExprNodeEvaluator evaluator =
         ExprNodeEvaluatorFactory.get(exprDesc, hiveConf);
 
@@ -881,7 +881,7 @@ public class TestVectorBetweenIn {
       TypeInfo outputTypeInfo, Object[] resultObjects)
           throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     if (betweenInTestMode == BetweenInTestMode.ADAPTOR) {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE, true);
     }

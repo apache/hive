@@ -323,7 +323,7 @@ public class TestVectorStringExpressions {
     return i;
   }
 
-  private HiveConf hiveConf = new HiveConf();
+  private HiveConf hiveConf = HiveConf.create();
 
   private boolean vectorEqual(BytesColumnVector vector, int i, byte[] bytes, int offset, int length) {
     byte[] bytesSlice = new byte[length];

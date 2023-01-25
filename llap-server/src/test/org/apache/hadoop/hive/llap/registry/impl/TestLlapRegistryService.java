@@ -35,7 +35,7 @@ import java.io.IOException;
  */
 public class TestLlapRegistryService {
   private static MiniLlapCluster cluster = null;
-  private static HiveConf conf = new HiveConf();
+  private static HiveConf conf = HiveConf.create();
 
   @BeforeClass
   public static void setUp() throws Exception {

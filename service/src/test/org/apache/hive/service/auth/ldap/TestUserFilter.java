@@ -42,7 +42,7 @@ public class TestUserFilter {
 
   @Before
   public void setup() {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     factory = new UserFilterFactory();
   }
 

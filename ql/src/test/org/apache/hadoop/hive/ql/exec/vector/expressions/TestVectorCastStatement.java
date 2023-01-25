@@ -411,7 +411,7 @@ public class TestVectorCastStatement {
         " exprDesc " + exprDesc.toString());
     */
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     ExprNodeEvaluator evaluator =
         ExprNodeEvaluatorFactory.get(exprDesc, hiveConf);
     try {
@@ -474,7 +474,7 @@ public class TestVectorCastStatement {
     ExprNodeGenericFuncDesc exprDesc =
         new ExprNodeGenericFuncDesc(targetTypeInfo, udf, children);
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     if (castStmtTestMode == CastStmtTestMode.ADAPTOR) {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE, true);
     }

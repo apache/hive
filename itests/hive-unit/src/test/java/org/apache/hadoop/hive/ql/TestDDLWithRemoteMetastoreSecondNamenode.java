@@ -78,7 +78,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode {
     }
     tests = new JUnit4TestAdapter(this.getClass()).countTestCases();
     try {
-      conf = new HiveConf(ExecDriver.class);
+      conf = HiveConf.create(ExecDriver.class);
       SessionState.start(conf);
 
       // Test with remote metastore service
@@ -90,7 +90,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode {
 
       // Initialize second mocked filesystem (implement only necessary stuff)
       // Physical files are resides in local file system in the similar location
-      jobConf = new HiveConf(conf);
+      jobConf = HiveConf.create(conf);
       miniDfs = new MiniDFSCluster(new Configuration(), 1, true, null);
       fs2 = miniDfs.getFileSystem();
       try {

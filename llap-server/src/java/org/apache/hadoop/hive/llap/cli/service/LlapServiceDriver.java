@@ -73,7 +73,7 @@ public class LlapServiceDriver {
     this.cl = cl;
 
     SessionState ss = SessionState.get();
-    this.conf = (ss != null) ? ss.getConf() : new HiveConf(SessionState.class);
+    this.conf = (ss != null) ? ss.getConf() : HiveConf.create(SessionState.class);
 
     HiveConfUtil.copyFromProperties(cl.getConfig(), this.conf);
 

@@ -58,7 +58,7 @@ public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManag
 
     String confDir = "../../data/conf/llap/";
     HiveConf.setHiveSiteLocation(new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setVar(ConfVars.HIVE_AUTHENTICATOR_MANAGER, "org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator");
     java.nio.file.Path confPath = File.createTempFile("hive", "test").toPath();
     conf.writeXml(new FileWriter(confPath.toFile()));
@@ -66,7 +66,7 @@ public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManag
 
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
 
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setTimeVar(ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL, 100, TimeUnit.MILLISECONDS);

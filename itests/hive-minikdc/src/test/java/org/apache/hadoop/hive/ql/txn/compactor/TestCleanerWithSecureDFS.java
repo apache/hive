@@ -108,13 +108,13 @@ public class TestCleanerWithSecureDFS extends CompactorTest {
 
   @Override
   public void setup() throws Exception {
-    HiveConf conf = new HiveConf(secureConf);
+    HiveConf conf = HiveConf.create(secureConf);
     conf.set("fs.defaultFS", dfsCluster.getFileSystem().getUri().toString());
-    setup(new HiveConf(secureConf));
+    setup(HiveConf.create(secureConf));
   }
 
   private static HiveConf createSecureDFSConfig(MiniKdc kdc) throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     SecurityUtil.setAuthenticationMethod(UserGroupInformation.AuthenticationMethod.KERBEROS, conf);
     String suPrincipal = SUPER_USER_NAME + "/localhost@" + kdc.getRealm();
     String suKeyTab = SUPER_USER_KEYTAB.toAbsolutePath().toString();
@@ -157,7 +157,7 @@ public class TestCleanerWithSecureDFS extends CompactorTest {
     // compaction requests to fail and its not practical to have in a unit test.
     // The size of the configuration, measured by taking heapdump and inspecting the objects, is
     // roughly 190MB.
-    HiveConf cleanerConf = new HiveConf(conf);
+    HiveConf cleanerConf = HiveConf.create(conf);
     for (int i = 0; i < 1_000_000; i++) {
       cleanerConf.set("hive.random.property.with.id." + i, Integer.toString(i));
     }

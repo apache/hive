@@ -80,7 +80,7 @@ public class TestBlacklistingLlapMetricsListener {
   public void setUp() throws Exception {
     initMocks(this);
 
-    conf = new HiveConf();
+    conf = HiveConf.create();
     when(mockRegistry.getInstances()).thenReturn(mockInstanceSet);
     when(mockRegistry.lockForConfigChange(anyLong(), anyLong())).thenReturn(
         new ConfigChangeLockResult(true, Long.MIN_VALUE));

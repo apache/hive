@@ -44,7 +44,7 @@ public class TestBigIntCompareValidation {
   public void setUp() throws Exception {
     this.constant = new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, 0L);
     this.processor = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor();
-    this.errorMsg = HiveConf.StrictChecks.checkTypeSafety(new HiveConf());
+    this.errorMsg = HiveConf.StrictChecks.checkTypeSafety(HiveConf.create());
     this.functionInfo = FunctionRegistry.getFunctionInfo("=");
   }
 

@@ -41,7 +41,7 @@ public class TestUseDatabase {
   @Before
   public void setUp() throws Exception {
 
-    HiveConf hcatConf = new HiveConf(this.getClass());
+    HiveConf hcatConf = HiveConf.create(this.getClass());
     hcatConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hcatConf.set(ConfVars.PREEXECHOOKS.varname, "");

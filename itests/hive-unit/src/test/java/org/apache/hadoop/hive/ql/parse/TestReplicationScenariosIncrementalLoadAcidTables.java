@@ -71,7 +71,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
   static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz)
       throws Exception {
-    conf = new HiveConf(clazz);
+    conf = HiveConf.create(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

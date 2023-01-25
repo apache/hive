@@ -69,7 +69,7 @@ public class TestOperationLoggingLayout {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     tableName = "TestOperationLoggingLayout_table";
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "execution");
     miniHS2 = new MiniHS2(hiveConf);
     confOverlay = new HashMap<String, String>();

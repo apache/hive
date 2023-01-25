@@ -816,7 +816,7 @@ public class HiveStreamingConnection implements StreamingConnection {
   }
 
   private HiveConf createHiveConf(Class<?> clazz, String metaStoreUri) {
-    HiveConf conf = new HiveConf(clazz);
+    HiveConf conf = HiveConf.create(clazz);
     if (metaStoreUri != null) {
       conf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metaStoreUri);
     }

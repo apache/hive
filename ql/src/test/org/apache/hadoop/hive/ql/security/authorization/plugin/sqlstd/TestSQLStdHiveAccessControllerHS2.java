@@ -70,7 +70,7 @@ public class TestSQLStdHiveAccessControllerHS2 {
   }
 
   private HiveConf newAuthEnabledConf() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     return conf;
   }

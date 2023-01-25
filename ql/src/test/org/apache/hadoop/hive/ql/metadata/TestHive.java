@@ -96,7 +96,7 @@ public class TestHive {
   @BeforeClass
   public static void setUp() throws Exception {
 
-    hiveConf = new HiveConf(TestHive.class);
+    hiveConf = HiveConf.create(TestHive.class);
     hm = setUpImpl(hiveConf);
   }
 
@@ -458,14 +458,14 @@ public class TestHive {
 
   @Test
   public void testWmNamespaceHandling() throws Throwable {
-    HiveConf hiveConf = new HiveConf(this.getClass());
+    HiveConf hiveConf = HiveConf.create(this.getClass());
     Hive hm = setUpImpl(hiveConf);
     // TODO: threadlocals... Why is all this Hive client stuff like that?!!
     final AtomicReference<Hive> hm2r = new AtomicReference<>();
     Thread pointlessThread = new Thread(new Runnable() {
       @Override
       public void run() {
-        HiveConf hiveConf2 = new HiveConf(this.getClass());
+        HiveConf hiveConf2 = HiveConf.create(this.getClass());
         hiveConf2.setVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE, "hm2");
         try {
           hm2r.set(setUpImpl(hiveConf2));
@@ -864,7 +864,7 @@ public class TestHive {
     Hive newHiveObj;
 
     //if HiveConf has not changed, same object should be returned
-    HiveConf newHconf = new HiveConf(hiveConf);
+    HiveConf newHconf = HiveConf.create(hiveConf);
     newHiveObj = Hive.get(newHconf);
     assertTrue(prevHiveObj == newHiveObj);
 
@@ -876,7 +876,7 @@ public class TestHive {
     prevHiveObj = Hive.get();
     prevHiveObj.getDatabaseCurrent();
     //change value of a metavar config param in new hive conf
-    newHconf = new HiveConf(hiveConf);
+    newHconf = HiveConf.create(hiveConf);
     newHconf.setIntVar(ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
         newHconf.getIntVar(ConfVars.METASTORETHRIFTCONNECTIONRETRIES) + 1);
     newHiveObj = Hive.get(newHconf);

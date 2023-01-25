@@ -124,7 +124,7 @@ public abstract class CompactorTest {
   
   @Before
   public void setup() throws Exception {
-    setup(new HiveConf());
+    setup(HiveConf.create());
   }
 
   protected final void setup(HiveConf conf) throws Exception {

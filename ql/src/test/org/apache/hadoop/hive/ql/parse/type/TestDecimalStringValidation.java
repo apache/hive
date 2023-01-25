@@ -100,7 +100,7 @@ public class TestDecimalStringValidation {
 
   @Test
   public void testValidationDecimalWithCharacterFailsWhenStrictChecksEnabled() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY, true);
     try {
       validateCall(conf);
@@ -112,7 +112,7 @@ public class TestDecimalStringValidation {
 
   @Test
   public void testValidationDecimalWithCharacterSucceedsWhenStrictChecksDisabled() throws SemanticException {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY, false);
     validateCall(conf);
   }

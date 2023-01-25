@@ -68,7 +68,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   public void Initialize() throws Exception {
 
-    hcatConf = new HiveConf(this.getClass());
+    hcatConf = HiveConf.create(this.getClass());
     //hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
     //		HCatSemanticAnalyzer.class.getName());
     URI fsuri = getFileSystem().getUri();

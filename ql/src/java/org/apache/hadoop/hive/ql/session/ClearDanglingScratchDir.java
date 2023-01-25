@@ -89,7 +89,7 @@ public class ClearDanglingScratchDir implements Runnable {
       verbose = true;
     }
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
 
     String rootHDFSDir;
     if (cli.hasOption("s")) {

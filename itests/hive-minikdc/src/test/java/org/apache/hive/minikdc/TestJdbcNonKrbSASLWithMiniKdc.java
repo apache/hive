@@ -59,7 +59,7 @@ public class TestJdbcNonKrbSASLWithMiniKdc extends TestJdbcWithMiniKdc{
         CustomAuthenticator.class.getName());
     confOverlay.put(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED.varname, "false");
     miniHiveKdc = new MiniHiveKdc();
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerbWithRemoteHMS(miniHiveKdc, hiveConf, "CUSTOM");
     miniHS2.start(confOverlay);
   }

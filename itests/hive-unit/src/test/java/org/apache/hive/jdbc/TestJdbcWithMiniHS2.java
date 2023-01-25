@@ -106,7 +106,7 @@ public class TestJdbcWithMiniHS2 {
   @BeforeClass
   public static void setupBeforeClass() throws Exception {
     MiniHS2.cleanupLocalDir();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
 
@@ -204,7 +204,7 @@ public class TestJdbcWithMiniHS2 {
       }
     }
     stopMiniHS2();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     startMiniHS2(conf);
     openDefaultConnections();
     openTestConnections();
@@ -790,7 +790,7 @@ public class TestJdbcWithMiniHS2 {
   public void testSessionScratchDirs() throws Exception {
     // Stop HiveServer2
     stopMiniHS2();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     String userName;
     Path scratchDirPath;
     // Set a custom prefix for hdfs scratch dir path
@@ -858,7 +858,7 @@ public class TestJdbcWithMiniHS2 {
    */
   @Test
   public void testUdfWhiteBlackList() throws Exception {
-    HiveConf testConf = new HiveConf();
+    HiveConf testConf = HiveConf.create();
     assertTrue(testConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST).isEmpty());
     // verify that udf in default whitelist can be executed
     Statement stmt = conDefault.createStatement();
@@ -902,7 +902,7 @@ public class TestJdbcWithMiniHS2 {
    */
   @Test
   public void testUdfBlackList() throws Exception {
-    HiveConf testConf = new HiveConf();
+    HiveConf testConf = HiveConf.create();
     assertTrue(testConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST).isEmpty());
     Statement stmt = conDefault.createStatement();
     // verify that udf in default whitelist can be executed
@@ -933,7 +933,7 @@ public class TestJdbcWithMiniHS2 {
   public void testUdfBlackListOverride() throws Exception {
     stopMiniHS2();
     // setup whitelist
-    HiveConf testConf = new HiveConf();
+    HiveConf testConf = HiveConf.create();
 
     Set<String> funcNames = FunctionRegistry.getFunctionNames();
     String funcNameStr = "";
@@ -969,7 +969,7 @@ public class TestJdbcWithMiniHS2 {
   public void testRootScratchDir() throws Exception {
     // Stop HiveServer2
     stopMiniHS2();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     String userName;
     Path scratchDirPath;
     conf.set("hive.exec.scratchdir", tmpDir + "/hs2");
@@ -1019,7 +1019,7 @@ public class TestJdbcWithMiniHS2 {
   public void testHttpHeaderSize() throws Exception {
     // Stop HiveServer2
     stopMiniHS2();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_REQUEST_HEADER_SIZE, 1024);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE, 1024);
     startMiniHS2(conf, true);
@@ -1089,7 +1089,7 @@ public class TestJdbcWithMiniHS2 {
   public void testHttpRetryOnServerIdleTimeout() throws Exception {
     // Stop HiveServer2
     stopMiniHS2();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     // Set server's idle timeout to a very low value
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME, "5000");
     startMiniHS2(conf, true);
@@ -1457,7 +1457,7 @@ public class TestJdbcWithMiniHS2 {
     String testPathName = System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
     Path testPath = new Path(testPathName + Path.SEPARATOR
             + Base64.getEncoder().encodeToString(testDbName.toLowerCase().getBytes(StandardCharsets.UTF_8)));
-    FileSystem fs = testPath.getFileSystem(new HiveConf());
+    FileSystem fs = testPath.getFileSystem(HiveConf.create());
     Statement stmt = conDefault.createStatement();
     try {
       stmt.execute("set hive.repl.rootdir = " + testPathName);

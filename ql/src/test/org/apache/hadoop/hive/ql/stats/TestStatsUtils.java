@@ -78,7 +78,7 @@ public class TestStatsUtils {
 
   @Test
   public void testPrimitiveSizeEstimations() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     Set<String> exclusions = Sets.newHashSet();
     exclusions.add(serdeConstants.VOID_TYPE_NAME);
     exclusions.add(serdeConstants.LIST_TYPE_NAME);

@@ -42,7 +42,7 @@ public class HCatDataCheckUtil {
   private static final Logger LOG = LoggerFactory.getLogger(HCatDataCheckUtil.class);
 
   public static IDriver instantiateDriver(MiniCluster cluster) {
-    HiveConf hiveConf = new HiveConf(HCatDataCheckUtil.class);
+    HiveConf hiveConf = HiveConf.create(HCatDataCheckUtil.class);
     for (Entry e : cluster.getProperties().entrySet()) {
       hiveConf.set(e.getKey().toString(), e.getValue().toString());
     }

@@ -60,7 +60,7 @@ public class TestHiveHooks {
 
   @Test
   public void testLoadHooksFromConf() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setVar(HiveConf.ConfVars.PREEXECHOOKS,
         PreExecHook.class.getName() + "," + PreExecHook.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS,
@@ -97,7 +97,7 @@ public class TestHiveHooks {
 
   @Test
   public void testAddHooks() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     HiveHooks loader = new HiveHooks(hiveConf);
     verify(HookContext.HookType.PRE_EXEC_HOOK, loader, ExecuteWithHookContext.class, PreExecHook.class);
     verify(HookContext.HookType.POST_EXEC_HOOK, loader, ExecuteWithHookContext.class, PostExecHook.class);

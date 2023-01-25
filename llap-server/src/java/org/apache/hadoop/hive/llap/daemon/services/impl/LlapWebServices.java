@@ -83,7 +83,7 @@ public class LlapWebServices extends AbstractService {
     String bindAddress = "0.0.0.0";
     HttpServer.Builder builder =
         new HttpServer.Builder("llap").setPort(this.port).setHost(bindAddress);
-    builder.setConf(new HiveConf(conf, HiveConf.class));
+    builder.setConf(HiveConf.create(conf, HiveConf.class));
     builder.setDisableDirListing(true);
     if (conf.getBoolean(ConfVars.LLAP_DAEMON_WEB_XFRAME_ENABLED.varname,
         ConfVars.LLAP_DAEMON_WEB_XFRAME_ENABLED.defaultBoolVal)) {

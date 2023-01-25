@@ -58,7 +58,7 @@ public class TestHs2HooksWithMiniKdc {
     confOverlay.put(ConfVars.HIVEFETCHTASKCACHING.varname, "" + false);
 
     miniHiveKdc = new MiniHiveKdc();
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(confOverlay);
   }

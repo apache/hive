@@ -186,7 +186,7 @@ public class HttpServer {
     }
 
     public Builder setConf(HiveConf origConf) {
-      this.conf = new HiveConf(origConf);
+      this.conf = HiveConf.create(origConf);
       origConf.stripHiddenConfigurations(conf);
       setContextAttribute(CONF_CONTEXT_ATTRIBUTE, conf);
       return this;

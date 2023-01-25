@@ -59,7 +59,7 @@ public class TestExplainTask {
 
   @Before
   public void setUp() {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     uut = new ExplainTask();
     uut.conf = hiveConf;
     out = mock(PrintStream.class);
@@ -322,7 +322,7 @@ public class TestExplainTask {
     when(qs.getHiveOperation()).thenReturn(HiveOperation.EXPLAIN);
     uut.queryState = qs;
 
-    SessionState.start(new HiveConf(ExplainTask.class));
+    SessionState.start(HiveConf.create(ExplainTask.class));
     // SessionState.get().setCommandType(HiveOperation.EXPLAIN);
     HiveAuthenticationProvider authenticationProviderMock = mock(HiveAuthenticationProvider.class);
     when(authenticationProviderMock.getUserName()).thenReturn("test-user");
@@ -340,7 +340,7 @@ public class TestExplainTask {
   public void testOutputPlanVectorizationJsonShouldMatch() throws Exception {
     QueryState qs = mock(QueryState.class);
     when(qs.getHiveOperation()).thenReturn(HiveOperation.EXPLAIN);
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     when(qs.getConf()).thenReturn(hiveConf);
     uut.queryState = qs;

@@ -139,7 +139,7 @@ public class TestHs2Hooks {
    */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setVar(ConfVars.PREEXECHOOKS,
         PreExecHook.class.getName());
     hiveConf.setVar(ConfVars.POSTEXECHOOKS,

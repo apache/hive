@@ -420,7 +420,7 @@ public class TestVectorIfStatement {
 
     ExprNodeGenericFuncDesc exprDesc =
         new ExprNodeGenericFuncDesc(typeInfo, udf, children);
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     ExprNodeEvaluator evaluator =
         ExprNodeEvaluatorFactory.get(exprDesc, hiveConf);
     evaluator.initialize(rowInspector);
@@ -479,7 +479,7 @@ public class TestVectorIfStatement {
         new ExprNodeGenericFuncDesc(typeInfo, udf, children);
 
     String ifExprMode = (ifStmtTestMode != IfStmtTestMode.VECTOR_EXPRESSION ? "adaptor" : "good");
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setVar(HiveConf.ConfVars.HIVE_VECTORIZED_IF_EXPR_MODE, ifExprMode);
 
     VectorizationContext vectorizationContext =

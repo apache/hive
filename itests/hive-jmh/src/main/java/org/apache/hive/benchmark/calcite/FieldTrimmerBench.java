@@ -80,7 +80,7 @@ public class FieldTrimmerBench {
   @Setup(Level.Trial)
   public void initTrial() {
     // Init cluster and builder
-    final RelOptPlanner planner = CalcitePlanner.createPlanner(new HiveConf());
+    final RelOptPlanner planner = CalcitePlanner.createPlanner(HiveConf.create());
     final RexBuilder rexBuilder = new RexBuilder(
         new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
     relOptCluster = RelOptCluster.create(planner, rexBuilder);

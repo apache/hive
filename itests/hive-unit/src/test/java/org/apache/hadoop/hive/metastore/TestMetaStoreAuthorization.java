@@ -38,7 +38,7 @@ import org.junit.Test;
  * TestMetaStoreAuthorization.
  */
 public class TestMetaStoreAuthorization {
-  protected HiveConf conf = new HiveConf();
+  protected HiveConf conf = HiveConf.create();
 
   private int port;
 

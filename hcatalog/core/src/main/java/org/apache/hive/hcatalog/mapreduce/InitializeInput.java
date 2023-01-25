@@ -98,7 +98,7 @@ class InitializeInput {
       if (conf != null) {
         hiveConf = HCatUtil.getHiveConf(conf);
       } else {
-        hiveConf = new HiveConf(HCatInputFormat.class);
+        hiveConf = HiveConf.create(HCatInputFormat.class);
       }
       client = HCatUtil.getHiveMetastoreClient(hiveConf);
       Table table = HCatUtil.getTable(client, inputJobInfo.getDatabaseName(),

@@ -226,7 +226,7 @@ public abstract class CLIServiceTest {
      * to give a compile time error.
      * (compilation is done synchronous as of now)
      */
-    longPollingTimeout = HiveConf.getTimeVar(new HiveConf(),
+    longPollingTimeout = HiveConf.getTimeVar(HiveConf.create(),
         HiveConf.ConfVars.HIVE_SERVER2_LONG_POLLING_TIMEOUT, TimeUnit.MILLISECONDS);
     queryString = "SELECT NON_EXISTING_COLUMN FROM " + tableName;
     try {
@@ -308,7 +308,7 @@ public abstract class CLIServiceTest {
     SessionHandle sessionHandle = setupTestData(tableName, columnDefinitions, confOverlay);
     assertNotNull(sessionHandle);
 
-    long longPollingTimeout = HiveConf.getTimeVar(new HiveConf(),
+    long longPollingTimeout = HiveConf.getTimeVar(HiveConf.create(),
         HiveConf.ConfVars.HIVE_SERVER2_LONG_POLLING_TIMEOUT, TimeUnit.MILLISECONDS);
     confOverlay.put(
         HiveConf.ConfVars.HIVE_SERVER2_LONG_POLLING_TIMEOUT.varname, longPollingTimeout + "ms");

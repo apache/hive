@@ -34,7 +34,7 @@ public class TestHiveAuthFactory {
   @BeforeClass
   public static void setUp() throws Exception {
     miniHiveKdc = new MiniHiveKdc();
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
   }
 
   @AfterClass

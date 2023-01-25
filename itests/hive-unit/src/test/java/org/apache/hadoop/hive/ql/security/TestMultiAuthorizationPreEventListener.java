@@ -61,7 +61,7 @@ public class TestMultiAuthorizationPreEventListener {
 
     int port = MetaStoreTestUtils.startMetaStoreWithRetry();
 
-    clientHiveConf = new HiveConf();
+    clientHiveConf = HiveConf.create();
 
     clientHiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     clientHiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");

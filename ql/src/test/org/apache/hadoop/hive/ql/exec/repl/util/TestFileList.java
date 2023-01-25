@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 @PrepareForTest({LoggerFactory.class})
 public class TestFileList {
 
-  HiveConf conf = new HiveConf();
+  HiveConf conf = HiveConf.create();
   private FSDataOutputStream outStream;
   private FSDataOutputStream testFileStream;
   final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
@@ -145,7 +145,7 @@ public class TestFileList {
 
   @Test
   public void testReadWithDuplicateEntries() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     String testEntry = "someEntry";
     int numUniqueEntries = 100;
     Path testFilePath =  new Path(new Path(TEST_DATA_DIR), "testFile");
@@ -170,7 +170,7 @@ public class TestFileList {
 
   @Test
   public void testReadWithAllDistinctEntries() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     String testEntry = "someEntry";
     int numUniqueEntries = 100;
     Path testFilePath =  new Path(new Path(TEST_DATA_DIR), "testFile");

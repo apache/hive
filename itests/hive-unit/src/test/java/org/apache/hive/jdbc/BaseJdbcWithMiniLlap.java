@@ -101,7 +101,7 @@ public abstract class BaseJdbcWithMiniLlap {
       HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
     }
-    HiveConf defaultConf = new HiveConf();
+    HiveConf defaultConf = HiveConf.create();
     defaultConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     defaultConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     defaultConf.addResource(new URL("file://" + new File(confDir).toURI().getPath() + "/tez-site.xml"));

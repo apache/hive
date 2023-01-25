@@ -94,7 +94,7 @@ public class TestStatsReplicationScenarios {
                                        Map<String, String> replicaOverrides, Class clazz,
                                        boolean autogather, AcidTableKind acidTableKind)
       throws Exception {
-    conf = new HiveConf(clazz);
+    conf = HiveConf.create(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

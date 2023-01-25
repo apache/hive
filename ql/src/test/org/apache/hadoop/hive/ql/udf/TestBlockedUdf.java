@@ -47,8 +47,8 @@ public class TestBlockedUdf {
    */
   @Test
   public void testDefaultWhiteList() throws Exception {
-    assertEquals("", new HiveConf().getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST));
-    assertEquals("", new HiveConf().getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST));
+    assertEquals("", HiveConf.create().getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST));
+    assertEquals("", HiveConf.create().getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST));
     FunctionRegistry.setupPermissionsForBuiltinUDFs("", "");
     assertEquals("substr", FunctionRegistry.getFunctionInfo("substr").getDisplayName());
   }

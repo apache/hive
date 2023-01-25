@@ -119,7 +119,7 @@ import org.junit.Test;
 
     stmt.execute("set hive.support.concurrency = false");
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     String dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     Path dataFilePath = new Path(dataFileDir, "kv1.txt");

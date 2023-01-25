@@ -123,7 +123,7 @@ public class TestHiveMetastore {
    * Starts a TestHiveMetastore with the default connection pool size (5) and the default HiveConf.
    */
   public void start() {
-    start(new HiveConf(new Configuration(), TestHiveMetastore.class), DEFAULT_POOL_SIZE);
+    start(HiveConf.create(new Configuration(), TestHiveMetastore.class), DEFAULT_POOL_SIZE);
   }
 
   /**
@@ -150,7 +150,7 @@ public class TestHiveMetastore {
       this.executorService = Executors.newSingleThreadExecutor();
       this.executorService.submit(() -> server.serve());
 
-      // in Hive3, setting this as a system prop ensures that it will be picked up whenever a new HiveConf is created
+      // in Hive3, setting this as a system prop ensures that it will be picked up whenever a HiveConf.create is created
       System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname, hiveConf.getVar(HiveConf.ConfVars.METASTOREURIS));
 
       this.clientPool = new HiveClientPool(1, hiveConf);
@@ -228,7 +228,7 @@ public class TestHiveMetastore {
   }
 
   private TServer newThriftServer(TServerSocket socket, int poolSize, HiveConf conf) throws Exception {
-    HiveConf serverConf = new HiveConf(conf);
+    HiveConf serverConf = HiveConf.create(conf);
     serverConf.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:" + DERBY_PATH + ";create=true");
     baseHandler = HMS_HANDLER_CTOR.newInstance("new db based metaserver", serverConf);
     IHMSHandler handler = GET_BASE_HMS_HANDLER.invoke(serverConf, baseHandler, false);
@@ -257,7 +257,7 @@ public class TestHiveMetastore {
   }
 
   private static void setupMetastoreDB(String dbURL) throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY,
         "jdbc:derby:" + DERBY_PATH + ";create=true");
     TestTxnDbUtil.prepDb(conf);

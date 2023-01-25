@@ -77,7 +77,7 @@ public class HiveConfUtil {
     sb.append("hiveServer2SiteUrl=").append(HiveConf.getHiveServer2SiteLocation()).append('\n');
     sb.append("hivemetastoreSiteUrl=").append(HiveConf.getMetastoreSiteLocation()).append('\n');
     dumpConfig(conf, sb);
-    return sb.append("END========\"new HiveConf()\"========\n");
+    return sb.append("END========\"HiveConf.create()\"========\n");
   }
 
   /**

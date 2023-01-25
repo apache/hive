@@ -1079,7 +1079,7 @@ public class SessionState implements ISessionAuthState{
   public static HiveConf getSessionConf() {
     SessionStates state = tss.get();
     if (state.conf == null) {
-      state.attach(new HiveConf());
+      state.attach(HiveConf.create());
     }
     return state.conf;
   }

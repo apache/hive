@@ -132,7 +132,7 @@ public class TestSessionUserName {
    * that captures the given user name
    */
   private HiveConf getAuthV2HiveConf() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         HiveAuthorizerStoringUserNameFactory.class.getName());
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,

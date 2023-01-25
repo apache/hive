@@ -448,7 +448,7 @@ public class LauncherDelegator extends TempletonDelegator {
    */
   void addHiveMetaStoreTokenArg() {
     //in order for this to work hive-site.xml must be on the classpath
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     if(!hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL)) {
       return;
     }

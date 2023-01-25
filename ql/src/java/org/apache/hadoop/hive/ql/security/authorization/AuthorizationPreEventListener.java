@@ -72,7 +72,7 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
   private static final ThreadLocal<Configuration> tConfig = new ThreadLocal<Configuration>() {
     @Override
     protected Configuration initialValue() {
-      return new HiveConf(AuthorizationPreEventListener.class);
+      return HiveConf.create(AuthorizationPreEventListener.class);
     }
   };
 

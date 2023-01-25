@@ -73,7 +73,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       ASTNode child = (ASTNode) command.getChild(1);
 
       if (child.getType() == HiveParser.StringLiteral) {
-        ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+        ZoneId timeZone = SessionState.get() == null ? HiveConf.create().getLocalTimeZone() : SessionState.get().getConf()
             .getLocalTimeZone();
         TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(child.getText()), timeZone);
         spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(TIME, time.toEpochMilli()));
@@ -87,7 +87,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       // the second child must be the rollback parameter
       ASTNode child = (ASTNode) command.getChild(1);
 
-      ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+      ZoneId timeZone = SessionState.get() == null ? HiveConf.create().getLocalTimeZone() : SessionState.get().getConf()
           .getLocalTimeZone();
       TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(child.getText()), timeZone);
       spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));

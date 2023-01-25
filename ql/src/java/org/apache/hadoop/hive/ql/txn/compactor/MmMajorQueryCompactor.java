@@ -50,7 +50,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     ValidWriteIdList writeIds = context.getValidWriteIdList();
 
     // Set up the session for driver.
-    HiveConf driverConf = new HiveConf(hiveConf);
+    HiveConf driverConf = HiveConf.create(hiveConf);
 
     // Note: we could skip creating the table and just add table type stuff directly to the
     //       "insert overwrite directory" command if there were no bucketing or list bucketing.

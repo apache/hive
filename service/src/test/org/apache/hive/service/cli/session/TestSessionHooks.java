@@ -66,7 +66,7 @@ public class TestSessionHooks {
     System.setProperty(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         TestSessionHooks.SessionHookTest.class.getName());
     service = new EmbeddedThriftBinaryCLIService();
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

@@ -55,7 +55,7 @@ public class TestOperationLogManager {
 
   @Before
   public void setUp() throws Exception {
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_HISTORIC_OPERATION_LOG_ENABLED, true);
     HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES, 1);
     HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT, 8080);
@@ -139,7 +139,7 @@ public class TestOperationLogManager {
   @Test
   public void testGetOperationLog() throws Exception {
     FakeHiveSession session = new FakeHiveSession(
-        new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V11), new HiveConf(hiveConf));
+        new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V11), HiveConf.create(hiveConf));
     session.setOperationLogSessionDir(new File(HiveConf.getVar(hiveConf,
         HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION)));
     session.open(new HashMap<>());

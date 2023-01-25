@@ -32,11 +32,11 @@ import org.junit.Test;
 public class TestEmbeddedLockManager {
 
   private int counter;
-  private HiveConf conf = new HiveConf();
+  private HiveConf conf = HiveConf.create();
 
   @Test
   public void testLocking() throws LockException {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.set("hive.lock.numretries", "0");
     conf.set("hive.unlock.numretries", "0");
     EmbeddedLockManager manager = new EmbeddedLockManager();

@@ -44,7 +44,7 @@ public class KillTriggerActionHandler implements TriggerActionHandler<TezSession
         String queryId = sessionState.getWmContext().getQueryId();
         try {
           UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-          SessionState ss = new SessionState(new HiveConf(), ugi.getShortUserName());
+          SessionState ss = new SessionState(HiveConf.create(), ugi.getShortUserName());
           ss.setIsHiveServerQuery(true);
           SessionState.start(ss);
           KillQuery killQuery = sessionState.getKillQuery();

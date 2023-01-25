@@ -131,7 +131,7 @@ public class TestSymlinkTextInputFormat {
         new Path(dataDir2, "combinefile2_1"));
 
 
-    HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
+    HiveConf hiveConf = HiveConf.create(TestSymlinkTextInputFormat.class);
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

@@ -111,13 +111,13 @@ public class TestProactiveEviction {
     closeSweeperExecutorForTest();
 
     // Test that proactive sweeper thread does not get created if we turn the feature off
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setBoolVar(HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED, false);
     new DummyPolicy(conf);
     assertFalse(isProactiveEvictionSweeperThreadStarted());
 
     // Below here - testing with the feature turned on
-    conf = new HiveConf();
+    conf = HiveConf.create();
     // NOTE: Choosing a too small value (<10ms) here can make this test case flaky
     long sweepIntervalInMs = 200;
     conf.setTimeVar(HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_SWEEP_INTERVAL, sweepIntervalInMs,

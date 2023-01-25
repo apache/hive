@@ -57,7 +57,7 @@ public class TestHiveConf {
   }
 
   private void checkHiveConf(String name, String expectedHiveVal) throws Exception {
-    Assert.assertEquals(expectedHiveVal, new HiveConf().get(name));
+    Assert.assertEquals(expectedHiveVal, HiveConf.create().get(name));
   }
 
   @Test
@@ -137,7 +137,7 @@ public class TestHiveConf {
 
   @Test
   public void testHiddenConfig() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
 
     // check that a change to the hidden list should fail
     try {
@@ -178,7 +178,7 @@ public class TestHiveConf {
 
   @Test
   public void testEncodingDecoding() throws UnsupportedEncodingException {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     String query = "select blah, '\u0001' from random_table";
     conf.setQueryString(query);
     Assert.assertEquals(URLEncoder.encode(query, "UTF-8"), conf.get(ConfVars.HIVEQUERYSTRING.varname));
@@ -229,7 +229,7 @@ public class TestHiveConf {
     File f2 = new File(newFileName);
     FileUtils.writeStringToFile(f2, testLdapString);
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     String val = conf.getVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_DOMAIN);
     Assert.assertEquals("b.com", val);
     //restore and clean up

@@ -216,7 +216,7 @@ public class TestWorkloadManager {
 
     @Override
     protected WmTezSession createSessionObject(String sessionId, HiveConf conf) {
-      conf = conf == null ? new HiveConf(getConf()) : conf;
+      conf = conf == null ? HiveConf.create(getConf()) : conf;
       SampleTezSessionState sess = new SampleTezSessionState(sessionId, this, conf);
       if (failedWait != null) {
         sess.setWaitForAmRegistryFuture(failedWait);
@@ -1398,7 +1398,7 @@ public class TestWorkloadManager {
   }
 
   private HiveConf createConf() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.set(ConfVars.HIVE_SERVER2_TEZ_SESSION_LIFETIME.varname, "-1");
     conf.set(ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
     conf.set(ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME.varname, "");

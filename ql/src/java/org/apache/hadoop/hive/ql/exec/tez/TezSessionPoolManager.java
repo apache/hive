@@ -163,7 +163,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
                   queueIx = 0;
                 }
               }
-              HiveConf sessionConf = new HiveConf(initConf);
+              HiveConf sessionConf = HiveConf.create(initConf);
               return createAndInitSession(defaultQueueList[localQueueIx], true, sessionConf);
           }
       });

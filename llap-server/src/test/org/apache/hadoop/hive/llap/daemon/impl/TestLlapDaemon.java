@@ -55,7 +55,7 @@ public class TestLlapDaemon {
       MetricsUtils.METRICS_PROCESS_NAME
   };
 
-  private Configuration hiveConf = new HiveConf();
+  private Configuration hiveConf = HiveConf.create();
 
   @Mock
   private LlapRegistryService mockRegistry;
@@ -88,7 +88,7 @@ public class TestLlapDaemon {
 
   @Test(expected = IllegalArgumentException.class)
   public void testEnforceProperNumberOfIOThreads() throws IOException {
-    Configuration thisHiveConf = new HiveConf();
+    Configuration thisHiveConf = HiveConf.create();
     HiveConf.setVar(thisHiveConf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "@llap");
     HiveConf.setIntVar(thisHiveConf, HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS, 4);
     HiveConf.setIntVar(thisHiveConf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE, 3);

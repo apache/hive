@@ -75,7 +75,7 @@ public class TestReplicationMetricSink {
 
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, "repl");
     conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "1");
     MetricSink metricSinkSpy = Mockito.spy(MetricSink.getInstance());

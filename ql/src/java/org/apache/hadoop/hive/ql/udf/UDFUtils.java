@@ -30,7 +30,7 @@ public class UDFUtils {
 
   public static TimestampTZ getTimestampTZFromTimestamp(Timestamp timestamp) {
     ZoneId zone = ((SessionState.get() == null) ?
-      new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone());
+      HiveConf.create().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone());
     return TimestampTZUtil.convert(timestamp, zone);
   }
 }

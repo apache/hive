@@ -69,7 +69,7 @@ public abstract class AbstractJdbcTriggersTest {
     HiveConf.setHiveSiteLocation(new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
 
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);

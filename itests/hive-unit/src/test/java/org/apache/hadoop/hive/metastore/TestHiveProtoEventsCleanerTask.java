@@ -65,7 +65,7 @@ public class TestHiveProtoEventsCleanerTask {
 
   @Before
   public void setup() throws Exception {
-    hiveConf = new HiveConf(TestHiveProtoEventsCleanerTask.class);
+    hiveConf = HiveConf.create(TestHiveProtoEventsCleanerTask.class);
     String tmpFolder = folder.newFolder().getAbsolutePath();
     hiveConf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder + "/" + eventsSubDirs[0]);
     HiveConf.setTimeVar(hiveConf, ConfVars.HIVE_PROTO_EVENTS_TTL, 2, TimeUnit.DAYS);

@@ -405,7 +405,7 @@ public class TestLazySimpleFast {
 
   @Test
   public void testLazySimpleDeserializeRowEmptyArray() throws Throwable {
-    HiveConf hconf = new HiveConf();
+    HiveConf hconf = HiveConf.create();
 
     // set the escaping related properties
     Properties props = new Properties();

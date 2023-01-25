@@ -250,7 +250,7 @@ public class AppConfig extends Configuration {
    * those values should take precedence.
    */
   private void handleHiveProperties() {
-    HiveConf hiveConf = new HiveConf();//load hive-site.xml from classpath
+    HiveConf hiveConf = HiveConf.create();//load hive-site.xml from classpath
     List<String> interestingPropNames = Arrays.asList(
         HiveConf.ConfVars.METASTOREURIS.varname,
         HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
@@ -305,7 +305,7 @@ public class AppConfig extends Configuration {
 
     sb.append(TempletonUtils.dumpPropMap("========WebHCat System.getProperties()========", System.getProperties()));
 
-    sb.append(HiveConfUtil.dumpConfig(new HiveConf()));
+    sb.append(HiveConfUtil.dumpConfig(HiveConf.create()));
     return sb.toString();
   }
 

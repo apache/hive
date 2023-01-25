@@ -63,7 +63,7 @@ public class TestGenMapRedUtilsCreateConditionalTask {
 
   @BeforeClass
   public static void initializeSessionState() {
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
   }
 
   @Before

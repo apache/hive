@@ -46,7 +46,7 @@ import org.junit.Test;
 public class TestVectorPTFGroupBatches {
 
   private Configuration getConf(int batchSize) {
-    Configuration hconf = new HiveConf();
+    Configuration hconf = HiveConf.create();
     HiveConf.setIntVar(hconf, HiveConf.ConfVars.HIVE_VECTORIZATION_TESTING_REDUCER_BATCH_SIZE,
         batchSize);
     return hconf;

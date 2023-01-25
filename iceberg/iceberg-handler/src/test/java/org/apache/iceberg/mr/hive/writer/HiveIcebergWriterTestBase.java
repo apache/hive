@@ -70,7 +70,7 @@ public class HiveIcebergWriterTestBase {
       .add(122, "g")
       .build();
 
-  private final HadoopTables tables = new HadoopTables(new HiveConf());
+  private final HadoopTables tables = new HadoopTables(HiveConf.create());
   private TestHelper helper;
   protected Table table;
   protected WriterBuilder writerBuilder;
@@ -114,7 +114,7 @@ public class HiveIcebergWriterTestBase {
         PartitionSpec.builderFor(SCHEMA)
             .bucket("data", 3)
             .build();
-    this.helper = new TestHelper(new HiveConf(), tables, location.toString(), SCHEMA, spec, fileFormat,
+    this.helper = new TestHelper(HiveConf.create(), tables, location.toString(), SCHEMA, spec, fileFormat,
         Collections.singletonMap(WriterBuilder.ICEBERG_DELETE_SKIPROWDATA, String.valueOf(skipRowData)), temp);
     this.table = helper.createTable();
     helper.appendToTable(RECORDS);

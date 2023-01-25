@@ -95,7 +95,7 @@ public class TestRexNodeConverter {
         ImmutableList.of("f1", "f2")
     );
 
-    RelOptPlanner planner = CalcitePlanner.createPlanner(new HiveConf());
+    RelOptPlanner planner = CalcitePlanner.createPlanner(HiveConf.create());
     relOptCluster = RelOptCluster.create(planner, REX_BUILDER);
   }
 

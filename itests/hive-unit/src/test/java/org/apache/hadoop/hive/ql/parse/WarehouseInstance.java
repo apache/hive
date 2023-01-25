@@ -126,7 +126,7 @@ public class WarehouseInstance implements Closeable {
 
   private void initialize(String cmRoot, String externalTableWarehouseRoot, String warehouseRoot,
       Map<String, String> overridesForHiveConf) throws Exception {
-    hiveConf = new HiveConf(miniDFSCluster.getConfiguration(0), TestReplicationScenarios.class);
+    hiveConf = HiveConf.create(miniDFSCluster.getConfiguration(0), TestReplicationScenarios.class);
 
     String metaStoreUri = System.getProperty("test." + HiveConf.ConfVars.METASTOREURIS.varname);
     if (metaStoreUri != null) {

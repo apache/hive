@@ -60,7 +60,7 @@ public class TestTezSessionPool {
 
   @Before
   public void setUp() {
-    conf = new HiveConf();
+    conf = HiveConf.create();
   }
 
   @Test
@@ -271,7 +271,7 @@ public class TestTezSessionPool {
     @Override
     public void run() {
       try {
-        HiveConf tmpConf = new HiveConf(conf);
+        HiveConf tmpConf = HiveConf.create(conf);
         if (random.nextDouble() > 0.5) {
           tmpConf.set("tez.queue.name", "default");
         } else {

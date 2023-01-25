@@ -39,7 +39,7 @@ public class TestJdbcWithDBTokenStoreNoDoAs extends TestJdbcWithMiniKdc{
     confOverlay.put(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED.varname, "false");
 
     miniHiveKdc = new MiniHiveKdc();
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerbWithRemoteHMSWithKerb(miniHiveKdc, hiveConf);

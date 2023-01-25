@@ -62,7 +62,7 @@ public class TestSessionCleanup {
   // This is to test session temporary files are cleaned up after HIVE-11768
   public void testTempSessionFileCleanup() throws Exception {
     MyEmbeddedThriftBinaryCLIService service = new MyEmbeddedThriftBinaryCLIService();
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

@@ -2219,7 +2219,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testCompactionWithSchemaEvolutionNoBucketsMultipleReducers() throws Exception {
-    HiveConf hiveConf = new HiveConf(conf);
+    HiveConf hiveConf = HiveConf.create(conf);
     hiveConf.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
     hiveConf.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
     driver = DriverFactory.newDriver(hiveConf);
@@ -2721,7 +2721,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     CompactionInfo ciMock = mock(CompactionInfo.class);
     ciMock.runAs = "hive";
     List<String> emptyQueries = new ArrayList<>();
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.set(ValidTxnList.VALID_TXNS_KEY, "8:9223372036854775807::");
 
     // Check for default case.

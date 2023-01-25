@@ -127,7 +127,7 @@ public class TestFileUtils {
 
   @Test
   public void testGetJarFilesByPath() {
-    HiveConf conf = new HiveConf(this.getClass());
+    HiveConf conf = HiveConf.create(this.getClass());
     File tmpDir = Files.createTempDir();
     String jarFileName1 = tmpDir.getAbsolutePath() + File.separator + "a.jar";
     String jarFileName2 = tmpDir.getAbsolutePath() + File.separator + "b.jar";
@@ -220,7 +220,7 @@ public class TestFileUtils {
   public void testCopyWithDistcp() throws IOException {
     Path copySrc = new Path("copySrc");
     Path copyDst = new Path("copyDst");
-    HiveConf conf = new HiveConf(TestFileUtils.class);
+    HiveConf conf = HiveConf.create(TestFileUtils.class);
 
     FileSystem mockFs = mock(FileSystem.class);
     when(mockFs.getUri()).thenReturn(URI.create("hdfs:///"));
@@ -241,7 +241,7 @@ public class TestFileUtils {
   public void testCopyWithDistCpAs() throws IOException {
     Path copySrc = new Path("copySrc");
     Path copyDst = new Path("copyDst");
-    HiveConf conf = new HiveConf(TestFileUtils.class);
+    HiveConf conf = HiveConf.create(TestFileUtils.class);
 
     FileSystem fs = copySrc.getFileSystem(conf);
 
@@ -290,7 +290,7 @@ public class TestFileUtils {
 
   @Test
   public void testListStatusIterator() throws Exception {
-    MockFileSystem fs = new MockFileSystem(new HiveConf(),
+    MockFileSystem fs = new MockFileSystem(HiveConf.create(),
         new MockFile("mock:/tmp/.staging", 500, new byte[0]),
         new MockFile("mock:/tmp/_dummy", 500, new byte[0]),
         new MockFile("mock:/tmp/dummy", 500, new byte[0]));

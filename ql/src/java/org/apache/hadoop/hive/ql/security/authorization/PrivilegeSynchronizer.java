@@ -63,7 +63,7 @@ public class PrivilegeSynchronizer implements Runnable {
   public PrivilegeSynchronizer(LeaderLatch privilegeSynchronizerLatch,
       PolicyProviderContainer policyProviderContainer,
       HiveConf hiveConf) {
-    this.hiveConf = new HiveConf(hiveConf);
+    this.hiveConf = HiveConf.create(hiveConf);
     this.hiveConf.set(MetastoreConf.ConfVars.FILTER_HOOK.getVarname(), DefaultMetaStoreFilterHookImpl.class.getName());
     try {
       hiveClient = Hive.get(this.hiveConf).getMSC();

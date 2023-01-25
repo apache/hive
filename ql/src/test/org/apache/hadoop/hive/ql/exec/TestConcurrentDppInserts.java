@@ -156,7 +156,7 @@ public class TestConcurrentDppInserts {
   }
 
   private static IDriver createDriver(boolean custom) {
-    HiveConf conf = new HiveConf(env_setup.getTestCtx().hiveConf);
+    HiveConf conf = HiveConf.create(env_setup.getTestCtx().hiveConf);
 
     if (custom) {
       conf.setVar(ConfVars.HIVE_LOCK_FILE_MOVE_MODE, "all");

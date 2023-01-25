@@ -357,7 +357,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       LOG.info("Received pre-hook notification for: " + plan.getQueryId());
 
       // Make a copy so that we do not modify hookContext conf.
-      HiveConf conf = new HiveConf(hookContext.getConf());
+      HiveConf conf = HiveConf.create(hookContext.getConf());
       List<ExecDriver> mrTasks = Utilities.getMRTasks(plan.getRootTasks());
       List<TezTask> tezTasks = Utilities.getTezTasks(plan.getRootTasks());
       ExecutionMode executionMode = getExecutionMode(plan, mrTasks, tezTasks);

@@ -158,7 +158,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
       public Map<String, String> getHiveVariable() {
         return null;
       }
-    }).substitute(new HiveConf(), qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH));
+    }).substitute(HiveConf.create(), qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH));
 
     testBlobstorePath = HiveTestEnvSetup.ensurePathEndsInSlash(testBlobstorePath);
     testBlobstorePath += HiveTestEnvSetup.ensurePathEndsInSlash(this.getClass().getSimpleName()); // name of child class

@@ -31,7 +31,7 @@ import org.junit.Assert;
 public abstract class AbstractTestGenericUDFOPNumeric {
   public AbstractTestGenericUDFOPNumeric() {
     // Arithmetic operations rely on getting conf from SessionState, need to initialize here.
-    SessionState ss = new SessionState(new HiveConf());
+    SessionState ss = new SessionState(HiveConf.create());
     ss.getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");
     SessionState.setCurrentSessionState(ss);
   }

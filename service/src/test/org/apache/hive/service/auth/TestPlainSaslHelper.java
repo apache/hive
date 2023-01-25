@@ -41,7 +41,7 @@ public class TestPlainSaslHelper {
   @Test
   public void testDoAsSetting(){
 
-    HiveConf hconf = new HiveConf();
+    HiveConf hconf = HiveConf.create();
     hconf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

@@ -91,7 +91,7 @@ public abstract class ZooKeeperTokenStoreTestBase {
     if(zkSslEnabled) {
       String dataFileDir = !System.getProperty("test.data.files", "").isEmpty() ?
           System.getProperty("test.data.files") :
-          (new HiveConf()).get("test.data.files").replace('\\', '/').replace("c:", "");
+          (HiveConf.create()).get("test.data.files").replace('\\', '/').replace("c:", "");
       conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_LOCATION,
           dataFileDir + File.separator + LOCALHOST_KEY_STORE_NAME);
       conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_PASSWORD,

@@ -31,7 +31,7 @@ public abstract class MapJoinOneLongKeyBenchBase extends AbstractMapJoin {
   public void doSetup(VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinTestImplementation mapJoinImplementation) throws Exception {
     
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
 
     long seed = 2543;
 

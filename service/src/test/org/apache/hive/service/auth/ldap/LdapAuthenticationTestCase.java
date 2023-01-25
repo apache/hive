@@ -140,7 +140,7 @@ public final class LdapAuthenticationTestCase {
     public LdapAuthenticationTestCase build() {
       Preconditions.checkState(conf == null,
           "Test Case Builder should not be reused. Please create a new instance.");
-      conf = new HiveConf();
+      conf = HiveConf.create();
       overrideHiveConf();
       return new LdapAuthenticationTestCase(this);
     }

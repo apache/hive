@@ -80,7 +80,7 @@ public class TestReplicationMetricCollector {
 
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, "repl");
     conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "1");
     MetricCollector.getInstance().init(conf);
@@ -102,7 +102,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testFailureCacheHardLimit() throws Exception {
     MetricCollector.getInstance().deinit();
-    conf = new HiveConf();
+    conf = HiveConf.create();
     MetricCollector collector = MetricCollector.getInstance();
     MetricCollector metricCollectorSpy = Mockito.spy(collector);
     Mockito.doReturn(1L).when(metricCollectorSpy).getMaxSize(Mockito.any());
@@ -121,7 +121,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testFailureNoScheduledId() throws Exception {
     MetricCollector.getInstance().deinit();
-    conf = new HiveConf();
+    conf = HiveConf.create();
     MetricCollector.getInstance().init(conf);
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
         "dummyDir", conf, 0L);
@@ -136,7 +136,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testFailureNoPolicyId() throws Exception {
     MetricCollector.getInstance().deinit();
-    conf = new HiveConf();
+    conf = HiveConf.create();
     MetricCollector.getInstance().init(conf);
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
         "dummyDir", conf, 0L);

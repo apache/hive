@@ -186,7 +186,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
   }
 
   private HiveConf setUpDriverSession(HiveConf hiveConf) {
-    HiveConf driverConf = new HiveConf(hiveConf);
+    HiveConf driverConf = HiveConf.create(hiveConf);
     driverConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
     driverConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
     return driverConf;

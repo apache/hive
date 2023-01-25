@@ -112,7 +112,7 @@ public class TestHCatPartitionPublish {
       return;
     }
 
-    hcatConf = new HiveConf(TestHCatPartitionPublish.class);
+    hcatConf = HiveConf.create(TestHCatPartitionPublish.class);
     MetaStoreTestUtils.startMetaStoreWithRetry(hcatConf);
 
     isServerRunning = true;

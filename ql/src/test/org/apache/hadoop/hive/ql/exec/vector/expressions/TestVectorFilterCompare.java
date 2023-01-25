@@ -82,7 +82,7 @@ public class TestVectorFilterCompare {
 
   public TestVectorFilterCompare() {
     // Arithmetic operations rely on getting conf from SessionState, need to initialize here.
-    SessionState ss = new SessionState(new HiveConf());
+    SessionState ss = new SessionState(HiveConf.create());
     ss.getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");
     SessionState.setCurrentSessionState(ss);
   }
@@ -583,7 +583,7 @@ public class TestVectorFilterCompare {
         " exprDesc " + exprDesc.toString());
     */
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     ExprNodeEvaluator evaluator =
         ExprNodeEvaluatorFactory.get(exprDesc, hiveConf);
     evaluator.initialize(rowInspector);
@@ -639,7 +639,7 @@ public class TestVectorFilterCompare {
       TypeInfo outputTypeInfo, Object[] resultObjects)
           throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     if (filterCompareTestMode == FilterCompareTestMode.ADAPTOR) {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE, true);
 

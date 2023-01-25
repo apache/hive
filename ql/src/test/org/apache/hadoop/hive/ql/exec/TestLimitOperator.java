@@ -63,7 +63,7 @@ public class TestLimitOperator {
       ObjectCache.setupObjectRegistry(new ObjectRegistryImpl());
     }
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYID, "query-" + random.nextInt(10000));
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     conf.set(TezProcessor.HIVE_TEZ_VERTEX_NAME, "Map 1");

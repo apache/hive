@@ -39,7 +39,7 @@ public class SSLTestUtils {
   private static final String HS2_HTTP_ENDPOINT = "cliservice";
   private static final String HS2_BINARY_AUTH_MODE = "NONE";
 
-  private static final HiveConf conf = new HiveConf();
+  private static final HiveConf conf = HiveConf.create();
   private static final String dataFileDir = !System.getProperty("test.data.files", "").isEmpty() ? System.getProperty(
           "test.data.files") : conf.get("test.data.files").replace('\\', '/').replace("c:", "");
 

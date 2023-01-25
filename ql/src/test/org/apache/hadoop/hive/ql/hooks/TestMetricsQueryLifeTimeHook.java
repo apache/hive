@@ -41,7 +41,7 @@ public class TestMetricsQueryLifeTimeHook {
 
   @Before
   public void before() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
 
     conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, "local");
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, CodahaleMetrics.class.getCanonicalName());

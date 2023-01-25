@@ -181,7 +181,7 @@ public class ManyMiniCluster {
    * @return Configuration of Hive Metastore, this is a standalone not a daemon
    */
   public HiveConf getHiveConf() {
-    return new HiveConf(hiveConf);
+    return HiveConf.create(hiveConf);
   }
 
   /**
@@ -295,7 +295,7 @@ public class ManyMiniCluster {
 
   private void setUpMetastore() throws Exception {
     if (hiveConf == null)
-      hiveConf = new HiveConf(this.getClass());
+      hiveConf = HiveConf.create(this.getClass());
 
     //The default org.apache.hadoop.hive.ql.hooks.PreExecutePrinter hook
     //is present only in the ql/test directory

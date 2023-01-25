@@ -51,7 +51,7 @@ public class TestCBORuleFiredOnlyOnce {
   @Test
   public void testRuleFiredOnlyOnce() {
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
 
     // Create HepPlanner
     HepProgramBuilder programBuilder = new HepProgramBuilder();

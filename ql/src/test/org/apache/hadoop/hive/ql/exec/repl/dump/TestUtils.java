@@ -50,7 +50,7 @@ public class TestUtils {
 
   @Test
   public void testCreate() throws SemanticException, IOException {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     Mockito.when(outputFile.getFileSystem(conf)).thenReturn(fileSystem);
     Mockito.when(fileSystem.create(outputFile)).thenReturn(outputStream);
     Utils.create(outputFile, conf);

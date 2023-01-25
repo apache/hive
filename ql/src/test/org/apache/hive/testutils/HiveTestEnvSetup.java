@@ -154,23 +154,23 @@ public class HiveTestEnvSetup extends ExternalResource {
       HiveConf.setHivemetastoreSiteUrl(new File(confFolder, "hivemetastore-site.xml").toURI().toURL());
       // FIXME: hiveServer2SiteUrl is not settable?
 
-      ctx.hiveConf = new HiveConf(IDriver.class);
+      ctx.hiveConf = HiveConf.create(IDriver.class);
       ctx.hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST_IDE, true);
     }
 
     @Override
     public void beforeMethod(HiveTestEnvContext ctx) throws Exception {
       if (savedConf == null) {
-        savedConf = new HiveConf(ctx.hiveConf);
+        savedConf = HiveConf.create(ctx.hiveConf);
       }
       // service a fresh conf for every testMethod
-      ctx.hiveConf = new HiveConf(savedConf);
+      ctx.hiveConf = HiveConf.create(savedConf);
     }
 
     @Override
     public void afterMethod(HiveTestEnvContext ctx) throws Exception {
       // create a fresh hiveconf; afterclass methods may get into trouble without this
-      ctx.hiveConf = new HiveConf(savedConf);
+      ctx.hiveConf = HiveConf.create(savedConf);
     }
 
     @Override

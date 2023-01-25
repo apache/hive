@@ -43,7 +43,7 @@ public class TestHiveServer2 {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    miniHS2 = new MiniHS2(new HiveConf());
+    miniHS2 = new MiniHS2(HiveConf.create());
     confOverlay = new HashMap<String, String>();
     confOverlay.put(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     miniHS2.start(confOverlay);

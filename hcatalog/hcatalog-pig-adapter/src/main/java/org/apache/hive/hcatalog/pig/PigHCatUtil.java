@@ -150,7 +150,7 @@ class PigHCatUtil {
     // metastore configuration arguments like the metastore jdbc connection string
     // and password, in the case of an embedded metastore, which you get when
     // hive.metastore.uris = "".
-    HiveConf hiveConf = new HiveConf(job.getConfiguration(), clazz);
+    HiveConf hiveConf = HiveConf.create(job.getConfiguration(), clazz);
 
     if (serverUri != null) {
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, serverUri.trim());

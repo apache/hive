@@ -62,7 +62,7 @@ public class VectorSelectOperatorBench extends AbstractOperatorBench {
 
   @Setup
   public void setup(Blackhole bh) throws HiveException {
-    HiveConf hconf = new HiveConf();
+    HiveConf hconf = HiveConf.create();
     List<String> columns = new ArrayList<String>();
     columns.add("a");
     columns.add("b");

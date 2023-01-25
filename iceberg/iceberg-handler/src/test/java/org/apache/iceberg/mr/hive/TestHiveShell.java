@@ -83,7 +83,7 @@ public class TestHiveShell {
 
   public void start() {
     // Create a copy of the HiveConf for the metastore
-    metastore.start(new HiveConf(hs2Conf), 20);
+    metastore.start(HiveConf.create(hs2Conf), 20);
     hs2Conf.setVar(HiveConf.ConfVars.METASTOREURIS, metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREURIS));
     hs2Conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
         metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE));
@@ -181,7 +181,7 @@ public class TestHiveShell {
   }
 
   private HiveConf initializeConf() {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
 
     // Use ephemeral port to enable running tests in parallel
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, 0);

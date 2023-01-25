@@ -100,7 +100,7 @@ public class CompleteDelegator extends TempletonDelegator {
           String metastoreTokenStrForm =
                   DelegationTokenCache.getStringFormTokenCache().getDelegationToken(id);
           if(metastoreTokenStrForm != null) {
-            client = HCatUtil.getHiveMetastoreClient(new HiveConf());
+            client = HCatUtil.getHiveMetastoreClient(HiveConf.create());
             client.cancelDelegationToken(metastoreTokenStrForm);
             LOG.debug("Cancelled token for jobId=" + id + " status from JT=" + jobStatus);
             DelegationTokenCache.getStringFormTokenCache().removeDelegationToken(id);

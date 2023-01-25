@@ -69,7 +69,7 @@ public class TestConditionalResolverCommonJoin {
     ctx.setTaskToAliases(taskToAliases);
     ctx.setAliasToKnownSize(aliasToKnownSize);
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setLongVar(HiveConf.ConfVars.HIVESMALLTABLESFILESIZE, 4096);
 
     // alias3 only can be selected

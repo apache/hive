@@ -62,7 +62,7 @@ public class TestMetaStoreEventListenerInRepl {
 
   @BeforeClass
   public static void internalBeforeClassSetup() throws Exception {
-    TestMetaStoreEventListenerInRepl.conf = new HiveConf(TestMetaStoreEventListenerInRepl.class);
+    TestMetaStoreEventListenerInRepl.conf = HiveConf.create(TestMetaStoreEventListenerInRepl.class);
     TestMetaStoreEventListenerInRepl.conf.set("dfs.client.use.datanode.hostname", "true");
     TestMetaStoreEventListenerInRepl.conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

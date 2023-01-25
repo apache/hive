@@ -130,7 +130,7 @@ public class TestCliDriverMethods {
     SessionStream err = new SessionStream(dataErr);
     System.setErr(err);
 
-    CliSessionState ss = new CliSessionState(new HiveConf());
+    CliSessionState ss = new CliSessionState(HiveConf.create());
     ss.out = out;
     ss.err = err;
 
@@ -226,7 +226,7 @@ public class TestCliDriverMethods {
       File historyFile = new File(historyDirectory + File.separator + ".hivehistory");
       historyFile.delete();
     }
-    HiveConf configuration = new HiveConf();
+    HiveConf configuration = HiveConf.create();
     configuration.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
     PrintStream oldOut = System.out;
     ByteArrayOutputStream dataOut = new ByteArrayOutputStream();
@@ -260,7 +260,7 @@ public class TestCliDriverMethods {
   @Test
   public void testQuit() throws Exception {
 
-    CliSessionState ss = new CliSessionState(new HiveConf());
+    CliSessionState ss = new CliSessionState(HiveConf.create());
     ss.err = new SessionStream(System.err);
     ss.out = new SessionStream(System.out);
 
@@ -290,7 +290,7 @@ public class TestCliDriverMethods {
 
   @Test
   public void testProcessSelectDatabase() throws Exception {
-    CliSessionState sessinState = new CliSessionState(new HiveConf());
+    CliSessionState sessinState = new CliSessionState(HiveConf.create());
     CliSessionState.start(sessinState);
     ByteArrayOutputStream data = new ByteArrayOutputStream();
     sessinState.err = new SessionStream(data);
@@ -325,7 +325,7 @@ public class TestCliDriverMethods {
     FileUtils.write(homeFile, "-- init hive file for test ");
     setEnv("HIVE_HOME", homeFile.getParentFile().getParentFile().getAbsolutePath());
     setEnv("HIVE_CONF_DIR", homeFile.getParentFile().getAbsolutePath());
-    CliSessionState sessionState = new CliSessionState(new HiveConf());
+    CliSessionState sessionState = new CliSessionState(HiveConf.create());
 
     ByteArrayOutputStream data = new ByteArrayOutputStream();
 

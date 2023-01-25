@@ -479,7 +479,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
 
   @Test public void testMmMinorCompactionWithSchemaEvolutionNoBucketsMultipleReducers()
       throws Exception {
-    HiveConf hiveConf = new HiveConf(conf);
+    HiveConf hiveConf = HiveConf.create(conf);
     hiveConf.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
     hiveConf.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
     driver = DriverFactory.newDriver(hiveConf);

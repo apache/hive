@@ -49,7 +49,7 @@ public class TestLdapSearch {
 
   @Before
   public void setup() {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY, "memberOf");
   }
 

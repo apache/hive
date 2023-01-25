@@ -304,7 +304,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       this.query = query;
       this.cdlIn = cdlIn;
       this.cdlOut = cdlOut;
-      this.hiveConf = new HiveConf(hiveConf);
+      this.hiveConf = HiveConf.create(hiveConf);
     }
 
     @Override
@@ -1233,7 +1233,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         "WHEN MATCHED THEN UPDATE SET b = 7 " +
         "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
     d.destroy();
-    HiveConf hc = new HiveConf(hiveConf);
+    HiveConf hc = HiveConf.create(hiveConf);
     hc.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
     d = new Driver(hc);
@@ -1292,7 +1292,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   @Test
   public void testMergeUpdateDeleteNoCardCheck() throws Exception {
     d.destroy();
-    HiveConf hc = new HiveConf(hiveConf);
+    HiveConf hc = HiveConf.create(hiveConf);
     hc.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, false);
     d = new Driver(hc);
     d.setMaxRows(10000);
@@ -1461,7 +1461,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //see bucket_num_reducers.q bucket_num_reducers2.q
     // todo: try using set VerifyNumReducersHook.num.reducers=10;
     d.destroy();
-    HiveConf hc = new HiveConf(hiveConf);
+    HiveConf hc = HiveConf.create(hiveConf);
     hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 1);
     //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
     hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 1);
@@ -1481,7 +1481,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //todo: try using set VerifyNumReducersHook.num.reducers=10;
     //see bucket_num_reducers.q bucket_num_reducers2.q
     d.destroy();
-    HiveConf hc = new HiveConf(hiveConf);
+    HiveConf hc = HiveConf.create(hiveConf);
     hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
     //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
     hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);

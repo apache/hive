@@ -46,7 +46,7 @@ public abstract class DbTxnManagerEndToEndTestBase {
       DbTxnManagerEndToEndTestBase.class.getCanonicalName() + "-" + System.currentTimeMillis())
     .getPath().replaceAll("\\\\", "/");
 
-  protected static HiveConf conf = new HiveConf(Driver.class);
+  protected static HiveConf conf = HiveConf.create(Driver.class);
   protected HiveTxnManager txnMgr;
   protected Context ctx;
   protected Driver driver, driver2;

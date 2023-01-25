@@ -69,10 +69,10 @@ public class TestSequenceFileReadWrite {
   public void setup() throws Exception {
     dataDir = new File(System.getProperty("java.io.tmpdir") + File.separator +
         TestSequenceFileReadWrite.class.getCanonicalName() + "-" + System.currentTimeMillis());
-    hiveConf = new HiveConf(this.getClass());
+    hiveConf = HiveConf.create(this.getClass());
     warehouseDir = HCatUtil.makePathASafeFileName(dataDir + File.separator + "warehouse");
     inputFileName = HCatUtil.makePathASafeFileName(dataDir + File.separator + "input.data");
-    hiveConf = new HiveConf(this.getClass());
+    hiveConf = HiveConf.create(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");

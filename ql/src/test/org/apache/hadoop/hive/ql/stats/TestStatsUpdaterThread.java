@@ -73,7 +73,7 @@ public class TestStatsUpdaterThread {
   @SuppressWarnings("deprecation")
   @Before
   public void setUp() throws Exception {
-    this.hiveConf = new HiveConf(TestStatsUpdaterThread.class);
+    this.hiveConf = HiveConf.create(TestStatsUpdaterThread.class);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getTestDataDir());

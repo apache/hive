@@ -62,7 +62,7 @@ public class UtilsForTest {
   public static HiveConf getHiveOnTezConfFromDir(String confDir) throws Exception {
     HiveConf.setHiveSiteLocation(
         new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf
         .addResource(new URL("file://" + new File(confDir).toURI().getPath() + "/tez-site.xml"));
     return hiveConf;

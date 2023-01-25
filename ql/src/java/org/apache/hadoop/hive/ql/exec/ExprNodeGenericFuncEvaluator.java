@@ -140,9 +140,9 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
       return ss.getConf();
     }
 
-    // Last resort is to create a new HiveConf object. It does not have any "runtime"
+    // Last resort is to create a HiveConf.create object. It does not have any "runtime"
     // changes to the configuration but that is the best we can do if we get this far.
-    return new HiveConf();
+    return HiveConf.create();
   }
 
 

@@ -56,7 +56,7 @@ public class TestShowPartitionAnalyzer {
 
   @Before
   public void before() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     SessionState.start(conf);
   }
 
@@ -96,7 +96,7 @@ public class TestShowPartitionAnalyzer {
         "foo", 1, 1, -1, null, partColumns, null,
         null, null, TableType.MANAGED_TABLE.name()));
     ShowPartitionAnalyzer analyzer = new ShowPartitionAnalyzer(QueryState.getNewQueryState(
-        new HiveConf(), null));
+        HiveConf.create(), null));
     funcDesc = (ExprNodeGenericFuncDesc)analyzer.getShowPartitionsFilter(table, command);
     Assert.assertTrue(funcDesc.getChildren().size() == 2);
     // ds > '2010-03-03'

@@ -90,10 +90,10 @@ class AsyncTaskCreateUdfFile implements Callable<Void> {
 
   private Set<String> downloadPermanentFunctions() throws HiveException, URISyntaxException, IOException {
     Map<String, String> udfs = new HashMap<String, String>();
-    HiveConf hiveConf = new HiveConf(conf);
+    HiveConf hiveConf = HiveConf.create(conf);
     // disable expensive operations on the metastore
     hiveConf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), false);
-    // performance problem: ObjectStore does its own new HiveConf()
+    // performance problem: ObjectStore does its own HiveConf.create()
     Hive hive = Hive.getWithFastCheck(hiveConf, false);
     ResourceDownloader resourceDownloader = new ResourceDownloader(conf, udfDir.toUri().normalize().getPath());
     List<Function> fns = hive.getAllFunctions();

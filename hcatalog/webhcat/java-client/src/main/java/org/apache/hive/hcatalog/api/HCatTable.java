@@ -207,14 +207,14 @@ public class HCatTable {
       this.conf = (HiveConf)conf;
     }
     else {
-      this.conf = new HiveConf(conf, getClass());
+      this.conf = HiveConf.create(conf, getClass());
     }
   }
 
   HiveConf getConf() {
     if (conf == null) {
       LOG.warn("Conf hasn't been set yet. Using defaults.");
-      conf = new HiveConf();
+      conf = HiveConf.create();
     }
     return conf;
   }

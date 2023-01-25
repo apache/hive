@@ -1088,7 +1088,7 @@ public class HiveServer2 extends CompositeService {
     long attempts = 0, maxAttempts = 1;
     while (true) {
       LOG.info("Starting HiveServer2");
-      HiveConf hiveConf = new HiveConf();
+      HiveConf hiveConf = HiveConf.create();
       maxAttempts = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS);
       long retrySleepIntervalMs = hiveConf
           .getTimeVar(ConfVars.HIVE_SERVER2_SLEEP_INTERVAL_BETWEEN_START_ATTEMPTS,
@@ -1206,7 +1206,7 @@ public class HiveServer2 extends CompositeService {
    * @throws Exception
    */
   static void deleteServerInstancesFromZooKeeper(String versionNumber) throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     setUpZooKeeperAuth(hiveConf);
     CuratorFramework zooKeeperClient = hiveConf.getZKConfig().getNewZookeeperClient();
     zooKeeperClient.start();
@@ -1391,7 +1391,7 @@ public class HiveServer2 extends CompositeService {
         if (commandLine.hasOption("getHiveConf")) {
           return new ServerOptionsProcessorResponse(() -> {
             String key = commandLine.getOptionValue("getHiveConf");
-            HiveConf hiveConf = new HiveConf();
+            HiveConf hiveConf = HiveConf.create();
             HiveConf.ConfVars confVars = HiveConf.getConfVars(key);
             String value = hiveConf.get(key);
             if (confVars != null && confVars.getValidator() instanceof Validator.TimeValidator) {
@@ -1518,7 +1518,7 @@ public class HiveServer2 extends CompositeService {
     @Override
     public void execute() {
       try {
-        HiveConf hiveConf = new HiveConf();
+        HiveConf hiveConf = HiveConf.create();
         HS2ActivePassiveHARegistry haRegistry = HS2ActivePassiveHARegistryClient.getClient(hiveConf);
         Collection<HiveServer2Instance> hs2Instances = haRegistry.getAll();
         // no HS2 instances are running
@@ -1609,7 +1609,7 @@ public class HiveServer2 extends CompositeService {
     @Override
     public void execute() {
       try {
-        HiveConf hiveConf = new HiveConf();
+        HiveConf hiveConf = HiveConf.create();
         HS2ActivePassiveHARegistry haRegistry = HS2ActivePassiveHARegistryClient.getClient(hiveConf);
         HS2Peers.HS2Instances hs2Instances = new HS2Peers.HS2Instances(haRegistry.getAll());
         String jsonOut = hs2Instances.toJson();

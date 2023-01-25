@@ -158,7 +158,7 @@ public class TestHCatLoaderEncryption {
       throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
     }
 
-    HiveConf hiveConf = new HiveConf(this.getClass());
+    HiveConf hiveConf = HiveConf.create(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");

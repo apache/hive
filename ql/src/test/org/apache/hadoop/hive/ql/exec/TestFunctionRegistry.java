@@ -96,7 +96,7 @@ public class TestFunctionRegistry {
     varchar5 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
     char10 = TypeInfoFactory.getPrimitiveTypeInfo("char(10)");
     char5 = TypeInfoFactory.getPrimitiveTypeInfo("char(5)");
-    SessionState.start(new HiveConf());
+    SessionState.start(HiveConf.create());
   }
 
   private void implicit(TypeInfo a, TypeInfo b, boolean convertible) {

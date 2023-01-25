@@ -525,7 +525,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     HiveAuthorizer ret = null;
     HiveConf hiveConf = (HiveConf)tConfig.get();
     if(hiveConf == null){
-      HiveConf hiveConf1 = new HiveConf(super.getConf(), HiveConf.class);
+      HiveConf hiveConf1 = HiveConf.create(super.getConf(), HiveConf.class);
       tConfig.set(hiveConf1);
       hiveConf = hiveConf1;
     }

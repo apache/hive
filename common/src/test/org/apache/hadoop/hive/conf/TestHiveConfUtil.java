@@ -28,7 +28,7 @@ import org.junit.Test;
  */
 public class TestHiveConfUtil {
 
-  private HiveConf conf = new HiveConf();
+  private HiveConf conf = HiveConf.create();
 
   @Before
   public void init() {

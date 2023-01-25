@@ -71,7 +71,7 @@ public class TestHCatOutputFormat {
   @Before
   public void setUp() throws Exception {
 
-    hiveConf = new HiveConf(this.getClass());
+    hiveConf = HiveConf.create(this.getClass());
 
     try {
       client = new HiveMetaStoreClient(hiveConf);

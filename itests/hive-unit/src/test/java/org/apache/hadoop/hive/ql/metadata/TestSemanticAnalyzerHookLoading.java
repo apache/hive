@@ -38,7 +38,7 @@ public class TestSemanticAnalyzerHookLoading {
   @Test
   public void testHookLoading() throws Exception {
 
-    HiveConf conf = new HiveConf(this.getClass());
+    HiveConf conf = HiveConf.create(this.getClass());
     conf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname, DummySemanticAnalyzerHook.class.getName());
     conf.set(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(conf);

@@ -112,7 +112,7 @@ public class TestFilterSelectivityEstimator {
     int11 = REX_BUILDER.makeLiteral(11, integerType, true);
     tableType = TYPE_FACTORY.createStructType(ImmutableList.of(integerType), ImmutableList.of("f1"));
 
-    RelOptPlanner planner = CalcitePlanner.createPlanner(new HiveConf());
+    RelOptPlanner planner = CalcitePlanner.createPlanner(HiveConf.create());
     relOptCluster = RelOptCluster.create(planner, REX_BUILDER);
 
     stats = new ColStatistics();

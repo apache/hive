@@ -655,7 +655,7 @@ public class TestVectorFilterExpressions {
     FilterLongColumnInList f = new FilterLongColumnInList(0);
     f.setInListValues(inList);
     f.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-    f.transientInit(new HiveConf());
+    f.transientInit(HiveConf.create());
     VectorExpression expr1 = f;
 
     // Basic case
@@ -758,7 +758,7 @@ public class TestVectorFilterExpressions {
     FilterDoubleColumnInList f = new FilterDoubleColumnInList(0);
     f.setInListValues(inList);
     f.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.doubleTypeInfo});
-    f.transientInit(new HiveConf());
+    f.transientInit(HiveConf.create());
     VectorExpression expr1 = f;
 
     // Basic sanity check. Other cases are not skipped because it is similar to the case for Long.

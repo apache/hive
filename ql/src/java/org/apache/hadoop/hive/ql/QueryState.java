@@ -304,9 +304,9 @@ public class QueryState {
       if (isolated) {
         // isolate query conf
         if (hiveConf == null) {
-          queryConf = new HiveConf();
+          queryConf = HiveConf.create();
         } else {
-          queryConf = new HiveConf(hiveConf);
+          queryConf = HiveConf.create(hiveConf);
         }
       } else {
         queryConf = hiveConf;

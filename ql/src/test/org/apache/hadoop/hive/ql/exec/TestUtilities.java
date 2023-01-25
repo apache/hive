@@ -133,7 +133,7 @@ public class TestUtilities {
   public void testgetDbTableName() throws HiveException{
     String tablename;
     String [] dbtab;
-    SessionState.start(new HiveConf(this.getClass()));
+    SessionState.start(HiveConf.create(this.getClass()));
     String curDefaultdb = SessionState.get().getCurrentDatabase();
 
     //test table without db portion
@@ -247,7 +247,7 @@ public class TestUtilities {
 
   private List<Path> runRemoveTempOrDuplicateFilesTestCase(String executionEngine, boolean dPEnabled)
       throws Exception {
-    Configuration hconf = new HiveConf(this.getClass());
+    Configuration hconf = HiveConf.create(this.getClass());
     // do this to verify that Utilities.removeTempOrDuplicateFiles does not revert to default scheme information
     hconf.set("fs.defaultFS", "hdfs://should-not-be-used/");
     hconf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, executionEngine);

@@ -41,7 +41,7 @@ public abstract class MessageFactory {
 
   private static MessageFactory instance = null;
 
-  protected static final HiveConf hiveConf = new HiveConf();
+  protected static final HiveConf hiveConf = HiveConf.create();
   static {
     hiveConf.addResource("hive-site.xml");
   }

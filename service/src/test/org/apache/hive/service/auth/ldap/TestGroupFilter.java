@@ -44,7 +44,7 @@ public class TestGroupFilter {
 
   @Before
   public void setup() {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.set("hive.root.logger", "DEBUG,console");
     factory = new GroupFilterFactory();
   }

@@ -80,10 +80,10 @@ public class GenericUDFTimestamp extends GenericUDF {
     checkArgGroups(arguments, 0, tsInputTypes, STRING_GROUP, DATE_GROUP, NUMERIC_GROUP, VOID_GROUP, BOOLEAN_GROUP);
 
     strict = SessionState.get() != null ? SessionState.get().getConf()
-        .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION) : new HiveConf()
+        .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION) : HiveConf.create()
         .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION);
     intToTimestampInSeconds = SessionState.get() != null ? SessionState.get().getConf()
-        .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS) : new HiveConf()
+        .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS) : HiveConf.create()
         .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS);
 
     if (strict) {

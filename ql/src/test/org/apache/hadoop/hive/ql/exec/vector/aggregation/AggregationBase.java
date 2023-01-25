@@ -198,7 +198,7 @@ public class AggregationBase {
       Object[] results)
           throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
 
     VectorizationContext vectorizationContext =
         new VectorizationContext(

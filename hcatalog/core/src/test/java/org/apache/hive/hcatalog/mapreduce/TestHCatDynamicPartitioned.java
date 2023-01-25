@@ -194,7 +194,7 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
   //TODO 1.0 miniCluster is slow this test times out, make it work
 // renaming test to make test framework skip it
   public void _testHCatDynamicPartitionMaxPartitions() throws Exception {
-    HiveConf hc = new HiveConf(this.getClass());
+    HiveConf hc = HiveConf.create(this.getClass());
 
     int maxParts = hiveConf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS);
     LOG.info("Max partitions allowed = {}", maxParts);

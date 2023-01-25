@@ -110,7 +110,7 @@ public class TestSemanticAnalyzer {
 
   @Test
   public void testSkipAuthorization() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS, "u1,u2");
     SessionState ss = new SessionState(hiveConf);

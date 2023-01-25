@@ -34,7 +34,7 @@ public class TestCommandProcessorFactory {
 
   @Before
   public void setUp() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
   }
 
   @Test

@@ -97,7 +97,7 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public static class Builder {
-    private HiveConf hiveConf = new HiveConf();
+    private HiveConf hiveConf = HiveConf.create();
     private MiniClusterType miniClusterType = MiniClusterType.LOCALFS_ONLY;
     private boolean useMiniKdc = false;
     private String serverPrincipal;

@@ -50,7 +50,7 @@ import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestDummyTxnManager {
-  private final HiveConf conf = new HiveConf();
+  private final HiveConf conf = HiveConf.create();
   private HiveTxnManager txnMgr;
   private Context ctx;
   private int nextInput = 1;

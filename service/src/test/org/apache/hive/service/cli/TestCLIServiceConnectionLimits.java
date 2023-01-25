@@ -31,7 +31,7 @@ public class TestCLIServiceConnectionLimits {
   public ExpectedException thrown = ExpectedException.none();
 
   private int limit = 10;
-  private HiveConf conf = new HiveConf();
+  private HiveConf conf = HiveConf.create();
 
   @Test
   public void testNoLimit() throws HiveSQLException {

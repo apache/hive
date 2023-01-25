@@ -45,7 +45,7 @@ public class TestSQLOperationMetrics {
 
   @Before
   public void setup() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
     MetricsFactory.init(conf);
 

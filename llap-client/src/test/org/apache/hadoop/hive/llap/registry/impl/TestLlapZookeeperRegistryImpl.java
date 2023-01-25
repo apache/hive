@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 
 public class TestLlapZookeeperRegistryImpl {
 
-  private HiveConf hiveConf = new HiveConf();
+  private HiveConf hiveConf = HiveConf.create();
 
   private LlapZookeeperRegistryImpl registry;
 

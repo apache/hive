@@ -88,7 +88,7 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
     try {
       SessionState.getConsole().printInfo("Beginning metadata export");
       EximUtil.createExportDump(fs, outFile, mTbl, null, null,
-          new HiveConf(conf, MetaDataExportListener.class));
+          HiveConf.create(conf, MetaDataExportListener.class));
       if (moveMetadataToTrash == true) {
         wh.deleteDir(metaPath, true, false, false);
       }

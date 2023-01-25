@@ -89,7 +89,7 @@ public class TestSystemVariables {
 
     SystemVariables uut = new SystemVariables();
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.set(HiveConf.ConfVars.HIVE_QUERY_MAX_LENGTH.varname, "100Kb");
     conf.set("myTestVariable", longStringWithReferences.toString());
 

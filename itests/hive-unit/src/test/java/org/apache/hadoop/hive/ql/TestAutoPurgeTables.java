@@ -112,7 +112,7 @@ public class TestAutoPurgeTables {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    conf = new HiveConf(TestAutoPurgeTables.class);
+    conf = HiveConf.create(TestAutoPurgeTables.class);
     // enable trash so it can be tested
     conf.setFloat("fs.trash.checkpoint.interval", 30);
     conf.setFloat("fs.trash.interval", 30);

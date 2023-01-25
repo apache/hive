@@ -72,7 +72,7 @@ public class TestJdbcWithServiceDiscovery {
 
     // Create one MiniHS2 with miniMRCluster and one with Local FS only
     HiveConf hiveConf1 = loadConf();
-    HiveConf hiveConf2 = new HiveConf();
+    HiveConf hiveConf2 = HiveConf.create();
 
     setSDConfigs(hiveConf1);
     setSDConfigs(hiveConf2);
@@ -154,7 +154,7 @@ public class TestJdbcWithServiceDiscovery {
     String confDir = "../../data/conf/";
     HiveConf.setHiveSiteLocation(new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
-    HiveConf defaultConf = new HiveConf();
+    HiveConf defaultConf = HiveConf.create();
     return defaultConf;
   }
 

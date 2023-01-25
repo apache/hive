@@ -232,7 +232,7 @@ public class HiveStrictManagedMigration {
 
     HiveStrictManagedMigration migration = null;
     try {
-      HiveConf conf = hiveConf == null ? new HiveConf() : hiveConf;
+      HiveConf conf = hiveConf == null ? HiveConf.create() : hiveConf;
       WarehouseRootCheckResult warehouseRootCheckResult = checkOldWarehouseRoot(runOptions, conf);
       runOptions.setShouldModifyManagedTableLocation(
         warehouseRootCheckResult.shouldModifyManagedTableLocation);

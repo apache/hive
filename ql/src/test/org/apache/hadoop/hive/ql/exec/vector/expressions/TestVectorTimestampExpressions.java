@@ -66,7 +66,7 @@ import org.junit.Test;
  */
 public class TestVectorTimestampExpressions {
 
-  private HiveConf hiveConf = new HiveConf();
+  private HiveConf hiveConf = HiveConf.create();
   private SimpleDateFormat dateFormat = getFormatter();
 
   private static SimpleDateFormat getFormatter() {

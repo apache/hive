@@ -116,7 +116,7 @@ public class TestTxnHandler {
   static final private String CLASS_NAME = TxnHandler.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
-  private HiveConf conf = new HiveConf();
+  private HiveConf conf = HiveConf.create();
   private TxnStore txnHandler;
 
   public TestTxnHandler() throws Exception {

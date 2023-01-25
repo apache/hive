@@ -63,7 +63,7 @@ public class TestHS2HttpServerPamConfiguration {
     String metastorePasswd = "693efe9fa425ad21886d73a0fa3fbc70"; //random md5
     Integer webUIPort =
         MetaStoreTestUtils.findFreePortExcepting(Integer.valueOf(ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue()));
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM, true);
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, false);
     hiveConf.set(ConfVars.METASTOREPWD.varname, metastorePasswd);

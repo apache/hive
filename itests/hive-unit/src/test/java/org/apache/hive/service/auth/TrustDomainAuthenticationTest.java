@@ -60,7 +60,7 @@ public abstract class TrustDomainAuthenticationTest {
     hs2TransportMode = transportMode;
     properTrustedDomain = useProperTrustedDomain;
 
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     hiveConf.writeXml(baos);
     baos.close();

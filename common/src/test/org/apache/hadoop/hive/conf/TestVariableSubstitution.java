@@ -54,10 +54,10 @@ public class TestVariableSubstitution {
           }
         });
 
-    String v = variableSubstitution.substitute(new HiveConf(), "${a}");
+    String v = variableSubstitution.substitute(HiveConf.create(), "${a}");
     Assert.assertEquals("${a}", v);
     TestVariableSubstitution.getMySource().put("a", "b");
-    v = variableSubstitution.substitute(new HiveConf(), "${a}");
+    v = variableSubstitution.substitute(HiveConf.create(), "${a}");
     Assert.assertEquals("b", v);
   }
 }

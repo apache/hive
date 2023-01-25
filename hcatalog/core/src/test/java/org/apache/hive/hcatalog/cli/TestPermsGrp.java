@@ -91,7 +91,7 @@ public class TestPermsGrp {
       return;
     }
 
-    hcatConf = new HiveConf(this.getClass());
+    hcatConf = HiveConf.create(this.getClass());
     MetaStoreTestUtils.startMetaStoreWithRetry(hcatConf);
 
     isServerRunning = true;

@@ -83,7 +83,7 @@ public class TestNullScanTaskDispatcher {
 
   @Before
   public void setup() {
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     hiveConf.set("fs.mock.impl", MockFileSystem.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES, true);
     sessionState = SessionState.start(hiveConf);

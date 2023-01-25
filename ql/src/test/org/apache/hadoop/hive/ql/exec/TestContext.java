@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class TestContext {
-    private static HiveConf conf = new HiveConf();
+    private static HiveConf conf = HiveConf.create();
 
     private Context context;
 

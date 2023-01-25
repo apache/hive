@@ -45,7 +45,7 @@ import org.junit.Test;
  */
 public class TestVectorFilterOperator {
 
-  HiveConf hconf = new HiveConf();
+  HiveConf hconf = HiveConf.create();
 
   /**
    * Fundamental logic and performance tests for vector filters belong here.

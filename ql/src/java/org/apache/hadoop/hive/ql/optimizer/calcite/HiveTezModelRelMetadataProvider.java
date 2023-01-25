@@ -45,7 +45,7 @@ public class HiveTezModelRelMetadataProvider {
             ImmutableList.of(
                 HiveRelMdDistinctRowCount.SOURCE,
                 HiveRelMdCumulativeCost.SOURCE,
-                new HiveRelMdCost(HiveOnTezCostModel.getCostModel(new HiveConf())).getMetadataProvider(),
+                new HiveRelMdCost(HiveOnTezCostModel.getCostModel(HiveConf.create())).getMetadataProvider(),
                 HiveRelMdSelectivity.SOURCE,
                 HiveRelMdRowCount.SOURCE,
                 HiveRelMdUniqueKeys.SOURCE,

@@ -57,7 +57,7 @@ import org.junit.Test;
  */
 public class TestVectorTypeCasts {
 
-  private HiveConf hiveConf = new HiveConf();
+  private HiveConf hiveConf = HiveConf.create();
 
   @Test
   public void testVectorCastLongToDouble() throws HiveException {

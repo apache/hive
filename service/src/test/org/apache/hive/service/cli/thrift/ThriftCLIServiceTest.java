@@ -62,7 +62,7 @@ public abstract class ThriftCLIServiceTest {
     // Find a free port
     port = MetaStoreTestUtils.findFreePort();
     hiveServer2 = new HiveServer2();
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
   }
 
   /**

@@ -68,7 +68,7 @@ public class HCatCli {
     }
     LOG = LoggerFactory.getLogger(HCatCli.class);
 
-    CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
+    CliSessionState ss = new CliSessionState(HiveConf.create(SessionState.class));
     ss.in = System.in;
     try {
       ss.out = new SessionStream(System.out, true, "UTF-8");

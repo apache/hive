@@ -487,7 +487,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
             LOG.info("Invoking KillQuery for " + queryId + ": " + reason);
             try {
               UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-              SessionState ss = new SessionState(new HiveConf(), ugi.getShortUserName());
+              SessionState ss = new SessionState(HiveConf.create(), ugi.getShortUserName());
               ss.setIsHiveServerQuery(true);
               SessionState.start(ss);
               kq.killQuery(queryId, reason, toKill.getConf());
@@ -1735,7 +1735,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     if (sessionConf == null) {
       // TODO: can this ever happen?
       LOG.warn("Session configuration is null for " + wmTezSession);
-      sessionConf = new HiveConf(conf, WorkloadManager.class);
+      sessionConf = HiveConf.create(conf, WorkloadManager.class);
     }
 
     SettableFuture<WmTezSession> future = SettableFuture.create();
@@ -1814,7 +1814,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   @VisibleForTesting
   protected WmTezSession createSessionObject(String sessionId, HiveConf conf) {
-    conf = (conf == null) ? new HiveConf(this.conf) : conf;
+    conf = (conf == null) ? HiveConf.create(this.conf) : conf;
     conf.set(LlapTaskSchedulerService.LLAP_PLUGIN_ENDPOINT_ENABLED, "true");
     return new WmTezSession(sessionId, this, expirationTracker, conf);
   }

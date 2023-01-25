@@ -82,12 +82,12 @@ public class TestReplicationTask {
     event.setTableName(t.getTableName());
 
     ReplicationTask.resetFactory(null);
-    ReplicationTask rtask = ReplicationTask.create(HCatClient.create(new HiveConf()),new HCatNotificationEvent(event));
+    ReplicationTask rtask = ReplicationTask.create(HCatClient.create(HiveConf.create()),new HCatNotificationEvent(event));
     assertTrue("Provided factory instantiation should yield CreateTableReplicationTask", rtask instanceof CreateTableReplicationTask);
 
     ReplicationTask.resetFactory(NoopFactory.class);
 
-    rtask = ReplicationTask.create(HCatClient.create(new HiveConf()),new HCatNotificationEvent(event));
+    rtask = ReplicationTask.create(HCatClient.create(HiveConf.create()),new HCatNotificationEvent(event));
     assertTrue("Provided factory instantiation should yield NoopReplicationTask", rtask instanceof NoopReplicationTask);
 
     ReplicationTask.resetFactory(null);

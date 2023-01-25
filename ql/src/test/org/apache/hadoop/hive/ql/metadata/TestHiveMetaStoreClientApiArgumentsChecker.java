@@ -71,7 +71,7 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
   @Before
   public void setUp() throws Exception {
 
-    client = new TestHiveMetaStoreClient(new HiveConf(Hive.class));
+    client = new TestHiveMetaStoreClient(HiveConf.create(Hive.class));
     hive = Hive.get(client);
     hive.getConf().set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "15");
     hive.getConf().set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "throw");

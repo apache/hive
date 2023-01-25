@@ -108,7 +108,7 @@ public class TestHCatClient {
   @BeforeClass
   public static void startMetaStoreServer() throws Exception {
 
-    hcatConf = new HiveConf(TestHCatClient.class);
+    hcatConf = HiveConf.create(TestHCatClient.class);
     String metastoreUri = System.getProperty("test."+HiveConf.ConfVars.METASTOREURIS.varname);
     if (metastoreUri != null) {
       hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, metastoreUri);
@@ -814,11 +814,11 @@ public class TestHCatClient {
 
   private void startReplicationTargetMetaStoreIfRequired() throws Exception {
     if (!isReplicationTargetHCatRunning) {
-      HiveConf conf = new HiveConf();
+      HiveConf conf = HiveConf.create();
       conf.set("javax.jdo.option.ConnectionURL", hcatConf.get("javax.jdo.option.ConnectionURL")
         .replace("metastore", "target_metastore"));
       replicationTargetHCatPort = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
-      replicationTargetHCatConf = new HiveConf(hcatConf);
+      replicationTargetHCatConf = HiveConf.create(hcatConf);
       replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTOREURIS,
                                        "thrift://localhost:" + replicationTargetHCatPort);
       isReplicationTargetHCatRunning = true;

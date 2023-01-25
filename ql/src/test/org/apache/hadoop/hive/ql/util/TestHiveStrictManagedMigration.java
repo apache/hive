@@ -82,7 +82,7 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
     String oldWarehouse = getWarehouseDir();
     String[] args = {"--hiveconf", "hive.strict.managed.tables=true", "-m",  "automatic", "--modifyManagedTables",
       "--oldWarehouseRoot", oldWarehouse};
-    HiveConf newConf = new HiveConf(hiveConf);
+    HiveConf newConf = HiveConf.create(hiveConf);
     File newWarehouseDir = new File(getTestDataDir(), "newWarehouse");
     newConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, newWarehouseDir.getAbsolutePath());
     newConf.set("strict.managed.tables.migration.owner", System.getProperty("user.name"));
@@ -121,7 +121,7 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
     String oldWarehouse = getWarehouseDir();
     String[] args = {"-m",  "external", "--shouldMoveExternal", "--tableRegex", "man.*|ext.*|custm.*|custe.*",
       "--oldWarehouseRoot", oldWarehouse};
-    HiveConf newConf = new HiveConf(hiveConf);
+    HiveConf newConf = HiveConf.create(hiveConf);
     File newManagedWarehouseDir = new File(getTestDataDir(), "newManaged");
     File newExtWarehouseDir = new File(getTestDataDir(), "newExternal");
     newConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, newManagedWarehouseDir.getAbsolutePath());
@@ -137,7 +137,7 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
   public void testExternalMoveFailsForIncorrectOptions() throws Throwable {
     try {
       String[] args = {"-m", "automatic", "--shouldMoveExternal"};
-      runMigrationTool(new HiveConf(hiveConf), args);
+      runMigrationTool(HiveConf.create(hiveConf), args);
     } catch (Exception e) {
       // Exceptions are re-packaged by the migration tool...
       throw e.getCause();
@@ -148,7 +148,7 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
   public void testExceptionForDbRegexPlusControlFile() throws Throwable {
     try {
       String[] args = {"-m", "automatic", "--dbRegex", "db0", "--controlFileUrl", "file:/tmp/file"};
-      runMigrationTool(new HiveConf(hiveConf), args);
+      runMigrationTool(HiveConf.create(hiveConf), args);
     } catch (Exception e) {
       // Exceptions are re-packaged by the migration tool...
       throw e.getCause();
@@ -161,7 +161,7 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
     String oldWarehouse = getWarehouseDir();
     String[] args = {"-m",  "external", "--oldWarehouseRoot", oldWarehouse, "--controlFileUrl",
         "src/test/resources/hsmm/hsmm_cfg_01.yaml"};
-    HiveConf newConf = new HiveConf(hiveConf);
+    HiveConf newConf = HiveConf.create(hiveConf);
 
     runMigrationTool(newConf, args);
 
@@ -176,7 +176,7 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
     String oldWarehouse = getWarehouseDir();
     String[] args = {"-m",  "external", "--oldWarehouseRoot", oldWarehouse, "--controlFileUrl",
         "src/test/resources/hsmm"};
-    HiveConf newConf = new HiveConf(hiveConf);
+    HiveConf newConf = HiveConf.create(hiveConf);
 
     runMigrationTool(newConf, args);
 
@@ -213,7 +213,7 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
     Hive.get().alterDatabase("ownerlessdb", db);
 
     String[] args = {"-m",  "external"};
-    HiveConf newConf = new HiveConf(hiveConf);
+    HiveConf newConf = HiveConf.create(hiveConf);
     File newExtWarehouseDir = new File(getTestDataDir(), "newExternal");
     newConf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, newExtWarehouseDir.getAbsolutePath());
     runMigrationTool(newConf, args);

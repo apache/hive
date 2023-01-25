@@ -57,7 +57,7 @@ public final class CommandProcessorFactory {
       return null;
     }
     if (conf == null) {
-      conf = new HiveConf();
+      conf = HiveConf.create();
     }
     Set<String> availableCommands = new HashSet<String>();
     for (String availableCommand : conf.getVar(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST)

@@ -133,7 +133,7 @@ public class HiveSessionImpl implements HiveSession {
     this.password = password;
     creationTime = System.currentTimeMillis();
     this.sessionHandle = sessionHandle != null ? sessionHandle : new SessionHandle(protocol);
-    this.sessionConf = new HiveConf(serverConf);
+    this.sessionConf = HiveConf.create(serverConf);
     this.ipAddress = ipAddress;
     this.forwardedAddresses = forwardedAddresses;
     this.operationLock = serverConf.getBoolVar(

@@ -191,8 +191,8 @@ public class TestJdbcDriver2 {
   @SuppressWarnings("deprecation")
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    conf = new HiveConf(TestJdbcDriver2.class);
-    HiveConf initConf = new HiveConf(conf);
+    conf = HiveConf.create(TestJdbcDriver2.class);
+    HiveConf initConf = HiveConf.create(conf);
     TestTxnDbUtil.setConfValues(initConf);
     TestTxnDbUtil.prepDb(initConf);
     dataFileDir = conf.get("test.data.files").replace('\\', '/')

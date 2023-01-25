@@ -141,7 +141,7 @@ public class TestHadoopAuthBridge23 {
         "true");
     System.setProperty(HiveConf.ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS.varname,
         MyTokenStore.class.getName());
-    conf = new HiveConf(TestHadoopAuthBridge23.class);
+    conf = HiveConf.create(TestHadoopAuthBridge23.class);
     MetaStoreTestUtils.startMetaStoreWithRetry(new MyHadoopThriftAuthBridge23(), conf);
   }
 

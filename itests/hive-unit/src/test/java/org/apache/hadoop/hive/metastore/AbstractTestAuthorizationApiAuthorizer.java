@@ -55,7 +55,7 @@ public abstract class AbstractTestAuthorizationApiAuthorizer {
     System.setProperty("hive.security.metastore.authorization.manager",
         MetaStoreAuthzAPIAuthorizerEmbedOnly.class.getName());
 
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     if (isRemoteMetastoreMode) {
       MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
     }

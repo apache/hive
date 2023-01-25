@@ -2753,7 +2753,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.run("create table source (a int, b int) partitioned by (c int) stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into source values (3,3,2), (4,4,2)");
 
-    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(new HiveConf(conf));
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(HiveConf.create(conf));
 
     if (!slowCompile) {
       // txn 1 insert data to an old and a new partition
@@ -2763,7 +2763,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       driver2.compileAndRespond("insert overwrite table target partition (c=2) select 3, 3");
     }
 
-    DbTxnManager txnMgr3 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(new HiveConf(conf));
+    DbTxnManager txnMgr3 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(HiveConf.create(conf));
     swapTxnManager(txnMgr3);
 
     // Compile txn 3 with only 1 known partition

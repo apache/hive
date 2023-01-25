@@ -50,7 +50,7 @@ public class TestFileUtils {
 
   @BeforeClass
   public static void setup() throws Exception {
-    conf = new HiveConf(TestFileUtils.class);
+    conf = HiveConf.create(TestFileUtils.class);
     dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);
     fs = dfs.getFileSystem();
   }

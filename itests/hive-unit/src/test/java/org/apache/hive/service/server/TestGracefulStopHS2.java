@@ -48,7 +48,7 @@ public class TestGracefulStopHS2 {
   public static void setupBeforeClass() throws Exception {
     MiniHS2.cleanupLocalDir();
     try {
-      HiveConf conf = new HiveConf();
+      HiveConf conf = HiveConf.create();
       conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
       conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
       conf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);

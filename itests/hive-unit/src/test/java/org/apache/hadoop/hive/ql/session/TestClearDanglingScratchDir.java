@@ -47,7 +47,7 @@ public class TestClearDanglingScratchDir {
   @BeforeClass
   static public void oneTimeSetup() throws Exception {
     m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1).format(true).build();
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.set(HiveConf.ConfVars.HIVE_SCRATCH_DIR_LOCK.toString(), "true");
     conf.set(HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL.toString(), "true");
     LoggerFactory.getLogger("SessionState");

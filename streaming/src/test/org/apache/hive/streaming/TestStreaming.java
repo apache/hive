@@ -211,7 +211,7 @@ public class TestStreaming {
     partitionVals2.add(PART1_COUNTRY);
 
 
-    conf = new HiveConf(this.getClass());
+    conf = HiveConf.create(this.getClass());
     conf.set("fs.raw.impl", RawFileSystem.class.getName());
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

@@ -73,7 +73,7 @@ public class TestCompileLock {
 
   @Before
   public void init() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
 
     conf.setBoolVar(HIVE_SERVER2_METRICS_ENABLED, true);
     conf.setVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR, System.getProperty("java.io.tmpdir"));

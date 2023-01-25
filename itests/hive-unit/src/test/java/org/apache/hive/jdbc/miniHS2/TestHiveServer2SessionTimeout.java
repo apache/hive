@@ -43,7 +43,7 @@ public class TestHiveServer2SessionTimeout {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    miniHS2 = new MiniHS2(new HiveConf());
+    miniHS2 = new MiniHS2(HiveConf.create());
   }
 
   @Before

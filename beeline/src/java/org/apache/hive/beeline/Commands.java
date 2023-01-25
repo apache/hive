@@ -773,7 +773,7 @@ public class Commands {
   }
 
   public HiveConf getHiveConfHelper(boolean call) {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     BufferedRows rows = getConfInternal(call);
     while (rows != null && rows.hasNext()) {
       addConf((Rows.Row) rows.next(), conf);

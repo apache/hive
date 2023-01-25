@@ -78,7 +78,7 @@ public class TestHiveProtoLoggingHook {
 
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.set(HiveConf.ConfVars.LLAP_DAEMON_QUEUE_NAME.varname, "llap_queue");
     conf.set(HiveConf.ConfVars.HIVE_PROTO_EVENTS_QUEUE_CAPACITY.varname, "3");
     conf.set(MRJobConfig.QUEUE_NAME, "mr_queue");

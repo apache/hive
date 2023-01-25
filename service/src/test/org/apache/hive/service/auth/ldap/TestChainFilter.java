@@ -60,7 +60,7 @@ public class TestChainFilter {
 
   @Before
   public void setup() {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     factory = new ChainFilterFactory(factory1, factory2, factory3);
   }
 

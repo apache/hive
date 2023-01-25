@@ -192,7 +192,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
     zkCluster = new MiniZooKeeperCluster(zookeeperSSLEnabled);
     int zkPort = zkCluster.startup(zkDataDir);
 
-    miniHS2 = new MiniHS2(new HiveConf());
+    miniHS2 = new MiniHS2(HiveConf.create());
     confOverlay = new HashMap<String, String>();
     Path workDir = new Path(System.getProperty("test.tmp.dir",
         "target" + File.separator + "test" + File.separator + "tmp"));
@@ -218,7 +218,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
     if(zookeeperSSLEnabled) {
       String dataFileDir = !System.getProperty("test.data.files", "").isEmpty() ?
           System.getProperty("test.data.files") :
-          (new HiveConf()).get("test.data.files").replace('\\', '/').replace("c:", "");
+          (HiveConf.create()).get("test.data.files").replace('\\', '/').replace("c:", "");
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION.varname,
           dataFileDir + File.separator + LOCALHOST_KEY_STORE_NAME);
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname,

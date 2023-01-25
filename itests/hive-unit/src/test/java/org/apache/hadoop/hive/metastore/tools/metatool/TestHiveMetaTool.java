@@ -93,7 +93,7 @@ public class TestHiveMetaTool {
       os = new ByteArrayOutputStream();
       System.setOut(new PrintStream(os));
 
-      hiveConf = new HiveConf(HiveMetaTool.class);
+      hiveConf = HiveConf.create(HiveMetaTool.class);
       client = new HiveMetaStoreClient(hiveConf);
 
       createDatabase();

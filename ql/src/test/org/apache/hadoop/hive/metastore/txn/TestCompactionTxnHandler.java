@@ -76,7 +76,7 @@ import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPA
 public class TestCompactionTxnHandler {
 
   public static final String WORKER_VERSION = HiveVersionInfo.getShortVersion();
-  private HiveConf conf = new HiveConf();
+  private HiveConf conf = HiveConf.create();
   private TxnStore txnHandler;
 
   public TestCompactionTxnHandler() throws Exception {

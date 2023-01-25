@@ -36,7 +36,7 @@ public class TestLlapLoadGeneratorService {
   public void testLoadGeneratorStops() throws InterruptedException, UnknownHostException {
     LlapLoadGeneratorService service = new LlapLoadGeneratorService();
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES,
         InetAddress.getLocalHost().getHostName() + ",???");
     HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION, 0.5f);
@@ -61,7 +61,7 @@ public class TestLlapLoadGeneratorService {
   public void testLoadGeneratorFails() throws InterruptedException, UnknownHostException {
     LlapLoadGeneratorService service = new LlapLoadGeneratorService();
 
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES,
         InetAddress.getLocalHost().getHostName() + ",???");
     HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION, 1.2f);

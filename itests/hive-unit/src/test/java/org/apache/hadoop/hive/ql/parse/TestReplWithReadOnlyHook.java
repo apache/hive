@@ -43,7 +43,7 @@ public class TestReplWithReadOnlyHook extends BaseReplicationScenariosAcidTables
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
       GzipJSONMessageEncoder.class.getCanonicalName());
 
-    conf = new HiveConf(TestReplWithReadOnlyHook.class);
+    conf = HiveConf.create(TestReplWithReadOnlyHook.class);
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
 
     MiniDFSCluster miniDFSCluster =

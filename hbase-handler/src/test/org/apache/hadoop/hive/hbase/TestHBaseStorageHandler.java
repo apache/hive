@@ -38,11 +38,11 @@ public class TestHBaseStorageHandler {
   @Test
   public void testHbaseConfigIsAddedToJobConf() {
     HBaseStorageHandler hbaseStorageHandler = new HBaseStorageHandler();
-    hbaseStorageHandler.setConf(new JobConf(new HiveConf()));
+    hbaseStorageHandler.setConf(new JobConf(HiveConf.create()));
 
     TableDesc tableDesc = getHBaseTableDesc();
 
-    JobConf jobConfToConfigure = new JobConf(new HiveConf());
+    JobConf jobConfToConfigure = new JobConf(HiveConf.create());
 
     Assert.assertTrue("hbase-site.xml is supposed to be present",
         jobConfToConfigure.get("hbase.some.fake.option.from.xml.file") == null);
@@ -108,7 +108,7 @@ public class TestHBaseStorageHandler {
 
     // full URL encoding turned on
     serdeParams.put("hbase.columns.mapping", "myco#lumn\ns");
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SECURITY_HBASE_URLENCODE_AUTHORIZATION_URI, true);
     uri = checkURIForAuth(createMockTable(serdeParams), new JobConf(hiveConf));
     Assert.assertEquals("hbase://testhost:8765/my%23tbl/myco%23lumn%0As", uri.toString());
@@ -126,7 +126,7 @@ public class TestHBaseStorageHandler {
   }
 
   private static URI checkURIForAuth(Table table) throws URISyntaxException {
-    return checkURIForAuth(table, new JobConf(new HiveConf()));
+    return checkURIForAuth(table, new JobConf(HiveConf.create()));
   }
 
   private static URI checkURIForAuth(Table table, JobConf jobConf) throws URISyntaxException {

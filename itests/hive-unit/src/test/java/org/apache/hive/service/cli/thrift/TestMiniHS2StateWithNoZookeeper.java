@@ -52,7 +52,7 @@ public class TestMiniHS2StateWithNoZookeeper {
   @BeforeClass
   public static void beforeTest() throws Exception   {
     MiniHS2.cleanupLocalDir();
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY, true);
     hiveConf.setIntVar(ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES, 0);
     hiveConf.setTimeVar(ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, 0, TimeUnit.MILLISECONDS);

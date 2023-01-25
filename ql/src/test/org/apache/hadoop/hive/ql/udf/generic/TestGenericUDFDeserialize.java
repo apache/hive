@@ -66,7 +66,7 @@ public class TestGenericUDFDeserialize {
                 PrimitiveObjectInspectorFactory.writableStringObjectInspector});
         GenericUDF.DeferredObject[] args = new GenericUDF.DeferredObject[2];
         String expectedOutput = "test";
-        MessageEncoder encoder = MessageFactory.getDefaultInstanceForReplMetrics(new HiveConf());
+        MessageEncoder encoder = MessageFactory.getDefaultInstanceForReplMetrics(HiveConf.create());
         String serializedMsg = encoder.getSerializer().serialize(expectedOutput);
         args[0] = new GenericUDF.DeferredJavaObject(new Text(serializedMsg));
         args[1] = new GenericUDF.DeferredJavaObject(new Text(encoder.getMessageFormat()));
@@ -81,7 +81,7 @@ public class TestGenericUDFDeserialize {
                 PrimitiveObjectInspectorFactory.writableStringObjectInspector});
         GenericUDF.DeferredObject[] args = new GenericUDF.DeferredObject[2];
         String expectedOutput = "test";
-        MessageEncoder encoder = MessageFactory.getDefaultInstanceForReplMetrics(new HiveConf());
+        MessageEncoder encoder = MessageFactory.getDefaultInstanceForReplMetrics(HiveConf.create());
         String serializedMsg = encoder.getSerializer().serialize(expectedOutput);
         String compressionFormat = "randomSerialization";
         args[0] = new GenericUDF.DeferredJavaObject(new Text(serializedMsg));

@@ -240,7 +240,7 @@ class HiveClientCache {
   }
 
   public void cleanup() {
-    // TODO: periodically reload a new HiveConf to check if stats reporting is enabled.
+    // TODO: periodically reload a HiveConf.create to check if stats reporting is enabled.
     hiveCache.cleanUp();
 
     if (enableStats) {

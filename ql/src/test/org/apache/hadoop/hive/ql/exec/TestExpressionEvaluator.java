@@ -64,7 +64,7 @@ public class TestExpressionEvaluator {
 
   public TestExpressionEvaluator() {
     // Arithmetic operations rely on getting conf from SessionState, need to initialize here.
-    SessionState ss = new SessionState(new HiveConf());
+    SessionState ss = new SessionState(HiveConf.create());
     SessionState.setCurrentSessionState(ss);
 
     col1 = new ArrayList<Text>();

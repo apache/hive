@@ -47,7 +47,7 @@ public class TestHadoopFileStatus {
 
   @BeforeClass
   public static void setUp() throws IOException {
-    hiveConf = new HiveConf(TestHadoopFileStatus.class);
+    hiveConf = HiveConf.create(TestHadoopFileStatus.class);
     hiveConf.set("dfs.namenode.acls.enabled", "true");
   }
 

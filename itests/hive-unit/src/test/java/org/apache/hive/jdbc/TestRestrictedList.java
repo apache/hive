@@ -58,7 +58,7 @@ public class TestRestrictedList {
         new URL("file://" + new File(confDir).toURI().getPath() + "/hivemetastore-site.xml"));
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
 
-    hiveConf = new HiveConf();
+    hiveConf = HiveConf.create();
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS, 1);
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS, 1);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

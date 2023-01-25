@@ -64,7 +64,7 @@ public class TestJdbcWithSQLAuthUDFBlacklist {
 
   @Test
   public void testBlackListedUdfUsage() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "sqrt");
     startHS2(conf);
 

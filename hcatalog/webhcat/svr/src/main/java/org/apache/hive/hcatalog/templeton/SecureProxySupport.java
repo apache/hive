@@ -212,7 +212,7 @@ public class SecureProxySupport {
 
   private String buildHcatDelegationToken(String user)
     throws IOException, InterruptedException, TException {
-    final HiveConf c = new HiveConf();
+    final HiveConf c = HiveConf.create();
     final IMetaStoreClient client = HCatUtil.getHiveMetastoreClient(c);
     LOG.info("user: " + user + " loginUser: " + UserGroupInformation.getLoginUser().getUserName());
     final UserGroupInformation ugi = UgiFactory.getUgi(user);

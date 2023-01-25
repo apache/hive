@@ -87,7 +87,7 @@ public class TestExecDriver {
 
   static {
     try {
-      queryState = new QueryState.Builder().withHiveConf(new HiveConf(ExecDriver.class)).build();
+      queryState = new QueryState.Builder().withHiveConf(HiveConf.create(ExecDriver.class)).build();
       conf = queryState.getConf();
       conf.setBoolVar(HiveConf.ConfVars.SUBMITVIACHILD, true);
       conf.setBoolVar(HiveConf.ConfVars.SUBMITLOCALTASKVIACHILD, true);

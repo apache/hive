@@ -37,7 +37,7 @@ public class TestHiveConfRestrictList {
 
     System.setProperty(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname,
         ConfVars.HIVETESTMODEPREFIX.varname);
-    conf = new HiveConf();
+    conf = HiveConf.create();
   }
 
   /**

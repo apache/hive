@@ -334,7 +334,7 @@ public class TestVectorDateExpressions {
   private void verifyUDFUnixTimeStamp(VectorizedRowBatch batch) throws HiveException {
     VectorExpression udf;
     udf = new VectorUDFUnixTimeStampDate(0, 1);
-    udf.transientInit(new HiveConf());
+    udf.transientInit(HiveConf.create());
     udf.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.dateTypeInfo});
     udf.evaluate(batch);
     final int in = 0;
@@ -398,7 +398,7 @@ public class TestVectorDateExpressions {
     VectorExpression udf;
     udf = new VectorUDFWeekOfYearDate(0, 1);
     udf.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.dateTypeInfo});
-    udf.transientInit(new HiveConf());
+    udf.transientInit(HiveConf.create());
     udf.evaluate(batch);
     final int in = 0;
     final int out = 1;

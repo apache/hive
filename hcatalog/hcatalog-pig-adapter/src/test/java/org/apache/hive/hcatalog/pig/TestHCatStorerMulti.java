@@ -94,7 +94,7 @@ public class TestHCatStorerMulti {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     if (driver == null) {
-      HiveConf hiveConf = new HiveConf(this.getClass());
+      HiveConf hiveConf = HiveConf.create(this.getClass());
       hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
       hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
       hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");

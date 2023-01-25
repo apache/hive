@@ -31,7 +31,7 @@ public class TestSerializer {
   public void testEmptyList() {
     List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString("array<tinyint>");
     List<String> fieldNames = Arrays.asList(new String[]{"a"});
-    Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
+    Serializer converter = new Serializer(HiveConf.create(), "attemptId", typeInfos, fieldNames);
     ArrowWrapperWritable writable = converter.emptyBatch();
     Assert.assertEquals("Schema<a: List<$data$: Int(8, true)>>",
         writable.getVectorSchemaRoot().getSchema().toString());
@@ -41,7 +41,7 @@ public class TestSerializer {
   public void testEmptyStruct() {
     List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString("struct<b:int,c:string>");
     List<String> fieldNames = Arrays.asList(new String[] { "a" });
-    Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
+    Serializer converter = new Serializer(HiveConf.create(), "attemptId", typeInfos, fieldNames);
     ArrowWrapperWritable writable = converter.emptyBatch();
     Assert.assertEquals("Schema<a: Struct<b: Int(32, true), c: Utf8>>",
         writable.getVectorSchemaRoot().getSchema().toString());
@@ -51,7 +51,7 @@ public class TestSerializer {
   public void testEmptyMap() {
     List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString("map<string,string>");
     List<String> fieldNames = Arrays.asList(new String[] { "a" });
-    Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
+    Serializer converter = new Serializer(HiveConf.create(), "attemptId", typeInfos, fieldNames);
     ArrowWrapperWritable writable = converter.emptyBatch();
     Assert.assertEquals("Schema<a: Map(false)<entries: Struct<key: Utf8 not null, value: Utf8 not null> not null>>",
         writable.getVectorSchemaRoot().getSchema().toString());
@@ -62,7 +62,7 @@ public class TestSerializer {
     List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString(
         "struct<b:array<tinyint>,c:map<string,string>,d:struct<e:array<tinyint>,f:map<string,string>>>");
     List<String> fieldNames = Arrays.asList(new String[] { "a" });
-    Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
+    Serializer converter = new Serializer(HiveConf.create(), "attemptId", typeInfos, fieldNames);
     ArrowWrapperWritable writable = converter.emptyBatch();
     Assert.assertEquals(
         "Schema<a: Struct<b: List<$data$: Int(8, true)>, c: Map(false)<entries: Struct<key: Utf8 not null, " +
@@ -76,7 +76,7 @@ public class TestSerializer {
     List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString(
         "map<array<tinyint>,struct<b:array<tinyint>,c:map<string,string>>>");
     List<String> fieldNames = Arrays.asList(new String[] { "a" });
-    Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
+    Serializer converter = new Serializer(HiveConf.create(), "attemptId", typeInfos, fieldNames);
     ArrowWrapperWritable writable = converter.emptyBatch();
     Assert.assertEquals(
         "Schema<a: Map(false)<entries: Struct<key: List<$data$: Int(8, true)> not null, value: Struct<b: " +
@@ -90,7 +90,7 @@ public class TestSerializer {
     List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString("struct<b:array<array<tinyint>>," +
         "c:array<map<string,string>>,d:array<struct<e:array<tinyint>,f:map<string,string>>>>");
     List<String> fieldNames = Arrays.asList(new String[] { "a" });
-    Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
+    Serializer converter = new Serializer(HiveConf.create(), "attemptId", typeInfos, fieldNames);
     ArrowWrapperWritable writable = converter.emptyBatch();
     Assert.assertEquals(
         "Schema<a: Struct<b: List<$data$: List<$data$: Int(8, true)>>, c: List<$data$: Map(false)<entries: " +

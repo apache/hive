@@ -226,7 +226,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
 
   private HiveConf getConf(HiveConf conf) {
     // if it is a db level path check for custom configurations.
-    HiveConf clonedConf = new HiveConf(conf);
+    HiveConf clonedConf = HiveConf.create(conf);
     if (work.getTableName().startsWith("dbPath:")) {
       for (Map.Entry<String, String> entry : conf.getPropsWithPrefix(CUSTOM_PATH_CONFIG_PREFIX).entrySet()) {
         clonedConf.set(entry.getKey().replaceFirst(CUSTOM_PATH_CONFIG_PREFIX, ""), entry.getValue());

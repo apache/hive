@@ -85,7 +85,7 @@ public class TestHiveClientPool {
   }
 
   private HiveConf createHiveConf() {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     try (InputStream inputStream = new ByteArrayInputStream(HIVE_SITE_CONTENT.getBytes(StandardCharsets.UTF_8))) {
       hiveConf.addResource(inputStream, "for_test");
     } catch (IOException e) {

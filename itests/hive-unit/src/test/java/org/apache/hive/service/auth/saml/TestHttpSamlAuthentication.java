@@ -105,7 +105,7 @@ public class TestHttpSamlAuthentication {
 
   @BeforeClass
   public static void setupHS2() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);

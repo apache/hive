@@ -80,7 +80,7 @@ public class GenericUDFDateFormat extends GenericUDF {
       if (fmtStr != null) {
         try {
           if (timeZone == null) {
-            timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+            timeZone = SessionState.get() == null ? HiveConf.create().getLocalTimeZone() : SessionState.get().getConf()
                 .getLocalTimeZone();
           }
           formatter = DateTimeFormatter.ofPattern(fmtStr);

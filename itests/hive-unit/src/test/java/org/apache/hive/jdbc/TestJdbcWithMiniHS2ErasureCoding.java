@@ -67,7 +67,7 @@ public class TestJdbcWithMiniHS2ErasureCoding {
   @BeforeClass
   public static void beforeTest() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
-    conf = new HiveConf();
+    conf = HiveConf.create();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     DriverManager.setLoginTimeout(0);
     miniHS2 = new MiniHS2.Builder()

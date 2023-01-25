@@ -270,7 +270,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   private PlanFragment createPlanFragment(String query, ApplicationId splitsAppId)
       throws HiveException {
 
-    HiveConf conf = new HiveConf(SessionState.get().getConf());
+    HiveConf conf = HiveConf.create(SessionState.get().getConf());
     HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, "none");
     HiveConf.setVar(conf, ConfVars.HIVEQUERYRESULTFILEFORMAT, PlanUtils.LLAP_OUTPUT_FORMAT_KEY);
 

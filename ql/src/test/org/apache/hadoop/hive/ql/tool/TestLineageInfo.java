@@ -40,7 +40,7 @@ public class TestLineageInfo {
 
   @Before
   public void before() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     SessionState.start(conf);
     ctx = new Context(conf);
   }

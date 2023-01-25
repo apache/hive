@@ -44,7 +44,7 @@ public class TestLazySimpleDeserializeRead {
    */
   @Test
   public void testEscaping() throws Exception {
-    HiveConf hconf = new HiveConf();
+    HiveConf hconf = HiveConf.create();
 
     // set the escaping related properties
     Properties props = new Properties();

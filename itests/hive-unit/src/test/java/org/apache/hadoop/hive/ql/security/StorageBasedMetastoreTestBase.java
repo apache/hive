@@ -57,7 +57,7 @@ public class StorageBasedMetastoreTestBase {
   }
 
   protected HiveConf createHiveConf() throws Exception {
-    HiveConf conf = new HiveConf(this.getClass());
+    HiveConf conf = HiveConf.create(this.getClass());
     return conf;
   }
 

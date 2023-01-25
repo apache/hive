@@ -72,7 +72,7 @@ public class TestConstraintsMerge {
 
   @Before
   public void setUp() throws Exception {
-    hiveConf = new HiveConf(this.getClass());
+    hiveConf = HiveConf.create(this.getClass());
     hiveConf.set(ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
@@ -136,7 +136,7 @@ public class TestConstraintsMerge {
 
   @Test
   public void testUpdateInMergeViolatesCheckConstraint() throws Exception {
-    HiveConf confForTez = new HiveConf(hiveConf);
+    HiveConf confForTez = HiveConf.create(hiveConf);
     confForTez.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
     setupTez(confForTez);
 

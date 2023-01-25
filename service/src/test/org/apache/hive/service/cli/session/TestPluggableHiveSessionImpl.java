@@ -35,7 +35,7 @@ public class TestPluggableHiveSessionImpl {
   @Test
   public void testSessionImpl() throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.getDefaultValue());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SESSION_IMPL_CLASSNAME,
@@ -61,7 +61,7 @@ public class TestPluggableHiveSessionImpl {
 
   @Test
   public void testSessionImplWithUGI() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.getDefaultValue());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SESSION_IMPL_WITH_UGI_CLASSNAME,

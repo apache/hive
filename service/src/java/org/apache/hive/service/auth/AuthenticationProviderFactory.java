@@ -35,7 +35,7 @@ public final class AuthenticationProviderFactory {
 
     private final String authMethod;
 
-    private final HiveConf conf = new HiveConf();
+    private final HiveConf conf = HiveConf.create();
 
     AuthMethods(String authMethod) {
       this.authMethod = authMethod;

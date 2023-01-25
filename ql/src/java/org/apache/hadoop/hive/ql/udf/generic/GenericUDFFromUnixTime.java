@@ -86,7 +86,7 @@ public class GenericUDFFromUnixTime extends GenericUDF {
     }
 
     if (timeZone == null) {
-      timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+      timeZone = SessionState.get() == null ? HiveConf.create().getLocalTimeZone() : SessionState.get().getConf()
               .getLocalTimeZone();
     }
 

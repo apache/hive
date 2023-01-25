@@ -69,7 +69,7 @@ public class TestGenTezWork {
   @Before
   public void setUp() throws Exception {
     // Init conf
-    final HiveConf conf = new HiveConf(SemanticAnalyzer.class);
+    final HiveConf conf = HiveConf.create(SemanticAnalyzer.class);
     SessionState.start(conf);
 
     // Init parse context

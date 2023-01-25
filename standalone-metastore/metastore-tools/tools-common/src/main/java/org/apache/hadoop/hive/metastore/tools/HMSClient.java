@@ -134,7 +134,7 @@ final class HMSClient implements AutoCloseable {
    */
   private void getClient(@Nullable URI uri)
       throws TException, IOException, InterruptedException, URISyntaxException, LoginException {
-    Configuration conf = new HiveConf();
+    Configuration conf = HiveConf.create();
     addResource(conf, HIVE_SITE);
     if (uri != null) {
       conf.set(METASTORE_URI, uri.toString());

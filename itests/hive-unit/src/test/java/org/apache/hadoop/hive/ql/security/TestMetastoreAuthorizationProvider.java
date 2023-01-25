@@ -82,7 +82,7 @@ public class TestMetastoreAuthorizationProvider {
   }
 
   protected HiveConf createHiveConf() throws Exception {
-    return new HiveConf(this.getClass());
+    return HiveConf.create(this.getClass());
   }
 
   protected String getProxyUserName() {

@@ -46,7 +46,7 @@ public class TestLlapWebServices {
     llapWSPort = MetaStoreTestUtils.findFreePortExcepting(
         Integer.valueOf(HiveConf.ConfVars.LLAP_DAEMON_WEB_PORT.getDefaultValue()));
     llapWS = new LlapWebServices(llapWSPort, null, null);
-    llapWS.init(new HiveConf());
+    llapWS.init(HiveConf.create());
     llapWS.start();
     Thread.sleep(5000);
     ensureUniqueInClasspath("javax/servlet/http/HttpServletRequest.class");

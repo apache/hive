@@ -43,7 +43,7 @@ public class EmbeddedCLIServicePortal {
   }
 
   private static HiveConf buildOverlayedConf(Map<String, String> confOverlay) {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     if (confOverlay != null && !confOverlay.isEmpty()) {
       // apply overlay query specific settings, if any
       for (Map.Entry<String, String> confEntry : confOverlay.entrySet()) {

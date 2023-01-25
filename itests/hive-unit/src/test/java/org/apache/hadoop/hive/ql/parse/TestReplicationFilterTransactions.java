@@ -253,7 +253,7 @@ public class TestReplicationFilterTransactions {
 
   @Before
   public void setup() throws Throwable {
-    TestReplicationFilterTransactions.dfsConf = new HiveConf(TestReplicationFilterTransactions.class);
+    TestReplicationFilterTransactions.dfsConf = HiveConf.create(TestReplicationFilterTransactions.class);
     TestReplicationFilterTransactions.dfsConf.set("dfs.client.use.datanode.hostname", "true");
     TestReplicationFilterTransactions.dfsConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     TestReplicationFilterTransactions.dfsConf.set("dfs.namenode.acls.enabled", "true");

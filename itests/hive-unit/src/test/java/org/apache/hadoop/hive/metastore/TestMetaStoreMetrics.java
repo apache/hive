@@ -41,7 +41,7 @@ public class TestMetaStoreMetrics {
 
   @BeforeClass
   public static void before() throws Exception {
-    hiveConf = new HiveConf(TestMetaStoreMetrics.class);
+    hiveConf = HiveConf.create(TestMetaStoreMetrics.class);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_METRICS, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

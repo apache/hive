@@ -151,7 +151,7 @@ class CompactorTestUtil {
    */
   static void runCompaction(HiveConf conf, String dbName, String tblName, CompactionType compactionType,
                             boolean isQueryBased, Map<String, String> properties, String... partNames) throws  Exception {
-    HiveConf hiveConf = new HiveConf(conf);
+    HiveConf hiveConf = HiveConf.create(conf);
     hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     Worker t = new Worker();
@@ -197,7 +197,7 @@ class CompactorTestUtil {
     // Wait for the cooldown period so the Cleaner can see last committed txn as the highest committed watermark
     Thread.sleep(MetastoreConf.getTimeVar(hConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
 
-    HiveConf hiveConf = new HiveConf(hConf);
+    HiveConf hiveConf = HiveConf.create(hConf);
     Cleaner t = new Cleaner();
     t.setConf(hiveConf);
     t.init(new AtomicBoolean(true));

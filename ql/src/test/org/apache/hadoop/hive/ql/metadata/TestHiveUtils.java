@@ -90,7 +90,7 @@ public class TestHiveUtils {
   }
 
   private HiveConf createConf(Quotation quotation) {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.setVar(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT, quotation.stringValue());
     return conf;
   }

@@ -63,7 +63,7 @@ public class TestSchemaToolCatalogOps {
 
   @BeforeClass
   public static void initDb() throws HiveMetaException, IOException {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTO_CREATE_ALL, false);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS, 1);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 1);

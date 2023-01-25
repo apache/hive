@@ -35,7 +35,7 @@ public class TestHS2ClearDanglingScratchDir {
   @Test
   public void testScratchDirCleared() throws Exception {
     MiniDFSCluster m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1).format(true).build();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = HiveConf.create();
     conf.addResource(m_dfs.getConfiguration(0));
     conf.set(HiveConf.ConfVars.HIVE_SCRATCH_DIR_LOCK.toString(), "true");
     conf.set(HiveConf.ConfVars.HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR.toString(), "true");

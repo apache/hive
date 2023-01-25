@@ -103,12 +103,12 @@ public class TestActivePassiveHA {
 
   @Before
   public void setUp() throws Exception {
-    hiveConf1 = new HiveConf();
+    hiveConf1 = HiveConf.create();
     hiveConf1.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     // Set up zookeeper dynamic service discovery configs
     setHAConfigs(hiveConf1);
     miniHS2_1 = new MiniHS2.Builder().withConf(hiveConf1).cleanupLocalDirOnStartup(false).build();
-    hiveConf2 = new HiveConf();
+    hiveConf2 = HiveConf.create();
     hiveConf2.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     // Set up zookeeper dynamic service discovery configs
     setHAConfigs(hiveConf2);

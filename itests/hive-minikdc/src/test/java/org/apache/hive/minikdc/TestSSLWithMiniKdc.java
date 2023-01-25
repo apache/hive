@@ -54,7 +54,7 @@ public class TestSSLWithMiniKdc {
 
     miniHiveKdc = new MiniHiveKdc();
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
 
     SSLTestUtils.setMetastoreSslConf(hiveConf);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

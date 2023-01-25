@@ -49,7 +49,7 @@ public class TestParseUtils {
   public TestParseUtils(String query, TxnType txnType) {
     this.query = query;
     this.txnType = txnType;
-    this.conf = new HiveConf();
+    this.conf = HiveConf.create();
   }
 
   @Before

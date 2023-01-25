@@ -83,7 +83,7 @@ public class TestMetaStoreMultipleEncryptionZones {
     miniDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     DFSTestUtil.createKey("test_key_cm", miniDFSCluster, conf);
     DFSTestUtil.createKey("test_key_db", miniDFSCluster, conf);
-    hiveConf = new HiveConf(TestReplChangeManager.class);
+    hiveConf = HiveConf.create(TestReplChangeManager.class);
     hiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
     hiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
@@ -1252,7 +1252,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
   @Test
   public void testClearerEncrypted() throws Exception {
-    HiveConf hiveConfCmClearer = new HiveConf(TestReplChangeManager.class);
+    HiveConf hiveConfCmClearer = HiveConf.create(TestReplChangeManager.class);
     hiveConfCmClearer.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
     hiveConfCmClearer.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     hiveConfCmClearer.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
@@ -1358,7 +1358,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
   @Test
   public void testCmRootAclPermissions() throws Exception {
-    HiveConf hiveConfAclPermissions = new HiveConf(TestReplChangeManager.class);
+    HiveConf hiveConfAclPermissions = HiveConf.create(TestReplChangeManager.class);
     hiveConfAclPermissions.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
     hiveConfAclPermissions.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     hiveConfAclPermissions.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
@@ -1500,7 +1500,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
   @Test
   public void testCmrootEncrypted() throws Exception {
-    HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
+    HiveConf encryptedHiveConf = HiveConf.create(TestReplChangeManager.class);
     encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
     encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
@@ -1561,7 +1561,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
   @Test
   public void testCmrootFallbackEncrypted() throws Exception {
-    HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
+    HiveConf encryptedHiveConf = HiveConf.create(TestReplChangeManager.class);
     encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
     encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
@@ -1599,7 +1599,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
   @Test
   public void testCmrootFallbackRelative() throws Exception {
-    HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
+    HiveConf encryptedHiveConf = HiveConf.create(TestReplChangeManager.class);
     encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
     encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,

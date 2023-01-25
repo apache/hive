@@ -41,7 +41,7 @@ public class TestUserSearchFilter {
 
   @Before
   public void setup() {
-    conf = new HiveConf();
+    conf = HiveConf.create();
     factory = new UserSearchFilterFactory();
   }
 

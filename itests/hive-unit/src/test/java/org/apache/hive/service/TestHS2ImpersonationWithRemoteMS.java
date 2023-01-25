@@ -46,7 +46,7 @@ public class TestHS2ImpersonationWithRemoteMS {
 
   @BeforeClass
   public static void startServices() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS, 1);
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS, 1);
     hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI, true);

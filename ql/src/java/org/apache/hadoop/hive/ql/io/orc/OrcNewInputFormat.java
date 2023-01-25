@@ -139,7 +139,7 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
     // Use threads to resolve directories into splits.
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED)) {
       // Create HiveConf once, since this is expensive.
-      conf = new HiveConf(conf, OrcInputFormat.class);
+      conf = HiveConf.create(conf, OrcInputFormat.class);
     }
     return new Context(conf, numSplits, null);
   }

@@ -250,7 +250,7 @@ public class TestVectorStructField {
         " exprDesc " + exprDesc.toString());
     */
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     ExprNodeEvaluator evaluator =
         ExprNodeEvaluatorFactory.get(exprNodeFieldDesc, hiveConf);
     evaluator.initialize(rowInspector);
@@ -304,7 +304,7 @@ public class TestVectorStructField {
       TypeInfo outputTypeInfo, Object[] resultObjects)
           throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
 
     VectorizationContext vectorizationContext =
         new VectorizationContext(

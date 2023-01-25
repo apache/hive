@@ -39,7 +39,7 @@ public abstract class Hs2ConnectionMetrics {
   protected static final String PASSWORD = "foo";
 
   public static void setup() throws Exception {
-    miniHS2 = new MiniHS2(new HiveConf());
+    miniHS2 = new MiniHS2(HiveConf.create());
 
     confOverlay.put(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     confOverlay.put(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,

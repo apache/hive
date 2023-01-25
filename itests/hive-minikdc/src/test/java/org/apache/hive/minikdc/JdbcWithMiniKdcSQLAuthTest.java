@@ -47,7 +47,7 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
   public static void beforeTestBase(String transportMode) throws Exception {
     miniHiveKdc = new MiniHiveKdc();
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = HiveConf.create();
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, transportMode);
     System.err.println("Testing using HS2 mode:" + transportMode);
 

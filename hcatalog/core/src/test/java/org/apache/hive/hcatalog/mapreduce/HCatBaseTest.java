@@ -75,10 +75,10 @@ public abstract class HCatBaseTest {
   }
 
   /**
-   * Create a new HiveConf and set properties necessary for unit tests.
+   * Create a HiveConf.create and set properties necessary for unit tests.
    */
   protected void setUpHiveConf() {
-    hiveConf = new HiveConf(this.getClass());
+    hiveConf = HiveConf.create(this.getClass());
     Path workDir = new Path(System.getProperty("test.tmp.dir",
         "target" + File.separator + "test" + File.separator + "tmp"));
     hiveConf.set("mapred.local.dir", workDir + File.separator + this.getClass().getSimpleName()

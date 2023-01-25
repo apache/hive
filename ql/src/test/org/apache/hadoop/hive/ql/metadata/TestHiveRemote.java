@@ -42,7 +42,7 @@ public class TestHiveRemote extends TestHive {
    */
   @BeforeClass
   public static void setUp() throws Exception {
-    hiveConf = new HiveConf(TestHiveRemote.class);
+    hiveConf = HiveConf.create(TestHiveRemote.class);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);

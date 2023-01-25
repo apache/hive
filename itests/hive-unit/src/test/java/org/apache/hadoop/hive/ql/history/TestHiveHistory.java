@@ -71,7 +71,7 @@ public class TestHiveHistory {
   @Before
   public void setUp() {
     try {
-      conf = new HiveConf(HiveHistory.class);
+      conf = HiveConf.create(HiveHistory.class);
       SessionState.start(conf);
 
       fs = FileSystem.get(conf);
@@ -136,7 +136,7 @@ public class TestHiveHistory {
         LogUtils.initHiveLog4j();
       } catch (LogInitializationException e) {
       }
-      HiveConf hconf = new HiveConf(SessionState.class);
+      HiveConf hconf = HiveConf.create(SessionState.class);
       hconf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
       CliSessionState ss = new CliSessionState(hconf);
       ss.in = System.in;
@@ -187,7 +187,7 @@ public class TestHiveHistory {
     }
     try {
       String actualDir = parentTmpDir + "/test";
-      HiveConf conf = new HiveConf(SessionState.class);
+      HiveConf conf = HiveConf.create(SessionState.class);
       conf.set(HiveConf.ConfVars.HIVEHISTORYFILELOC.toString(), actualDir);
       SessionState ss = new CliSessionState(conf);
       HiveHistory hiveHistory = new HiveHistoryImpl(ss);
@@ -209,7 +209,7 @@ public class TestHiveHistory {
    */
   @Test
   public void testHiveHistoryConfigEnabled() throws Exception {
-      HiveConf conf = new HiveConf(SessionState.class);
+      HiveConf conf = HiveConf.create(SessionState.class);
       conf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
       SessionState ss = new CliSessionState(conf);
       SessionState.start(ss);
@@ -223,7 +223,7 @@ public class TestHiveHistory {
    */
   @Test
   public void testHiveHistoryConfigDisabled() throws Exception {
-    HiveConf conf = new HiveConf(SessionState.class);
+    HiveConf conf = HiveConf.create(SessionState.class);
     conf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, false);
     SessionState ss = new CliSessionState(conf);
     SessionState.start(ss);

@@ -77,7 +77,7 @@ public class TestLlapOutputFormat {
       job.set(LlapOutputFormat.LLAP_OF_ID_KEY, id);
       LlapOutputFormat format = new LlapOutputFormat();
 
-      HiveConf conf = new HiveConf();
+      HiveConf conf = HiveConf.create();
       Socket socket = new Socket("localhost", service.getPort());
 
       LOG.debug("Socket connected");

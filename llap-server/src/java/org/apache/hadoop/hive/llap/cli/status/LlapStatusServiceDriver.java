@@ -129,7 +129,7 @@ public class LlapStatusServiceDriver {
 
   public LlapStatusServiceDriver() {
     SessionState ss = SessionState.get();
-    conf = (ss != null) ? ss.getConf() : new HiveConf(SessionState.class);
+    conf = (ss != null) ? ss.getConf() : HiveConf.create(SessionState.class);
     setupConf();
   }
 
