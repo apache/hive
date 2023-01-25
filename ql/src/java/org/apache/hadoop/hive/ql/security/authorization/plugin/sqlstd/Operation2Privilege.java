@@ -427,6 +427,7 @@ public class Operation2Privilege {
             arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT), INS_NOGRANT_AR));
     op2Priv.put(HiveOperationType.ABORT_TRANSACTIONS, PrivRequirement.newIOPrivRequirement(null, null));
 
+    op2Priv.put(HiveOperationType.ABORT_COMPACTION, PrivRequirement.newIOPrivRequirement(null, null));
     // Handled via adminPrivOps (see above).
     op2Priv.put(HiveOperationType.KILL_QUERY, PrivRequirement.newIOPrivRequirement(null, null));
     // llap cluster info does not need admin privilege, since it is read only assigning privilege same as
