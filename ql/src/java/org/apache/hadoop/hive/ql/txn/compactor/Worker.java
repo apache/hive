@@ -103,6 +103,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     boolean genericStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS);
     boolean mrStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_MR_COMPACTOR_GATHER_STATS);
     long timeout = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS);
+    long nextSleep = SLEEP_TIME;
     boolean launchedJob;
     ExecutorService executor = getTimeoutHandlingExecutor();
     try {
@@ -136,17 +137,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         // here as the result of an error like communication failure with the DB, schema failures etc.  Either way we want to wait
         // a bit before, otherwise we can start over the loop immediately.
         if ((!launchedJob || err) && !stop.get()) {
-          Thread.sleep(SLEEP_TIME);
-          //Backoff mechanism
-          //Increase sleep time if error persist
-          if(err && SLEEP_TIME < SLEEP_TIME_MAX) {
-            SLEEP_TIME *= 2;
-          }
+          Thread.sleep(nextSleep);
         }
+        //Backoff mechanism
+        //Increase sleep time if error persist
         //Reset sleep time to default once error is resolved
-        if (!err) {
-          SLEEP_TIME = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_SLEEP_TIME, TimeUnit.MILLISECONDS);
-        }
+        nextSleep = (err) ? nextSleep * 2 : SLEEP_TIME;
+        if (nextSleep > SLEEP_TIME_MAX) nextSleep = SLEEP_TIME_MAX;
+
       } while (!stop.get());
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
