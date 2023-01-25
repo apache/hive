@@ -297,7 +297,7 @@ public abstract class CompactorOnTezTest {
     /**
      * 3 txns.
      */
-    protected void insertMmTestDataPartitioned(String tblName) throws Exception {
+    protected void insertOnlyTestDataPartitioned(String tblName) throws Exception {
       executeStatementOnDriver("insert into " + tblName
           + " values('1',2, 'today'),('1',3, 'today'),('1',4, 'yesterday'),('2',2, 'tomorrow'),"
           + "('2',3, 'yesterday'),('2',4, 'today')", driver);
@@ -308,10 +308,27 @@ public abstract class CompactorOnTezTest {
           + "('5',4, 'today'),('6',2, 'today'),('6',3, 'today'),('6',4, 'today')", driver);
     }
 
+    protected void insertTestData(String tblName, boolean isPartitioned) throws Exception {
+      if (isPartitioned) {
+        insertTestDataPartitioned(tblName);
+      } else {
+        insertTestData(tblName);
+      }
+    }
+
+
+    protected void insertOnlyTestData(String tblName, boolean isPartitioned) throws Exception {
+      if (isPartitioned) {
+        insertOnlyTestDataPartitioned(tblName);
+      } else {
+        insertOnlyTestData(tblName);
+      }
+    }
+
     /**
      * 5 txns.
      */
-    void insertTestData(String tblName) throws Exception {
+    private void insertTestData(String tblName) throws Exception {
       insertTestData(null, tblName);
     }
 
@@ -406,14 +423,14 @@ public abstract class CompactorOnTezTest {
     /**
      * 5 txns.
      */
-    void insertMmTestData(String tblName) throws Exception {
-      insertMmTestData(null, tblName);
+    void insertOnlyTestData(String tblName) throws Exception {
+      insertOnlyTestData(null, tblName);
     }
 
     /**
      * 3 txns.
      */
-    void insertMmTestData(String dbName, String tblName) throws Exception {
+    void insertOnlyTestData(String dbName, String tblName) throws Exception {
       if (dbName != null) {
         tblName = dbName + "." + tblName;
       }
@@ -440,7 +457,7 @@ public abstract class CompactorOnTezTest {
     /**
      * i txns.
      */
-    protected void insertMmTestData(String tblName, int iterations) throws Exception {
+    protected void insertOnlyTestData(String tblName, int iterations) throws Exception {
       for (int i = 0; i < iterations; i++) {
         executeStatementOnDriver("insert into " + tblName + " values('" + i + "'," + i + ")", driver);
       }

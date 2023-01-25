@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -39,10 +38,14 @@ import java.util.stream.Collectors;
 final class RebalanceQueryCompactor extends QueryCompactor {
 
   @Override
-  public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-           ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir)
+  public boolean run(CompactorContext context)
       throws IOException, HiveException {
-    AcidUtils.setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
+    HiveConf hiveConf = context.getConf();
+    Table table = context.getTable();
+    AcidUtils.setAcidOperationalProperties(context.getConf(), true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
+    StorageDescriptor storageDescriptor = context.getSd();
+    AcidDirectory dir = context.getAcidDirectory();
+    ValidWriteIdList writeIds = context.getValidWriteIdList();
 
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
@@ -50,7 +53,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
     String tmpTableName = getTempTableName(table);
     Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
         conf, true, false, false, null);
-    int numBuckets = compactionInfo.numberOfBuckets;
+    int numBuckets = context.getCompactionInfo().numberOfBuckets;
     if (numBuckets <= 0) {
       //TODO: This is quite expensive, a better way should be found to get the number of buckets for an implicitly bucketed table
       numBuckets = Streams.stream(new FileUtils.AdaptingIterator<>(FileUtils.listFiles(dir.getFs(), dir.getPath(), true, AcidUtils.bucketFileFilter)))
@@ -60,11 +63,12 @@ final class RebalanceQueryCompactor extends QueryCompactor {
 
 
     List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
-    List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName, numBuckets);
+    List<String> compactionQueries = getCompactionQueries(table, context.getPartition(), tmpTableName, numBuckets);
     List<String> dropQueries = getDropQueries(tmpTableName);
-    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
+    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
         Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries,
         table.getParameters());
+    return true;
   }
 
   private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) {

@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -118,25 +117,28 @@ public class MRCompactor implements Compactor {
     this.msc = msc;
   }
 
-   @Override
-  public void run(HiveConf conf, Table table, Partition partition, StorageDescriptor sd,
-                  ValidWriteIdList writeIds, CompactionInfo ci, AcidDirectory dir)
+  @Override
+  public boolean run(CompactorContext context)
        throws IOException, HiveException, InterruptedException {
-    if (ci.runAs.equals(System.getProperty("user.name"))) {
-      run(conf, table, sd, writeIds, ci, dir);
+    if (context.getCompactionInfo().runAs.equals(System.getProperty("user.name"))) {
+      run(context.getConf(), context.getTable(), context.getSd(),
+              context.getValidWriteIdList(), context.getCompactionInfo(), context.getAcidDirectory());
     } else {
-      UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
+      UserGroupInformation ugi = UserGroupInformation.createProxyUser(context.getCompactionInfo().runAs,
+              UserGroupInformation.getLoginUser());
       ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-        run(conf, table, sd, writeIds, ci, dir);
+        run(context.getConf(), context.getTable(), context.getSd(),
+                context.getValidWriteIdList(), context.getCompactionInfo(), context.getAcidDirectory());
         return null;
       });
       try {
         FileSystem.closeAllForUGI(ugi);
       } catch (IOException exception) {
-        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + context.getCompactionInfo().getFullPartitionName(),
             exception);
       }
     }
+    return true;
   }
 
   @VisibleForTesting

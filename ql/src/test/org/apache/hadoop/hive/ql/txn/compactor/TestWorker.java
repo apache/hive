@@ -1042,7 +1042,7 @@ public class TestWorker extends CompactorTest {
     txnHandler.compact(new CompactionRequest("default", "mtwb", CompactionType.MINOR));
 
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
-    when(mockedFactory.getCompactor(any(), any(), any(), any())).thenThrow(new RuntimeException());
+    when(mockedFactory.getCompactorPipeline(any(), any(), any(), any())).thenThrow(new RuntimeException());
 
     Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(conf);
