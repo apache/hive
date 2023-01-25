@@ -56,9 +56,10 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
       tbl = createViewLikeTable(oldTable);
     } else {
       Map<String, String> originalProperties = new HashMap<>();
-      Table sourceTable = oldTable.makeCopy();
-      if (sourceTable.getStorageHandler() != null) {
-        originalProperties = new HashMap<>(sourceTable.getStorageHandler().getNativeProperties(sourceTable));
+      // Get the storage handler without caching, since the storage handler can get changed when copying the
+      // properties of the target table and
+      if (oldTable.getStorageHandlerWithoutCaching() != null) {
+        originalProperties = new HashMap<>(oldTable.getStorageHandlerWithoutCaching().getNativeProperties(oldTable));
       }
       tbl = createTableLikeTable(oldTable, originalProperties);
     }
