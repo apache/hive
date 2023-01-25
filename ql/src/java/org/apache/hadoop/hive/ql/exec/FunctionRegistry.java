@@ -344,6 +344,7 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF("encode", GenericUDFEncode.class);
     system.registerGenericUDF("decode", GenericUDFDecode.class);
+    system.registerGenericUDF("convertCharset", GenericUDFConvertCharset.class);
 
     system.registerGenericUDF("upper", GenericUDFUpper.class);
     system.registerGenericUDF("lower", GenericUDFLower.class);
