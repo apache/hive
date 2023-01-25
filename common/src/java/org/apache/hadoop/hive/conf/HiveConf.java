@@ -6331,29 +6331,67 @@ public class HiveConf extends Configuration {
       .trustStorePassword(trustStorePassword).build();
   }
 
+  public static HiveConf create() {
+    return new HiveConf();
+  }
+
+  public static HiveConf create(Class<?> cls) {
+    return new HiveConf(cls);
+  }
+
+  public static HiveConf create(Configuration other, Class<?> cls) {
+    return new HiveConf(other, cls);
+  }
+
+
+  public static HiveConf create(HiveConf other) {
+    return new HiveConf(other);
+  }
+
+  /**
+   * Instantiating HiveConf is deprecated. Please use
+   * HiveConf#create() to construct a Configuration,
+   * this method will become private eventually.
+   * @deprecated Please use create method instead.
+   */
   public HiveConf() {
     super();
     initialize(this.getClass());
   }
 
+  /**
+   * Instantiating HiveConf is deprecated. Please use
+   * HiveConf#create(cls) to construct a Configuration,
+   * this method will become private eventually.
+   * @deprecated Please use create method instead.
+   */
   public HiveConf(Class<?> cls) {
     super();
     initialize(cls);
   }
 
+  /**
+   * Instantiating HiveConf is deprecated. Please use
+   * HiveConf#create(conf, cls) to construct a Configuration,
+   * this method will become private eventually.
+   * @deprecated Please use create method instead.
+   */
   public HiveConf(Configuration other, Class<?> cls) {
     super(other);
     initialize(cls);
   }
 
   /**
-   * Copy constructor
+   * Instantiating HiveConf is deprecated. Please use
+   * HiveConf#create(conf) to construct a Configuration,
+   * this method will become private eventually.
+   * @deprecated Please use create method instead.
    */
   public HiveConf(HiveConf other) {
     super(other);
     hiveJar = other.hiveJar;
     auxJars = other.auxJars;
-    origProp = (Properties)other.origProp.clone();
+    origProp = (Properties) other.origProp.clone();
     restrictList.addAll(other.restrictList);
     hiddenSet.addAll(other.hiddenSet);
     modWhiteListPattern = other.modWhiteListPattern;
