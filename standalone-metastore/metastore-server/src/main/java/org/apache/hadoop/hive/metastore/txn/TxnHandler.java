@@ -6347,11 +6347,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           AbortCompactionResponseElement> abortCompactionResponseElements, List<Long> requestedCompId) throws MetaException {
 
     List<CompactionInfo> compactionInfoList = new ArrayList<>();
-    String queryText = TxnQueries.SELECT_COMPACTION_QUEUE_BY_COMPID + "  WHERE \"CC_ID\" IN " +
-            "(" + Joiner.on(',').join(requestedCompId) + ") ";
+    String queryText = TxnQueries.SELECT_COMPACTION_QUEUE_BY_COMPID + "  WHERE \"CC_ID\" IN (?) " ;
+    String sqlIN = requestedCompId.stream()
+            .map(x -> String.valueOf(x))
+            .collect(Collectors.joining(",", "(", ")"));
+    queryText = queryText.replace("(?)", sqlIN);
     try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-         PreparedStatement pStmt = dbConn.prepareStatement(queryText)) {
-      try (ResultSet rs = pStmt.executeQuery()) {
+         Statement pStmt = dbConn.createStatement()) {
+      try (ResultSet rs = pStmt.executeQuery(queryText)) {
         while (rs.next()) {
           char compState = rs.getString(5).charAt(0);
           long compID = rs.getLong(1);
