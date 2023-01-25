@@ -125,6 +125,7 @@ public class MetaStoreUtils {
   private static final Charset ENCODING = StandardCharsets.UTF_8;
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreUtils.class);
 
+  public static final String USER_NAME_HTTP_HEADER = "x-actor-username";
   // The following two are public for any external users who wish to use them.
   /**
    * This character is used to mark a database name as having a catalog name prepended.  This
@@ -1167,6 +1168,29 @@ public class MetaStoreUtils {
       LOG.error("Bad URL " + onestr + ", ignoring path");
     }
     return oneurl;
+  }
+
+  /**
+   * The config parameter can be like "path", "/path", "/path/", "path/*", "/path1/path2/*" and so on.
+   * httpPath should end up as "/*", "/path/*" or "/path1/../pathN/*"
+   * @param httpPath
+   * @return
+   */
+  public static String getHttpPath(String httpPath) {
+    if (httpPath == null || httpPath.equals("")) {
+      httpPath = "/*";
+    } else {
+      if (!httpPath.startsWith("/")) {
+        httpPath = "/" + httpPath;
+      }
+      if (httpPath.endsWith("/")) {
+        httpPath = httpPath + "*";
+      }
+      if (!httpPath.endsWith("/*")) {
+        httpPath = httpPath + "/*";
+      }
+    }
+    return httpPath;
   }
 
   /**

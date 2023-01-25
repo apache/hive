@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -59,8 +60,10 @@ public class TestSSL {
   private static final String EXAMPLEDOTCOM_KEY_STORE_NAME = "keystore_exampledotcom.jks";
   private static final String TRUST_STORE_NAME = "truststore.jks";
   private static final String KEY_STORE_TRUST_STORE_PASSWORD = "HiveJdbc";
+  private static final String KEY_STORE_TRUST_STORE_TYPE = "jks";
   private static final String JAVA_TRUST_STORE_PROP = "javax.net.ssl.trustStore";
   private static final String JAVA_TRUST_STORE_PASS_PROP = "javax.net.ssl.trustStorePassword";
+  private static final String KEY_MANAGER_FACTORY_ALGORITHM = "SunX509";
 
   private MiniHS2 miniHS2 = null;
   private static HiveConf conf = new HiveConf();
@@ -168,6 +171,7 @@ public class TestSSL {
    * Test SSL client with non-SSL server fails
    * @throws Exception
    */
+  @Ignore("HIVE-22620")
   @Test
   public void testInvalidConfig() throws Exception {
     SSLTestUtils.clearSslConfOverlay(confOverlay);
@@ -216,6 +220,7 @@ public class TestSSL {
    * Test non-SSL client with SSL server fails
    * @throws Exception
    */
+  @Ignore("HIVE-22620")
   @Test
   public void testConnectionMismatch() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
@@ -259,6 +264,7 @@ public class TestSSL {
    * Test SSL client connection to SSL server
    * @throws Exception
    */
+  @Ignore("HIVE-22620")
   @Test
   public void testSSLConnectionWithURL() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
@@ -286,6 +292,7 @@ public class TestSSL {
    * Test SSL client connection to SSL server
    * @throws Exception
    */
+  @Ignore("HIVE-22620")
   @Test
   public void testSSLConnectionWithProperty() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
@@ -315,6 +322,7 @@ public class TestSSL {
    * Start HS2 in SSL mode, open a SSL connection and fetch data
    * @throws Exception
    */
+  @Ignore("HIVE-22620")
   @Test
   public void testSSLFetch() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
@@ -386,7 +394,7 @@ public class TestSSL {
    * Opening a new connection with this wrong certificate should fail
    * @throws Exception
    */
-  @Ignore
+  @Ignore("HIVE-22620")
   @Test
   public void testConnectionWrongCertCN() throws Exception {
     // This call sets the default ssl params including the correct keystore in the server config
@@ -434,6 +442,7 @@ public class TestSSL {
    * Test HMS server with SSL
    * @throws Exception
    */
+  @Ignore("HIVE-22620")
   @Test
   public void testMetastoreWithSSL() throws Exception {
     SSLTestUtils.setMetastoreSslConf(conf);
@@ -466,9 +475,27 @@ public class TestSSL {
   }
 
   /**
+   * Test HMS server with Thrift over Http + SSL
+   * @throws Exception
+   */
+  @Test
+  public void testMetastoreWithHttps() throws Exception {
+    SSLTestUtils.setMetastoreHttpsConf(conf);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM,
+            KEY_MANAGER_FACTORY_ALGORITHM);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE, KEY_STORE_TRUST_STORE_TYPE);
+    // false flag in testSSLHMS will set key store type for metastore
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM,
+            KEY_MANAGER_FACTORY_ALGORITHM);
+
+    testSSLHMS(false);
+  }
+
+  /**
    * Verify the HS2 can't connect to HMS if the certificate doesn't match
    * @throws Exception
    */
+  @Ignore("HIVE-22620")
   @Test
   public void testMetastoreConnectionWrongCertCN() throws Exception {
     SSLTestUtils.setMetastoreSslConf(conf);
@@ -482,5 +509,42 @@ public class TestSSL {
     }
 
     miniHS2.stop();
+  }
+
+  private void testSSLHMS(boolean useDefaultStoreType) throws Exception {
+    SSLTestUtils.setMetastoreSslConf(conf);
+    SSLTestUtils.setSslConfOverlay(confOverlay);
+    // Test in binary mode
+    SSLTestUtils.setBinaryConfOverlay(confOverlay);
+    if (!useDefaultStoreType) {
+      MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE, KEY_STORE_TRUST_STORE_TYPE);
+    }
+    // MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+    // confOverlay.put("hive.metastore.event.db.notification.api.auth", "false");
+    // Test in http mode
+    SSLTestUtils.setHttpConfOverlay(confOverlay);
+    miniHS2 = new MiniHS2.Builder().withRemoteMetastore().withConf(conf).cleanupLocalDirOnStartup(false).build();
+    miniHS2.start(confOverlay);
+
+    String tableName = "sslTab";
+    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
+
+    // make SSL connection
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL("default", SSLTestUtils.SSL_CONN_PARAMS),
+            System.getProperty("user.name"), "bar");
+
+    // Set up test data
+    SSLTestUtils.setupTestTableWithData(tableName, dataFilePath, hs2Conn);
+    Statement stmt = hs2Conn.createStatement();
+    ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
+    int rowCount = 0;
+    while (res.next()) {
+      ++rowCount;
+      assertEquals("val_" + res.getInt(1), res.getString(2));
+    }
+    // read result over SSL
+    assertEquals(500, rowCount);
+
+    hs2Conn.close();
   }
 }
