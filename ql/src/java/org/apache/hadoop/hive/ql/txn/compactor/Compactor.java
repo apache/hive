@@ -20,13 +20,6 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.parquet.Strings;
 
@@ -50,17 +43,10 @@ public interface Compactor {
 
   /**
    * Start a compaction.
-   * @param hiveConf hive configuration
-   * @param table the table, where the compaction should run
-   * @param partition the partition, where the compaction should run
-   * @param storageDescriptor this is the resolved storage descriptor
-   * @param writeIds valid write IDs used to filter rows while they're being read for compaction
-   * @param compactionInfo provides info about the type of compaction
-   * @param dir provides ACID directory layout information
+   * @param context CompactionContext which contains information to perform compaction.
    * @throws IOException compaction cannot be finished.
    */
-  void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-           ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir)
+  boolean run(CompactorContext context)
       throws IOException, HiveException, InterruptedException;
 
 }

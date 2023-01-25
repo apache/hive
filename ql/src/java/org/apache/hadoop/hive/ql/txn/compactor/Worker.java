@@ -437,14 +437,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         todo Find a more generic approach to collecting files in the same logical bucket to compact within the same
         task (currently we're using Tez split grouping).
         */
-        Compactor compactor = compactorFactory.getCompactor(table, conf, ci, msc);
-        computeStats = (compactor instanceof MRCompactor && collectMrStats) || collectGenericStats;
+        CompactorPipeline compactorPipeline = compactorFactory.getCompactorPipeline(table, conf, ci, msc);
+        computeStats = (compactorPipeline.isMRCompaction() && collectMrStats) || collectGenericStats;
 
         LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
                 ci.id + " in " + compactionTxn + " with compute stats set to " + computeStats);
-        LOG.debug("Will compact id: " + ci.id + " with compactor class: " + compactor.getClass().getName());
 
-        compactor.run(conf, table, p, sd, tblValidWriteIds, ci, dir);
+        CompactorContext compactorContext = new CompactorContext(conf, table, p, sd, tblValidWriteIds, ci, dir);
+        compactorPipeline.execute(compactorContext);
 
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in "
             + compactionTxn + ", marking as compacted.");
