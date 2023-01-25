@@ -181,8 +181,5 @@ class TestCompactorBase {
         writer.close();
       }
     }
-
   }
-
-
 }
