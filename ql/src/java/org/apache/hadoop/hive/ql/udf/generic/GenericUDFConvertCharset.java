@@ -113,8 +113,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
         throw new HiveException(e);
       }
     } else {
-      String s = PrimitiveObjectInspectorUtils.getString(arguments[1].get(), fromCharsetOI);
-      encoded = Charset.forName(s).encode(value);
+      encoded =
+          Charset.forName(PrimitiveObjectInspectorUtils.getString(arguments[1].get(), fromCharsetOI)).encode(value);
     }
 
     CharBuffer decoded;
@@ -127,7 +127,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
     } else {
       decoded =
           Charset.forName(PrimitiveObjectInspectorUtils.getString(arguments[2].get(), toCharsetOI)).decode(encoded);
-
     }
     return decoded.toString();
   }
