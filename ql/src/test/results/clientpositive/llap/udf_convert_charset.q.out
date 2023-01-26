@@ -1,4 +1,4 @@
-EHOOK: query: DESCRIBE FUNCTION convertCharset
+PREHOOK: query: DESCRIBE FUNCTION convertCharset
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION convertCharset
 POSTHOOK: type: DESCFUNCTION
@@ -52,4 +52,4 @@ convertCharset('TestConvertCharset3', cast('UTF-8' as char(5)), 'US-ASCII')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-TestConvertCharset1     TestConvertCharset2     TestConvertCharset3
+TestConvertCharset1	TestConvertCharset2	TestConvertCharset3
