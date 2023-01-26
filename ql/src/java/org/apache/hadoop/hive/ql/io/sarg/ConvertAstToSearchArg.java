@@ -29,6 +29,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -138,6 +139,7 @@ public class ConvertAstToSearchArg {
         case DATE:
           return BoxType.DATE;
         case TIMESTAMP:
+        case TIMESTAMPLOCALTZ:
           return BoxType.TIMESTAMP;
         case DECIMAL:
           return BoxType.DECIMAL;
@@ -218,6 +220,8 @@ public class ConvertAstToSearchArg {
         } else if (lit instanceof org.apache.hadoop.hive.common.type.Timestamp) {
           ts = ((org.apache.hadoop.hive.common.type.Timestamp) lit)
               .toSqlTimestamp();
+        } else if (lit instanceof org.apache.hadoop.hive.common.type.TimestampTZ) {
+          ts =  Timestamp.valueOf(((TimestampTZ)lit).getZonedDateTime().toLocalDateTime());
         } else {
           ts = org.apache.hadoop.hive.common.type.Timestamp.valueOf(lit.toString())
               .toSqlTimestamp();
