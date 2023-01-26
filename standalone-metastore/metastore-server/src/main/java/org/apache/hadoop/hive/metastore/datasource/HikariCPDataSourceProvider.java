@@ -72,6 +72,17 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
       config.setPoolName(poolName);
     }
 
+    // It's kind of a waste to create a fixed size connection pool as same as the TxnHandler#connPool,
+    // TxnHandler#connPoolMutex is mostly used for MutexAPI that is primarily designed to
+    // provide coarse-grained mutex support to maintenance tasks running inside the Metastore,
+    // add minimumIdle=2 and idleTimeout=10min(default, can be set by hikaricp.idleTimeout) to the pool,
+    // so that the connection pool can retire the idle connection aggressively,
+    // this will make Metastore more scalable especially if there is a leader in the warehouse.
+    if ("mutex".equals(poolName)) {
+      int minimumIdle = Integer.valueOf(hdpConfig.get(HIKARI + ".minimumIdle", "2"));
+      config.setMinimumIdle(Math.min(maxPoolSize, minimumIdle));
+    }
+
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
 
