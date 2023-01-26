@@ -18,11 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -37,102 +32,95 @@ import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.VectorFilterDesc;
+import org.apache.hadoop.hive.ql.plan.VectorTopNKeyDesc;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Test cases for vectorized filter operator.
+ * Tests that are necessary until VectorizedRowBatch selected issue is being fixed:
+ * It has three fields to manage selected elements:
+ * - selected (array)
+ * - selectedInUse
+ * - size (selected size)
+ * <p>
+ * The tricky thing is those fields are all public: so it is possible to modify some of them without keeping the others
+ * in sync.
+ * The issue that is fixed and checked with these tests is when somebody modifies the selected array but forgets to
+ * set the size parameter: Because of that, the Operators can try to process with wrong size value and it can cause
+ * ArrayIndexOutOfBoundsException.
+ * </p>
+ * <p>
+ * Related ticket: HIVE-26992
+ * Those tests can be removed when those fields are public they can be modified with public methods that ensures to
+ * use them properly.
+ * </p>
+ * Ticket to fix the issue: HIVE-26993
  */
-public class TestVectorFilterOperator {
+public class TestVectorOperationProcess {
 
-  HiveConf hconf = new HiveConf();
+  HiveConf hiveConf = new HiveConf();
 
-  private VectorFilterOperator getAVectorFilterOperator() throws HiveException {
-    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Long.class, "col1", "table", false);
-    List<String> columns = new ArrayList<String>();
+  @Test
+  public void testVectorFilterHasSelectedSmallerThanBatch() throws HiveException {
+    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(Long.class, "col1", "table", false);
+    List<String> columns = new ArrayList<>();
     columns.add("col1");
-    FilterDesc fdesc = new FilterDesc();
-    fdesc.setPredicate(col1Expr);
+    FilterDesc filterDesc = new FilterDesc();
+    filterDesc.setPredicate(col1Expr);
     VectorFilterDesc vectorDesc = new VectorFilterDesc();
 
     Operator<? extends OperatorDesc> filterOp =
-        OperatorFactory.get(new CompilationOpContext(), fdesc);
+            OperatorFactory.get(new CompilationOpContext(), filterDesc);
 
     VectorizationContext vc = new VectorizationContext("name", columns);
 
-    return (VectorFilterOperator) Vectorizer.vectorizeFilterOperator(filterOp, vc, vectorDesc);
-  }
+    VectorFilterOperator vfo = (VectorFilterOperator) Vectorizer.vectorizeFilterOperator(filterOp, vc, vectorDesc);
 
-  @Test
-  public void testBasicFilterOperator() throws HiveException {
-    VectorFilterOperator vfo = getAVectorFilterOperator();
-    vfo.initialize(hconf, null);
+    vfo.initialize(hiveConf, null);
     VectorExpression ve1 = new FilterLongColGreaterLongColumn(0,1);
     VectorExpression ve2 = new FilterLongColEqualDoubleScalar(2, 0);
     VectorExpression ve3 = new FilterExprAndExpr();
     ve3.setChildExpressions(new VectorExpression[] {ve1, ve2});
     vfo.setFilterCondition(ve3);
 
-    FakeDataReader fdr = new FakeDataReader(1024*1, 3);
-
+    FakeDataReader fdr = new FakeDataReader(1024, 3);
     VectorizedRowBatch vrg = fdr.getNext();
 
-    vfo.getPredicateExpression().evaluate(vrg);
+    vrg.selected = new int[] { 1, 2, 3, 4};
 
-    //Verify
-    int rows = 0;
-    for (int i =0; i < 1024; i++){
-      LongColumnVector l1 = (LongColumnVector) vrg.cols[0];
-      LongColumnVector l2 = (LongColumnVector) vrg.cols[1];
-      LongColumnVector l3 = (LongColumnVector) vrg.cols[2];
-      if ((l1.vector[i] > l2.vector[i]) && (l3.vector[i] == 0)) {
-        rows ++;
-      }
-    }
-    Assert.assertEquals(rows, vrg.size);
+    vfo.process(vrg, 0);
   }
 
   @Test
-  public void testBasicFilterLargeData() throws HiveException {
-    VectorFilterOperator vfo = getAVectorFilterOperator();
-    vfo.initialize(hconf, null);
+  public void testTopNHasSelectedSmallerThanBatch() throws HiveException {
+    List<String> columns = new ArrayList<>();
+    columns.add("col1");
+    TopNKeyDesc topNKeyDesc = new TopNKeyDesc();
+    topNKeyDesc.setCheckEfficiencyNumBatches(1);
+    topNKeyDesc.setTopN(2);
+
+    Operator<? extends OperatorDesc> filterOp =
+            OperatorFactory.get(new CompilationOpContext(), topNKeyDesc);
+
+    VectorizationContext vc = new VectorizationContext("name", columns);
+
+    VectorTopNKeyOperator vfo = (VectorTopNKeyOperator) Vectorizer.vectorizeTopNKeyOperator(filterOp, vc, new VectorTopNKeyDesc());
+
+    vfo.initialize(hiveConf, null);
     VectorExpression ve1 = new FilterLongColGreaterLongColumn(0,1);
     VectorExpression ve2 = new FilterLongColEqualDoubleScalar(2, 0);
     VectorExpression ve3 = new FilterExprAndExpr();
     ve3.setChildExpressions(new VectorExpression[] {ve1, ve2});
-    vfo.setFilterCondition(ve3);
 
-    FakeDataReader fdr = new FakeDataReader(16*1024*1024, 3);
-
-    long startTime = System.currentTimeMillis();
+    FakeDataReader fdr = new FakeDataReader(1024, 3);
     VectorizedRowBatch vrg = fdr.getNext();
 
-    while (vrg.size > 0) {
-      vfo.process(vrg, 0);
-      vrg = fdr.getNext();
-    }
-    long endTime = System.currentTimeMillis();
-    System.out.println("testBaseFilterOperator Op Time = "+(endTime-startTime));
+    vrg.selected = new int[] { 1, 2, 3, 4};
 
-    //Base time
-
-    fdr = new FakeDataReader(16*1024*1024, 3);
-
-    long startTime1 = System.currentTimeMillis();
-    vrg = fdr.getNext();
-    LongColumnVector l1 = (LongColumnVector) vrg.cols[0];
-    LongColumnVector l2 = (LongColumnVector) vrg.cols[1];
-    LongColumnVector l3 = (LongColumnVector) vrg.cols[2];
-    int rows = 0;
-    for (int j =0; j < 16 *1024; j++) {
-      for (int i = 0; i < l1.vector.length && i < l2.vector.length && i < l3.vector.length; i++) {
-        if ((l1.vector[i] > l2.vector[i]) && (l3.vector[i] == 0)) {
-          rows++;
-        }
-      }
-    }
-    long endTime1 = System.currentTimeMillis();
-    System.out.println("testBaseFilterOperator base Op Time = "+(endTime1-startTime1));
+    vfo.process(vrg, 0);
   }
 }
-

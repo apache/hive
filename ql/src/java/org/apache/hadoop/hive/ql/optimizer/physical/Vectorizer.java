@@ -4397,9 +4397,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         vContext, vectorFilterDesc);
   }
 
-  private static Operator<? extends OperatorDesc> vectorizeTopNKeyOperator(
-      Operator<? extends OperatorDesc> topNKeyOperator, VectorizationContext vContext,
-      VectorTopNKeyDesc vectorTopNKeyDesc) throws HiveException {
+  public static Operator<? extends OperatorDesc> vectorizeTopNKeyOperator(
+          Operator<? extends OperatorDesc> topNKeyOperator, VectorizationContext vContext,
+          VectorTopNKeyDesc vectorTopNKeyDesc) throws HiveException {
 
     TopNKeyDesc topNKeyDesc = (TopNKeyDesc) topNKeyOperator.getConf();
     VectorExpression[] keyExpressions = getVectorExpressions(vContext, topNKeyDesc.getKeyColumns());
