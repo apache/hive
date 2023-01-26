@@ -239,7 +239,7 @@
                       <exclude>com.microsoft.sqlserver:mssql-jdbc</exclude>
                       <exclude>commons-beanutils:*</exclude>
                       <exclude>commons-cli:*</exclude>
-                      <exclude>commons-dbcp:*</exclude>
+                      <exclude>commons-dbcp2:*</exclude>
                       <exclude>commons-digester:*</exclude>
                       <exclude>commons-el:*</exclude>
                       <exclude>commons-httpclient:*</exclude>

@@ -31,7 +31,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Random;
 
-import org.apache.commons.dbcp.DelegatingConnection;
+import org.apache.commons.dbcp2.DelegatingConnection;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.text.StrTokenizer;
 import org.apache.hadoop.conf.Configuration;

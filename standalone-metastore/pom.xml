@@ -61,7 +61,7 @@
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <commons-dbcp.version>1.4</commons-dbcp.version>
+    <commons-dbcp2.version>2.7.0</commons-dbcp2.version>
     <commons-lang3.version>3.2</commons-lang3.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
@@ -141,11 +141,6 @@
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
       <version>${hikaricp.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-dbcp</groupId>
-      <artifactId>commons-dbcp</artifactId>
-      <version>${commons-dbcp.version}</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
@@ -261,6 +256,11 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-storage-api</artifactId>
       <version>${storage-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-dbcp2</artifactId>
+      <version>${commons-dbcp2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
