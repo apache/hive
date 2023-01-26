@@ -1101,8 +1101,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   public Partition add_partition(Partition new_part, EnvironmentContext envContext)
       throws TException {
-    if (new_part == null) {
-      throw new MetaException("Partition cannot be null.");
+    if (new_part == null || new_part.getDbName() == null) {
+      throw new MetaException("Partition/DB name cannot be null.");
     }
     if (!new_part.isSetCatName()) {
       new_part.setCatName(getDefaultCatalog(conf));
@@ -1220,6 +1220,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Partition appendPartition(String catName, String dbName, String tableName,
                                    String name) throws TException {
+    if (name == null) {
+      throw new MetaException("Partition name cannot be null.");
+    }
     AppendPartitionsRequest appendPartitionRequest = new AppendPartitionsRequest();
     appendPartitionRequest.setDbName(dbName);
     appendPartitionRequest.setTableName(tableName);
