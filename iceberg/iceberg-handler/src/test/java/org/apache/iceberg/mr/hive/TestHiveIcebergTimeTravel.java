@@ -118,6 +118,18 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
+  public void testAsOfCurrentTimestampAndInterval() throws IOException, InterruptedException {
+    testTables.createTableWithVersions(shell, "customers",
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 3);
+
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " +
+        "customers FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP + interval '10' hours");
+
+    Assert.assertEquals(5, rows.size());
+  }
+
+  @Test
   public void testAsOfWithJoins() throws IOException, InterruptedException {
     Table table = testTables.createTableWithVersions(shell, "customers",
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,

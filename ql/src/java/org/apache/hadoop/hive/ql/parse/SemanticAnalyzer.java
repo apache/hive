@@ -1133,7 +1133,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (asOfTimeIndex != -1 || asOfVersionIndex != -1) {
       String asOfVersion = asOfVersionIndex == -1 ? null : tabref.getChild(asOfVersionIndex).getChild(0).getText();
-      String asOfTime = asOfTimeIndex == -1 ? null : tabref.getChild(asOfTimeIndex).getChild(0).getText();
+      String asOfTime = null;
+      
+      if (asOfTimeIndex != -1) {
+        ASTNode expr = (ASTNode) tabref.getChild(asOfTimeIndex).getChild(0);
+        if (expr.getChildCount() > 0) {
+          ExprNodeDesc desc = genExprNodeDesc(expr, null, false, true);
+          if (desc instanceof ExprNodeConstantDesc) {
+            ExprNodeConstantDesc c = (ExprNodeConstantDesc) desc;
+            asOfTime = String.valueOf(c.getValue());
+          }
+        } else {
+          asOfTime = stripQuotes(expr.getText());
+        }
+      }
       Pair<String, String> asOf = Pair.of(asOfVersion, asOfTime);
       qb.setAsOf(alias, asOf);
     }
