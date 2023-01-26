@@ -1,4 +1,4 @@
-CRIBE FUNCTION convertCharset;
+DESCRIBE FUNCTION convertCharset;
 DESC FUNCTION EXTENDED convertCharset;
 
 explain select convertCharset('TestConvertCharset1', 'UTF-8', 'US-ASCII');
