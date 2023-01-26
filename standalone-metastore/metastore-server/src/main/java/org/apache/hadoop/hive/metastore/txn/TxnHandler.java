@@ -6222,6 +6222,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         connectionProps.setProperty("user", username);
         connectionProps.setProperty("password", password);
         Connection conn = driver.connect(connString, connectionProps);
+        String prepareStmt = dbProduct != null ? dbProduct.getPrepareTxnStmt() : null;
+        if (prepareStmt != null) {
+          try (Statement stmt = conn.createStatement()) {
+            stmt.execute(prepareStmt);
+          }
+        }
         conn.setAutoCommit(false);
         return conn;
       } catch (SQLException e) {
