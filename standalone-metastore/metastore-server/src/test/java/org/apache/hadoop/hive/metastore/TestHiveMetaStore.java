@@ -149,6 +149,7 @@ public abstract class TestHiveMetaStore {
     MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
     MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
     MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "no.such.class");
+    MetastoreConf.setBoolVar(conf, ConfVars.INTEGER_JDO_PUSHDOWN, true);
   }
 
   protected void initConf() {
@@ -2298,18 +2299,19 @@ public abstract class TestHiveMetaStore {
         .addCol("c1", ColumnType.STRING_TYPE_NAME)
         .addCol("c2", ColumnType.INT_TYPE_NAME)
         .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
-        .addPartCol("p2", ColumnType.STRING_TYPE_NAME)
+        .addPartCol("p2", ColumnType.VARCHAR_TYPE_NAME)
         .addPartCol("p3", ColumnType.INT_TYPE_NAME)
+        .addPartCol("p4", ColumnType.CHAR_TYPE_NAME)
         .create(client, conf);
 
     tbl = client.getTable(dbName, tblName);
 
-    add_partition(client, tbl, Lists.newArrayList("p11", "p21", "31"), "part1");
-    add_partition(client, tbl, Lists.newArrayList("p11", "p22", "32"), "part2");
-    add_partition(client, tbl, Lists.newArrayList("p12", "p21", "31"), "part3");
-    add_partition(client, tbl, Lists.newArrayList("p12", "p23", "32"), "part4");
-    add_partition(client, tbl, Lists.newArrayList("p13", "p24", "31"), "part5");
-    add_partition(client, tbl, Lists.newArrayList("p13", "p25", "-33"), "part6");
+    add_partition(client, tbl, Lists.newArrayList("p11", "p21", "31", "p41"), "part1");
+    add_partition(client, tbl, Lists.newArrayList("p11", "p22", "32", "p42"), "part2");
+    add_partition(client, tbl, Lists.newArrayList("p12", "p21", "31", "p43"), "part3");
+    add_partition(client, tbl, Lists.newArrayList("p12", "p23", "32", "p43"), "part4");
+    add_partition(client, tbl, Lists.newArrayList("p13", "p24", "31", "p44"), "part5");
+    add_partition(client, tbl, Lists.newArrayList("p13", "p25", "-33", "p45"), "part6");
 
     // Test equals operator for strings and integers.
     checkFilter(client, dbName, tblName, "p1 = \"p11\"", 2);
@@ -2326,6 +2328,8 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p1 = \"p11\" or p1=\"p12\"", 4);
     checkFilter(client, dbName, tblName, "p1 = \"p11\" and p3 = 31", 1);
     checkFilter(client, dbName, tblName, "p3 = -33 or p1 = \"p12\"", 3);
+    checkFilter(client, dbName, tblName, "p1 = \"p11\" and p4 = \"p41\"", 1);
+    checkFilter(client, dbName, tblName, "p1 = \"p12\" and p4 = \"p43\"", 2);
 
     // Test not-equals operator for strings and integers.
     checkFilter(client, dbName, tblName, "p1 != \"p11\"", 4);
@@ -2341,6 +2345,8 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p3 != -33 or p1 != \"p13\"", 5);
     checkFilter(client, dbName, tblName, "p1 != \"p11\" and p3 = 31", 2);
     checkFilter(client, dbName, tblName, "p3 != 31 and p1 = \"p12\"", 1);
+    checkFilter(client, dbName, tblName, "p1 != \"p11\" and p4 != \"p43\"", 2);
+    checkFilter(client, dbName, tblName, "p3 != 31 and p4 = \"p43\"", 1);
 
     // Test reverse order.
     checkFilter(client, dbName, tblName, "31 != p3 and p1 = \"p12\"", 1);
@@ -2357,6 +2363,8 @@ public abstract class TestHiveMetaStore {
        "p1=\"p12\" and (p2=\"p27\" Or p2=\"p21\")", 1);
     checkFilter(client, dbName, tblName,
        "p1=\"p12\" and p2=\"p27\" Or p2=\"p21\"", 2);
+    checkFilter(client, dbName, tblName,
+        "p1=\"p11\" and (p4=\"p41\" or p4=\"p42\")", 2);
 
     // Test gt/lt/lte/gte/like for strings.
     checkFilter(client, dbName, tblName, "p1 > \"p12\"", 2);
@@ -2365,6 +2373,7 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 4);
     checkFilter(client, dbName, tblName, "p1 like \"p1%\"", 6);
     checkFilter(client, dbName, tblName, "p2 like \"p%3\"", 1);
+    checkFilter(client, dbName, tblName, "p4 like \"p4%\"", 6);
 
     // Test gt/lt/lte/gte for numbers.
     checkFilter(client, dbName, tblName, "p3 < 0", 1);
@@ -2387,6 +2396,7 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p3 between 1 and 3 or p3 not between 1 and 3", 6);
     checkFilter(client, dbName, tblName,
         "p3 between 31 and 32 and p1 between \"p12\" and \"p14\"", 3);
+    checkFilter(client, dbName, tblName, "p4 between \"p41\" and \"p44\"", 5);
 
     //Test for setting the maximum partition count
     List<Partition> partitions = client.listPartitionsByFilter(dbName,
