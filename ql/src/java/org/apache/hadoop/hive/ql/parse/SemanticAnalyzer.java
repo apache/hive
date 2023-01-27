@@ -8723,11 +8723,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       conversion.set(true);
       if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE) {
         // handle array in case of complex types
-        String array_type_prefix = "array<";
-        if (tableFieldTypeInfo.getTypeName().startsWith(array_type_prefix)) {
+        String arrayTypePrefix = "array<";
+        if (tableFieldTypeInfo.getTypeName().startsWith(arrayTypePrefix)) {
           // If number of nested array is unequal, then the implicit conversion cannot be done
-          if (StringUtils.countMatches(tableFieldTypeInfo.getTypeName(), array_type_prefix) !=
-                  StringUtils.countMatches(rowFieldTypeInfo.getTypeName(), array_type_prefix)) {
+          if (StringUtils.countMatches(tableFieldTypeInfo.getTypeName(), arrayTypePrefix) !=
+                  StringUtils.countMatches(rowFieldTypeInfo.getTypeName(), arrayTypePrefix)) {
             column = null;
           }
         } else {
