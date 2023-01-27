@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 import org.apache.iceberg.HistoryEntry;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -118,7 +119,7 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void testAsOfCurrentTimestampAndInterval() throws IOException, InterruptedException {
+  public void testSelectAsOfCurrentTimestampAndInterval() throws IOException, InterruptedException {
     testTables.createTableWithVersions(shell, "customers",
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 3);
@@ -127,6 +128,17 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
         "customers FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP + interval '10' hours");
 
     Assert.assertEquals(5, rows.size());
+  }
+
+  @Test
+  public void testInvalidSelectAsOfTimestampExpression() throws IOException, InterruptedException {
+    Table icebergTable = testTables.createTableWithVersions(shell, "customers",
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 3);
+    icebergTable.updateSchema().addColumn("create_time", Types.TimestampType.withZone()).commit();
+
+    Assert.assertThrows(IllegalArgumentException.class, () -> shell.executeStatement("SELECT * FROM " +
+        "customers FOR SYSTEM_TIME AS OF create_time - interval '10' hours"));
   }
 
   @Test

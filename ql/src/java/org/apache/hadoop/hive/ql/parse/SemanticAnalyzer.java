@@ -1138,11 +1138,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (asOfTimeIndex != -1) {
         ASTNode expr = (ASTNode) tabref.getChild(asOfTimeIndex).getChild(0);
         if (expr.getChildCount() > 0) {
-          ExprNodeDesc desc = genExprNodeDesc(expr, null, false, true);
-          if (desc instanceof ExprNodeConstantDesc) {
-            ExprNodeConstantDesc c = (ExprNodeConstantDesc) desc;
-            asOfTime = String.valueOf(c.getValue());
-          }
+          ExprNodeDesc desc = genExprNodeDesc(expr, new RowResolver(), false, true);
+          ExprNodeConstantDesc c = (ExprNodeConstantDesc) desc;
+          asOfTime = String.valueOf(c.getValue());
         } else {
           asOfTime = stripQuotes(expr.getText());
         }
