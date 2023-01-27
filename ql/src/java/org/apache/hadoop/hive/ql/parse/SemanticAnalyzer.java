@@ -7889,6 +7889,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unknown destination type: " + destType);
     }
 
+    if (!(destType == QBMetaData.DEST_DFS_FILE && qb.getIsQuery())) {
+      input = genConversionSelectOperator(
+              dest, qb, input, destinationTable.getDeserializer(), dpCtx, null, destinationTable);
+    }
 
     inputRR = opParseCtx.get(input).getRowResolver();
 
@@ -8592,7 +8596,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ColumnInfo> rowFields = opParseCtx.get(input).getRowResolver().getColumnInfos();
     int inColumnCnt = rowFields.size();
     int outColumnCnt = tableFields.size();
-    if (dynPart && dpCtx != null) {
+
+    // if target table is always unpartitioned, then the output object inspector will already contain the partition cols
+    // too, therefore we shouldn't add the partition col num to the output col num
+    boolean alreadyContainsPartCols = Optional.ofNullable(table.getStorageHandler())
+            .map(HiveStorageHandler::alwaysUnpartitioned)
+            .orElse(Boolean.FALSE);
+
+    if (dynPart && dpCtx != null && !alreadyContainsPartCols) {
       outColumnCnt += dpCtx.getNumDPCols();
     }
 
