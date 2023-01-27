@@ -171,7 +171,6 @@ public class TestSSL {
    * Test SSL client with non-SSL server fails
    * @throws Exception
    */
-  @Ignore("HIVE-22620")
   @Test
   public void testInvalidConfig() throws Exception {
     SSLTestUtils.clearSslConfOverlay(confOverlay);
@@ -220,7 +219,6 @@ public class TestSSL {
    * Test non-SSL client with SSL server fails
    * @throws Exception
    */
-  @Ignore("HIVE-22620")
   @Test
   public void testConnectionMismatch() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
@@ -264,7 +262,6 @@ public class TestSSL {
    * Test SSL client connection to SSL server
    * @throws Exception
    */
-  @Ignore("HIVE-22620")
   @Test
   public void testSSLConnectionWithURL() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
@@ -292,7 +289,6 @@ public class TestSSL {
    * Test SSL client connection to SSL server
    * @throws Exception
    */
-  @Ignore("HIVE-22620")
   @Test
   public void testSSLConnectionWithProperty() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
@@ -322,7 +318,6 @@ public class TestSSL {
    * Start HS2 in SSL mode, open a SSL connection and fetch data
    * @throws Exception
    */
-  @Ignore("HIVE-22620")
   @Test
   public void testSSLFetch() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
@@ -394,7 +389,7 @@ public class TestSSL {
    * Opening a new connection with this wrong certificate should fail
    * @throws Exception
    */
-  @Ignore("HIVE-22620")
+  @Ignore
   @Test
   public void testConnectionWrongCertCN() throws Exception {
     // This call sets the default ssl params including the correct keystore in the server config
@@ -442,7 +437,6 @@ public class TestSSL {
    * Test HMS server with SSL
    * @throws Exception
    */
-  @Ignore("HIVE-22620")
   @Test
   public void testMetastoreWithSSL() throws Exception {
     SSLTestUtils.setMetastoreSslConf(conf);
@@ -495,7 +489,6 @@ public class TestSSL {
    * Verify the HS2 can't connect to HMS if the certificate doesn't match
    * @throws Exception
    */
-  @Ignore("HIVE-22620")
   @Test
   public void testMetastoreConnectionWrongCertCN() throws Exception {
     SSLTestUtils.setMetastoreSslConf(conf);
