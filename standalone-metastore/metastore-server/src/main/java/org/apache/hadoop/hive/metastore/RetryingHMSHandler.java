@@ -206,7 +206,7 @@ public class RetryingHMSHandler implements InvocationHandler {
       Throwable rootCause = ExceptionUtils.getRootCause(caughtException);
       String errorMessage = ExceptionUtils.getMessage(caughtException) +
               (rootCause == null ? "" : ("\nRoot cause: " + rootCause));
-      if (!RetryingMetaStoreClient.isRecoverableMessage(errorMessage) ||  retryCount >= retryLimit) {
+      if (retryCount >= retryLimit) {
         LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
         throw new MetaException(errorMessage);
       }
