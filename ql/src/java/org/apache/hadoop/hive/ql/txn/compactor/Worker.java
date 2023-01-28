@@ -79,7 +79,8 @@ import java.util.stream.Collectors;
 public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private String CLASS_NAME = Worker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-  static final private long SLEEP_TIME = 10000;
+  private static long SLEEP_TIME_MAX;
+  static private long SLEEP_TIME;
 
   private String workerName;
   private final CompactorFactory compactorFactory;
@@ -102,12 +103,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     boolean genericStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS);
     boolean mrStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_MR_COMPACTOR_GATHER_STATS);
     long timeout = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS);
+    long nextSleep = SLEEP_TIME;
     boolean launchedJob;
     ExecutorService executor = getTimeoutHandlingExecutor();
     try {
       do {
         long startedAt = System.currentTimeMillis();
-        launchedJob = true;
+        boolean err = false;
+        launchedJob = false;
         Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(genericStats, mrStats));
         try {
           launchedJob = singleRun.get(timeout, TimeUnit.MILLISECONDS);
@@ -118,24 +121,33 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           singleRun.cancel(true);
           executor.shutdownNow();
           executor = getTimeoutHandlingExecutor();
+          err = true;
         } catch (ExecutionException e) {
           LOG.info("Exception during executing compaction", e);
+          err = true;
         } catch (InterruptedException ie) {
-          // do not ignore interruption requests
-          return;
+          Thread.currentThread().interrupt();
+        } catch (Throwable t) {
+          err = true;
         }
 
         doPostLoopActions(System.currentTimeMillis() - startedAt);
 
         // If we didn't try to launch a job it either means there was no work to do or we got
-        // here as the result of a communication failure with the DB.  Either way we want to wait
+        // here as the result of an error like communication failure with the DB, schema failures etc.  Either way we want to wait
         // a bit before, otherwise we can start over the loop immediately.
-        if (!launchedJob && !stop.get()) {
-          Thread.sleep(SLEEP_TIME);
+        if ((!launchedJob || err) && !stop.get()) {
+          Thread.sleep(nextSleep);
         }
+        //Backoff mechanism
+        //Increase sleep time if error persist
+        //Reset sleep time to default once error is resolved
+        nextSleep = (err) ? nextSleep * 2 : SLEEP_TIME;
+        if (nextSleep > SLEEP_TIME_MAX) nextSleep = SLEEP_TIME_MAX;
+
       } while (!stop.get());
     } catch (InterruptedException e) {
-      // do not ignore interruption requests
+      Thread.currentThread().interrupt();
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor worker, exiting.", t);
     } finally {
@@ -152,6 +164,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
+    SLEEP_TIME = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_SLEEP_TIME, TimeUnit.MILLISECONDS);
+    SLEEP_TIME_MAX = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_MAX_SLEEP_TIME, TimeUnit.MILLISECONDS);
     this.workerName = getWorkerId();
     setName(workerName);
   }
@@ -268,6 +282,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       findNextCompactRequest.setWorkerVersion(runtimeVersion);
       findNextCompactRequest.setPoolName(this.getPoolName());
       ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
+      ci.errorMessage = "";
       LOG.info("Processing compaction request {}", ci);
 
       if (ci == null) {
@@ -315,10 +330,19 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return false;
       }
 
-      if (!ci.type.equals(CompactionType.REBALANCE) && ci.numberOfBuckets > 0) {
-        if (LOG.isWarnEnabled()) {
-          LOG.warn("Only the REBALANCE compaction accepts the number of buckets clause (CLUSTERED INTO {N} BUCKETS). " +
-              "Since the compaction request is {}, it will be ignored.", ci.type);
+      if (LOG.isWarnEnabled()) {
+        boolean insertOnly = AcidUtils.isInsertOnlyTable(table.getParameters());
+        if (ci.type.equals(CompactionType.REBALANCE) && insertOnly) {
+          ci.errorMessage += "Falling back to MAJOR compaction as REBALANCE compaction is supported only on full-acid tables. ";
+          LOG.warn("REBALANCE compaction requested on an insert-only table ({}). Falling back to MAJOR compaction as " +
+              "REBALANCE compaction is supported only on full-acid tables", table.getTableName());
+        }
+        if ((!ci.type.equals(CompactionType.REBALANCE) || insertOnly) && ci.numberOfBuckets > 0) {
+          ci.errorMessage += "Only REBALANCE compaction on a full-acid table accepts the number of buckets clause. " +
+              "(CLUSTERED INTO {N} BUCKETS).";
+          LOG.warn("Only REBALANCE compaction on a full-acid table accepts the number of buckets clause " +
+                  "(CLUSTERED INTO {N} BUCKETS). Since the compaction request is {} and the table is {}, it will be ignored.",
+              ci.type, insertOnly ? "insert-only" : "full-acid");
         }
       }
 
@@ -427,14 +451,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         todo Find a more generic approach to collecting files in the same logical bucket to compact within the same
         task (currently we're using Tez split grouping).
         */
-        Compactor compactor = compactorFactory.getCompactor(table, conf, ci, msc);
-        computeStats = (compactor instanceof MRCompactor && collectMrStats) || collectGenericStats;
+        CompactorPipeline compactorPipeline = compactorFactory.getCompactorPipeline(table, conf, ci, msc);
+        computeStats = (compactorPipeline.isMRCompaction() && collectMrStats) || collectGenericStats;
 
         LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
                 ci.id + " in " + compactionTxn + " with compute stats set to " + computeStats);
-        LOG.debug("Will compact id: " + ci.id + " with compactor class: " + compactor.getClass().getName());
 
-        compactor.run(conf, table, p, sd, tblValidWriteIds, ci, dir);
+        CompactorContext compactorContext = new CompactorContext(conf, table, p, sd, tblValidWriteIds, ci, dir);
+        compactorPipeline.execute(compactorContext);
 
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in "
             + compactionTxn + ", marking as compacted.");

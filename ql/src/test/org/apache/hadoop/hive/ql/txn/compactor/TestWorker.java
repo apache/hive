@@ -1042,7 +1042,7 @@ public class TestWorker extends CompactorTest {
     txnHandler.compact(new CompactionRequest("default", "mtwb", CompactionType.MINOR));
 
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
-    when(mockedFactory.getCompactor(any(), any(), any(), any())).thenThrow(new RuntimeException());
+    when(mockedFactory.getCompactorPipeline(any(), any(), any(), any())).thenThrow(new RuntimeException());
 
     Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(conf);
@@ -1201,6 +1201,8 @@ public class TestWorker extends CompactorTest {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     HiveConf timeoutConf = new HiveConf(conf);
     timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, timeout, TimeUnit.MILLISECONDS);
+    timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_SLEEP_TIME, 20, TimeUnit.MILLISECONDS);
+    timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_MAX_SLEEP_TIME, 20, TimeUnit.MILLISECONDS);
 
     TimeoutWorker timeoutWorker = getTimeoutWorker(timeoutConf, executor,
         runForever, swallowInterrupt, new CountDownLatch(2));

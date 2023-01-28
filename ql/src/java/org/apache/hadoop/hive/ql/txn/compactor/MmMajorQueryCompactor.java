@@ -25,8 +25,6 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,11 +40,14 @@ final class MmMajorQueryCompactor extends QueryCompactor {
   private static final Logger LOG = LoggerFactory.getLogger(MmMajorQueryCompactor.class.getName());
 
   @Override
-  public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-                     ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+  public boolean run(CompactorContext context) throws IOException {
+    HiveConf hiveConf = context.getConf();
+    Table table = context.getTable();
     LOG.debug("Going to delete directories for aborted transactions for MM table " + table.getDbName() + "." + table
         .getTableName());
-    QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
+    QueryCompactor.Util.removeFilesForMmTable(hiveConf, context.getAcidDirectory());
+    StorageDescriptor storageDescriptor = context.getSd();
+    ValidWriteIdList writeIds = context.getValidWriteIdList();
 
     // Set up the session for driver.
     HiveConf driverConf = new HiveConf(hiveConf);
@@ -59,11 +60,12 @@ final class MmMajorQueryCompactor extends QueryCompactor {
 
     List<String> createTableQueries = getCreateQueries(tmpTableName, table, storageDescriptor,
         resultBaseDir.toString());
-    List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
+    List<String> compactionQueries = getCompactionQueries(table, context.getPartition(), tmpTableName);
     List<String> dropQueries = getDropQueries(tmpTableName);
-    runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
+    runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
         Lists.newArrayList(resultBaseDir), createTableQueries, compactionQueries, dropQueries,
             table.getParameters());
+    return true;
   }
 
   /**
@@ -74,7 +76,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
   @Override
   protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    Util.cleanupEmptyDir(conf, tmpTableName);
+    Util.cleanupEmptyTableDir(conf, tmpTableName);
   }
 
   private List<String> getCreateQueries(String tmpTableName, Table table,

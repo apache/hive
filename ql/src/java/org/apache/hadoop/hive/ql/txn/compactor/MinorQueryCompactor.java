@@ -22,10 +22,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -44,16 +42,21 @@ final class MinorQueryCompactor extends QueryCompactor {
   private static final Logger LOG = LoggerFactory.getLogger(MinorQueryCompactor.class.getName());
 
   @Override
-  public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-           ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+  public boolean run(CompactorContext context) throws IOException {
     LOG.info("Running query based minor compaction");
+    HiveConf hiveConf = context.getConf();
+    Table table = context.getTable();
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
+    StorageDescriptor storageDescriptor = context.getSd();
+    AcidDirectory dir = context.getAcidDirectory();
+    ValidWriteIdList writeIds = context.getValidWriteIdList();
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
     conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
+
     String tmpTableName =
         table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_" + System.currentTimeMillis();
 
@@ -67,17 +70,18 @@ final class MinorQueryCompactor extends QueryCompactor {
     List<String> compactionQueries = getCompactionQueries(tmpTableName, table, writeIds);
     List<String> dropQueries = getDropQueries(tmpTableName);
 
-    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
+    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
         Lists.newArrayList(resultDeltaDir, resultDeleteDeltaDir), createQueries,
         compactionQueries, dropQueries, table.getParameters());
+    return true;
   }
 
 
   @Override
   protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    Util.cleanupEmptyDir(conf, AcidUtils.DELTA_PREFIX + tmpTableName + "_result");
-    Util.cleanupEmptyDir(conf, AcidUtils.DELETE_DELTA_PREFIX + tmpTableName + "_result");
+    Util.cleanupEmptyTableDir(conf, AcidUtils.DELTA_PREFIX + tmpTableName + "_result");
+    Util.cleanupEmptyTableDir(conf, AcidUtils.DELETE_DELTA_PREFIX + tmpTableName + "_result");
   }
 
   /**

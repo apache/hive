@@ -3016,7 +3016,7 @@ public class HiveConf extends Configuration {
     HIVE_TXN_MANAGER("hive.txn.manager",
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager",
         "Set to org.apache.hadoop.hive.ql.lockmgr.DbTxnManager as part of turning on Hive\n" +
-        "transactions, which also requires appropriate settings for hive.compactor.initiator.on,\n" +
+        "transactions, which also requires appropriate settings for hive.compactor.initiator.on,hive.compactor.cleaner.on,\n" +
         "hive.compactor.worker.threads, hive.support.concurrency (true),\n" +
         "and hive.exec.dynamic.partition.mode (nonstrict).\n" +
         "The default DummyTxnManager replicates pre-Hive-0.13 behavior and provides\n" +
@@ -3215,6 +3215,15 @@ public class HiveConf extends Configuration {
         "Time in seconds after which a compaction job will be declared failed and the\n" +
         "compaction re-queued."),
 
+    HIVE_COMPACTOR_WORKER_SLEEP_TIME("hive.compactor.worker.sleep.time", "10800ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Time in milliseconds for which a worker threads goes into sleep before starting another iteration " +
+                "in case of no launched job or error"),
+
+    HIVE_COMPACTOR_WORKER_MAX_SLEEP_TIME("hive.compactor.worker.max.sleep.time", "320000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Max time in milliseconds for which a worker threads goes into sleep before starting another iteration " +
+                "used for backoff in case of no launched job or error"),
     HIVE_COMPACTOR_CHECK_INTERVAL("hive.compactor.check.interval", "300s",
         new TimeValidator(TimeUnit.SECONDS),
         "Time in seconds between checks to see if any tables or partitions need to be\n" +
@@ -3276,6 +3285,9 @@ public class HiveConf extends Configuration {
     HIVE_COMPACTOR_SMALL_DELTA_DIR_THRESHOLD("hive.compactor.small.delta.dir.threshold", 200,
         "If the number of small delta directories under a table/partition passes this threshold, a " +
             "warning message will be logged."),
+
+    HIVE_MERGE_COMPACTION_ENABLED("hive.compaction.merge.enabled", false,
+            "Enables merge-based compaction which is a compaction optimization when few ORC delta files are present"),
 
     /**
      * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_LOGGER_FREQUENCY
@@ -3710,7 +3722,12 @@ public class HiveConf extends Configuration {
     HIVE_EXPLAIN_USER("hive.explain.user", true,
         "Whether to show explain result at user level.\n" +
         "When enabled, will log EXPLAIN output for the query at user level. Tez only."),
-
+    HIVE_EXPLAIN_NODE_VISIT_LIMIT("hive.explain.node.visit.limit", 256, new RangeValidator(1, Integer.MAX_VALUE),
+        "Maximum number of times an operator/node can be visited during the construction of the EXPLAIN "
+            + "output; an error is thrown when the limit is reached. In some cases, the EXPLAIN statement visits (and "
+            + "prints) the same node multiple times. The number of visits can become exponential and make the server "
+            + "crash or become unresponsive so this limit acts as a safety net to fail-fast the problematic query and "
+            + "avoid bringing down the entire server."),
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
