@@ -9181,7 +9181,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
     processor = new ThriftHiveMetastore.Processor<>(handler);
     LOG.info("Starting DB backed MetaStore Server with generic processor");
-    TServlet thriftHttpServlet = new HmsThriftHttpServlet(processor, protocolFactory);
+    TServlet thriftHttpServlet = new HmsThriftHttpServlet(processor, protocolFactory, conf);
 
     boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
     HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
