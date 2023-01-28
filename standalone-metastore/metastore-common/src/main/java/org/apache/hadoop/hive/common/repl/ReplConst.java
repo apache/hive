@@ -64,6 +64,13 @@ public class ReplConst {
    */
   public static final String REPL_TARGET_DATABASE_PROPERTY = "repl.target.last.id";
 
+  /**
+   * Indicates initiation of RESUME action. This property can be used to avoid updation of
+   * "repl.target.last.id" when "repl.last.id" is changed(This behaviour is currently used in
+   * RESUME workflow). This property will be removed after second cycle of Optimised bootstrap.
+   */
+  public static final String REPL_RESUME_STARTED_AFTER_FAILOVER = "repl.resume.started";
+
   public static final String SOURCE_OF_REPLICATION = "repl.source.for";
 
   public static final String REPL_FIRST_INC_PENDING_FLAG = "hive.repl.first.inc.pending";
@@ -73,4 +80,6 @@ public class ReplConst {
   public static final String REPL_IS_CUSTOM_DB_MANAGEDLOC = "hive.repl.is.custom.db.managedloc";
 
   public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = "bootstrap.dump.state.";
+
+  public static final String READ_ONLY_HOOK = "org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook";
 }

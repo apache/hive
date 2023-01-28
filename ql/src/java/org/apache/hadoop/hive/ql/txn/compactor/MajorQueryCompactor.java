@@ -25,8 +25,6 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
 import java.io.IOException;
@@ -38,10 +36,13 @@ import java.util.List;
 final class MajorQueryCompactor extends QueryCompactor {
 
   @Override
-  public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-                  ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+  public boolean run(CompactorContext context) throws IOException {
+    HiveConf hiveConf = context.getConf();
+    Table table = context.getTable();
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
+    StorageDescriptor storageDescriptor = context.getSd();
+    ValidWriteIdList writeIds = context.getValidWriteIdList();
 
     HiveConf conf = new HiveConf(hiveConf);
     /*
@@ -55,11 +56,12 @@ final class MajorQueryCompactor extends QueryCompactor {
         conf, true, false, false, null);
 
     List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
-    List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
+    List<String> compactionQueries = getCompactionQueries(table, context.getPartition(), tmpTableName);
     List<String> dropQueries = getDropQueries(tmpTableName);
-    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
+    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
         Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries,
             table.getParameters());
+    return true;
   }
 
   /**
