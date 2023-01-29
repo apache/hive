@@ -234,7 +234,7 @@ public class VectorMapJoinAntiJoinLongOperator extends VectorMapJoinAntiJoinGene
             // Common anti join result processing.
             switch (saveJoinResult) {
             case MATCH:
-              allMatchs[allMatchCount++] = batchIndex;
+              allMatches[allMatchCount++] = batchIndex;
               // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH isSingleValue " + equalKeySeriesIsSingleValue[equalKeySeriesCount] + " currentKey " + currentKey);
               break;
 
@@ -252,7 +252,7 @@ public class VectorMapJoinAntiJoinLongOperator extends VectorMapJoinAntiJoinGene
             // Series of equal keys.
             switch (saveJoinResult) {
             case MATCH:
-              allMatchs[allMatchCount++] = batchIndex;
+              allMatches[allMatchCount++] = batchIndex;
               // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH duplicate");
               break;
 
@@ -286,7 +286,7 @@ public class VectorMapJoinAntiJoinLongOperator extends VectorMapJoinAntiJoinGene
 
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
-              " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
+              " allMatches " + intArrayToRangesString(allMatches, allMatchCount) +
               " spills " + intArrayToRangesString(spills, spillCount) +
               " spillHashMapResultIndices " + intArrayToRangesString(spillHashMapResultIndices, spillCount) +
               " hashMapResults " + Arrays.toString(Arrays.copyOfRange(hashSetResults, 0, hashSetResultCount)));

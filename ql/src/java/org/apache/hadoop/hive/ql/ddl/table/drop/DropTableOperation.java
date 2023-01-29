@@ -76,7 +76,7 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
        * to repeats. What can happen, sometimes, is that a drone processing a replication task can
        * have been abandoned for not returning in time, but still execute its task after a while,
        * which should not result in it mucking up data that has been impressed later on. So, for eg.,
-       * if we create partition P1, followed by droppping it, followed by creating it yet again,
+       * if we create partition P1, followed by dropping it, followed by creating it yet again,
        * the replication of that drop should not drop the newer partition if it runs after the destination
        * object is already in the newer state.
        *
@@ -91,7 +91,7 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
        */
       Map<String, String> dbParams = context.getDb().getDatabase(table.getDbName()).getParameters();
       if (!replicationSpec.allowEventReplacementInto(dbParams)) {
-        // Drop occured as part of replicating a drop, but the destination
+        // Drop occurred as part of replicating a drop, but the destination
         // table was newer than the event being replicated. Ignore, but drop
         // any partitions inside that are older.
         if (table.isPartitioned()) {

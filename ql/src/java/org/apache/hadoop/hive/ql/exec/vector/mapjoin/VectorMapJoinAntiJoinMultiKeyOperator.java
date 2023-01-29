@@ -294,19 +294,19 @@ public class VectorMapJoinAntiJoinMultiKeyOperator extends VectorMapJoinAntiJoin
               // Regardless of our matching result, we keep that information to make multiple use
               // of it for a possible series of equal keys.
               haveSaveKey = true;
-  
+
               /*
                * Multi-Key specific save key and lookup.
                */
-  
+
               temp = saveKeyOutput;
               saveKeyOutput = currentKeyOutput;
               currentKeyOutput = temp;
-  
+
               /*
                * Multi-key specific lookup key.
                */
-  
+
               byte[] keyBytes = saveKeyOutput.getData();
               int keyLength = saveKeyOutput.getLength();
               saveJoinResult = hashSet.contains(keyBytes, 0, keyLength, hashSetResults[hashSetResultCount]);
@@ -319,7 +319,7 @@ public class VectorMapJoinAntiJoinMultiKeyOperator extends VectorMapJoinAntiJoin
 
             switch (saveJoinResult) {
             case MATCH:
-              allMatchs[allMatchCount++] = batchIndex;
+              allMatches[allMatchCount++] = batchIndex;
               // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH isSingleValue " + equalKeySeriesIsSingleValue[equalKeySeriesCount] + " currentKey " + currentKey);
               break;
 
@@ -338,7 +338,7 @@ public class VectorMapJoinAntiJoinMultiKeyOperator extends VectorMapJoinAntiJoin
 
             switch (saveJoinResult) {
             case MATCH:
-              allMatchs[allMatchCount++] = batchIndex;
+              allMatches[allMatchCount++] = batchIndex;
               // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH duplicate");
               break;
 
@@ -372,7 +372,7 @@ public class VectorMapJoinAntiJoinMultiKeyOperator extends VectorMapJoinAntiJoin
 
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
-              " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
+              " allMatches " + intArrayToRangesString(allMatches, allMatchCount) +
               " spills " + intArrayToRangesString(spills, spillCount) +
               " spillHashMapResultIndices " + intArrayToRangesString(spillHashMapResultIndices, spillCount) +
               " hashMapResults " + Arrays.toString(Arrays.copyOfRange(hashSetResults, 0, hashSetResultCount)));

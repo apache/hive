@@ -231,7 +231,7 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
-        // We remember any matching rows in matchs / matchSize.  At the end of the loop,
+        // We remember any matching rows in matches / matchSize.  At the end of the loop,
         // selected / batch.size will represent both matching and non-matching rows for outer join.
         // Only deferred rows will have been removed from selected.
         int selected[] = batch.selected;
@@ -304,11 +304,11 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
               temp = saveKeyOutput;
               saveKeyOutput = currentKeyOutput;
               currentKeyOutput = temp;
-  
+
               /*
                * Single-Column Long specific lookup key.
                */
-  
+
               byte[] keyBytes = saveKeyOutput.getData();
               int keyLength = saveKeyOutput.getLength();
               saveJoinResult = hashMultiSet.contains(keyBytes, 0, keyLength, hashMultiSetResults[hashMultiSetResultCount]);
@@ -378,7 +378,7 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
 
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
-              " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
+              " allMatches " + intArrayToRangesString(allMatchs, allMatchCount) +
               " equalKeySeriesValueCounts " + longArrayToRangesString(equalKeySeriesValueCounts, equalKeySeriesCount) +
               " equalKeySeriesAllMatchIndices " + intArrayToRangesString(equalKeySeriesAllMatchIndices, equalKeySeriesCount) +
               " equalKeySeriesDuplicateCounts " + intArrayToRangesString(equalKeySeriesDuplicateCounts, equalKeySeriesCount) +
