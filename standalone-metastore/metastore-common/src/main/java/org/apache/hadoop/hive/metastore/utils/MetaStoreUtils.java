@@ -1152,15 +1152,30 @@ public class MetaStoreUtils {
   /**
    * Because TABLE_NO_AUTO_COMPACT was originally assumed to be NO_AUTO_COMPACT and then was moved
    * to no_auto_compact, we need to check it in both cases.
+   * Check the database level no_auto_compact , if present it is given priority else table level no_auto_compact is considered.
    */
-  public static boolean isNoAutoCompactSet(Map<String, String> parameters) {
-    String noAutoCompact =
-            parameters.get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT);
-    if (noAutoCompact == null) {
-      noAutoCompact =
-              parameters.get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT.toUpperCase());
+  public static boolean isNoAutoCompactSet(Map<String, String> dbParameters, Map<String, String> tblParameters) {
+    String dbNoAutoCompact = getNoAutoCompact(dbParameters);
+    if (dbNoAutoCompact == null) {
+      LOG.debug("Using table configuration '" + hive_metastoreConstants.NO_AUTO_COMPACT + "' for compaction");
+      String noAutoCompact = getNoAutoCompact(tblParameters);
+      return Boolean.parseBoolean(noAutoCompact);
     }
-    return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
+    LOG.debug("Using database configuration '" + hive_metastoreConstants.NO_AUTO_COMPACT + "' for compaction");
+    return Boolean.parseBoolean(dbNoAutoCompact);
+  }
+
+  /**
+   * Get no_auto_compact property by checking in both lower and upper cases
+   * @param parameters
+   * @return true/false if set, null if there is no NO_AUTO_COMPACT set in database level config,
+   */
+  public static String getNoAutoCompact(Map<String, String> parameters) {
+    String noAutoCompact = parameters.get(hive_metastoreConstants.NO_AUTO_COMPACT);
+    if (noAutoCompact == null) {
+      return parameters.get(hive_metastoreConstants.NO_AUTO_COMPACT.toUpperCase());
+    }
+    return noAutoCompact;
   }
 
   public static String getHostFromId(String id) {

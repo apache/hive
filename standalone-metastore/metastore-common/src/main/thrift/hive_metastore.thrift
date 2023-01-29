@@ -1076,10 +1076,12 @@ struct AbortTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
     3: optional TxnType txn_type,
+    4: optional i64 errorCode,
 }
 
 struct AbortTxnsRequest {
     1: required list<i64> txn_ids,
+    2: optional i64 errorCode,
 }
 
 struct CommitTxnKeyValue {
@@ -2168,7 +2170,9 @@ struct AlterTableRequest {
   6: optional i64 writeId=-1,
   7: optional string validWriteIdList
   8: optional list<string> processorCapabilities,
-  9: optional string processorIdentifier
+  9: optional string processorIdentifier,
+  10: optional string expectedParameterKey,
+  11: optional string expectedParameterValue
 // TODO: also add cascade here, out of envCtx
 }
 
@@ -3192,3 +3196,7 @@ const string DEFAULT_TABLE_TYPE = "defaultTableType",
 // ACID
 const string TXN_ID = "txnId",
 const string WRITE_ID = "writeId",
+
+// Keys for alter table environment context parameters
+const string EXPECTED_PARAMETER_KEY = "expected_parameter_key",
+const string EXPECTED_PARAMETER_VALUE = "expected_parameter_value",

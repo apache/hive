@@ -1,0 +1,97 @@
+PREHOOK: query: create table source(a int) stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source
+POSTHOOK: query: create table source(a int) stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source
+PREHOOK: query: insert into source values (1), (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@source
+POSTHOOK: query: insert into source values (1), (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@source
+PREHOOK: query: create table target like source stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@target
+POSTHOOK: query: create table target like source stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@target
+PREHOOK: query: show create table target
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@target
+POSTHOOK: query: show create table target
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@target
+CREATE EXTERNAL TABLE `target`(
+  `a` int)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'TRANSLATED_TO_EXTERNAL'='TRUE', 
+  'bucketing_version'='2', 
+  'created_with_ctlt'='true', 
+  'engine.hive.enabled'='true', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: select count(*) from target
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from target
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: insert into target values (1), (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@target
+POSTHOOK: query: insert into target values (1), (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@target
+PREHOOK: query: select a from target order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select a from target order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+PREHOOK: query: delete from target where a=2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target
+PREHOOK: Output: default@target
+POSTHOOK: query: delete from target where a=2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target
+POSTHOOK: Output: default@target
+PREHOOK: query: select a from target order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select a from target order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1

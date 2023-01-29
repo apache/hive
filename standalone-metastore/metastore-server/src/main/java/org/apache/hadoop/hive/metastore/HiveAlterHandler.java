@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 
+import javax.jdo.Constants;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -177,7 +178,17 @@ public class HiveAlterHandler implements AlterHandler {
         rename = true;
       }
 
-      msdb.openTransaction();
+      String expectedKey = environmentContext != null && environmentContext.getProperties() != null ?
+              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_KEY) : null;
+      String expectedValue = environmentContext != null && environmentContext.getProperties() != null ?
+              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE) : null;
+
+      if (expectedKey != null) {
+        // If we have to check the expected state of the table we have to prevent nonrepeatable reads.
+        msdb.openTransaction(Constants.TX_REPEATABLE_READ);
+      } else {
+        msdb.openTransaction();
+      }
       // get old table
       // Note: we don't verify stats here; it's done below in alterTableUpdateTableColumnStats.
       olddb = msdb.getDatabase(catName, dbname);
@@ -185,6 +196,12 @@ public class HiveAlterHandler implements AlterHandler {
       if (oldt == null) {
         throw new InvalidOperationException("table " +
             TableName.getQualified(catName, dbname, name) + " doesn't exist");
+      }
+
+      if (expectedKey != null && expectedValue != null
+              && !expectedValue.equals(oldt.getParameters().get(expectedKey))) {
+        throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is '"
+                + oldt.getParameters().get(expectedKey) + "'. The expected was value was '" + expectedValue + "'");
       }
 
       validateTableChangesOnReplSource(olddb, oldt, newt, environmentContext);
@@ -271,7 +288,13 @@ public class HiveAlterHandler implements AlterHandler {
             // get new location
             assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
             if (renamedTranslatedToExternalTable) {
-              destPath = new Path(newt.getSd().getLocation());
+              if (!tableInSpecifiedLoc) {
+                destPath = new Path(newt.getSd().getLocation());
+              } else {
+                Path databasePath = constructRenamedPath(wh.getDatabaseExternalPath(db), srcPath);
+                destPath = new Path(databasePath, newTblName);
+                newt.getSd().setLocation(destPath.toString());
+              }
             } else {
               Path databasePath = constructRenamedPath(wh.getDatabaseManagedPath(db), srcPath);
               destPath = new Path(databasePath, newTblName);

@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.CatalogFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
@@ -121,6 +122,7 @@ import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DB_PROPERTY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.TARGET_OF_REPLICATION;
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
@@ -161,7 +163,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private Set<String> tablesForBootstrap = new HashSet<>();
   private List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
   private boolean createEventMarker = false;
-  private boolean unsetDbPropertiesForOptimisedBootstrap;
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -263,8 +264,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
               assert isTableDiffDirectoryPresent;
 
-              // Set boolean to determine the db properties need to sorted once dump is complete
-              unsetDbPropertiesForOptimisedBootstrap = true;
+              work.setSecondDumpAfterFailover(true);
 
               long fromEventId = Long.parseLong(getEventIdFromFile(previousValidHiveDumpPath.getParent(), conf)[1]);
               LOG.info("Starting optimised bootstrap from event id {} for database {}", fromEventId,
@@ -473,7 +473,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                     + ReplAck.DUMP_ACKNOWLEDGEMENT);
 
     // Check if we need to unset database properties after successful optimised bootstrap.
-    if (unsetDbPropertiesForOptimisedBootstrap) {
+    if (work.isSecondDumpAfterFailover()) {
       Hive hiveDb = getHive();
       Database database = hiveDb.getDatabase(work.dbNameOrPattern);
       LinkedHashMap<String, String> dbParams = new LinkedHashMap<>(database.getParameters());
@@ -483,6 +483,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dbParams.remove(CURR_STATE_ID_SOURCE.toString());
       dbParams.remove(REPL_TARGET_DB_PROPERTY);
       dbParams.remove(ReplConst.REPL_ENABLE_BACKGROUND_THREAD);
+      dbParams.remove(REPL_RESUME_STARTED_AFTER_FAILOVER);
 
       database.setParameters(dbParams);
       LOG.info("Removing {} property from the database {} after successful optimised bootstrap dump", String.join(",",
@@ -775,7 +776,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     List<Long> txnsForDb = getOpenTxns(hiveTxnManager, hiveTxnManager.getValidTxns(excludedTxns), work.dbNameOrPattern);
     if (!txnsForDb.isEmpty()) {
       LOG.debug("Going to abort transactions: {} for database: {}.", txnsForDb, work.dbNameOrPattern);
-      hiveDb.abortTransactions(txnsForDb);
+      hiveDb.abortTransactions(txnsForDb, TxnErrorMsg.ABORT_FETCH_FAILOVER_METADATA.getErrorCode());
     }
     fmd.setAbortedTxns(txnsForDb);
     fmd.setCursorPoint(currentNotificationId(hiveDb));
@@ -786,7 +787,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     txnsForDb = getOpenTxns(hiveTxnManager, allValidTxns, work.dbNameOrPattern);
     if (!txnsForDb.isEmpty()) {
       LOG.debug("Going to abort transactions: {} for database: {}.", txnsForDb, work.dbNameOrPattern);
-      hiveDb.abortTransactions(txnsForDb);
+      hiveDb.abortTransactions(txnsForDb, TxnErrorMsg.ABORT_FETCH_FAILOVER_METADATA.getErrorCode());
       fmd.addToAbortedTxns(txnsForDb);
     }
     fmd.setFailoverEventId(currentNotificationId(hiveDb));
@@ -866,6 +867,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)) {
         work.getMetricCollector().reportFailoverStart(getName(), metricMap, work.getFailoverMetadata());
       } else {
+        int size = tablesForBootstrap.size();
+        if (size > 0) {
+          metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) tablesForBootstrap.size());
+        }
         work.getMetricCollector().reportStageStart(getName(), metricMap);
       }
       long dumpedCount = resumeFrom - work.eventFrom;
@@ -1585,7 +1590,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       List<Long> openTxns = getOpenTxns(hiveTxnManager, validTxnList, work.dbNameOrPattern);
       if (!openTxns.isEmpty()) {
         //abort only write transactions for the db under replication if abort transactions is enabled.
-        hiveDb.abortTransactions(openTxns);
+        hiveDb.abortTransactions(openTxns, TxnErrorMsg.ABORT_WRITE_TXN_AFTER_TIMEOUT.getErrorCode());
         validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
         openTxns = getOpenTxns(hiveTxnManager, validTxnList, work.dbNameOrPattern);
         if (!openTxns.isEmpty()) {

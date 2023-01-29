@@ -86,6 +86,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
     // re-initialize metrics
     Metrics.shutdown();
     Metrics.initialize(conf);
@@ -835,7 +836,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     String dbName = "default";
 
     Map<String, String> params = new HashMap<>();
-    params.put(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT, "true");
+    params.put(hive_metastoreConstants.NO_AUTO_COMPACT, "true");
     Table disabledTbl = newTable(dbName, "comp_disabled", false, params);
     burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, null);
     burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, new HashSet<>(

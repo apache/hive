@@ -91,6 +91,10 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   WRITE_ID = "writeId";
 
+  EXPECTED_PARAMETER_KEY = "expected_parameter_key";
+
+  EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
+
 }
 
 }}} // namespace

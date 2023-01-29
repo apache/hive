@@ -60,6 +60,7 @@ public abstract class DbTxnManagerEndToEndTestBase {
 
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, getWarehouseDir());
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
     TestTxnDbUtil.setConfValues(conf);
   }
   

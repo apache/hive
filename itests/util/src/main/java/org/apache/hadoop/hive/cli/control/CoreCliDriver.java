@@ -71,6 +71,7 @@ public class CoreCliDriver extends CliAdapter {
             .withCleanupScript(cleanupScript)
             .withLlapIo(true)
             .withFsType(cliConfig.getFsType())
+            .withCustomConfigValueMap(this.cliConfig.getCustomConfigValueMap())
             .build());
   }
 

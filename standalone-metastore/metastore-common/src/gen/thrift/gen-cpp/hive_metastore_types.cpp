@@ -21896,6 +21896,11 @@ void AbortTxnRequest::__set_txn_type(const TxnType::type val) {
   this->txn_type = val;
 __isset.txn_type = true;
 }
+
+void AbortTxnRequest::__set_errorCode(const int64_t val) {
+  this->errorCode = val;
+__isset.errorCode = true;
+}
 std::ostream& operator<<(std::ostream& out, const AbortTxnRequest& obj)
 {
   obj.printTo(out);
@@ -21951,6 +21956,14 @@ uint32_t AbortTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->errorCode);
+          this->__isset.errorCode = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -21984,6 +21997,11 @@ uint32_t AbortTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) co
     xfer += oprot->writeI32(static_cast<int32_t>(this->txn_type));
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.errorCode) {
+    xfer += oprot->writeFieldBegin("errorCode", ::apache::thrift::protocol::T_I64, 4);
+    xfer += oprot->writeI64(this->errorCode);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -21994,6 +22012,7 @@ void swap(AbortTxnRequest &a, AbortTxnRequest &b) {
   swap(a.txnid, b.txnid);
   swap(a.replPolicy, b.replPolicy);
   swap(a.txn_type, b.txn_type);
+  swap(a.errorCode, b.errorCode);
   swap(a.__isset, b.__isset);
 }
 
@@ -22001,12 +22020,14 @@ AbortTxnRequest::AbortTxnRequest(const AbortTxnRequest& other818) {
   txnid = other818.txnid;
   replPolicy = other818.replPolicy;
   txn_type = other818.txn_type;
+  errorCode = other818.errorCode;
   __isset = other818.__isset;
 }
 AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other819) {
   txnid = other819.txnid;
   replPolicy = other819.replPolicy;
   txn_type = other819.txn_type;
+  errorCode = other819.errorCode;
   __isset = other819.__isset;
   return *this;
 }
@@ -22016,6 +22037,7 @@ void AbortTxnRequest::printTo(std::ostream& out) const {
   out << "txnid=" << to_string(txnid);
   out << ", " << "replPolicy="; (__isset.replPolicy ? (out << to_string(replPolicy)) : (out << "<null>"));
   out << ", " << "txn_type="; (__isset.txn_type ? (out << to_string(txn_type)) : (out << "<null>"));
+  out << ", " << "errorCode="; (__isset.errorCode ? (out << to_string(errorCode)) : (out << "<null>"));
   out << ")";
 }
 
@@ -22026,6 +22048,11 @@ AbortTxnsRequest::~AbortTxnsRequest() noexcept {
 
 void AbortTxnsRequest::__set_txn_ids(const std::vector<int64_t> & val) {
   this->txn_ids = val;
+}
+
+void AbortTxnsRequest::__set_errorCode(const int64_t val) {
+  this->errorCode = val;
+__isset.errorCode = true;
 }
 std::ostream& operator<<(std::ostream& out, const AbortTxnsRequest& obj)
 {
@@ -22076,6 +22103,14 @@ uint32_t AbortTxnsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->errorCode);
+          this->__isset.errorCode = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -22107,6 +22142,11 @@ uint32_t AbortTxnsRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
   }
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.errorCode) {
+    xfer += oprot->writeFieldBegin("errorCode", ::apache::thrift::protocol::T_I64, 2);
+    xfer += oprot->writeI64(this->errorCode);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -22115,19 +22155,26 @@ uint32_t AbortTxnsRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 void swap(AbortTxnsRequest &a, AbortTxnsRequest &b) {
   using ::std::swap;
   swap(a.txn_ids, b.txn_ids);
+  swap(a.errorCode, b.errorCode);
+  swap(a.__isset, b.__isset);
 }
 
 AbortTxnsRequest::AbortTxnsRequest(const AbortTxnsRequest& other826) {
   txn_ids = other826.txn_ids;
+  errorCode = other826.errorCode;
+  __isset = other826.__isset;
 }
 AbortTxnsRequest& AbortTxnsRequest::operator=(const AbortTxnsRequest& other827) {
   txn_ids = other827.txn_ids;
+  errorCode = other827.errorCode;
+  __isset = other827.__isset;
   return *this;
 }
 void AbortTxnsRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "AbortTxnsRequest(";
   out << "txn_ids=" << to_string(txn_ids);
+  out << ", " << "errorCode="; (__isset.errorCode ? (out << to_string(errorCode)) : (out << "<null>"));
   out << ")";
 }
 
@@ -45654,6 +45701,16 @@ void AlterTableRequest::__set_processorIdentifier(const std::string& val) {
   this->processorIdentifier = val;
 __isset.processorIdentifier = true;
 }
+
+void AlterTableRequest::__set_expectedParameterKey(const std::string& val) {
+  this->expectedParameterKey = val;
+__isset.expectedParameterKey = true;
+}
+
+void AlterTableRequest::__set_expectedParameterValue(const std::string& val) {
+  this->expectedParameterValue = val;
+__isset.expectedParameterValue = true;
+}
 std::ostream& operator<<(std::ostream& out, const AlterTableRequest& obj)
 {
   obj.printTo(out);
@@ -45769,6 +45826,22 @@ uint32_t AlterTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->expectedParameterKey);
+          this->__isset.expectedParameterKey = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->expectedParameterValue);
+          this->__isset.expectedParameterValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -45842,6 +45915,16 @@ uint32_t AlterTableRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeString(this->processorIdentifier);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.expectedParameterKey) {
+    xfer += oprot->writeFieldBegin("expectedParameterKey", ::apache::thrift::protocol::T_STRING, 10);
+    xfer += oprot->writeString(this->expectedParameterKey);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.expectedParameterValue) {
+    xfer += oprot->writeFieldBegin("expectedParameterValue", ::apache::thrift::protocol::T_STRING, 11);
+    xfer += oprot->writeString(this->expectedParameterValue);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -45858,6 +45941,8 @@ void swap(AlterTableRequest &a, AlterTableRequest &b) {
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.processorCapabilities, b.processorCapabilities);
   swap(a.processorIdentifier, b.processorIdentifier);
+  swap(a.expectedParameterKey, b.expectedParameterKey);
+  swap(a.expectedParameterValue, b.expectedParameterValue);
   swap(a.__isset, b.__isset);
 }
 
@@ -45871,6 +45956,8 @@ AlterTableRequest::AlterTableRequest(const AlterTableRequest& other1573) {
   validWriteIdList = other1573.validWriteIdList;
   processorCapabilities = other1573.processorCapabilities;
   processorIdentifier = other1573.processorIdentifier;
+  expectedParameterKey = other1573.expectedParameterKey;
+  expectedParameterValue = other1573.expectedParameterValue;
   __isset = other1573.__isset;
 }
 AlterTableRequest& AlterTableRequest::operator=(const AlterTableRequest& other1574) {
@@ -45883,6 +45970,8 @@ AlterTableRequest& AlterTableRequest::operator=(const AlterTableRequest& other15
   validWriteIdList = other1574.validWriteIdList;
   processorCapabilities = other1574.processorCapabilities;
   processorIdentifier = other1574.processorIdentifier;
+  expectedParameterKey = other1574.expectedParameterKey;
+  expectedParameterValue = other1574.expectedParameterValue;
   __isset = other1574.__isset;
   return *this;
 }
@@ -45898,6 +45987,8 @@ void AlterTableRequest::printTo(std::ostream& out) const {
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ", " << "processorCapabilities="; (__isset.processorCapabilities ? (out << to_string(processorCapabilities)) : (out << "<null>"));
   out << ", " << "processorIdentifier="; (__isset.processorIdentifier ? (out << to_string(processorIdentifier)) : (out << "<null>"));
+  out << ", " << "expectedParameterKey="; (__isset.expectedParameterKey ? (out << to_string(expectedParameterKey)) : (out << "<null>"));
+  out << ", " << "expectedParameterValue="; (__isset.expectedParameterValue ? (out << to_string(expectedParameterValue)) : (out << "<null>"));
   out << ")";
 }
 

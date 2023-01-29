@@ -3746,11 +3746,13 @@ class AbortTxnRequest
   TXNID = 1
   REPLPOLICY = 2
   TXN_TYPE = 3
+  ERRORCODE = 4
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
-    TXN_TYPE => {:type => ::Thrift::Types::I32, :name => 'txn_type', :optional => true, :enum_class => ::TxnType}
+    TXN_TYPE => {:type => ::Thrift::Types::I32, :name => 'txn_type', :optional => true, :enum_class => ::TxnType},
+    ERRORCODE => {:type => ::Thrift::Types::I64, :name => 'errorCode', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3768,9 +3770,11 @@ end
 class AbortTxnsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXN_IDS = 1
+  ERRORCODE = 2
 
   FIELDS = {
-    TXN_IDS => {:type => ::Thrift::Types::LIST, :name => 'txn_ids', :element => {:type => ::Thrift::Types::I64}}
+    TXN_IDS => {:type => ::Thrift::Types::LIST, :name => 'txn_ids', :element => {:type => ::Thrift::Types::I64}},
+    ERRORCODE => {:type => ::Thrift::Types::I64, :name => 'errorCode', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -7213,6 +7217,8 @@ class AlterTableRequest
   VALIDWRITEIDLIST = 7
   PROCESSORCAPABILITIES = 8
   PROCESSORIDENTIFIER = 9
+  EXPECTEDPARAMETERKEY = 10
+  EXPECTEDPARAMETERVALUE = 11
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
@@ -7223,7 +7229,9 @@ class AlterTableRequest
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
+    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
+    EXPECTEDPARAMETERKEY => {:type => ::Thrift::Types::STRING, :name => 'expectedParameterKey', :optional => true},
+    EXPECTEDPARAMETERVALUE => {:type => ::Thrift::Types::STRING, :name => 'expectedParameterValue', :optional => true}
   }
 
   def struct_fields; FIELDS; end

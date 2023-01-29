@@ -432,6 +432,15 @@ public class MetastoreConf {
         "Time after Initiator will ignore metastore.compactor.initiator.failed.compacts.threshold "
             + "and retry with compaction again. This will try to auto heal tables with previous failed compaction "
             + "without manual intervention. Setting it to 0 or negative value will disable this feature."),
+    COMPACTOR_INITIATOR_REBALANCE_MINIMUM_SIZE("metastore.compactor.initiator.rebalance.min.size",
+        "hive.compactor.initiator.rebalance.min.size", 1024*1024*100,
+        "Minimum table/partition size for which a rebalancing compaction can be initiated."),
+    COMPACTOR_INITIATOR_REBALANCE_THRESHOLD("metastore.compactor.initiator.rebalance.threshold",
+        "hive.compactor.initiator.rebalance.threshold", 0.2d,
+        "Threshold for the rebalancing compaction. If the std_dev/average_bucket_size (where std_dev is the " +
+            "standard deviation of the bucket sizes) is larger than the threshold, a rebalance compaction is initiated. " +
+            "In other words (assuming that the value is 0.2): If the standard deviation is larger than 20% of the average " +
+            "bucket size, a rebalancing compaction is initiated. "),
     COMPACTOR_RUN_AS_USER("metastore.compactor.run.as.user", "hive.compactor.run.as.user", "",
         "Specify the user to run compactor Initiator and Worker as. If empty string, defaults to table/partition " +
         "directory owner."),
@@ -604,7 +613,12 @@ public class MetastoreConf {
         "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
             "count as small deltas. Default 0.01 = 1%.)"),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
-        "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
+        "Whether to run the initiator thread on this metastore instance or not.\n" +
+            "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
+            "on Hive transactions. For a complete list of parameters required for turning on\n" +
+            "transactions, see hive.txn.manager."),
+    COMPACTOR_CLEANER_ON("metastore.compactor.cleaner.on", "hive.compactor.cleaner.on", false,
+        "Whether to run the cleaner thread on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
             "transactions, see hive.txn.manager."),
@@ -1654,7 +1668,7 @@ public class MetastoreConf {
     HIVE_TXN_MANAGER("hive.txn.manager", "hive.txn.manager",
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager",
         "Set to org.apache.hadoop.hive.ql.lockmgr.DbTxnManager as part of turning on Hive\n" +
-            "transactions, which also requires appropriate settings for hive.compactor.initiator.on,\n" +
+            "transactions, which also requires appropriate settings for hive.compactor.initiator.on,hive.compactor.cleaner.on,\n" +
             "hive.compactor.worker.threads, hive.support.concurrency (true),\n" +
             "and hive.exec.dynamic.partition.mode (nonstrict).\n" +
             "The default DummyTxnManager replicates pre-Hive-0.13 behavior and provides\n" +

@@ -70,7 +70,7 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
     Map<String, String> properties = new HashMap<>();
     properties.put("hive.compactor.worker.pool", "pool1");
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false, properties);
-    provider.insertTestData(DEFAULT_TABLE_NAME);
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
 
     executeStatementOnDriver("ALTER TABLE " + DEFAULT_TABLE_NAME + " COMPACT 'major' POOL 'pool2'", driver);
 
@@ -93,7 +93,7 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
     Map<String, String> properties = new HashMap<>();
     properties.put("hive.compactor.worker.pool", "pool1");
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false, properties);
-    provider.insertTestData(DEFAULT_TABLE_NAME);
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
 
     TxnCommandsBaseForTests.runInitiator(conf);
 
@@ -103,7 +103,7 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
   @Test
   public void testInitiatorHandlesEmptyPoolName() throws Exception {
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false);
-    provider.insertTestData(DEFAULT_TABLE_NAME);
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
 
     TxnCommandsBaseForTests.runInitiator(conf);
 
@@ -128,9 +128,9 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
     Map<String, String> properties = new HashMap<>();
     properties.put("hive.compactor.worker.pool", "pool1");
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false, properties);
-    provider.insertTestData(DEFAULT_TABLE_NAME);
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
     provider.createFullAcidTable(null, "table2", false, false);
-    provider.insertTestData("table2");
+    provider.insertTestData("table2", false);
 
     TxnCommandsBaseForTests.runInitiator(conf);
 
@@ -152,10 +152,10 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
     Map<String, String> properties = new HashMap<>();
     properties.put("hive.compactor.worker.pool", "pool1");
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false, properties);
-    provider.insertTestData(DEFAULT_TABLE_NAME);
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
     properties.put("hive.compactor.worker.pool", "pool2");
     provider.createFullAcidTable(null, "table2", false, false, properties);
-    provider.insertTestData("table2");
+    provider.insertTestData("table2", false);
 
     TxnCommandsBaseForTests.runInitiator(conf);
 
