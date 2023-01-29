@@ -61,7 +61,7 @@ public abstract class AbstractCreateViewAnalyzer extends BaseSemanticAnalyzer {
     ctx.setEnableUnparse(true);
     analyzer.forViewCreation(fqViewName);
     analyzer.analyze(select, ctx);
-    analyzer.executeUnparseTranlations();
+    analyzer.executeUnParseTranslations();
 
     queryState.setLineageState(innerQueryState.getLineageState());
     queryState.getLineageState().mapDirToOp(new Path(fqViewName), analyzer.getSinkOp());
