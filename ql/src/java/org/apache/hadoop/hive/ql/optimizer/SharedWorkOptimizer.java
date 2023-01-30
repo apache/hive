@@ -1883,12 +1883,19 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     OperatorGraph og = new OperatorGraph(pctx);
-    Set<OperatorGraph.Cluster> cc1 = og.clusterOf(op1).childClusters(edgePredicate);
-    Set<OperatorGraph.Cluster> cc2 = og.clusterOf(op2).childClusters(edgePredicate);
+    Set<Cluster> clusterSet1 = og.clusterOf(op1);
+    Set<Cluster> clusterSet2 = og.clusterOf(op2);
 
-    if (!Collections.disjoint(cc1, cc2)) {
-      LOG.debug("merge would create an unsupported parallel edge(CHILDS)", op1, op2);
-      return false;
+    for (Cluster cluster1: clusterSet1) {
+      for (Cluster cluster2: clusterSet2) {
+        Set<Cluster> cc1 = cluster1.childClusters(edgePredicate);
+        Set<Cluster> cc2 = cluster2.childClusters(edgePredicate);
+
+        if (!Collections.disjoint(cc1, cc2)) {
+          LOG.debug("merge would create an unsupported parallel edge(CHILDS)", op1, op2);
+          return false;
+        }
+      }
     }
 
     if (!og.mayMerge(op1, op2)) {
@@ -1907,20 +1914,25 @@ public class SharedWorkOptimizer extends Transform {
     //
     // In the check, we exclude the inputs to the root operator that we are trying
     // to merge (only useful for extended merging as TS do not have inputs).
-    Set<OperatorGraph.Cluster> pc1 = og.clusterOf(op1).parentClusters(edgePredicate);
-    Set<OperatorGraph.Cluster> pc2 = og.clusterOf(op2).parentClusters(edgePredicate);
-    Set<Cluster> pc = new HashSet<>(Sets.intersection(pc1, pc2));
+    for (Cluster cluster1: clusterSet1) {
+      for (Cluster cluster2: clusterSet2) {
+        Set<Cluster> pc1 = cluster1.parentClusters(edgePredicate);
+        Set<Cluster> pc2 = cluster2.parentClusters(edgePredicate);
 
-    for (Operator<?> o : sr.discardableOps.get(0).getParentOperators()) {
-      pc.remove(og.clusterOf(o));
-    }
-    for (Operator<?> o : sr.discardableInputOps) {
-      pc.remove(og.clusterOf(o));
-    }
+        Set<Cluster> pc = new HashSet<>(Sets.intersection(pc1, pc2));
 
-    if (pc.size() > 0) {
-      LOG.debug("merge would create an unsupported parallel edge(PARENTS)", op1, op2);
-      return false;
+        for (Operator<?> o : sr.discardableOps.get(0).getParentOperators()) {
+          pc.removeAll(og.clusterOf(o));
+        }
+        for (Operator<?> o : sr.discardableInputOps) {
+          pc.removeAll(og.clusterOf(o));
+        }
+
+        if (pc.size() > 0) {
+          LOG.debug("merge would create an unsupported parallel edge(PARENTS)", op1, op2);
+          return false;
+        }
+      }
     }
 
     return true;
