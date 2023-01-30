@@ -463,7 +463,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
 
   private void finishRemainingTasks() throws HiveException {
-    boolean isFailoverInProgress = shouldFailover() && !work.isBootstrap();
+    boolean isFailoverInProgress = shouldFailover() && !work.isBootstrap() && !createEventMarker;
     if (isFailoverInProgress) {
       Utils.create(new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + File.separator
               + ReplAck.FAILOVER_READY_MARKER), conf);
@@ -831,7 +831,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       setReplSourceFor(hiveDb, dbName, db);
     }
     if (shouldFailover()) {
-      if (!MetaStoreUtils.isDbBeingFailedOver(db)) {
+      if (!MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.SOURCE)) {
         setReplFailoverEnabledAtSource(db);
       }
       fetchFailoverMetadata(hiveDb);
@@ -863,14 +863,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       replLogger.startLog();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.EVENTS.name(), estimatedNumEvents);
-
+      int size = tablesForBootstrap.size();
+      if (size > 0) {
+        metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) tablesForBootstrap.size());
+      }
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)) {
         work.getMetricCollector().reportFailoverStart(getName(), metricMap, work.getFailoverMetadata());
       } else {
-        int size = tablesForBootstrap.size();
-        if (size > 0) {
-          metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) tablesForBootstrap.size());
-        }
         work.getMetricCollector().reportStageStart(getName(), metricMap);
       }
       long dumpedCount = resumeFrom - work.eventFrom;
