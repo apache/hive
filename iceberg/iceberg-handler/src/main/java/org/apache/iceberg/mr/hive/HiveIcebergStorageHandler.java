@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -1127,5 +1128,29 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       tbl.getParameters().put("TRANSLATED_TO_EXTERNAL", "TRUE");
       desc.setIsExternal(true);
     }
+
+    // If source is Iceberg table set the schema and the partition spec
+    if ("ICEBERG".equalsIgnoreCase(origParams.get("table_type"))) {
+      tbl.getParameters()
+          .put(InputFormatConfig.TABLE_SCHEMA, origParams.get(InputFormatConfig.TABLE_SCHEMA));
+      tbl.getParameters()
+          .put(InputFormatConfig.PARTITION_SPEC, origParams.get(InputFormatConfig.PARTITION_SPEC));
+    } else {
+      // if the source is partitioned non-iceberg table set the partition transform spec and set the table as
+      // unpartitioned
+      List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(tbl.getPartitionKeys());
+      SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec);
+      tbl.getSd().getCols().addAll(tbl.getPartitionKeys());
+      tbl.getTTable().setPartitionKeysIsSet(false);
+    }
+  }
+
+  @Override
+  public Map<String, String> getNativeProperties(org.apache.hadoop.hive.ql.metadata.Table table) {
+    Table origTable = IcebergTableUtil.getTable(conf, table.getTTable());
+    Map<String, String> props = Maps.newHashMap();
+    props.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(origTable.schema()));
+    props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(origTable.spec()));
+    return props;
   }
 }

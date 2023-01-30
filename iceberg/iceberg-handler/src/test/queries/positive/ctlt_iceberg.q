@@ -22,3 +22,26 @@ select a from target order by a;
 delete from target where a=2;
 
 select a from target order by a;
+
+--create a partitioned iceberg table
+create table emp_iceberg (id int) partitioned by (company string) stored by iceberg;
+
+show create table emp_iceberg;
+
+-- CTLT with the source as the partitioned iceberg table
+create table emp_like1 like emp_iceberg stored by iceberg;
+
+-- Partition column should be there
+show create table emp_like1;
+
+--create a partitioned non iceberg table
+create table emp (id int) partitioned by (company string);
+
+show create table emp;
+
+-- CTLT with the source as the partitioned iceberg table
+create table emp_like2 like emp stored by iceberg;
+
+-- Partition column should be there
+show create table emp_like2;
+

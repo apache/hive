@@ -368,6 +368,18 @@ public class Table implements Serializable {
     return storageHandler;
   }
 
+  public HiveStorageHandler getStorageHandlerWithoutCaching() {
+    if (storageHandler != null || !isNonNative()) {
+      return storageHandler;
+    }
+    try {
+      return HiveUtils.getStorageHandler(SessionState.getSessionConf(),
+          getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public void setStorageHandler(HiveStorageHandler sh){
     storageHandler = sh;
   }
