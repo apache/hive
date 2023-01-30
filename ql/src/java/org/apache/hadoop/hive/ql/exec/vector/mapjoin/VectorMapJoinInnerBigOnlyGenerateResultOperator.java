@@ -114,7 +114,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
       hashMultiSetResults[i] = baseHashMultiSet.createHashMultiSetResult();
     }
 
-    allMatchs = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    allMatches = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
     equalKeySeriesValueCounts = new long[VectorizedRowBatch.DEFAULT_SIZE];
     equalKeySeriesAllMatchIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
@@ -164,7 +164,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
      * Optimize by running value expressions only over the matched rows.
      */
     if (allMatchCount > 0 && bigTableValueExpressions != null) {
-      performValueExpressions(batch, allMatchs, allMatchCount);
+      performValueExpressions(batch, allMatches, allMatchCount);
     }
 
     int numSel = 0;
@@ -175,10 +175,10 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
 
       if (count == 1) {
         numSel = generateHashMultiSetResultSingleValue(
-            batch, allMatchs, allMatchesIndex, duplicateCount, numSel);
+            batch, allMatches, allMatchesIndex, duplicateCount, numSel);
       } else {
         generateHashMultiSetResultMultiValue(batch,
-            allMatchs, allMatchesIndex,
+            allMatches, allMatchesIndex,
             duplicateCount, count);
       }
     }
@@ -194,7 +194,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
    * @param allMatches
    *          A subset of the rows of the batch that are matches.
    * @param allMatchesIndex
-   *          The logical index into allMatchs of the first equal key.
+   *          The logical index into allMatches of the first equal key.
    * @param duplicateCount
    *          The number of duplicates or equal keys.
    * @param numSel

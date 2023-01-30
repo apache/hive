@@ -297,7 +297,7 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
               equalKeySeriesValueCounts[equalKeySeriesCount] = hashMultiSetResults[hashMultiSetResultCount].count();
               equalKeySeriesAllMatchIndices[equalKeySeriesCount] = allMatchCount;
               equalKeySeriesDuplicateCounts[equalKeySeriesCount] = 1;
-              allMatchs[allMatchCount++] = batchIndex;
+              allMatches[allMatchCount++] = batchIndex;
               // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH isSingleValue " + equalKeySeriesIsSingleValue[equalKeySeriesCount] + " currentKey " + currentKey);
               break;
 
@@ -317,7 +317,7 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
             switch (saveJoinResult) {
             case MATCH:
               equalKeySeriesDuplicateCounts[equalKeySeriesCount]++;
-              allMatchs[allMatchCount++] = batchIndex;
+              allMatches[allMatchCount++] = batchIndex;
               // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH duplicate");
               break;
 
@@ -352,7 +352,7 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
 
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
-              " allMatches " + intArrayToRangesString(allMatchs, allMatchCount) +
+              " allMatches " + intArrayToRangesString(allMatches, allMatchCount) +
               " equalKeySeriesValueCounts " + longArrayToRangesString(equalKeySeriesValueCounts, equalKeySeriesCount) +
               " equalKeySeriesAllMatchIndices " + intArrayToRangesString(equalKeySeriesAllMatchIndices, equalKeySeriesCount) +
               " equalKeySeriesDuplicateCounts " + intArrayToRangesString(equalKeySeriesDuplicateCounts, equalKeySeriesCount) +
