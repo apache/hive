@@ -55,6 +55,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -279,6 +280,15 @@ public interface HiveStorageHandler extends Configurable {
    */
   default void setTableParametersForCTLT(org.apache.hadoop.hive.ql.metadata.Table tbl, CreateTableLikeDesc desc,
       Map<String, String> origParams) {
+  }
+
+  /**
+   * Extract the native properties of the table which aren't stored in the HMS
+   * @param table the table
+   * @return map with native table level properties
+   */
+  default Map<String, String> getNativeProperties(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return new HashMap<>();
   }
 
   enum AcidSupportType {
