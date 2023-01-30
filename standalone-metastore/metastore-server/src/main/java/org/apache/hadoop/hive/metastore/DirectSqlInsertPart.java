@@ -77,7 +77,7 @@ class DirectSqlInsertPart {
   }
 
   private void insertInBatch(String tableName, String columns, int columnCount, int rowCount,
-      BatchExecutionContext bec) throws MetaException {
+      BatchExecutionContext batchExecutionContext) throws MetaException {
     if (rowCount == 0 || columnCount == 0) {
       return;
     }
@@ -91,11 +91,17 @@ class DirectSqlInsertPart {
     }
     int batchParamCount = maxRowsInBatch * columnCount;
     for (int batch = 0; batch < maxBatches; batch++) {
-      bec.execute(query, maxRowsInBatch, batchParamCount);
+      batchExecutionContext.execute(query, maxRowsInBatch, batchParamCount);
     }
     if (last != 0) {
       query = dbType.getBatchInsertQuery(tableName, columns, rowFormat, last);
-      bec.execute(query, last, last * columnCount);
+      batchExecutionContext.execute(query, last, last * columnCount);
+    }
+  }
+
+  private void executeQuery(String queryText, Object[] params) throws MetaException {
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, queryText);
     }
   }
 
@@ -104,7 +110,7 @@ class DirectSqlInsertPart {
     String columns = "(\"SERDE_ID\",\"DESCRIPTION\",\"DESERIALIZER_CLASS\",\"NAME\",\"SERDE_TYPE\",\"SLIB\","
         + "\"SERIALIZER_CLASS\")";
     int columnCount = 7;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MSerDeInfo>> it = serdeIdToSerDeInfo.entrySet().iterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount, int batchParamCount) throws MetaException {
@@ -121,12 +127,10 @@ class DirectSqlInsertPart {
           params[paramIndex++] = serdeInfo.getSerializationLib();
           params[paramIndex++] = serdeInfo.getSerializerClass();
         }
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"SERDES\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"SERDES\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertStorageDescriptorInBatch(Map<Long, MStorageDescriptor> sdIdToStorageDescriptor,
@@ -135,7 +139,7 @@ class DirectSqlInsertPart {
     String columns = "(\"SD_ID\",\"CD_ID\",\"INPUT_FORMAT\",\"IS_COMPRESSED\",\"IS_STOREDASSUBDIRECTORIES\","
         + "\"LOCATION\",\"NUM_BUCKETS\",\"OUTPUT_FORMAT\",\"SERDE_ID\")";
     int columnCount = 9;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MStorageDescriptor>> it = sdIdToStorageDescriptor.entrySet().iterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount, int batchParamCount) throws MetaException {
@@ -154,12 +158,10 @@ class DirectSqlInsertPart {
           params[paramIndex++] = sd.getOutputFormat();
           params[paramIndex++] = sdIdToSerdeId.get(entry.getKey());
         }
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"SDS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"SDS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertPartitionInBatch(Map<Long, MPartition> partIdToPartition, Map<Long, Long> partIdToSdId)
@@ -168,7 +170,7 @@ class DirectSqlInsertPart {
     String columns = "(\"PART_ID\",\"CREATE_TIME\",\"LAST_ACCESS_TIME\",\"PART_NAME\",\"SD_ID\",\"TBL_ID\","
         + "\"WRITE_ID\")";
     int columnCount = 7;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MPartition>> it = partIdToPartition.entrySet().iterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount, int batchParamCount) throws MetaException {
@@ -185,12 +187,10 @@ class DirectSqlInsertPart {
           params[paramIndex++] = partition.getTable().getId();
           params[paramIndex++] = partition.getWriteId();
         }
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"PARTITIONS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"PARTITIONS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertSerdeParamInBatch(Map<Long, MSerDeInfo> serdeIdToSerDeInfo) throws MetaException {
@@ -203,7 +203,7 @@ class DirectSqlInsertPart {
     }
     String columns = "(\"SERDE_ID\",\"PARAM_KEY\",\"PARAM_VALUE\")";
     int columnCount = 3;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MSerDeInfo>> serdeIt = serdeIdToSerDeInfo.entrySet().iterator();
       Map.Entry<Long, MSerDeInfo> serdeEntry = serdeIt.next();
       Iterator<Map.Entry<String, String>> it = serdeEntry.getValue().getParameters().entrySet().iterator();
@@ -225,12 +225,10 @@ class DirectSqlInsertPart {
             it = serdeEntry.getValue().getParameters().entrySet().iterator();
           }
         } while (index < batchRowCount);
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"SERDE_PARAMS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"SERDE_PARAMS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertStorageDescriptorParamInBatch(Map<Long, MStorageDescriptor> sdIdToStorageDescriptor)
@@ -244,7 +242,7 @@ class DirectSqlInsertPart {
     }
     String columns = "(\"SD_ID\",\"PARAM_KEY\",\"PARAM_VALUE\")";
     int columnCount = 3;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MStorageDescriptor>> sdIt = sdIdToStorageDescriptor.entrySet().iterator();
       Map.Entry<Long, MStorageDescriptor> sdEntry = sdIt.next();
       Iterator<Map.Entry<String, String>> it = sdEntry.getValue().getParameters().entrySet().iterator();
@@ -266,12 +264,10 @@ class DirectSqlInsertPart {
             it = sdEntry.getValue().getParameters().entrySet().iterator();
           }
         } while (index < batchRowCount);
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"SD_PARAMS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"SD_PARAMS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertPartitionParamInBatch(Map<Long, MPartition> partIdToPartition) throws MetaException {
@@ -284,7 +280,7 @@ class DirectSqlInsertPart {
     }
     String columns = "(\"PART_ID\",\"PARAM_KEY\",\"PARAM_VALUE\")";
     int columnCount = 3;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MPartition>> partIt = partIdToPartition.entrySet().iterator();
       Map.Entry<Long, MPartition> partEntry = partIt.next();
       Iterator<Map.Entry<String, String>> it = partEntry.getValue().getParameters().entrySet().iterator();
@@ -306,12 +302,10 @@ class DirectSqlInsertPart {
             it = partEntry.getValue().getParameters().entrySet().iterator();
           }
         } while (index < batchRowCount);
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"PARTITION_PARAMS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"PARTITION_PARAMS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertPartitionKeyValInBatch(Map<Long, MPartition> partIdToPartition) throws MetaException {
@@ -324,7 +318,7 @@ class DirectSqlInsertPart {
     }
     String columns = "(\"PART_ID\",\"PART_KEY_VAL\",\"INTEGER_IDX\")";
     int columnCount = 3;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       int colIndex = 0;
       final Iterator<Map.Entry<Long, MPartition>> partIt = partIdToPartition.entrySet().iterator();
       Map.Entry<Long, MPartition> partEntry = partIt.next();
@@ -347,20 +341,17 @@ class DirectSqlInsertPart {
             it = partEntry.getValue().getValues().iterator();
           }
         } while (index < batchRowCount);
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"PARTITION_KEY_VALS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"PARTITION_KEY_VALS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
-
 
   private void insertColumnDescriptorInBatch(Map<Long, MColumnDescriptor> cdIdToColumnDescriptor) throws MetaException {
     int rowCount = cdIdToColumnDescriptor.size();
     String columns = "(\"CD_ID\")";
     int columnCount = 1;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Long> it = cdIdToColumnDescriptor.keySet().iterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount, int batchParamCount) throws MetaException {
@@ -369,12 +360,10 @@ class DirectSqlInsertPart {
         for (int index = 0; index < batchRowCount; index++) {
           params[paramIndex++] = it.next();
         }
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"CDS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"CDS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertColumnV2InBatch(Map<Long, MColumnDescriptor> cdIdToColumnDescriptor) throws MetaException {
@@ -387,7 +376,7 @@ class DirectSqlInsertPart {
     }
     String columns = "(\"CD_ID\",\"COMMENT\",\"COLUMN_NAME\",\"TYPE_NAME\",\"INTEGER_IDX\")";
     int columnCount = 5;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       int colIndex = 0;
       final Iterator<Map.Entry<Long, MColumnDescriptor>> cdIt = cdIdToColumnDescriptor.entrySet().iterator();
       Map.Entry<Long, MColumnDescriptor> cdEntry = cdIt.next();
@@ -413,12 +402,10 @@ class DirectSqlInsertPart {
             it = cdEntry.getValue().getCols().iterator();
           }
         } while (index < batchRowCount);
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"COLUMNS_V2\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"COLUMNS_V2\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertBucketColInBatch(Map<Long, MStorageDescriptor> sdIdToStorageDescriptor) throws MetaException {
@@ -431,7 +418,7 @@ class DirectSqlInsertPart {
     }
     String columns = "(\"SD_ID\",\"BUCKET_COL_NAME\",\"INTEGER_IDX\")";
     int columnCount = 3;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       int colIndex = 0;
       final Iterator<Map.Entry<Long, MStorageDescriptor>> sdIt = sdIdToStorageDescriptor.entrySet().iterator();
       Map.Entry<Long, MStorageDescriptor> sdEntry = sdIt.next();
@@ -454,12 +441,10 @@ class DirectSqlInsertPart {
             it = sdEntry.getValue().getBucketCols().iterator();
           }
         } while (index < batchRowCount);
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"BUCKETING_COLS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"BUCKETING_COLS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertSortColInBatch(Map<Long, MStorageDescriptor> sdIdToStorageDescriptor) throws MetaException {
@@ -472,7 +457,7 @@ class DirectSqlInsertPart {
     }
     String columns = "(\"SD_ID\",\"COLUMN_NAME\",\"ORDER\",\"INTEGER_IDX\")";
     int columnCount = 4;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       int colIndex = 0;
       final Iterator<Map.Entry<Long, MStorageDescriptor>> sdIt = sdIdToStorageDescriptor.entrySet().iterator();
       Map.Entry<Long, MStorageDescriptor> sdEntry = sdIt.next();
@@ -497,19 +482,17 @@ class DirectSqlInsertPart {
             it = sdEntry.getValue().getSortCols().iterator();
           }
         } while (index < batchRowCount);
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"SORT_COLS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"SORT_COLS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertSkewedStringListInBatch(List<Long> stringListIds) throws MetaException {
     int rowCount = stringListIds.size();
     String columns = "(\"STRING_LIST_ID\")";
     int columnCount = 1;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Long> it = stringListIds.iterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount, int batchParamCount) throws MetaException {
@@ -518,12 +501,10 @@ class DirectSqlInsertPart {
         for (int index = 0; index < batchRowCount; index++) {
           params[paramIndex++] = it.next();
         }
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"SKEWED_STRING_LIST\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"SKEWED_STRING_LIST\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertSkewedStringListValInBatch(Map<Long, List<String>> stringListIdToStringList) throws MetaException {
@@ -536,7 +517,7 @@ class DirectSqlInsertPart {
     }
     String columns = "(\"STRING_LIST_ID\",\"STRING_LIST_VALUE\",\"INTEGER_IDX\")";
     int columnCount = 3;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       int colIndex = 0;
       final Iterator<Map.Entry<Long, List<String>>> stringListIt = stringListIdToStringList.entrySet().iterator();
       Map.Entry<Long, List<String>> stringListEntry = stringListIt.next();
@@ -559,12 +540,10 @@ class DirectSqlInsertPart {
             it = stringListEntry.getValue().iterator();
           }
         } while (index < batchRowCount);
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"SKEWED_STRING_LIST_VALUES\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"SKEWED_STRING_LIST_VALUES\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertSkewedColInBatch(Map<Long, MStorageDescriptor> sdIdToStorageDescriptor) throws MetaException {
@@ -577,7 +556,7 @@ class DirectSqlInsertPart {
     }
     String columns = "(\"SD_ID\",\"SKEWED_COL_NAME\",\"INTEGER_IDX\")";
     int columnCount = 3;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       int colIndex = 0;
       final Iterator<Map.Entry<Long, MStorageDescriptor>> sdIt = sdIdToStorageDescriptor.entrySet().iterator();
       Map.Entry<Long, MStorageDescriptor> sdEntry = sdIt.next();
@@ -600,12 +579,10 @@ class DirectSqlInsertPart {
             it = sdEntry.getValue().getSkewedColNames().iterator();
           }
         } while (index < batchRowCount);
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"SKEWED_COL_NAMES\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"SKEWED_COL_NAMES\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertSkewedValInBatch(List<Long> stringListIds, Map<Long, Long> stringListIdToSdId)
@@ -613,7 +590,7 @@ class DirectSqlInsertPart {
     int rowCount = stringListIds.size();
     String columns = "(\"SD_ID_OID\",\"STRING_LIST_ID_EID\",\"INTEGER_IDX\")";
     int columnCount = 3;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       int colIndex = 0;
       long prevSdId = -1;
       final Iterator<Long> it = stringListIds.iterator();
@@ -632,12 +609,10 @@ class DirectSqlInsertPart {
           params[paramIndex++] = colIndex++;
           prevSdId = sdId;
         }
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"SKEWED_VALUES\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"SKEWED_VALUES\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertSkewedLocationInBatch(Map<Long, String> stringListIdToLocation, Map<Long, Long> stringListIdToSdId)
@@ -645,7 +620,7 @@ class DirectSqlInsertPart {
     int rowCount = stringListIdToLocation.size();
     String columns = "(\"SD_ID\",\"STRING_LIST_ID_KID\",\"LOCATION\")";
     int columnCount = 3;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, String>> it = stringListIdToLocation.entrySet().iterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount, int batchParamCount) throws MetaException {
@@ -657,12 +632,10 @@ class DirectSqlInsertPart {
           params[paramIndex++] = entry.getKey();
           params[paramIndex++] = entry.getValue();
         }
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"SKEWED_COL_VALUE_LOC_MAP\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"SKEWED_COL_VALUE_LOC_MAP\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertPartitionPrivilegeInBatch(Map<Long, MPartitionPrivilege> partGrantIdToPrivilege,
@@ -671,7 +644,7 @@ class DirectSqlInsertPart {
     String columns = "(\"PART_GRANT_ID\",\"AUTHORIZER\",\"CREATE_TIME\",\"GRANT_OPTION\",\"GRANTOR\",\"GRANTOR_TYPE\","
         + "\"PART_ID\",\"PRINCIPAL_NAME\",\"PRINCIPAL_TYPE\",\"PART_PRIV\")";
     int columnCount = 10;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MPartitionPrivilege>> it = partGrantIdToPrivilege.entrySet().iterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount, int batchParamCount) throws MetaException {
@@ -691,12 +664,10 @@ class DirectSqlInsertPart {
           params[paramIndex++] = partPrivilege.getPrincipalType();
           params[paramIndex++] = partPrivilege.getPrivilege();
         }
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"PART_PRIVS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"PART_PRIVS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   private void insertPartitionColPrivilegeInBatch(Map<Long, MPartitionColumnPrivilege> partColumnGrantIdToPrivilege,
@@ -705,7 +676,7 @@ class DirectSqlInsertPart {
     String columns = "(\"PART_COLUMN_GRANT_ID\",\"AUTHORIZER\",\"COLUMN_NAME\",\"CREATE_TIME\",\"GRANT_OPTION\","
         + "\"GRANTOR\",\"GRANTOR_TYPE\",\"PART_ID\",\"PRINCIPAL_NAME\",\"PRINCIPAL_TYPE\",\"PART_COL_PRIV\")";
     int columnCount = 11;
-    BatchExecutionContext bec = new BatchExecutionContext() {
+    BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MPartitionColumnPrivilege>> it
           = partColumnGrantIdToPrivilege.entrySet().iterator();
       @Override
@@ -727,12 +698,10 @@ class DirectSqlInsertPart {
           params[paramIndex++] = partColumnPrivilege.getPrincipalType();
           params[paramIndex++] = partColumnPrivilege.getPrivilege();
         }
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", batchQueryText))) {
-          MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), params, batchQueryText);
-        }
+        executeQuery(batchQueryText, params);
       }
     };
-    insertInBatch("\"PART_COL_PRIVS\"", columns, columnCount, rowCount, bec);
+    insertInBatch("\"PART_COL_PRIVS\"", columns, columnCount, rowCount, batchExecutionContext);
   }
 
   /**

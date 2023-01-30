@@ -693,7 +693,9 @@ public class MetastoreConf {
     DATANUCLEUS_USE_LEGACY_VALUE_STRATEGY("datanucleus.rdbms.useLegacyNativeValueStrategy",
         "datanucleus.rdbms.useLegacyNativeValueStrategy", true, ""),
     DATANUCLEUS_QUERY_SQL_ALLOWALL("datanucleus.query.sql.allowAll", "datanucleus.query.sql.allowAll",
-        true, "Allow insert, update and delete operations from JDO SQL"),
+        true, "In strict JDO all SQL queries must begin with \"SELECT ...\", and consequently it "
+        + "is not possible to execute queries that change data. This DataNucleus property when set to true allows "
+        + "insert, update and delete operations from JDO SQL. Default value is true."),
 
     // Parameters for configuring SSL encryption to the database store
     // If DBACCESS_USE_SSL is false, then all other DBACCESS_SSL_* properties will be ignored
