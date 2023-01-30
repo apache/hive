@@ -463,7 +463,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
 
   private void finishRemainingTasks() throws HiveException {
-    boolean isFailoverInProgress = shouldFailover() && !work.isBootstrap();
+    boolean isFailoverInProgress = shouldFailover() && !work.isBootstrap() && !createEventMarker;
     if (isFailoverInProgress) {
       Utils.create(new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + File.separator
               + ReplAck.FAILOVER_READY_MARKER), conf);
@@ -831,7 +831,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       setReplSourceFor(hiveDb, dbName, db);
     }
     if (shouldFailover()) {
-      if (!MetaStoreUtils.isDbBeingFailedOver(db)) {
+      if (!MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.SOURCE)) {
         setReplFailoverEnabledAtSource(db);
       }
       fetchFailoverMetadata(hiveDb);
@@ -863,26 +863,30 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       replLogger.startLog();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.EVENTS.name(), estimatedNumEvents);
-
+      int size = tablesForBootstrap.size();
+      if (size > 0) {
+        metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) tablesForBootstrap.size());
+      }
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)) {
         work.getMetricCollector().reportFailoverStart(getName(), metricMap, work.getFailoverMetadata());
       } else {
-        int size = tablesForBootstrap.size();
-        if (size > 0) {
-          metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) tablesForBootstrap.size());
-        }
         work.getMetricCollector().reportStageStart(getName(), metricMap);
       }
       long dumpedCount = resumeFrom - work.eventFrom;
       if (dumpedCount > 0) {
         LOG.info("Event id {} to {} are already dumped, skipping {} events", work.eventFrom, resumeFrom, dumpedCount);
       }
-      cleanFailedEventDirIfExists(dumpRoot, resumeFrom);
+      boolean isStagingDirCheckedForFailedEvents = false;
       while (evIter.hasNext()) {
         NotificationEvent ev = evIter.next();
         lastReplId = ev.getEventId();
         if (ev.getEventId() <= resumeFrom) {
           continue;
+        }
+        // Checking and removing remnant file from staging directory if previous incremental repl dump is failed
+        if (!isStagingDirCheckedForFailedEvents) {
+          cleanFailedEventDirIfExists(dumpRoot, ev.getEventId());
+          isStagingDirCheckedForFailedEvents = true;
         }
 
         //disable materialized-view replication if not configured
@@ -1073,16 +1077,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return currentEventMaxLimit;
   }
 
-  private void cleanFailedEventDirIfExists(Path dumpDir, long resumeFrom) throws SemanticException {
-    Path nextEventRoot = new Path(dumpDir, String.valueOf(resumeFrom + 1));
+  private void cleanFailedEventDirIfExists(Path dumpDir, long eventId) throws SemanticException {
+    Path eventRoot = new Path(dumpDir, String.valueOf(eventId));
     Retryable retryable = Retryable.builder()
       .withHiveConf(conf)
       .withRetryOnException(IOException.class).build();
     try {
       retryable.executeCallable((Callable<Void>) () -> {
-        FileSystem fs = FileSystem.get(nextEventRoot.toUri(), conf);
         try {
-          fs.delete(nextEventRoot, true);
+          FileSystem fs = FileSystem.get(eventRoot.toUri(), conf);
+          if (fs.exists(eventRoot))  {
+            fs.delete(eventRoot, true);
+          }
         } catch (FileNotFoundException e) {
           // no worries
         }
