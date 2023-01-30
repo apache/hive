@@ -7890,8 +7890,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (!(destType == QBMetaData.DEST_DFS_FILE && qb.getIsQuery())) {
-      input = genConversionSelectOperator(
-              dest, qb, input, destinationTable.getDeserializer(), dpCtx, null, destinationTable);
+      try {
+        input = genConversionSelectOperator(
+                dest, qb, input, tableDescriptor.getDeserializer(conf), dpCtx, null, destinationTable);
+      } catch (Exception e) {
+        throw new SemanticException(e);
+      }
     }
 
     inputRR = opParseCtx.get(input).getRowResolver();
@@ -8599,7 +8603,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // if target table is always unpartitioned, then the output object inspector will already contain the partition cols
     // too, therefore we shouldn't add the partition col num to the output col num
-    boolean alreadyContainsPartCols = Optional.ofNullable(table.getStorageHandler())
+    boolean alreadyContainsPartCols = Optional.ofNullable(table)
+            .map(Table::getStorageHandler)
             .map(HiveStorageHandler::alwaysUnpartitioned)
             .orElse(Boolean.FALSE);
 
