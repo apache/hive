@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,42 +50,55 @@ public class DotExporter {
   }
 
   public void write(File outFile) throws Exception {
-    Map<Operator<?>, Cluster> nodeCluster = operatorGraph.nodeCluster;
-    DagGraph<Operator<?>, OpEdge> g = operatorGraph.g;
+    DagGraph<Operator<?>, OpEdge> g = operatorGraph.getDagGraph();
     PrintWriter writer = new PrintWriter(outFile);
     writer.println("digraph G");
     writer.println("{\n");
-    HashSet<Cluster> clusters = new HashSet<>(nodeCluster.values());
+    Set<Cluster> clusters = operatorGraph.getClusters();
+    Map<Cluster, Integer> clusterIndicesMap = new HashMap<>();
     int idx = 0;
     for (Cluster cluster : clusters) {
       idx++;
+      clusterIndicesMap.put(cluster, idx);
       writer.printf("subgraph cluster_%d {\n", idx);
-      for (Operator<?> member : cluster.members) {
-        writer.printf("%s;\n", nodeName(member));
+      for (Operator<?> member : cluster.getMembers()) {
+        writer.printf("%s;\n", nodeName(member, idx));
       }
       writer.printf("label = \"cluster %d\";\n", idx);
       writer.printf("}\n");
     }
     Set<Operator<?>> nodes = g.nodes();
     for (Operator<?> n : nodes) {
-      writer.printf("%s[shape=record,label=\"%s\",%s];\n", nodeName(n), nodeLabel(n), style(n));
-      Set<Operator<?>> succ = g.successors(n);
-      for (Operator<?> s : succ) {
-        Optional<OpEdge> e = g.getEdge(n, s);
-        String style = "";
-        switch(e.get().getEdgeType()) {
-        case BROADCAST:
-          style = "[color=blue,label=\"BROADCAST\"]";
-          break;
-        case DPP:
-          style = "[color=green,label=\"DPP\"]";
-          break;
-        case SEMIJOIN:
-          style = "[color=red,label=\"SEMIJOIN\"]";
-          break;
-        }
+      for (Cluster curCluster: operatorGraph.clusterOf(n)) {
+        int curClusterIdx = clusterIndicesMap.get(curCluster);
+        writer.printf("%s[shape=record,label=\"%s\",%s];\n",
+            nodeName(n, curClusterIdx), nodeLabel(n), style(n));
+        Set<Operator<?>> succ = g.successors(n);
+        for (Operator<?> s : succ) {
+          Optional<OpEdge> e = g.getEdge(n, s);
+          String style = "";
+          switch(e.get().getEdgeType()) {
+            case BROADCAST:
+              style = "[color=blue,label=\"BROADCAST\"]";
+              break;
+            case DPP:
+              style = "[color=green,label=\"DPP\"]";
+              break;
+            case SEMIJOIN:
+              style = "[color=red,label=\"SEMIJOIN\"]";
+              break;
+          }
 
-        writer.printf("%s->%s%s;\n", nodeName(n), nodeName(s), style);
+          Set<Cluster> childClusters = operatorGraph.clusterOf(s);
+          if (childClusters.contains(curCluster)) {
+            writer.printf("%s->%s%s;\n", nodeName(n, curClusterIdx), nodeName(s, curClusterIdx), style);
+          } else {
+            for (Cluster childCluster: childClusters) {
+              int childClusterIdx = clusterIndicesMap.get(childCluster);
+              writer.printf("%s->%s%s;\n", nodeName(n, curClusterIdx), nodeName(s, childClusterIdx), style);
+            }
+          }
+        }
       }
     }
 
@@ -156,8 +169,8 @@ public class DotExporter {
     return "{ " + hBox(strings) + "}";
   }
 
-  private String nodeName(Operator<?> member) {
-    return String.format("\"%s\"", member);
+  private String nodeName(Operator<?> member, int clusterIndex) {
+    return String.format("\"%s-cluster%d\"", member, clusterIndex);
   }
 
   private String nodeName0(Operator<?> member) {

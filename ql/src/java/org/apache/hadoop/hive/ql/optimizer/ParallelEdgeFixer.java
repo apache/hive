@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.EdgeType;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -185,19 +188,32 @@ public class ParallelEdgeFixer extends Transform {
     }
   }
 
+  private static class ActualEdgePredicate implements OperatorGraph.OperatorEdgePredicate {
+    EnumSet<EdgeType> acceptableEdgeTypes = EnumSet.of(EdgeType.FLOW, EdgeType.SEMIJOIN, EdgeType.BROADCAST);
+
+    @Override
+    public boolean accept(Operator<?> s, Operator<?> t, OperatorGraph.OpEdge opEdge) {
+      return acceptableEdgeTypes.contains(opEdge.getEdgeType());
+    }
+  }
+
   private void fixParallelEdges(OperatorGraph og) throws SemanticException {
 
     // Identify edge operators
+    ActualEdgePredicate actualEdgePredicate = new ActualEdgePredicate();
+
     ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
         new ArrayListValuedHashMap<>();
-    for (Cluster c : og.getClusters()) {
-      for (Operator<?> o : c.getMembers()) {
-        for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
-          Cluster parentCluster = og.clusterOf(p);
-          if (parentCluster == c) {
-            continue;
+    for (Cluster cluster: og.getClusters()) {
+      for (Cluster parentCluster: cluster.parentClusters(actualEdgePredicate)) {
+        Set<Operator<?>> parentOperators = parentCluster.getMembers();
+        List<Pair<Operator<?>, Operator<?>>> operatorPairs = new LinkedList<>();
+        for (Operator<?> operator: cluster.getMembers()) {
+          for (Operator<?> parentOperator: operator.getParentOperators()) {
+            if (parentOperators.contains(parentOperator)) {
+              edgeOperators.put(new Pair<>(parentCluster, cluster), new Pair<>(parentOperator, operator));
+            }
           }
-          edgeOperators.put(new Pair<>(parentCluster, c), new Pair<>(p, o));
         }
       }
     }
