@@ -207,7 +207,6 @@ public class ParallelEdgeFixer extends Transform {
     for (Cluster cluster: og.getClusters()) {
       for (Cluster parentCluster: cluster.parentClusters(actualEdgePredicate)) {
         Set<Operator<?>> parentOperators = parentCluster.getMembers();
-        List<Pair<Operator<?>, Operator<?>>> operatorPairs = new LinkedList<>();
         for (Operator<?> operator: cluster.getMembers()) {
           for (Operator<?> parentOperator: operator.getParentOperators()) {
             if (parentOperators.contains(parentOperator)) {
