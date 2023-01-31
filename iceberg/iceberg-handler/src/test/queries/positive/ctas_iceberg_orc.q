@@ -20,3 +20,25 @@ create external table tbl_ice stored by iceberg stored as orc tblproperties ('fo
 select i, s, vc,c, t, si from source;
 
 select * from tbl_ice;
+
+
+-- Test insert - select
+explain
+insert into tbl_ice
+select * from source;
+
+insert into tbl_ice
+select * from source;
+
+select * from tbl_ice;
+
+
+-- Test insert overwrite
+explain
+insert overwrite table tbl_ice
+select * from source;
+
+insert overwrite table tbl_ice
+select * from source;
+
+select * from tbl_ice;
