@@ -222,7 +222,7 @@ public class HiveVectorizedReader {
 
     MemoryBufferOrBuffers footerData = null;
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
-        LlapProxy.getIo() != null) {
+        LlapProxy.getIo() != null && LlapProxy.getIo().usingLowLevelCache()) {
       LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
       footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId);
     }

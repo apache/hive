@@ -170,6 +170,37 @@ POSTHOOK: Input: default@mat1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 five	54
 four	53
+PREHOOK: query: alter materialized view mat1 disable rewrite
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: alter materialized view mat1 disable rewrite
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: default@mat1
+PREHOOK: query: explain cbo
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(b=[$1], c=[$2])
+  HiveFilter(condition=[>($2, 52)])
+    HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice])
+
+PREHOOK: query: alter materialized view mat1 enable rewrite
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: alter materialized view mat1 enable rewrite
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: default@mat1
 PREHOOK: query: explain cbo
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 PREHOOK: type: QUERY

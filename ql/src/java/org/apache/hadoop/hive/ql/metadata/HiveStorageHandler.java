@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
@@ -54,6 +55,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -268,6 +270,25 @@ public interface HiveStorageHandler extends Configurable {
    */
   default boolean alwaysUnpartitioned() {
     return false;
+  }
+
+  /**
+   * Retains storage handler specific properties during CTLT.
+   * @param tbl        the table
+   * @param desc       the table descriptor
+   * @param origParams the original table properties
+   */
+  default void setTableParametersForCTLT(org.apache.hadoop.hive.ql.metadata.Table tbl, CreateTableLikeDesc desc,
+      Map<String, String> origParams) {
+  }
+
+  /**
+   * Extract the native properties of the table which aren't stored in the HMS
+   * @param table the table
+   * @return map with native table level properties
+   */
+  default Map<String, String> getNativeProperties(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return new HashMap<>();
   }
 
   enum AcidSupportType {

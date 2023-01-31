@@ -79,6 +79,9 @@ import java.util.List;
 import java.util.Map;
 
 
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_TABLE_PROPERTY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_ENABLE_BACKGROUND_THREAD;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
@@ -394,7 +397,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     dumpPath = new Path(reverseDumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
@@ -622,7 +625,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     dumpAckFile = new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString());
     assertTrue(fs.exists(dumpAckFile));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
@@ -731,7 +734,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Path dumpAckFile = new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString());
     assertTrue(fs.exists(dumpAckFile));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
@@ -745,7 +748,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(preFailoverDumpData.dumpLocation)));
     assertNotEquals(reverseDumpData.dumpLocation, dumpData.dumpLocation);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     assertTrue(fs.exists(dumpAckFile));
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
@@ -3560,5 +3563,29 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     assertTrue(AcidUtils.isTransactionalTable(replica.getTable(replicatedDbName, tbl)));
     assertFalse(replica.getTable(replicatedDbName, tbl).getTableType().equals(TableType.EXTERNAL_TABLE.toString()));
+  }
+
+  @Test
+  public void testReplTargetLastIdNotUpdatedInCaseOfResume() throws Throwable {
+    Map<String, String> params = new HashMap<>();
+    params.put(REPL_RESUME_STARTED_AFTER_FAILOVER, "true");
+    params.put(REPL_TARGET_TABLE_PROPERTY, "19");
+    params.put(REPL_TARGET_DATABASE_PROPERTY, "15");
+
+    // create database and set the parameters
+    String dbName = "db1";
+    Database db1 = primary.run("create database " + dbName)
+                          .getDatabase(dbName);
+    db1.setParameters(params);
+
+    // let's change 'repl.last.id', now this should not update 'repl.target.last.id' as it finds
+    // 'repl.resume.started' flag
+    primary.run("alter database " + dbName + " set dbproperties('repl.last.id'='21')");
+    Map<String, String> updatedParams = db1.getParameters();
+
+
+    assertEquals(params.get(REPL_TARGET_DATABASE_PROPERTY),
+      updatedParams.get(REPL_TARGET_DATABASE_PROPERTY));
+    assertEquals("15", updatedParams.get(REPL_TARGET_DATABASE_PROPERTY));
   }
 }

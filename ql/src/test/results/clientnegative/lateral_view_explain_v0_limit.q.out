@@ -1,0 +1,23 @@
+PREHOOK: query: CREATE TABLE customer(orders array<string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer
+POSTHOOK: query: CREATE TABLE customer(orders array<string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer
+PREHOOK: query: EXPLAIN SELECT *
+FROM customer
+lateral view explode(orders) v as c1
+lateral view explode(orders) v as c2
+lateral view explode(orders) v as c3
+lateral view explode(orders) v as c4
+lateral view explode(orders) v as c5
+lateral view explode(orders) v as c6
+lateral view explode(orders) v as c7
+lateral view explode(orders) v as c8
+lateral view explode(orders) v as c9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.ExplainTask. LVJ[45] reached hive.explain.node.visit.limit(256)

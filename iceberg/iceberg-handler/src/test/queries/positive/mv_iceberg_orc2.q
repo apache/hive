@@ -20,6 +20,15 @@ select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
 
 select * from mat1;
 
+alter materialized view mat1 disable rewrite;
+
+-- no rewrite
+explain cbo
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
+
+alter materialized view mat1 enable rewrite;
+
+-- rewrite
 explain cbo
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
 
