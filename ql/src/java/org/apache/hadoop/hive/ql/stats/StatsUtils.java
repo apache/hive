@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -281,15 +282,14 @@ public class StatsUtils {
       long nr;
       long fs;
 
-      Map<String, String> icebergBasicStatMap =
-          (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()) ? table.getStorageHandler()
-              .getBasicStatistics(Partish.buildFor(table)) : null;
+      Map<String, Long> basicStatsMap = getValidBasicStatsFromStorageHandler(table);
 
-      if (icebergBasicStatMap != null) {
-        ds = Long.parseLong(icebergBasicStatMap.get(StatsSetupConst.TOTAL_SIZE));
-        nr = Long.parseLong(icebergBasicStatMap.get(StatsSetupConst.ROW_COUNT));
-        fs = Long.parseLong(icebergBasicStatMap.get(StatsSetupConst.NUM_FILES));
-      } else {
+      if (basicStatsMap != null ) {
+        ds = basicStatsMap.get(StatsSetupConst.TOTAL_SIZE);
+        nr = basicStatsMap.get(StatsSetupConst.ROW_COUNT);
+        fs = basicStatsMap.get(StatsSetupConst.NUM_FILES);
+      }
+      else {
 
         Factory basicStatsFactory = new BasicStats.Factory();
 
@@ -467,6 +467,27 @@ public class StatsUtils {
     }
     return stats;
   }
+
+  private static Map<String, Long> getValidBasicStatsFromStorageHandler(Table table) {
+
+    Map<String, String> storageHandlerBasicStatsMap =
+        (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()) ? table.getStorageHandler()
+            .getBasicStatistics(Partish.buildFor(table)) : null;
+
+    try {
+      if (storageHandlerBasicStatsMap != null &&
+          Long.parseLong(storageHandlerBasicStatsMap.get(StatsSetupConst.ROW_COUNT)) > 0) {
+        Map<String, Long> basicStatsMap = new HashMap<>();
+        storageHandlerBasicStatsMap.forEach((k, v) -> basicStatsMap.put(k, Long.valueOf(v)));
+        return basicStatsMap;
+      } else {
+        return null;
+      }
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
 
   private static List<String> extractColumnStates(Table table, List<String> columns,
       ColumnStatsList colStatsCache, List<ColStatistics> columnStats) {

@@ -10,6 +10,15 @@ POSTHOOK: query: create external table tbl_ice(a int, b string, c int) stored by
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: select count(*) from tbl_ice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_ice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
 PREHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 51),(2, 'two', 51),(2, 'two', 51), (3, 'three', 52), (4, 'four', 53), (5, 'five', 54), (111, 'one', 55), (333, 'two', 56)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -117,3 +126,37 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 18
+PREHOOK: query: drop table if exists tbl_orc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_orc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table tbl_orc(a int, b string, c int) stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: create external table tbl_orc(a int, b string, c int) stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: insert into tbl_orc values (1, 'one', 50), (2, 'two', 51),(2, 'two', 51),(2, 'two', 51), (3, 'three', 52), (4, 'four',
+53), (5, 'five', 54), (111, 'one', 55), (333, 'two', 56)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: insert into tbl_orc values (1, 'one', 50), (2, 'two', 51),(2, 'two', 51),(2, 'two', 51), (3, 'three', 52), (4, 'four',
+53), (5, 'five', 54), (111, 'one', 55), (333, 'two', 56)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Lineage: tbl_orc.a SCRIPT []
+POSTHOOK: Lineage: tbl_orc.b SCRIPT []
+POSTHOOK: Lineage: tbl_orc.c SCRIPT []
+PREHOOK: query: select count(*) from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9
