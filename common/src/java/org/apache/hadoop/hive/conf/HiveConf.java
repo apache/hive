@@ -477,6 +477,8 @@ public class HiveConf extends Configuration {
    * in the underlying Hadoop configuration.
    */
   public static enum ConfVars {
+    HIVE_CONF_PROPERTY_TRACKING("hive.conf.property.tracking", false,
+        "Whether to enable property tracking with TrackedHiveConf objects"),
     MSC_CACHE_ENABLED("hive.metastore.client.cache.v2.enabled", true,
             "This property enables a Caffeine Cache for Metastore client"),
     MSC_CACHE_MAX_SIZE("hive.metastore.client.cache.v2.maxSize", "1Gb", new SizeValidator(),
@@ -6332,20 +6334,37 @@ public class HiveConf extends Configuration {
   }
 
   public static HiveConf create() {
-    return new HiveConf();
+    HiveConf conf = new HiveConf();
+    if (conf.isPropertyTrackingEnabled()) {
+      return new TrackedHiveConf();
+    }
+    return conf;
   }
 
   public static HiveConf create(Class<?> cls) {
-    return new HiveConf(cls);
+    HiveConf conf = new HiveConf(cls);
+    if (conf.isPropertyTrackingEnabled()) {
+      return new TrackedHiveConf(cls);
+    }
+    return conf;
   }
 
   public static HiveConf create(Configuration other, Class<?> cls) {
+    if (other.getBoolean(ConfVars.HIVE_CONF_PROPERTY_TRACKING.varname, false)) {
+      return new TrackedHiveConf(other, cls);
+    }
     return new HiveConf(other, cls);
   }
 
-
   public static HiveConf create(HiveConf other) {
+    if (other.isPropertyTrackingEnabled()) {
+      return new TrackedHiveConf(other);
+    }
     return new HiveConf(other);
+  }
+
+  private boolean isPropertyTrackingEnabled() {
+    return getBoolVar(ConfVars.HIVE_CONF_PROPERTY_TRACKING);
   }
 
   /**
