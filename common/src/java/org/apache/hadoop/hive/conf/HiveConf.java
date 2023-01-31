@@ -6349,44 +6349,36 @@ public class HiveConf extends Configuration {
   }
 
   /**
-   * Instantiating HiveConf is deprecated. Please use
-   * HiveConf#create() to construct a Configuration,
-   * this method will become private eventually.
-   * @deprecated Please use create method instead.
+   * @deprecated This method will become private eventually; Use {@link #create()} instead.
    */
+  @Deprecated
   public HiveConf() {
     super();
     initialize(this.getClass());
   }
 
   /**
-   * Instantiating HiveConf is deprecated. Please use
-   * HiveConf#create(cls) to construct a Configuration,
-   * this method will become private eventually.
-   * @deprecated Please use create method instead.
+   * @deprecated This method will become private eventually; Use {@link #create(cls)} instead.
    */
+  @Deprecated
   public HiveConf(Class<?> cls) {
     super();
     initialize(cls);
   }
 
   /**
-   * Instantiating HiveConf is deprecated. Please use
-   * HiveConf#create(conf, cls) to construct a Configuration,
-   * this method will become private eventually.
-   * @deprecated Please use create method instead.
+   * @deprecated This method will become private eventually; Use {@link #create(other, cls)} instead.
    */
+  @Deprecated
   public HiveConf(Configuration other, Class<?> cls) {
     super(other);
     initialize(cls);
   }
 
   /**
-   * Instantiating HiveConf is deprecated. Please use
-   * HiveConf#create(conf) to construct a Configuration,
-   * this method will become private eventually.
-   * @deprecated Please use create method instead.
+   * @deprecated This method will become private eventually; Use {@link #create(other)} instead.
    */
+  @Deprecated
   public HiveConf(HiveConf other) {
     super(other);
     hiveJar = other.hiveJar;
