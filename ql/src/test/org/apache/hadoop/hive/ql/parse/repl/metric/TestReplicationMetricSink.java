@@ -94,7 +94,7 @@ public class TestReplicationMetricSink {
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector(
       "testAcidTablesReplLoadBootstrapIncr_1592205875387",
         "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_parse_TestReplicationScenarios_245261428230295"
-          + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive", conf);
+          + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive", conf, 0L);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -157,7 +157,7 @@ public class TestReplicationMetricSink {
     ReplicationMetricCollector incrementDumpMetricCollector = new IncrementalDumpMetricCollector(
       "testAcidTablesReplLoadBootstrapIncr_1592205875387",
       "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_parse_TestReplicationScenarios_245261428230295"
-        + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive", conf);
+        + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive", conf, 0L);
     metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
     incrementDumpMetricCollector.reportStageStart("dump", metricMap);
@@ -217,7 +217,7 @@ public class TestReplicationMetricSink {
     String stagingDir = "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_parse_TestReplicationScenarios_245261428230295"
             + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive/";
     ReplicationMetricCollector failoverDumpMetricCollector = new IncrementalDumpMetricCollector(
-            "testAcidTablesReplLoadBootstrapIncr_1592205875387", stagingDir, conf);
+            "testAcidTablesReplLoadBootstrapIncr_1592205875387", stagingDir, conf, 0L);
     metricMap = new HashMap<String, Long>(){{put(ReplUtils.MetricName.EVENTS.name(), (long) 10);}};
 
     failoverDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd);
@@ -322,7 +322,7 @@ public class TestReplicationMetricSink {
     ReplicationMetricCollector incrementDumpMetricCollector =
         new IncrementalDumpMetricCollector("testAcidTablesReplLoadBootstrapIncr_1592205875387",
             "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_parse_TestReplicationScenarios_245261428230295"
-                + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive", conf);
+                + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive", conf, 0L);
     Map<String, Long> metricMap = new HashMap<>();
     ReplStatsTracker repl = Mockito.mock(ReplStatsTracker.class);
 

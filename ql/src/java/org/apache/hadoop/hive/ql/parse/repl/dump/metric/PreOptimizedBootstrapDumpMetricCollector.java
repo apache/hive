@@ -21,12 +21,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 
-/**
- * IncrementalDumpMetricCollector.
- * Incremental Dump Metric Collector
- */
-public class IncrementalDumpMetricCollector extends ReplicationMetricCollector {
-  public IncrementalDumpMetricCollector(String dbName, String stagingDir, HiveConf conf, Long executorId) {
-    super(dbName, Metadata.ReplicationType.INCREMENTAL, stagingDir, executorId, conf);
+
+public class PreOptimizedBootstrapDumpMetricCollector extends ReplicationMetricCollector {
+  public PreOptimizedBootstrapDumpMetricCollector(String dbName, String stagingDir, HiveConf conf, Long executorId) {
+    super(dbName, Metadata.ReplicationType.PRE_OPTIMIZED_BOOTSTRAP, stagingDir, executorId, conf);
   }
 }

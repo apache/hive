@@ -260,7 +260,7 @@ public class OptimisedBootstrapUtils {
     LOG.info("Created event_ack file at {} with source eventId {} and target eventId {}", filePath, dbEventId,
         targetDbEventId);
     work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
-    dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, -1L, false);
+    dmd.setDump(DumpType.PRE_OPTIMIZED_BOOTSTRAP, work.eventFrom, lastReplId, cmRoot, -1L, false);
     dmd.write(true);
     return lastReplId;
   }

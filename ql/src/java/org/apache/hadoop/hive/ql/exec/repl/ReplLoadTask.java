@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.thrift.TException;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
@@ -776,6 +778,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         LOG.error("The database {} is already source of replication.", targetDb.getName());
         throw new Exception("Failover target was not source of replication");
       }
+      work.getMetricCollector().reportStageStart(STAGE_NAME, new HashMap<>());
       boolean isTableDiffPresent =
           checkFileExists(new Path(work.dumpDirectory).getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
       boolean isAbortTxnsListPresent =
@@ -800,6 +803,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         this.childTasks = new ArrayList<>();
       }
       createReplLoadCompleteAckTask();
+      work.getMetricCollector().reportStageEnd(STAGE_NAME, Status.SUCCESS);
+      work.getMetricCollector().reportEnd(Status.SUCCESS);
       return 0;
     } else if (work.isSecondFailover) {
       // DROP the tables extra on target, which are not on source cluster.
