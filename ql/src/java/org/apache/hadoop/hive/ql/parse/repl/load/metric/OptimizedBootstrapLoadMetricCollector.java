@@ -15,18 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump.metric;
+package org.apache.hadoop.hive.ql.parse.repl.load.metric;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 
 /**
- * IncrementalDumpMetricCollector.
- * Incremental Dump Metric Collector
+ * BootstrapLoadMetricCollector.
+ * Bootstrap Load Metric Collector
  */
-public class IncrementalDumpMetricCollector extends ReplicationMetricCollector {
-  public IncrementalDumpMetricCollector(String dbName, String stagingDir, HiveConf conf, Long executorId) {
-    super(dbName, Metadata.ReplicationType.INCREMENTAL, stagingDir, executorId, conf);
+public class OptimizedBootstrapLoadMetricCollector extends ReplicationMetricCollector {
+  public OptimizedBootstrapLoadMetricCollector(String dbName, String stagingDir, long dumpExecutionId, HiveConf conf) {
+    super(dbName, Metadata.ReplicationType.OPTIMIZED_BOOTSTRAP, stagingDir, dumpExecutionId, conf);
   }
 }
