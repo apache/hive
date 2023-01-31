@@ -45,7 +45,7 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $FILE_OUTPUT_FORMAT;
     static protected $META_TABLE_STORAGE;
     static protected $TABLE_IS_TRANSACTIONAL;
-    static protected $TABLE_NO_AUTO_COMPACT;
+    static protected $NO_AUTO_COMPACT;
     static protected $TABLE_TRANSACTIONAL_PROPERTIES;
     static protected $TABLE_BUCKETING_VERSION;
     static protected $DRUID_CONFIG_PREFIX;
@@ -196,7 +196,7 @@ final class Constant extends \Thrift\Type\TConstant
         return "transactional";
     }
 
-    protected static function init_TABLE_NO_AUTO_COMPACT()
+    protected static function init_NO_AUTO_COMPACT()
     {
         return "no_auto_compaction";
     }
