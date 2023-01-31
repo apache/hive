@@ -6290,8 +6290,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     List<CompactionInfo> eligibleCompactionsToAbort = findEligibleCompactionsToAbort(abortCompactionResponseElements,
             compactionIdsToAbort);
-    for (int x = 0; x < eligibleCompactionsToAbort.size(); x++) {
-      abortCompactionResponseElements.put(eligibleCompactionsToAbort.get(x).id, abortCompaction(eligibleCompactionsToAbort.get(x)));
+    for (CompactionInfo compactionInfo : eligibleCompactionsToAbort) {
+      abortCompactionResponseElements.put(compactionInfo.id, abortCompaction(compactionInfo));
     }
     return response;
   }

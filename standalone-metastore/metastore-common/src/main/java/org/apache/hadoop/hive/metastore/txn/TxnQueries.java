@@ -53,7 +53,7 @@ public class TxnQueries {
 
 
     public static final String SELECT_COMPACTION_QUEUE_BY_COMPID =
-            "SELECT XX.* FROM ( SELECT " +
+            "SELECT " +
                     "   \"CQ_ID\" AS \"CC_ID\", \"CQ_DATABASE\" AS \"CC_DATABASE\", \"CQ_TABLE\" AS \"CC_TABLE\", \"CQ_PARTITION\" AS \"CC_PARTITION\", " +
                     "   \"CQ_STATE\" AS \"CC_STATE\", \"CQ_TYPE\" AS \"CC_TYPE\", \"CQ_TBLPROPERTIES\" AS \"CC_TBLPROPERTIES\", \"CQ_WORKER_ID\" AS \"CC_WORKER_ID\", " +
                     "   \"CQ_START\" AS \"CC_START\", \"CQ_RUN_AS\" AS \"CC_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" AS \"CC_HIGHEST_WRITE_ID\", \"CQ_META_INFO\" AS \"CC_META_INFO\"," +
@@ -73,7 +73,7 @@ public class TxnQueries {
                     "    -1 , \"CC_NEXT_TXN_ID\", \"CC_TXN_ID\", \"CC_NEXT_TXN_ID\", \"CC_POOL_NAME\", " +
                     "   \"CC_NUMBER_OF_BUCKETS\" " +
                     "   FROM   " +
-                    "   \"COMPLETED_COMPACTIONS\" ) XX  ";
+                    "   \"COMPLETED_COMPACTIONS\" ";
 
 
     public static final String INSERT_INTO_COMPLETED_COMPACTION =
