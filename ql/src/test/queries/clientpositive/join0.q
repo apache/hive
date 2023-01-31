@@ -3,6 +3,7 @@
 SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
+SET hive.conf.property.tracking=true;
 -- SORT_QUERY_RESULTS
 
 EXPLAIN
