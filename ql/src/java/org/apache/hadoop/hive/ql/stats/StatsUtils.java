@@ -277,23 +277,37 @@ public class StatsUtils {
     boolean metaTable = table.getMetaTable() != null;
 
     if (!table.isPartitioned()) {
+      long ds;
+      long nr;
+      long fs;
 
-      Factory basicStatsFactory = new BasicStats.Factory();
+      Map<String, String> icebergBasicStatMap =
+          (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()) ? table.getStorageHandler()
+              .getBasicStatistics(Partish.buildFor(table)) : null;
 
-      if (estimateStats) {
-        basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+      if (icebergBasicStatMap != null) {
+        ds = Long.parseLong(icebergBasicStatMap.get(StatsSetupConst.TOTAL_SIZE));
+        nr = Long.parseLong(icebergBasicStatMap.get(StatsSetupConst.ROW_COUNT));
+        fs = Long.parseLong(icebergBasicStatMap.get(StatsSetupConst.NUM_FILES));
+      } else {
+
+        Factory basicStatsFactory = new BasicStats.Factory();
+
+        if (estimateStats) {
+          basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+        }
+
+        //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
+        basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
+        basicStatsFactory.addEnhancer(new BasicStats.SetMinRowNumber01());
+        BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table));
+
+        //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
+        ds = basicStats.getDataSize();
+        nr = basicStats.getNumRows();
+        fs = basicStats.getTotalFileSize();
       }
 
-      //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-      basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
-      basicStatsFactory.addEnhancer(new BasicStats.SetMinRowNumber01());
-
-      BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table));
-
-      //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
-      long ds = basicStats.getDataSize();
-      long nr = basicStats.getNumRows();
-      long fs = basicStats.getTotalFileSize();
       List<ColStatistics> colStats = Collections.emptyList();
 
       long numErasureCodedFiles = getErasureCodedFiles(table);
