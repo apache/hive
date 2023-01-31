@@ -42,7 +42,7 @@ import org.apache.iceberg.transforms.UnknownTransform;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.util.Pair;
 
-public class BaseUpdatePartitionSpec implements UpdatePartitionSpec {
+class BaseUpdatePartitionSpec implements UpdatePartitionSpec {
   private final TableOperations ops;
   private final TableMetadata base;
   private final int formatVersion;
@@ -83,17 +83,13 @@ public class BaseUpdatePartitionSpec implements UpdatePartitionSpec {
               });
   }
 
-  /**
-   * For testing only.
-   */
+  /** For testing only. */
   @VisibleForTesting
   BaseUpdatePartitionSpec(int formatVersion, PartitionSpec spec) {
     this(formatVersion, spec, spec.lastAssignedFieldId());
   }
 
-  /**
-   * For testing only.
-   */
+  /** For testing only. */
   @VisibleForTesting
   BaseUpdatePartitionSpec(int formatVersion, PartitionSpec spec, int lastAssignedPartitionId) {
     this.ops = null;
@@ -118,7 +114,7 @@ public class BaseUpdatePartitionSpec implements UpdatePartitionSpec {
    * creates a new PartitionField.
    *
    * @param sourceTransform pair of source ID and transform for this PartitionField addition
-   * @param name            target partition field name, if specified
+   * @param name target partition field name, if specified
    * @return the recycled or newly created partition field
    */
   private PartitionField recycleOrCreatePartitionField(
@@ -191,9 +187,8 @@ public class BaseUpdatePartitionSpec implements UpdatePartitionSpec {
     Preconditions.checkArgument(
             existing == null ||
                     (deletes.contains(existing.fieldId()) &&
-                            !existing.name().equals(name)),
-//            !existing.transform().toString().equals(sourceTransform.second().toString())),
-            "Cannot add duplicate partition field %s=%s, conflicts with lofasz %s",
+                            !existing.transform().toString().equals(sourceTransform.second().toString())),
+            "Cannot add duplicate partition field %s=%s, conflicts with %s",
             name,
             term,
             existing);
@@ -351,12 +346,13 @@ public class BaseUpdatePartitionSpec implements UpdatePartitionSpec {
     } else {
       transform = Transforms.fromString(transform.toString());
     }
+
     return Pair.of(sourceId, transform);
   }
 
   private Transform<?, ?> toTransform(BoundTerm<?> term) {
     if (term instanceof BoundReference) {
-      return Transforms.identity(term.type());
+      return Transforms.identity();
     } else if (term instanceof BoundTransform) {
       return ((BoundTransform<?, ?>) term).transform();
     } else {
