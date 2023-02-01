@@ -217,6 +217,7 @@ public class ParallelEdgeFixer extends Transform {
       }
     }
 
+    HashSet<Pair<Operator<?>, Operator<?>>> processedEdge = new HashSet<>();
     // process all edges and fix parallel edges if there are any
     for (Pair<Cluster, Cluster> key : edgeOperators.keySet()) {
       List<Pair<Operator<?>, Operator<?>>> values = edgeOperators.get(key);
@@ -232,7 +233,10 @@ public class ParallelEdgeFixer extends Transform {
       Iterator<Pair<Operator<?>, Operator<?>>> it = values.iterator();
       while (it.hasNext()) {
         Pair<Operator<?>, Operator<?>> pair = it.next();
-        fixParallelEdge(pair.left, pair.right);
+        if (!processedEdge.contains(pair)) {
+          fixParallelEdge(pair.left, pair.right);
+          processedEdge.add(pair);
+        }
       }
     }
   }
