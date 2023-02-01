@@ -43,6 +43,8 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.OptimizedBootstrapLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.PreOptimizedBootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -97,8 +99,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         try {
           analyzeReplDump(ast);
         } catch (SemanticException e) {
-          ReplUtils.reportStatusInReplicationMetrics("REPL_DUMP", ReplUtils.isErrorRecoverable(e)
-                  ? Status.FAILED_ADMIN : Status.FAILED, null, conf);
+            ReplUtils.reportStatusInReplicationMetrics("REPL_DUMP", ReplUtils.isErrorRecoverable(e)
+                    ? Status.FAILED_ADMIN : Status.FAILED, null, conf, null, null);
           throw e;
         }
         break;
@@ -110,7 +112,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         } catch (SemanticException e) {
           if (!e.getMessage().equals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg())) {
             ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", ReplUtils.isErrorRecoverable(e)
-                    ? Status.FAILED_ADMIN : Status.FAILED, null, conf);
+                    ? Status.FAILED_ADMIN : Status.FAILED, null, conf,  null, null);
           }
           throw e;
         }
@@ -318,7 +320,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     // looking at each db, and then each table, and then setting up the appropriate
     // import job in its place.
     try {
-      assert(sourceDbNameOrPattern != null);
+      Objects.requireNonNull(sourceDbNameOrPattern, "REPL LOAD Source database name shouldn't be null");
+      Objects.requireNonNull(replScope.getDbName(), "REPL LOAD Target database name shouldn't be null");
       Path loadPath = getCurrentLoadPath();
 
       // Now, the dumped path can be one of three things:
@@ -342,7 +345,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
         Path nonRecoverableFile = new Path(latestDumpPath, ReplAck.NON_RECOVERABLE_MARKER.toString());
         ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED,
-                nonRecoverableFile.toString(), conf);
+                nonRecoverableFile.toString(), conf,  sourceDbNameOrPattern, null);
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }
       if (loadPath != null) {
@@ -350,22 +353,25 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
         boolean evDump = false;
         // we will decide what hdfs locations needs to be copied over here as well.
-        if (dmd.isIncrementalDump()) {
-          LOG.debug("{} contains an incremental dump", loadPath);
+        if (dmd.isIncrementalDump() || dmd.isOptimizedBootstrapDump() || dmd.isPreOptimizedBootstrapDump()) {
+          LOG.debug("{} contains an incremental / Optimized bootstrap dump", loadPath);
           evDump = true;
         } else {
           LOG.debug("{} contains an bootstrap dump", loadPath);
         }
+
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
                 replScope.getDbName(),
                 dmd.getReplScope(),
                 queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),
-            initMetricCollection(!evDump, loadPath.toString(), replScope.getDbName(),
-              dmd.getDumpExecutionId()), dmd.isReplScopeModified());
+                initMetricCollection(loadPath.toString(), replScope.getDbName(), dmd), dmd.isReplScopeModified());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
+        if (dmd.isPreOptimizedBootstrapDump()) {
+          dmd.setOptimizedBootstrapToDumpMetadataFile();
+        }
       } else {
-        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED, null, conf);
-        LOG.warn("Previous Dump Already Loaded");
+        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED, null, conf,  sourceDbNameOrPattern, null);
+        LOG.warn("No dump to load or the previous dump already loaded");
       }
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
@@ -373,13 +379,18 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private ReplicationMetricCollector initMetricCollection(boolean isBootstrap, String dumpDirectory,
-                                                          String dbNameToLoadIn, long dumpExecutionId) {
+  private ReplicationMetricCollector initMetricCollection(String dumpDirectory,
+                                                          String dbNameToLoadIn, DumpMetaData dmd) throws SemanticException {
+
     ReplicationMetricCollector collector;
-    if (isBootstrap) {
-      collector = new BootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dumpExecutionId, conf);
+    if (dmd.isPreOptimizedBootstrapDump()) {
+      collector = new PreOptimizedBootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf);
+    } else if (dmd.isOptimizedBootstrapDump()) {
+      collector = new OptimizedBootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf);
+    } else if (dmd.isBootstrapDump()) {
+      collector = new BootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf);
     } else {
-      collector = new IncrementalLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dumpExecutionId, conf);
+      collector = new IncrementalLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf);
     }
     return collector;
   }

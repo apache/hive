@@ -26,7 +26,9 @@ public class Metadata {
    */
   public enum ReplicationType {
     BOOTSTRAP,
-    INCREMENTAL
+    INCREMENTAL,
+    PRE_OPTIMIZED_BOOTSTRAP,
+    OPTIMIZED_BOOTSTRAP
   }
   private String dbName;
   private ReplicationType replicationType;

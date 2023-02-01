@@ -1201,6 +1201,8 @@ public class TestWorker extends CompactorTest {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     HiveConf timeoutConf = new HiveConf(conf);
     timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, timeout, TimeUnit.MILLISECONDS);
+    timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_SLEEP_TIME, 20, TimeUnit.MILLISECONDS);
+    timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_MAX_SLEEP_TIME, 20, TimeUnit.MILLISECONDS);
 
     TimeoutWorker timeoutWorker = getTimeoutWorker(timeoutConf, executor,
         runForever, swallowInterrupt, new CountDownLatch(2));
