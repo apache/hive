@@ -383,6 +383,15 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                                                                         DumpMetaData dmd) throws SemanticException {
     ReplicationMetricCollector collector;
     if (dmd.isPreOptimizedBootstrapDump() || dmd.isOptimizedBootstrapDump()) {
+      Database dbToLoad = null;
+      try {
+        dbToLoad = db.getDatabase(dbNameToLoadIn);
+      } catch (HiveException e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
+      if (dbToLoad == null) {
+        throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS, dbNameToLoadIn);
+      }
       // db property ReplConst.FAILOVER_ENDPOINT is only set during planned failover.
       String failoverType = "";
       try {

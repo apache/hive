@@ -757,11 +757,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     Database targetDb = getHive().getDatabase(work.dbNameToLoadIn);
     Map<String, String> props = new HashMap<>();
-
-    if (targetDb == null) {
-      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, work.dbNameToLoadIn);
-    }
-
     // check if db is set READ_ONLY, if not then set it. Basically this ensures backward
     // compatibility.
     if (!isDbReadOnly(targetDb) && isReadOnlyHookRegistered()) {
