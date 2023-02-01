@@ -2098,7 +2098,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       replica.loadWithoutExplain("", "`*`");
       fail();
     } catch (HiveException e) {
-      assertEquals("MetaException(message:Database name cannot be null.)", e.getMessage());
+      assertEquals("REPL LOAD Target database name shouldn't be null", e.getMessage());
     }
   }
 
