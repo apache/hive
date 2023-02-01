@@ -1202,7 +1202,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
 
     // make some changes on primary
     primary.run("use " + primaryDbName)
-            .run("insert into table t1 values (4)");
+            .run("create table t2(name string) stored as orc tblproperties(\"transactional\"=\"true\")")
+            .run("insert into t2 values('a')");
 
     withClause = Arrays.asList(
             String.format("'%s'='%s'", HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false")
@@ -1232,7 +1233,9 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     }
     // ensure optimized bootstrap was successful.
     primary.run(String.format("select * from %s.t1", primaryDbName))
-            .verifyResults(new String[]{"1", "2", "3"});
+            .verifyResults(new String[]{"1", "2", "3"})
+            .run("show tables in "+primaryDbName)
+            .verifyResults(new String[]{"t1"});
   }
   @Test
   public void testReverseFailoverBeforeOptimizedBootstrap() throws Throwable {
