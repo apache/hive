@@ -159,20 +159,25 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
        * for the same.
        */
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
-      if (fs.exists(incBootstrapDir)) {
-        if (isSecondFailover) {
-          String[] bootstrappedTables = getBootstrapTableList(new Path(dumpDirectory).getParent(), hiveConf);
-          LOG.info("Optimised bootstrap load for database {} with initial bootstrapped table list as {}",
-              dbNameToLoadIn, tablesToBootstrap);
-          // Get list of tables bootstrapped.
+      if (isSecondFailover) {
+        String[] bootstrappedTables = getBootstrapTableList(new Path(dumpDirectory).getParent(), hiveConf);
+        LOG.info("Optimised bootstrap load for database {} with initial bootstrapped table list as {}",
+                dbNameToLoadIn, tablesToBootstrap);
+        // Get list of tables bootstrapped.
+        if (fs.exists(incBootstrapDir)) {
           Path tableMetaPath = new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME + "/" + sourceDbName);
           tablesToBootstrap =
-              Stream.of(fs.listStatus(tableMetaPath)).map(st -> st.getPath().getName()).collect(Collectors.toList());
-          List<String> tableList = Arrays.asList(bootstrappedTables);
-          tablesToDrop = ListUtils.subtract(tableList, tablesToBootstrap);
-          LOG.info("Optimised bootstrap for database {} with drop table list as {} and bootstrap table list as {}",
-              dbNameToLoadIn, tablesToDrop, tablesToBootstrap);
+                  Stream.of(fs.listStatus(tableMetaPath)).map(st -> st.getPath().getName()).collect(Collectors.toList());
         }
+        else {
+          tablesToBootstrap = Collections.emptyList();
+        }
+        List<String> tableList = Arrays.asList(bootstrappedTables);
+        tablesToDrop = ListUtils.subtract(tableList, tablesToBootstrap);
+        LOG.info("Optimised bootstrap for database {} with drop table list as {} and bootstrap table list as {}",
+                dbNameToLoadIn, tablesToDrop, tablesToBootstrap);
+      }
+      if (fs.exists(incBootstrapDir)) {
         this.bootstrapIterator = new BootstrapEventsIterator(
                 new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true,
           hiveConf, metricCollector);
