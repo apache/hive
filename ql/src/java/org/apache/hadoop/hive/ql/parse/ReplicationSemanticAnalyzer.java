@@ -320,7 +320,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     // looking at each db, and then each table, and then setting up the appropriate
     // import job in its place.
     try {
-      assert (sourceDbNameOrPattern != null);
+      Objects.requireNonNull(sourceDbNameOrPattern, "REPL LOAD Source database name shouldn't be null");
+      Objects.requireNonNull(replScope.getDbName(), "REPL LOAD Target database name shouldn't be null");
       Path loadPath = getCurrentLoadPath();
 
       // Now, the dumped path can be one of three things:
@@ -370,7 +371,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } else {
         ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED, null, conf,  sourceDbNameOrPattern, null);
-        LOG.warn("Previous Dump Already Loaded");
+        LOG.warn("No dump to load or the previous dump already loaded");
       }
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
