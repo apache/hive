@@ -1,0 +1,147 @@
+PREHOOK: query: create database if not exists tmp
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tmp
+POSTHOOK: query: create database if not exists tmp
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tmp
+PREHOOK: query: use tmp
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:tmp
+POSTHOOK: query: use tmp
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:tmp
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:tmp
+PREHOOK: Output: tmp@b
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:tmp
+POSTHOOK: Output: tmp@b
+PREHOOK: query: insert into b values ("a"),("b"),("c")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: tmp@b
+POSTHOOK: query: insert into b values ("a"),("b"),("c")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: tmp@b
+POSTHOOK: Lineage: b.s SCRIPT []
+PREHOOK: query: select * from b
+PREHOOK: type: QUERY
+PREHOOK: Input: tmp@b
+#### A masked pattern was here ####
+POSTHOOK: query: select * from b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tmp@b
+#### A masked pattern was here ####
+a
+b
+c
+PREHOOK: query: desc formatted b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: tmp@b
+POSTHOOK: query: desc formatted b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: tmp@b
+# col_name            	data_type           	comment             
+s                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	tmp                 	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s\":\"true\"}}
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	TRUE                
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	44                  
+	totalSize           	#Masked#                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table b rename to bb
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: tmp@b
+PREHOOK: Output: database:tmp
+PREHOOK: Output: tmp@b
+PREHOOK: Output: tmp@bb
+POSTHOOK: query: alter table b rename to bb
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: tmp@b
+POSTHOOK: Output: database:tmp
+POSTHOOK: Output: tmp@b
+POSTHOOK: Output: tmp@bb
+PREHOOK: query: desc formatted bb
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: tmp@bb
+POSTHOOK: query: desc formatted bb
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: tmp@bb
+# col_name            	data_type           	comment             
+s                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	tmp                 	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s\":\"true\"}}
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	TRUE                
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	44                  
+	totalSize           	#Masked#                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:tmp
+PREHOOK: Output: tmp@b
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:tmp
+POSTHOOK: Output: tmp@b
+PREHOOK: query: select * from b
+PREHOOK: type: QUERY
+PREHOOK: Input: tmp@b
+#### A masked pattern was here ####
+POSTHOOK: query: select * from b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tmp@b
+#### A masked pattern was here ####

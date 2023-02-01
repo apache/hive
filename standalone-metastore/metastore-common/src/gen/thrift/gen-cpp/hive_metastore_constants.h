@@ -42,7 +42,7 @@ class hive_metastoreConstants {
   std::string FILE_OUTPUT_FORMAT;
   std::string META_TABLE_STORAGE;
   std::string TABLE_IS_TRANSACTIONAL;
-  std::string TABLE_NO_AUTO_COMPACT;
+  std::string NO_AUTO_COMPACT;
   std::string TABLE_TRANSACTIONAL_PROPERTIES;
   std::string TABLE_BUCKETING_VERSION;
   std::string DRUID_CONFIG_PREFIX;
@@ -55,6 +55,8 @@ class hive_metastoreConstants {
   std::string DEFAULT_TABLE_TYPE;
   std::string TXN_ID;
   std::string WRITE_ID;
+  std::string EXPECTED_PARAMETER_KEY;
+  std::string EXPECTED_PARAMETER_VALUE;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;

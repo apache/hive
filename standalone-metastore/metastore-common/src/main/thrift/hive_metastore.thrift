@@ -199,6 +199,7 @@ enum LockType {
 enum CompactionType {
     MINOR = 1,
     MAJOR = 2,
+    REBALANCE = 3,
 }
 
 enum GrantRevokeType {
@@ -1075,10 +1076,12 @@ struct AbortTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
     3: optional TxnType txn_type,
+    4: optional i64 errorCode,
 }
 
 struct AbortTxnsRequest {
     1: required list<i64> txn_ids,
+    2: optional i64 errorCode,
 }
 
 struct CommitTxnKeyValue {
@@ -1289,6 +1292,7 @@ struct CompactionRequest {
     7: optional string initiatorId
     8: optional string initiatorVersion
     9: optional string poolName
+    10: optional i32 numberOfBuckets
 }
 
 struct CompactionInfoStruct {
@@ -1309,6 +1313,7 @@ struct CompactionInfoStruct {
     15: optional i64 enqueueTime,
     16: optional i64 retryRetention,
     17: optional string poolname
+    18: optional i32 numberOfBuckets
 }
 
 struct OptionalCompactionInfoStruct {
@@ -2165,7 +2170,9 @@ struct AlterTableRequest {
   6: optional i64 writeId=-1,
   7: optional string validWriteIdList
   8: optional list<string> processorCapabilities,
-  9: optional string processorIdentifier
+  9: optional string processorIdentifier,
+  10: optional string expectedParameterKey,
+  11: optional string expectedParameterValue
 // TODO: also add cascade here, out of envCtx
 }
 
@@ -3174,7 +3181,7 @@ const string FILE_INPUT_FORMAT    = "file.inputformat",
 const string FILE_OUTPUT_FORMAT   = "file.outputformat",
 const string META_TABLE_STORAGE   = "storage_handler",
 const string TABLE_IS_TRANSACTIONAL = "transactional",
-const string TABLE_NO_AUTO_COMPACT = "no_auto_compaction",
+const string NO_AUTO_COMPACT = "no_auto_compaction",
 const string TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties",
 const string TABLE_BUCKETING_VERSION = "bucketing_version",
 const string DRUID_CONFIG_PREFIX = "druid.",
@@ -3189,3 +3196,7 @@ const string DEFAULT_TABLE_TYPE = "defaultTableType",
 // ACID
 const string TXN_ID = "txnId",
 const string WRITE_ID = "writeId",
+
+// Keys for alter table environment context parameters
+const string EXPECTED_PARAMETER_KEY = "expected_parameter_key",
+const string EXPECTED_PARAMETER_VALUE = "expected_parameter_value",

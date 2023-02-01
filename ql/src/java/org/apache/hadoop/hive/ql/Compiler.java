@@ -191,7 +191,6 @@ public class Compiler {
     // because at that point we need access to the objects.
     Hive.get().getMSC().flushCache();
 
-    driverContext.setBackupContext(new Context(context));
     boolean executeHooks = driverContext.getHookRunner().hasPreAnalyzeHooks();
 
     HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();

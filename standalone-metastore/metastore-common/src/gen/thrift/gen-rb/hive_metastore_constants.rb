@@ -61,7 +61,7 @@ META_TABLE_STORAGE = %q"storage_handler"
 
 TABLE_IS_TRANSACTIONAL = %q"transactional"
 
-TABLE_NO_AUTO_COMPACT = %q"no_auto_compaction"
+NO_AUTO_COMPACT = %q"no_auto_compaction"
 
 TABLE_TRANSACTIONAL_PROPERTIES = %q"transactional_properties"
 
@@ -86,4 +86,8 @@ DEFAULT_TABLE_TYPE = %q"defaultTableType"
 TXN_ID = %q"txnId"
 
 WRITE_ID = %q"writeId"
+
+EXPECTED_PARAMETER_KEY = %q"expected_parameter_key"
+
+EXPECTED_PARAMETER_VALUE = %q"expected_parameter_value"
 

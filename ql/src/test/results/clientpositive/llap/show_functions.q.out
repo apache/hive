@@ -51,6 +51,7 @@ array_distinct
 array_join
 array_max
 array_min
+array_slice
 ascii
 asin
 assert_true
@@ -550,6 +551,7 @@ PREHOOK: query: SHOW FUNCTIONS LIKE '%e'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS LIKE '%e'
 POSTHOOK: type: SHOWFUNCTIONS
+array_slice
 assert_true
 case
 coalesce
@@ -670,6 +672,7 @@ array_distinct
 array_join
 array_max
 array_min
+array_slice
 ascii
 asin
 assert_true

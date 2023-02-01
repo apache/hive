@@ -111,6 +111,7 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATT
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_DIGITS;
 
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
@@ -1507,7 +1508,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private boolean isReplicationEventIdUpdate(Database oldDb, Database newDb) {
     Map<String, String> oldDbProp = oldDb.getParameters();
     Map<String, String> newDbProp = newDb.getParameters();
-    if (newDbProp == null || newDbProp.isEmpty()) {
+    if (newDbProp == null || newDbProp.isEmpty() ||
+      Boolean.parseBoolean(newDbProp.get(REPL_RESUME_STARTED_AFTER_FAILOVER))) {
       return false;
     }
     String newReplId = newDbProp.get(ReplConst.REPL_TARGET_TABLE_PROPERTY);
@@ -5987,7 +5989,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           .defaultMetaException();
     } finally {
       tableLock.unlock();
-      endFunction("alter_partition", oldParts != null, ex, tbl_name);
+      endFunction("alter_partitions", oldParts != null, ex, tbl_name);
     }
   }
 
@@ -6005,7 +6007,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     // Do not set an environment context.
     String[] parsedDbName = parseDbName(dbname, conf);
     alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, newTable,
-        null, null, null, null);
+        null, null, null, null, null, null);
   }
 
   @Override
@@ -6019,7 +6021,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     String[] parsedDbName = parseDbName(dbname, conf);
     alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, newTable,
-        envContext, null, null, null);
+        envContext, null, null, null, null, null);
   }
 
   @Override
@@ -6027,7 +6029,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws InvalidOperationException, MetaException, TException {
     alter_table_core(req.getCatName(), req.getDbName(), req.getTableName(),
         req.getTable(), req.getEnvironmentContext(), req.getValidWriteIdList(),
-        req.getProcessorCapabilities(), req.getProcessorIdentifier());
+        req.getProcessorCapabilities(), req.getProcessorIdentifier(),
+        req.getExpectedParameterKey(), req.getExpectedParameterValue());
     return new AlterTableResponse();
   }
 
@@ -6038,17 +6041,26 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws InvalidOperationException, MetaException {
     String[] parsedDbName = parseDbName(dbname, conf);
     alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-        name, newTable, envContext, null, null, null);
+        name, newTable, envContext, null, null, null, null, null);
   }
 
   private void alter_table_core(String catName, String dbname, String name, Table newTable,
-                                EnvironmentContext envContext, String validWriteIdList, List<String> processorCapabilities, String processorId)
+                                EnvironmentContext envContext, String validWriteIdList, List<String> processorCapabilities,
+                                String processorId, String expectedPropertyKey, String expectedPropertyValue)
           throws InvalidOperationException, MetaException {
     startFunction("alter_table", ": " + TableName.getQualified(catName, dbname, name)
         + " newtbl=" + newTable.getTableName());
     if (envContext == null) {
       envContext = new EnvironmentContext();
     }
+    // Set the values to the envContext, so we do not have to change the HiveAlterHandler API
+    if (expectedPropertyKey != null) {
+      envContext.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, expectedPropertyKey);
+    }
+    if (expectedPropertyValue != null) {
+      envContext.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, expectedPropertyValue);
+    }
+
     if (catName == null) {
       catName = getDefaultCatalog(conf);
     }

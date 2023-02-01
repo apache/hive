@@ -155,15 +155,18 @@ class LockType(object):
 class CompactionType(object):
     MINOR = 1
     MAJOR = 2
+    REBALANCE = 3
 
     _VALUES_TO_NAMES = {
         1: "MINOR",
         2: "MAJOR",
+        3: "REBALANCE",
     }
 
     _NAMES_TO_VALUES = {
         "MINOR": 1,
         "MAJOR": 2,
+        "REBALANCE": 3,
     }
 
 
@@ -12517,14 +12520,16 @@ class AbortTxnRequest(object):
      - txnid
      - replPolicy
      - txn_type
+     - errorCode
 
     """
 
 
-    def __init__(self, txnid=None, replPolicy=None, txn_type=None,):
+    def __init__(self, txnid=None, replPolicy=None, txn_type=None, errorCode=None,):
         self.txnid = txnid
         self.replPolicy = replPolicy
         self.txn_type = txn_type
+        self.errorCode = errorCode
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -12550,6 +12555,11 @@ class AbortTxnRequest(object):
                     self.txn_type = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I64:
+                    self.errorCode = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -12571,6 +12581,10 @@ class AbortTxnRequest(object):
         if self.txn_type is not None:
             oprot.writeFieldBegin('txn_type', TType.I32, 3)
             oprot.writeI32(self.txn_type)
+            oprot.writeFieldEnd()
+        if self.errorCode is not None:
+            oprot.writeFieldBegin('errorCode', TType.I64, 4)
+            oprot.writeI64(self.errorCode)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -12596,12 +12610,14 @@ class AbortTxnsRequest(object):
     """
     Attributes:
      - txn_ids
+     - errorCode
 
     """
 
 
-    def __init__(self, txn_ids=None,):
+    def __init__(self, txn_ids=None, errorCode=None,):
         self.txn_ids = txn_ids
+        self.errorCode = errorCode
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -12622,6 +12638,11 @@ class AbortTxnsRequest(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.errorCode = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -12638,6 +12659,10 @@ class AbortTxnsRequest(object):
             for iter659 in self.txn_ids:
                 oprot.writeI64(iter659)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.errorCode is not None:
+            oprot.writeFieldBegin('errorCode', TType.I64, 2)
+            oprot.writeI64(self.errorCode)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -15318,11 +15343,12 @@ class CompactionRequest(object):
      - initiatorId
      - initiatorVersion
      - poolName
+     - numberOfBuckets
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None, poolName=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None, poolName=None, numberOfBuckets=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -15332,6 +15358,7 @@ class CompactionRequest(object):
         self.initiatorId = initiatorId
         self.initiatorVersion = initiatorVersion
         self.poolName = poolName
+        self.numberOfBuckets = numberOfBuckets
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15393,6 +15420,11 @@ class CompactionRequest(object):
                     self.poolName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.I32:
+                    self.numberOfBuckets = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15443,6 +15475,10 @@ class CompactionRequest(object):
             oprot.writeFieldBegin('poolName', TType.STRING, 9)
             oprot.writeString(self.poolName.encode('utf-8') if sys.version_info[0] == 2 else self.poolName)
             oprot.writeFieldEnd()
+        if self.numberOfBuckets is not None:
+            oprot.writeFieldBegin('numberOfBuckets', TType.I32, 10)
+            oprot.writeI32(self.numberOfBuckets)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -15487,11 +15523,12 @@ class CompactionInfoStruct(object):
      - enqueueTime
      - retryRetention
      - poolname
+     - numberOfBuckets
 
     """
 
 
-    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None, poolname=None,):
+    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None, poolname=None, numberOfBuckets=None,):
         self.id = id
         self.dbname = dbname
         self.tablename = tablename
@@ -15509,6 +15546,7 @@ class CompactionInfoStruct(object):
         self.enqueueTime = enqueueTime
         self.retryRetention = retryRetention
         self.poolname = poolname
+        self.numberOfBuckets = numberOfBuckets
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15604,6 +15642,11 @@ class CompactionInfoStruct(object):
                     self.poolname = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 18:
+                if ftype == TType.I32:
+                    self.numberOfBuckets = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15681,6 +15724,10 @@ class CompactionInfoStruct(object):
         if self.poolname is not None:
             oprot.writeFieldBegin('poolname', TType.STRING, 17)
             oprot.writeString(self.poolname.encode('utf-8') if sys.version_info[0] == 2 else self.poolname)
+            oprot.writeFieldEnd()
+        if self.numberOfBuckets is not None:
+            oprot.writeFieldBegin('numberOfBuckets', TType.I32, 18)
+            oprot.writeI32(self.numberOfBuckets)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -26077,11 +26124,13 @@ class AlterTableRequest(object):
      - validWriteIdList
      - processorCapabilities
      - processorIdentifier
+     - expectedParameterKey
+     - expectedParameterValue
 
     """
 
 
-    def __init__(self, catName=None, dbName=None, tableName=None, table=None, environmentContext=None, writeId=-1, validWriteIdList=None, processorCapabilities=None, processorIdentifier=None,):
+    def __init__(self, catName=None, dbName=None, tableName=None, table=None, environmentContext=None, writeId=-1, validWriteIdList=None, processorCapabilities=None, processorIdentifier=None, expectedParameterKey=None, expectedParameterValue=None,):
         self.catName = catName
         self.dbName = dbName
         self.tableName = tableName
@@ -26091,6 +26140,8 @@ class AlterTableRequest(object):
         self.validWriteIdList = validWriteIdList
         self.processorCapabilities = processorCapabilities
         self.processorIdentifier = processorIdentifier
+        self.expectedParameterKey = expectedParameterKey
+        self.expectedParameterValue = expectedParameterValue
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -26153,6 +26204,16 @@ class AlterTableRequest(object):
                     self.processorIdentifier = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.STRING:
+                    self.expectedParameterKey = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.STRING:
+                    self.expectedParameterValue = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -26201,6 +26262,14 @@ class AlterTableRequest(object):
         if self.processorIdentifier is not None:
             oprot.writeFieldBegin('processorIdentifier', TType.STRING, 9)
             oprot.writeString(self.processorIdentifier.encode('utf-8') if sys.version_info[0] == 2 else self.processorIdentifier)
+            oprot.writeFieldEnd()
+        if self.expectedParameterKey is not None:
+            oprot.writeFieldBegin('expectedParameterKey', TType.STRING, 10)
+            oprot.writeString(self.expectedParameterKey.encode('utf-8') if sys.version_info[0] == 2 else self.expectedParameterKey)
+            oprot.writeFieldEnd()
+        if self.expectedParameterValue is not None:
+            oprot.writeFieldBegin('expectedParameterValue', TType.STRING, 11)
+            oprot.writeString(self.expectedParameterValue.encode('utf-8') if sys.version_info[0] == 2 else self.expectedParameterValue)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -30964,11 +31033,13 @@ AbortTxnRequest.thrift_spec = (
     (1, TType.I64, 'txnid', None, None, ),  # 1
     (2, TType.STRING, 'replPolicy', 'UTF8', None, ),  # 2
     (3, TType.I32, 'txn_type', None, None, ),  # 3
+    (4, TType.I64, 'errorCode', None, None, ),  # 4
 )
 all_structs.append(AbortTxnsRequest)
 AbortTxnsRequest.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'txn_ids', (TType.I64, None, False), None, ),  # 1
+    (2, TType.I64, 'errorCode', None, None, ),  # 2
 )
 all_structs.append(CommitTxnKeyValue)
 CommitTxnKeyValue.thrift_spec = (
@@ -31197,6 +31268,7 @@ CompactionRequest.thrift_spec = (
     (7, TType.STRING, 'initiatorId', 'UTF8', None, ),  # 7
     (8, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 8
     (9, TType.STRING, 'poolName', 'UTF8', None, ),  # 9
+    (10, TType.I32, 'numberOfBuckets', None, None, ),  # 10
 )
 all_structs.append(CompactionInfoStruct)
 CompactionInfoStruct.thrift_spec = (
@@ -31218,6 +31290,7 @@ CompactionInfoStruct.thrift_spec = (
     (15, TType.I64, 'enqueueTime', None, None, ),  # 15
     (16, TType.I64, 'retryRetention', None, None, ),  # 16
     (17, TType.STRING, 'poolname', 'UTF8', None, ),  # 17
+    (18, TType.I32, 'numberOfBuckets', None, None, ),  # 18
 )
 all_structs.append(OptionalCompactionInfoStruct)
 OptionalCompactionInfoStruct.thrift_spec = (
@@ -32080,6 +32153,8 @@ AlterTableRequest.thrift_spec = (
     (7, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 7
     (8, TType.LIST, 'processorCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 8
     (9, TType.STRING, 'processorIdentifier', 'UTF8', None, ),  # 9
+    (10, TType.STRING, 'expectedParameterKey', 'UTF8', None, ),  # 10
+    (11, TType.STRING, 'expectedParameterValue', 'UTF8', None, ),  # 11
 )
 all_structs.append(AlterTableResponse)
 AlterTableResponse.thrift_spec = (

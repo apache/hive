@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -74,7 +75,9 @@ import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionContext;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.schq.MockScheduledQueryService;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.txn.compactor.CompactorMR;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
+import org.apache.hadoop.hive.ql.txn.compactor.MRCompactor;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
@@ -94,6 +97,7 @@ import org.junit.rules.ExpectedException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.powermock.api.mockito.PowerMockito.when;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
@@ -1216,6 +1220,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     }
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
 
     int numFailedCompactions = MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
     AtomicBoolean stop = new AtomicBoolean(true);
@@ -1296,6 +1301,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
       runStatementOnDriver("insert into " + tblName + " values(" + (i + 1) + ", 'foo'),(" + (i + 2) + ", 'bar'),(" + (i + 3) + ", 'baz')");
     }
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
     runInitiator(hiveConf);
     runWorker(hiveConf);
     runCleaner(hiveConf);
@@ -1444,18 +1450,20 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
       req.setPartitionname("p=" + partName);
     }
     txnHandler.compact(req);
-    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+    MRCompactor mrCompactor = Mockito.spy(new MRCompactor(HiveMetaStoreUtils.getHiveMetastoreClient(hiveConf)));
 
     Mockito.doAnswer((Answer<JobConf>) invocationOnMock -> {
       JobConf job = (JobConf) invocationOnMock.callRealMethod();
       job.setMapperClass(SlowCompactorMap.class);
       return job;
-    }).when(compactorMr).createBaseJobConf(any(), any(), any(), any(), any(), any());
+    }).when(mrCompactor).createBaseJobConf(any(), any(), any(), any(), any(), any());
 
-    Worker worker = Mockito.spy(new Worker());
+    CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
+    when(mockedFactory.getCompactorPipeline(any(), any(), any(), any())).thenReturn(new CompactorPipeline(mrCompactor));
+
+    Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
 
     CompletableFuture<Void> compactionJob = CompletableFuture.runAsync(worker);
     Thread.sleep(1000);
@@ -1501,7 +1509,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(0, status.length);
   }
 
-  static class SlowCompactorMap<V extends Writable> extends CompactorMR.CompactorMap<V>{
+  static class SlowCompactorMap<V extends Writable> extends MRCompactor.CompactorMap<V>{
     @Override
     public void cleanupTmpLocationOnTaskRetry(AcidOutputFormat.Options options, Path rootDir) throws IOException {
       try {

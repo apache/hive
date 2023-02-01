@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.QuotaUsage;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
@@ -32,11 +33,19 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
+import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
 import org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metric;
+import static org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector.isMetricsEnabledForTests;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
@@ -55,6 +64,7 @@ import java.util.Map;
 
 import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_DONT_SET;
 import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_RESET;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_ENABLE_BACKGROUND_THREAD;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DB_PROPERTY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.TARGET_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
@@ -70,6 +80,7 @@ import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.KEY.CURR_STATE_ID_
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -485,6 +496,62 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   }
 
   @Test
+  public void testReverseReplicationFailureWhenSourceDbIsDropped() throws Throwable {
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+
+    // Do a bootstrap cycle.
+    primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // Create 1 managed table and do a dump & load.
+    WarehouseInstance.Tuple tuple =
+      primary.run("use " + primaryDbName)
+        .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+          "tblproperties (\"transactional\"=\"true\")")
+        .run("insert into table t1 values (1)")
+        .dump(primaryDbName, withClause);
+
+    // Do the load and check tables is present.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+          .run("repl status " + replicatedDbName)
+          .verifyResult(tuple.lastReplicationId)
+          .run("use " + replicatedDbName)
+          .run("show tables like 't1'")
+          .verifyResult("t1")
+          .verifyReplTargetProperty(replicatedDbName);
+
+    // suppose source database got dropped before initiating reverse replication( B -> A )
+    primary.run("alter database " + primaryDbName + " set dbproperties('repl.source.for'='')")
+           .run("drop database "+ primaryDbName +" cascade");
+
+    // Do some modifications on the target cluster. (t1)
+    replica.run("use " + replicatedDbName)
+           .run("insert into table t1 values (101)")
+           .run("insert into table t1 values (210),(321)");
+
+    // Prepare for reverse replication.
+    DistributedFileSystem replicaFs = replica.miniDFSCluster.getFileSystem();
+    Path newReplDir = new Path(replica.repldDir + "1");
+    replicaFs.mkdirs(newReplDir);
+    withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+
+    // Do a reverse dump, this should create event_ack file
+    tuple = replica.dump(replicatedDbName, withClause);
+
+    // Check the event ack file got created.
+    assertTrue(new Path(tuple.dumpLocation, EVENT_ACK_FILE).toString() + " doesn't exist",
+      replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
+
+    // this load should throw exception
+    List<String> finalWithClause = withClause;
+    assertThrows("Should fail with db doesn't exist exception", HiveException.class, () -> {
+      primary.load(primaryDbName, replicatedDbName, finalWithClause);
+    });
+  }
+
+  @Test
   public void testReverseBootstrap() throws Throwable {
     List<String> withClause = setUpFirstIterForOptimisedBootstrap();
 
@@ -848,6 +915,82 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
         .verifyFailure(new String[]{"tnew_managed"});
   }
 
+  @Test
+  public void testTblMetricRegisterDuringSecondCycleOfOptimizedBootstrap() throws Throwable {
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(false);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create table t1_managed (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into table t1_managed values (10)")
+            .run("insert into table t1_managed values (20),(31),(42)")
+            .dump(primaryDbName, withClause);
+
+    // Do the bootstrap load and check all the external & managed tables are present.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1_managed"})
+            .verifyReplTargetProperty(replicatedDbName);
+
+    // Do an incremental dump & load, Add one table which we can drop & an empty table as well.
+    tuple = primary.run("use " + primaryDbName)
+            .run("create table t2_managed (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into table t2_managed values (10)")
+            .run("insert into table t2_managed values (20),(31),(42)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1_managed", "t2_managed"})
+            .verifyReplTargetProperty(replicatedDbName);
+
+    primary.run("use " + primaryDbName)
+            .run("insert into table t1_managed values (30)")
+            .run("insert into table t1_managed values (50),(51),(52)");
+
+    // Prepare for reverse replication.
+    DistributedFileSystem replicaFs = replica.miniDFSCluster.getFileSystem();
+    Path newReplDir = new Path(replica.repldDir + "1");
+    replicaFs.mkdirs(newReplDir);
+    withClause = ReplicationTestUtils.includeExternalTableClause(false);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+
+
+    // Do a reverse dump
+    tuple = replica.dump(replicatedDbName, withClause);
+
+    // Check the event ack file got created.
+    assertTrue(new Path(tuple.dumpLocation, EVENT_ACK_FILE).toString() + " doesn't exist",
+            replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
+
+
+    // Do a load, this should create a table_diff_complete directory
+    primary.load(primaryDbName,replicatedDbName, withClause);
+
+    // Check the table diff directory exist.
+    assertTrue(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY).toString() + " doesn't exist",
+            replicaFs.exists(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY)));
+
+    Path dumpPath = new Path(tuple.dumpLocation);
+    // Check the table diff has all the modified table, including the dropped and empty ones
+    HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(dumpPath, conf);
+    assertTrue("Table Diff Contains " + tableDiffEntries, tableDiffEntries
+            .containsAll(Arrays.asList("t1_managed")));
+
+    isMetricsEnabledForTests(true);
+    replica.dump(replicatedDbName, withClause);
+    MetricCollector collector = MetricCollector.getInstance();
+    ReplicationMetric metric = collector.getMetrics().getLast();
+    Stage stage = metric.getProgress().getStageByName("REPL_DUMP");
+    Metric tableMetric = stage.getMetricByName(ReplUtils.MetricName.TABLES.name());
+    assertEquals(tableMetric.getTotalCount(), tableDiffEntries.size());
+  }
+
   @NotNull
   private List<String> setUpFirstIterForOptimisedBootstrap() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
@@ -1026,8 +1169,165 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   }
 
   List<Long> getReplCreatedTxns() throws MetaException {
-    List<TxnType> excludedTxns = Arrays.asList(TxnType.DEFAULT, TxnType.READ_ONLY, TxnType.COMPACTION,
-            TxnType.MATER_VIEW_REBUILD, TxnType.SOFT_DELETE);
-    return txnHandler.getOpenTxns(excludedTxns).getOpen_txns();
+    List<TxnType> txnListExcludingReplCreated = new ArrayList<>();
+    for (TxnType type : TxnType.values()) {
+      // exclude REPL_CREATED txn
+      if (type != TxnType.REPL_CREATED) {
+        txnListExcludingReplCreated.add(type);
+      }
+    }
+    return txnHandler.getOpenTxns(txnListExcludingReplCreated).getOpen_txns();
+  }
+
+  @Test
+  public void testDbParametersAfterOptimizedBootstrap() throws Throwable {
+    List<String> withClause = Arrays.asList(
+            String.format("'%s'='%s'", HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false"),
+            String.format("'%s'='%s'", HiveConf.ConfVars.HIVE_REPL_FAILOVER_START.varname, "true")
+    );
+
+    // bootstrap
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into table t1 values (1),(2)")
+            .dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // incremental
+    primary.run("use " + primaryDbName)
+            .run("insert into table t1 values (3)")
+            .dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // make some changes on primary
+    primary.run("use " + primaryDbName)
+            .run("create table t2(name string) stored as orc tblproperties(\"transactional\"=\"true\")")
+            .run("insert into t2 values('a')");
+
+    withClause = Arrays.asList(
+            String.format("'%s'='%s'", HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false")
+    );
+    // 1st cycle of optimized bootstrap
+    replica.dump(replicatedDbName, withClause);
+    primary.load(primaryDbName, replicatedDbName, withClause);
+
+    String[] dbParams = new String[]{
+            TARGET_OF_REPLICATION,
+            CURR_STATE_ID_SOURCE.toString(),
+            CURR_STATE_ID_TARGET.toString(),
+            REPL_TARGET_DB_PROPERTY,
+            REPL_ENABLE_BACKGROUND_THREAD
+    };
+    //verify if all db parameters are set
+    for (String paramKey : dbParams) {
+      assertTrue(replica.getDatabase(replicatedDbName).getParameters().containsKey(paramKey));
+    }
+
+    // 2nd cycle of optimized bootstrap
+    replica.dump(replicatedDbName, withClause);
+    primary.load(primaryDbName, replicatedDbName, withClause);
+
+    for (String paramKey : dbParams) {
+      assertFalse(replica.getDatabase(replicatedDbName).getParameters().containsKey(paramKey));
+    }
+    // ensure optimized bootstrap was successful.
+    primary.run(String.format("select * from %s.t1", primaryDbName))
+            .verifyResults(new String[]{"1", "2", "3"})
+            .run("show tables in "+primaryDbName)
+            .verifyResults(new String[]{"t1"});
+  }
+  @Test
+  public void testReverseFailoverBeforeOptimizedBootstrap() throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("create  table t1 (id string)")
+            .run("insert into table t1 values ('A')")
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+
+    primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+    //initiate a controlled failover from primary to replica.
+    List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'");
+    primary.dump(primaryDbName, failoverConfigs);
+    replica.load(replicatedDbName, primaryDbName, failoverConfigs);
+    primary.run("use " + primaryDbName)
+            .run("insert into t1 values('B')"); //modify primary after failover.
+    //initiate a controlled failover from replica to primary before the first cycle of optimized bootstrap is run.
+    WarehouseInstance.Tuple reverseDump = replica.run("use " + replicatedDbName)
+            .run("create table t2 (col int)")
+            .run("insert into t2 values(1),(2)")
+            .dump(replicatedDbName, failoverConfigs);
+
+    // the first reverse dump should NOT be failover ready.
+    FileSystem fs = new Path(reverseDump.dumpLocation).getFileSystem(conf);
+    assertTrue(fs.exists(new Path(reverseDump.dumpLocation, EVENT_ACK_FILE)));
+    Path dumpPath = new Path(reverseDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertFalse(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
+    assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
+    // ensure load was successful.
+    primary.load(primaryDbName, replicatedDbName, failoverConfigs);
+    assertTrue(fs.exists(new Path(reverseDump.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY)));
+    assertTrue(fs.exists(new Path(dumpPath, ReplAck.LOAD_ACKNOWLEDGEMENT.toString())));
+    HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(new Path(reverseDump.dumpLocation), conf);
+    assertTrue(!tableDiffEntries.isEmpty()); // we have modified a table t1 at source
+
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+            MetaStoreUtils.FailoverEndpoint.SOURCE));
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+            MetaStoreUtils.FailoverEndpoint.TARGET));
+
+    //do a second dump, this dump should NOT be failover ready as some tables need to be bootstrapped (here it is t1).
+    reverseDump = replica.dump(replicatedDbName, failoverConfigs);
+    assertTrue(fs.exists(new Path(reverseDump.dumpLocation, OptimisedBootstrapUtils.BOOTSTRAP_TABLES_LIST)));
+    dumpPath = new Path(reverseDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
+
+    primary.load(primaryDbName, replicatedDbName, failoverConfigs);
+    //ensure optimized bootstrap was successful
+    primary.run(String.format("select * from %s.t1", primaryDbName))
+            .verifyResults(new String[]{"A"})
+            .run(String.format("select * from %s.t2", primaryDbName))
+            .verifyResults(new String[]{"1", "2"});
+
+    assertFalse(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+            MetaStoreUtils.FailoverEndpoint.SOURCE));
+    assertFalse(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+            MetaStoreUtils.FailoverEndpoint.TARGET));
+
+    //do a third dump, this should be failover ready.
+    reverseDump = replica.dump(replicatedDbName, failoverConfigs);
+    dumpPath = new Path(reverseDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
+
+    primary.load(primaryDbName, replicatedDbName, failoverConfigs);
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+            MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+            MetaStoreUtils.FailoverEndpoint.SOURCE));
+
+    //initiate a failover from primary to replica.
+    WarehouseInstance.Tuple forwardDump = primary.dump(primaryDbName, failoverConfigs);
+    assertTrue(fs.exists(new Path(forwardDump.dumpLocation, EVENT_ACK_FILE)));
+    dumpPath = new Path(forwardDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertFalse(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
+    assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
+
+    replica.load(replicatedDbName, primaryDbName, failoverConfigs);
+    assertTrue(fs.exists(new Path(forwardDump.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY)));
+    tableDiffEntries = getTablesFromTableDiffFile(new Path(forwardDump.dumpLocation), conf);
+    assertTrue(tableDiffEntries.isEmpty()); // nothing was modified
+    // here second dump will be failover ready, since no tables need to be bootstrapped.
+    forwardDump = primary.dump(primaryDbName, failoverConfigs);
+    assertTrue(fs.exists(new Path(forwardDump.dumpLocation, OptimisedBootstrapUtils.BOOTSTRAP_TABLES_LIST)));
+    dumpPath = new Path(forwardDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
+
+    replica.load(replicatedDbName, primaryDbName, failoverConfigs);
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+            MetaStoreUtils.FailoverEndpoint.SOURCE));
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+            MetaStoreUtils.FailoverEndpoint.TARGET));
   }
 }

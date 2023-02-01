@@ -440,8 +440,8 @@ compactPool
 alterStatementSuffixCompact
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
-    : KW_COMPACT compactType=StringLiteral blocking? compactPool? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)?
-    -> ^(TOK_ALTERTABLE_COMPACT $compactType blocking?  compactPool? tableProperties?)
+    : KW_COMPACT compactType=StringLiteral tableImplBuckets? blocking? compactPool? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)?
+    -> ^(TOK_ALTERTABLE_COMPACT $compactType tableImplBuckets? blocking? compactPool? tableProperties?)
     ;
 
 alterStatementSuffixSetOwner
@@ -465,6 +465,8 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_ROLLBACK $rollbackParam)
     | KW_EXECUTE KW_EXPIRE_SNAPSHOTS LPAREN (expireParam=StringLiteral) RPAREN
     -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam)
+    | KW_EXECUTE KW_SET_CURRENT_SNAPSHOT LPAREN (snapshotParam=Number) RPAREN
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_SET_CURRENT_SNAPSHOT $snapshotParam)
     ;
 
 fileFormat

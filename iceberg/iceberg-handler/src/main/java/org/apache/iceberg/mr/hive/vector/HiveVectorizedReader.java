@@ -43,10 +43,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hive.iceberg.org.apache.orc.OrcConf;
-import org.apache.hive.iceberg.org.apache.parquet.format.converter.ParquetMetadataConverter;
-import org.apache.hive.iceberg.org.apache.parquet.hadoop.ParquetFileReader;
-import org.apache.hive.iceberg.org.apache.parquet.hadoop.metadata.ParquetMetadata;
-import org.apache.hive.iceberg.org.apache.parquet.schema.MessageType;
 import org.apache.iceberg.FileContent;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
@@ -67,6 +63,10 @@ import org.apache.iceberg.parquet.TypeWithSchemaVisitor;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.orc.impl.OrcTail;
+import org.apache.parquet.format.converter.ParquetMetadataConverter;
+import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.schema.MessageType;
 
 /**
  * Utility class to create vectorized readers for Hive.
@@ -222,7 +222,7 @@ public class HiveVectorizedReader {
 
     MemoryBufferOrBuffers footerData = null;
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
-        LlapProxy.getIo() != null) {
+        LlapProxy.getIo() != null && LlapProxy.getIo().usingLowLevelCache()) {
       LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
       footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId);
     }

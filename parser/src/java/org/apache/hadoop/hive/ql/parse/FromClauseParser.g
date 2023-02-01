@@ -217,7 +217,7 @@ asOfClause
 @init { gParent.pushMsg("as of system_time / system_version clause for table", state); }
 @after { gParent.popMsg(state); }
     :
-    (KW_FOR KW_SYSTEM_TIME KW_AS KW_OF asOfTime=StringLiteral)
+    (KW_FOR KW_SYSTEM_TIME KW_AS KW_OF asOfTime=expression)
     -> ^(TOK_AS_OF_TIME $asOfTime)
     |
     (KW_FOR KW_SYSTEM_VERSION KW_AS KW_OF asOfVersion=Number)

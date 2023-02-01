@@ -126,7 +126,8 @@ std::string to_string(const LockType::type& val);
 struct CompactionType {
   enum type {
     MINOR = 1,
-    MAJOR = 2
+    MAJOR = 2,
+    REBALANCE = 3
   };
 };
 
@@ -8792,9 +8793,10 @@ void swap(OpenTxnsResponse &a, OpenTxnsResponse &b);
 std::ostream& operator<<(std::ostream& out, const OpenTxnsResponse& obj);
 
 typedef struct _AbortTxnRequest__isset {
-  _AbortTxnRequest__isset() : replPolicy(false), txn_type(false) {}
+  _AbortTxnRequest__isset() : replPolicy(false), txn_type(false), errorCode(false) {}
   bool replPolicy :1;
   bool txn_type :1;
+  bool errorCode :1;
 } _AbortTxnRequest__isset;
 
 class AbortTxnRequest : public virtual ::apache::thrift::TBase {
@@ -8805,7 +8807,8 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
   AbortTxnRequest() noexcept
                   : txnid(0),
                     replPolicy(),
-                    txn_type(static_cast<TxnType::type>(0)) {
+                    txn_type(static_cast<TxnType::type>(0)),
+                    errorCode(0) {
   }
 
   virtual ~AbortTxnRequest() noexcept;
@@ -8816,6 +8819,7 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
    * @see TxnType
    */
   TxnType::type txn_type;
+  int64_t errorCode;
 
   _AbortTxnRequest__isset __isset;
 
@@ -8824,6 +8828,8 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
   void __set_replPolicy(const std::string& val);
 
   void __set_txn_type(const TxnType::type val);
+
+  void __set_errorCode(const int64_t val);
 
   bool operator == (const AbortTxnRequest & rhs) const
   {
@@ -8836,6 +8842,10 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
     if (__isset.txn_type != rhs.__isset.txn_type)
       return false;
     else if (__isset.txn_type && !(txn_type == rhs.txn_type))
+      return false;
+    if (__isset.errorCode != rhs.__isset.errorCode)
+      return false;
+    else if (__isset.errorCode && !(errorCode == rhs.errorCode))
       return false;
     return true;
   }
@@ -8855,23 +8865,37 @@ void swap(AbortTxnRequest &a, AbortTxnRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const AbortTxnRequest& obj);
 
+typedef struct _AbortTxnsRequest__isset {
+  _AbortTxnsRequest__isset() : errorCode(false) {}
+  bool errorCode :1;
+} _AbortTxnsRequest__isset;
 
 class AbortTxnsRequest : public virtual ::apache::thrift::TBase {
  public:
 
   AbortTxnsRequest(const AbortTxnsRequest&);
   AbortTxnsRequest& operator=(const AbortTxnsRequest&);
-  AbortTxnsRequest() noexcept {
+  AbortTxnsRequest() noexcept
+                   : errorCode(0) {
   }
 
   virtual ~AbortTxnsRequest() noexcept;
   std::vector<int64_t>  txn_ids;
+  int64_t errorCode;
+
+  _AbortTxnsRequest__isset __isset;
 
   void __set_txn_ids(const std::vector<int64_t> & val);
+
+  void __set_errorCode(const int64_t val);
 
   bool operator == (const AbortTxnsRequest & rhs) const
   {
     if (!(txn_ids == rhs.txn_ids))
+      return false;
+    if (__isset.errorCode != rhs.__isset.errorCode)
+      return false;
+    else if (__isset.errorCode && !(errorCode == rhs.errorCode))
       return false;
     return true;
   }
@@ -10605,13 +10629,14 @@ void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b);
 std::ostream& operator<<(std::ostream& out, const HeartbeatTxnRangeResponse& obj);
 
 typedef struct _CompactionRequest__isset {
-  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false) {}
+  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false), numberOfBuckets(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
   bool initiatorId :1;
   bool initiatorVersion :1;
   bool poolName :1;
+  bool numberOfBuckets :1;
 } _CompactionRequest__isset;
 
 class CompactionRequest : public virtual ::apache::thrift::TBase {
@@ -10627,7 +10652,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
                       runas(),
                       initiatorId(),
                       initiatorVersion(),
-                      poolName() {
+                      poolName(),
+                      numberOfBuckets(0) {
   }
 
   virtual ~CompactionRequest() noexcept;
@@ -10644,6 +10670,7 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   std::string initiatorId;
   std::string initiatorVersion;
   std::string poolName;
+  int32_t numberOfBuckets;
 
   _CompactionRequest__isset __isset;
 
@@ -10664,6 +10691,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   void __set_initiatorVersion(const std::string& val);
 
   void __set_poolName(const std::string& val);
+
+  void __set_numberOfBuckets(const int32_t val);
 
   bool operator == (const CompactionRequest & rhs) const
   {
@@ -10697,6 +10726,10 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.poolName && !(poolName == rhs.poolName))
       return false;
+    if (__isset.numberOfBuckets != rhs.__isset.numberOfBuckets)
+      return false;
+    else if (__isset.numberOfBuckets && !(numberOfBuckets == rhs.numberOfBuckets))
+      return false;
     return true;
   }
   bool operator != (const CompactionRequest &rhs) const {
@@ -10716,7 +10749,7 @@ void swap(CompactionRequest &a, CompactionRequest &b);
 std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj);
 
 typedef struct _CompactionInfoStruct__isset {
-  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false) {}
+  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false), numberOfBuckets(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -10730,6 +10763,7 @@ typedef struct _CompactionInfoStruct__isset {
   bool enqueueTime :1;
   bool retryRetention :1;
   bool poolname :1;
+  bool numberOfBuckets :1;
 } _CompactionInfoStruct__isset;
 
 class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
@@ -10754,7 +10788,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
                          hasoldabort(0),
                          enqueueTime(0),
                          retryRetention(0),
-                         poolname() {
+                         poolname(),
+                         numberOfBuckets(0) {
   }
 
   virtual ~CompactionInfoStruct() noexcept;
@@ -10779,6 +10814,7 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   int64_t enqueueTime;
   int64_t retryRetention;
   std::string poolname;
+  int32_t numberOfBuckets;
 
   _CompactionInfoStruct__isset __isset;
 
@@ -10815,6 +10851,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   void __set_retryRetention(const int64_t val);
 
   void __set_poolname(const std::string& val);
+
+  void __set_numberOfBuckets(const int32_t val);
 
   bool operator == (const CompactionInfoStruct & rhs) const
   {
@@ -10877,6 +10915,10 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
     if (__isset.poolname != rhs.__isset.poolname)
       return false;
     else if (__isset.poolname && !(poolname == rhs.poolname))
+      return false;
+    if (__isset.numberOfBuckets != rhs.__isset.numberOfBuckets)
+      return false;
+    else if (__isset.numberOfBuckets && !(numberOfBuckets == rhs.numberOfBuckets))
       return false;
     return true;
   }
@@ -18035,13 +18077,15 @@ void swap(RenamePartitionResponse &a, RenamePartitionResponse &b);
 std::ostream& operator<<(std::ostream& out, const RenamePartitionResponse& obj);
 
 typedef struct _AlterTableRequest__isset {
-  _AlterTableRequest__isset() : catName(false), environmentContext(false), writeId(true), validWriteIdList(false), processorCapabilities(false), processorIdentifier(false) {}
+  _AlterTableRequest__isset() : catName(false), environmentContext(false), writeId(true), validWriteIdList(false), processorCapabilities(false), processorIdentifier(false), expectedParameterKey(false), expectedParameterValue(false) {}
   bool catName :1;
   bool environmentContext :1;
   bool writeId :1;
   bool validWriteIdList :1;
   bool processorCapabilities :1;
   bool processorIdentifier :1;
+  bool expectedParameterKey :1;
+  bool expectedParameterValue :1;
 } _AlterTableRequest__isset;
 
 class AlterTableRequest : public virtual ::apache::thrift::TBase {
@@ -18055,7 +18099,9 @@ class AlterTableRequest : public virtual ::apache::thrift::TBase {
                       tableName(),
                       writeId(-1LL),
                       validWriteIdList(),
-                      processorIdentifier() {
+                      processorIdentifier(),
+                      expectedParameterKey(),
+                      expectedParameterValue() {
   }
 
   virtual ~AlterTableRequest() noexcept;
@@ -18068,6 +18114,8 @@ class AlterTableRequest : public virtual ::apache::thrift::TBase {
   std::string validWriteIdList;
   std::vector<std::string>  processorCapabilities;
   std::string processorIdentifier;
+  std::string expectedParameterKey;
+  std::string expectedParameterValue;
 
   _AlterTableRequest__isset __isset;
 
@@ -18088,6 +18136,10 @@ class AlterTableRequest : public virtual ::apache::thrift::TBase {
   void __set_processorCapabilities(const std::vector<std::string> & val);
 
   void __set_processorIdentifier(const std::string& val);
+
+  void __set_expectedParameterKey(const std::string& val);
+
+  void __set_expectedParameterValue(const std::string& val);
 
   bool operator == (const AlterTableRequest & rhs) const
   {
@@ -18120,6 +18172,14 @@ class AlterTableRequest : public virtual ::apache::thrift::TBase {
     if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
       return false;
     else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
+      return false;
+    if (__isset.expectedParameterKey != rhs.__isset.expectedParameterKey)
+      return false;
+    else if (__isset.expectedParameterKey && !(expectedParameterKey == rhs.expectedParameterKey))
+      return false;
+    if (__isset.expectedParameterValue != rhs.__isset.expectedParameterValue)
+      return false;
+    else if (__isset.expectedParameterValue && !(expectedParameterValue == rhs.expectedParameterValue))
       return false;
     return true;
   }

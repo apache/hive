@@ -1980,7 +1980,7 @@ public abstract class BaseSemanticAnalyzer {
   /**
    * Unparses the analyzed statement
    */
-  protected void executeUnparseTranlations() {
+  protected void executeUnParseTranslations() {
     UnparseTranslator unparseTranslator = new UnparseTranslator(conf);
     unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
   }

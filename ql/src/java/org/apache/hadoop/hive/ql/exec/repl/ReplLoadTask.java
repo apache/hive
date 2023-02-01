@@ -23,12 +23,15 @@ import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.database.alter.owner.AlterDatabaseSetOwnerDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.thrift.TException;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
@@ -96,6 +99,9 @@ import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.Set;
 
+import static org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook.READONLY;
+import static org.apache.hadoop.hive.common.repl.ReplConst.READ_ONLY_HOOK;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
@@ -420,7 +426,38 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         // Ignore if no file.
       }
     }
+
+    if (isReadOnlyHookRegistered()) {
+      LOG.info("Setting database {} read-only", work.dbNameToLoadIn);
+      setDbReadOnly();
+    }
     return 0;
+  }
+
+  private boolean isReadOnlyHookRegistered() {
+    return conf.get(HiveConf.ConfVars.PREEXECHOOKS.varname) != null &&
+      conf.get(HiveConf.ConfVars.PREEXECHOOKS.varname).contains(READ_ONLY_HOOK);
+  }
+
+  /**
+   * Following hook should be registered before using readonly feature.
+   * 1. SET hive.exec.pre.hooks = "org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook";
+   * If not set 'readonly' has no effect on the database.
+   */
+  private void setDbReadOnly() {
+    Map<String, String> props = new HashMap<>();
+    props.put(READONLY, Boolean.TRUE.toString());
+
+    AlterDatabaseSetPropertiesDesc setTargetReadOnly =
+      new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);
+    DDLWork alterDbPropWork = new DDLWork(new HashSet<>(), new HashSet<>(), setTargetReadOnly, true,
+      work.dumpDirectory, work.getMetricCollector());
+
+    Task<?> addReadOnlyTargetPropTask = TaskFactory.get(alterDbPropWork, conf);
+    if (this.childTasks == null) {
+      this.childTasks = new ArrayList<>();
+    }
+    this.childTasks.add(addReadOnlyTargetPropTask);
   }
 
   private void addLazyDataCopyTask(TaskTracker loadTaskTracker, ReplLogger replLogger) throws IOException {
@@ -604,6 +641,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
               Database db = hiveDb.getDatabase(work.getTargetDatabase());
               LinkedHashMap<String, String> params = new LinkedHashMap<>(db.getParameters());
               LOG.debug("Database {} properties before removal {}", work.getTargetDatabase(), params);
+              params.remove(REPL_RESUME_STARTED_AFTER_FAILOVER);
               params.remove(SOURCE_OF_REPLICATION);
               db.setParameters(params);
               LOG.info("Removed {} property from database {} after successful optimised bootstrap load.",
@@ -720,6 +758,15 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Database targetDb = getHive().getDatabase(work.dbNameToLoadIn);
     Map<String, String> props = new HashMap<>();
 
+    if (targetDb == null) {
+      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, work.dbNameToLoadIn);
+    }
+
+    // check if db is set READ_ONLY, if not then set it. Basically this ensures backward
+    // compatibility.
+    if (!isDbReadOnly(targetDb) && isReadOnlyHookRegistered()) {
+      setDbReadOnly();
+    }
     // Check if it is a optimised bootstrap failover.
     if (work.isFirstFailover) {
       // Check it should be marked as target of replication & not source of replication.
@@ -731,6 +778,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         LOG.error("The database {} is already source of replication.", targetDb.getName());
         throw new Exception("Failover target was not source of replication");
       }
+      work.getMetricCollector().reportStageStart(STAGE_NAME, new HashMap<>());
       boolean isTableDiffPresent =
           checkFileExists(new Path(work.dumpDirectory).getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
       boolean isAbortTxnsListPresent =
@@ -755,6 +803,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         this.childTasks = new ArrayList<>();
       }
       createReplLoadCompleteAckTask();
+      work.getMetricCollector().reportStageEnd(STAGE_NAME, Status.SUCCESS);
+      work.getMetricCollector().reportEnd(Status.SUCCESS);
       return 0;
     } else if (work.isSecondFailover) {
       // DROP the tables extra on target, which are not on source cluster.
@@ -872,13 +922,18 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return 0;
   }
 
+  private boolean isDbReadOnly(Database db) {
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null && Boolean.parseBoolean(dbParameters.get(READONLY)) ;
+  }
+
   private void abortOpenTxnsForDatabase(HiveTxnManager hiveTxnManager, ValidTxnList validTxnList, String dbName,
                                         Hive hiveDb) throws HiveException {
     List<Long> openTxns = ReplUtils.getOpenTxns(hiveTxnManager, validTxnList, dbName);
     if (!openTxns.isEmpty()) {
       LOG.info("Rolling back write txns:" + openTxns.toString() + " for the database: " + dbName);
       //abort only write transactions for the current database if abort transactions is enabled.
-      hiveDb.abortTransactions(openTxns);
+      hiveDb.abortTransactions(openTxns, TxnErrorMsg.ABORT_ONGOING_TXN_FOR_TARGET_DB.getErrorCode());
       validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
       openTxns = ReplUtils.getOpenTxns(hiveTxnManager, validTxnList, dbName);
       if (!openTxns.isEmpty()) {

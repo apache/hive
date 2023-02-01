@@ -19,7 +19,10 @@ package org.apache.hadoop.hive.metastore.datasource;
 
 import com.zaxxer.hikari.HikariDataSource;
 
+import com.zaxxer.hikari.HikariPoolMXBean;
 import org.apache.commons.dbcp2.PoolingDataSource;
+import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -34,6 +37,8 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Category(MetastoreUnitTest.class)
 public class TestDataSourceProviderFactory {
@@ -141,6 +146,60 @@ public class TestDataSourceProviderFactory {
 
     DataSource ds = dsp.create(conf);
     Assert.assertTrue(ds instanceof PoolingDataSource);
+  }
+
+  @Test
+  public void testEvictIdleConnection() throws Exception {
+    String[] dataSourceType = {HikariCPDataSourceProvider.HIKARI, DbCPDataSourceProvider.DBCP};
+    try (DataSourceProvider.DataSourceNameConfigurator configurator =
+             new DataSourceProvider.DataSourceNameConfigurator(conf, "mutex")) {
+      for (final String type: dataSourceType) {
+        MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, type);
+        boolean isHikari = HikariCPDataSourceProvider.HIKARI.equals(type);
+        if (isHikari) {
+          conf.unset("hikaricp.connectionInitSql");
+          // The minimum of idleTimeout is 10s
+          conf.set("hikaricp.idleTimeout", "10000");
+          System.setProperty("com.zaxxer.hikari.housekeeping.periodMs", "1000");
+        } else {
+          conf.set("dbcp.timeBetweenEvictionRunsMillis", "1000");
+          conf.set("dbcp.softMinEvictableIdleTimeMillis", "3000");
+          conf.set("dbcp.maxIdle", "0");
+        }
+        DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+        DataSource ds = dsp.create(conf, 5);
+        List<Connection> connections = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+          connections.add(ds.getConnection());
+        }
+        HikariPoolMXBean poolMXBean = null;
+        GenericObjectPool objectPool = null;
+        if (isHikari) {
+          poolMXBean = ((HikariDataSource) ds).getHikariPoolMXBean();
+          Assert.assertEquals(type, 5, poolMXBean.getTotalConnections());
+          Assert.assertEquals(type, 5, poolMXBean.getActiveConnections());
+        } else {
+          objectPool = (GenericObjectPool) MethodUtils.invokeMethod(ds, true, "getPool");
+          Assert.assertEquals(type, 5, objectPool.getNumActive());
+          Assert.assertEquals(type, 5, objectPool.getMaxTotal());
+        }
+        connections.forEach(connection -> {
+          try {
+            connection.close();
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
+        });
+        Thread.sleep(isHikari ? 15000 : 7000);
+        if (isHikari) {
+          Assert.assertEquals(type, 2, poolMXBean.getTotalConnections());
+          Assert.assertEquals(type, 2, poolMXBean.getIdleConnections());
+        } else {
+          Assert.assertEquals(type, 0, objectPool.getNumActive());
+          Assert.assertEquals(type, 0, objectPool.getNumIdle());
+        }
+      }
+    }
   }
 
   @Test

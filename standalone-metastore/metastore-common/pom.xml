@@ -528,7 +528,7 @@
                 </outputTarget>
                 <outputTarget>
                   <type>grpc-java</type>
-                  <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.24.0</pluginArtifact>
+                  <pluginArtifact>io.grpc:protoc-gen-grpc-java:${io.grpc.version}</pluginArtifact>
                 </outputTarget>
               </outputTargets>
             </configuration>

@@ -65,7 +65,7 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   TABLE_IS_TRANSACTIONAL = "transactional";
 
-  TABLE_NO_AUTO_COMPACT = "no_auto_compaction";
+  NO_AUTO_COMPACT = "no_auto_compaction";
 
   TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties";
 
@@ -90,6 +90,10 @@ hive_metastoreConstants::hive_metastoreConstants() {
   TXN_ID = "txnId";
 
   WRITE_ID = "writeId";
+
+  EXPECTED_PARAMETER_KEY = "expected_parameter_key";
+
+  EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
 
 }
 

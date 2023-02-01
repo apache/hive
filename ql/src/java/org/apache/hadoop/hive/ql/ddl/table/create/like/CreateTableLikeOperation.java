@@ -18,18 +18,12 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create.like;
 
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
-
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -39,13 +33,11 @@ import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hive.common.util.AnnotationUtils;
 
 /**
  * Operation process of creating a table like an existing one.
@@ -63,7 +55,13 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     if (oldTable.getTableType() == TableType.VIRTUAL_VIEW || oldTable.getTableType() == TableType.MATERIALIZED_VIEW) {
       tbl = createViewLikeTable(oldTable);
     } else {
-      tbl = createTableLikeTable(oldTable);
+      Map<String, String> originalProperties = new HashMap<>();
+      // Get the storage handler without caching, since the storage handler can get changed when copying the
+      // properties of the target table and
+      if (oldTable.getStorageHandlerWithoutCaching() != null) {
+        originalProperties = new HashMap<>(oldTable.getStorageHandlerWithoutCaching().getNativeProperties(oldTable));
+      }
+      tbl = createTableLikeTable(oldTable, originalProperties);
     }
 
     // If location is specified - ensure that it is a full qualified name
@@ -112,7 +110,8 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     return table;
   }
 
-  private Table createTableLikeTable(Table table) throws SemanticException, HiveException {
+  private Table createTableLikeTable(Table table, Map<String, String> originalProperties)
+      throws SemanticException, HiveException {
     String[] names = Utilities.getDbTableName(desc.getTableName());
     table.setDbName(names[0]);
     table.setTableName(names[1]);
@@ -120,7 +119,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
 
     setUserSpecifiedLocation(table);
 
-    setTableParameters(table);
+    setTableParameters(table, originalProperties);
 
     if (desc.isUserStorageFormat() || (table.getInputFormatClass() == null) || (table.getOutputFormatClass() == null)) {
       setStorage(table);
@@ -147,14 +146,18 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     }
   }
 
-  private void setTableParameters(Table tbl) throws HiveException {
+  private void setTableParameters(Table tbl, Map<String, String> originalProperties) throws HiveException {
     // With Hive-25813, we'll not copy over table properties from the source.
     // CTLT should should copy column schema but not table properties. It is also consistent
     // with other query engines like mysql, redshift.
+    originalProperties.putAll(tbl.getParameters());
     tbl.getParameters().clear();
-
     if (desc.getTblProps() != null) {
       tbl.setParameters(desc.getTblProps());
+    }
+    HiveStorageHandler storageHandler = tbl.getStorageHandler();
+    if (storageHandler != null) {
+      storageHandler.setTableParametersForCTLT(tbl, desc, originalProperties);
     }
   }
 

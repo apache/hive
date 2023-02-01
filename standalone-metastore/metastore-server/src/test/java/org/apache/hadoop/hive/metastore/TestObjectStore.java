@@ -1481,6 +1481,49 @@ public class TestObjectStore {
     Assert.assertEquals(1, result.size());
   }
 
+  @Test
+  public void testSavePoint() throws Exception {
+    List<String> partNames = Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2");
+    createPartitionedTable(true, false);
+    Assert.assertEquals(3, objectStore.getPartitionCount());
+
+    objectStore.openTransaction();
+    objectStore.new GetHelper<Object>(DEFAULT_CATALOG_NAME, DB1, TABLE1, true, true) {
+      @Override
+      protected String describeResult() {
+        return "test savepoint";
+      }
+
+      @Override
+      protected Object getSqlResult(ObjectStore.GetHelper<Object> ctx) throws MetaException {
+        // drop the partitions with SQL alone
+        try (AutoCloseable c = deadline()) {
+          objectStore.dropPartitionsInternal(ctx.catName, ctx.dbName, ctx.tblName, partNames, true,
+              false);
+          Assert.assertEquals(0, objectStore.getPartitionCount());
+        } catch (Exception e) {
+          throw new MetaException(e.getMessage());
+        }
+        throw new MetaException("Throwing exception in direct SQL to test Savepoint");
+      }
+
+      @Override
+      protected Object getJdoResult(ObjectStore.GetHelper<Object> ctx) throws MetaException {
+        // drop the partitions with JDO alone
+        try (AutoCloseable c = deadline()) {
+          Assert.assertEquals(3, objectStore.getPartitionCount());
+          objectStore.dropPartitionsInternal(ctx.catName, ctx.dbName, ctx.tblName, partNames, false,
+              true);
+        } catch (Exception e) {
+          throw new MetaException(e.getMessage());
+        }
+        return null;
+      }
+    }.run(false);
+    objectStore.commitTransaction();
+    Assert.assertEquals(0, objectStore.getPartitionCount());
+  }
+
   /**
    * Helper method to check whether the Java system properties were set correctly in {@link ObjectStore#configureSSL(Configuration)}
    * @param useSSL whether or not SSL is enabled
