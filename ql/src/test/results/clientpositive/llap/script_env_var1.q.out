@@ -10,5 +10,4 @@ POSTHOOK: query: SELECT count(1) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1
-1
+2
