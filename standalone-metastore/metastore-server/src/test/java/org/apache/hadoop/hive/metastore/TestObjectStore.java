@@ -125,6 +125,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
 
 @Category(MetastoreUnitTest.class)
 public class TestObjectStore {
@@ -1259,6 +1260,40 @@ public class TestObjectStore {
   @Test
   public void testEmptyTrustStoreProps() {
     setAndCheckSSLProperties(true, "", "", "jks");
+  }
+
+  /**
+   * Tests getPrimaryKeys() when db_name isn't specified.
+   */
+  @Test
+  public void testGetPrimaryKeys() throws Exception {
+    Database db1 =
+        new DatabaseBuilder().setName(DB1).setDescription("description")
+            .setLocation("locationurl").build(conf);
+    objectStore.createDatabase(db1);
+    StorageDescriptor sd1 = new StorageDescriptor(
+        ImmutableList.of(new FieldSchema("pk_col", "double", null)), "location",
+        null, null, false, 0,
+        new SerDeInfo("SerDeName", "serializationLib", null), null, null, null);
+    HashMap<String, String> params = new HashMap<>();
+    params.put("EXTERNAL", "false");
+    Table tbl1 =
+        new Table(TABLE1, DB1, "owner", 1, 2, 3, sd1, null, params, null, null,
+            "MANAGED_TABLE");
+    objectStore.createTable(tbl1);
+
+    SQLPrimaryKey pk =
+        new SQLPrimaryKey(DB1, TABLE1, "pk_col", 1, "pk_const_1", false, false,
+            false);
+    pk.setCatName(DEFAULT_CATALOG_NAME);
+    objectStore.addPrimaryKeys(ImmutableList.of(pk));
+
+    // Primary key retrieval should be success, even if db_name isn't specified.
+    assertEquals("pk_col",
+        objectStore.getPrimaryKeys(DEFAULT_CATALOG_NAME, null, TABLE1).get(0)
+            .getColumn_name());
+    objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+    objectStore.dropDatabase(db1.getCatalogName(), DB1);
   }
 
   /**
