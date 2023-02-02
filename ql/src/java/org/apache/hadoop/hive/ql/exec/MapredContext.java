@@ -153,7 +153,7 @@ public class MapredContext {
     // close is called by UDTFOperator
   }
 
-  private boolean needConfigure(Object func) {
+  static boolean needConfigure(Object func) {
     try {
       Method initMethod = func.getClass().getMethod("configure", MapredContext.class);
       return initMethod.getDeclaringClass() != GenericUDF.class &&

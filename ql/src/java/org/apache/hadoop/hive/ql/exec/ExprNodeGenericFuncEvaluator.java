@@ -170,7 +170,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
     // when "hive.fetch.task.conversion" occurs.
     if (context != null) {
       context.setup(genericUDF);
-    } else {
+    } else if (MapredContext.needConfigure(genericUDF)) {
       // It is a bit unfortunate that currently the UDF configuration signature expects a
       // MapredContext (even if execution is tez or another engine) - this causes an
       // impedence mismatch. For example: MapredContext has Reporter objects that may or
