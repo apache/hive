@@ -238,7 +238,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessPreOptimizedBootstrapDumpMetrics() throws Exception {
     ReplicationMetricCollector preOptimizedBootstrapDumpMetricCollector = new PreOptimizedBootstrapDumpMetricCollector("db",
-            "dummyDir", conf, (long) -1, MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), ReplConst.UNPLANNED_FAILOVER);
+            "dummyDir", conf, (long) -1, MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), ReplConst.FailoverType.UNPLANNED.toString());
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 0);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 0);
@@ -256,7 +256,7 @@ public class TestReplicationMetricCollector {
     Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.PRE_OPTIMIZED_BOOTSTRAP, "dummyDir");
     expectedMetadata.setLastReplId(-1);
     expectedMetadata.setFailoverEndPoint(MetaStoreUtils.FailoverEndpoint.SOURCE.toString());
-    expectedMetadata.setFailoverType(ReplConst.UNPLANNED_FAILOVER);
+    expectedMetadata.setFailoverType(ReplConst.FailoverType.UNPLANNED.toString());
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
     Stage dumpStage = new Stage("dump", Status.SUCCESS, 0);
@@ -277,7 +277,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessOptimizedBootstrapDumpMetrics() throws Exception {
     ReplicationMetricCollector optimizedBootstrapDumpMetricCollector = new OptimizedBootstrapDumpMetricCollector("db",
-            "dummyDir", conf, 0L, MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), ReplConst.UNPLANNED_FAILOVER);
+            "dummyDir", conf, 0L, MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), ReplConst.FailoverType.UNPLANNED.toString());
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -300,7 +300,7 @@ public class TestReplicationMetricCollector {
     Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.OPTIMIZED_BOOTSTRAP, "dummyDir");
     expectedMetadata.setLastReplId(10);
     expectedMetadata.setFailoverEndPoint(MetaStoreUtils.FailoverEndpoint.SOURCE.toString());
-    expectedMetadata.setFailoverType(ReplConst.UNPLANNED_FAILOVER);
+    expectedMetadata.setFailoverType(ReplConst.FailoverType.UNPLANNED.toString());
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
     Stage dumpStage = new Stage("dump", Status.SUCCESS, 0);
@@ -325,7 +325,7 @@ public class TestReplicationMetricCollector {
             "dummyDir", conf, 0L);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
-    incrDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd, MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), ReplConst.PLANNED_FAILOVER);
+    incrDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd, MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), ReplConst.FailoverType.PLANNED.toString());
     incrDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 2);
     List<ReplicationMetric> actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
@@ -341,7 +341,7 @@ public class TestReplicationMetricCollector {
     expectedMetadata.setFailoverEventId(10);
     expectedMetadata.setFailoverMetadataLoc("dummyDir");
     expectedMetadata.setFailoverEndPoint(MetaStoreUtils.FailoverEndpoint.SOURCE.toString());
-    expectedMetadata.setFailoverType(ReplConst.PLANNED_FAILOVER);
+    expectedMetadata.setFailoverType(ReplConst.FailoverType.PLANNED.toString());
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.FAILOVER_READY);
     Stage dumpStage = new Stage("dump", Status.SUCCESS, 0);

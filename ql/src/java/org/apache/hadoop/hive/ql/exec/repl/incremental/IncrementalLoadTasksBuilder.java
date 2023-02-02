@@ -115,7 +115,7 @@ public class IncrementalLoadTasksBuilder {
       }
       this.metricCollector.reportFailoverStart("REPL_LOAD", metricMap,
           new FailoverMetaData(new Path(dumpDirectory, ReplUtils.REPL_HIVE_BASE_DIR), conf),
-          dbFailoverEndPoint, ReplConst.PLANNED_FAILOVER);
+          dbFailoverEndPoint, ReplConst.FailoverType.PLANNED.toString());
     } else {
       this.metricCollector.reportStageStart("REPL_LOAD", metricMap);
     }

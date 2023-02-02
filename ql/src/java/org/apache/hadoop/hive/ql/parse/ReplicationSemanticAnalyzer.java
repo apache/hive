@@ -396,7 +396,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       String failoverType = "";
       try {
         // check whether ReplConst.FAILOVER_ENDPOINT is set
-        failoverType = MetaStoreUtils.isDbBeingFailedOver(db.getDatabase(dbNameToLoadIn)) ? ReplConst.PLANNED_FAILOVER : ReplConst.UNPLANNED_FAILOVER;
+        failoverType = MetaStoreUtils.isDbBeingFailedOver(db.getDatabase(dbNameToLoadIn)) ? ReplConst.FailoverType.PLANNED.toString() : ReplConst.FailoverType.UNPLANNED.toString();
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }

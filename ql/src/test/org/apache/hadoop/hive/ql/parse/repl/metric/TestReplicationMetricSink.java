@@ -222,7 +222,7 @@ public class TestReplicationMetricSink {
             "testAcidTablesReplLoadBootstrapIncr_1592205875387", stagingDir, conf, 0L);
     metricMap = new HashMap<String, Long>(){{put(ReplUtils.MetricName.EVENTS.name(), (long) 10);}};
 
-    failoverDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd, MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), ReplConst.PLANNED_FAILOVER);
+    failoverDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd, MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), ReplConst.FailoverType.PLANNED.toString());
     failoverDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 10);
     failoverDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
             new ReplStatsTracker(0));
@@ -234,7 +234,7 @@ public class TestReplicationMetricSink {
     expectedMetadata.setFailoverEventId(100);
     expectedMetadata.setFailoverMetadataLoc(stagingDir + FailoverMetaData.FAILOVER_METADATA);
     expectedMetadata.setFailoverEndPoint(MetaStoreUtils.FailoverEndpoint.SOURCE.toString());
-    expectedMetadata.setFailoverType(ReplConst.PLANNED_FAILOVER);
+    expectedMetadata.setFailoverType(ReplConst.FailoverType.PLANNED.toString());
     expectedProgress = new Progress();
     expectedProgress.setStatus(Status.FAILOVER_READY);
     dumpStage = new Stage("dump", Status.SUCCESS, 0);

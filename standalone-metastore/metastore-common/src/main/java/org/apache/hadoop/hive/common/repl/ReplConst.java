@@ -88,6 +88,8 @@ public class ReplConst {
   /**
    * Type of failover
    */
-  public static final String PLANNED_FAILOVER = "PLANNED";
-  public static final String UNPLANNED_FAILOVER = "UNPLANNED";
+  public enum FailoverType {
+    PLANNED,
+    UNPLANNED;
+  }
 }

@@ -895,7 +895,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         } else {
           LOG.warn("Replication Metrics: Cannot obtained failover endpoint info, setting failover endpoint to null ");
         }
-        work.getMetricCollector().reportFailoverStart(getName(), metricMap, work.getFailoverMetadata(), dbFailoverEndPoint, ReplConst.PLANNED_FAILOVER);
+        work.getMetricCollector().reportFailoverStart(getName(), metricMap, work.getFailoverMetadata(), dbFailoverEndPoint, ReplConst.FailoverType.PLANNED.toString());
       } else {
         work.getMetricCollector().reportStageStart(getName(), metricMap);
       }
@@ -1094,7 +1094,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     } else if (isFailover) {
       // db property ReplConst.FAILOVER_ENDPOINT is only set during planned failover.
       String failoverType = MetaStoreUtils.isDbBeingFailedOver(getHive().getDatabase(work.dbNameOrPattern)) ?
-          ReplConst.PLANNED_FAILOVER : ReplConst.UNPLANNED_FAILOVER;
+          ReplConst.FailoverType.PLANNED.toString() : ReplConst.FailoverType.UNPLANNED.toString();
       if (isPreOptimisedBootstrap) {
         collector = new PreOptimizedBootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf, executorId,
             MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), failoverType);
