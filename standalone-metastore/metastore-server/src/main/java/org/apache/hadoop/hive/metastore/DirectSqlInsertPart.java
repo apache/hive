@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.StringUtils.repeat;
 import static org.apache.hadoop.hive.metastore.Batchable.NO_BATCHING;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.Map;
 
 import javax.jdo.PersistenceManager;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
@@ -195,7 +197,7 @@ class DirectSqlInsertPart {
   private void insertSerdeParamInBatch(Map<Long, MSerDeInfo> serdeIdToSerDeInfo) throws MetaException {
     int rowCount = 0;
     for (MSerDeInfo serDeInfo : serdeIdToSerDeInfo.values()) {
-      rowCount += serDeInfo.getParameters().size(); // serDeInfo.getParameters() is not null
+      rowCount += serDeInfo.getParameters() != null ? serDeInfo.getParameters().size() : 0;
     }
     if (rowCount == 0) {
       return;
@@ -205,7 +207,8 @@ class DirectSqlInsertPart {
     BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MSerDeInfo>> serdeIt = serdeIdToSerDeInfo.entrySet().iterator();
       Map.Entry<Long, MSerDeInfo> serdeEntry = serdeIt.next();
-      Iterator<Map.Entry<String, String>> it = serdeEntry.getValue().getParameters().entrySet().iterator();
+      Iterator<Map.Entry<String, String>> it = serdeEntry.getValue().getParameters() != null  ?
+          serdeEntry.getValue().getParameters().entrySet().iterator() : Collections.emptyIterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount) throws MetaException {
         Object[] params = new Object[batchRowCount * columnCount];
@@ -221,7 +224,8 @@ class DirectSqlInsertPart {
           }
           if (index < batchRowCount) {
             serdeEntry = serdeIt.next(); // serdeIt.next() cannot be null since it is within the row count
-            it = serdeEntry.getValue().getParameters().entrySet().iterator();
+            it = serdeEntry.getValue().getParameters() != null  ?
+                serdeEntry.getValue().getParameters().entrySet().iterator() : Collections.emptyIterator();
           }
         } while (index < batchRowCount);
         executeQuery(batchQueryText, params);
@@ -234,7 +238,7 @@ class DirectSqlInsertPart {
       throws MetaException {
     int rowCount = 0;
     for (MStorageDescriptor sd : sdIdToStorageDescriptor.values()) {
-      rowCount += sd.getParameters().size(); // sd.getParameters() is not null
+      rowCount += sd.getParameters() != null ? sd.getParameters().size() : 0;
     }
     if (rowCount == 0) {
       return;
@@ -244,7 +248,9 @@ class DirectSqlInsertPart {
     BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MStorageDescriptor>> sdIt = sdIdToStorageDescriptor.entrySet().iterator();
       Map.Entry<Long, MStorageDescriptor> sdEntry = sdIt.next();
-      Iterator<Map.Entry<String, String>> it = sdEntry.getValue().getParameters().entrySet().iterator();
+      Iterator<Map.Entry<String, String>> it = sdEntry.getValue().getParameters() != null ?
+          sdEntry.getValue().getParameters().entrySet().iterator() : Collections.emptyIterator();
+
       @Override
       public void execute(String batchQueryText, int batchRowCount) throws MetaException {
         Object[] params = new Object[batchRowCount * columnCount];
@@ -260,7 +266,8 @@ class DirectSqlInsertPart {
           }
           if (index < batchRowCount) {
             sdEntry = sdIt.next(); // sdIt.next() cannot be null since it is within the row count
-            it = sdEntry.getValue().getParameters().entrySet().iterator();
+            it = sdEntry.getValue().getParameters() != null  ?
+                sdEntry.getValue().getParameters().entrySet().iterator() : Collections.emptyIterator();
           }
         } while (index < batchRowCount);
         executeQuery(batchQueryText, params);
@@ -272,7 +279,7 @@ class DirectSqlInsertPart {
   private void insertPartitionParamInBatch(Map<Long, MPartition> partIdToPartition) throws MetaException {
     int rowCount = 0;
     for (MPartition part : partIdToPartition.values()) {
-      rowCount += part.getParameters().size(); // part.getParameters() is not null
+      rowCount += part.getParameters() != null ? part.getParameters().size() : 0;
     }
     if (rowCount == 0) {
       return;
@@ -282,7 +289,8 @@ class DirectSqlInsertPart {
     BatchExecutionContext batchExecutionContext = new BatchExecutionContext() {
       final Iterator<Map.Entry<Long, MPartition>> partIt = partIdToPartition.entrySet().iterator();
       Map.Entry<Long, MPartition> partEntry = partIt.next();
-      Iterator<Map.Entry<String, String>> it = partEntry.getValue().getParameters().entrySet().iterator();
+      Iterator<Map.Entry<String, String>> it = partEntry.getValue().getParameters() != null ?
+          partEntry.getValue().getParameters().entrySet().iterator() : Collections.emptyIterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount) throws MetaException {
         Object[] params = new Object[batchRowCount * columnCount];
@@ -298,7 +306,8 @@ class DirectSqlInsertPart {
           }
           if (index < batchRowCount) {
             partEntry = partIt.next(); // partIt.next() cannot be null since it is within the row count
-            it = partEntry.getValue().getParameters().entrySet().iterator();
+            it = partEntry.getValue().getParameters() != null ?
+                partEntry.getValue().getParameters().entrySet().iterator() : Collections.emptyIterator();
           }
         } while (index < batchRowCount);
         executeQuery(batchQueryText, params);
@@ -310,7 +319,7 @@ class DirectSqlInsertPart {
   private void insertPartitionKeyValInBatch(Map<Long, MPartition> partIdToPartition) throws MetaException {
     int rowCount = 0;
     for (MPartition part : partIdToPartition.values()) {
-      rowCount += part.getValues().size(); // part.getValues() is not null
+      rowCount += part.getValues().size();
     }
     if (rowCount == 0) {
       return;
@@ -368,7 +377,7 @@ class DirectSqlInsertPart {
   private void insertColumnV2InBatch(Map<Long, MColumnDescriptor> cdIdToColumnDescriptor) throws MetaException {
     int rowCount = 0;
     for (MColumnDescriptor cd : cdIdToColumnDescriptor.values()) {
-      rowCount += cd.getCols().size(); // cd.getCols() is not null
+      rowCount += cd.getCols().size();
     }
     if (rowCount == 0) {
       return;
@@ -410,7 +419,7 @@ class DirectSqlInsertPart {
   private void insertBucketColInBatch(Map<Long, MStorageDescriptor> sdIdToStorageDescriptor) throws MetaException {
     int rowCount = 0;
     for (MStorageDescriptor sd : sdIdToStorageDescriptor.values()) {
-      rowCount += sd.getBucketCols().size(); // sd.getBucketCols() is not null
+      rowCount += sd.getBucketCols() != null ? sd.getBucketCols().size() : 0;
     }
     if (rowCount == 0) {
       return;
@@ -421,7 +430,8 @@ class DirectSqlInsertPart {
       int colIndex = 0;
       final Iterator<Map.Entry<Long, MStorageDescriptor>> sdIt = sdIdToStorageDescriptor.entrySet().iterator();
       Map.Entry<Long, MStorageDescriptor> sdEntry = sdIt.next();
-      Iterator<String> it = sdEntry.getValue().getBucketCols().iterator();
+      Iterator<String> it = sdEntry.getValue().getBucketCols() != null ?
+          sdEntry.getValue().getBucketCols().iterator() : Collections.emptyIterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount) throws MetaException {
         Object[] params = new Object[batchRowCount * columnCount];
@@ -437,7 +447,8 @@ class DirectSqlInsertPart {
           if (index < batchRowCount) {
             colIndex = 0;
             sdEntry = sdIt.next(); // sdIt.next() cannot be null since it is within the row count
-            it = sdEntry.getValue().getBucketCols().iterator();
+            it = sdEntry.getValue().getBucketCols() != null ?
+                sdEntry.getValue().getBucketCols().iterator() : Collections.emptyIterator();
           }
         } while (index < batchRowCount);
         executeQuery(batchQueryText, params);
@@ -449,7 +460,7 @@ class DirectSqlInsertPart {
   private void insertSortColInBatch(Map<Long, MStorageDescriptor> sdIdToStorageDescriptor) throws MetaException {
     int rowCount = 0;
     for (MStorageDescriptor sd : sdIdToStorageDescriptor.values()) {
-      rowCount += sd.getSortCols().size(); // sd.getSortCols() is not null
+      rowCount += sd.getSortCols() != null ? sd.getSortCols().size() : 0;
     }
     if (rowCount == 0) {
       return;
@@ -460,7 +471,8 @@ class DirectSqlInsertPart {
       int colIndex = 0;
       final Iterator<Map.Entry<Long, MStorageDescriptor>> sdIt = sdIdToStorageDescriptor.entrySet().iterator();
       Map.Entry<Long, MStorageDescriptor> sdEntry = sdIt.next();
-      Iterator<MOrder> it = sdEntry.getValue().getSortCols().iterator();
+      Iterator<MOrder> it = sdEntry.getValue().getSortCols() != null ?
+          sdEntry.getValue().getSortCols().iterator() : Collections.emptyIterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount) throws MetaException {
         Object[] params = new Object[batchRowCount * columnCount];
@@ -478,7 +490,8 @@ class DirectSqlInsertPart {
           if (index < batchRowCount) {
             colIndex = 0;
             sdEntry = sdIt.next(); // sdIt.next() cannot be null since it is within the row count
-            it = sdEntry.getValue().getSortCols().iterator();
+            it = sdEntry.getValue().getSortCols() != null ?
+                sdEntry.getValue().getSortCols().iterator() : Collections.emptyIterator();
           }
         } while (index < batchRowCount);
         executeQuery(batchQueryText, params);
@@ -548,7 +561,7 @@ class DirectSqlInsertPart {
   private void insertSkewedColInBatch(Map<Long, MStorageDescriptor> sdIdToStorageDescriptor) throws MetaException {
     int rowCount = 0;
     for (MStorageDescriptor sd : sdIdToStorageDescriptor.values()) {
-      rowCount += sd.getSkewedColNames().size(); // sd.getSkewedColNames() is not null
+      rowCount += sd.getSkewedColNames() != null ? sd.getSkewedColNames().size() : 0;
     }
     if (rowCount == 0) {
       return;
@@ -559,7 +572,8 @@ class DirectSqlInsertPart {
       int colIndex = 0;
       final Iterator<Map.Entry<Long, MStorageDescriptor>> sdIt = sdIdToStorageDescriptor.entrySet().iterator();
       Map.Entry<Long, MStorageDescriptor> sdEntry = sdIt.next();
-      Iterator<String> it = sdEntry.getValue().getSkewedColNames().iterator();
+      Iterator<String> it = sdEntry.getValue().getSkewedColNames() != null ?
+          sdEntry.getValue().getSkewedColNames().iterator() : Collections.emptyIterator();
       @Override
       public void execute(String batchQueryText, int batchRowCount) throws MetaException {
         Object[] params = new Object[batchRowCount * columnCount];
@@ -575,7 +589,8 @@ class DirectSqlInsertPart {
           if (index < batchRowCount) {
             colIndex = 0;
             sdEntry = sdIt.next(); // sdIt.next() cannot be null since it is within the row count
-            it = sdEntry.getValue().getSkewedColNames().iterator();
+            it = sdEntry.getValue().getSkewedColNames() != null ?
+                sdEntry.getValue().getSkewedColNames().iterator() : Collections.emptyIterator();
           }
         } while (index < batchRowCount);
         executeQuery(batchQueryText, params);
@@ -730,20 +745,25 @@ class DirectSqlInsertPart {
     int partitionsCount = parts.size();
     for (int index = 0; index < partitionsCount; index++) {
       MPartition part = parts.get(index);
+      MStorageDescriptor sd = part.getSd();
+      if (part.getValues() == null || sd == null || sd.getSerDeInfo() == null || sd.getCD() == null
+          || sd.getCD().getCols() == null) {
+        throw new MetaException("Invalid partition");
+      }
       Long serDeId = getDataStoreId(MSerDeInfo.class);
-      serdeIdToSerDeInfo.put(serDeId, part.getSd().getSerDeInfo());
+      serdeIdToSerDeInfo.put(serDeId, sd.getSerDeInfo());
 
       Long cdId;
-      DatastoreId storeId = (DatastoreId) pm.getObjectId(part.getSd().getCD());
+      DatastoreId storeId = (DatastoreId) pm.getObjectId(sd.getCD());
       if (storeId == null) {
         cdId = getDataStoreId(MColumnDescriptor.class);
-        cdIdToColumnDescriptor.put(cdId, part.getSd().getCD());
+        cdIdToColumnDescriptor.put(cdId, sd.getCD());
       } else {
         cdId = (Long) storeId.getKeyAsObject();
       }
 
       Long sdId = getDataStoreId(MStorageDescriptor.class);
-      sdIdToStorageDescriptor.put(sdId, part.getSd());
+      sdIdToStorageDescriptor.put(sdId, sd);
       sdIdToSerdeId.put(sdId, serDeId);
       sdIdToCdId.put(sdId, cdId);
 
@@ -752,19 +772,23 @@ class DirectSqlInsertPart {
       partIdToSdId.put(partId, sdId);
 
       Map<List<String>, String> stringListToLocation = new HashMap<>();
-      for (Map.Entry<MStringList, String> entry : part.getSd().getSkewedColValueLocationMaps().entrySet()) {
-        stringListToLocation.put(entry.getKey().getInternalList(), entry.getValue());
+      if (sd.getSkewedColValueLocationMaps() != null) {
+        for (Map.Entry<MStringList, String> entry : sd.getSkewedColValueLocationMaps().entrySet()) {
+          stringListToLocation.put(entry.getKey().getInternalList(), entry.getValue());
+        }
       }
-      int skewedValCount = part.getSd().getSkewedColValues().size();
-      for (int i = 0; i < skewedValCount; i++) {
-        Long stringListId = getDataStoreId(MStringList.class);
-        stringListIds.add(stringListId);
-        stringListIdToSdId.put(stringListId, sdId);
-        List<String> stringList = part.getSd().getSkewedColValues().get(i).getInternalList();
-        stringListIdToStringList.put(stringListId, stringList);
-        String location = stringListToLocation.get(stringList);
-        if (location != null) {
-          stringListIdToLocation.put(stringListId, location);
+      if (CollectionUtils.isNotEmpty(sd.getSkewedColValues())) {
+        int skewedValCount = sd.getSkewedColValues().size();
+        for (int i = 0; i < skewedValCount; i++) {
+          Long stringListId = getDataStoreId(MStringList.class);
+          stringListIds.add(stringListId);
+          stringListIdToSdId.put(stringListId, sdId);
+          List<String> stringList = sd.getSkewedColValues().get(i).getInternalList();
+          stringListIdToStringList.put(stringListId, stringList);
+          String location = stringListToLocation.get(stringList);
+          if (location != null) {
+            stringListIdToLocation.put(stringListId, location);
+          }
         }
       }
 
