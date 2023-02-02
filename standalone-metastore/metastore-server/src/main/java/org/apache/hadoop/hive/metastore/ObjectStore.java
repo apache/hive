@@ -12025,7 +12025,7 @@ public class ObjectStore implements RawStore, Configurable {
                                                      final String dbNameInput,
                                                      final String tblNameInput)
   throws MetaException, NoSuchObjectException {
-    final String dbName = normalizeIdentifier(dbNameInput);
+    final String dbName = dbNameInput != null ? normalizeIdentifier(dbNameInput) : null;
     final String tblName = normalizeIdentifier(tblNameInput);
     return new GetListHelper<SQLPrimaryKey>(catName, dbName, tblName, true, true) {
 
