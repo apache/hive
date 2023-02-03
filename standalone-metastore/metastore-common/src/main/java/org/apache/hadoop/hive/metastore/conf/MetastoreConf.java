@@ -706,6 +706,10 @@ public class MetastoreConf {
         "Default transaction isolation level for identity generation."),
     DATANUCLEUS_USE_LEGACY_VALUE_STRATEGY("datanucleus.rdbms.useLegacyNativeValueStrategy",
         "datanucleus.rdbms.useLegacyNativeValueStrategy", true, ""),
+    DATANUCLEUS_QUERY_SQL_ALLOWALL("datanucleus.query.sql.allowAll", "datanucleus.query.sql.allowAll",
+        true, "In strict JDO all SQL queries must begin with \"SELECT ...\", and consequently it "
+        + "is not possible to execute queries that change data. This DataNucleus property when set to true allows "
+        + "insert, update and delete operations from JDO SQL. Default value is true."),
 
     // Parameters for configuring SSL encryption to the database store
     // If DBACCESS_USE_SSL is false, then all other DBACCESS_SSL_* properties will be ignored
@@ -1924,6 +1928,7 @@ public class MetastoreConf {
       ConfVars.DATANUCLEUS_PLUGIN_REGISTRY_BUNDLE_CHECK,
       ConfVars.DATANUCLEUS_TRANSACTION_ISOLATION,
       ConfVars.DATANUCLEUS_USE_LEGACY_VALUE_STRATEGY,
+      ConfVars.DATANUCLEUS_QUERY_SQL_ALLOWALL,
       ConfVars.DETACH_ALL_ON_COMMIT,
       ConfVars.IDENTIFIER_FACTORY,
       ConfVars.MANAGER_FACTORY_CLASS,

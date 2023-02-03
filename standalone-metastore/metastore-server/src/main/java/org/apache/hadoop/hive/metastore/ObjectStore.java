@@ -2643,39 +2643,69 @@ public class ObjectStore implements RawStore, Configurable {
         tabGrants = this.listAllTableGrants(catName, dbName, tblName);
         tabColumnGrants = this.listTableAllColumnGrants(catName, dbName, tblName);
       }
-      List<Object> toPersist = new ArrayList<>();
+      List<MPartition> mParts = new ArrayList<>();
+      List<List<MPartitionPrivilege>> mPartPrivilegesList = new ArrayList<>();
+      List<List<MPartitionColumnPrivilege>> mPartColPrivilegesList = new ArrayList<>();
       for (Partition part : parts) {
         if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
           throw new MetaException("Partition does not belong to target table "
               + dbName + "." + tblName + ": " + part);
         }
         MPartition mpart = convertToMPart(part, table, true);
-
-        toPersist.add(mpart);
+        mParts.add(mpart);
         int now = (int) (System.currentTimeMillis() / 1000);
+        List<MPartitionPrivilege> mPartPrivileges = new ArrayList<>();
         if (tabGrants != null) {
           for (MTablePrivilege tab: tabGrants) {
-            toPersist.add(new MPartitionPrivilege(tab.getPrincipalName(),
-                tab.getPrincipalType(), mpart, tab.getPrivilege(), now,
-                tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption(),
-                tab.getAuthorizer()));
+            MPartitionPrivilege mPartPrivilege = new MPartitionPrivilege(tab.getPrincipalName(), tab.getPrincipalType(),
+                mpart, tab.getPrivilege(), now, tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption(),
+                tab.getAuthorizer());
+            mPartPrivileges.add(mPartPrivilege);
           }
         }
 
+        List<MPartitionColumnPrivilege> mPartColumnPrivileges = new ArrayList<>();
         if (tabColumnGrants != null) {
           for (MTableColumnPrivilege col : tabColumnGrants) {
-            toPersist.add(new MPartitionColumnPrivilege(col.getPrincipalName(),
-                col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(),
-                now, col.getGrantor(), col.getGrantorType(), col.getGrantOption(),
-                col.getAuthorizer()));
+            MPartitionColumnPrivilege mPartColumnPrivilege = new MPartitionColumnPrivilege(col.getPrincipalName(),
+                col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(), now, col.getGrantor(),
+                col.getGrantorType(), col.getGrantOption(), col.getAuthorizer());
+            mPartColumnPrivileges.add(mPartColumnPrivilege);
           }
         }
+        mPartPrivilegesList.add(mPartPrivileges);
+        mPartColPrivilegesList.add(mPartColumnPrivileges);
       }
-      if (CollectionUtils.isNotEmpty(toPersist)) {
-        pm.makePersistentAll(toPersist);
-        pm.flush();
-      }
+      if (CollectionUtils.isNotEmpty(mParts)) {
+        GetHelper<Void> helper = new GetHelper<Void>(null, null, null, true,
+            true) {
+          @Override
+          protected Void getSqlResult(GetHelper<Void> ctx) throws MetaException {
+            directSql.addPartitions(mParts, mPartPrivilegesList, mPartColPrivilegesList);
+            return null;
+          }
 
+          @Override
+          protected Void getJdoResult(GetHelper<Void> ctx) {
+            List<Object> toPersist = new ArrayList<>(mParts);
+            mPartPrivilegesList.forEach(toPersist::addAll);
+            mPartColPrivilegesList.forEach(toPersist::addAll);
+            pm.makePersistentAll(toPersist);
+            pm.flush();
+            return null;
+          }
+
+          @Override
+          protected String describeResult() {
+            return "add partitions";
+          }
+        };
+        try {
+          helper.run(false);
+        } catch (NoSuchObjectException e) {
+          throw new MetaException(e.getMessage());
+        }
+      }
       success = commitTransaction();
     } finally {
       if (!success) {
