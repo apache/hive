@@ -12053,22 +12053,22 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<SQLPrimaryKey> getPrimaryKeysInternal(final String catName,
-                                                     final String db_name_input,
-                                                     final String tbl_name_input)
+                                                     final String dbNameInput,
+                                                     final String tblNameInput)
   throws MetaException, NoSuchObjectException {
-    final String db_name = normalizeIdentifier(db_name_input);
-    final String tbl_name = normalizeIdentifier(tbl_name_input);
-    return new GetListHelper<SQLPrimaryKey>(catName, db_name, tbl_name, true, true) {
+    final String dbName = dbNameInput != null ? normalizeIdentifier(dbNameInput) : null;
+    final String tblName = normalizeIdentifier(tblNameInput);
+    return new GetListHelper<SQLPrimaryKey>(catName, dbName, tblName, true, true) {
 
       @Override
       protected List<SQLPrimaryKey> getSqlResult(GetHelper<List<SQLPrimaryKey>> ctx) throws MetaException {
-        return directSql.getPrimaryKeys(catName, db_name, tbl_name);
+        return directSql.getPrimaryKeys(catName, dbName, tblName);
       }
 
       @Override
       protected List<SQLPrimaryKey> getJdoResult(
         GetHelper<List<SQLPrimaryKey>> ctx) throws MetaException, NoSuchObjectException {
-        return getPrimaryKeysViaJdo(catName, db_name, tbl_name);
+        return getPrimaryKeysViaJdo(catName, dbName, tblName);
       }
     }.run(false);
   }
