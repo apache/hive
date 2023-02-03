@@ -102,6 +102,7 @@ import java.util.Set;
 import static org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook.READONLY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.READ_ONLY_HOOK;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_FAILOVER_ENDPOINT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
@@ -643,6 +644,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
               LOG.debug("Database {} properties before removal {}", work.getTargetDatabase(), params);
               params.remove(REPL_RESUME_STARTED_AFTER_FAILOVER);
               params.remove(SOURCE_OF_REPLICATION);
+              if (!work.shouldFailover()) {
+                params.remove(REPL_FAILOVER_ENDPOINT);
+              }
               db.setParameters(params);
               LOG.info("Removed {} property from database {} after successful optimised bootstrap load.",
                   SOURCE_OF_REPLICATION, work.getTargetDatabase());

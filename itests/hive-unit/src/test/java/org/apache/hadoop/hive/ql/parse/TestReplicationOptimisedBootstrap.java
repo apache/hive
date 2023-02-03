@@ -66,6 +66,7 @@ import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_DONT_SET;
 import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_RESET;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_ENABLE_BACKGROUND_THREAD;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DB_PROPERTY;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_FAILOVER_ENDPOINT;
 import static org.apache.hadoop.hive.common.repl.ReplConst.TARGET_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
@@ -1329,5 +1330,67 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
             MetaStoreUtils.FailoverEndpoint.SOURCE));
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
+  }
+  @Test
+  public void testOptimizedBootstrapWithControlledFailover() throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("create  table t1 (id string)")
+            .run("insert into table t1 values ('A')")
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+
+    primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+    //initiate a controlled failover from primary to replica.
+    List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'");
+    primary.dump(primaryDbName, failoverConfigs);
+    replica.load(replicatedDbName, primaryDbName, failoverConfigs);
+
+    primary.run("use " + primaryDbName)
+            .run("create  table t3 (id int)")
+            .run("insert into t3 values(1),(2),(3)")
+            .run("insert into t1 values('B')"); //modify primary after failover.
+
+    // initiate first cycle of optimized bootstrap
+    WarehouseInstance.Tuple reverseDump = replica.run("use " + replicatedDbName)
+            .run("create table t2 (col int)")
+            .run("insert into t2 values(1),(2)")
+            .dump(replicatedDbName);
+
+    FileSystem fs = new Path(reverseDump.dumpLocation).getFileSystem(conf);
+    assertTrue(fs.exists(new Path(reverseDump.dumpLocation, EVENT_ACK_FILE)));
+
+    primary.load(primaryDbName, replicatedDbName);
+
+    assertEquals(MetaStoreUtils.FailoverEndpoint.SOURCE.toString(),
+            primary.getDatabase(primaryDbName).getParameters().get(REPL_FAILOVER_ENDPOINT));
+
+    assertEquals(MetaStoreUtils.FailoverEndpoint.TARGET.toString(),
+            replica.getDatabase(replicatedDbName).getParameters().get(REPL_FAILOVER_ENDPOINT));
+
+    assertTrue(fs.exists(new Path(reverseDump.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY)));
+    HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(new Path(reverseDump.dumpLocation), conf);
+    assertTrue(!tableDiffEntries.isEmpty());
+
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+            MetaStoreUtils.FailoverEndpoint.SOURCE));
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+            MetaStoreUtils.FailoverEndpoint.TARGET));
+
+    // second cycle of optimized bootstrap
+    reverseDump = replica.dump(replicatedDbName);
+    assertTrue(fs.exists(new Path(reverseDump.dumpLocation, OptimisedBootstrapUtils.BOOTSTRAP_TABLES_LIST)));
+
+    primary.load(primaryDbName, replicatedDbName);
+    //ensure optimized bootstrap was successful
+    primary.run(String.format("select * from %s.t1", primaryDbName))
+            .verifyResults(new String[]{"A"})
+            .run(String.format("select * from %s.t2", primaryDbName))
+            .verifyResults(new String[]{"1", "2"})
+            .run("show tables in " + primaryDbName)
+            .verifyResults(new String[]{"t1", "t2"});
+
+    assertFalse(primary.getDatabase(primaryDbName).getParameters().containsKey(REPL_FAILOVER_ENDPOINT));
+    assertFalse(replica.getDatabase(replicatedDbName).getParameters().containsKey(REPL_FAILOVER_ENDPOINT));
   }
 }
