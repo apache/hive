@@ -150,9 +150,6 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       isFirstFailover = checkFileExists(dumpDirParent, hiveConf, EVENT_ACK_FILE);
       isSecondFailover =
           !isFirstFailover && checkFileExists(dumpDirParent, hiveConf, BOOTSTRAP_TABLES_LIST);
-      incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
-          new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
-          replStatsTracker, shouldFailover);
 
       /*
        * If the current incremental dump also includes bootstrap for some tables, then create iterator
@@ -186,6 +183,9 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
         this.bootstrapIterator = null;
         this.constraintsIterator = null;
       }
+      incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
+              new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
+              replStatsTracker, shouldFailover, tablesToBootstrap.size());
     } else {
       this.bootstrapIterator = new BootstrapEventsIterator(new Path(dumpDirectory, EximUtil.METADATA_PATH_NAME)
               .toString(), dbNameToLoadIn, true, hiveConf, metricCollector);

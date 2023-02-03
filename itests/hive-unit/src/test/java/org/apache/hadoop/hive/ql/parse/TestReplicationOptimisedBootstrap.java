@@ -992,6 +992,87 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     assertEquals(tableMetric.getTotalCount(), tableDiffEntries.size());
   }
 
+  @Test
+  public void testTblMetricRegisterDuringSecondLoadCycleOfOptimizedBootstrap() throws Throwable {
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(false);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create table t1_managed (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into table t1_managed values (10)")
+            .run("insert into table t1_managed values (20),(31),(42)")
+            .dump(primaryDbName, withClause);
+
+    // Do the bootstrap load and check all the external & managed tables are present.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1_managed"})
+            .verifyReplTargetProperty(replicatedDbName);
+
+    // Do an incremental dump & load, Add one table which we can drop & an empty table as well.
+    tuple = primary.run("use " + primaryDbName)
+            .run("create table t2_managed (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into table t2_managed values (10)")
+            .run("insert into table t2_managed values (20),(31),(42)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1_managed", "t2_managed"})
+            .verifyReplTargetProperty(replicatedDbName);
+
+    primary.run("use " + primaryDbName)
+            .run("insert into table t1_managed values (30)")
+            .run("insert into table t1_managed values (50),(51),(52)");
+
+    // Prepare for reverse replication.
+    DistributedFileSystem replicaFs = replica.miniDFSCluster.getFileSystem();
+    Path newReplDir = new Path(replica.repldDir + "1");
+    replicaFs.mkdirs(newReplDir);
+    withClause = ReplicationTestUtils.includeExternalTableClause(false);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+
+
+    // Do a reverse dump
+    tuple = replica.dump(replicatedDbName, withClause);
+
+    // Check the event ack file got created.
+    assertTrue(new Path(tuple.dumpLocation, EVENT_ACK_FILE).toString() + " doesn't exist",
+            replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
+
+
+    // Do a load, this should create a table_diff_complete directory
+    primary.load(primaryDbName,replicatedDbName, withClause);
+
+    // Check the table diff directory exist.
+    assertTrue(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY).toString() + " doesn't exist",
+            replicaFs.exists(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY)));
+
+    Path dumpPath = new Path(tuple.dumpLocation);
+    // Check the table diff has all the modified table, including the dropped and empty ones
+    HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(dumpPath, conf);
+    assertTrue("Table Diff Contains " + tableDiffEntries, tableDiffEntries
+            .containsAll(Arrays.asList("t1_managed")));
+
+    isMetricsEnabledForTests(true);
+    replica.dump(replicatedDbName, withClause);
+
+    //do a load on primary and verify insert queries are discarded
+    primary.load(primaryDbName,replicatedDbName, withClause)
+            .run("select id from t1_managed")
+            .verifyResults(new String[] { "10", "20", "31", "42" });
+    MetricCollector collector = MetricCollector.getInstance();
+    ReplicationMetric metric = collector.getMetrics().getLast();
+    Stage stage = metric.getProgress().getStageByName("REPL_LOAD");
+    Metric tableMetric = stage.getMetricByName(ReplUtils.MetricName.TABLES.name());
+    assertEquals(tableMetric.getTotalCount(), tableDiffEntries.size());
+  }
+
   @NotNull
   private List<String> setUpFirstIterForOptimisedBootstrap() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
