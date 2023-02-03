@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.hive;
 
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -177,11 +176,10 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
 
     CommitStatus commitStatus = CommitStatus.FAILURE;
     boolean updateHiveTable = false;
-    HiveCommitLock commitLock = null;
 
+    HiveLock lock = lockObject();
     try {
-      commitLock = createLock();
-      commitLock.acquire();
+      lock.lock();
 
       Table tbl = loadHmsTable();
 
@@ -226,11 +224,11 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
         StatsSetupConst.clearColumnStatsState(tbl.getParameters());
       }
 
-      commitLock.ensureActive();
+      lock.ensureActive();
       try {
         persistTable(tbl, updateHiveTable);
 
-        commitLock.ensureActive();
+        lock.ensureActive();
 
         commitStatus = CommitStatus.SUCCESS;
       } catch (LockException le) {
@@ -268,15 +266,18 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
             throw new CommitStateUnknownException(e);
         }
       }
-    } catch (TException | UnknownHostException e) {
+    } catch (TException e) {
       throw new RuntimeException(String.format("Metastore operation failed for %s.%s", database, tableName), e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException("Interrupted during commit", e);
 
+    } catch (LockException e) {
+      throw new CommitFailedException(e);
+
     } finally {
-      cleanupMetadataAndUnlock(commitStatus, newMetadataLocation, commitLock);
+      cleanupMetadataAndUnlock(commitStatus, newMetadataLocation, lock);
     }
 
     LOG.info("Committed to table {} with the new metadata location {}", fullName, newMetadataLocation);
@@ -476,12 +477,12 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
   }
 
   @VisibleForTesting
-  HiveCommitLock createLock() throws UnknownHostException, TException, InterruptedException {
-    return new HiveCommitLock(conf, metaClients, catalogName, database, tableName);
+  HiveLock lockObject() {
+    return new MetastoreLock(conf, metaClients, catalogName, database, tableName);
   }
 
   private void cleanupMetadataAndUnlock(CommitStatus commitStatus, String metadataLocation,
-      HiveCommitLock lock) {
+      HiveLock lock) {
     try {
       if (commitStatus == CommitStatus.FAILURE) {
         // If we are sure the commit failed, clean up the uncommitted metadata file
@@ -494,11 +495,10 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     }
   }
 
-  @VisibleForTesting
-  void doUnlock(HiveCommitLock lock) {
+  void doUnlock(HiveLock lock) {
     if (lock != null) {
       try {
-        lock.release();
+        lock.unlock();
       } catch (Exception e) {
         LOG.warn("Failed to unlock {}.{}", database, tableName, e);
       }

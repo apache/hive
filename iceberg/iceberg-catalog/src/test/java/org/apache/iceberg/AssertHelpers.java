@@ -20,6 +20,8 @@
 package org.apache.iceberg;
 
 import java.util.concurrent.Callable;
+import org.assertj.core.api.AbstractThrowableAssert;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 
 public class AssertHelpers {
@@ -60,13 +62,18 @@ public class AssertHelpers {
                                   Class<? extends Exception> expected,
                                   String containedInMessage,
                                   Runnable runnable) {
-    try {
-      runnable.run();
-      Assert.fail("No exception was thrown (" + message + "), expected: " +
-          expected.getName());
-    } catch (Exception actual) {
-      handleException(message, expected, containedInMessage, actual);
+    AbstractThrowableAssert<?, ? extends Throwable> check =
+            Assertions.assertThatThrownBy(runnable::run).as(message).isInstanceOf(expected);
+    if (null != containedInMessage) {
+      check.hasMessageContaining(containedInMessage);
     }
+//    try {
+//      runnable.run();
+//      Assert.fail("No exception was thrown (" + message + "), expected: " +
+//          expected.getName());
+//    } catch (Exception actual) {
+//      handleException(message, expected, containedInMessage, actual);
+//    }
   }
 
   /**

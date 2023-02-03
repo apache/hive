@@ -64,21 +64,22 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     HiveTableOperations spyOps = spy(ops);
 
-    AtomicReference<HiveCommitLock> lockRef = new AtomicReference<>();
+    AtomicReference<HiveLock> lockRef = new AtomicReference<>();
 
-    when(spyOps.createLock()).thenAnswer(i -> {
-          HiveCommitLock lock = (HiveCommitLock) i.callRealMethod();
-          lockRef.set(lock);
-          return lock;
-        }
-    );
+    when(spyOps.lockObject())
+        .thenAnswer(
+            i -> {
+              HiveLock lock = (HiveLock) i.callRealMethod();
+              lockRef.set(lock);
+              return lock;
+            });
 
     try {
       spyOps.commit(metadataV2, metadataV1);
-      HiveCommitLock spyLock = spy(lockRef.get());
-      doThrow(new RuntimeException()).when(spyLock).release();
+      HiveLock spyLock = spy(lockRef.get());
+      doThrow(new RuntimeException()).when(spyLock).unlock();
     } finally {
-      ops.doUnlock(lockRef.get());
+      lockRef.get().unlock();
     }
 
     ops.refresh();
@@ -269,11 +270,14 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     HiveTableOperations spyOps = spy(ops);
 
-    AtomicReference<HiveCommitLock> lock = new AtomicReference<>();
-    doAnswer(l -> {
-      lock.set(ops.createLock());
-      return lock.get();
-    }).when(spyOps).createLock();
+    AtomicReference<HiveLock> lock = new AtomicReference<>();
+    doAnswer(
+      l -> {
+        lock.set(ops.lockObject());
+        return lock.get();
+      })
+        .when(spyOps)
+        .lockObject();
 
     concurrentCommitAndThrowException(ops, spyOps, table, lock);
 
@@ -316,8 +320,11 @@ public class TestHiveCommits extends HiveTableBaseTest {
     }).when(spyOperations).persistTable(any(), anyBoolean());
   }
 
-  private void concurrentCommitAndThrowException(HiveTableOperations realOperations, HiveTableOperations spyOperations,
-                                                 Table table, AtomicReference<HiveCommitLock> lockId)
+  private void concurrentCommitAndThrowException(
+      HiveTableOperations realOperations,
+      HiveTableOperations spyOperations,
+      Table table,
+      AtomicReference<HiveLock> lock)
       throws TException, InterruptedException {
     // Simulate a communication error after a successful commit
     doAnswer(i -> {
@@ -325,7 +332,7 @@ public class TestHiveCommits extends HiveTableBaseTest {
           i.getArgument(0, org.apache.hadoop.hive.metastore.api.Table.class);
       realOperations.persistTable(tbl, true);
       // Simulate lock expiration or removal
-      realOperations.doUnlock(lockId.get());
+      lock.get().unlock();
       table.refresh();
       table.updateSchema().addColumn("newCol", Types.IntegerType.get()).commit();
       throw new TException("Datacenter on fire");

@@ -29,7 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -54,17 +54,17 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HiveCommitLock {
+public class MetastoreLock implements HiveLock {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HiveCommitLock.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MetastoreLock.class);
 
   private static final String HIVE_ACQUIRE_LOCK_TIMEOUT_MS = "iceberg.hive.lock-timeout-ms";
   private static final String HIVE_LOCK_CHECK_MIN_WAIT_MS = "iceberg.hive.lock-check-min-wait-ms";
   private static final String HIVE_LOCK_CHECK_MAX_WAIT_MS = "iceberg.hive.lock-check-max-wait-ms";
-  private static final String HIVE_LOCK_HEARTBEAT_INTERVAL_MS = "iceberg.hive.lock-heartbeat-interval-ms";
   private static final String HIVE_LOCK_CREATION_TIMEOUT_MS = "iceberg.hive.lock-creation-timeout-ms";
   private static final String HIVE_LOCK_CREATION_MIN_WAIT_MS = "iceberg.hive.lock-creation-min-wait-ms";
   private static final String HIVE_LOCK_CREATION_MAX_WAIT_MS = "iceberg.hive.lock-creation-max-wait-ms";
+  private static final String HIVE_LOCK_HEARTBEAT_INTERVAL_MS = "iceberg.hive.lock-heartbeat-interval-ms";
   private static final String HIVE_TABLE_LEVEL_LOCK_EVICT_MS = "iceberg.hive.table-level-lock-evict-ms";
   private static final long HIVE_ACQUIRE_LOCK_TIMEOUT_MS_DEFAULT = 3 * 60 * 1000; // 3 minutes
   private static final long HIVE_LOCK_CHECK_MIN_WAIT_MS_DEFAULT = 50; // 50 milliseconds
@@ -74,44 +74,34 @@ public class HiveCommitLock {
   private static final long HIVE_LOCK_CREATION_MAX_WAIT_MS_DEFAULT = 5 * 1000; // 5 seconds
   private static final long HIVE_LOCK_HEARTBEAT_INTERVAL_MS_DEFAULT = 4 * 60 * 1000; // 4 minutes
   private static final long HIVE_TABLE_LEVEL_LOCK_EVICT_MS_DEFAULT = TimeUnit.MINUTES.toMillis(10);
+  private static volatile Cache<String, ReentrantLock> commitLockCache;
 
-  private static Cache<String, ReentrantLock> commitLockCache;
+  private final ClientPool<IMetaStoreClient, TException> metaClients;
 
-  private static synchronized void initTableLevelLockCache(long evictionTimeout) {
-    if (commitLockCache == null) {
-      commitLockCache = Caffeine.newBuilder()
-          .expireAfterAccess(evictionTimeout, TimeUnit.MILLISECONDS)
-          .build();
-    }
-  }
-
-  private final String fullName;
   private final String databaseName;
   private final String tableName;
-  private final ClientPool<IMetaStoreClient, TException> metaClients;
+  private final String fullName;
 
   private final long lockAcquireTimeout;
   private final long lockCheckMinWaitTime;
   private final long lockCheckMaxWaitTime;
-  private final long lockHeartbeatIntervalTime;
   private final long lockCreationTimeout;
   private final long lockCreationMinWaitTime;
   private final long lockCreationMaxWaitTime;
-  private final String agentInfo;
+  private final long lockHeartbeatIntervalTime;
   private final ScheduledExecutorService exitingScheduledExecutorService;
+  private final String agentInfo;
 
   private Optional<Long> hmsLockId = Optional.empty();
-  private Optional<ReentrantLock> jvmLock = Optional.empty();
-  private HiveLockHeartbeat heartbeat = null;
+  private ReentrantLock jvmLock = null;
+  private Heartbeat heartbeat = null;
 
-  public HiveCommitLock(Configuration conf, ClientPool<IMetaStoreClient, TException> metaClients,
-      String catalogName, String databaseName, String tableName) {
+  public MetastoreLock(Configuration conf, ClientPool<IMetaStoreClient, TException> metaClients,
+                       String catalogName, String databaseName, String tableName) {
     this.metaClients = metaClients;
+    this.fullName = catalogName + "." + databaseName + "." + tableName;
     this.databaseName = databaseName;
     this.tableName = tableName;
-    this.fullName = catalogName + "." + databaseName + "." + tableName;
-
-    this.agentInfo = "Iceberg-" + UUID.randomUUID();
 
     this.lockAcquireTimeout =
         conf.getLong(HIVE_ACQUIRE_LOCK_TIMEOUT_MS, HIVE_ACQUIRE_LOCK_TIMEOUT_MS_DEFAULT);
@@ -119,65 +109,95 @@ public class HiveCommitLock {
         conf.getLong(HIVE_LOCK_CHECK_MIN_WAIT_MS, HIVE_LOCK_CHECK_MIN_WAIT_MS_DEFAULT);
     this.lockCheckMaxWaitTime =
         conf.getLong(HIVE_LOCK_CHECK_MAX_WAIT_MS, HIVE_LOCK_CHECK_MAX_WAIT_MS_DEFAULT);
-    this.lockHeartbeatIntervalTime =
-            conf.getLong(HIVE_LOCK_HEARTBEAT_INTERVAL_MS, HIVE_LOCK_HEARTBEAT_INTERVAL_MS_DEFAULT);
     this.lockCreationTimeout =
             conf.getLong(HIVE_LOCK_CREATION_TIMEOUT_MS, HIVE_LOCK_CREATION_TIMEOUT_MS_DEFAULT);
     this.lockCreationMinWaitTime =
             conf.getLong(HIVE_LOCK_CREATION_MIN_WAIT_MS, HIVE_LOCK_CREATION_MIN_WAIT_MS_DEFAULT);
     this.lockCreationMaxWaitTime =
             conf.getLong(HIVE_LOCK_CREATION_MAX_WAIT_MS, HIVE_LOCK_CREATION_MAX_WAIT_MS_DEFAULT);
+    this.lockHeartbeatIntervalTime =
+            conf.getLong(HIVE_LOCK_HEARTBEAT_INTERVAL_MS, HIVE_LOCK_HEARTBEAT_INTERVAL_MS_DEFAULT);
     long tableLevelLockCacheEvictionTimeout =
         conf.getLong(HIVE_TABLE_LEVEL_LOCK_EVICT_MS, HIVE_TABLE_LEVEL_LOCK_EVICT_MS_DEFAULT);
+
+    this.agentInfo = "Iceberg-" + UUID.randomUUID();
+
     this.exitingScheduledExecutorService =
             Executors.newSingleThreadScheduledExecutor(
                     new ThreadFactoryBuilder()
                             .setDaemon(true)
-                            .setNameFormat("iceberg-hive-lock-heartbeat-%d")
+                            .setNameFormat("iceberg-hive-lock-heartbeat-" + fullName + "-%d")
                             .build());
+
     initTableLevelLockCache(tableLevelLockCacheEvictionTimeout);
   }
 
-  public void acquire() throws UnknownHostException, TException, InterruptedException {
+  @Override
+  public void lock() throws LockException {
     // getting a process-level lock per table to avoid concurrent commit attempts to the same table from the same
-    // JVM process, which would result in unnecessary and costly HMS lock acquisition requests
+    // JVM process, which would result in unnecessary HMS lock acquisition requests
     acquireJvmLock();
-    acquireLockFromHms();
+    hmsLockId = Optional.of(acquireLock());
 
     // Starting heartbeat for the HMS lock
     heartbeat =
-            new HiveLockHeartbeat(metaClients, hmsLockId.get(), lockHeartbeatIntervalTime);
+            new Heartbeat(metaClients, hmsLockId.get(), lockHeartbeatIntervalTime);
     heartbeat.schedule(exitingScheduledExecutorService);
   }
 
-  public void release() {
-    releaseHmsLock();
-    releaseJvmLock();
+  @Override
+  public void ensureActive() throws LockException {
+    if (heartbeat == null) {
+      throw new LockException("Lock is not active");
+    }
+
+    if (heartbeat.encounteredException != null) {
+      throw new LockException(
+              heartbeat.encounteredException,
+              "Failed to heartbeat for hive lock. %s",
+              heartbeat.encounteredException.getMessage());
+    }
+    if (!heartbeat.active()) {
+      throw new LockException("Hive lock heartbeat thread not active");
+    }
+  }
+
+  @Override
+  public void unlock() {
+    if (heartbeat != null) {
+      heartbeat.cancel();
+      exitingScheduledExecutorService.shutdown();
+    }
+
+    try {
+      unlock(hmsLockId);
+    } finally {
+      releaseJvmLock();
+    }
   }
 
   // TODO add lock heart beating for cases where default lock timeout is too low.
-  private void acquireLockFromHms() throws UnknownHostException, TException, InterruptedException {
+  @SuppressWarnings("checkstyle:CyclomaticComplexity")
+  private long acquireLock() throws LockException {
     if (hmsLockId.isPresent()) {
       throw new IllegalArgumentException(String.format("HMS lock ID=%s already acquired for table %s.%s",
           hmsLockId.get(), databaseName, tableName));
     }
-    LockInfo lockInfo = tryLock();
-    long lockId = lockInfo.lockId;
-    AtomicReference<LockState> state = new AtomicReference<>(lockInfo.lockState);
-    this.hmsLockId = Optional.of(lockId);
+    LockInfo lockInfo = createLock();
 
     final long start = System.currentTimeMillis();
     long duration = 0;
     boolean timeout = false;
+    TException thriftError = null;
 
     try {
-      if (state.get().equals(LockState.WAITING)) {
+      if (lockInfo.lockState.equals(LockState.WAITING)) {
         // Retry count is the typical "upper bound of retries" for Tasks.run() function. In fact, the maximum number of
         // attempts the Tasks.run() would try is `retries + 1`. Here, for checking locks, we use timeout as the
         // upper bound of retries. So it is just reasonable to set a large retry count. However, if we set
         // Integer.MAX_VALUE, the above logic of `retries + 1` would overflow into Integer.MIN_VALUE. Hence,
         // the retry is set conservatively as `Integer.MAX_VALUE - 100` so it doesn't hit any boundary issues.
-        Tasks.foreach(lockId)
+        Tasks.foreach(lockInfo.lockId)
             .retry(Integer.MAX_VALUE - 100)
             .exponentialBackoff(
                 lockCheckMinWaitTime,
@@ -185,59 +205,179 @@ public class HiveCommitLock {
                 lockAcquireTimeout,
                 1.5)
             .throwFailureWhenFinished()
-            .onlyRetryOn(WaitingForHmsLockException.class)
+            .onlyRetryOn(WaitingForLockException.class)
             .run(id -> {
               try {
                 LockResponse response = metaClients.run(client -> client.checkLock(id));
                 LockState newState = response.getState();
-                state.set(newState);
+                lockInfo.lockState = newState;
                 if (newState.equals(LockState.WAITING)) {
-                  throw new WaitingForHmsLockException("Waiting for lock.");
+                  throw new WaitingForLockException(String.format(
+                          "Waiting for lock on table %s.%s", databaseName, tableName));
                 }
               } catch (InterruptedException e) {
                 Thread.interrupted(); // Clear the interrupt status flag
-                LOG.warn("Interrupted while waiting for lock.", e);
+                LOG.warn(
+                        "Interrupted while waiting for lock on table {}.{}",
+                        databaseName,
+                        tableName,
+                        e);
               }
+
             }, TException.class);
       }
-    } catch (WaitingForHmsLockException waitingForLockException) {
+    } catch (WaitingForLockException e) {
       timeout = true;
       duration = System.currentTimeMillis() - start;
+    } catch (TException e) {
+      thriftError = e;
     } finally {
-      if (!state.get().equals(LockState.ACQUIRED)) {
-        releaseHmsLock();
+      if (!lockInfo.lockState.equals(LockState.ACQUIRED)) {
+        unlock(Optional.of(lockInfo.lockId));
       }
     }
 
-    // timeout and do not have lock acquired
-    if (timeout && !state.get().equals(LockState.ACQUIRED)) {
-      throw new CommitFailedException("Timed out after %s ms waiting for lock on %s.%s",
-          duration, databaseName, tableName);
-    }
+    if (!lockInfo.lockState.equals(LockState.ACQUIRED)) {
+      // timeout and do not have lock acquired
+      if (timeout) {
+        throw new LockException("Timed out after %s ms waiting for lock on %s.%s",
+                duration, databaseName, tableName);
+      }
 
-    if (!state.get().equals(LockState.ACQUIRED)) {
-      throw new CommitFailedException("Could not acquire the lock on %s.%s, " +
-          "lock request ended in state %s", databaseName, tableName, state);
+      if (thriftError != null) {
+        throw new LockException(
+                thriftError, "Metastore operation failed for %s.%s", databaseName, tableName);
+      }
+
+      // Just for safety. We should not get here.
+      throw new LockException(
+              "Could not acquire the lock on %s.%s, lock request ended in state %s",
+              databaseName, tableName, lockInfo.lockState);
+    } else {
+      return lockInfo.lockId;
     }
   }
 
-  private void releaseHmsLock() {
-//    if (hmsLockId.isPresent()) {
-//      try {
-//
-//        metaClients.run(client -> {
-//          client.unlock(hmsLockId.get());
-//          return null;
-//        });
-//        hmsLockId = Optional.empty();
-//      } catch (Exception e) {
-//        LOG.warn("Failed to unlock {}.{}", databaseName, tableName, e);
-//      }
-//    }
+  /**
+   * Creates a lock, retrying if possible on failure.
+   *
+   * @return The {@link LockInfo} object for the successfully created lock
+   * @throws LockException When we are not able to fill the hostname for lock creation, or there is
+   *     an error during lock creation
+   */
+  @SuppressWarnings("ReverseDnsLookup")
+  private LockInfo createLock() throws LockException {
+    LockInfo lockInfo = new LockInfo();
+
+    String hostName;
+    try {
+      hostName = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException uhe) {
+      throw new LockException(uhe, "Error generating host name");
+    }
+
+    LockComponent lockComponent =
+            new LockComponent(LockType.EXCLUSIVE, LockLevel.TABLE, databaseName);
+    lockComponent.setTablename(tableName);
+    LockRequest lockRequest =
+            new LockRequest(
+                    Lists.newArrayList(lockComponent),
+                    HiveHadoopUtil.currentUser(),
+                    hostName);
+
+    // Only works in Hive 2 or later.
+    if (HiveVersion.min(HiveVersion.HIVE_2)) {
+      lockRequest.setAgentInfo(agentInfo);
+    }
+
+    AtomicBoolean interrupted = new AtomicBoolean(false);
+    Tasks.foreach(lockRequest)
+            .retry(Integer.MAX_VALUE - 100)
+            .exponentialBackoff(
+                    lockCreationMinWaitTime, lockCreationMaxWaitTime, lockCreationTimeout, 2.0)
+            .shouldRetryTest(e -> !interrupted.get() && e instanceof LockException &&
+                    HiveVersion.min(HiveVersion.HIVE_2))
+            .throwFailureWhenFinished()
+            .run(
+                request -> {
+                  try {
+                    LockResponse lockResponse = metaClients.run(client -> client.lock(request));
+                    lockInfo.lockId = lockResponse.getLockid();
+                    lockInfo.lockState = lockResponse.getState();
+                  } catch (TException te) {
+                    LOG.warn("Failed to create lock {}", request, te);
+                    try {
+                      // If we can not check for lock, or we do not find it, then rethrow the exception
+                      // Otherwise we are happy as the findLock sets the lockId and the state correctly
+                      if (!HiveVersion.min(HiveVersion.HIVE_2)) {
+                        LockInfo lockFound = findLock();
+                        if (lockFound != null) {
+                          lockInfo.lockId = lockFound.lockId;
+                          lockInfo.lockState = lockFound.lockState;
+                          LOG.info("Found lock {} by agentInfo {}", lockInfo, agentInfo);
+                          return;
+                        }
+                      }
+
+                      throw new LockException("Failed to find lock for table %s.%s", databaseName, tableName);
+                    } catch (InterruptedException e) {
+                      Thread.currentThread().interrupt();
+                      interrupted.set(true);
+                      LOG.warn(
+                              "Interrupted while trying to find lock for table {}.{}", databaseName, tableName, e);
+                      throw new LockException(
+                              e, "Interrupted while trying to find lock for table %s.%s", databaseName, tableName);
+                    }
+                  } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    interrupted.set(true);
+                    LOG.warn("Interrupted while creating lock on table {}.{}", databaseName, tableName, e);
+                    throw new LockException("Interrupted while creating lock", e);
+                  }
+                },
+                LockException.class);
+
+    // This should be initialized always, or exception should be thrown.
+    LOG.debug("Lock {} created for table {}.{}", lockInfo, databaseName, tableName);
+    return lockInfo;
+  }
+
+  /**
+   * Search for the locks using HMSClient.showLocks identified by the agentInfo. If the lock is
+   * there, then a {@link LockInfo} object is returned. If the lock is not found <code>null</code>
+   * is returned.
+   *
+   * @return The {@link LockInfo} for the found lock, or <code>null</code> if nothing found
+   */
+  private LockInfo findLock() throws LockException, InterruptedException {
+    Preconditions.checkArgument(
+            HiveVersion.min(HiveVersion.HIVE_2),
+            "Minimally Hive 2 HMS client is needed to find the Lock using the showLocks API call");
+    ShowLocksRequest showLocksRequest = new ShowLocksRequest();
+    showLocksRequest.setDbname(databaseName);
+    showLocksRequest.setTablename(tableName);
+    ShowLocksResponse response;
+    try {
+      response = metaClients.run(client -> client.showLocks(showLocksRequest));
+    } catch (TException e) {
+      throw new LockException(e, "Failed to find lock for table %s.%s", databaseName, tableName);
+    }
+    for (ShowLocksResponseElement lock : response.getLocks()) {
+      if (lock.getAgentInfo().equals(agentInfo)) {
+        // We found our lock
+        return new LockInfo(lock.getLockid(), lock.getState());
+      }
+    }
+
+    // Not found anything
+    return null;
+  }
+
+  private void unlock(Optional<Long> lockId) {
 
     Long id = null;
     try {
-      if (!hmsLockId.isPresent()) {
+      if (!lockId.isPresent()) {
         // Try to find the lock based on agentInfo. Only works with Hive 2 or later.
         if (HiveVersion.min(HiveVersion.HIVE_2)) {
           LockInfo lockInfo = findLock();
@@ -253,10 +393,10 @@ public class HiveCommitLock {
           return;
         }
       } else {
-        id = hmsLockId.get();
+        id = lockId.get();
       }
 
-      doUnlock(hmsLockId.get());
+      doUnlock(id);
 
     } catch (InterruptedException ie) {
       if (id != null) {
@@ -281,11 +421,6 @@ public class HiveCommitLock {
 
   @VisibleForTesting
   void doUnlock(long lockId) throws TException, InterruptedException {
-    if (heartbeat != null) {
-      heartbeat.cancel();
-      exitingScheduledExecutorService.shutdown();
-    }
-
     metaClients.run(
         client -> {
           client.unlock(lockId);
@@ -295,181 +430,46 @@ public class HiveCommitLock {
 
 
   private void acquireJvmLock() {
-    if (jvmLock.isPresent()) {
-      throw new IllegalStateException(String.format("JVM lock already acquired for table %s", fullName));
+    if (jvmLock != null) {
+      throw new IllegalStateException(String.format("Cannot call acquireLock twice for %s", fullName));
     }
-    jvmLock = Optional.of(commitLockCache.get(fullName, t -> new ReentrantLock(true)));
-    jvmLock.get().lock();
+
+    jvmLock = commitLockCache.get(fullName, t -> new ReentrantLock(true));
+    jvmLock.lock();
   }
 
   private void releaseJvmLock() {
-    if (jvmLock.isPresent()) {
-      jvmLock.get().unlock();
-      jvmLock = Optional.empty();
+    if (jvmLock != null) {
+      jvmLock.unlock();
+      jvmLock = null;
     }
   }
 
-  public String getDatabaseName() {
-    return databaseName;
+  private static void initTableLevelLockCache(long evictionTimeout) {
+    if (commitLockCache == null) {
+      synchronized (MetastoreLock.class) {
+        if (commitLockCache == null) {
+          commitLockCache =
+                  Caffeine.newBuilder()
+                          .expireAfterAccess(evictionTimeout, TimeUnit.MILLISECONDS)
+                          .build();
+        }
+      }
+    }
   }
 
   public String getTableName() {
     return tableName;
   }
 
-  public void ensureActive() {
-    if (heartbeat == null) {
-      throw new LockException("Lock is not active");
-    }
-
-    if (heartbeat.encounteredException != null) {
-      throw new LockException(
-              heartbeat.encounteredException,
-              "Failed to heartbeat for hive lock. %s",
-              heartbeat.encounteredException.getMessage());
-    }
-    if (!heartbeat.active()) {
-      throw new LockException("Hive lock heartbeat thread not active");
-    }
-  }
-
-  private static class LockInfo {
-    private long lockId;
-    private LockState lockState;
-
-    private LockInfo() {
-      this.lockId = -1;
-      this.lockState = null;
-    }
-
-    private LockInfo(long lockId, LockState lockState) {
-      this.lockId = lockId;
-      this.lockState = lockState;
-    }
-
-    @Override
-    public String toString() {
-      return MoreObjects.toStringHelper(this)
-              .add("lockId", lockId)
-              .add("lockState", lockState)
-              .toString();
-    }
-  }
-
-  /**
-   * Tries to create a lock. If the lock creation fails, and it is possible then retries the lock
-   * creation a few times. If the lock creation is successful then a {@link LockInfo} is returned,
-   * otherwise an appropriate exception is thrown.
-   *
-   * @return The created lock
-   * @throws UnknownHostException When we are not able to fill the hostname for lock creation
-   * @throws TException When there is an error during lock creation
-   */
-  @SuppressWarnings("ReverseDnsLookup")
-  private LockInfo tryLock() throws UnknownHostException, TException {
-    LockInfo lockInfo = new LockInfo();
-
-    final LockComponent lockComponent =
-            new LockComponent(LockType.EXCLUSIVE, LockLevel.TABLE, databaseName);
-    lockComponent.setTablename(tableName);
-    final LockRequest lockRequest =
-            new LockRequest(
-                    Lists.newArrayList(lockComponent),
-                    System.getProperty("user.name"),
-                    InetAddress.getLocalHost().getHostName());
-
-    // Only works in Hive 2 or later.
-    if (HiveVersion.min(HiveVersion.HIVE_2)) {
-      lockRequest.setAgentInfo(agentInfo);
-    }
-
-    Tasks.foreach(lockRequest)
-            .retry(Integer.MAX_VALUE - 100)
-            .exponentialBackoff(
-                    lockCreationMinWaitTime, lockCreationMaxWaitTime, lockCreationTimeout, 2.0)
-            .shouldRetryTest(e -> e instanceof TException && HiveVersion.min(HiveVersion.HIVE_2))
-            .throwFailureWhenFinished()
-            .run(
-                request -> {
-                  try {
-                    LockResponse lockResponse = metaClients.run(client -> client.lock(request));
-                    lockInfo.lockId = lockResponse.getLockid();
-                    lockInfo.lockState = lockResponse.getState();
-                  } catch (TException te) {
-                    LOG.warn("Failed to acquire lock {}", request, te);
-                    try {
-                      // If we can not check for lock, or we do not find it, then rethrow the exception
-                      // Otherwise we are happy as the findLock sets the lockId and the state correctly
-                      if (!HiveVersion.min(HiveVersion.HIVE_2)) {
-                        LockInfo lockFound = findLock();
-                        if (lockFound != null) {
-                          lockInfo.lockId = lockFound.lockId;
-                          lockInfo.lockState = lockFound.lockState;
-                          LOG.info("Found lock {} by agentInfo {}", lockInfo, agentInfo);
-                          return;
-                        }
-                      }
-
-                      throw te;
-                    } catch (InterruptedException e) {
-                      Thread.currentThread().interrupt();
-                      LOG.warn(
-                              "Interrupted while checking for lock on table {}.{}", databaseName, tableName, e);
-                      throw new RuntimeException("Interrupted while checking for lock", e);
-                    }
-                  } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    LOG.warn("Interrupted while acquiring lock on table {}.{}", databaseName, tableName, e);
-                    throw new RuntimeException("Interrupted while acquiring lock", e);
-                  }
-                },
-                TException.class);
-
-    // This should be initialized always, or exception should be thrown.
-    LOG.debug("Lock {} created for table {}.{}", lockInfo, databaseName, tableName);
-    return lockInfo;
-  }
-
-  /**
-   * Search for the locks using HMSClient.showLocks identified by the agentInfo. If the lock is
-   * there, then a {@link LockInfo} object is returned. If the lock is not found <code>null</code>
-   * is returned.
-   *
-   * @return The {@link LockInfo} for the found lock, or <code>null</code> if nothing found
-   */
-  private LockInfo findLock() throws TException, InterruptedException {
-    Preconditions.checkArgument(
-            HiveVersion.min(HiveVersion.HIVE_2),
-            "Minimally Hive 2 HMS client is needed to find the Lock using the showLocks API call");
-    ShowLocksRequest showLocksRequest = new ShowLocksRequest();
-    showLocksRequest.setDbname(databaseName);
-    showLocksRequest.setTablename(tableName);
-    ShowLocksResponse response = metaClients.run(client -> client.showLocks(showLocksRequest));
-    for (ShowLocksResponseElement lock : response.getLocks()) {
-      if (lock.getAgentInfo().equals(agentInfo)) {
-        // We found our lock
-        return new LockInfo(lock.getLockid(), lock.getState());
-      }
-    }
-
-    // Not found anything
-    return null;
-  }
-
-  private static class WaitingForHmsLockException extends RuntimeException {
-    WaitingForHmsLockException(String message) {
-      super(message);
-    }
-  }
-
-  private static class HiveLockHeartbeat implements Runnable {
+  private static class Heartbeat implements Runnable {
     private final ClientPool<IMetaStoreClient, TException> hmsClients;
     private final long lockId;
     private final long intervalMs;
     private ScheduledFuture<?> future;
     private volatile Exception encounteredException = null;
 
-    HiveLockHeartbeat(
+    Heartbeat(
             ClientPool<IMetaStoreClient, TException> hmsClients, long lockId, long intervalMs) {
       this.hmsClients = hmsClients;
       this.lockId = lockId;
@@ -504,6 +504,36 @@ public class HiveCommitLock {
       if (future != null) {
         future.cancel(false);
       }
+    }
+  }
+
+
+  private static class LockInfo {
+    private long lockId;
+    private LockState lockState;
+
+    private LockInfo() {
+      this.lockId = -1;
+      this.lockState = null;
+    }
+
+    private LockInfo(long lockId, LockState lockState) {
+      this.lockId = lockId;
+      this.lockState = lockState;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this)
+              .add("lockId", lockId)
+              .add("lockState", lockState)
+              .toString();
+    }
+  }
+
+  private static class WaitingForLockException extends RuntimeException {
+    WaitingForLockException(String message) {
+      super(message);
     }
   }
 }

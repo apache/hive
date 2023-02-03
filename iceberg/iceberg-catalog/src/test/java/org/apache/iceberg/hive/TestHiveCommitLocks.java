@@ -283,10 +283,10 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
     AssertHelpers.assertThrows(
         "Expected an exception",
         RuntimeException.class,
-        "Interrupted while acquiring lock",
+        "Interrupted while creating lock",
         () -> spyOps.doCommit(metadataV2, metadataV1));
 
-//    verify(spyClient, times(1)).unlock(eq(dummyLockId));
+    verify(spyClient, times(1)).unlock(eq(dummyLockId));
     // Make sure that we exit the lock loop on InterruptedException
     verify(spyClient, times(1)).lock(any());
   }
@@ -310,9 +310,9 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
         "Could not acquire the lock on",
         () -> spyOps.doCommit(metadataV2, metadataV1));
 
-    verify(spyClient, times(1)).unlock(any());
+    verify(spyClient, times(1)).unlock(eq(dummyLockId));
     // Make sure that we exit the checkLock loop on InterruptedException
-    verify(spyClient, times(1)).checkLock(any());
+    verify(spyClient, times(1)).checkLock(eq(dummyLockId));
   }
 
   @Test
