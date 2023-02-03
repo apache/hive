@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.metric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
@@ -220,7 +222,7 @@ public class TestReplicationMetricSink {
             "testAcidTablesReplLoadBootstrapIncr_1592205875387", stagingDir, conf, 0L);
     metricMap = new HashMap<String, Long>(){{put(ReplUtils.MetricName.EVENTS.name(), (long) 10);}};
 
-    failoverDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd);
+    failoverDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd, MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), ReplConst.FailoverType.PLANNED.toString());
     failoverDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 10);
     failoverDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
             new ReplStatsTracker(0));
@@ -231,6 +233,8 @@ public class TestReplicationMetricSink {
     expectedMetadata.setLastReplId(10);
     expectedMetadata.setFailoverEventId(100);
     expectedMetadata.setFailoverMetadataLoc(stagingDir + FailoverMetaData.FAILOVER_METADATA);
+    expectedMetadata.setFailoverEndPoint(MetaStoreUtils.FailoverEndpoint.SOURCE.toString());
+    expectedMetadata.setFailoverType(ReplConst.FailoverType.PLANNED.toString());
     expectedProgress = new Progress();
     expectedProgress.setStatus(Status.FAILOVER_READY);
     dumpStage = new Stage("dump", Status.SUCCESS, 0);
@@ -302,6 +306,8 @@ public class TestReplicationMetricSink {
     Assert.assertEquals(expected.getMetadata().getDbName(), actual.getMetadata().getDbName());
     Assert.assertEquals(expected.getMetadata().getStagingDir(), actual.getMetadata().getStagingDir());
     Assert.assertEquals(expected.getMetadata().getLastReplId(), actual.getMetadata().getLastReplId());
+    Assert.assertEquals(expected.getMetadata().getFailoverEndPoint(), actual.getMetadata().getFailoverEndPoint());
+    Assert.assertEquals(expected.getMetadata().getFailoverType(), actual.getMetadata().getFailoverType());
     Assert.assertEquals(expected.getProgress().getStatus(), actual.getProgress().getStatus());
     Assert.assertEquals(expected.getProgress().getStageByName(stageName).getStatus(),
       actual.getProgress().getStageByName(stageName).getStatus());

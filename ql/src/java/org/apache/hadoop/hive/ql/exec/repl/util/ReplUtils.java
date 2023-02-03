@@ -534,13 +534,20 @@ public class ReplUtils {
     }
   }
 
+  /**
+   * Used to report status of replication stage which is skipped or has some error
+   * @param stageName Name of replication stage
+   * @param status Status skipped or FAILED etc
+   * @param errorLogPath path of error log file
+   * @param conf handle configuration parameter
+   * @param dbName name of database
+   * @param replicationType type of replication incremental, bootstrap, etc
+   * @throws SemanticException
+   */
   public static void reportStatusInReplicationMetrics(String stageName, Status status, String errorLogPath,
                                                       HiveConf conf, String dbName, Metadata.ReplicationType replicationType)
           throws SemanticException {
-    ReplicationMetricCollector metricCollector;
-    metricCollector =
-            new ReplicationMetricCollector(dbName, replicationType, null, 0, conf) {};
-
+    ReplicationMetricCollector metricCollector = new ReplicationMetricCollector(dbName, replicationType, null, 0, conf) {};
     metricCollector.reportStageStart(stageName, new HashMap<>());
     metricCollector.reportStageEnd(stageName, status, errorLogPath);
   }

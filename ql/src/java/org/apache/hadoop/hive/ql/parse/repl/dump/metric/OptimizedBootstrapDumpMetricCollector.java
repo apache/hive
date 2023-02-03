@@ -23,7 +23,9 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 
 
 public class OptimizedBootstrapDumpMetricCollector extends ReplicationMetricCollector {
-  public OptimizedBootstrapDumpMetricCollector(String dbName, String stagingDir, HiveConf conf, Long executorId) {
-    super(dbName, Metadata.ReplicationType.OPTIMIZED_BOOTSTRAP, stagingDir, executorId, conf);
+  public OptimizedBootstrapDumpMetricCollector(String dbName, String stagingDir, HiveConf conf, Long executorId,
+                                               String failoverEndPoint, String failoverType) {
+    super(dbName, Metadata.ReplicationType.OPTIMIZED_BOOTSTRAP, stagingDir, executorId, conf, failoverEndPoint,
+        failoverType);
   }
 }

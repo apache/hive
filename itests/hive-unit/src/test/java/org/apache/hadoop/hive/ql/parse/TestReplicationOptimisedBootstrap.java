@@ -547,7 +547,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
 
     // this load should throw exception
     List<String> finalWithClause = withClause;
-    assertThrows("Should fail with db doesn't exist exception", HiveException.class, () -> {
+    assertThrows("Should fail with db doesn't exist exception", SemanticException.class, () -> {
       primary.load(primaryDbName, replicatedDbName, finalWithClause);
     });
   }

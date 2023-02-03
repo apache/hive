@@ -145,7 +145,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEve
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getReplEventIdFromDatabase;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getTablesFromTableDiffFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getTargetEventId;
-import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFailover;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isDbTargetOfFailover;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFirstIncrementalPending;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
@@ -208,28 +208,42 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
         Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
         boolean isFailoverMarkerPresent = false;
-        boolean isFailover = isFailover(work.dbNameOrPattern, getHive());
-        LOG.debug("Database is {} going through failover", isFailover ? "" : "not");
-        if (previousValidHiveDumpPath == null && !isFailover) {
+        boolean isFailoverTarget = isDbTargetOfFailover(work.dbNameOrPattern, getHive());
+        LOG.debug("Database {} is {} going through failover", work.dbNameOrPattern, isFailoverTarget ? "" : "not");
+        if (previousValidHiveDumpPath == null && !isFailoverTarget) {
           work.setBootstrap(true);
         } else {
-          work.setOldReplScope(isFailover ? null : new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
-          isFailoverMarkerPresent = !isFailover && isDumpFailoverReady(previousValidHiveDumpPath);
+          work.setOldReplScope(isFailoverTarget ? null : new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
+          isFailoverMarkerPresent = !isFailoverTarget && isDumpFailoverReady(previousValidHiveDumpPath);
         }
         //Proceed with dump operation in following cases:
         //1. No previous dump is present.
         //2. Previous dump is already loaded and it is not in failover ready status.
-        if (shouldDump(previousValidHiveDumpPath, isFailoverMarkerPresent, isFailover)) {
+        if (shouldDump(previousValidHiveDumpPath, isFailoverMarkerPresent, isFailoverTarget)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, work.isBootstrap());
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
-          if (!work.isBootstrap() && !isFailover) {
+          if (!work.isBootstrap() && !isFailoverTarget) {
             preProcessFailoverIfRequired(previousValidHiveDumpPath, isFailoverMarkerPresent);
+          }
+          // check if we need to create event marker
+          if (previousValidHiveDumpPath == null) {
+            createEventMarker = isFailoverTarget;
+          } else {
+            if (isFailoverTarget) {
+              boolean isEventAckFilePresent = checkFileExists(previousValidHiveDumpPath.getParent(), conf, EVENT_ACK_FILE);
+              if (!isEventAckFilePresent) {
+                // If this is optimised bootstrap failover cycle and _event_ack file is not present, then create it
+                createEventMarker = true;
+              }
+            }
           }
           // Set distCp custom name corresponding to the replication policy.
           String mapRedCustomName = ReplUtils.getDistCpCustomName(conf, work.dbNameOrPattern);
           conf.set(JobContext.JOB_NAME, mapRedCustomName);
           work.setCurrentDumpPath(currentDumpPath);
-          work.setMetricCollector(initMetricCollection(work.isBootstrap(), hiveDumpRoot, isFailover));
+          // Initialize repl dump metric collector for all replication stage (Bootstrap, incremental, pre-optimised and optimised bootstrap)
+          ReplicationMetricCollector dumpMetricCollector = initReplicationDumpMetricCollector(hiveDumpRoot, work.isBootstrap(), createEventMarker /*isPreOptimisedBootstrap*/, isFailoverTarget);
+          work.setMetricCollector(dumpMetricCollector);
           if (shouldDumpAtlasMetadata()) {
             addAtlasDumpTask(work.isBootstrap(), previousValidHiveDumpPath);
             LOG.info("Added task to dump atlas metadata.");
@@ -243,7 +257,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
           Long lastReplId;
           LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
-          if (isFailover) {
+          if (isFailoverTarget) {
             if (createEventMarker) {
               LOG.info("Optimised Bootstrap Dump triggered for {}.", work.dbNameOrPattern);
               // Before starting optimised bootstrap, check if the first incremental is done to ensure database is in
@@ -272,8 +286,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               assert isTableDiffDirectoryPresent;
 
               work.setSecondDumpAfterFailover(true);
-              long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
-              work.setMetricCollector(new OptimizedBootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf, executorId));
               long fromEventId = Long.parseLong(getEventIdFromFile(previousValidHiveDumpPath.getParent(), conf)[1]);
               LOG.info("Starting optimised bootstrap from event id {} for database {}", fromEventId,
                   work.dbNameOrPattern);
@@ -617,7 +629,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
      * skip doing any further dump.
      */
     if (previousDumpPath == null) {
-      createEventMarker = isFailover;
       return true;
     } else if (isFailoverMarkerPresent && shouldFailover()) {
       return false;
@@ -632,7 +643,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         // we need to trigger the failover dump
         LOG.debug("EVENT_ACK file not found in {}. Proceeding with OptimisedBootstrap Failover",
             previousDumpPath.getParent());
-        createEventMarker = true;
         return true;
       }
       // Event_ACK file is present check if it contains correct value or not.
@@ -879,8 +889,16 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (size > 0) {
         metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) tablesForBootstrap.size());
       }
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)) {
-        work.getMetricCollector().reportFailoverStart(getName(), metricMap, work.getFailoverMetadata());
+      if (shouldFailover()) {
+        Map<String, String> params = db.getParameters();
+        String dbFailoverEndPoint = "";
+        if (params != null) {
+          dbFailoverEndPoint = params.get(ReplConst.REPL_FAILOVER_ENDPOINT);
+          LOG.debug("Replication Metrics: setting failover endpoint to {} ", dbFailoverEndPoint);
+        } else {
+          LOG.warn("Replication Metrics: Cannot obtained failover endpoint info, setting failover endpoint to null ");
+        }
+        work.getMetricCollector().reportFailoverStart(getName(), metricMap, work.getFailoverMetadata(), dbFailoverEndPoint, ReplConst.FailoverType.PLANNED.toString());
       } else {
         work.getMetricCollector().reportStageStart(getName(), metricMap);
       }
@@ -1071,17 +1089,24 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private ReplicationMetricCollector initMetricCollection(boolean isBootstrap, Path dumpRoot, boolean isFailover) {
+  private ReplicationMetricCollector initReplicationDumpMetricCollector(Path dumpRoot, boolean isBootstrap, boolean isPreOptimisedBootstrap, boolean isFailover) throws HiveException {
     ReplicationMetricCollector collector;
     long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
     if (isBootstrap) {
       collector = new BootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf, executorId);
-    } else {
-      if (isFailover) {
-        collector = new PreOptimizedBootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf, executorId);
+    } else if (isFailover) {
+      // db property ReplConst.FAILOVER_ENDPOINT is only set during planned failover.
+      String failoverType = MetaStoreUtils.isDbBeingFailedOver(getHive().getDatabase(work.dbNameOrPattern)) ?
+          ReplConst.FailoverType.PLANNED.toString() : ReplConst.FailoverType.UNPLANNED.toString();
+      if (isPreOptimisedBootstrap) {
+        collector = new PreOptimizedBootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf, executorId,
+            MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), failoverType);
       } else {
-        collector = new IncrementalDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf, executorId);
+        collector = new OptimizedBootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf, executorId,
+            MetaStoreUtils.FailoverEndpoint.SOURCE.toString(), failoverType);
       }
+    } else {
+      collector = new IncrementalDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf, executorId);
     }
     return collector;
   }

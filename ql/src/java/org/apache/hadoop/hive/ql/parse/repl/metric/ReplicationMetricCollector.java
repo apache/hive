@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.metric;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -74,6 +73,24 @@ public abstract class ReplicationMetricCollector {
     }
   }
 
+  public ReplicationMetricCollector(String dbName, Metadata.ReplicationType replicationType,
+                                    String stagingDir, long dumpExecutionId, HiveConf conf,
+                                    String failoverEndpoint, String failoverType) {
+    this.conf = conf;
+    checkEnabledForTests(conf);
+    String policy = conf.get(Constants.SCHEDULED_QUERY_SCHEDULENAME);
+    long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+    if (!StringUtils.isEmpty(policy) && executionId > 0) {
+      isEnabled = true;
+      metricCollector = MetricCollector.getInstance().init(conf);
+      MetricSink.getInstance().init(conf);
+      Metadata metadata = new Metadata(dbName, replicationType, getStagingDir(stagingDir));
+      metadata.setFailoverEndPoint(failoverEndpoint);
+      metadata.setFailoverType(failoverType);
+      replicationMetric = new ReplicationMetric(executionId, policy, dumpExecutionId, metadata);
+    }
+  }
+
   public void reportStageStart(String stageName, Map<String, Long> metricMap) throws SemanticException {
     if (isEnabled) {
       LOG.debug("Stage Started {}, {}, {}", stageName, metricMap.size(), metricMap );
@@ -90,7 +107,8 @@ public abstract class ReplicationMetricCollector {
   }
 
   public void reportFailoverStart(String stageName, Map<String, Long> metricMap,
-                                  FailoverMetaData failoverMd) throws SemanticException {
+                                  FailoverMetaData failoverMd, String failoverEndpoint,
+                                  String failoverType) throws SemanticException {
     if (isEnabled) {
       LOG.info("Failover Stage Started {}, {}, {}", stageName, metricMap.size(), metricMap);
       Progress progress = replicationMetric.getProgress();
@@ -104,6 +122,8 @@ public abstract class ReplicationMetricCollector {
       Metadata metadata = replicationMetric.getMetadata();
       metadata.setFailoverMetadataLoc(failoverMd.getFilePath());
       metadata.setFailoverEventId(failoverMd.getFailoverEventId());
+      metadata.setFailoverEndPoint(failoverEndpoint);
+      metadata.setFailoverType(failoverType);
       replicationMetric.setMetadata(metadata);
       metricCollector.addMetric(replicationMetric);
     }
