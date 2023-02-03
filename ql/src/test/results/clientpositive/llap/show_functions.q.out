@@ -48,6 +48,7 @@ approx_distinct
 array
 array_contains
 array_distinct
+array_join
 array_max
 array_min
 array_slice
@@ -668,6 +669,7 @@ approx_distinct
 array
 array_contains
 array_distinct
+array_join
 array_max
 array_min
 array_slice

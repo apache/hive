@@ -20,15 +20,21 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.BatchUpdateException;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.concurrent.TimeUnit;
 
 import javax.jdo.JDOException;
+import javax.jdo.JDOUserException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.datanucleus.exceptions.NucleusDataStoreException;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -107,5 +113,32 @@ public class TestRetriesInRetryingHMSHandler {
     .when(mockBaseHandler).init();
     RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
     Mockito.verify(mockBaseHandler, Mockito.times(2)).init();
+  }
+
+  @Test
+  public void testGetRootCauseInMetaException() throws MetaException {
+    IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
+    Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
+    SQLIntegrityConstraintViolationException sqlException =
+        new SQLIntegrityConstraintViolationException("Cannot delete or update a parent row");
+    BatchUpdateException updateException = new BatchUpdateException(sqlException);
+    NucleusDataStoreException nucleusException = new NucleusDataStoreException(
+        "Clear request failed: DELETE FROM `PARTITION_PARAMS` WHERE `PART_ID`=?", updateException);
+    JDOUserException jdoException = new JDOUserException(
+        "One or more instances could not be deleted", nucleusException);
+    // SQLIntegrityConstraintViolationException wrapped in BatchUpdateException wrapped in
+    // NucleusDataStoreException wrapped in JDOUserException wrapped in MetaException wrapped in InvocationException
+    MetaException me = new MetaException("Dummy exception");
+    me.initCause(jdoException);
+    InvocationTargetException ex = new InvocationTargetException(me);
+    Mockito.doThrow(me).when(mockBaseHandler).getMS();
+
+    IHMSHandler retryingHandler = RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
+    try {
+      retryingHandler.getMS();
+      Assert.fail("should throw the mocked MetaException");
+    } catch (MetaException e) {
+      Assert.assertTrue(e.getMessage().contains("java.sql.SQLIntegrityConstraintViolationException"));
+    }
   }
 }
