@@ -83,7 +83,7 @@ public class TestTezOutputCommitter {
       driver.run(String.format("CREATE TABLE %s (a int)", TEST_TABLE));
       driver.run(String.format("INSERT INTO %s VALUES (4), (5)", TEST_TABLE));
       fail();
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       assertTrue(e.getMessage().contains(ABORT_TASK_ERROR_MSG));
     }
 
@@ -101,7 +101,7 @@ public class TestTezOutputCommitter {
       driver.run(String.format("CREATE TABLE %s (a int)", TEST_TABLE));
       driver.run(String.format("INSERT INTO %s VALUES (4), (5)", TEST_TABLE));
       fail();
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       assertTrue(e.getMessage().contains(ABORT_JOB_ERROR_MSG));
     }
 
