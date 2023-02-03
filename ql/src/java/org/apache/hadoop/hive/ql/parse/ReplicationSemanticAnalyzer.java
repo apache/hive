@@ -360,11 +360,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           LOG.debug("{} contains an bootstrap dump", loadPath);
         }
 
+        ReplicationMetricCollector metricCollector = initReplicationLoadMetricCollector(loadPath.toString(), replScope.getDbName(), dmd);
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
                 replScope.getDbName(),
                 dmd.getReplScope(),
                 queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),
-                initMetricCollection(loadPath.toString(), replScope.getDbName(), dmd), dmd.isReplScopeModified());
+                metricCollector, dmd.isReplScopeModified());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         if (dmd.isPreOptimizedBootstrapDump()) {
           dmd.setOptimizedBootstrapToDumpMetadataFile();
@@ -379,14 +380,35 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private ReplicationMetricCollector initMetricCollection(String dumpDirectory,
-                                                          String dbNameToLoadIn, DumpMetaData dmd) throws SemanticException {
-
+  private ReplicationMetricCollector initReplicationLoadMetricCollector(String dumpDirectory, String dbNameToLoadIn,
+                                                                        DumpMetaData dmd) throws SemanticException {
     ReplicationMetricCollector collector;
-    if (dmd.isPreOptimizedBootstrapDump()) {
-      collector = new PreOptimizedBootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf);
-    } else if (dmd.isOptimizedBootstrapDump()) {
-      collector = new OptimizedBootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf);
+    if (dmd.isPreOptimizedBootstrapDump() || dmd.isOptimizedBootstrapDump()) {
+      Database dbToLoad = null;
+      try {
+        dbToLoad = db.getDatabase(dbNameToLoadIn);
+      } catch (HiveException e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
+      if (dbToLoad == null) {
+        throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS, dbNameToLoadIn);
+      }
+      // db property ReplConst.FAILOVER_ENDPOINT is only set during planned failover.
+      String failoverType = "";
+      try {
+        // check whether ReplConst.FAILOVER_ENDPOINT is set
+        failoverType = MetaStoreUtils.isDbBeingFailedOver(db.getDatabase(dbNameToLoadIn)) ? ReplConst.FailoverType.PLANNED.toString() : ReplConst.FailoverType.UNPLANNED.toString();
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+      if (dmd.isPreOptimizedBootstrapDump()) {
+        collector = new PreOptimizedBootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf,
+                MetaStoreUtils.FailoverEndpoint.TARGET.toString(), failoverType);
+      } else {
+        // db property ReplConst.FAILOVER_ENDPOINT is only set during planned failover.
+        collector = new OptimizedBootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf,
+                MetaStoreUtils.FailoverEndpoint.TARGET.toString(), failoverType);
+      }
     } else if (dmd.isBootstrapDump()) {
       collector = new BootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf);
     } else {

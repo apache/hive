@@ -88,7 +88,7 @@ public class OptimisedBootstrapUtils {
    * @return true, if the database has repl.target.for property set.
    * @throws HiveException
    */
-  public static boolean isFailover(String dbName, Hive hive) throws HiveException {
+  public static boolean isDbTargetOfFailover(String dbName, Hive hive) throws HiveException {
     Database database = hive.getDatabase(dbName);
     return database != null ? MetaStoreUtils.isTargetOfReplication(database) : false;
   }
