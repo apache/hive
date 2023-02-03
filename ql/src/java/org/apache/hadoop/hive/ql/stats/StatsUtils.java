@@ -23,7 +23,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -278,36 +277,23 @@ public class StatsUtils {
     boolean metaTable = table.getMetaTable() != null;
 
     if (!table.isPartitioned()) {
-      long ds;
-      long nr;
-      long fs;
 
-      Map<String, Long> basicStatsMap = getValidBasicStatsFromStorageHandler(table);
+      Factory basicStatsFactory = new BasicStats.Factory();
 
-      if (basicStatsMap != null ) {
-        ds = basicStatsMap.get(StatsSetupConst.TOTAL_SIZE);
-        nr = basicStatsMap.get(StatsSetupConst.ROW_COUNT);
-        fs = basicStatsMap.get(StatsSetupConst.NUM_FILES);
-      }
-      else {
-
-        Factory basicStatsFactory = new BasicStats.Factory();
-
-        if (estimateStats) {
-          basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
-        }
-
-        //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-        basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
-        basicStatsFactory.addEnhancer(new BasicStats.SetMinRowNumber01());
-        BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table));
-
-        //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
-        ds = basicStats.getDataSize();
-        nr = basicStats.getNumRows();
-        fs = basicStats.getTotalFileSize();
+      if (estimateStats) {
+        basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
       }
 
+      //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
+      basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
+      basicStatsFactory.addEnhancer(new BasicStats.SetMinRowNumber01());
+
+      BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table));
+
+      //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
+      long ds = basicStats.getDataSize();
+      long nr = basicStats.getNumRows();
+      long fs = basicStats.getTotalFileSize();
       List<ColStatistics> colStats = Collections.emptyList();
 
       long numErasureCodedFiles = getErasureCodedFiles(table);
@@ -467,27 +453,6 @@ public class StatsUtils {
     }
     return stats;
   }
-
-  private static Map<String, Long> getValidBasicStatsFromStorageHandler(Table table) {
-
-    Map<String, String> storageHandlerBasicStatsMap =
-        (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()) ? table.getStorageHandler()
-            .getBasicStatistics(Partish.buildFor(table)) : null;
-
-    try {
-      if (storageHandlerBasicStatsMap != null &&
-          Long.parseLong(storageHandlerBasicStatsMap.get(StatsSetupConst.ROW_COUNT)) > 0) {
-        Map<String, Long> basicStatsMap = new HashMap<>();
-        storageHandlerBasicStatsMap.forEach((k, v) -> basicStatsMap.put(k, Long.valueOf(v)));
-        return basicStatsMap;
-      } else {
-        return null;
-      }
-    } catch (NumberFormatException e) {
-      return null;
-    }
-  }
-
 
   private static List<String> extractColumnStates(Table table, List<String> columns,
       ColumnStatsList colStatsCache, List<ColStatistics> columnStats) {
