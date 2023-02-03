@@ -493,7 +493,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dbParams.remove(REPL_TARGET_DB_PROPERTY);
       dbParams.remove(ReplConst.REPL_ENABLE_BACKGROUND_THREAD);
       dbParams.remove(REPL_RESUME_STARTED_AFTER_FAILOVER);
-
+      if (!isFailoverInProgress) {
+        // if we have failover endpoint from controlled failover remove it.
+        dbParams.remove(ReplConst.REPL_FAILOVER_ENDPOINT);
+      }
       database.setParameters(dbParams);
       LOG.info("Removing {} property from the database {} after successful optimised bootstrap dump", String.join(",",
           new String[] { TARGET_OF_REPLICATION, CURR_STATE_ID_TARGET.toString(), CURR_STATE_ID_SOURCE.toString(),
