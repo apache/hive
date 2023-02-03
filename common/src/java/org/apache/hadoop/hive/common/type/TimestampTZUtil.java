@@ -79,7 +79,7 @@ public class TimestampTZUtil {
         optionalEnd().optionalEnd();
     // Zone part
     builder.optionalStart().appendLiteral(" ").optionalEnd();
-    builder.optionalStart().appendZoneText(TextStyle.NARROW).optionalEnd();
+    builder.optionalStart().appendZoneOrOffsetId().optionalEnd();
 
     FORMATTER = builder.toFormatter();
   }
