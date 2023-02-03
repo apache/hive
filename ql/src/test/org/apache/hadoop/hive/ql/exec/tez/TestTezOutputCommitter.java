@@ -123,7 +123,7 @@ public class TestTezOutputCommitter {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setInt("tez.am.task.max.failed.attempts", MAX_TASK_ATTEMPTS);
-    conf.setInt("tez.am.app.max.app.attempts", 1);
+    conf.setInt("tez.am.max.app.attempts", 1);
     conf.set("mapred.output.committer.class", committerClass);
 
     SessionState.start(conf);
