@@ -20,11 +20,15 @@
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
 import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class ColumnStatsMerger {
+import java.util.List;
+import java.util.stream.Collectors;
+
+public abstract class ColumnStatsMerger<T> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColumnStatsMerger.class);
 
@@ -45,5 +49,61 @@ public abstract class ColumnStatsMerger {
       return newEst;
     }
     return oldEst;
+  }
+
+  protected long mergeNumDistinctValueEstimator(String columnName, List<NumDistinctValueEstimator> estimators,
+      long oldNumDVs, long newNumDVs) {
+    if (estimators == null || estimators.size() != 2) {
+      throw new IllegalArgumentException("NDV estimators list must be set and contain exactly two elements, " +
+          "found " + (estimators == null ? "null" :
+          estimators.stream().map(NumDistinctValueEstimator::toString).collect(Collectors.joining(", "))));
+    }
+
+    NumDistinctValueEstimator oldEst = estimators.get(0);
+    NumDistinctValueEstimator newEst = estimators.get(1);
+    if (oldEst == null && newEst == null) {
+      return mergeNumDVs(oldNumDVs, newNumDVs);
+    }
+
+    if (oldEst == null) {
+      estimators.set(0, newEst);
+      return mergeNumDVs(oldNumDVs, newEst.estimateNumDistinctValues());
+    }
+
+    final long ndv;
+    if (oldEst.canMerge(newEst)) {
+      oldEst.mergeEstimators(newEst);
+      ndv = oldEst.estimateNumDistinctValues();
+      return ndv;
+    } else {
+      ndv = mergeNumDVs(oldNumDVs, newNumDVs);
+    }
+    LOG.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", columnName,
+        oldNumDVs, newNumDVs, ndv);
+    return ndv;
+  }
+
+  public T mergeLowValue(T oldValue, T newValue) {
+    throw new UnsupportedOperationException("This operation is not supported");
+  }
+
+  public T mergeHighValue(T oldValue, T newValue) {
+    throw new UnsupportedOperationException("This operation is not supported");
+  }
+
+  public long mergeNumDVs(long oldValue, long newValue) {
+    return Math.max(oldValue, newValue);
+  }
+
+  public long mergeNumNulls(long oldValue, long newValue) {
+    return oldValue + newValue;
+  }
+
+  public long mergeMaxColLen(long oldValue, long newValue) {
+    return Math.max(oldValue, newValue);
+  }
+
+  public double mergeAvgColLen(double oldValue, double newValue) {
+    return Math.max(oldValue, newValue);
   }
 }
