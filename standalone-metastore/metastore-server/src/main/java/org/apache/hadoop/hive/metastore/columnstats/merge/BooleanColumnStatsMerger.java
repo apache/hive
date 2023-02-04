@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BooleanColumnStatsMerger extends ColumnStatsMerger<Boolean> {
+public class BooleanColumnStatsMerger extends ColumnStatsMerger {
 
   private static final Logger LOG = LoggerFactory.getLogger(BooleanColumnStatsMerger.class);
 
@@ -34,9 +34,8 @@ public class BooleanColumnStatsMerger extends ColumnStatsMerger<Boolean> {
 
     BooleanColumnStatsData aggregateData = aggregateColStats.getStatsData().getBooleanStats();
     BooleanColumnStatsData newData = newColStats.getStatsData().getBooleanStats();
-
     aggregateData.setNumTrues(aggregateData.getNumTrues() + newData.getNumTrues());
     aggregateData.setNumFalses(aggregateData.getNumFalses() + newData.getNumFalses());
-    aggregateData.setNumNulls(mergeNumNulls(aggregateData.getNumNulls(), newData.getNumNulls()));
+    aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
   }
 }

@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BinaryColumnStatsMerger extends ColumnStatsMerger<byte []> {
+public class BinaryColumnStatsMerger extends ColumnStatsMerger {
 
   private static final Logger LOG = LoggerFactory.getLogger(BinaryColumnStatsMerger.class);
 
@@ -34,9 +34,8 @@ public class BinaryColumnStatsMerger extends ColumnStatsMerger<byte []> {
 
     BinaryColumnStatsData aggregateData = aggregateColStats.getStatsData().getBinaryStats();
     BinaryColumnStatsData newData = newColStats.getStatsData().getBinaryStats();
-
-    aggregateData.setMaxColLen(mergeMaxColLen(aggregateData.getMaxColLen(), newData.getMaxColLen()));
-    aggregateData.setAvgColLen(mergeAvgColLen(aggregateData.getAvgColLen(), newData.getAvgColLen()));
-    aggregateData.setNumNulls(mergeNumNulls(aggregateData.getNumNulls(), newData.getNumNulls()));
+    aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
+    aggregateData.setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
+    aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
   }
 }

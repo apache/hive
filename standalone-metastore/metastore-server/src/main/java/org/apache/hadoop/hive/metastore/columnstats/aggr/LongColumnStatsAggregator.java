@@ -109,13 +109,11 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
         } else {
-          aggregateData.setLowValue(merger.mergeLowValue(
-              merger.getLowValue(aggregateData), merger.getLowValue(newData)));
-          aggregateData.setHighValue(merger.mergeHighValue(
-              merger.getHighValue(aggregateData), merger.getHighValue(newData)));
+          merger.setLowValue(aggregateData, newData);
+          merger.setHighValue(aggregateData, newData);
 
-          aggregateData.setNumNulls(merger.mergeNumNulls(aggregateData.getNumNulls(), newData.getNumNulls()));
-          aggregateData.setNumDVs(merger.mergeNumDVs(aggregateData.getNumDVs(), newData.getNumDVs()));
+          aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
+          aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
         }
       }
       if (areAllNDVEstimatorsMergeable && ndvEstimator != null) {

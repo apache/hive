@@ -763,7 +763,7 @@ public class MetaStoreServerUtils {
         assert (statsObjNew.getStatsData().getSetField() == statsObjOld.getStatsData()
             .getSetField());
         // If statsObjOld is found, we can merge.
-        ColumnStatsMerger<?> merger = ColumnStatsMergerFactory.getColumnStatsMerger(statsObjNew,
+        ColumnStatsMerger merger = ColumnStatsMergerFactory.getColumnStatsMerger(statsObjNew,
             statsObjOld);
         merger.merge(statsObjNew, statsObjOld);
       }
