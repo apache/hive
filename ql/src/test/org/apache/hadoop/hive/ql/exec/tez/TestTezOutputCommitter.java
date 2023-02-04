@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputCommitter;
@@ -35,7 +36,6 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class TestTezOutputCommitter {
 
@@ -78,17 +78,10 @@ public class TestTezOutputCommitter {
   @Test
   public void testAbortTask() throws Exception {
     driver = getDriverWithCommitter(TaskAbortingOutputCommitter.class.getName());
+    driver.run(String.format("CREATE TABLE %s (a int)", TEST_TABLE));
+    CommandProcessorResponse cpr = driver.run(String.format("INSERT INTO %s VALUES (4), (5)", TEST_TABLE));
 
-    try {
-      driver.run(String.format("CREATE TABLE %s (a int)", TEST_TABLE));
-      driver.run(String.format("INSERT INTO %s VALUES (4), (5)", TEST_TABLE));
-      System.out.println(String.format("%s|%s|%s|%s", commitTaskCounter, abortTaskCounter, commitJobCounter, abortJobCounter));
-      fail();
-    } catch (RuntimeException e) {
-      System.out.println(e.getMessage());
-      assertTrue(e.getMessage().contains(ABORT_TASK_ERROR_MSG));
-    }
-
+    assertTrue(cpr.getErrorMessage(), cpr.getErrorMessage().contains(ABORT_TASK_ERROR_MSG));
     assertEquals(MAX_TASK_ATTEMPTS, commitTaskCounter);
     assertEquals(MAX_TASK_ATTEMPTS, abortTaskCounter);
     assertEquals(0, commitJobCounter);
@@ -98,17 +91,10 @@ public class TestTezOutputCommitter {
   @Test
   public void testAbortJob() throws Exception {
     driver = getDriverWithCommitter(JobAbortingOutputCommitter.class.getName());
+    driver.run(String.format("CREATE TABLE %s (a int)", TEST_TABLE));
+    CommandProcessorResponse cpr = driver.run(String.format("INSERT INTO %s VALUES (4), (5)", TEST_TABLE));
 
-    try {
-      driver.run(String.format("CREATE TABLE %s (a int)", TEST_TABLE));
-      driver.run(String.format("INSERT INTO %s VALUES (4), (5)", TEST_TABLE));
-      System.out.println(String.format("%s|%s|%s|%s", commitTaskCounter, abortTaskCounter, commitJobCounter, abortJobCounter));
-      fail();
-    } catch (RuntimeException e) {
-      System.out.println(e.getMessage());
-      assertTrue(e.getMessage().contains(ABORT_JOB_ERROR_MSG));
-    }
-
+    assertTrue(cpr.getErrorMessage(), cpr.getErrorMessage().contains(ABORT_JOB_ERROR_MSG));
     assertEquals(1, commitTaskCounter);
     assertEquals(0, abortTaskCounter);
     assertEquals(1, commitJobCounter);
@@ -127,9 +113,7 @@ public class TestTezOutputCommitter {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setInt("tez.am.task.max.failed.attempts", MAX_TASK_ATTEMPTS);
-    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
     conf.set("mapred.output.committer.class", committerClass);
-
     SessionState.start(conf);
     return DriverFactory.newDriver(conf);
   }
