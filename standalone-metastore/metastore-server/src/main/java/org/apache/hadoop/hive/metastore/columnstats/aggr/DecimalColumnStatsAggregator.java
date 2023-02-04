@@ -115,11 +115,13 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
         } else {
-          merger.setLowValue(aggregateData, newData);
-          merger.setHighValue(aggregateData, newData);
+          aggregateData.setLowValue(merger.mergeLowValue(
+              merger.getLowValue(aggregateData), merger.getLowValue(newData)));
+          aggregateData.setHighValue(merger.mergeHighValue(
+              merger.getHighValue(aggregateData), merger.getHighValue(newData)));
 
-          aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-          aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
+          aggregateData.setNumNulls(merger.mergeNumNulls(aggregateData.getNumNulls(), newData.getNumNulls()));
+          aggregateData.setNumDVs(merger.mergeNumDVs(aggregateData.getNumDVs(), newData.getNumDVs()));
         }
       }
       if (areAllNDVEstimatorsMergeable && ndvEstimator != null) {
