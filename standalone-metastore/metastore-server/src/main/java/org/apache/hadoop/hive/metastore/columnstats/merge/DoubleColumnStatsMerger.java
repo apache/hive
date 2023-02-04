@@ -26,12 +26,9 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataI
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.doubleInspectorFromStats;
 
-public class DoubleColumnStatsMerger extends ColumnStatsMerger<Double> {
+public class DoubleColumnStatsMerger extends ColumnStatsMerger {
 
   private static final Logger LOG = LoggerFactory.getLogger(DoubleColumnStatsMerger.class);
 
@@ -41,58 +38,63 @@ public class DoubleColumnStatsMerger extends ColumnStatsMerger<Double> {
 
     DoubleColumnStatsDataInspector aggregateData = doubleInspectorFromStats(aggregateColStats);
     DoubleColumnStatsDataInspector newData = doubleInspectorFromStats(newColStats);
-
-    Double lowValue = mergeLowValue(getLowValue(aggregateData), getLowValue(newData));
-    if (lowValue != null) {
-      aggregateData.setLowValue(lowValue);
+    setLowValue(aggregateData, newData);
+    setHighValue(aggregateData, newData);
+    aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
+    if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
+      aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
+    } else {
+      NumDistinctValueEstimator oldEst = aggregateData.getNdvEstimator();
+      NumDistinctValueEstimator newEst = newData.getNdvEstimator();
+      long ndv;
+      if (oldEst.canMerge(newEst)) {
+        oldEst.mergeEstimators(newEst);
+        ndv = oldEst.estimateNumDistinctValues();
+        aggregateData.setNdvEstimator(oldEst);
+      } else {
+        ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
+      }
+      LOG.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}",
+          aggregateColStats.getColName(), aggregateData.getNumDVs(), newData.getNumDVs(),  ndv);
+      aggregateData.setNumDVs(ndv);
     }
-    Double highValue = mergeHighValue(getHighValue(aggregateData), getHighValue(newData));
-    if (highValue != null) {
-      aggregateData.setHighValue(highValue);
-    }
-    aggregateData.setNumNulls(mergeNumNulls(aggregateData.getNumNulls(), newData.getNumNulls()));
 
-    NumDistinctValueEstimator oldNDVEst = aggregateData.getNdvEstimator();
-    NumDistinctValueEstimator newNDVEst = newData.getNdvEstimator();
-    List<NumDistinctValueEstimator> ndvEstimatorsList = Arrays.asList(oldNDVEst, newNDVEst);
-    aggregateData.setNumDVs(mergeNumDistinctValueEstimator(aggregateColStats.getColName(),
-        ndvEstimatorsList, aggregateData.getNumDVs(), newData.getNumDVs()));
-    aggregateData.setNdvEstimator(ndvEstimatorsList.get(0));
-
-    KllHistogramEstimator oldKllEst = aggregateData.getHistogramEstimator();
-    KllHistogramEstimator newKllEst = newData.getHistogramEstimator();
-    aggregateData.setHistogramEstimator(mergeHistogramEstimator(aggregateColStats.getColName(), oldKllEst, newKllEst));
+    KllHistogramEstimator oldEst = aggregateData.getHistogramEstimator();
+    KllHistogramEstimator newEst = newData.getHistogramEstimator();
+    aggregateData.setHistogramEstimator(mergeHistogramEstimator(aggregateColStats.getColName(), oldEst, newEst));
 
     aggregateColStats.getStatsData().setDoubleStats(aggregateData);
   }
 
-  public Double getLowValue(DoubleColumnStatsDataInspector data) {
-    return data.isSetLowValue() ? data.getLowValue() : null;
-  }
+  public void setLowValue(DoubleColumnStatsDataInspector aggregateData, DoubleColumnStatsDataInspector newData) {
+    final double lowValue;
 
-  public Double getHighValue(DoubleColumnStatsDataInspector data) {
-    return data.isSetHighValue() ? data.getHighValue() : null;
-  }
-
-  @Override
-  public Double mergeLowValue(Double oldValue, Double newValue) {
-    if (oldValue != null && newValue != null) {
-      return Math.min(oldValue, newValue);
-    } else if (oldValue != null) {
-      return oldValue;
+    if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
+      lowValue = Math.min(aggregateData.getLowValue(), newData.getLowValue());
+    } else if (aggregateData.isSetLowValue()) {
+      lowValue = aggregateData.getLowValue();
+    } else if (newData.isSetLowValue()) {
+      lowValue = newData.getLowValue();
+    } else {
+      return;
     }
-    // it can be null
-    return newValue;
+
+    aggregateData.setLowValue(lowValue);
   }
 
-  @Override
-  public Double mergeHighValue(Double oldValue, Double newValue) {
-      if (oldValue != null && newValue != null) {
-        return Math.max(oldValue, newValue);
-      } else if (oldValue != null) {
-        return oldValue;
-      }
-      // it can be null
-      return newValue;
+  public void setHighValue(DoubleColumnStatsDataInspector aggregateData, DoubleColumnStatsDataInspector newData) {
+    final double highValue;
+
+    if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
+      highValue = Math.max(aggregateData.getHighValue(), newData.getHighValue());
+    } else if (aggregateData.isSetHighValue()) {
+      highValue = aggregateData.getHighValue();
+    } else if (newData.isSetHighValue()) {
+      highValue = newData.getHighValue();
+    } else {
+      return;
+    }
+
+    aggregateData.setHighValue(highValue);
   }
 }
