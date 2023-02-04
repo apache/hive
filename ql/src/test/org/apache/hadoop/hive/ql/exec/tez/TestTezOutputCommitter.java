@@ -82,8 +82,10 @@ public class TestTezOutputCommitter {
     try {
       driver.run(String.format("CREATE TABLE %s (a int)", TEST_TABLE));
       driver.run(String.format("INSERT INTO %s VALUES (4), (5)", TEST_TABLE));
+      System.out.println(String.format("%s|%s|%s|%s", commitTaskCounter, abortTaskCounter, commitJobCounter, abortJobCounter));
       fail();
     } catch (RuntimeException e) {
+      System.out.println(e.getMessage());
       assertTrue(e.getMessage().contains(ABORT_TASK_ERROR_MSG));
     }
 
@@ -100,8 +102,10 @@ public class TestTezOutputCommitter {
     try {
       driver.run(String.format("CREATE TABLE %s (a int)", TEST_TABLE));
       driver.run(String.format("INSERT INTO %s VALUES (4), (5)", TEST_TABLE));
+      System.out.println(String.format("%s|%s|%s|%s", commitTaskCounter, abortTaskCounter, commitJobCounter, abortJobCounter));
       fail();
     } catch (RuntimeException e) {
+      System.out.println(e.getMessage());
       assertTrue(e.getMessage().contains(ABORT_JOB_ERROR_MSG));
     }
 
@@ -123,7 +127,7 @@ public class TestTezOutputCommitter {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setInt("tez.am.task.max.failed.attempts", MAX_TASK_ATTEMPTS);
-    conf.setInt("tez.am.max.app.attempts", 1);
+    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
     conf.set("mapred.output.committer.class", committerClass);
 
     SessionState.start(conf);
