@@ -1,0 +1,101 @@
+PREHOOK: query: create table ice01 (id int) Stored by Iceberg stored as ORC
+ TBLPROPERTIES('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: create table ice01 (id int) Stored by Iceberg stored as ORC
+ TBLPROPERTIES('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+PREHOOK: query: insert into ice01 values (1),(2),(3),(4),(5),(6),(9),(8),(10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 values (1),(2),(3),(4),(5),(6),(9),(8),(10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: delete from ice01 where id>9 OR id=8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where id>9 OR id=8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+5
+6
+9
+PREHOOK: query: select summary from default.ice01.snapshots
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select summary from default.ice01.snapshots
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"added-data-files":"1","added-records":"9","added-files-size":"#FileSize#","changed-partition-count":"1","total-records":"9","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}
+{"added-position-delete-files":"1","added-delete-files":"1","added-files-size":"#FileSize#","added-position-deletes":"2","changed-partition-count":"1","total-records":"9","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"1","total-position-deletes":"2","total-equality-deletes":"0"}
+PREHOOK: query: ALTER TABLE ice01 SET TBLPROPERTIES ('write.delete.mode'='copy-on-write')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: ALTER TABLE ice01 SET TBLPROPERTIES ('write.delete.mode'='copy-on-write')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: delete from ice01 where id>4 OR id=2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where id>4 OR id=2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+3
+4
+PREHOOK: query: select summary from default.ice01.snapshots
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select summary from default.ice01.snapshots
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"added-data-files":"1","added-records":"9","added-files-size":"#FileSize#","changed-partition-count":"1","total-records":"9","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}
+{"added-position-delete-files":"1","added-delete-files":"1","added-files-size":"#FileSize#","added-position-deletes":"2","changed-partition-count":"1","total-records":"9","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"1","total-position-deletes":"2","total-equality-deletes":"0"}
+{"replace-partitions":"true","added-data-files":"1","deleted-data-files":"1","removed-position-delete-files":"1","removed-delete-files":"1","added-records":"3","deleted-records":"9","added-files-size":"#FileSize#","removed-files-size":"#FileSize#","removed-position-deletes":"2","changed-partition-count":"1","total-records":"3","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}
+PREHOOK: query: drop table if exists ice01
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: drop table if exists ice01
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: drop table if exists icepart01
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists icepart01
+POSTHOOK: type: DROPTABLE

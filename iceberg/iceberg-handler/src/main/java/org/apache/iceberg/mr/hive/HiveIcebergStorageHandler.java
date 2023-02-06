@@ -640,7 +640,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   // TODO: remove the checks as copy-on-write mode implementation for these DML ops get added
   private static void checkDMLOperationMode(org.apache.hadoop.hive.ql.metadata.Table table) {
     Map<String, String> opTypes = ImmutableMap.of(
-        TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT,
         TableProperties.MERGE_MODE, TableProperties.MERGE_MODE_DEFAULT,
         TableProperties.UPDATE_MODE, TableProperties.UPDATE_MODE_DEFAULT);
 
@@ -1165,5 +1164,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     props.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(origTable.schema()));
     props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(origTable.spec()));
     return props;
+  }
+
+  @Override
+  public boolean isOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String name) {
+    String mode = null;
+    mode = mTable.getTTable().getParameters()
+        .getOrDefault(TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT);
+
+    return mode.equalsIgnoreCase("copy-on-write");
+
   }
 }

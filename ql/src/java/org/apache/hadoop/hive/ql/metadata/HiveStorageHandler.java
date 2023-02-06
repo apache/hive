@@ -291,6 +291,10 @@ public interface HiveStorageHandler extends Configurable {
     return new HashMap<>();
   }
 
+  default boolean isOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String name) {
+    return false;
+  }
+
   enum AcidSupportType {
     NONE,
     WITH_TRANSACTIONS,
