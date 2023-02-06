@@ -397,7 +397,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     dumpPath = new Path(reverseDumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
@@ -625,7 +625,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     dumpAckFile = new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString());
     assertTrue(fs.exists(dumpAckFile));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
@@ -734,7 +734,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Path dumpAckFile = new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString());
     assertTrue(fs.exists(dumpAckFile));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
@@ -748,7 +748,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(preFailoverDumpData.dumpLocation)));
     assertNotEquals(reverseDumpData.dumpLocation, dumpData.dumpLocation);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     assertTrue(fs.exists(dumpAckFile));
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
@@ -2098,7 +2098,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       replica.loadWithoutExplain("", "`*`");
       fail();
     } catch (HiveException e) {
-      assertEquals("MetaException(message:Database name cannot be null.)", e.getMessage());
+      assertEquals("REPL LOAD Target database name shouldn't be null", e.getMessage());
     }
   }
 

@@ -88,7 +88,7 @@ public class OptimisedBootstrapUtils {
    * @return true, if the database has repl.target.for property set.
    * @throws HiveException
    */
-  public static boolean isFailover(String dbName, Hive hive) throws HiveException {
+  public static boolean isDbTargetOfFailover(String dbName, Hive hive) throws HiveException {
     Database database = hive.getDatabase(dbName);
     return database != null ? MetaStoreUtils.isTargetOfReplication(database) : false;
   }
@@ -260,7 +260,7 @@ public class OptimisedBootstrapUtils {
     LOG.info("Created event_ack file at {} with source eventId {} and target eventId {}", filePath, dbEventId,
         targetDbEventId);
     work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
-    dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, -1L, false);
+    dmd.setDump(DumpType.PRE_OPTIMIZED_BOOTSTRAP, work.eventFrom, lastReplId, cmRoot, -1L, false);
     dmd.write(true);
     return lastReplId;
   }
