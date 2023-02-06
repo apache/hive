@@ -66,7 +66,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 1
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_struct1_n7
@@ -221,7 +221,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 1
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_struct1_n7
@@ -242,7 +242,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -308,7 +308,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 1
             Map Operator Tree:
                 TableScan
                   alias: part_add_various_various_struct2_n7
@@ -539,7 +539,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 1
             Map Operator Tree:
                 TableScan
                   alias: part_add_various_various_struct2_n7
@@ -560,7 +560,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -645,7 +645,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 1
             Map Operator Tree:
                 TableScan
                   alias: part_add_to_various_various_struct4_n7
@@ -800,7 +800,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 1
             Map Operator Tree:
                 TableScan
                   alias: part_add_to_various_various_struct4_n7
@@ -821,7 +821,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
