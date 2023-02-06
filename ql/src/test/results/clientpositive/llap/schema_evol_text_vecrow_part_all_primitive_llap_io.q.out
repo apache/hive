@@ -553,7 +553,7 @@ PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_various_various_decimal_to_double
 PREHOOK: Output: default@part_change_various_various_decimal_to_double
 POSTHOOK: query: alter table part_change_various_various_decimal_to_double replace columns (insert_num int,
-             c1 DECIMAL(38,18), c2 DECIMAL(38,18), c3 DECIMAL(38,18), c4 DECIMAL(38,18), c5 DECIMAL(38,18), c6 DECIMAL(38,18), c7 DECIMAL(38,18), c8 DECIMAL(38,18), c9 DECIMAL(38,18), c10 DECIMAL(38,18), c11 DECIMAL(38,18),
+             c1 DECIMAL(38,18), c2 DECIMAL(38,18), c3 DECIMAL(38,18), c4 DECIMAL(38,18), c5 DECIMAL(38,18), c6 DECIMAL(38,18), c7 DECIMAL(38,18), c8 DECIMAL(38,18), c9 DECIMAL(38,18), c10 DECIMAL(38,18), c11 DECIMAL(38,18), 
              c12 FLOAT, c13 FLOAT, c14 FLOAT, c15 FLOAT, c16 FLOAT, c17 FLOAT, c18 FLOAT, c19 FLOAT, c20 FLOAT, c21 FLOAT, c22 FLOAT,
              c23 DOUBLE, c24 DOUBLE, c25 DOUBLE, c26 DOUBLE, c27 DOUBLE, c28 DOUBLE, c29 DOUBLE, c30 DOUBLE, c31 DOUBLE, c32 DOUBLE, c33 DOUBLE,
              b STRING)
