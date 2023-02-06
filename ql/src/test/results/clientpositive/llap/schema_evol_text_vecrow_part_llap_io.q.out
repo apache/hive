@@ -62,7 +62,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_add_int_permute_select
@@ -172,7 +172,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_add_int_permute_select
@@ -277,7 +277,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_add_int_string_permute_select
@@ -388,7 +388,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_add_int_string_permute_select
@@ -495,7 +495,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_string_group_double
@@ -610,7 +610,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_string_group_double
@@ -703,7 +703,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_date_group_string_group_date_timestamp
@@ -825,7 +825,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_date_group_string_group_date_timestamp
@@ -944,7 +944,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_numeric_group_string_group_multi_ints_string_group
@@ -1092,7 +1092,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_numeric_group_string_group_multi_ints_string_group
@@ -1206,7 +1206,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_numeric_group_string_group_floating_string_group
@@ -1349,7 +1349,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_numeric_group_string_group_floating_string_group
@@ -1456,7 +1456,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_string_group_string_group_string
@@ -1592,7 +1592,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_string_group_string_group_string
@@ -1652,7 +1652,7 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tiny
                                 tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1,
                                 smallint1, smallint1, smallint1, smallint1, smallint1,
                                 int1, int1, int1, int1,
-                                bigint1, bigint1, bigint1,
+                                bigint1, bigint1, bigint1, 
                                 'original' FROM schema_evolution_data_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@schema_evolution_data_n0
@@ -1661,7 +1661,7 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tin
                                 tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1,
                                 smallint1, smallint1, smallint1, smallint1, smallint1,
                                 int1, int1, int1, int1,
-                                bigint1, bigint1, bigint1,
+                                bigint1, bigint1, bigint1, 
                                 'original' FROM schema_evolution_data_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@schema_evolution_data_n0
@@ -1713,7 +1713,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_lower_to_higher_numeric_group_tinyint_to_bigint
@@ -1863,7 +1863,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_lower_to_higher_numeric_group_tinyint_to_bigint
@@ -1961,7 +1961,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_lower_to_higher_numeric_group_decimal_to_float
@@ -2076,7 +2076,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_lower_to_higher_numeric_group_decimal_to_float

@@ -156,7 +156,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_boolean_to_bigint
@@ -248,7 +248,7 @@ PREHOOK: query: insert into table part_change_various_various_boolean_to_bigint 
              tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1,
              smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1,
              int1, int1, int1, int1, int1, int1, int1, int1, int1, int1, int1,
-             bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1,
+             bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, 
               'new' FROM schema_evolution_data_n2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@schema_evolution_data_n2
@@ -258,7 +258,7 @@ POSTHOOK: query: insert into table part_change_various_various_boolean_to_bigint
              tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1,
              smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1,
              int1, int1, int1, int1, int1, int1, int1, int1, int1, int1, int1,
-             bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1,
+             bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, 
               'new' FROM schema_evolution_data_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@schema_evolution_data_n2
@@ -345,7 +345,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_boolean_to_bigint
@@ -477,7 +477,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_decimal_to_double
@@ -545,7 +545,7 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c
 104	1	true	23	834	203332	888888857923222	-100.35978	30.774	66475.561431	66475.561431             	66475.561431	1978-08-02 06:34:14	true	23	834	203332	888888857923222	66475.561431000000000000	30.774	-100.3597812	-100.3597812             	-100.3597812	1978-08-02 06:34:14	true	23	834	203332	888888857923222	66475.561431000000000000	-100.35978	30.774	30.774                   	30.774	1978-08-02 06:34:14	original
 105	1	false	-99	-28300	-999992	-222282153733	NULL	46114.28	9250340.75	9250340.75               	9250340.75	1991-01-06 16:20:39.72036854	false	-99	-28300	-999992	-222282153733	9250340.750000000000000000	46114.28	–32768	–32768                   	–32768	1991-01-06 16:20:39.72036854	false	-99	-28300	-999992	-222282153733	9250340.750000000000000000	NULL	46114.28	46114.28                 	46114.28	1991-01-06 16:20:39.72036854	original
 PREHOOK: query: alter table part_change_various_various_decimal_to_double replace columns (insert_num int,
-             c1 DECIMAL(38,18), c2 DECIMAL(38,18), c3 DECIMAL(38,18), c4 DECIMAL(38,18), c5 DECIMAL(38,18), c6 DECIMAL(38,18), c7 DECIMAL(38,18), c8 DECIMAL(38,18), c9 DECIMAL(38,18), c10 DECIMAL(38,18), c11 DECIMAL(38,18),
+             c1 DECIMAL(38,18), c2 DECIMAL(38,18), c3 DECIMAL(38,18), c4 DECIMAL(38,18), c5 DECIMAL(38,18), c6 DECIMAL(38,18), c7 DECIMAL(38,18), c8 DECIMAL(38,18), c9 DECIMAL(38,18), c10 DECIMAL(38,18), c11 DECIMAL(38,18), 
              c12 FLOAT, c13 FLOAT, c14 FLOAT, c15 FLOAT, c16 FLOAT, c17 FLOAT, c18 FLOAT, c19 FLOAT, c20 FLOAT, c21 FLOAT, c22 FLOAT,
              c23 DOUBLE, c24 DOUBLE, c25 DOUBLE, c26 DOUBLE, c27 DOUBLE, c28 DOUBLE, c29 DOUBLE, c30 DOUBLE, c31 DOUBLE, c32 DOUBLE, c33 DOUBLE,
              b STRING)
@@ -638,7 +638,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_decimal_to_double
@@ -733,7 +733,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_timestamp
@@ -841,7 +841,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_timestamp
@@ -928,7 +928,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_date
@@ -1028,7 +1028,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_date
@@ -1137,7 +1137,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_same_type_different_params
@@ -1298,7 +1298,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_same_type_different_params

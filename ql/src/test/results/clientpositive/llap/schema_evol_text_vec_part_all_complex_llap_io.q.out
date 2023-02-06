@@ -66,7 +66,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_struct1
@@ -236,7 +236,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_struct1
@@ -323,7 +323,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_add_various_various_struct2
@@ -491,7 +491,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_add_various_various_struct2
@@ -646,7 +646,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_add_various_various_struct2
@@ -752,7 +752,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_add_to_various_various_struct4
@@ -920,7 +920,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_add_to_various_various_struct4
