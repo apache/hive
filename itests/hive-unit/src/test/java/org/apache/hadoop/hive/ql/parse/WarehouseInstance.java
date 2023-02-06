@@ -479,7 +479,7 @@ public class WarehouseInstance implements Closeable {
   public int getNoOfEventsDumped(String dumpLocation, HiveConf conf) throws Throwable {
     IncrementalLoadEventsIterator itr = new IncrementalLoadEventsIterator(
             dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR, conf);
-    return itr.getNumEvents();
+    return itr.getTotalEventsCount();
   }
 
   public List<String> getAllTables(String dbName) throws Exception {

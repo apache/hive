@@ -91,13 +91,13 @@ public class IncrementalLoadTasksBuilder {
     outputs = new HashSet<>();
     log = null;
     this.conf = conf;
-    replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents(), replStatsTracker);
+    replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getTotalEventsCount(), replStatsTracker);
     replLogger.startLog();
     this.eventTo = eventTo;
     setNumIteration(0);
     this.metricCollector = metricCollector;
     Map<String, Long> metricMap = new HashMap<>();
-    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) iterator.getNumEvents());
+    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) iterator.getTotalEventsCount());
     this.shouldFailover = shouldFailover;
     if (shouldFailover) {
       Database db = null;
