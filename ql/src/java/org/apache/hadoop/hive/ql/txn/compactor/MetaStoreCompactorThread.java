@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -30,13 +32,17 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
@@ -51,6 +57,8 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
   protected TxnStore txnHandler;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
+
+  private Optional<Cache<String, TBase>> metaCache = Optional.empty();
 
   @Override
   public void init(AtomicBoolean stop) throws Exception {
@@ -133,4 +141,27 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
     }
     return 0;
   }
+
+  <T extends TBase<T,?>> T computeIfAbsent(String key, Callable<T> callable) throws Exception {
+    if (metaCache.isPresent()) {
+      try {
+        return (T) metaCache.get().get(key, callable);
+      } catch (ExecutionException e) {
+        throw (Exception) e.getCause();
+      }
+    }
+    return callable.call();
+  }
+
+  Optional<Cache<String, TBase>> initializeCache(boolean tableCacheOn) {
+    if (tableCacheOn) {
+      metaCache = Optional.of(CacheBuilder.newBuilder().softValues().build());
+    }
+    return metaCache;
+  }
+
+  void invalidateMetaCache(){
+    metaCache.ifPresent(Cache::invalidateAll);
+  }
+
 }
