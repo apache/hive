@@ -168,7 +168,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     LOG.info("On root vertex initialized " + inputName);
     try {
       // This is using the payload from the RootVertexInitializer corresponding
-      // to InputName. Ideally it should be using it's own configuration class -
+      // to InputName. Ideally it should be using its own configuration class -
       // but that
       // means serializing another instance.
       MRInputUserPayloadProto protoPayload =

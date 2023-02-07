@@ -257,7 +257,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -667,7 +667,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -941,7 +941,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
