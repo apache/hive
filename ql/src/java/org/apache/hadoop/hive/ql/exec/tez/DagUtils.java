@@ -194,7 +194,7 @@ public class DagUtils {
   // The merge file being currently processed.
   public static final String TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX =
       "hive.tez.current.merge.file.prefix";
-  // "A comma separated list of work names used as prefix.
+  // A comma separated list of work names used as prefix.
   public static final String TEZ_MERGE_WORK_FILE_PREFIXES = "hive.tez.merge.file.prefixes";
   private static final Text KAFKA_DELEGATION_TOKEN_KEY = new Text("KAFKA_DELEGATION_TOKEN");
   /**
@@ -480,7 +480,7 @@ public class DagUtils {
 
     if (mapWork instanceof MergeFileWork) {
       MergeFileWork mfWork = (MergeFileWork) mapWork;
-      // This mapper class is used for serializaiton/deserializaiton of merge
+      // This mapper class is used for serialization/deserialization of merge
       // file work.
       conf.set("mapred.mapper.class", MergeFileMapper.class.getName());
       conf.set("mapred.input.format.class", mfWork.getInputformat());
@@ -874,7 +874,7 @@ public class DagUtils {
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, mapWork);
 
-    // finally create the vertex
+    // finally, create the vertex
     Vertex map = null;
 
     // use tez to combine splits
@@ -960,7 +960,7 @@ public class DagUtils {
       // we need to set this, because with HS2 and client side split
       // generation we end up not finding the map work. This is
       // because of thread local madness (tez split generation is
-      // multi-threaded - HS2 plan cache uses thread locals). Setting
+      // multithreaded - HS2 plan cache uses thread locals). Setting
       // VECTOR_MODE/USE_VECTORIZED_INPUT_FILE_FORMAT causes the split gen code to use the conf instead
       // of the map work.
       conf.setBoolean(Utilities.VECTOR_MODE, mapWork.getVectorMode());
@@ -1058,7 +1058,7 @@ public class DagUtils {
   public static Map<String, LocalResource> createTezLrMap(
       LocalResource appJarLr, Collection<LocalResource> additionalLr) {
     // Note: interestingly this would exclude LLAP app jars that the session adds for LLAP case.
-    //       Of course it doesn't matter because vertices run ON LLAP and have those jars, and
+    //       Of course, it doesn't matter because vertices run ON LLAP and have those jars, and
     //       moreover we anyway don't localize jars for the vertices on LLAP; but in theory
     //       this is still crappy code that assumes there's one and only app jar.
     Map<String, LocalResource> localResources = new HashMap<>();
@@ -1507,7 +1507,7 @@ public class DagUtils {
    * Creates and initializes a JobConf object that can be used to execute
    * the DAG. This can skip the configs which are already included in AM configs.
    * @param hiveConf Current conf for the execution
-   * @param skipAMConf Skip the configs where are already set across all DAGs 
+   * @param skipAMConf Skip the configs where are already set across all DAGs
    * @return JobConf base configuration for job execution
    * @throws IOException
    */
@@ -1544,7 +1544,7 @@ public class DagUtils {
     hiveConf.stripHiddenConfigurations(conf);
 
     // Remove hive configs which are used only in HS2 and not needed for execution
-    conf.unset(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname); 
+    conf.unset(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname);
     return conf;
   }
 
@@ -1850,7 +1850,7 @@ public class DagUtils {
           return size * 1024 * 1024;
         case 'g':
         case 'G':
-          // -Xmx speficied in GB
+          // -Xmx specified in GB
           return size * 1024 * 1024 * 1024;
       }
     }

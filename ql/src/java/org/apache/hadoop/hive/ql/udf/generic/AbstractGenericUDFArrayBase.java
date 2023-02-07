@@ -19,8 +19,10 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -87,6 +89,21 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
                             + "\"" + arguments[idx].getTypeName() + "\" "
                             + "is found");
         }
+    }
+
+    void checkArgIntPrimitiveCategory(PrimitiveObjectInspector objectInspector, String functionName, int idx)
+        throws UDFArgumentTypeException {
+      switch (objectInspector.getPrimitiveCategory()) {
+      case SHORT:
+      case INT:
+      case LONG:
+        break;
+      default:
+        throw new UDFArgumentTypeException(0,
+            "Argument " + idx + " of function " + functionName + " must be \"" + serdeConstants.SMALLINT_TYPE_NAME + "\""
+                + " or \"" + serdeConstants.INT_TYPE_NAME + "\"" + " or \"" + serdeConstants.BIGINT_TYPE_NAME
+                + "\", but \"" + objectInspector.getTypeName() + "\" was found.");
+      }
     }
 
     ObjectInspector initOI(ObjectInspector[] arguments) {

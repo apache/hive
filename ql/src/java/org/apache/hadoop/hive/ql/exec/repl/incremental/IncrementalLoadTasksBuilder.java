@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl.incremental;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.Context;
@@ -82,7 +83,7 @@ public class IncrementalLoadTasksBuilder {
 
   public IncrementalLoadTasksBuilder(String dbName, String loadPath, IncrementalLoadEventsIterator iterator,
       HiveConf conf, Long eventTo, ReplicationMetricCollector metricCollector, ReplStatsTracker replStatsTracker,
-                                     boolean shouldFailover) throws SemanticException {
+                                     boolean shouldFailover, int bootstrapTableSize) throws SemanticException {
     this.dbName = dbName;
     dumpDirectory = (new Path(loadPath).getParent()).toString();
     this.iterator = iterator;
@@ -90,18 +91,37 @@ public class IncrementalLoadTasksBuilder {
     outputs = new HashSet<>();
     log = null;
     this.conf = conf;
-    replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents(), replStatsTracker);
+    replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getTotalEventsCount(), replStatsTracker);
     replLogger.startLog();
     this.eventTo = eventTo;
     setNumIteration(0);
     this.metricCollector = metricCollector;
     Map<String, Long> metricMap = new HashMap<>();
-    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) iterator.getNumEvents());
+    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) iterator.getTotalEventsCount());
     this.shouldFailover = shouldFailover;
     if (shouldFailover) {
+      Database db = null;
+      try {
+        db = Hive.get().getDatabase(dbName);
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+      String dbFailoverEndPoint = "";
+      if (db != null) {
+        Map<String, String> params = db.getParameters();
+        if (params != null) {
+          dbFailoverEndPoint = params.get(ReplConst.REPL_FAILOVER_ENDPOINT);
+        }
+      }
       this.metricCollector.reportFailoverStart("REPL_LOAD", metricMap,
-              new FailoverMetaData(new Path(dumpDirectory, ReplUtils.REPL_HIVE_BASE_DIR), conf));
+          new FailoverMetaData(new Path(dumpDirectory, ReplUtils.REPL_HIVE_BASE_DIR), conf),
+          dbFailoverEndPoint, ReplConst.FailoverType.PLANNED.toString());
     } else {
+      //Registering table metric as we do boostrap of selective tables
+      // in second load cycle of optimized bootstrap
+      if(bootstrapTableSize > 0) {
+        metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) bootstrapTableSize);
+      }
       this.metricCollector.reportStageStart("REPL_LOAD", metricMap);
     }
   }

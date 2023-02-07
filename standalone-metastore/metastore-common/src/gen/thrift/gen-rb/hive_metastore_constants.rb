@@ -61,7 +61,7 @@ META_TABLE_STORAGE = %q"storage_handler"
 
 TABLE_IS_TRANSACTIONAL = %q"transactional"
 
-TABLE_NO_AUTO_COMPACT = %q"no_auto_compaction"
+NO_AUTO_COMPACT = %q"no_auto_compaction"
 
 TABLE_TRANSACTIONAL_PROPERTIES = %q"transactional_properties"
 

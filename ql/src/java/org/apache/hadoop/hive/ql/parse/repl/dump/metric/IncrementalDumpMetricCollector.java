@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
  * Incremental Dump Metric Collector
  */
 public class IncrementalDumpMetricCollector extends ReplicationMetricCollector {
-  public IncrementalDumpMetricCollector(String dbName, String stagingDir, HiveConf conf) {
-    super(dbName, Metadata.ReplicationType.INCREMENTAL, stagingDir, 0, conf);
+  public IncrementalDumpMetricCollector(String dbName, String stagingDir, HiveConf conf, Long executorId) {
+    super(dbName, Metadata.ReplicationType.INCREMENTAL, stagingDir, executorId, conf);
   }
 }

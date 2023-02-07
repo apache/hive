@@ -99,6 +99,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
     overrides.put(MetastoreConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.getVarname(),
         "true");
+    overrides.put(HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS.varname, "false");
     internalBeforeClassSetup(overrides, TestReplicationScenariosAcrossInstances.class);
   }
 
@@ -701,7 +702,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
       replica.load("", "`*`");
       Assert.fail();
     } catch (HiveException e) {
-      assertEquals("MetaException(message:Database name cannot be null.)", e.getMessage());
+      assertEquals("REPL LOAD Target database name shouldn't be null", e.getMessage());
     }
   }
 

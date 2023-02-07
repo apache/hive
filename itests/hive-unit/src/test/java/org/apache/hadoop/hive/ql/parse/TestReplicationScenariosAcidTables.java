@@ -49,7 +49,9 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.EventsDumpMetadata;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -77,6 +79,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
@@ -86,6 +91,8 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_ENABLE_BACKGROUND_THREAD;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -130,6 +137,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("hive.txn.readonly.enabled", "true");
         //HIVE-25267
         put(MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT.getVarname(), "2000");
+        put(HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS.varname, "false");
         put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
         put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
       }};
@@ -397,7 +405,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     dumpPath = new Path(reverseDumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
@@ -625,7 +633,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     dumpAckFile = new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString());
     assertTrue(fs.exists(dumpAckFile));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
@@ -734,7 +742,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Path dumpAckFile = new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString());
     assertTrue(fs.exists(dumpAckFile));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
@@ -748,7 +756,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(preFailoverDumpData.dumpLocation)));
     assertNotEquals(reverseDumpData.dumpLocation, dumpData.dumpLocation);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.INCREMENTAL);
+    assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     assertTrue(fs.exists(dumpAckFile));
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
@@ -2098,7 +2106,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       replica.loadWithoutExplain("", "`*`");
       fail();
     } catch (HiveException e) {
-      assertEquals("MetaException(message:Database name cannot be null.)", e.getMessage());
+      assertEquals("REPL LOAD Target database name shouldn't be null", e.getMessage());
     }
   }
 
@@ -2206,7 +2214,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     fs.delete(lastEvtRoot, true);
     fs.delete(secondLastEvtRoot, true);
     fs.delete(thirdLastEvtRoot, true);
-    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(String.valueOf(lastEventID - 3), ackLastEventID,
+    EventsDumpMetadata eventsDumpMetadata = EventsDumpMetadata.deserialize(ackLastEventID, conf);
+    eventsDumpMetadata.setLastReplId(lastEventID - 3);
+    eventsDumpMetadata.setEventsDumpedCount(eventsDumpMetadata.getEventsDumpedCount() - 3);
+    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(eventsDumpMetadata.serialize(), ackLastEventID,
             primary.hiveConf);
     ReplDumpWork.testDeletePreviousDumpMetaPath(false);
 
@@ -2473,15 +2484,18 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     long fifthLastIncEventID = Long.parseLong(incrementalDump1.lastReplicationId) - 4;
     long lastIncEventID = Long.parseLong(incrementalDump1.lastReplicationId);
     assertTrue(lastIncEventID > fifthLastIncEventID);
-
+    int deletedEventsCount = 0;
     for (long eventId=fifthLastIncEventID + 1; eventId<=lastIncEventID; eventId++) {
       Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventId));
       if (fs.exists(eventRoot)) {
+        deletedEventsCount++;
         fs.delete(eventRoot, true);
       }
     }
-
-    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(String.valueOf(fifthLastIncEventID), ackLastEventID,
+    EventsDumpMetadata eventsDumpMetadata = EventsDumpMetadata.deserialize(ackLastEventID, conf);
+    eventsDumpMetadata.setLastReplId(fifthLastIncEventID);
+    eventsDumpMetadata.setEventsDumpedCount(eventsDumpMetadata.getEventsDumpedCount() - deletedEventsCount);
+    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(eventsDumpMetadata.serialize(), ackLastEventID,
             primary.hiveConf);
 
     ReplDumpWork.testDeletePreviousDumpMetaPath(false);
@@ -3587,5 +3601,139 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertEquals(params.get(REPL_TARGET_DATABASE_PROPERTY),
       updatedParams.get(REPL_TARGET_DATABASE_PROPERTY));
     assertEquals("15", updatedParams.get(REPL_TARGET_DATABASE_PROPERTY));
+  }
+  @Test
+  public void testBatchingOfIncrementalEvents() throws Throwable {
+    final int REPL_MAX_LOAD_TASKS = 5;
+    List<String> incrementalBatchConfigs = Arrays.asList(
+            String.format("'%s'='%s'", HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS, "true"),
+            String.format("'%s'='%d'", HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS, REPL_MAX_LOAD_TASKS)
+    );
+
+    //bootstrap run, config should have no effect
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("create table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .dump(primaryDbName, incrementalBatchConfigs);
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+
+    replica.load(replicatedDbName, primaryDbName, incrementalBatchConfigs)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1"});
+
+    //incremental run
+    WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
+            .run("insert into t1 values(2)")
+            .run("insert into t1 values(3)")
+            .run("insert into t1 values(4)")
+            .run("insert into t1 values(5)")
+            .dump(primaryDbName, incrementalBatchConfigs);
+
+    Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path ackLastEventID = new Path(dumpPath, ReplAck.EVENTS_DUMP.toString());
+    EventsDumpMetadata eventsDumpMetadata = EventsDumpMetadata.deserialize(ackLastEventID, conf);
+    assertTrue(eventsDumpMetadata.isEventsBatched());
+
+    int eventsCountInAckFile = eventsDumpMetadata.getEventsDumpedCount(), expectedEventsCount = 0;
+    String eventsBatchDirPrefix = ReplUtils.INC_EVENTS_BATCH.replaceAll("%d", "");
+
+    List<FileStatus> batchFiles = Arrays.stream(fs.listStatus(dumpPath))
+            .filter(fileStatus -> fileStatus.getPath().getName()
+                    .startsWith(eventsBatchDirPrefix)).collect(Collectors.toList());
+
+
+    for (FileStatus fileStatus : batchFiles) {
+      int eventsPerBatch = fs.listStatus(fileStatus.getPath()).length;
+      assertTrue(eventsPerBatch <= REPL_MAX_LOAD_TASKS);
+      expectedEventsCount += eventsPerBatch;
+    }
+    assertEquals(eventsCountInAckFile, expectedEventsCount);
+
+    // Repl Load should be agnostic of batch size and REPL_BATCH_INCREMENTAL_EVENTS config.
+    // hence not passing incrementalBatchConfigs here.
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2", "3", "4", "5"});
+
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+
+    ReplDumpWork.testDeletePreviousDumpMetaPath(true);
+    //second round of incremental dump.
+    incrementalDump = primary.run("use " + primaryDbName)
+            .run("insert into t1 values(6)")
+            .run("insert into t1 values(7)")
+            .run("insert into t1 values(8)")
+            .run("insert into t1 values(9)")
+            .dump(primaryDbName, incrementalBatchConfigs);
+
+    // simulate a failure in repl dump when batching was enabled.
+    dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    batchFiles = Arrays.stream(fs.listStatus(dumpPath))
+            .filter(fileStatus -> fileStatus.getPath().getName()
+                    .startsWith(eventsBatchDirPrefix))
+            .sorted(new EventDumpDirComparator()).collect(Collectors.toList());
+
+
+    FileStatus lastBatch = batchFiles.get(batchFiles.size() - 1);
+    Path lastBatchPath = lastBatch.getPath();
+
+    FileStatus[] eventsOfLastBatch = fs.listStatus(lastBatchPath);
+    Arrays.sort(eventsOfLastBatch, new EventDumpDirComparator());
+    Map<FileStatus, Long> modificationTimes = batchFiles.stream().filter(file -> !Objects.equals(lastBatch, file))
+            .collect(Collectors.toMap(Function.identity(), FileStatus::getModificationTime));
+
+    long lastReplId = Long.parseLong(eventsOfLastBatch[0].getPath().getName()) - 1;
+    ackLastEventID = new Path(dumpPath, ReplAck.EVENTS_DUMP.toString());
+    eventsDumpMetadata = EventsDumpMetadata.deserialize(ackLastEventID, conf);
+    eventsDumpMetadata.setLastReplId(lastReplId);
+    eventsDumpMetadata.setEventsDumpedCount(eventsDumpMetadata.getEventsDumpedCount() - (eventsOfLastBatch.length - 1));
+    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(eventsDumpMetadata.serialize(),
+            ackLastEventID,
+            primary.hiveConf);
+    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), false);
+    //delete all events of last batch except one.
+    for (int idx = 1; idx < eventsOfLastBatch.length; idx++)
+      fs.delete(eventsOfLastBatch[idx].getPath(), true);
+
+    // when we try to resume a failed dump which was batched without setting REPL_BATCH_INCREMENTAL_EVENTS = true
+    // in the next run dump should fail.
+    primary.dumpFailure(primaryDbName);
+    if (ReplUtils.failedWithNonRecoverableError(dumpPath, conf)) {
+      fs.delete(new Path(dumpPath, ReplAck.NON_RECOVERABLE_MARKER.toString()), false);
+    }
+
+    WarehouseInstance.Tuple dumpAfterFailure = primary.dump(primaryDbName, incrementalBatchConfigs);
+    //ensure dump did recover and dump location of new dump is same as the previous one.
+    assertEquals(dumpAfterFailure.dumpLocation, incrementalDump.dumpLocation);
+
+    List<FileStatus> filesAfterFailedDump = Arrays.stream(fs.listStatus(dumpPath))
+            .filter(fileStatus -> fileStatus.getPath().getName()
+                    .startsWith(eventsBatchDirPrefix))
+            .sorted(new EventDumpDirComparator()).collect(Collectors.toList());
+
+    //ensure all event files are dumped again.
+    assertEquals(batchFiles, filesAfterFailedDump);
+
+    //ensure last batch had events dumped and was indeed modified.
+    assertNotEquals(lastBatch.getModificationTime(),
+            filesAfterFailedDump.get(filesAfterFailedDump.size() - 1).getModificationTime());
+
+    assertArrayEquals(fs.listStatus(lastBatchPath),
+            fs.listStatus(filesAfterFailedDump.get(filesAfterFailedDump.size() - 1).getPath()));
+
+    //ensure remaining batches were not modified.
+    assertTrue(filesAfterFailedDump.stream()
+            .filter(file -> !Objects.equals(file, lastBatch))
+            .allMatch(file -> file.getModificationTime() == modificationTimes.get(file)));
+    //ensure successful repl load.
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9"});
+
+    ReplDumpWork.testDeletePreviousDumpMetaPath(false);
   }
 }

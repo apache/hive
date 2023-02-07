@@ -1133,7 +1133,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (asOfTimeIndex != -1 || asOfVersionIndex != -1) {
       String asOfVersion = asOfVersionIndex == -1 ? null : tabref.getChild(asOfVersionIndex).getChild(0).getText();
-      String asOfTime = asOfTimeIndex == -1 ? null : tabref.getChild(asOfTimeIndex).getChild(0).getText();
+      String asOfTime = null;
+      
+      if (asOfTimeIndex != -1) {
+        ASTNode expr = (ASTNode) tabref.getChild(asOfTimeIndex).getChild(0);
+        if (expr.getChildCount() > 0) {
+          ExprNodeDesc desc = genExprNodeDesc(expr, new RowResolver(), false, true);
+          ExprNodeConstantDesc c = (ExprNodeConstantDesc) desc;
+          asOfTime = String.valueOf(c.getValue());
+        } else {
+          asOfTime = stripQuotes(expr.getText());
+        }
+      }
       Pair<String, String> asOf = Pair.of(asOfVersion, asOfTime);
       qb.setAsOf(alias, asOf);
     }
@@ -7878,6 +7889,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unknown destination type: " + destType);
     }
 
+    if (!(destType == QBMetaData.DEST_DFS_FILE && qb.getIsQuery())
+            && destinationTable != null && destinationTable.getStorageHandler() != null) {
+      try {
+        input = genConversionSelectOperator(
+                dest, qb, input, tableDescriptor.getDeserializer(conf), dpCtx, null, destinationTable);
+      } catch (Exception e) {
+        throw new SemanticException(e);
+      }
+    }
 
     inputRR = opParseCtx.get(input).getRowResolver();
 
@@ -8581,7 +8601,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ColumnInfo> rowFields = opParseCtx.get(input).getRowResolver().getColumnInfos();
     int inColumnCnt = rowFields.size();
     int outColumnCnt = tableFields.size();
-    if (dynPart && dpCtx != null) {
+
+    // if target table is always unpartitioned, then the output object inspector will already contain the partition cols
+    // too, therefore we shouldn't add the partition col num to the output col num
+    boolean alreadyContainsPartCols = Optional.ofNullable(table)
+            .map(Table::getStorageHandler)
+            .map(HiveStorageHandler::alwaysUnpartitioned)
+            .orElse(Boolean.FALSE);
+
+    if (dynPart && dpCtx != null && !alreadyContainsPartCols) {
       outColumnCnt += dpCtx.getNumDPCols();
     }
 

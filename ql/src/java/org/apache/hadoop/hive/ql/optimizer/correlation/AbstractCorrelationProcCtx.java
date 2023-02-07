@@ -37,7 +37,7 @@ abstract class AbstractCorrelationProcCtx implements NodeProcessorCtx {
 
   // This is min number of reducer for deduped RS to avoid query executed on
   // too small number of reducers. For example, queries GroupBy+OrderBy can be executed by
-  // only one reducer if this configuration does not prevents
+  // only one reducer if this configuration does not prevent
   private final int minReducer;
   private final Set<Operator<?>> removedOps;
   private final boolean isMapAggr;

@@ -25,9 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -324,7 +322,7 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
                 equalKeySeriesAllMatchIndices[equalKeySeriesCount] = allMatchCount;
                 equalKeySeriesIsSingleValue[equalKeySeriesCount] = hashMapResults[hashMapResultCount].isSingleRow();
                 equalKeySeriesDuplicateCounts[equalKeySeriesCount] = 1;
-                allMatchs[allMatchCount++] = batchIndex;
+                allMatches[allMatchCount++] = batchIndex;
                 break;
 
               case SPILL:
@@ -344,7 +342,7 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
               switch (saveJoinResult) {
               case MATCH:
                 equalKeySeriesDuplicateCounts[equalKeySeriesCount]++;
-                allMatchs[allMatchCount++] = batchIndex;
+                allMatches[allMatchCount++] = batchIndex;
                 break;
 
               case SPILL:
@@ -377,7 +375,7 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
 
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter +
-              " allMatchs " + intArrayToRangesString(allMatchs,allMatchCount) +
+              " allMatches " + intArrayToRangesString(allMatches,allMatchCount) +
               " equalKeySeriesHashMapResultIndices " + intArrayToRangesString(equalKeySeriesHashMapResultIndices, equalKeySeriesCount) +
               " equalKeySeriesAllMatchIndices " + intArrayToRangesString(equalKeySeriesAllMatchIndices, equalKeySeriesCount) +
               " equalKeySeriesIsSingleValue " + Arrays.toString(Arrays.copyOfRange(equalKeySeriesIsSingleValue, 0, equalKeySeriesCount)) +
