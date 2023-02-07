@@ -576,7 +576,7 @@ public class Initiator extends MetaStoreCompactorThread {
             return true;
           }
         } catch (IOException e) {
-          LOG.error("Error occured during checking bucket file sizes, rebalance threshold calculation is skipped.", e);
+          LOG.error("Error occurred during checking bucket file sizes, rebalance threshold calculation is skipped.", e);
         }
       } else {
         LOG.debug("Table is smaller than the minimum required size for REBALANCE compaction.");

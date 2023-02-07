@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
  * This rule is similar to {@link org.apache.calcite.rel.rules.SemiJoinProjectTransposeRule}.
  * However, it works on Hive nodes rather than logical nodes.
  *
- * <p>The rule pushes a Semijoin down in a tree past a Project if the
+ * <p>The rule pushes a Semi-join down in a tree past a Project if the
  * Project is followed by a Join. The intention is to remove Projects
  * between Joins.
  *
@@ -66,7 +66,7 @@ public class HiveSemiJoinProjectTransposeRule extends RelOptRule {
   }
 
   //~ Methods ----------------------------------------------------------------
-
+  @Override
   public void onMatch(RelOptRuleCall call) {
     Join semiJoin = call.rel(0);
     Project project = call.rel(1);
@@ -75,7 +75,7 @@ public class HiveSemiJoinProjectTransposeRule extends RelOptRule {
     // expression; all projection expressions must be RexInputRefs,
     // otherwise, we wouldn't have created this semi-join.
 
-    // convert the semijoin condition to reflect the LHS with the project
+    // convert the semi-join condition to reflect the LHS with the project
     // pulled up
     RexNode newCondition = adjustCondition(project, semiJoin);
 
@@ -85,7 +85,7 @@ public class HiveSemiJoinProjectTransposeRule extends RelOptRule {
 
     // Create the new projection.  Note that the projection expressions
     // are the same as the original because they only reference the LHS
-    // of the semijoin and the semijoin only projects out the LHS
+    // of the semi-join and the semi-join only projects out the LHS
     final RelBuilder relBuilder = call.builder();
     relBuilder.push(newSemiJoin);
     relBuilder.project(project.getProjects(), project.getRowType().getFieldNames());
@@ -105,15 +105,15 @@ public class HiveSemiJoinProjectTransposeRule extends RelOptRule {
    */
   private RexNode adjustCondition(Project project, Join semiJoin) {
     // create two RexPrograms -- the bottom one representing a
-    // concatenation of the project and the RHS of the semijoin and the
-    // top one representing the semijoin condition
+    // concatenation of the project and the RHS of the semi-join and the
+    // top one representing the semi-join condition
 
     RexBuilder rexBuilder = project.getCluster().getRexBuilder();
     RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
     RelNode rightChild = semiJoin.getRight();
 
     // for the bottom RexProgram, the input is a concatenation of the
-    // child of the project and the RHS of the semijoin
+    // child of the project and the RHS of the semi-join
     RelDataType bottomInputRowType =
         SqlValidatorUtil.deriveJoinRowType(
             project.getInput().getRowType(),
@@ -126,7 +126,7 @@ public class HiveSemiJoinProjectTransposeRule extends RelOptRule {
         new RexProgramBuilder(bottomInputRowType, rexBuilder);
 
     // add the project expressions, then add input references for the RHS
-    // of the semijoin
+    // of the semi-join
     for (Pair<RexNode, String> pair : project.getNamedProjects()) {
       bottomProgramBuilder.addProject(pair.left, pair.right);
     }
@@ -143,8 +143,8 @@ public class HiveSemiJoinProjectTransposeRule extends RelOptRule {
     }
     RexProgram bottomProgram = bottomProgramBuilder.getProgram();
 
-    // input rowtype into the top program is the concatenation of the
-    // project and the RHS of the semijoin
+    // input rowType into the top program is the concatenation of the
+    // project and the RHS of the semi-join
     RelDataType topInputRowType =
         SqlValidatorUtil.deriveJoinRowType(
             project.getRowType(),
@@ -162,8 +162,8 @@ public class HiveSemiJoinProjectTransposeRule extends RelOptRule {
     RexProgram topProgram = topProgramBuilder.getProgram();
 
     // merge the programs and expand out the local references to form
-    // the new semijoin condition; it now references a concatenation of
-    // the project's child and the RHS of the semijoin
+    // the new semi-join condition; it now references a concatenation of
+    // the project's child and the RHS of the semi-join
     RexProgram mergedProgram =
         RexProgramBuilder.mergePrograms(
             topProgram,

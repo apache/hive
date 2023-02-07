@@ -272,7 +272,7 @@ public final class ParquetDataColumnReaderFactory {
     }
 
     /**
-     * Enforce the max legnth of varchar or char.
+     * Enforce the max length of varchar or char.
      */
     protected String enforceMaxLength(String value) {
       return HiveBaseChar.enforceMaxLength(value, length);
@@ -1909,8 +1909,8 @@ public final class ParquetDataColumnReaderFactory {
     case INT96:
       ZoneId targetZone =
           skipTimestampConversion ? ZoneOffset.UTC : firstNonNull(writerTimezone, TimeZone.getDefault().toZoneId());
-      return isDictionary ? 
-          new TypesFromInt96PageReader(dictionary, length, targetZone, legacyConversionEnabled) : 
+      return isDictionary ?
+          new TypesFromInt96PageReader(dictionary, length, targetZone, legacyConversionEnabled) :
           new TypesFromInt96PageReader(valuesReader, length, targetZone, legacyConversionEnabled);
     case BOOLEAN:
       return isDictionary ? new TypesFromBooleanPageReader(dictionary, length) : new

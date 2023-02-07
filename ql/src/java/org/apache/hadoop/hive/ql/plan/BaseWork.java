@@ -56,7 +56,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   protected static final Logger LOG = LoggerFactory.getLogger(BaseWork.class);
 
   // dummyOps is a reference to all the HashTableDummy operators in the
-  // plan. These have to be separately initialized when we setup a task.
+  // plan. These have to be separately initialized when we set up a task.
   // Their function is mainly as root ops to give the mapjoin the correct
   // schema info.
   List<HashTableDummyOperator> dummyOps;

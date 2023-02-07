@@ -210,7 +210,7 @@ public class ListIndexColColumn extends VectorExpression {
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /*
-     * Same LIST for entire batch. Still need to validate the LIST upper limit against varing
+     * Same LIST for entire batch. Still need to validate the LIST upper limit against varying
      * INDEX.
      *
      * (Repeated INDEX case handled above).

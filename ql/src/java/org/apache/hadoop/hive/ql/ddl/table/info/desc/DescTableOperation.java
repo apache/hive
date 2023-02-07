@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter.DescTableFormatter;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -244,7 +243,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     StatObjectConverter.fillColumnStatisticsData(partCol.getType(), data, r == null ? null : r.minValue,
         r == null ? null : r.maxValue, r == null ? null : r.minValue, r == null ? null : r.maxValue,
         r == null ? null : r.minValue.toString(), r == null ? null : r.maxValue.toString(),
-        cs.getNumNulls(), cs.getCountDistint(), null, null, cs.getAvgColLen(),
+        cs.getNumNulls(), cs.getCountDistinct(), null, null, cs.getAvgColLen(),
         cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
     ColumnStatisticsObj cso = new ColumnStatisticsObj(partCol.getName(), partCol.getType(), data);
     colStats.add(cso);

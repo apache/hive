@@ -31,7 +31,7 @@ public interface StatEstimator {
   /**
    * Computes the output statistics of the actual UDF.
    *
-   * The estimator should return with a prefereably overestimated {@link ColStatistics} object if possible.
+   * The estimator should return with a preferably overestimated {@link ColStatistics} object if possible.
    * The actual estimation logic may decide to not give an estimation; it should return with {@link Optional#empty()}.
    *
    * Note: at the time of the call there will be {@link ColStatistics} for all the arguments; if that is not available - the estimation is skipped.

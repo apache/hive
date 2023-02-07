@@ -511,7 +511,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           new String[] { TARGET_OF_REPLICATION, CURR_STATE_ID_TARGET.toString(), CURR_STATE_ID_SOURCE.toString(),
               REPL_TARGET_DB_PROPERTY }), work.dbNameOrPattern);
       hiveDb.alterDatabase(work.dbNameOrPattern, database);
-      LOG.debug("Database {} paramas after removal {}", work.dbNameOrPattern, dbParams);
+      LOG.debug("Database {} params after removal {}", work.dbNameOrPattern, dbParams);
     }
     Utils.create(dumpAckFile, conf);
     prepareReturnValues(work.getResultValues());
@@ -765,7 +765,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return !ReplUtils.tableIncludedInReplScope(work.oldReplScope, table.getTableName());
   }
 
-  private boolean isTableSatifiesConfig(Table table) {
+  private boolean isTableSatisfiesConfig(Table table) {
     if (table == null) {
       return false;
     }
@@ -1050,7 +1050,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                 dumpTable(exportService, matchedDbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
                         hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
               }
-              if (tableList != null && isTableSatifiesConfig(table)) {
+              if (tableList != null && isTableSatisfiesConfig(table)) {
                 tableList.add(tableName);
               }
             } catch (InvalidTableException te) {
@@ -1371,7 +1371,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               LOG.debug(te.getMessage());
             }
             dumpConstraintMetadata(dbName, tblName, dbRoot, hiveDb, table != null ? table.getTTable().getId() : -1);
-            if (tableList != null && isTableSatifiesConfig(table)) {
+            if (tableList != null && isTableSatisfiesConfig(table)) {
               tableList.add(tblName);
             }
           }
@@ -1615,7 +1615,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // phase won't be able to replicate those txns. So, the logic is to wait for the given amount
     // of time to see if all open txns < current txn is getting aborted/committed. If not, then
     // we forcefully abort those txns just like AcidHouseKeeperService.
-    //Exclude readonly and repl created tranasactions
+    //Exclude readonly and repl created transactions
     HiveTxnManager hiveTxnManager = getTxnMgr();
     ValidTxnList validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
     while (System.currentTimeMillis() < waitUntilTime) {

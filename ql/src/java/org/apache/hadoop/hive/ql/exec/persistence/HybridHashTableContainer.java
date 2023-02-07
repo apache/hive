@@ -468,7 +468,7 @@ public class HybridHashTableContainer
       if (hp.hashMap != null) {
         memUsed += hp.hashMap.memorySize();
       } else {
-        // also include the still-in-memory sidefile, before it has been truely spilled
+        // also include the still-in-memory sidefile, before it has been truly spilled
         if (hp.sidefileKVContainer != null) {
           memUsed += hp.sidefileKVContainer.numRowsInReadBuffer() * tableRowSize;
         }
@@ -627,7 +627,7 @@ public class HybridHashTableContainer
       }
     }
 
-    // It can happen that although there're some partitions in memory, but their sizes are all 0.
+    // It can happen that although there are some partitions in memory, but their sizes are all 0.
     // In that case we just pick one and spill.
     if (res == -1) {
       for (int i = 0; i < hashPartitions.length; i++) {

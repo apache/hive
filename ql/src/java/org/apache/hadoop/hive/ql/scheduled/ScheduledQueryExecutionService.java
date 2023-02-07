@@ -80,7 +80,7 @@ public class ScheduledQueryExecutionService implements Closeable {
     synchronized (ScheduledQueryExecutionService.class) {
       if (INSTANCE != null) {
         throw new IllegalStateException(
-            "There is already a ScheduledQueryExecutionService in service; check it and close it explicitly if neccessary");
+            "There is already a ScheduledQueryExecutionService in service; check it and close it explicitly if necessary");
       }
       INSTANCE = new ScheduledQueryExecutionService(ctx);
       return INSTANCE;

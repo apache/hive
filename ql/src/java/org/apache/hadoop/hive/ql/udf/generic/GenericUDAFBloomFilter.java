@@ -292,7 +292,7 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
                 sourceOperator.getConf().getColList().get(0));
             if (colExpr != null
                 && stats.getColumnStatisticsFromColName(colExpr.getColumn()) != null) {
-              long ndv = stats.getColumnStatisticsFromColName(colExpr.getColumn()).getCountDistint();
+              long ndv = stats.getColumnStatisticsFromColName(colExpr.getColumn()).getCountDistinct();
               if (ndv > 0) {
                 expectedEntries = ndv;
               }

@@ -1454,7 +1454,7 @@ class EncodedReaderImpl implements EncodedReader {
       BufferChunk chunk = (i == 0) ? candidateCached.getChunk() : (BufferChunk)next;
       dest.put(chunk.getData());
       if (isValid) {
-        trace.logValidUncompresseedChunk(startLim - startPos, chunk);
+        trace.logValidUncompressedChunk(startLim - startPos, chunk);
       }
       next = chunk.next;
       if (i == 0) {

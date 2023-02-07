@@ -296,7 +296,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         LOG.warn("A timed out copmaction pool entry ({}) is picked up by one of the default compaction pool workers.", ci);
       }
       if (StringUtils.isNotBlank(getPoolName()) && StringUtils.isNotBlank(ci.poolName) && !getPoolName().equals(ci.poolName)) {
-        LOG.warn("The returned compaction request ({}) belong to a different pool. Altough the worker is assigned to the {} pool," +
+        LOG.warn("The returned compaction request ({}) belong to a different pool. Although the worker is assigned to the {} pool," +
             " it will process the request.", ci, getPoolName());
       }
       checkInterrupt();

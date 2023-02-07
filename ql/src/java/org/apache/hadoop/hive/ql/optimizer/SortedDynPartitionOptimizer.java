@@ -870,7 +870,7 @@ public class SortedDynPartitionOptimizer extends Transform {
           // statistics for this partition are for some reason not available
           return true;
         }
-        partCardinality = partCardinality * partStats.getCountDistint();
+        partCardinality = partCardinality * partStats.getCountDistinct();
       }
 
       if (MAX_WRITERS < 0) {

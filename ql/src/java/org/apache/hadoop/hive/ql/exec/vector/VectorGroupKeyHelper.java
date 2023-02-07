@@ -40,7 +40,7 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
 
   void init(VectorExpression[] keyExpressions) throws HiveException {
 
-    // NOTE: To support pruning the grouping set id dummy key by VectorGroupbyOpeator MERGE_PARTIAL
+    // NOTE: To support pruning the grouping set id dummy key by VectorGroupByOperator MERGE_PARTIAL
     // case, we use the keyCount passed to the constructor and not keyExpressions.length.
 
     // Inspect the output type of each key expression.  And, remember the output columns.
@@ -62,7 +62,7 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
   /*
    * This helper method copies the group keys from one vectorized row batch to another,
    * but does not increment the outputBatch.size (i.e. the next output position).
-   * 
+   *
    * It was designed for VectorGroupByOperator's sorted reduce group batch processing mode
    * to copy the group keys at startGroup.
    */
@@ -75,7 +75,7 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       LongColumnVector inputColumnVector = (LongColumnVector) inputBatch.cols[inputColumnNum];
       LongColumnVector outputColumnVector = (LongColumnVector) outputBatch.cols[outputColumnNum];
 
-      // This vectorized code pattern says: 
+      // This vectorized code pattern says:
       //    If the input batch has no nulls at all (noNulls is true) OR
       //    the input row is NOT NULL, copy the value.
       //

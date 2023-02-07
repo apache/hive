@@ -41,8 +41,8 @@ public class PessimisticStatCombiner {
       if (stat.getAvgColLen() > result.getAvgColLen()) {
         result.setAvgColLen(stat.getAvgColLen());
       }
-      if (stat.getCountDistint() > result.getCountDistint()) {
-        result.setCountDistint(stat.getCountDistint());
+      if (stat.getCountDistinct() > result.getCountDistinct()) {
+        result.setCountDistinct(stat.getCountDistinct());
       }
       if (stat.getNumNulls() > result.getNumNulls()) {
         result.setNumNulls(stat.getNumNulls());

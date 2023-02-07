@@ -615,7 +615,7 @@ public class TestStatsRulesProcFactory {
     ColStatistics colStatistics = new ColStatistics(colName, colType);
 
     colStatistics.setNumNulls(numNulls);
-    colStatistics.setCountDistint(numDVs);
+    colStatistics.setCountDistinct(numDVs);
     if (hll != null) {
       if (hll instanceof HyperLogLog) {
         colStatistics.setBitVectors(((HyperLogLog) hll).serialize());

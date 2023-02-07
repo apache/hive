@@ -51,7 +51,7 @@ public class HiveProjectMergeRule extends ProjectMergeRule {
 
   @Override
   public boolean matches(RelOptRuleCall call) {
-    // Currently we do not support merging windowing functions with other
+    // Currently, we do not support merging windowing functions with other
     // windowing functions i.e. embedding windowing functions within each
     // other
     final Project topProject = call.rel(0);

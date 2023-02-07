@@ -103,7 +103,7 @@ public final class EstimateUniqueKeys {
     for (ColStatistics cStat : colStats) {
       boolean isKey = false;
       if (!cStat.isEstimated()) {
-        if (cStat.getCountDistint() >= numRows) {
+        if (cStat.getCountDistinct() >= numRows) {
           isKey = true;
         }
         if (!isKey && cStat.getRange() != null && cStat.getRange().maxValue != null

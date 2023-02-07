@@ -78,7 +78,7 @@ public class HiveRelJsonImpl extends RelJsonWriter {
       for (ColStatistics cs : colStats) {
         final Map<String, Object> csMap = jsonBuilder.map();
         csMap.put("name", cs.getColumnName());
-        csMap.put("ndv", cs.getCountDistint());
+        csMap.put("ndv", cs.getCountDistinct());
         if (cs.getRange() != null) {
           csMap.put("minValue", cs.getRange().minValue);
           csMap.put("maxValue", cs.getRange().maxValue);

@@ -485,7 +485,7 @@ public class StatsUtils {
   public static void inferAndSetPrimaryKey(long numRows, List<ColStatistics> colStats) {
     if (colStats != null) {
       for (ColStatistics cs : colStats) {
-        if (cs != null && cs.getCountDistint() >= numRows) {
+        if (cs != null && cs.getCountDistinct() >= numRows) {
           cs.setPrimaryKey(true);
         }
         else if (cs != null && cs.getRange() != null && cs.getRange().minValue != null &&
@@ -601,7 +601,7 @@ public class StatsUtils {
         .getTypeName());
     long numPartitions = getNDVPartitionColumn(partList,
         ci.getInternalName());
-    partCS.setCountDistint(numPartitions);
+    partCS.setCountDistinct(numPartitions);
     partCS.setAvgColLen(StatsUtils.getAvgColLenOf(conf,
         ci.getObjectInspector(), partCS.getColumnType()));
     partCS.setRange(getRangePartitionColumn(partList, ci.getInternalName(),
@@ -859,28 +859,28 @@ public class StatsUtils {
     if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getLongStats().getNumDVs());
+      cs.setCountDistinct(csd.getLongStats().getNumDVs());
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
       cs.setBitVectors(csd.getLongStats().getBitVectors());
       cs.setHistogram(csd.getLongStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getLongStats().getNumDVs());
+      cs.setCountDistinct(csd.getLongStats().getNumDVs());
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
       cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
       cs.setBitVectors(csd.getLongStats().getBitVectors());
       cs.setHistogram(csd.getLongStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getDoubleStats().getNumDVs());
+      cs.setCountDistinct(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
       cs.setBitVectors(csd.getDoubleStats().getBitVectors());
       cs.setHistogram(csd.getDoubleStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
-      cs.setCountDistint(csd.getDoubleStats().getNumDVs());
+      cs.setCountDistinct(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
       cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
@@ -889,15 +889,15 @@ public class StatsUtils {
     } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
-      cs.setCountDistint(csd.getStringStats().getNumDVs());
+      cs.setCountDistinct(csd.getStringStats().getNumDVs());
       cs.setNumNulls(csd.getStringStats().getNumNulls());
       cs.setAvgColLen(csd.getStringStats().getAvgColLen());
       cs.setBitVectors(csd.getStringStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
       if (csd.getBooleanStats().getNumFalses() > 0 && csd.getBooleanStats().getNumTrues() > 0) {
-        cs.setCountDistint(2);
+        cs.setCountDistinct(2);
       } else {
-        cs.setCountDistint(1);
+        cs.setCountDistinct(1);
       }
       cs.setNumTrues(csd.getBooleanStats().getNumTrues());
       cs.setNumFalses(csd.getBooleanStats().getNumFalses());
@@ -919,7 +919,7 @@ public class StatsUtils {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
     } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDecimal());
-      cs.setCountDistint(csd.getDecimalStats().getNumDVs());
+      cs.setCountDistinct(csd.getDecimalStats().getNumDVs());
       cs.setNumNulls(csd.getDecimalStats().getNumNulls());
       Decimal highValue = csd.getDecimalStats().getHighValue();
       Decimal lowValue = csd.getDecimalStats().getLowValue();
@@ -965,7 +965,7 @@ public class StatsUtils {
     float ndvPercent = Math.min(100L, HiveConf.getFloatVar(conf, ConfVars.HIVE_STATS_NDV_ESTIMATE_PERC));
     float nullPercent = Math.min(100L, HiveConf.getFloatVar(conf, ConfVars.HIVE_STATS_NUM_NULLS_ESTIMATE_PERC));
 
-    cs.setCountDistint(Math.max(1, (long)(numRows * ndvPercent/100.00)));
+    cs.setCountDistinct(Math.max(1, (long)(numRows * ndvPercent/100.00)));
     cs.setNumNulls(Math.min(numRows, (long)(numRows * nullPercent/100.00)));
 
     if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)){
@@ -993,7 +993,7 @@ public class StatsUtils {
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
       cs.setAvgColLen(getAvgColLenOf(conf,cinfo.getObjectInspector(), cinfo.getTypeName()));
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
-        cs.setCountDistint(2);
+        cs.setCountDistinct(2);
         cs.setNumTrues(Math.max(1, numRows/2));
         cs.setNumFalses(Math.max(1, numRows/2));
         cs.setAvgColLen(JavaDataModel.get().primitive1());
@@ -1666,7 +1666,7 @@ public class StatsUtils {
     avgColSize = getAvgColLenOf(conf, oi, colType);
     ColStatistics colStats = new ColStatistics(colName, colType);
     colStats.setAvgColLen(avgColSize);
-    colStats.setCountDistint(countDistincts);
+    colStats.setCountDistinct(countDistincts);
     colStats.setNumNulls(numNulls);
 
     return colStats;
@@ -1688,7 +1688,7 @@ public class StatsUtils {
     double avgColSize = getAvgColLenOf(conf, oi, colType);
     ColStatistics colStats = new ColStatistics(encd.getName(), colType);
     colStats.setAvgColLen(avgColSize);
-    colStats.setCountDistint(countDistincts);
+    colStats.setCountDistinct(countDistincts);
     colStats.setNumNulls(numNulls);
 
     Optional<Number> value = getConstValue(encd);
@@ -1762,7 +1762,7 @@ public class StatsUtils {
       for (String col : engfd.getCols()) {
         ColStatistics stats = parentStats.getColumnStatisticsFromColName(col);
         if (stats != null) {
-          ndvs.add(stats.getCountDistint());
+          ndvs.add(stats.getCountDistinct());
         }
       }
     }
@@ -2090,7 +2090,7 @@ public class StatsUtils {
     if (useColStats) {
       List<ColStatistics> colStats = stats.getColumnStats();
       for (ColStatistics cs : colStats) {
-        long oldDV = cs.getCountDistint();
+        long oldDV = cs.getCountDistinct();
         if (affectedColumns.contains(cs.getColumnName())) {
           long newDV = oldDV;
 
@@ -2101,12 +2101,12 @@ public class StatsUtils {
           if (ratio <= 1.0) {
             newDV = (long) Math.ceil(ratio * oldDV);
           }
-          cs.setCountDistint(newDV);
+          cs.setCountDistinct(newDV);
           cs.setFilterColumn();
           oldDV = newDV;
         }
         if (oldDV > newNumRows) {
-          cs.setCountDistint(newNumRows);
+          cs.setCountDistinct(newNumRows);
         }
         long newNumNulls = Math.round(ratio * cs.getNumNulls());
         cs.setNumNulls(newNumNulls > newNumRows ? newNumRows: newNumNulls);
@@ -2126,8 +2126,8 @@ public class StatsUtils {
       cs.setNumTrues(StatsUtils.safeMult(cs.getNumTrues(), factor));
       cs.setNumNulls(StatsUtils.safeMult(cs.getNumNulls(), factor));
       if (factor < 1.0) {
-        final double newNDV = Math.ceil(cs.getCountDistint() * factor);
-        cs.setCountDistint(newNDV > Long.MAX_VALUE ? Long.MAX_VALUE : (long) newNDV);
+        final double newNDV = Math.ceil(cs.getCountDistinct() * factor);
+        cs.setCountDistinct(newNDV > Long.MAX_VALUE ? Long.MAX_VALUE : (long) newNDV);
       }
     }
   }
@@ -2156,7 +2156,7 @@ public class StatsUtils {
     // compute product of distinct values of grouping columns
     for (ColStatistics cs : colStats) {
       if (cs != null) {
-        long ndv = cs.getCountDistint();
+        long ndv = cs.getCountDistinct();
         if (cs.getNumNulls() > 0) {
           ndv = StatsUtils.safeAdd(ndv, 1);
         }

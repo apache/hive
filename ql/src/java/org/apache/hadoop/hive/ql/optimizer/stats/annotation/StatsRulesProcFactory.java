@@ -551,7 +551,7 @@ public class StatsRulesProcFactory {
         factor *= children.size() - 1;
       }
       for (int i = 0; i < columnStats.size(); i++) {
-        long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
+        long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistinct();
         long intersectionSize = estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
         // (num of distinct vals for col in IN clause  / num of distinct vals for col )
         double columnFactor = dvs == 0 ? 0.5d : (1.0d / dvs);
@@ -1404,7 +1404,7 @@ public class StatsRulesProcFactory {
 
               ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
-                long dvs = cs.getCountDistint();
+                long dvs = cs.getCountDistinct();
                 numRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
                 return numRows;
               }
@@ -1425,7 +1425,7 @@ public class StatsRulesProcFactory {
 
                 ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
                 if (cs != null) {
-                  long dvs = cs.getCountDistint();
+                  long dvs = cs.getCountDistinct();
                   numRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
                   return numRows;
                 }
@@ -1471,7 +1471,7 @@ public class StatsRulesProcFactory {
 
   /**
    * GROUPBY operator changes the number of rows. The number of rows emitted by GBY operator will be
-   * atleast 1 or utmost T(R) (number of rows in relation T) based on the aggregation. A better
+   * at least 1 or utmost T(R) (number of rows in relation T) based on the aggregation. A better
    * estimate can be found if we have column statistics on the columns that we are grouping on.
    * <p>
    * Suppose if we are grouping by attributes A,B,C and if statistics for columns A,B,C are
@@ -1617,7 +1617,7 @@ public class StatsRulesProcFactory {
         }
         final long maxColumnNDV = colStats.stream()
                 .filter(Objects::nonNull)
-                .mapToLong(ColStatistics::getCountDistint)
+                .mapToLong(ColStatistics::getCountDistinct)
                 .max()
                 .orElse(-1);
         if (interReduction) {
@@ -1754,7 +1754,7 @@ public class StatsRulesProcFactory {
             String colName = ci.getInternalName();
             String colType = ci.getTypeName();
             ColStatistics cs = new ColStatistics(colName, colType);
-            cs.setCountDistint(stats.getNumRows());
+            cs.setCountDistinct(stats.getNumRows());
             cs.setNumNulls(0);
             cs.setAvgColLen(StatsUtils.getAvgColLenOf(conf, ci.getObjectInspector(), colType));
             computeAggregateColumnMinMax(cs, conf, aggDesc.get(idx++), colType, parentStats);
@@ -1802,7 +1802,7 @@ public class StatsRulesProcFactory {
         if (parentCS != null && parentCS.getRange() != null &&
             parentCS.getRange().minValue != null && parentCS.getRange().maxValue != null) {
           long valuesCount = agg.getDistinct() ?
-              parentCS.getCountDistint() :
+              parentCS.getCountDistinct() :
               parentStats.getNumRows() - parentCS.getNumNulls();
           Range range = parentCS.getRange();
           // Get the aggregate function matching the name in the query.
@@ -1905,7 +1905,7 @@ public class StatsRulesProcFactory {
         long avgKeySize = 0;
         for (ColStatistics cs : colStats) {
           if (cs != null) {
-            numEstimatedRows = StatsUtils.safeMult(numEstimatedRows, cs.getCountDistint());
+            numEstimatedRows = StatsUtils.safeMult(numEstimatedRows, cs.getCountDistinct());
             avgKeySize += Math.ceil(cs.getAvgColLen());
           }
         }
@@ -2114,7 +2114,7 @@ public class StatsRulesProcFactory {
               String col = joinKeys.get(i).get(idx);
               ColStatistics cs = joinStats.get(i).getColumnStatisticsFromColName(col);
               if (cs != null) {
-                perAttrDVs.add(cs.getCountDistint());
+                perAttrDVs.add(cs.getCountDistinct());
               }
             }
             distinctVals.add(getDenominator(perAttrDVs));
@@ -2318,7 +2318,7 @@ public class StatsRulesProcFactory {
       for (String col: joinKeys) {
         ColStatistics cs = statistics.getColumnStatisticsFromColName(col);
         if (cs != null) {
-          distinctVals.add(cs.getCountDistint());
+          distinctVals.add(cs.getCountDistinct());
         }
       }
       // Compute the number of distinct values based on configuration property
@@ -2449,11 +2449,11 @@ public class StatsRulesProcFactory {
           rowCounts.add(newrows);
 
           // 2.1 The ndv is the minimum of the PK and the FK.
-          distinctVals.add(Math.min(csFK.getCountDistint(), csPK.getCountDistint()));
+          distinctVals.add(Math.min(csFK.getCountDistinct(), csPK.getCountDistinct()));
         } else {
           // 2.2 All the other FKs.
           rowCounts.add(parentStats.getNumRows());
-          distinctVals.add(csFK.getCountDistint());
+          distinctVals.add(csFK.getCountDistinct());
         }
       }
       long newNumRows;
@@ -2709,7 +2709,7 @@ public class StatsRulesProcFactory {
       for (ColStatistics cs : colStats) {
         colNameStatsAvailable.add(cs.getColumnName());
         int pos = jop.getConf().getReversedExprs().get(cs.getColumnName());
-        long oldDV = cs.getCountDistint();
+        long oldDV = cs.getCountDistinct();
 
         boolean useCalciteForNdvReadjustment
             = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_JOIN_NDV_READJUSTMENT);
@@ -2730,7 +2730,7 @@ public class StatsRulesProcFactory {
             newDV = (long) Math.ceil(ratio * oldDV);
           }
         }
-        cs.setCountDistint(newDV);
+        cs.setCountDistinct(newDV);
         updateNumNulls(cs, leftUnmatchedRows, rightUnmatchedRows, newNumRows, pos, jop);
       }
       stats.setColumnStats(colStats);
@@ -2838,8 +2838,8 @@ public class StatsRulesProcFactory {
           int pos = entry.getKey();
           String key = entry.getValue().get(joinColIdx);
           ColStatistics cs = joinStats.get(pos).getColumnStatisticsFromColName(key);
-          if (cs != null && cs.getCountDistint() < minNDV) {
-            minNDV = cs.getCountDistint();
+          if (cs != null && cs.getCountDistinct() < minNDV) {
+            minNDV = cs.getCountDistinct();
           }
         }
 
@@ -2850,7 +2850,7 @@ public class StatsRulesProcFactory {
             String key = entry.getValue().get(joinColIdx);
             ColStatistics cs = joinStats.get(pos).getColumnStatisticsFromColName(key);
             if (cs != null) {
-              cs.setCountDistint(minNDV);
+              cs.setCountDistinct(minNDV);
             }
           }
         }

@@ -187,11 +187,11 @@ public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
           ExprNodeDesc realCol = parentRS.getColumnExprMap().get(prefix + "." + keyCol);
           ColStatistics cs =
               StatsUtils.getColStatisticsFromExpression(context.conf, stats, realCol);
-          if (cs == null || cs.getCountDistint() <= 0) {
+          if (cs == null || cs.getCountDistinct() <= 0) {
             maxKeyCount = Long.MAX_VALUE;
             break;
           }
-          maxKeyCount *= cs.getCountDistint();
+          maxKeyCount *= cs.getCountDistinct();
           if (maxKeyCount >= keyCount) {
             break;
           }
