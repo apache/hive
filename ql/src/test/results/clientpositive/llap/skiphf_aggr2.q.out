@@ -1,0 +1,123 @@
+PREHOOK: query: DROP TABLE IF EXISTS hf1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS hf1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hf1 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.header.line.count'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hf1
+POSTHOOK: query: CREATE TABLE hf1 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.header.line.count'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hf1
+PREHOOK: query: INSERT OVERWRITE TABLE hf1 VALUES ('x','y'),('a','b'),('c','d')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hf1
+POSTHOOK: query: INSERT OVERWRITE TABLE hf1 VALUES ('x','y'),('a','b'),('c','d')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hf1
+POSTHOOK: Lineage: hf1.a SCRIPT []
+POSTHOOK: Lineage: hf1.b SCRIPT []
+PREHOOK: query: SELECT * FROM hf1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hf1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hf1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hf1
+#### A masked pattern was here ####
+a	b
+c	d
+PREHOOK: query: DROP TABLE IF EXISTS hf2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS hf2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hf2 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.footer.line.count'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hf2
+POSTHOOK: query: CREATE TABLE hf2 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.footer.line.count'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hf2
+PREHOOK: query: INSERT OVERWRITE TABLE hf2 VALUES ('x','y'),('a','b'),('c','d')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hf2
+POSTHOOK: query: INSERT OVERWRITE TABLE hf2 VALUES ('x','y'),('a','b'),('c','d')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hf2
+POSTHOOK: Lineage: hf2.a SCRIPT []
+POSTHOOK: Lineage: hf2.b SCRIPT []
+PREHOOK: query: SELECT * FROM hf2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hf2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hf2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hf2
+#### A masked pattern was here ####
+x	y
+PREHOOK: query: DROP TABLE IF EXISTS hf3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS hf3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hf3 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.header.line.count'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hf3
+POSTHOOK: query: CREATE TABLE hf3 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.header.line.count'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hf3
+PREHOOK: query: INSERT OVERWRITE TABLE hf3 VALUES ('x','y'),('a','b'),('c','d')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hf3
+POSTHOOK: query: INSERT OVERWRITE TABLE hf3 VALUES ('x','y'),('a','b'),('c','d')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hf3
+POSTHOOK: Lineage: hf3.a SCRIPT []
+POSTHOOK: Lineage: hf3.b SCRIPT []
+PREHOOK: query: SELECT * FROM hf3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hf3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hf3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hf3
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE IF EXISTS hf4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS hf4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hf4 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.header.line.count'='1','skip.footer.line.count'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hf4
+POSTHOOK: query: CREATE TABLE hf4 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.header.line.count'='1','skip.footer.line.count'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hf4
+PREHOOK: query: INSERT OVERWRITE TABLE hf4 VALUES ('x','y'),('a','b'),('c','d')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hf4
+POSTHOOK: query: INSERT OVERWRITE TABLE hf4 VALUES ('x','y'),('a','b'),('c','d')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hf4
+POSTHOOK: Lineage: hf4.a SCRIPT []
+POSTHOOK: Lineage: hf4.b SCRIPT []
+PREHOOK: query: SELECT * FROM hf4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hf4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hf4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hf4
+#### A masked pattern was here ####
