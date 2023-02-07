@@ -99,6 +99,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
     overrides.put(MetastoreConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.getVarname(),
         "true");
+    overrides.put(HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS.varname, "false");
     internalBeforeClassSetup(overrides, TestReplicationScenariosAcrossInstances.class);
   }
 
