@@ -5256,7 +5256,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       QBParseInfo qbPI = qb.getParseInfo();
       Map<ASTNode, String> exprToAlias = qbPI.getAllExprToColumnAlias();
       /*
-       * a mouthful, but safe: - a QB is guaranteed to have atleast 1
+       * a mouthful, but safe: - a QB is guaranteed to have at least 1
        * destination - we don't support multi insert, so picking the first dest.
        */
       Set<String> aggExprs = qbPI.getDestToAggregationExprs().values().iterator().next().keySet();

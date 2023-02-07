@@ -118,7 +118,7 @@ public class CastDecimalToDecimal extends VectorExpression {
       } else {
         if (!outputColVector.noNulls) {
 
-          // Assume it is almost always a performance win to fill all of isNull so we can
+          // Assume it is almost always a performance win to fill all of isNull, so we can
           // safely reset noNulls.
           Arrays.fill(outputIsNull, false);
           outputColVector.noNulls = true;

@@ -208,7 +208,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
    * 3. merge task followed by a move task.
    * It used to be true for dynamic partition only since static partition doesn't have #3.
    * It changes w/ list bucketing. Static partition has #3 since it has sub-directories.
-   * For example, if a static partition is defined as skewed and stored-as-directores,
+   * For example, if a static partition is defined as skewed and stored-as-directories,
    * instead of all files in one directory, it will create a sub-dir per skewed value plus
    * default directory. So #3 is required for static partition.
    * So, we move it to a method so that it can be used by both SP and DP.

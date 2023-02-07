@@ -203,7 +203,7 @@ public class VectorMapJoinAntiJoinStringOperator extends VectorMapJoinAntiJoinGe
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
-        // We remember any matching rows in matchs / matchSize.  At the end of the loop,
+        // We remember any matching rows in matches / matchSize.  At the end of the loop,
         // selected / batch.size will represent both matching and non-matching rows for outer join.
         // Only deferred rows will have been removed from selected.
         int selected[] = batch.selected;
@@ -266,17 +266,17 @@ public class VectorMapJoinAntiJoinStringOperator extends VectorMapJoinAntiJoinGe
               // Regardless of our matching result, we keep that information to make multiple use
               // of it for a possible series of equal keys.
               haveSaveKey = true;
-  
+
               /*
                * Single-Column String specific save key and lookup.
                */
-  
+
               saveKeyBatchIndex = batchIndex;
-  
+
               /*
                * Single-Column String specific lookup key.
                */
-  
+
               byte[] keyBytes = vector[batchIndex];
               int keyStart = start[batchIndex];
               int keyLength = length[batchIndex];
@@ -290,7 +290,7 @@ public class VectorMapJoinAntiJoinStringOperator extends VectorMapJoinAntiJoinGe
 
             switch (saveJoinResult) {
             case MATCH:
-              allMatchs[allMatchCount++] = batchIndex;
+              allMatches[allMatchCount++] = batchIndex;
               // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH isSingleValue " + equalKeySeriesIsSingleValue[equalKeySeriesCount] + " currentKey " + currentKey);
               break;
 
@@ -309,7 +309,7 @@ public class VectorMapJoinAntiJoinStringOperator extends VectorMapJoinAntiJoinGe
 
             switch (saveJoinResult) {
             case MATCH:
-              allMatchs[allMatchCount++] = batchIndex;
+              allMatches[allMatchCount++] = batchIndex;
               // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH duplicate");
               break;
 
@@ -343,7 +343,7 @@ public class VectorMapJoinAntiJoinStringOperator extends VectorMapJoinAntiJoinGe
 
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
-              " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
+              " allMatches " + intArrayToRangesString(allMatches, allMatchCount) +
               " spills " + intArrayToRangesString(spills, spillCount) +
               " spillHashMapResultIndices " + intArrayToRangesString(spillHashMapResultIndices, spillCount) +
               " hashMapResults " + Arrays.toString(Arrays.copyOfRange(hashSetResults, 0, hashSetResultCount)));

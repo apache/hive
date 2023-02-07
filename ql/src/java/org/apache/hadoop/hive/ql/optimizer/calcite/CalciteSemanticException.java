@@ -35,7 +35,7 @@ public class CalciteSemanticException extends SemanticException {
     Less_than_equal_greater_than, Others, Same_name_in_multiple_expressions,
     Schema_less_table, Select_alias_in_having_clause, Select_transform, Subquery,
     Table_sample_clauses, UDTF, Union_type, Unique_join,
-    HighPrecissionTimestamp // CALCITE-1690
+    HighPrecisionTimestamp // CALCITE-1690
   };
 
   private UnsupportedFeature unsupportedFeature;

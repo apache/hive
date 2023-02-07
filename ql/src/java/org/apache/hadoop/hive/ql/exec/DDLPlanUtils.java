@@ -611,7 +611,7 @@ public class DDLPlanUtils {
    * Parses the basic table statistics for the given table.
    *
    * @param pt
-   * @return Returns the alter table .... update statistics for partititon.
+   * @return Returns the alter table .... update statistics for partition.
    */
   public String getAlterTableStmtPartitionStatsBasic(Partition pt) {
     Map<String, String> parameters = pt.getParameters();

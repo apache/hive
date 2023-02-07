@@ -64,7 +64,7 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
 
   // Pre-allocated member for storing the (physical) batch index of matching row (single- or
   // multi-small-table-valued) indexes during a process call.
-  protected transient int[] allMatchs;
+  protected transient int[] allMatches;
 
   // Pre-allocated member for storing the (physical) batch index of rows that need to be spilled.
   protected transient int[] spills;
@@ -100,7 +100,7 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
       hashSetResults[i] = baseHashSet.createHashSetResult();
     }
 
-    allMatchs = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    allMatches = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
     spills = new int[VectorizedRowBatch.DEFAULT_SIZE];
     spillHashMapResultIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
@@ -119,7 +119,7 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
    *          The big table batch with any matching and any non matching rows both as
    *          selected in use.
    * @param allMatchCount
-   *          Number of matches in allMatchs.
+   *          Number of matches in allMatches.
    * @param spillCount
    *          Number of spills in spills.
    * @param hashTableResults
@@ -140,10 +140,10 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
      * Optimize by running value expressions only over the matched rows.
      */
     if (allMatchCount > 0 && bigTableValueExpressions != null) {
-      performValueExpressions(batch, allMatchs, allMatchCount);
+      performValueExpressions(batch, allMatches, allMatchCount);
     }
 
-    int numSel = generateHashSetResults(batch, allMatchs, allMatchCount);
+    int numSel = generateHashSetResults(batch, allMatches, allMatchCount);
     batch.size = numSel;
     batch.selectedInUse = true;
   }
@@ -153,13 +153,13 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
    *
    * @param batch
    *          The big table batch.
-   * @param allMatchs
+   * @param allMatches
    *          A subset of the rows of the batch that are matches.
    * @param allMatchCount
-   *          Number of matches in allMatchs.
+   *          Number of matches in allMatches.
    */
   private int generateHashSetResults(VectorizedRowBatch batch,
-      int[] allMatchs, int allMatchCount)
+      int[] allMatches, int allMatchCount)
           throws HiveException, IOException {
 
     int numSel = 0;
@@ -168,7 +168,7 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
 
     for (int i = 0; i < allMatchCount; i++) {
 
-      int batchIndex = allMatchs[i];
+      int batchIndex = allMatches[i];
 
       // Use the big table row as output.
       batch.selected[numSel++] = batchIndex;

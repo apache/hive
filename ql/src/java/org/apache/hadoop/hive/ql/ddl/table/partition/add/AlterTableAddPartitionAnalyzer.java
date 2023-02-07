@@ -73,12 +73,12 @@ public class AlterTableAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer
     Long writeId = null;
     int stmtId = 0;
 
-    for (AlterTableAddPartitionDesc.PartitionDesc partitonDesc : desc.getPartitions()) {
-      if (partitonDesc.getLocation() != null) {
-        AcidUtils.validateAcidPartitionLocation(partitonDesc.getLocation(), conf);
+    for (AlterTableAddPartitionDesc.PartitionDesc partitionDesc : desc.getPartitions()) {
+      if (partitionDesc.getLocation() != null) {
+        AcidUtils.validateAcidPartitionLocation(partitionDesc.getLocation(), conf);
         if (desc.isIfNotExists()) {
           //Don't add partition data if it already exists
-          Partition oldPart = PartitionUtils.getPartition(db, table, partitonDesc.getPartSpec(), false);
+          Partition oldPart = PartitionUtils.getPartition(db, table, partitionDesc.getPartSpec(), false);
           if (oldPart != null) {
             continue;
           }
@@ -93,15 +93,15 @@ public class AlterTableAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer
           }
           stmtId = getTxnMgr().getStmtIdAndIncrement();
         }
-        LoadTableDesc loadTableWork = new LoadTableDesc(new Path(partitonDesc.getLocation()),
-            Utilities.getTableDesc(table), partitonDesc.getPartSpec(),
+        LoadTableDesc loadTableWork = new LoadTableDesc(new Path(partitionDesc.getLocation()),
+            Utilities.getTableDesc(table), partitionDesc.getPartSpec(),
             LoadTableDesc.LoadFileType.KEEP_EXISTING, //not relevant - creating new partition
             writeId);
         loadTableWork.setStmtId(stmtId);
         loadTableWork.setInheritTableSpecs(true);
         try {
-          partitonDesc.setLocation(new Path(table.getDataLocation(),
-              Warehouse.makePartPath(partitonDesc.getPartSpec())).toString());
+          partitionDesc.setLocation(new Path(table.getDataLocation(),
+              Warehouse.makePartPath(partitionDesc.getPartSpec())).toString());
         } catch (MetaException ex) {
           throw new SemanticException("Could not determine partition path due to: " + ex.getMessage(), ex);
         }

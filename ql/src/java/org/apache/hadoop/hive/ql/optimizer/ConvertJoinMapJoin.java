@@ -721,7 +721,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
 
   /**
-   * Preserves additional informations about the operator.
+   * Preserves additional information about the operator.
    *
    * When an operator is replaced by a new one; some of the information of the old have to be retained.
    */

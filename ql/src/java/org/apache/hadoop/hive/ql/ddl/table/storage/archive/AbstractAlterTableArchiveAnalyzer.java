@@ -47,7 +47,7 @@ public abstract class AbstractAlterTableArchiveAnalyzer extends AbstractAlterTab
   }
 
   @Override
-  // partSpec coming from the input is not applicable here as archiver gets it's partitions from a different part of
+  // partSpec coming from the input is not applicable here as archiver gets its partitions from a different part of
   // the AST tree
   protected void analyzeCommand(TableName tableName, Map<String, String> partSpec, ASTNode command)
       throws SemanticException {

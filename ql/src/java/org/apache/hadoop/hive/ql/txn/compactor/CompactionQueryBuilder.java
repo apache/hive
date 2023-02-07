@@ -207,7 +207,7 @@ class CompactionQueryBuilder {
    * @param compactionType major or minor; crud or insert-only, e.g. CompactionType.MAJOR_CRUD.
    *                       Cannot be null.
    * @param operation query's Operation e.g. Operation.CREATE.
-   * @param insertOnly Inidicated if the table is not full ACID but Insert-only (Micromanaged)
+   * @param insertOnly Indicates if the table is not full ACID but Insert-only (Micromanaged)
    * @throws IllegalArgumentException if compactionType is null
    */
   CompactionQueryBuilder(CompactionType compactionType, Operation operation, boolean insertOnly,
