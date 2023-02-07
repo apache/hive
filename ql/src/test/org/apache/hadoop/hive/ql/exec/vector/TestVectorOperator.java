@@ -19,26 +19,10 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColLessDoubleScalar;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public abstract class TestVectorOperator {
 
   protected HiveConf hiveConf = new HiveConf();
-
-  protected void prepareVectorFilterOperation(VectorFilterOperator vfo) throws HiveException {
-    vfo.initialize(hiveConf, null);
-
-    VectorExpression ve1 = new FilterLongColEqualLongColumn(0,1);
-    VectorExpression ve2 = new FilterLongColLessDoubleScalar(2, 10);
-    VectorExpression ve3 = new FilterExprAndExpr();
-    ve3.setChildExpressions(new VectorExpression[] {ve1, ve2});
-
-    vfo.setFilterCondition(ve3);
-  }
 
   public enum FakeDataSampleType {
     OrderedSequence,

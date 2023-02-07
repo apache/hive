@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -132,6 +136,17 @@ public class TestVectorFilterOperator extends TestVectorOperator{
     vrg.selected = new int[] { 1, 2, 3, 4};
 
     Assertions.assertDoesNotThrow(() -> vfo.process(vrg, 0));
+  }
+
+  private void prepareVectorFilterOperation(VectorFilterOperator vfo) throws HiveException {
+    vfo.initialize(hiveConf, null);
+
+    VectorExpression ve1 = new FilterLongColGreaterLongColumn(0,1);
+    VectorExpression ve2 = new FilterLongColEqualDoubleScalar(2, 0);
+    VectorExpression ve3 = new FilterExprAndExpr();
+    ve3.setChildExpressions(new VectorExpression[] {ve1, ve2});
+
+    vfo.setFilterCondition(ve3);
   }
 }
 
