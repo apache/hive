@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuild
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -183,9 +184,13 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
         this.bootstrapIterator = null;
         this.constraintsIterator = null;
       }
-      incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
-              new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
-              replStatsTracker, shouldFailover, tablesToBootstrap.size());
+      try {
+        incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
+                new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
+                replStatsTracker, shouldFailover, tablesToBootstrap.size());
+      } catch (HiveException e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
     } else {
       this.bootstrapIterator = new BootstrapEventsIterator(new Path(dumpDirectory, EximUtil.METADATA_PATH_NAME)
               .toString(), dbNameToLoadIn, true, hiveConf, metricCollector);

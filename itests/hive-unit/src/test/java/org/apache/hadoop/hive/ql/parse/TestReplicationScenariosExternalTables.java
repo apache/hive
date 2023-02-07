@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.StringAppender;
+import org.apache.hadoop.hive.ql.parse.repl.dump.EventsDumpMetadata;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
@@ -104,6 +105,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
         UserGroupInformation.getCurrentUser().getUserName());
     overrides.put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
+    overrides.put(HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS.varname, "false");
 
     internalBeforeClassSetup(overrides, TestReplicationScenarios.class);
   }
@@ -726,16 +728,19 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     assertFalse(fs.exists(dataDir));
     long oldMetadirModTime = fs.getFileStatus(metaDir).getModificationTime();
     fs.delete(ackFile, false);
+    EventsDumpMetadata eventsDumpMetadata = EventsDumpMetadata.deserialize(ackLastEventID, conf);
     fs.delete(ackLastEventID, false);
     //delete all the event folders except first event
     long startEvent = -1;
     long endEvent = Long.valueOf(incrementalDump1.lastReplicationId);
+    int deletedEventsCount = 0;
     for (long eventDir = Long.valueOf(tuple.lastReplicationId) + 1;  eventDir <= endEvent; eventDir++) {
       Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventDir));
       if (fs.exists(eventRoot)) {
         if (startEvent == -1){
           startEvent = eventDir;
         } else {
+          deletedEventsCount++;
           fs.delete(eventRoot, true);
         }
       }
@@ -746,7 +751,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       firstEventModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
     }
     assertTrue(endEvent - startEvent > 1);
-    Utils.writeOutput(String.valueOf(startEvent), ackLastEventID, primary.hiveConf);
+    eventsDumpMetadata.setEventsDumpedCount(eventsDumpMetadata.getEventsDumpedCount() - deletedEventsCount);
+    Utils.writeOutput(eventsDumpMetadata.serialize(), ackLastEventID, primary.hiveConf);
     WarehouseInstance.Tuple incrementalDump2 = primary.dump(primaryDbName, withClause);
     assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
     assertTrue(fs.getFileStatus(metaDir).getModificationTime() > oldMetadirModTime);
