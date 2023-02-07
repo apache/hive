@@ -70,6 +70,7 @@ import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
@@ -1749,6 +1750,43 @@ public class TestHiveIcebergStorageHandlerNoScan {
     // Should be the 4rd metadata version (1 empty base + 1 commit retry change + 1 insert + 1 property change)
     Assert.assertEquals(3,
         ((BaseTable) testTables.loadTable(identifier)).operations().current().previousFiles().size());
+  }
+
+  @Test
+  public void testCreateTableWithMetadataLocationWithoutSchema() throws IOException, TException, InterruptedException {
+    Assume.assumeTrue("Create with metadata location is only supported for Hive Catalog tables",
+        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    TableIdentifier sourceIdentifier = TableIdentifier.of("default", "source");
+    PartitionSpec spec =
+        PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("customer_id").build();
+    List<Record> records = TestHelper.generateRandomRecords(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, 4, 0L);
+    Table sourceTable =
+        testTables.createTable(shell, sourceIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
+            FileFormat.PARQUET, records, 1,
+            ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
+    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
+    TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
+
+    String tblProps =
+        testTables.propertiesForCreateTableSQL(Collections.singletonMap("metadata_location", metadataLocation));
+
+    // Try the query with columns also specified, it should throw exception.
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Column names can not be provided along with metadata location.", () -> {
+          shell.executeStatement("CREATE EXTERNAL TABLE target (id int) STORED BY ICEBERG " +
+              testTables.locationForCreateTableSQL(targetIdentifier) + tblProps);
+        });
+    shell.executeStatement(
+        "CREATE EXTERNAL TABLE target STORED BY ICEBERG " + testTables.locationForCreateTableSQL(targetIdentifier) +
+            tblProps);
+
+    // Check the partition and the schema are preserved.
+    Table targetIcebergTable =
+        IcebergTableUtil.getTable(shell.getHiveConf(), shell.metastore().getTable(targetIdentifier));
+    Assert.assertEquals(1, targetIcebergTable.spec().fields().size());
+    Assert.assertEquals(sourceTable.spec().fields(), targetIcebergTable.spec().fields());
+    Assert.assertEquals(sourceTable.schema().toString(), targetIcebergTable.schema().toString());
   }
 
 
