@@ -17,22 +17,35 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 public class CompactorUtil {
+  private static final Logger LOG = LoggerFactory.getLogger(CompactorUtil.class);
   public static final String COMPACTOR = "compactor";
   /**
    * List of accepted properties for defining the compactor's job queue.
@@ -100,4 +113,37 @@ public class CompactorUtil {
     return conf.getVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
   }
 
+  public static StorageDescriptor resolveStorageDescriptor(Table t, Partition p) {
+    return (p == null) ? t.getSd() : p.getSd();
+  }
+
+  public static boolean isDynPartAbort(Table t, String partName) {
+    return Optional.ofNullable(t).map(Table::getPartitionKeys).filter(pk -> pk.size() > 0).isPresent()
+            && partName == null;
+  }
+
+  public static List<Partition> getPartitionsByNames(HiveConf conf, String dbName, String tableName, String partName) throws MetaException {
+    try {
+      return getMSForConf(conf).getPartitionsByNames(getDefaultCatalog(conf), dbName, tableName,
+              Collections.singletonList(partName));
+    } catch (Exception e) {
+      LOG.error("Unable to get partitions by name for CompactionInfo= {}.{}.{}", dbName, tableName, partName);
+      throw new MetaException(e.toString());
+    }
+  }
+
+  public static String getDebugInfo(List<Path> paths) {
+    return "[" + paths.stream().map(Path::getName).collect(Collectors.joining(",")) + ']';
+  }
+
+  /**
+   * Determine whether to run this job as the current user or whether we need a doAs to switch
+   * users.
+   * @param owner of the directory we will be working in, as determined by
+   * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#findUserToRunAs(String, Table, Configuration)}
+   * @return true if the job should run as the current user, false if a doAs is needed.
+   */
+  public static boolean runJobAsSelf(String owner) {
+    return (owner.equals(System.getProperty("user.name")));
+  }
 }

@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -97,16 +96,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
   }
 
   @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
-    try {
-      return getMSForConf(conf).getPartitionsByNames(getDefaultCatalog(conf), ci.dbname, ci.tableName,
-          Collections.singletonList(ci.partName));
-    } catch (MetaException e) {
-      LOG.error("Unable to get partitions by name for CompactionInfo=" + ci);
-      throw e;
-    } catch (NoSuchObjectException e) {
-      LOG.error("Unable to get partitions by name for CompactionInfo=" + ci);
-      throw new MetaException(e.toString());
-    }
+    return CompactorUtil.getPartitionsByNames(conf, ci.dbname, ci.tableName, ci.partName);
   }
 
   protected void startCycleUpdater(long updateInterval, Runnable taskToRun) {

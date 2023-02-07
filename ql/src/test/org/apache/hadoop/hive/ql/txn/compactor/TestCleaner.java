@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.CompactionHandler;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.Handler;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -1122,8 +1124,10 @@ public class TestCleaner extends CompactorTest {
     //Prevent cleaner from marking the compaction as cleaned
     TxnStore mockedHandler = spy(txnHandler);
     doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
-    Cleaner cleaner = Mockito.spy(new Cleaner());
+    Cleaner cleaner = new Cleaner();
+    Handler handler = Mockito.spy(new CompactionHandler(conf, mockedHandler, false));
     cleaner.setConf(conf);
+    cleaner.setHandlers(Arrays.asList(handler));
     cleaner.init(new AtomicBoolean(true));
     cleaner.run();
     cleaner.run();
@@ -1131,8 +1135,8 @@ public class TestCleaner extends CompactorTest {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(1, compacts.size());
-    Mockito.verify(cleaner, times(2)).computeIfAbsent(Mockito.any(),Mockito.any());
-    Mockito.verify(cleaner, times(1)).resolveTable(Mockito.any());
+    Mockito.verify(handler, times(3)).computeIfAbsent(Mockito.any(),Mockito.any());
+    Mockito.verify(handler, times(1)).resolveTable(Mockito.any(), Mockito.any());
   }
 
   private void allocateTableWriteId(String dbName, String tblName, long txnId) throws Exception {
