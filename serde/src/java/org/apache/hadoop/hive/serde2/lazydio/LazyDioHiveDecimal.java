@@ -46,6 +46,6 @@ public class LazyDioHiveDecimal extends LazyHiveDecimal {
     isNull = false;
     byte[] recv = new byte[length];
     System.arraycopy(bytes.getData(), start, recv, 0, length);
-    data.setFromBytes(recv, 0, length);
+    data.setFromBytes(recv, 0, length, true);
   }
 }

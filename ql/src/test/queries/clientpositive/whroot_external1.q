@@ -105,3 +105,10 @@ drop database wre1_db cascade;
 dfs -rmr -f hdfs:///tmp/wre1_ext2;
 dfs -rmr -f hdfs:///tmp/wre1_ext4;
 dfs -rmr -f hdfs:///tmp/whroot_ext;
+
+dfs -rmr -f  hdfs:///tmp/test_dec_space;
+dfs -mkdir -p  hdfs:///tmp/test_dec_space;
+dfs -copyFromLocal ../../data/files/test_dec_space.csv hdfs:///tmp/test_dec_space/;
+create external table test_dec_space (id int, value decimal) ROW FORMAT DELIMITED
+ FIELDS TERMINATED BY ',' location 'hdfs:///tmp/test_dec_space';
+select * from test_dec_space;
