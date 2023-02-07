@@ -41,6 +41,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
@@ -4377,6 +4378,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return false;
   }
 
+  @VisibleForTesting
   public static Operator<? extends OperatorDesc> vectorizeFilterOperator(
       Operator<? extends OperatorDesc> filterOp, VectorizationContext vContext,
       VectorFilterDesc vectorFilterDesc)
@@ -4397,6 +4399,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         vContext, vectorFilterDesc);
   }
 
+  @VisibleForTesting
   public static Operator<? extends OperatorDesc> vectorizeTopNKeyOperator(
           Operator<? extends OperatorDesc> topNKeyOperator, VectorizationContext vContext,
           VectorTopNKeyDesc vectorTopNKeyDesc) throws HiveException {

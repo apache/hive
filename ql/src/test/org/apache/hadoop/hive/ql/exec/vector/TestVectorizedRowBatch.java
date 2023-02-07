@@ -162,6 +162,16 @@ public class TestVectorizedRowBatch {
     }
   }
 
+  /**
+   * Set the vector to sample data that is a monotonous sequence of numbers: 0, 1, 2, ...
+   * @param col
+   */
+  public static void setOrderedSequenceLongCol(LongColumnVector col) {
+    int size = col.vector.length;
+    for(int i = 0; i < size; i++) {
+      col.vector[i] = i;
+    }
+  }
 
   /**
    * Set the vector to sample data that repeats an iteration from 0 to 99.
