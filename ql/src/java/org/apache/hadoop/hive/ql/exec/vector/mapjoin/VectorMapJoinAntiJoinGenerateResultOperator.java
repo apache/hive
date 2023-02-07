@@ -60,7 +60,7 @@ public abstract class VectorMapJoinAntiJoinGenerateResultOperator
 
   // Pre-allocated member for storing the (physical) batch index of matching row (single- or
   // multi-small-table-valued) indexes during a process call.
-  protected transient int[] allMatchs;
+  protected transient int[] allMatches;
 
   // Pre-allocated member for storing the (physical) batch index of rows that need to be spilled.
   protected transient int[] spills;
@@ -96,7 +96,7 @@ public abstract class VectorMapJoinAntiJoinGenerateResultOperator
       hashSetResults[i] = baseHashSet.createHashSetResult();
     }
 
-    allMatchs = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    allMatches = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
     spills = new int[VectorizedRowBatch.DEFAULT_SIZE];
     spillHashMapResultIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
@@ -138,10 +138,10 @@ public abstract class VectorMapJoinAntiJoinGenerateResultOperator
      * Optimize by running value expressions only over the matched rows.
      */
     if (allMatchCount > 0 && bigTableValueExpressions != null) {
-      performValueExpressions(batch, allMatchs, allMatchCount);
+      performValueExpressions(batch, allMatches, allMatchCount);
     }
 
-    batch.size = generateHashSetResults(batch, allMatchs, allMatchCount);
+    batch.size = generateHashSetResults(batch, allMatches, allMatchCount);
     batch.selectedInUse = true;
   }
 
@@ -160,7 +160,7 @@ public abstract class VectorMapJoinAntiJoinGenerateResultOperator
     int numSel = 0;
     // Generate result within big table batch itself.
     for (int i = 0; i < allMatchCount; i++) {
-      int batchIndex = allMatchs[i];
+      int batchIndex = this.allMatches[i];
       // Use the big table row as output.
       batch.selected[numSel++] = batchIndex;
     }

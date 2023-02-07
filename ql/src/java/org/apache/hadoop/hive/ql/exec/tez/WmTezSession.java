@@ -93,7 +93,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
       }
       if (amRegistryFuture != null) {
         // We don't need this for now, so do not support it.
-        future.setException(new RuntimeException("Multiple waits are not suported"));
+        future.setException(new RuntimeException("Multiple waits are not supported"));
         return future;
       }
       amRegistryFuture = future;
@@ -140,7 +140,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
       }
     }
   }
-  
+
 
   private void handleGuaranteedTasksChange(int guaranteedCount) {
     boolean doNotify = false;
@@ -210,7 +210,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
       return intAlloc;
     }
   }
-  
+
   public String getAllocationState() {
     synchronized (actualState) {
       return "actual/target " + actualState.sent + "/" + actualState.target
