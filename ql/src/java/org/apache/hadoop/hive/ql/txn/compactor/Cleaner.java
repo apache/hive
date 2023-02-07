@@ -111,6 +111,9 @@ public class Cleaner extends MetaStoreCompactorThread {
             COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
+    boolean tableCacheOn = MetastoreConf.getBoolVar(conf,
+            MetastoreConf.ConfVars.COMPACTOR_CLEANER_TABLECACHE_ON);
+    initializeCache(tableCacheOn);
   }
 
   @Override
@@ -119,6 +122,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     try {
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
+        invalidateMetaCache();
         long startedAt = -1;
         long retentionTime = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
                 ? HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS)
@@ -224,7 +228,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       Partition p = null;
 
       if (location == null) {
-        t = resolveTable(ci);
+        t = computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci));
         if (t == null) {
           // The table was dropped before we got around to cleaning it.
           LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped." +
@@ -358,7 +362,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   private boolean removeFiles(String location, long minOpenTxnGLB, CompactionInfo ci, boolean dropPartition)
-      throws MetaException, IOException, NoSuchTxnException {
+      throws Exception {
 
     if (dropPartition) {
       LockRequest lockRequest = createLockRequest(ci, 0, LockType.EXCL_WRITE, DataOperationType.DELETE);
@@ -430,15 +434,15 @@ public class Cleaner extends MetaStoreCompactorThread {
    * @return true if any files were removed
    */
   private boolean removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
-      throws IOException, MetaException {
+      throws Exception {
     Path path = new Path(location);
     FileSystem fs = path.getFileSystem(conf);
     
-    // Collect all the files/dirs
+    // Collect all of the files/dirs
     Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshotsForCleaner(fs, path);
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false, 
         dirSnapshots);
-    Table table = resolveTable(ci);
+    Table table = computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci));
     boolean isDynPartAbort = isDynPartAbort(table, ci);
     
     List<Path> obsoleteDirs = getObsoleteDirs(dir, isDynPartAbort);
@@ -541,4 +545,5 @@ public class Cleaner extends MetaStoreCompactorThread {
       updateCycleDurationMetric(metric, startedAt);
     }
   }
+
 }

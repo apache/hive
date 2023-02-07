@@ -653,6 +653,9 @@ public class MetastoreConf {
             "hive.compactor.cleaner.retry.retentionTime", 300, TimeUnit.SECONDS, new TimeValidator(TimeUnit.SECONDS),
             "Initial value of the cleaner retry retention time. The delay has a backoff, and calculated the following way: " +
             "pow(2, number_of_failed_attempts) * HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME."),
+    COMPACTOR_CLEANER_TABLECACHE_ON("metastore.compactor.cleaner.tablecache.on",
+            "hive.compactor.cleaner.tablecache.on", true,
+            "Enable table caching in the cleaner. Currently the cache is cleaned after each cycle."),
     HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS("metastore.compactor.connectionPool.maxPoolSize",
             "hive.compactor.connectionPool.maxPoolSize", 5,
             "Specify the maximum number of connections in the connection pool used by the compactor."),
