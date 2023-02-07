@@ -88,6 +88,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"value\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId# 
 	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	true                
@@ -154,6 +155,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId# 
 	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	true                
@@ -218,6 +220,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"value\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId# 
 	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	true                
@@ -284,6 +287,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId# 
 	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	true                
@@ -366,6 +370,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId# 
 	engine.hive.enabled 	true                
 	external.table.purge	false               
 	iceberg.orc.files.only	true                

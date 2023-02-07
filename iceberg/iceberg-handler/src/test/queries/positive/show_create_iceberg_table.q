@@ -1,5 +1,6 @@
 -- Mask random uuid
 --! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
+-- Mask random snapshot id
 --! qt:replace:/('current-snapshot-id'=')\d+/$1#SnapshotId#/
 
 DROP TABLE IF EXISTS ice_t;

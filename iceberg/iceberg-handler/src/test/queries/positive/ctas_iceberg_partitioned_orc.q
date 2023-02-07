@@ -1,5 +1,8 @@
 set hive.query.lifetime.hooks=org.apache.iceberg.mr.hive.HiveIcebergQueryLifeTimeHook;
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
+-- Mask random snapshot id
+--! qt:replace:/(\s+current-snapshot-id\s+)\d+/$1#SnapshotId#/
+
 set hive.explain.user=false;
 
 create table source(a int, b string, c int);

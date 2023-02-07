@@ -1,5 +1,7 @@
 -- Mask random uuid
 --! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
+-- Mask random snapshot id
+--! qt:replace:/('current-snapshot-id'=')\d+/$1#SnapshotId#/
 
 -- create an unpartitioned table with skip delete data set to false
  create table ice01 (id int) Stored by Iceberg stored as ORC
