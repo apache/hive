@@ -308,6 +308,10 @@ sys	partitions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -506,6 +510,7 @@ PREHOOK: Output: sys@partition_keys
 PREHOOK: Output: sys@partition_params
 PREHOOK: Output: sys@partition_stats_view
 PREHOOK: Output: sys@partitions
+PREHOOK: Output: sys@replication_failover_failback_metrics
 PREHOOK: Output: sys@replication_metrics
 PREHOOK: Output: sys@replication_metrics_orig
 PREHOOK: Output: sys@role_map
@@ -569,6 +574,7 @@ POSTHOOK: Output: sys@partition_keys
 POSTHOOK: Output: sys@partition_params
 POSTHOOK: Output: sys@partition_stats_view
 POSTHOOK: Output: sys@partitions
+POSTHOOK: Output: sys@replication_failover_failback_metrics
 POSTHOOK: Output: sys@replication_metrics
 POSTHOOK: Output: sys@replication_metrics_orig
 POSTHOOK: Output: sys@role_map
