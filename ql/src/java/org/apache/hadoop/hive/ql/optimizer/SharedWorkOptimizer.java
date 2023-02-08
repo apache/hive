@@ -1916,18 +1916,12 @@ public class SharedWorkOptimizer extends Transform {
 
     @Override
     public boolean accept(Operator<?> s, Operator<?> t, OpEdge opEdge) {
-      if (!traverseableEdgeTypes.contains(opEdge.getEdgeType())) {
-        return true;
-      }
-      if (s instanceof ReduceSinkOperator) {
-        ReduceSinkOperator rs = (ReduceSinkOperator) s;
-        if (!ParallelEdgeFixer.colMappingInverseKeys(rs).isPresent()) {
-          return true;
-        }
-      }
-      return false;
-    }
+      boolean notTraverseable = !traverseableEdgeTypes.contains(opEdge.getEdgeType());
+      boolean notInvertible = (s instanceof ReduceSinkOperator) &&
+          !ParallelEdgeFixer.colMappingInverseKeys((ReduceSinkOperator) s).isPresent();
 
+      return notTraverseable || notInvertible;
+    }
   }
 
   private static Set<Operator<?>> findParentWorkOperators(ParseContext pctx,
