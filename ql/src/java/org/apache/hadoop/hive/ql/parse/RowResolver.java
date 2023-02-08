@@ -103,21 +103,21 @@ public class RowResolver implements Serializable{
     return expressionMap.get(node.toStringTree());
   }
 
-  public void put(String tab_alias, String col_alias, ColumnInfo colInfo) {
-    if (!putInternal(tab_alias, col_alias, colInfo)) {
+  public void put(String tabAlias, String colAlias, ColumnInfo colInfo) {
+    if (!putInternal(tabAlias, colAlias, colInfo)) {
       return;
     }
-    if (col_alias != null) {
-      colInfo.setAlias(col_alias.toLowerCase());
+    if (colAlias != null) {
+      colInfo.setAlias(colAlias.toLowerCase());
     }
   }
 
-  public boolean putInternal(String tab_alias, String col_alias, ColumnInfo colInfo) {
-    if (!addMappingOnly(tab_alias, col_alias, colInfo)) {
+  private boolean putInternal(String tabAlias, String colAlias, ColumnInfo colInfo) {
+    if (!addMappingOnly(tabAlias, colAlias, colInfo)) {
       //Make sure that the table alias and column alias are stored
       //in the column info
-      if (tab_alias != null) {
-        colInfo.setTabAlias(tab_alias.toLowerCase());
+      if (tabAlias != null) {
+        colInfo.setTabAlias(tabAlias.toLowerCase());
       }
       rowSchema.getSignature().add(colInfo);
       return true;
