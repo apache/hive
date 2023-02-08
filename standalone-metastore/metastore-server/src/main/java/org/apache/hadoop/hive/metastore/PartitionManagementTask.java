@@ -234,7 +234,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
       IMetaStoreClient msc = null;
       try {
         msc = new HiveMetaStoreClient(conf);
-        if (MetaStoreUtils.isDbBeingFailedOver((msc.getDatabase(msckInfo.getCatalogName(), msckInfo.getDbName())))) {
+        if (MetaStoreUtils.isDbBeingPlannedFailedOver((msc.getDatabase(msckInfo.getCatalogName(), msckInfo.getDbName())))) {
           LOG.info("Skipping table: {} as it belongs to database being failed over." + msckInfo.getTableName());
           return;
         }

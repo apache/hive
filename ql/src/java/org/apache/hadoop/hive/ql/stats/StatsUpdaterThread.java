@@ -624,7 +624,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
         SessionState.start(ss); // This is the first call, open the session
       }
       TableName tb = req.tableName;
-      if (MetaStoreUtils.isDbBeingFailedOver(rs.getDatabase(tb.getCat(), tb.getDb()))) {
+      if (MetaStoreUtils.isDbBeingPlannedFailedOver(rs.getDatabase(tb.getCat(), tb.getDb()))) {
         LOG.info("Skipping table: {} as it belongs to database which is being failed over." + tb.getTable());
         return true;
       }

@@ -285,7 +285,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
     Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
 
     replica.load(replicatedDbName, primaryDbName, failoverConfigs)
             .run("use " + replicatedDbName)
@@ -296,7 +296,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     Database db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(db));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(db));
 
     primary.run("use " + primaryDbName)
             .run("insert into t1 values(1)")
@@ -342,7 +342,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
     FailoverMetaData failoverMD = new FailoverMetaData(dumpPath, conf);
 
@@ -380,7 +380,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.LOAD_ACKNOWLEDGEMENT.toString())));
 
     Path dbRootDir = new Path(dumpData.dumpLocation).getParent();
@@ -391,7 +391,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.LOAD_ACKNOWLEDGEMENT.toString())));
 
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
 
     assertFalse(ReplChangeManager.isSourceOfReplication(replica.getDatabase(replicatedDbName)));
@@ -408,7 +408,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     db = replica.getDatabase(replicatedDbName);
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
     //do a second reverse dump.
     primary.load(primaryDbName, replicatedDbName);
@@ -432,7 +432,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertFalse(primaryDb == null);
     assertFalse(ReplUtils.isFirstIncPending(primaryDb.getParameters()));
     assertTrue(MetaStoreUtils.isTargetOfReplication(primaryDb));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primaryDb));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primaryDb));
     assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
     assertFalse(ReplChangeManager.isSourceOfReplication(primaryDb));
     assertTrue(ReplChangeManager.isSourceOfReplication(replica.getDatabase(replicatedDbName)));
@@ -440,7 +440,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     reverseDumpData = replica.run("insert into t3 values (3)")
             .run("insert into t2 partition(name='Bob') values(30)")
             .dump(replicatedDbName);
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(replica.getDatabase(replicatedDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(replica.getDatabase(replicatedDbName)));
 
     primary.load(primaryDbName, replicatedDbName)
             .run("select rank from t2 order by rank")
@@ -465,7 +465,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
     Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
 
     replica.load(replicatedDbName, primaryDbName, failoverConfigs)
             .run("use " + replicatedDbName)
@@ -476,7 +476,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     Database db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(db));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(db));
 
     dumpData = primary.run("use " + primaryDbName)
             .run("insert into t1 values(1)")
@@ -490,7 +490,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
 
     replica.load(replicatedDbName, primaryDbName, failoverConfigs)
@@ -509,7 +509,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
 
     dumpData = primary.run("create table t3(id int)")
             .run("insert into t3 values (3)")
@@ -518,7 +518,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertEquals(new DumpMetaData(dumpPath, conf).getDumpType(), DumpType.INCREMENTAL);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     assertFalse(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
     replica.load(replicatedDbName, primaryDbName)
             .run("show tables")
             .verifyResults(new String[]{"t1", "t2", "t3"})
@@ -533,7 +533,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(db));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(db));
   }
 
   @Test
@@ -557,7 +557,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
 
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
@@ -578,7 +578,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(dumpAckFile));
     assertTrue(fs.exists(failoverMdFile));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
     FailoverMetaData previousFmd = new FailoverMetaData(dumpPath, conf);
     Long failoverEventId = previousFmd.getFailoverEventId();
@@ -599,7 +599,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(failoverMdFile));
     Assert.assertEquals(failoverMdModifTime, (Long)fs.getFileStatus(failoverMdFile).getModificationTime());
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
     assertTrue(failoverEventId >= Long.parseLong(dumpData.lastReplicationId));
     FailoverMetaData currentFmd = new FailoverMetaData(dumpPath, conf);
@@ -618,7 +618,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     Database db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.LOAD_ACKNOWLEDGEMENT.toString())));
 
     WarehouseInstance.Tuple reverseDumpData = replica.run("use " + replicatedDbName)
@@ -635,7 +635,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     db = replica.getDatabase(replicatedDbName);
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
     primary.load(primaryDbName, replicatedDbName, retainPrevDumpDir);
     //do a second reverse dump.
@@ -662,7 +662,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .dump(replicatedDbName);
     dumpPath = new Path(reverseDumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(replica.getDatabase(replicatedDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(replica.getDatabase(replicatedDbName)));
 
     primary.load(primaryDbName, replicatedDbName)
             .run("use " + primaryDbName)
@@ -692,7 +692,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
 
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
@@ -711,7 +711,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
 
     replica.load(replicatedDbName, primaryDbName, failoverConfigs)
@@ -727,7 +727,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     Database db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.LOAD_ACKNOWLEDGEMENT.toString())));
 
     WarehouseInstance.Tuple reverseDumpData = replica.run("use " + replicatedDbName)
@@ -744,7 +744,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     db = replica.getDatabase(replicatedDbName);
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
     fs.delete(dumpAckFile, false);
     assertFalse(fs.exists(dumpAckFile));
@@ -759,7 +759,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(new DumpMetaData(dumpPath, conf).getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
     assertTrue(fs.exists(dumpAckFile));
     db = replica.getDatabase(replicatedDbName);
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
     primary.load(primaryDbName, replicatedDbName);
     dumpData = replica.dump(replicatedDbName, retainPrevDumpDir);
@@ -785,18 +785,18 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .dump(replicatedDbName, retainPrevDumpDir);
     dumpPath = new Path(reverseDumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     dumpAckFile = new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString());
-    assertFalse(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
     fs.delete(dumpAckFile);
     replica.run("ALTER DATABASE " + replicatedDbName + " SET DBPROPERTIES('" + ReplConst.REPL_FAILOVER_ENDPOINT + "'='"
             + MetaStoreUtils.FailoverEndpoint.TARGET + "')");
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
     assertFalse(fs.exists(dumpAckFile));
     dumpData = replica.dump(replicatedDbName, retainPrevDumpDir);
     assertEquals(reverseDumpData.dumpLocation, dumpData.dumpLocation);
     fs.exists(dumpAckFile);
-    assertFalse(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
 
     primary.load(primaryDbName, replicatedDbName, retainPrevDumpDir)
@@ -825,7 +825,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
 
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
@@ -845,7 +845,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(dumpAckFile));
     assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
 
     fs.delete(dumpAckFile, false);
@@ -860,7 +860,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
 
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
@@ -875,7 +875,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("select id from t3")
             .verifyResults(new String[]{"2"});
     assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(replica.getDatabase(replicatedDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(replica.getDatabase(replicatedDbName)));
   }
 
   @Test
@@ -892,7 +892,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
     Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
 
     replica.load(replicatedDbName, primaryDbName, failoverConfigs)
             .run("use " + replicatedDbName)
@@ -903,7 +903,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     Database db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(db));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(db));
 
     dumpData = primary.run("use " + primaryDbName)
             .run("insert into t1 values(1)")
@@ -916,7 +916,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertTrue(fs.exists(failoverReadyMarker));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
 
     replica.load(replicatedDbName, primaryDbName, failoverConfigs)
@@ -933,7 +933,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assert "true".equals(db.getParameters().get(REPL_ENABLE_BACKGROUND_THREAD));
   }
 
@@ -954,7 +954,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
     Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
 
     replica.load(replicatedDbName, primaryDbName, failoverConfigs)
             .run("use " + replicatedDbName)
@@ -965,7 +965,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     Database db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(db));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(db));
 
     dumpData = primary.run("use " + primaryDbName)
             .run("insert into t1 values(1)")
@@ -978,7 +978,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertTrue(fs.exists(failoverReadyMarker));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
 
     replica.load(replicatedDbName, primaryDbName, failoverConfigs)
@@ -995,13 +995,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
 
     dumpData = primary.run("insert into t1 values (5)")
             .dump(primaryDbName, retainPrevDumpDir);
     dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
     Path dumpAck = new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString());
     assertTrue(fs.exists(dumpAck));
     fs.delete(dumpAck, false);
@@ -1009,13 +1009,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(failoverReadyMarker));
     primary.run("ALTER DATABASE " + primaryDbName + " SET DBPROPERTIES('" + ReplConst.REPL_FAILOVER_ENDPOINT + "'='"
             + MetaStoreUtils.FailoverEndpoint.SOURCE + "')");
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
 
     WarehouseInstance.Tuple newDumpData = primary.dump(primaryDbName, retainPrevDumpDir);
     assertEquals(newDumpData.dumpLocation, dumpData.dumpLocation);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(primaryDbName)));
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     assertFalse(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
@@ -1026,7 +1026,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOver(db));
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(db));
   }
 
   private long getLatestDumpDirModifTime(Path dumpRoot) throws Exception {

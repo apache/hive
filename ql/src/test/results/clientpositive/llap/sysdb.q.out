@@ -264,6 +264,10 @@ sys	partitions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -779,6 +783,9 @@ partitions	part_id
 partitions	part_name
 partitions	sd_id
 partitions	tbl_id
+replication_failover_failback_metrics	db_name
+replication_failover_failback_metrics	db_repl_metrics_name
+replication_failover_failback_metrics	db_repl_metrics_value
 replication_metrics	dump_execution_id
 replication_metrics	metadata
 replication_metrics	policy_name
@@ -1305,7 +1312,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-78
+79
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1715,6 +1722,7 @@ default	sys	partition_keys	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	partitions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	replication_failover_failback_metrics	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	replication_metrics	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	replication_metrics_orig	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	role_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1842,6 +1850,7 @@ information_schema	views
 sys	compactions
 sys	locks
 sys	partition_stats_view
+sys	replication_failover_failback_metrics
 sys	replication_metrics
 sys	table_stats_view
 sys	transactions

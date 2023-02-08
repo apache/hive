@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -67,6 +68,11 @@ import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_RESET;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_ENABLE_BACKGROUND_THREAD;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DB_PROPERTY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_FAILOVER_ENDPOINT;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_METRICS_FAILBACK_COUNT;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_METRICS_FAILOVER_COUNT;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_METRICS_LAST_FAILBACK_ENDTIME;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_METRICS_LAST_FAILBACK_STARTTIME;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_METRICS_LAST_FAILOVER_TYPE;
 import static org.apache.hadoop.hive.common.repl.ReplConst.TARGET_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
@@ -616,6 +622,10 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
 
     assertTrue(tablesBootstrapped.containsAll(Arrays.asList("t1", "t2", "t3")));
 
+    // Get source or replica database properties and verify replication metrics properties
+    Map<String, String> sourceParams = replica.getDatabase(replicatedDbName).getParameters();
+    verifyReplicationMetricsStatistics(sourceParams, 1, 1, ReplConst.FailoverType.UNPLANNED.toString());
+
     // Do a reverse load, this should do a bootstrap load for the tables in table_diff and incremental for the rest.
     primary.load(primaryDbName, replicatedDbName, withClause);
 
@@ -635,10 +645,9 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
         .run("select place from t5 where country = 'china'")
         .verifyResults(new String[] { "beejing" });
 
-    // Check for correct db Properties set.
-
+    // Get target or primary database properties and verify replication metrics properties
     Map<String, String> targetParams = primary.getDatabase(primaryDbName).getParameters();
-    Map<String, String> sourceParams = replica.getDatabase(replicatedDbName).getParameters();
+    verifyReplicationMetricsStatistics(targetParams, 1, 1, ReplConst.FailoverType.UNPLANNED.toString());
 
     // Check the properties on the new target database.
     assertTrue(targetParams.containsKey(TARGET_OF_REPLICATION));
@@ -1321,20 +1330,24 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   }
   @Test
   public void testReverseFailoverBeforeOptimizedBootstrap() throws Throwable {
+    // Do bootstrap dump and load
     primary.run("use " + primaryDbName)
             .run("create  table t1 (id string)")
             .run("insert into table t1 values ('A')")
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
 
+    // Do incremental dump and load
     primary.dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
     //initiate a controlled failover from primary to replica.
     List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'");
     primary.dump(primaryDbName, failoverConfigs);
     replica.load(replicatedDbName, primaryDbName, failoverConfigs);
+
+    //modify primary after failover.
     primary.run("use " + primaryDbName)
-            .run("insert into t1 values('B')"); //modify primary after failover.
+            .run("insert into t1 values('B')");
     //initiate a controlled failover from replica to primary before the first cycle of optimized bootstrap is run.
     WarehouseInstance.Tuple reverseDump = replica.run("use " + replicatedDbName)
             .run("create table t2 (col int)")
@@ -1354,9 +1367,9 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(new Path(reverseDump.dumpLocation), conf);
     assertTrue(!tableDiffEntries.isEmpty()); // we have modified a table t1 at source
 
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
 
     //do a second dump, this dump should NOT be failover ready as some tables need to be bootstrapped (here it is t1).
@@ -1372,10 +1385,20 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
             .run(String.format("select * from %s.t2", primaryDbName))
             .verifyResults(new String[]{"1", "2"});
 
-    assertFalse(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
-    assertFalse(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+    assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
+
+    // Get source and target database properties after optimised bootstrap
+    Map<String, String> sourceParams = replica.getDatabase(replicatedDbName).getParameters();
+    Map<String, String> targetParams = primary.getDatabase(primaryDbName).getParameters();
+
+    // verify db failback metrics are set properly for source db after optimised bootstrap
+    verifyReplicationMetricsStatistics(sourceParams, 1, 2, ReplConst.FailoverType.PLANNED.toString());
+
+    // verify db failback metrics are set properly for target db after optimised bootstrap
+    verifyReplicationMetricsStatistics(targetParams, 1, 1, ReplConst.FailoverType.PLANNED.toString());
 
     //do a third dump, this should be failover ready.
     reverseDump = replica.dump(replicatedDbName, failoverConfigs);
@@ -1384,10 +1407,19 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
 
     primary.load(primaryDbName, replicatedDbName, failoverConfigs);
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
+
+    sourceParams = replica.getDatabase(replicatedDbName).getParameters();
+    targetParams = primary.getDatabase(primaryDbName).getParameters();
+
+    // verify db failback metrics are set properly for source db after optimised bootstrap
+    verifyReplicationMetricsStatistics(sourceParams, 1, 3, ReplConst.FailoverType.PLANNED.toString());
+
+    // verify db failback metrics are set properly for target db after optimised bootstrap
+    verifyReplicationMetricsStatistics(targetParams, 1, 2, ReplConst.FailoverType.PLANNED.toString());
 
     //initiate a failover from primary to replica.
     WarehouseInstance.Tuple forwardDump = primary.dump(primaryDbName, failoverConfigs);
@@ -1407,10 +1439,19 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
 
     replica.load(replicatedDbName, primaryDbName, failoverConfigs);
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
+
+    sourceParams = replica.getDatabase(replicatedDbName).getParameters();
+    targetParams = primary.getDatabase(primaryDbName).getParameters();
+
+    // verify db failback metrics are set properly for source db after optimised bootstrap
+    verifyReplicationMetricsStatistics(sourceParams, 2, 4, ReplConst.FailoverType.PLANNED.toString());
+
+    // verify db failback metrics are set properly for target db after optimised bootstrap
+    verifyReplicationMetricsStatistics(targetParams, 2, 3, ReplConst.FailoverType.PLANNED.toString());
   }
   @Test
   public void testOptimizedBootstrapWithControlledFailover() throws Throwable {
@@ -1453,9 +1494,9 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(new Path(reverseDump.dumpLocation), conf);
     assertTrue(!tableDiffEntries.isEmpty());
 
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
+    assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
 
     // second cycle of optimized bootstrap
@@ -1474,4 +1515,29 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     assertFalse(primary.getDatabase(primaryDbName).getParameters().containsKey(REPL_FAILOVER_ENDPOINT));
     assertFalse(replica.getDatabase(replicatedDbName).getParameters().containsKey(REPL_FAILOVER_ENDPOINT));
   }
+
+  private void verifyReplicationMetricsStatistics(Map<String, String> dbParams, int expectedFailbackCount, int expectedFailoverCount, String expectedFailoverType) {
+    // verify failover metrics
+    assertTrue(dbParams.containsKey(ReplConst.REPL_METRICS_LAST_FAILOVER_TYPE));
+    String failoverType = dbParams.get(ReplConst.REPL_METRICS_LAST_FAILOVER_TYPE);
+    assertEquals(failoverType, expectedFailoverType);
+
+    assertTrue(dbParams.containsKey(ReplConst.REPL_METRICS_FAILOVER_COUNT));
+    String failoverCount = dbParams.get(ReplConst.REPL_METRICS_FAILOVER_COUNT);
+    assertEquals(NumberUtils.toInt(failoverCount, 0), expectedFailoverCount);
+
+    // verify failback metrics
+    assertTrue(dbParams.containsKey(ReplConst.REPL_METRICS_LAST_FAILBACK_STARTTIME));
+    String failbackStartTime = dbParams.get(ReplConst.REPL_METRICS_LAST_FAILBACK_STARTTIME);
+    assertNotEquals(NumberUtils.toLong(failbackStartTime, 0), 0);
+
+    assertTrue(dbParams.containsKey(ReplConst.REPL_METRICS_FAILBACK_COUNT));
+    String failbackCount = dbParams.get(ReplConst.REPL_METRICS_FAILBACK_COUNT);
+    assertEquals(NumberUtils.toInt(failbackCount, 0), expectedFailbackCount);
+
+    assertTrue(dbParams.containsKey(ReplConst.REPL_METRICS_LAST_FAILBACK_ENDTIME));
+    String failbackEndTime = dbParams.get(ReplConst.REPL_METRICS_LAST_FAILBACK_ENDTIME);
+    assertNotEquals(NumberUtils.toLong(failbackEndTime, 0), 0);
+  }
+
 }

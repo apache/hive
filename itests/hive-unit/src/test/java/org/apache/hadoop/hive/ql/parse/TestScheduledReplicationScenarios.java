@@ -300,9 +300,9 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       Path failoverReadyMarker = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.FAILOVER_READY_MARKER.toString());
       assertTrue(fs.exists(failoverReadyMarker));
-      assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(sourceDbName),
+      assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(sourceDbName),
               MetaStoreUtils.FailoverEndpoint.SOURCE));
-      assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicaDbName),
+      assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(replica.getDatabase(replicaDbName),
               MetaStoreUtils.FailoverEndpoint.TARGET));
 
       primary.run("alter scheduled query repl_dump_p1 disabled")
@@ -331,7 +331,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       Database primaryDb = primary.getDatabase(sourceDbName);
       assertFalse(primaryDb == null);
       assertTrue(MetaStoreUtils.isTargetOfReplication(primaryDb));
-      assertFalse(MetaStoreUtils.isDbBeingFailedOver(primaryDb));
+      assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primaryDb));
 
       next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       ackPath = new Path(dumpRoot,
@@ -339,7 +339,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
                       + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
       waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
       assertFalse(ReplUtils.isFirstIncPending(primary.getDatabase(sourceDbName).getParameters()));
-      assertFalse(MetaStoreUtils.isDbBeingFailedOver(replica.getDatabase(replicaDbName)));
+      assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(replica.getDatabase(replicaDbName)));
 
       //Start failback from here.
       replica.run("alter  scheduled query repl_dump_p2 defined as repl dump " + replicaDbName +  " WITH(" + startFailoverClause + ')');
@@ -353,9 +353,9 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       failoverReadyMarker = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.FAILOVER_READY_MARKER.toString());
       assertTrue(fs.exists(failoverReadyMarker));
-      assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicaDbName),
+      assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(replica.getDatabase(replicaDbName),
               MetaStoreUtils.FailoverEndpoint.SOURCE));
-      assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(sourceDbName),
+      assertTrue(MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(primary.getDatabase(sourceDbName),
               MetaStoreUtils.FailoverEndpoint.TARGET));
 
       replica.run("alter scheduled query repl_dump_p2 disabled")
@@ -382,7 +382,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       Database replicaDb = replica.getDatabase(replicaDbName);
       assertFalse(replicaDb == null);
       assertTrue(MetaStoreUtils.isTargetOfReplication(replicaDb));
-      assertFalse(MetaStoreUtils.isDbBeingFailedOver(replicaDb));
+      assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(replicaDb));
 
       next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       ackPath = new Path(dumpRoot,
@@ -390,7 +390,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
                       + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
       waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
       assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicaDbName).getParameters()));
-      assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(sourceDbName)));
+      assertFalse(MetaStoreUtils.isDbBeingPlannedFailedOver(primary.getDatabase(sourceDbName)));
 
     } finally {
       primary.run("drop database if exists " + sourceDbName + " cascade").run("drop scheduled query repl_dump_p1");

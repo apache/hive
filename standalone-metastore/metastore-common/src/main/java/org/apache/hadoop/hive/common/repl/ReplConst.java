@@ -92,4 +92,14 @@ public class ReplConst {
     PLANNED,
     UNPLANNED;
   }
+
+  /**
+   * Database level property to keep track of failover and failback metrics
+   * Property values are set during failover and optimised bootstrap time.
+   */
+  public static final String REPL_METRICS_FAILOVER_COUNT = "repl.metrics.failover.count";
+  public static final String REPL_METRICS_LAST_FAILOVER_TYPE = "repl.metrics.last.failover.type";
+  public static final String REPL_METRICS_FAILBACK_COUNT = "repl.metrics.failback.count";
+  public static final String REPL_METRICS_LAST_FAILBACK_STARTTIME = "repl.metrics.last.failback.starttime";
+  public static final String REPL_METRICS_LAST_FAILBACK_ENDTIME = "repl.metrics.last.failback.endtime";
 }
