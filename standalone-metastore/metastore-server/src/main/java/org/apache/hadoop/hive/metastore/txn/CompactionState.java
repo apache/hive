@@ -34,7 +34,8 @@ public enum CompactionState {
   FAILED('f'),
   SUCCEEDED('s'),
   DID_NOT_INITIATE('a'),
-  REFUSED('c');
+  REFUSED('c'),
+  ABORTED('x');
 
   private final char sqlConst;
 

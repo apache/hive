@@ -5149,4 +5149,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       throws TException {
     return client.get_all_write_event_info(request);
   }
+
+  @Override
+  public AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException{
+    return client.abort_Compactions(request);
+  }
 }
