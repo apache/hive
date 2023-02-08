@@ -50,7 +50,7 @@ public class GenericUDAFCollectSet extends AbstractGenericUDAFResolver {
             "Only primitive, struct, list or map type arguments are accepted but "
                 + parameters[0].getTypeName() + " was passed as parameter 1.");
     }
-    return new GenericUDAFMkCollectionEvaluator(BufferType.SET);
+    return new GenericUDAFMkCollectionEvaluator(BufferType.SET, isMapAggr());
   }
 
 }

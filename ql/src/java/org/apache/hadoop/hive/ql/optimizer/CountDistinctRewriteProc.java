@@ -375,8 +375,9 @@ public class CountDistinctRewriteProc extends Transform {
           aggParameters.add(new ExprNodeColumnDesc(paraExprInfo.getType(), paraExpression,
               paraExprInfo.getTabAlias(), paraExprInfo.getIsVirtualCol()));
           Mode amode = SemanticAnalyzer.groupByDescModeToUDAFMode(GroupByDesc.Mode.HASH, false);
+          Boolean isMapAggr = HiveConf.getBoolVar(pGraphContext.getConf(), HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE);
           GenericUDAFEvaluator genericUDAFEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator(
-              "count", aggParameters, null, false, false);
+              "count", aggParameters, null, false, false, isMapAggr);
           assert (genericUDAFEvaluator != null);
           GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo(genericUDAFEvaluator, amode,
               aggParameters);
@@ -467,8 +468,9 @@ public class CountDistinctRewriteProc extends Transform {
       ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
       aggParameters.add(new ExprNodeColumnDesc(paraExprInfo.getType(), paraExpression, paraExprInfo
           .getTabAlias(), paraExprInfo.getIsVirtualCol()));
+      Boolean isMapAggr = HiveConf.getBoolVar(pGraphContext.getConf(), HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE);
       GenericUDAFEvaluator genericUDAFEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator("count",
-          aggParameters, null, false, false);
+          aggParameters, null, false, false, isMapAggr);
       assert (genericUDAFEvaluator != null);
       Mode amode = SemanticAnalyzer.groupByDescModeToUDAFMode(GroupByDesc.Mode.MERGEPARTIAL, false);
       GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo(genericUDAFEvaluator, amode,

@@ -3698,8 +3698,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       boolean isAllColumns = aggAst.getType() == HiveParser.TOK_FUNCTIONSTAR;
       String aggName = unescapeIdentifier(aggAst.getChild(0).getText());
 
+      Boolean isMapAggr = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE);
       AggregateInfo aInfo = functionHelper.getWindowAggregateFunctionInfo(
-          isDistinct, isAllColumns, aggName, aggParameters);
+          isDistinct, isAllColumns, isMapAggr, aggName, aggParameters);
 
       // If that did not work, try GenericUDF translation
       if (aInfo == null) {
@@ -3854,8 +3855,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
               aggParameters.add(parameterExpr);
             }
 
+            Boolean isMapAggr = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE);
             AggregateInfo aInfo = functionHelper.getAggregateFunctionInfo(
-              isDistinct, isAllColumns, aggName, aggParameters, fieldCollations);
+              isDistinct, isAllColumns, isMapAggr, aggName, aggParameters, fieldCollations);
             aggregations.add(aInfo);
             String field = getColumnInternalName(groupingColsSize + aggregations.size() - 1);
             outputColumnNames.add(field);

@@ -4985,18 +4985,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   public static GenericUDAFEvaluator getGenericUDAFEvaluator(String aggName,
       List<ExprNodeDesc> aggParameters, ASTNode aggTree,
-      boolean isDistinct, boolean isAllColumns)
+      boolean isDistinct, boolean isAllColumns, boolean isMapAggr)
       throws SemanticException {
     return getGenericUDAFEvaluator2(aggName, getWritableObjectInspector(aggParameters),
-        aggTree, isDistinct, isAllColumns);
+        aggTree, isDistinct, isAllColumns, isMapAggr);
   }
 
   public static GenericUDAFEvaluator getGenericUDAFEvaluator2(String aggName,
       List<ObjectInspector> aggParameterOIs, ASTNode aggTree,
-      boolean isDistinct, boolean isAllColumns)
+      boolean isDistinct, boolean isAllColumns, boolean isMapAggr)
       throws SemanticException {
     GenericUDAFEvaluator result = FunctionRegistry.getGenericUDAFEvaluator(
-        aggName, aggParameterOIs, isDistinct, isAllColumns);
+        aggName, aggParameterOIs, isDistinct, isAllColumns, isMapAggr);
     if (null == result) {
       String reason = "Looking for UDAF Evaluator\"" + aggName
           + "\" with parameters " + aggParameterOIs;
@@ -5224,9 +5224,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (isDistinct) {
         numDistinctUDFs++;
       }
+      Boolean isMapAggr = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE);
       Mode amode = groupByDescModeToUDAFMode(mode, isDistinct);
       GenericUDAFEvaluator genericUDAFEvaluator = getGenericUDAFEvaluator(
-          aggName, aggParameters, value, isDistinct, isAllColumns);
+          aggName, aggParameters, value, isDistinct, isAllColumns, isMapAggr);
       assert (genericUDAFEvaluator != null);
       GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
       aggregations.add(new AggregationDesc(aggName.toLowerCase(),
@@ -5672,8 +5673,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean isAllColumns = value.getType() == HiveParser.TOK_FUNCTIONSTAR;
       Mode amode = groupByDescModeToUDAFMode(GroupByDesc.Mode.HASH, isDistinct);
 
+      Boolean isMapAggr = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE);
       GenericUDAFEvaluator genericUDAFEvaluator = getGenericUDAFEvaluator(
-          aggName, aggParameters, value, isDistinct, isAllColumns);
+          aggName, aggParameters, value, isDistinct, isAllColumns, isMapAggr);
       assert (genericUDAFEvaluator != null);
       GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode,
           aggParameters);

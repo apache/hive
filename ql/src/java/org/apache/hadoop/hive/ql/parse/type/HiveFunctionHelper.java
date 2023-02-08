@@ -367,7 +367,7 @@ public class HiveFunctionHelper implements FunctionHelper {
    * {@inheritDoc}
    */
   @Override
-  public AggregateInfo getAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns,
+  public AggregateInfo getAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns, boolean isMapAggr,
                                                 String aggregateName, List<RexNode> aggregateParameters,
                                                 List<FieldCollation> fieldCollations)
       throws SemanticException {
@@ -387,7 +387,7 @@ public class HiveFunctionHelper implements FunctionHelper {
       }
     }
     GenericUDAFEvaluator genericUDAFEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator2(
-        aggregateName, aggParameterOIs, null, isDistinct, isAllColumns);
+        aggregateName, aggParameterOIs, null, isDistinct, isAllColumns, isMapAggr);
     assert (genericUDAFEvaluator != null);
     GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(
         genericUDAFEvaluator, udafMode, aggParameterOIs);
@@ -398,7 +398,7 @@ public class HiveFunctionHelper implements FunctionHelper {
    * {@inheritDoc}
    */
   @Override
-  public AggregateInfo getWindowAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns,
+  public AggregateInfo getWindowAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns, boolean isMapAggr,
       String aggregateName, List<RexNode> aggregateParameters)
       throws SemanticException {
     TypeInfo returnType = null;
@@ -422,13 +422,13 @@ public class HiveFunctionHelper implements FunctionHelper {
         if (aggregateName.toLowerCase().equals(FunctionRegistry.LEAD_FUNC_NAME)
             || aggregateName.toLowerCase().equals(FunctionRegistry.LAG_FUNC_NAME)) {
           GenericUDAFEvaluator genericUDAFEvaluator = FunctionRegistry.getGenericWindowingEvaluator(aggregateName,
-              aggParameterOIs, isDistinct, isAllColumns, true);
+              aggParameterOIs, isDistinct, isAllColumns, true, isMapAggr);
           GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(
               genericUDAFEvaluator, udafMode, aggParameterOIs);
           returnType = ((ListTypeInfo) udaf.returnType).getListElementTypeInfo();
         } else {
           GenericUDAFEvaluator genericUDAFEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator2(
-              aggregateName, aggParameterOIs, null, isDistinct, isAllColumns);
+              aggregateName, aggParameterOIs, null, isDistinct, isAllColumns, isMapAggr);
           assert (genericUDAFEvaluator != null);
           GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(
               genericUDAFEvaluator, udafMode, aggParameterOIs);

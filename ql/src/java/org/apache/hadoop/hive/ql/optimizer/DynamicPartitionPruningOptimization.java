@@ -633,16 +633,17 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
 
     ArrayList<AggregationDesc> aggs = new ArrayList<AggregationDesc>();
     try {
+      Boolean isMapAggr = HiveConf.getBoolVar(parseContext.getConf(), HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE);
       AggregationDesc min = new AggregationDesc("min",
-              FunctionRegistry.getGenericUDAFEvaluator("min", aggFnOIs, false, false),
+              FunctionRegistry.getGenericUDAFEvaluator("min", aggFnOIs, false, false, isMapAggr),
               params, false, Mode.PARTIAL1);
       AggregationDesc max = new AggregationDesc("max",
-              FunctionRegistry.getGenericUDAFEvaluator("max", aggFnOIs, false, false),
+              FunctionRegistry.getGenericUDAFEvaluator("max", aggFnOIs, false, false, isMapAggr),
               params, false, Mode.PARTIAL1);
       // we don't add numThreads here since PARTIAL1 mode is for VectorUDAFBloomFilter which does
       // not support numThreads parameter
       AggregationDesc bloomFilter = new AggregationDesc(BLOOM_FILTER_FUNCTION,
-              FunctionRegistry.getGenericUDAFEvaluator(BLOOM_FILTER_FUNCTION, aggFnOIs, false, false),
+              FunctionRegistry.getGenericUDAFEvaluator(BLOOM_FILTER_FUNCTION, aggFnOIs, false, false, isMapAggr),
               params, false, Mode.PARTIAL1);
       GenericUDAFBloomFilterEvaluator bloomFilterEval =
           (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
@@ -746,17 +747,18 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
       TypeInfo intTypeInfo = TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(Integer.TYPE);
       bloomFilterFinalParams.add(new ExprNodeConstantDesc(intTypeInfo, numThreads));
 
+      Boolean isMapAggr = HiveConf.getBoolVar(parseContext.getConf(), HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE);
       AggregationDesc min = new AggregationDesc("min",
               FunctionRegistry.getGenericUDAFEvaluator("min", minFinalFnOIs,
-                      false, false),
+                      false, false, isMapAggr),
               minFinalParams, false, Mode.FINAL);
       AggregationDesc max = new AggregationDesc("max",
               FunctionRegistry.getGenericUDAFEvaluator("max", maxFinalFnOIs,
-                      false, false),
+                      false, false, isMapAggr),
               maxFinalParams, false, Mode.FINAL);
       AggregationDesc bloomFilter = new AggregationDesc(BLOOM_FILTER_FUNCTION,
               FunctionRegistry.getGenericUDAFEvaluator(BLOOM_FILTER_FUNCTION, bloomFilterFinalFnOIs,
-                      false, false),
+                      false, false, isMapAggr),
               bloomFilterFinalParams, false, Mode.FINAL);
       GenericUDAFBloomFilterEvaluator bloomFilterEval = (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
       bloomFilterEval.setSourceOperator(selectOp);

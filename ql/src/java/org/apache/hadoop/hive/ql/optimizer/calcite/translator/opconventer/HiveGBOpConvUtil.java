@@ -274,11 +274,13 @@ final class HiveGBOpConvUtil {
         gbInfo.distColIndices.add(distColIndicesOfUDAF);
       }
 
+      Boolean isMapAggr = HiveConf.getBoolVar(hc, HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE);
       // special handling for count, similar to PlanModifierForASTConv::replaceEmptyGroupAggr()
       udafAttrs.udafEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator(udafAttrs.udafName,
           new ArrayList<ExprNodeDesc>(udafAttrs.udafParams), new ASTNode(),
           udafAttrs.isDistinctUDAF, udafAttrs.udafParams.size() == 0 &&
-          "count".equalsIgnoreCase(udafAttrs.udafName) ? true : false);
+          "count".equalsIgnoreCase(udafAttrs.udafName) ? true : false,
+          isMapAggr);
       gbInfo.udafAttrs.add(udafAttrs);
     }
 

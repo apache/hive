@@ -1241,7 +1241,7 @@ public final class FunctionRegistry {
   @SuppressWarnings("deprecation")
   public static GenericUDAFEvaluator getGenericUDAFEvaluator(String name,
       List<ObjectInspector> argumentOIs, boolean isDistinct,
-      boolean isAllColumns) throws SemanticException {
+      boolean isAllColumns, boolean isMapAggr) throws SemanticException {
 
     GenericUDAFResolver udafResolver = getGenericUDAFResolver(name);
     if (udafResolver == null) {
@@ -1257,7 +1257,7 @@ public final class FunctionRegistry {
 
     GenericUDAFParameterInfo paramInfo =
         new SimpleGenericUDAFParameterInfo(
-            args, false, isDistinct, isAllColumns);
+            args, false, isDistinct, isAllColumns, true, isMapAggr);
 
     GenericUDAFEvaluator udafEvaluator;
     if (udafResolver instanceof GenericUDAFResolver2) {
@@ -1274,9 +1274,9 @@ public final class FunctionRegistry {
       boolean isAllColumns, boolean respectNulls) throws SemanticException {
     Registry registry = SessionState.getRegistry();
     GenericUDAFEvaluator evaluator = registry == null ? null :
-        registry.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls);
+        registry.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls, false);
     return evaluator != null ? evaluator :
-        system.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls);
+        system.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls, false);
   }
 
   public static GenericUDAFResolver getGenericUDAFResolver(String functionName)

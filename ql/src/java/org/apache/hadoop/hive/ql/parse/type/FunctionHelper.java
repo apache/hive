@@ -67,14 +67,14 @@ public interface FunctionHelper {
   /**
    * Returns aggregation information based on given parameters.
    */
-  AggregateInfo getAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns,
+  AggregateInfo getAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns, boolean isMapAggr,
                                          String aggregateName, List<RexNode> aggregateParameters, List<FieldCollation> fieldCollations)
       throws SemanticException;
 
   /**
    * Returns aggregation information for analytical function based on given parameters.
    */
-  AggregateInfo getWindowAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns,
+  AggregateInfo getWindowAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns, boolean isMapAggr,
       String aggregateName, List<RexNode> aggregateParameters)
       throws SemanticException;
 

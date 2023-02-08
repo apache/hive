@@ -47,13 +47,15 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
   private transient ListObjectInspector internalMergeOI;
 
   private BufferType bufferType;
+  private boolean isMapAggr;
 
   //needed by kyro
   public GenericUDAFMkCollectionEvaluator() {
   }
 
-  public GenericUDAFMkCollectionEvaluator(BufferType bufferType){
+  public GenericUDAFMkCollectionEvaluator(BufferType bufferType, boolean isMapAggr) {
     this.bufferType = bufferType;
+    this.isMapAggr = isMapAggr;
   }
 
   @Override
@@ -67,10 +69,11 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
       return ObjectInspectorFactory.getStandardListObjectInspector(
           ObjectInspectorUtils.getStandardObjectInspector(inputOI));
     } else {
-      if (!(parameters[0] instanceof ListObjectInspector)) {
+      if (!isMapAggr) {
         //no map aggregation.
-        inputOI = ObjectInspectorUtils.getStandardObjectInspector(parameters[0]);
-        return ObjectInspectorFactory.getStandardListObjectInspector(inputOI);
+        inputOI = parameters[0];
+        return ObjectInspectorFactory.getStandardListObjectInspector(
+            ObjectInspectorUtils.getStandardObjectInspector(inputOI));
       } else {
         internalMergeOI = (ListObjectInspector) parameters[0];
         inputOI = internalMergeOI.getListElementObjectInspector();

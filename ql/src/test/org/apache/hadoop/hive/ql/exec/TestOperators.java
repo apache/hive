@@ -544,7 +544,7 @@ public class TestOperators {
     ArrayList<ExprNodeDesc> params = new ArrayList<ExprNodeDesc>();
     params.add(inputColumn);
     GenericUDAFEvaluator genericUDAFEvaluator =
-        SemanticAnalyzer.getGenericUDAFEvaluator(aggregate, params, null, false, false);
+        SemanticAnalyzer.getGenericUDAFEvaluator(aggregate, params, null, false, false, false);
     AggregationDesc agg =
         new AggregationDesc(aggregate, genericUDAFEvaluator, params, false, GenericUDAFEvaluator.Mode.PARTIAL1);
     ArrayList<AggregationDesc> aggs = new ArrayList<AggregationDesc>();

@@ -35,6 +35,8 @@ public abstract class AbstractGenericUDAFResolver
     implements GenericUDAFResolver2
 {
 
+  private boolean isMapAggr = false;
+
   @SuppressWarnings("deprecation")
   @Override
   public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo info)
@@ -44,7 +46,7 @@ public abstract class AbstractGenericUDAFResolver
       throw new SemanticException(
           "The specified syntax for UDAF invocation is invalid.");
     }
-
+    this.isMapAggr = info.isMapAggr();
     return getEvaluator(info.getParameters());
   }
 
@@ -53,5 +55,9 @@ public abstract class AbstractGenericUDAFResolver
     throws SemanticException {
     throw new SemanticException(
           "This UDAF does not support the deprecated getEvaluator() method.");
+  }
+
+  public boolean isMapAggr() {
+    return this.isMapAggr;
   }
 }

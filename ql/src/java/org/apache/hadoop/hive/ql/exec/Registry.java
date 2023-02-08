@@ -477,7 +477,7 @@ public class Registry {
   @SuppressWarnings("deprecation")
   public GenericUDAFEvaluator getGenericUDAFEvaluator(String name,
       List<ObjectInspector> argumentOIs, boolean isWindowing, boolean isDistinct,
-      boolean isAllColumns, boolean respectNulls) throws SemanticException {
+      boolean isAllColumns, boolean respectNulls, boolean isMapAggr) throws SemanticException {
 
     GenericUDAFResolver udafResolver = getGenericUDAFResolver(name);
     if (udafResolver == null) {
@@ -494,7 +494,7 @@ public class Registry {
 
     GenericUDAFParameterInfo paramInfo =
         new SimpleGenericUDAFParameterInfo(
-            args, isWindowing, isDistinct, isAllColumns, respectNulls);
+            args, isWindowing, isDistinct, isAllColumns, respectNulls, isMapAggr);
     if (udafResolver instanceof GenericUDAFResolver2) {
       udafEvaluator =
           ((GenericUDAFResolver2) udafResolver).getEvaluator(paramInfo);
@@ -505,7 +505,7 @@ public class Registry {
   }
 
   public GenericUDAFEvaluator getGenericWindowingEvaluator(String functionName,
-      List<ObjectInspector> argumentOIs, boolean isDistinct, boolean isAllColumns, boolean respectNulls)
+      List<ObjectInspector> argumentOIs, boolean isDistinct, boolean isAllColumns, boolean respectNulls, boolean isMapAggr)
       throws SemanticException {
     functionName = functionName.toLowerCase();
     WindowFunctionInfo info = getWindowFunctionInfo(functionName);
@@ -514,7 +514,7 @@ public class Registry {
     }
     if (!functionName.equals(FunctionRegistry.LEAD_FUNC_NAME) &&
         !functionName.equals(FunctionRegistry.LAG_FUNC_NAME)) {
-      return getGenericUDAFEvaluator(functionName, argumentOIs, true, isDistinct, isAllColumns, respectNulls);
+      return getGenericUDAFEvaluator(functionName, argumentOIs, true, isDistinct, isAllColumns, respectNulls, isMapAggr);
     }
 
     // this must be lead/lag UDAF

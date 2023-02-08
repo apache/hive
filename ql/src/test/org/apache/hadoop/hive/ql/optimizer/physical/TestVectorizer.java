@@ -96,7 +96,7 @@ public class TestVectorizer {
     paramOIs.add(exprNodeDesc.getWritableObjectInspector());
 
     AggregationDesc aggDesc = new AggregationDesc("sum",
-        FunctionRegistry.getGenericUDAFEvaluator("sum", paramOIs, false, false),
+        FunctionRegistry.getGenericUDAFEvaluator("sum", paramOIs, false, false, false),
         params,
         false,
         GenericUDAFEvaluator.Mode.PARTIAL1);
