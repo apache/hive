@@ -1271,12 +1271,12 @@ public final class FunctionRegistry {
 
   public static GenericUDAFEvaluator getGenericWindowingEvaluator(String name,
       List<ObjectInspector> argumentOIs, boolean isDistinct,
-      boolean isAllColumns, boolean respectNulls) throws SemanticException {
+      boolean isAllColumns, boolean respectNulls, boolean isMapAggr) throws SemanticException {
     Registry registry = SessionState.getRegistry();
     GenericUDAFEvaluator evaluator = registry == null ? null :
-        registry.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls, false);
+        registry.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls, isMapAggr);
     return evaluator != null ? evaluator :
-        system.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls, false);
+        system.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls, isMapAggr);
   }
 
   public static GenericUDAFResolver getGenericUDAFResolver(String functionName)

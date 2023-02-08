@@ -29,6 +29,7 @@ public class WindowFunctionDef extends WindowExpressionDef {
   String name;
   boolean isStar;
   boolean isDistinct;
+  boolean isMapAggr;
   List<PTFExpressionDef> args;
   WindowFrameDef windowFrame;
   GenericUDAFEvaluator wFnEval;
@@ -60,6 +61,14 @@ public class WindowFunctionDef extends WindowExpressionDef {
 
   public void setDistinct(boolean isDistinct) {
     this.isDistinct = isDistinct;
+  }
+
+  public void setMapAggr(boolean mapAggr) {
+    isMapAggr = mapAggr;
+  }
+
+  public boolean isMapAggr() {
+    return isMapAggr;
   }
 
   public List<PTFExpressionDef> getArgs() {

@@ -346,10 +346,12 @@ public class PTFTranslator {
     if (wFnInfo == null) {
       throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(spec.getName()));
     }
+    Boolean isMapAggr = HiveConf.getBoolVar(hCfg, HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE);
     WindowFunctionDef def = new WindowFunctionDef();
     def.setName(spec.getName());
     def.setAlias(spec.getAlias());
     def.setDistinct(spec.isDistinct());
+    def.setMapAggr(isMapAggr);
     def.setExpressionTreeString(spec.getExpression().toStringTree());
     def.setStar(spec.isStar());
     def.setPivotResult(wFnInfo.isPivotResult());
@@ -583,7 +585,7 @@ public class PTFTranslator {
 
     GenericUDAFEvaluator wFnEval = FunctionRegistry.getGenericWindowingEvaluator(def.getName(),
         argOIs,
-        def.isDistinct(), def.isStar(), def.respectNulls());
+        def.isDistinct(), def.isStar(), def.respectNulls(), def.isMapAggr());
     ObjectInspector OI = wFnEval.init(GenericUDAFEvaluator.Mode.COMPLETE, funcArgOIs);
     def.setWFnEval(wFnEval);
     def.setOI(OI);
