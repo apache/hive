@@ -12,6 +12,21 @@ module ThriftHiveMetastore
   class Client < ::FacebookService::Client 
     include ::Thrift::Client
 
+    def abort_Compactions(rqst)
+      send_abort_Compactions(rqst)
+      return recv_abort_Compactions()
+    end
+
+    def send_abort_Compactions(rqst)
+      send_message('abort_Compactions', Abort_Compactions_args, :rqst => rqst)
+    end
+
+    def recv_abort_Compactions()
+      result = receive_message(Abort_Compactions_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'abort_Compactions failed: unknown result')
+    end
+
     def getMetaConf(key)
       send_getMetaConf(key)
       return recv_getMetaConf()
@@ -4500,6 +4515,13 @@ module ThriftHiveMetastore
   class Processor < ::FacebookService::Processor 
     include ::Thrift::Processor
 
+    def process_abort_Compactions(seqid, iprot, oprot)
+      args = read_args(iprot, Abort_Compactions_args)
+      result = Abort_Compactions_result.new()
+      result.success = @handler.abort_Compactions(args.rqst)
+      write_result(result, oprot, 'abort_Compactions', seqid)
+    end
+
     def process_getMetaConf(seqid, iprot, oprot)
       args = read_args(iprot, GetMetaConf_args)
       result = GetMetaConf_result.new()
@@ -7858,6 +7880,38 @@ module ThriftHiveMetastore
   end
 
   # HELPER FUNCTIONS AND STRUCTURES
+
+  class Abort_Compactions_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AbortCompactionRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Abort_Compactions_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::AbortCompactResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
 
   class GetMetaConf_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
