@@ -1,6 +1,6 @@
 -- MV data is stored by partitioned iceberg with partition spec
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
---! qt:replace:/(\s+current-snapshot-id\s+)\d+/$1#SnapshotId#/
+--! qt:replace:/(\s+current-snapshot-id\s+)\d+(\s*)/$1#SnapshotId#/
 -- SORT_QUERY_RESULTS
 
 drop materialized view if exists mat1;

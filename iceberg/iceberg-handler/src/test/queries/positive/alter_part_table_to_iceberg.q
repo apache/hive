@@ -3,7 +3,7 @@
 -- Mask random uuid
 --! qt:replace:/(\s+uuid\s+)\S+/$1#Masked#/
 -- Mask random snapshot id
---! qt:replace:/(\s+current-snapshot-id\s+)\d+/$1#SnapshotId#/
+--! qt:replace:/(\s+current-snapshot-id\s+)\d+(\s*)/$1#SnapshotId#/
 
 set hive.vectorized.execution.enabled=false;
 
