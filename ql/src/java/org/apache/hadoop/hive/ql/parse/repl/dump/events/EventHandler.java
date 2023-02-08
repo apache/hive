@@ -45,6 +45,7 @@ public interface EventHandler {
     final ReplScope replScope;
     final ReplScope oldReplScope;
     private Set<String> tablesForBootstrap;
+    private boolean dmdCreated;
 
     public Context(Path eventRoot, Path dumpRoot, Path cmRoot, Hive db, HiveConf hiveConf,
                    ReplicationSpec replicationSpec, ReplScope replScope, ReplScope oldReplScope,
@@ -77,6 +78,7 @@ public interface EventHandler {
     }
 
     DumpMetaData createDmd(EventHandler eventHandler) {
+      this.dmdCreated = true;
       return new DumpMetaData(
           eventRoot,
           eventHandler.dumpType(),
@@ -98,6 +100,9 @@ public interface EventHandler {
     boolean removeFromListOfTablesForBootstrap(String tableName) {
       assert tableName != null;
       return tablesForBootstrap.remove(tableName.toLowerCase());
+    }
+    public boolean isDmdCreated() {
+      return dmdCreated;
     }
   }
 }
