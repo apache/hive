@@ -55,6 +55,10 @@ import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metric;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
@@ -92,6 +96,7 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_ENABLE_BACKGROUN
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 
+import static org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector.isMetricsEnabledForTests;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -3735,5 +3740,61 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9"});
 
     ReplDumpWork.testDeletePreviousDumpMetaPath(false);
+  }
+  @Test
+  public void testEventsDumpedCountWithFilteringOfOpenTransactions() throws Throwable {
+    final int REPL_MAX_LOAD_TASKS = 5;
+    List<String> incrementalBatchConfigs = Arrays.asList(
+            String.format("'%s'='%s'", HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS, "true"),
+            String.format("'%s'='%d'", HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS, REPL_MAX_LOAD_TASKS),
+            String.format("'%s'='%s'", HiveConf.ConfVars.REPL_FILTER_TRANSACTIONS, "true")
+    );
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("create table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .dump(primaryDbName, incrementalBatchConfigs);
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+
+    replica.load(replicatedDbName, primaryDbName, incrementalBatchConfigs)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1"});
+
+    isMetricsEnabledForTests(true);
+    MetricCollector collector = MetricCollector.getInstance();
+    //incremental run
+    WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
+            .run("insert into t1 values(2)")
+            .run("insert into t1 values(3)")
+            .run("select * from t1")  // will open a read only transaction which should be filtered.
+            .run("insert into t1 values(4)")
+            .run("insert into t1 values(5)")
+            .dump(primaryDbName, incrementalBatchConfigs);
+
+    ReplicationMetric metric = collector.getMetrics().getLast();
+    Stage stage = metric.getProgress().getStageByName("REPL_DUMP");
+    Metric eventMetric = stage.getMetricByName(ReplUtils.MetricName.EVENTS.name());
+    long eventCountFromMetrics = eventMetric.getTotalCount();
+
+    Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path ackLastEventID = new Path(dumpPath, ReplAck.EVENTS_DUMP.toString());
+    EventsDumpMetadata eventsDumpMetadata = EventsDumpMetadata.deserialize(ackLastEventID, conf);
+
+    int eventsCountInAckFile = eventsDumpMetadata.getEventsDumpedCount(), eventCountFromStagingDir = 0;
+
+    String eventsBatchDirPrefix = ReplUtils.INC_EVENTS_BATCH.replaceAll("%d", "");
+    List<FileStatus> batchFiles = Arrays.stream(fs.listStatus(dumpPath))
+            .filter(fileStatus -> fileStatus.getPath().getName()
+                    .startsWith(eventsBatchDirPrefix)).collect(Collectors.toList());
+
+    for (FileStatus fileStatus : batchFiles) {
+      eventCountFromStagingDir += fs.listStatus(fileStatus.getPath()).length;
+    }
+    // open transactions were filtered.
+    assertTrue(eventCountFromStagingDir < eventCountFromMetrics);
+    // ensure event count is captured appropriately in EventsDumpMetadata.
+    assertEquals(eventsCountInAckFile, eventCountFromStagingDir);
   }
 }

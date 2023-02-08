@@ -1209,8 +1209,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     );
     EventHandler eventHandler = EventHandlerFactory.handlerFor(ev);
     eventHandler.handle(context);
-    eventsDumpMetadata.incrementEventsDumpedCount();
-    work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.EVENTS.name(), 1);
+    if (context.isDmdCreated()) {
+      eventsDumpMetadata.incrementEventsDumpedCount();
+      work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.EVENTS.name(), 1);
+    }
     work.getReplLogger().eventLog(String.valueOf(ev.getEventId()), eventHandler.dumpType().toString());
   }
 
