@@ -402,8 +402,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // whether this is a mv rebuild rewritten expression
   protected MaterializationRebuildMode mvRebuildMode = MaterializationRebuildMode.NONE;
-  protected String mvRebuildDbName; // Db name for materialization to rebuild
-  protected String mvRebuildName; // Name for materialization to rebuild
 
   protected volatile boolean disableJoinMerge = false;
   protected final boolean defaultJoinMerge;
