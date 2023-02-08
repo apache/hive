@@ -2688,6 +2688,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return client.show_compact(new ShowCompactRequest());
   }
 
+  @Override
+  public AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException{
+    return client.abort_Compactions(request);
+  }
+
 
   @Override
   public ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException {

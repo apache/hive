@@ -557,6 +557,12 @@ class ShowCompactResponseElement; end
 
 class ShowCompactResponse; end
 
+class AbortCompactionRequest; end
+
+class AbortCompactionResponseElement; end
+
+class AbortCompactResponse; end
+
 class GetLatestCommittedCompactionInfoRequest; end
 
 class GetLatestCommittedCompactionInfoResponse; end
@@ -872,6 +878,10 @@ class TxnAbortedException < ::Thrift::Exception; end
 class TxnOpenException < ::Thrift::Exception; end
 
 class NoSuchLockException < ::Thrift::Exception; end
+
+class CompactionAbortedException < ::Thrift::Exception; end
+
+class NoSuchCompactionException < ::Thrift::Exception; end
 
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
@@ -4797,6 +4807,65 @@ class ShowCompactResponse
   ::Thrift::Struct.generate_accessors self
 end
 
+class AbortCompactionRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  COMPACTIONIDS = 1
+  TYPE = 2
+  POOLNAME = 3
+
+  FIELDS = {
+    COMPACTIONIDS => {:type => ::Thrift::Types::LIST, :name => 'compactionIds', :element => {:type => ::Thrift::Types::I64}},
+    TYPE => {:type => ::Thrift::Types::STRING, :name => 'type', :optional => true},
+    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field compactionIds is unset!') unless @compactionIds
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AbortCompactionResponseElement
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  COMPACTIONID = 1
+  STATUS = 2
+  MESSAGE = 3
+
+  FIELDS = {
+    COMPACTIONID => {:type => ::Thrift::Types::I64, :name => 'compactionId'},
+    STATUS => {:type => ::Thrift::Types::STRING, :name => 'status', :optional => true},
+    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field compactionId is unset!') unless @compactionId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AbortCompactResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ABORTEDCOMPACTS = 1
+
+  FIELDS = {
+    ABORTEDCOMPACTS => {:type => ::Thrift::Types::MAP, :name => 'abortedcompacts', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::AbortCompactionResponseElement}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field abortedcompacts is unset!') unless @abortedcompacts
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class GetLatestCommittedCompactionInfoRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
@@ -8193,6 +8262,48 @@ class TxnOpenException < ::Thrift::Exception
 end
 
 class NoSuchLockException < ::Thrift::Exception
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  def initialize(message=nil)
+    super()
+    self.message = message
+  end
+
+  MESSAGE = 1
+
+  FIELDS = {
+    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CompactionAbortedException < ::Thrift::Exception
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  def initialize(message=nil)
+    super()
+    self.message = message
+  end
+
+  MESSAGE = 1
+
+  FIELDS = {
+    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class NoSuchCompactionException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)
     super()

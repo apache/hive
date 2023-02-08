@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
+import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -2484,6 +2485,86 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb TYPE 'MAJOR' ORDER BY tbl DESC,PARTITIONS ASC");
 
   }
+
+  @Test
+  public void testAbortCompactions() throws Exception {
+    //generate some compaction history
+    runStatementOnDriver("drop database if exists mydb1 cascade");
+    runStatementOnDriver("create database mydb1");
+    runStatementOnDriver("create table mydb1.tbl0 " + "(a int, b int) partitioned by (p string) clustered by (a) into " +
+            BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into mydb1.tbl0" + " PARTITION(p) " +
+            " values(1,2,'p1'),(3,4,'p1'),(1,2,'p2'),(3,4,'p2'),(1,2,'p3'),(3,4,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p1') compact 'MAJOR'");
+    TestTxnCommands2.runInitiator(hiveConf);
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p2') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p3') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("insert into mydb1.tbl0" + " PARTITION(p) " +
+            " values(4,5,'p1'),(6,7,'p1'),(4,5,'p2'),(6,7,'p2'),(4,5,'p3'),(6,7,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION (p='p1') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION (p='p2') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION (p='p3')  compact 'MAJOR' pool 'pool0'");
+    TestTxnCommands2.runInitiator(hiveConf);
+    TestTxnCommands2.runWorker(hiveConf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+
+
+
+    runStatementOnDriver("create table mydb1.tbl2 " + "(a int, b int) partitioned by (p string) clustered by (a) into " +
+            BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into mydb1.tbl2" + " PARTITION(p) " +
+            " values(1,2,'p1'),(3,4,'p1'),(1,2,'p2'),(3,4,'p2'),(1,2,'p3'),(3,4,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl2" + " PARTITION(p='p1') compact 'MAJOR'");
+    runStatementOnDriver("alter table mydb1.tbl2" + " PARTITION(p='p2') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    TestTxnCommands2.runCleaner(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl2" + " PARTITION(p='p3') compact 'MAJOR'");
+    runStatementOnDriver("insert into mydb1.tbl0" + " PARTITION(p) " +
+            " values(4,5,'p1'),(6,7,'p1'),(4,5,'p2'),(6,7,'p2'),(4,5,'p3'),(6,7,'p3')");
+    TestTxnCommands2.runWorker(hiveConf);
+    TestTxnCommands2.runCleaner(hiveConf);
+    runStatementOnDriver("insert into mydb1.tbl2" + " PARTITION(p) " +
+            " values(11,12,'p1'),(13,14,'p1'),(11,12,'p2'),(13,14,'p2'),(11,12,'p3'),(13,14,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl2" + " PARTITION (p='p1')  compact 'MINOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+    runStatementOnDriver("create table mydb1.tbl3 " + "(a int, b int) partitioned by (ds string) clustered by (a) into " +
+            BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into mydb1.tbl3" + " PARTITION(ds) " +
+            " values(1,2,'today'),(3,4,'today'),(1,2,'tomorrow'),(3,4,'tomorrow'),(1,2,'yesterday'),(3,4,'yesterday')");
+    runStatementOnDriver("alter table mydb1.tbl3" + " PARTITION(ds='today') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+    SessionState.get().setCurrentDatabase("mydb1");
+
+    //testing show compaction command
+
+    List<String> r =  runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 STATUS 'initiated'");
+    Assert.assertEquals(3,r.size());
+    List<String>compIdsToAbort = r.stream().skip(1).map(x -> x.split("\t")[0]).collect(Collectors.toList());
+    String abortCompactionCmd = "ABORT COMPACTIONS " +compIdsToAbort.get(0)+"\t"+compIdsToAbort.get(1);
+    r = runStatementOnDriver(abortCompactionCmd);
+    Assert.assertEquals(3,r.size());
+    Assert.assertEquals("CompactionId\tStatus\tMessage", r.get(0));
+    Assert.assertTrue(r.get(1).contains("Successfully aborted compaction"));
+    Assert.assertTrue(r.get(2).contains("Successfully aborted compaction"));
+
+    abortCompactionCmd = "ABORT COMPACTIONS " +compIdsToAbort.get(0)+"\t"+compIdsToAbort.get(1);
+    r = runStatementOnDriver(abortCompactionCmd);
+    Assert.assertEquals(3,r.size());
+    Assert.assertEquals("CompactionId\tStatus\tMessage", r.get(0));
+    Assert.assertTrue(r.get(1).contains("Error"));
+
+    r =  runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 STATUS 'aborted'");
+    Assert.assertEquals(3,r.size());
+
+  }
+
 
   private void setUpCompactionRequestsData(String dbName, String tbName) throws Exception {
     runStatementOnDriver("drop database if exists " + dbName);

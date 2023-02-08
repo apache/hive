@@ -431,6 +431,7 @@ TOK_ROLLBACK;
 TOK_SET_AUTOCOMMIT;
 TOK_CACHE_METADATA;
 TOK_ABORT_TRANSACTIONS;
+TOK_ABORT_COMPACTIONS;
 TOK_MERGE;
 TOK_MATCHED;
 TOK_NOT_MATCHED;
@@ -1092,6 +1093,7 @@ ddlStatement
     | setRole
     | showCurrentRole
     | abortTransactionStatement
+    | abortCompactionStatement
     | killQueryStatement
     | resourcePlanDdlStatements
     | createDataConnectorStatement
@@ -2898,7 +2900,13 @@ abortTransactionStatement
   KW_ABORT KW_TRANSACTIONS ( Number )+ -> ^(TOK_ABORT_TRANSACTIONS ( Number )+)
   ;
 
+abortCompactionStatement
+@init { pushMsg("abort compactions statement", state); }
+@after { popMsg(state); }
+  :
 
+       KW_ABORT KW_COMPACTIONS ( Number )+ -> ^(TOK_ABORT_COMPACTIONS ( Number )+)
+  ;
 /*
 BEGIN SQL Merge statement
 */

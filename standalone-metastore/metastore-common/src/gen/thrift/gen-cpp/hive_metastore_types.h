@@ -745,6 +745,12 @@ class ShowCompactResponseElement;
 
 class ShowCompactResponse;
 
+class AbortCompactionRequest;
+
+class AbortCompactionResponseElement;
+
+class AbortCompactResponse;
+
 class GetLatestCommittedCompactionInfoRequest;
 
 class GetLatestCommittedCompactionInfoResponse;
@@ -1060,6 +1066,10 @@ class TxnAbortedException;
 class TxnOpenException;
 
 class NoSuchLockException;
+
+class CompactionAbortedException;
+
+class NoSuchCompactionException;
 
 typedef struct _Version__isset {
   _Version__isset() : version(false), comments(false) {}
@@ -11641,6 +11651,161 @@ void swap(ShowCompactResponse &a, ShowCompactResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const ShowCompactResponse& obj);
 
+typedef struct _AbortCompactionRequest__isset {
+  _AbortCompactionRequest__isset() : type(false), poolName(false) {}
+  bool type :1;
+  bool poolName :1;
+} _AbortCompactionRequest__isset;
+
+class AbortCompactionRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  AbortCompactionRequest(const AbortCompactionRequest&);
+  AbortCompactionRequest& operator=(const AbortCompactionRequest&);
+  AbortCompactionRequest() noexcept
+                         : type(),
+                           poolName() {
+  }
+
+  virtual ~AbortCompactionRequest() noexcept;
+  std::vector<int64_t>  compactionIds;
+  std::string type;
+  std::string poolName;
+
+  _AbortCompactionRequest__isset __isset;
+
+  void __set_compactionIds(const std::vector<int64_t> & val);
+
+  void __set_type(const std::string& val);
+
+  void __set_poolName(const std::string& val);
+
+  bool operator == (const AbortCompactionRequest & rhs) const
+  {
+    if (!(compactionIds == rhs.compactionIds))
+      return false;
+    if (__isset.type != rhs.__isset.type)
+      return false;
+    else if (__isset.type && !(type == rhs.type))
+      return false;
+    if (__isset.poolName != rhs.__isset.poolName)
+      return false;
+    else if (__isset.poolName && !(poolName == rhs.poolName))
+      return false;
+    return true;
+  }
+  bool operator != (const AbortCompactionRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AbortCompactionRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AbortCompactionRequest &a, AbortCompactionRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const AbortCompactionRequest& obj);
+
+typedef struct _AbortCompactionResponseElement__isset {
+  _AbortCompactionResponseElement__isset() : status(false), message(false) {}
+  bool status :1;
+  bool message :1;
+} _AbortCompactionResponseElement__isset;
+
+class AbortCompactionResponseElement : public virtual ::apache::thrift::TBase {
+ public:
+
+  AbortCompactionResponseElement(const AbortCompactionResponseElement&);
+  AbortCompactionResponseElement& operator=(const AbortCompactionResponseElement&);
+  AbortCompactionResponseElement() noexcept
+                                 : compactionId(0),
+                                   status(),
+                                   message() {
+  }
+
+  virtual ~AbortCompactionResponseElement() noexcept;
+  int64_t compactionId;
+  std::string status;
+  std::string message;
+
+  _AbortCompactionResponseElement__isset __isset;
+
+  void __set_compactionId(const int64_t val);
+
+  void __set_status(const std::string& val);
+
+  void __set_message(const std::string& val);
+
+  bool operator == (const AbortCompactionResponseElement & rhs) const
+  {
+    if (!(compactionId == rhs.compactionId))
+      return false;
+    if (__isset.status != rhs.__isset.status)
+      return false;
+    else if (__isset.status && !(status == rhs.status))
+      return false;
+    if (__isset.message != rhs.__isset.message)
+      return false;
+    else if (__isset.message && !(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const AbortCompactionResponseElement &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AbortCompactionResponseElement & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AbortCompactionResponseElement &a, AbortCompactionResponseElement &b);
+
+std::ostream& operator<<(std::ostream& out, const AbortCompactionResponseElement& obj);
+
+
+class AbortCompactResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  AbortCompactResponse(const AbortCompactResponse&);
+  AbortCompactResponse& operator=(const AbortCompactResponse&);
+  AbortCompactResponse() noexcept {
+  }
+
+  virtual ~AbortCompactResponse() noexcept;
+  std::map<int64_t, AbortCompactionResponseElement>  abortedcompacts;
+
+  void __set_abortedcompacts(const std::map<int64_t, AbortCompactionResponseElement> & val);
+
+  bool operator == (const AbortCompactResponse & rhs) const
+  {
+    if (!(abortedcompacts == rhs.abortedcompacts))
+      return false;
+    return true;
+  }
+  bool operator != (const AbortCompactResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AbortCompactResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AbortCompactResponse &a, AbortCompactResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const AbortCompactResponse& obj);
+
 typedef struct _GetLatestCommittedCompactionInfoRequest__isset {
   _GetLatestCommittedCompactionInfoRequest__isset() : partitionnames(false), lastCompactionId(false) {}
   bool partitionnames :1;
@@ -20633,6 +20798,96 @@ class NoSuchLockException : public ::apache::thrift::TException {
 void swap(NoSuchLockException &a, NoSuchLockException &b);
 
 std::ostream& operator<<(std::ostream& out, const NoSuchLockException& obj);
+
+typedef struct _CompactionAbortedException__isset {
+  _CompactionAbortedException__isset() : message(false) {}
+  bool message :1;
+} _CompactionAbortedException__isset;
+
+class CompactionAbortedException : public ::apache::thrift::TException {
+ public:
+
+  CompactionAbortedException(const CompactionAbortedException&);
+  CompactionAbortedException& operator=(const CompactionAbortedException&);
+  CompactionAbortedException() noexcept
+                             : message() {
+  }
+
+  virtual ~CompactionAbortedException() noexcept;
+  std::string message;
+
+  _CompactionAbortedException__isset __isset;
+
+  void __set_message(const std::string& val);
+
+  bool operator == (const CompactionAbortedException & rhs) const
+  {
+    if (!(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const CompactionAbortedException &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CompactionAbortedException & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+  mutable std::string thriftTExceptionMessageHolder_;
+  const char* what() const noexcept override;
+};
+
+void swap(CompactionAbortedException &a, CompactionAbortedException &b);
+
+std::ostream& operator<<(std::ostream& out, const CompactionAbortedException& obj);
+
+typedef struct _NoSuchCompactionException__isset {
+  _NoSuchCompactionException__isset() : message(false) {}
+  bool message :1;
+} _NoSuchCompactionException__isset;
+
+class NoSuchCompactionException : public ::apache::thrift::TException {
+ public:
+
+  NoSuchCompactionException(const NoSuchCompactionException&);
+  NoSuchCompactionException& operator=(const NoSuchCompactionException&);
+  NoSuchCompactionException() noexcept
+                            : message() {
+  }
+
+  virtual ~NoSuchCompactionException() noexcept;
+  std::string message;
+
+  _NoSuchCompactionException__isset __isset;
+
+  void __set_message(const std::string& val);
+
+  bool operator == (const NoSuchCompactionException & rhs) const
+  {
+    if (!(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const NoSuchCompactionException &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const NoSuchCompactionException & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+  mutable std::string thriftTExceptionMessageHolder_;
+  const char* what() const noexcept override;
+};
+
+void swap(NoSuchCompactionException &a, NoSuchCompactionException &b);
+
+std::ostream& operator<<(std::ostream& out, const NoSuchCompactionException& obj);
 
 }}} // namespace
 

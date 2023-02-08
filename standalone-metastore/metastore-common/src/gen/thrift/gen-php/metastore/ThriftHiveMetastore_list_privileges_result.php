@@ -82,14 +82,14 @@ class ThriftHiveMetastore_list_privileges_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1733 = 0;
-                        $_etype1736 = 0;
-                        $xfer += $input->readListBegin($_etype1736, $_size1733);
-                        for ($_i1737 = 0; $_i1737 < $_size1733; ++$_i1737) {
-                            $elem1738 = null;
-                            $elem1738 = new \metastore\HiveObjectPrivilege();
-                            $xfer += $elem1738->read($input);
-                            $this->success []= $elem1738;
+                        $_size1749 = 0;
+                        $_etype1752 = 0;
+                        $xfer += $input->readListBegin($_etype1752, $_size1749);
+                        for ($_i1753 = 0; $_i1753 < $_size1749; ++$_i1753) {
+                            $elem1754 = null;
+                            $elem1754 = new \metastore\HiveObjectPrivilege();
+                            $xfer += $elem1754->read($input);
+                            $this->success []= $elem1754;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -124,8 +124,8 @@ class ThriftHiveMetastore_list_privileges_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRUCT, count($this->success));
-            foreach ($this->success as $iter1739) {
-                $xfer += $iter1739->write($output);
+            foreach ($this->success as $iter1755) {
+                $xfer += $iter1755->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

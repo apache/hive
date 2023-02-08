@@ -24,6 +24,65 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     }
 
 
+    public function abort_Compactions(\metastore\AbortCompactionRequest $rqst)
+    {
+        $this->send_abort_Compactions($rqst);
+        return $this->recv_abort_Compactions();
+    }
+
+    public function send_abort_Compactions(\metastore\AbortCompactionRequest $rqst)
+    {
+        $args = new \metastore\ThriftHiveMetastore_abort_Compactions_args();
+        $args->rqst = $rqst;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'abort_Compactions',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('abort_Compactions', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_abort_Compactions()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_abort_Compactions_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_abort_Compactions_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        throw new \Exception("abort_Compactions failed: unknown result");
+    }
+
     public function getMetaConf($key)
     {
         $this->send_getMetaConf($key);

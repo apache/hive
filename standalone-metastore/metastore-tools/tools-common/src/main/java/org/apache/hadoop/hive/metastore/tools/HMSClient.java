@@ -515,4 +515,5 @@ final class HMSClient implements AutoCloseable {
       transport.close();
     }
   }
+
 }

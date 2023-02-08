@@ -20,6 +20,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     // Your initialization goes here
   }
 
+  void abort_Compactions(AbortCompactResponse& _return, const AbortCompactionRequest& rqst) {
+    // Your implementation goes here
+    printf("abort_Compactions\n");
+  }
+
   void getMetaConf(std::string& _return, const std::string& key) {
     // Your implementation goes here
     printf("getMetaConf\n");

@@ -198,6 +198,8 @@ public enum HiveOperation {
   ROLLBACK("ROLLBACK", HiveParser.TOK_ROLLBACK, null, null, true, true),
   SET_AUTOCOMMIT("SET AUTOCOMMIT", HiveParser.TOK_SET_AUTOCOMMIT, null, null, true, false),
   ABORT_TRANSACTIONS("ABORT TRANSACTIONS", HiveParser.TOK_ABORT_TRANSACTIONS, null, null, false, false),
+  ABORT_COMPACTION("ABORT COMPACTIONS", HiveParser.TOK_ABORT_COMPACTIONS, null, null, false, false),
+
   KILL_QUERY("KILL QUERY", HiveParser.TOK_KILL_QUERY, null, null),
   CREATE_RESOURCEPLAN("CREATE RESOURCEPLAN", HiveParser.TOK_CREATE_RP, null, null, false, false),
   SHOW_RESOURCEPLAN("SHOW RESOURCEPLAN", HiveParser.TOK_SHOW_RP, null, null, false, false),

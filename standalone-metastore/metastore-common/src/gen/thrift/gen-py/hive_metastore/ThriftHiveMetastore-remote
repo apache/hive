@@ -24,6 +24,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
     print('')
     print('Functions:')
+    print('  AbortCompactResponse abort_Compactions(AbortCompactionRequest rqst)')
     print('  string getMetaConf(string key)')
     print('  void setMetaConf(string key, string value)')
     print('  void create_catalog(CreateCatalogRequest catalog)')
@@ -387,7 +388,13 @@ protocol = TBinaryProtocol(transport)
 client = ThriftHiveMetastore.Client(protocol)
 transport.open()
 
-if cmd == 'getMetaConf':
+if cmd == 'abort_Compactions':
+    if len(args) != 1:
+        print('abort_Compactions requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.abort_Compactions(eval(args[0]),))
+
+elif cmd == 'getMetaConf':
     if len(args) != 1:
         print('getMetaConf requires 1 args')
         sys.exit(1)

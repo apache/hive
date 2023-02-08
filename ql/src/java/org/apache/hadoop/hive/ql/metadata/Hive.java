@@ -181,6 +181,8 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchRequest;
+import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
+import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -6594,6 +6596,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
       storageHandler.executeOperation(table, executeSpec);
     } catch (MetaException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws HiveException {
+    try {
+      return getMSC().abortCompactions(request);
+    } catch (Exception e) {
+      LOG.error("Failed abortCompactions", e);
       throw new HiveException(e);
     }
   }

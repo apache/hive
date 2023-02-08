@@ -4378,4 +4378,7 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request) throws TException;
+
+  AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException;
+
 }

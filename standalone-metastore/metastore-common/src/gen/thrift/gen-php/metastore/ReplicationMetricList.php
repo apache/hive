@@ -69,14 +69,14 @@ class ReplicationMetricList
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->replicationMetricList = array();
-                        $_size1238 = 0;
-                        $_etype1241 = 0;
-                        $xfer += $input->readListBegin($_etype1241, $_size1238);
-                        for ($_i1242 = 0; $_i1242 < $_size1238; ++$_i1242) {
-                            $elem1243 = null;
-                            $elem1243 = new \metastore\ReplicationMetrics();
-                            $xfer += $elem1243->read($input);
-                            $this->replicationMetricList []= $elem1243;
+                        $_size1254 = 0;
+                        $_etype1257 = 0;
+                        $xfer += $input->readListBegin($_etype1257, $_size1254);
+                        for ($_i1258 = 0; $_i1258 < $_size1254; ++$_i1258) {
+                            $elem1259 = null;
+                            $elem1259 = new \metastore\ReplicationMetrics();
+                            $xfer += $elem1259->read($input);
+                            $this->replicationMetricList []= $elem1259;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class ReplicationMetricList
             }
             $xfer += $output->writeFieldBegin('replicationMetricList', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->replicationMetricList));
-            foreach ($this->replicationMetricList as $iter1244) {
-                $xfer += $iter1244->write($output);
+            foreach ($this->replicationMetricList as $iter1260) {
+                $xfer += $iter1260->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
