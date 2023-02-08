@@ -1167,12 +1167,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean isOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String name) {
+  public boolean shouldOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String operationName) {
     String mode = null;
-    mode = mTable.getTTable().getParameters()
-        .getOrDefault(TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT);
-
-    return mode.equalsIgnoreCase("copy-on-write");
-
+    String formatVersion = mTable.getTTable().getParameters().get(TableProperties.FORMAT_VERSION);
+    // As of now only delete mode is supported, for all others return false
+    if ("2".equals(formatVersion) && operationName.equalsIgnoreCase("delete")) {
+      mode = mTable.getTTable().getParameters()
+          .getOrDefault(TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT);
+    }
+    return "copy-on-write".equalsIgnoreCase(mode);
   }
 }

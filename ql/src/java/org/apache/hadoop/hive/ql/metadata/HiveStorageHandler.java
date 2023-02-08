@@ -291,7 +291,13 @@ public interface HiveStorageHandler extends Configurable {
     return new HashMap<>();
   }
 
-  default boolean isOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String name) {
+  /**
+   * Returns whether the data should be overwritten for the specific operation.
+   * @param mTable the table.
+   * @param operationName operationName of the operation.
+   * @return if the data should be overwritten for the specified operation.
+   */
+  default boolean shouldOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String operationName) {
     return false;
   }
 

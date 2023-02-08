@@ -99,15 +99,15 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   private void reparseAndSuperAnalyze(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     List<? extends Node> children = tree.getChildren();
 
-    boolean isOverwrite = false;
+    boolean shouldOverwrite = false;
     HiveStorageHandler storageHandler = mTable.getStorageHandler();
-    if(storageHandler!=null) {
-      isOverwrite = storageHandler.isOverwrite(mTable, operation.name());
+    if (storageHandler != null) {
+      shouldOverwrite = storageHandler.shouldOverwrite(mTable, operation.name());
     }
 
 
     StringBuilder rewrittenQueryStr = new StringBuilder();
-    if (isOverwrite) {
+    if (shouldOverwrite) {
       rewrittenQueryStr.append("insert overwrite table ");
     } else {
       rewrittenQueryStr.append("insert into table ");
@@ -117,7 +117,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     ColumnAppender columnAppender = getColumnAppender(null);
     int columnOffset = columnAppender.getDeleteValues(operation).size();
-    if (!isOverwrite) {
+    if (!shouldOverwrite) {
       rewrittenQueryStr.append(" select ");
       columnAppender.appendAcidSelectColumns(rewrittenQueryStr, operation);
       rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
@@ -163,7 +163,8 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       assert where.getToken().getType() == HiveParser.TOK_WHERE :
           "Expected where clause, but found " + where.getName();
 
-      if (isOverwrite) {
+      if (shouldOverwrite) {
+        assert where.getChildCount() < 2 : "Overwrite mode not supported with more than 1 children in where clause.";
         for (int i = 0; i < where.getChildCount(); i++) {
           ASTNode node = new ASTNode(new CommonToken(HiveParser.KW_NOT, "!"));
           node.addChild(where.getChild(i));
@@ -172,7 +173,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
     }
 
-    if (!isOverwrite) {
+    if (!shouldOverwrite) {
       // Add a sort by clause so that the row ids come out in the correct order
       appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
     }
@@ -188,7 +189,8 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       rewrittenCtx.setOperation(Context.Operation.UPDATE);
       rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
     } else if (deleting()) {
-      if (isOverwrite) {
+      if (shouldOverwrite) {
+        // We are now actually executing an Insert query, so set the modes accordingly.
         rewrittenCtx.setOperation(Context.Operation.OTHER);
         rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.INSERT);
       } else {
