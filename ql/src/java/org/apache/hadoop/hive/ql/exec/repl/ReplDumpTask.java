@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.commons.collections4.CollectionUtils;
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -77,6 +76,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.ExportService;
+import org.apache.hadoop.hive.ql.parse.repl.dump.EventsDumpMetadata;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
@@ -104,13 +104,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -918,7 +915,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         evFetcher, work.eventFrom, maxEventLimit, evFilter);
     lastReplId = work.eventTo;
     Path ackFile = new Path(dumpRoot, ReplAck.EVENTS_DUMP.toString());
-    long resumeFrom = Utils.fileExists(ackFile, conf) ? getResumeFrom(ackFile) : work.eventFrom;
+    boolean shouldBatch = conf.getBoolVar(HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS);
+
+    EventsDumpMetadata eventsDumpMetadata =
+            Utils.fileExists(ackFile, conf) ? EventsDumpMetadata.deserialize(ackFile, conf)
+                    : new EventsDumpMetadata(work.eventFrom, 0, shouldBatch);
+
+    long resumeFrom = eventsDumpMetadata.getLastReplId();
 
     long estimatedNumEvents = evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
         maxEventLimit);
@@ -952,15 +955,44 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         LOG.info("Event id {} to {} are already dumped, skipping {} events", work.eventFrom, resumeFrom, dumpedCount);
       }
       boolean isStagingDirCheckedForFailedEvents = false;
+
+      int batchNo = 0, eventCount = 0;
+      final int maxEventsPerBatch = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
+      Path eventRootDir = dumpRoot;
+
+      if (shouldBatch && maxEventsPerBatch == 0) {
+        throw new SemanticException(String.format(
+                "batch size configured via %s cannot be set to zero since batching is enabled",
+                HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS.varname));
+      }
+      if (eventsDumpMetadata.isEventsBatched() != shouldBatch) {
+        LOG.error("Failed to resume from previous dump. {} was set to {} in previous dump but currently it's" +
+                        " set to {}. Cannot dump events in {} manner because they were {} batched in " +
+                        "the previous incomplete run",
+                HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS.varname, eventsDumpMetadata.isEventsBatched(),
+                shouldBatch, shouldBatch ? "batched" : "sequential", shouldBatch ? "not" : ""
+        );
+
+        throw new HiveException(
+                String.format("Failed to resume from previous dump. %s must be set to %s, but currently it's set to %s",
+                        HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS,
+                        eventsDumpMetadata.isEventsBatched(), shouldBatch)
+        );
+      }
+
       while (evIter.hasNext()) {
         NotificationEvent ev = evIter.next();
         lastReplId = ev.getEventId();
+
+        if (shouldBatch && eventCount++ % maxEventsPerBatch == 0) {
+          eventRootDir = new Path(dumpRoot, String.format(ReplUtils.INC_EVENTS_BATCH, ++batchNo));
+        }
         if (ev.getEventId() <= resumeFrom) {
           continue;
         }
         // Checking and removing remnant file from staging directory if previous incremental repl dump is failed
         if (!isStagingDirCheckedForFailedEvents) {
-          cleanFailedEventDirIfExists(dumpRoot, ev.getEventId());
+          cleanFailedEventDirIfExists(eventRootDir, ev.getEventId());
           isStagingDirCheckedForFailedEvents = true;
         }
 
@@ -980,9 +1012,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           }
         }
 
-        Path evRoot = new Path(dumpRoot, String.valueOf(lastReplId));
-        dumpEvent(ev, evRoot, dumpRoot, cmRoot, hiveDb);
-        Utils.writeOutput(String.valueOf(lastReplId), ackFile, conf);
+        Path eventDir = new Path(eventRootDir, String.valueOf(lastReplId));
+        dumpEvent(ev, eventDir, dumpRoot, cmRoot, hiveDb, eventsDumpMetadata);
+        eventsDumpMetadata.setLastReplId(lastReplId);
+        Utils.writeOutput(eventsDumpMetadata.serialize(), ackFile, conf);
       }
       replLogger.endLog(lastReplId.toString());
       LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
@@ -1192,33 +1225,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private long getResumeFrom(Path ackFile) throws SemanticException {
-    Retryable retryable = Retryable.builder()
-      .withHiveConf(conf)
-      .withRetryOnException(Exception.class).build();
-    try {
-      return retryable.executeCallable(() -> {
-        BufferedReader br = null;
-        try {
-          FileSystem fs = ackFile.getFileSystem(conf);
-          br = new BufferedReader(new InputStreamReader(fs.open(ackFile), Charset.defaultCharset()));
-          long lastEventID = Long.parseLong(br.readLine());
-          return lastEventID;
-        } finally {
-          if (br != null) {
-            try {
-              br.close();
-            } catch (Exception e) {
-              //Do nothing
-            }
-          }
-        }
-      });
-    } catch (Exception e) {
-      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
-    }
-  }
-
   private boolean needBootstrapAcidTablesDuringIncrementalDump() {
     // If acid table dump is not enabled, then no need to check further.
     if (!ReplUtils.includeAcidTableInDump(conf)) {
@@ -1233,7 +1239,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
   }
 
-  private void dumpEvent(NotificationEvent ev, Path evRoot, Path dumpRoot, Path cmRoot, Hive db) throws Exception {
+  private void dumpEvent(NotificationEvent ev, Path evRoot, Path dumpRoot, Path cmRoot, Hive db,
+                         EventsDumpMetadata eventsDumpMetadata) throws Exception {
     EventHandler.Context context = new EventHandler.Context(
         evRoot,
         dumpRoot,
@@ -1247,6 +1254,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     );
     EventHandler eventHandler = EventHandlerFactory.handlerFor(ev);
     eventHandler.handle(context);
+    eventsDumpMetadata.incrementEventsDumpedCount();
     work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.EVENTS.name(), 1);
     work.getReplLogger().eventLog(String.valueOf(ev.getEventId()), eventHandler.dumpType().toString());
   }
@@ -1531,8 +1539,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Path lastEventFile = new Path(hiveDumpPath, ReplAck.EVENTS_DUMP.toString());
     long resumeFrom = 0;
     try {
-      resumeFrom = getResumeFrom(lastEventFile);
-    } catch (SemanticException ex) {
+      resumeFrom = EventsDumpMetadata.deserialize(lastEventFile, conf).getLastReplId();
+    } catch (HiveException ex) {
       LOG.info("Could not get last repl id from {}, because of:", lastEventFile, ex.getMessage());
     }
     return resumeFrom > 0L;

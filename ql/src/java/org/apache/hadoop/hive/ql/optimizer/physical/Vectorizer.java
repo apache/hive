@@ -1895,7 +1895,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         if (isPartitionRowConversion && isLlapIoEnabled) {
           enabledConditionsNotMetList.add(
               "Could not enable vectorization. " +
-              "LLAP I/O is enabled wbich automatically deserializes into " +
+              "LLAP I/O is enabled which automatically deserializes into " +
               "VECTORIZED_INPUT_FILE_FORMAT. " +
               "A partition requires data type conversion and that is not supported");
 
@@ -1990,7 +1990,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         supportRemovedReasons.add(removeString);
       }
 
-      // Now rememember what is supported for this query and any support that was
+      // Now remember what is supported for this query and any support that was
       // removed.
       vectorTaskColumnInfo.setSupportSetInUse(supportSet);
       vectorTaskColumnInfo.setSupportRemovedReasons(supportRemovedReasons);

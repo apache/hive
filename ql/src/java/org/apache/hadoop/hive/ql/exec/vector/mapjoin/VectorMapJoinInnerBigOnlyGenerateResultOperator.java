@@ -61,7 +61,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
 
   // Pre-allocated member for storing the (physical) batch index of matching row (single- or
   // multi-small-table-valued) indexes during a process call.
-  protected transient int[] allMatchs;
+  protected transient int[] allMatches;
 
   /*
    *  Pre-allocated members for storing information on single- and multi-valued-small-table matches.
@@ -69,7 +69,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
    *  ~ValueCounts
    *                Number of (empty) small table values.
    *  ~AllMatchIndices
-   *                (Logical) indices into allMatchs to the first row of a match of a
+   *                (Logical) indices into allMatches to the first row of a match of a
    *                possible series of duplicate keys.
    *  ~DuplicateCounts
    *                The duplicate count for each matched key.
@@ -114,7 +114,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
       hashMultiSetResults[i] = baseHashMultiSet.createHashMultiSetResult();
     }
 
-    allMatchs = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    allMatches = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
     equalKeySeriesValueCounts = new long[VectorizedRowBatch.DEFAULT_SIZE];
     equalKeySeriesAllMatchIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
@@ -137,7 +137,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
    *          The big table batch with any matching and any non matching rows both as
    *          selected in use.
    * @param allMatchCount
-   *          Number of matches in allMatchs.
+   *          Number of matches in allMatches.
    * @param equalKeySeriesCount
    *          Number of single value matches.
    * @param spillCount
@@ -164,7 +164,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
      * Optimize by running value expressions only over the matched rows.
      */
     if (allMatchCount > 0 && bigTableValueExpressions != null) {
-      performValueExpressions(batch, allMatchs, allMatchCount);
+      performValueExpressions(batch, allMatches, allMatchCount);
     }
 
     int numSel = 0;
@@ -175,10 +175,10 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
 
       if (count == 1) {
         numSel = generateHashMultiSetResultSingleValue(
-            batch, allMatchs, allMatchesIndex, duplicateCount, numSel);
+            batch, allMatches, allMatchesIndex, duplicateCount, numSel);
       } else {
         generateHashMultiSetResultMultiValue(batch,
-            allMatchs, allMatchesIndex,
+            allMatches, allMatchesIndex,
             duplicateCount, count);
       }
     }
@@ -191,10 +191,10 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
    *
    * @param batch
    *          The big table batch.
-   * @param allMatchs
+   * @param allMatches
    *          A subset of the rows of the batch that are matches.
    * @param allMatchesIndex
-   *          The logical index into allMatchs of the first equal key.
+   *          The logical index into allMatches of the first equal key.
    * @param duplicateCount
    *          The number of duplicates or equal keys.
    * @param numSel
@@ -204,7 +204,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
    *          The new count of selected rows.
    */
   private int generateHashMultiSetResultSingleValue(VectorizedRowBatch batch,
-      int[] allMatchs, int allMatchesIndex, int duplicateCount, int numSel)
+      int[] allMatches, int allMatchesIndex, int duplicateCount, int numSel)
           throws HiveException, IOException {
 
     // LOG.debug("generateHashMultiSetResultSingleValue enter...");
@@ -215,12 +215,12 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
 
     for (int i = 0; i < duplicateCount; i++) {
 
-      int batchIndex = allMatchs[allMatchesIndex + i];
+      int batchIndex = allMatches[allMatchesIndex + i];
 
       // Use the big table row as output.
       batch.selected[numSel++] = batchIndex;
     }
- 
+
     return numSel;
   }
 
@@ -229,7 +229,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
    *
    * @param batch
    *          The big table batch.
-   * @param allMatchs
+   * @param allMatches
    *          The all match selected array that contains (physical) batch indices.
    * @param allMatchesIndex
    *          The index of the match key.
@@ -239,7 +239,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
    *          Value count.
    */
   private void generateHashMultiSetResultMultiValue(VectorizedRowBatch batch,
-      int[] allMatchs, int allMatchesIndex,
+      int[] allMatches, int allMatchesIndex,
       int duplicateCount, long count) throws HiveException, IOException {
 
     // LOG.debug("generateHashMultiSetResultMultiValue allMatchesIndex " + allMatchesIndex + " duplicateCount " + duplicateCount + " count " + count);
@@ -248,7 +248,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
 
     for (int i = 0; i < duplicateCount; i++) {
 
-      int batchIndex = allMatchs[allMatchesIndex + i];
+      int batchIndex = allMatches[allMatchesIndex + i];
 
       for (long l = 0; l < count; l++) {
 

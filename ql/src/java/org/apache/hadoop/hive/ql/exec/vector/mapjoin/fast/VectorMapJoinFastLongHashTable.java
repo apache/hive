@@ -279,7 +279,7 @@ public abstract class VectorMapJoinFastLongHashTable
     size += (2 * jdm.primitive2());
     size += (2 * jdm.primitive1());
     size += jdm.object();
-    // adding 16KB constant memory for keyBinarySortableDeserializeRead as the rabit hole is deep to implement
+    // adding 16KB constant memory for keyBinarySortableDeserializeRead as the rabbit hole is deep to implement
     // MemoryEstimate interface, also it is constant overhead
     size += (16 * 1024L);
     return size;

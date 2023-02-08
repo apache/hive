@@ -350,7 +350,7 @@ public final class ConstantPropagateProcFactory {
       // Don't evaluate nondeterministic function since the value can only calculate during runtime.
       if (!isConstantFoldableUdf(udf, newExprs)) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evaluate immediately.");
+          LOG.debug("Function " + udf.getClass() + " is not deterministic. Don't evaluate immediately.");
         }
         ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
         return desc;
@@ -407,7 +407,7 @@ public final class ConstantPropagateProcFactory {
       // Don't evaluate nondeterministic function since the value can only calculate during runtime.
       if (!isConstantFoldableUdf(udf, newExprs)) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evaluate immediately.");
+          LOG.debug("Function " + udf.getClass() + " is not deterministic. Don't evaluate immediately.");
         }
         ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
         return desc;
@@ -967,7 +967,7 @@ public final class ConstantPropagateProcFactory {
             ObjectInspectorUtils.copyToStandardJavaObject(o, coi));
       } else if (!PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(clz)) {
         if (LOG.isErrorEnabled()) {
-          LOG.error("Unable to evaluate {}({}). Return value unrecoginizable.",
+          LOG.error("Unable to evaluate {}({}). Return value unrecognizable.",
               udf.getClass().getName(), exprs);
         }
         return null;

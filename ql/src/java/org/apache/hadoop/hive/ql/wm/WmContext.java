@@ -64,7 +64,7 @@ public class WmContext implements PrintSummary {
   private Set<String> subscribedCounters = new HashSet<>();
   @JsonProperty("currentCounters")
   private Map<String, Long> currentCounters = new HashMap<>();
-  @JsonIgnore // explictly ignoring as Getter visibility is ANY for auto-json serialization of Trigger based on getters
+  @JsonIgnore // explicitly ignoring as Getter visibility is ANY for auto-json serialization of Trigger based on getters
   private Future<Boolean> returnEventFuture;
 
   public WmContext(final long queryStartTime, final String queryId) {
