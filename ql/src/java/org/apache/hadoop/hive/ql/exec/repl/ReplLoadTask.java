@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.fs.Options;
@@ -612,18 +613,25 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           public void run() throws SemanticException {
             try {
               Database db = getHive().getDatabase(work.getTargetDatabase());
-              if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET)) {
+              if (MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET)) {
                 return;
               }
-              Map<String, String> params = db.getParameters();
-              if (params == null) {
-                params = new HashMap<>();
-                db.setParameters(params);
-              }
+              HashMap<String, String> params = new HashMap<>(db.getParameters());
+
               LOG.info("Setting failover endpoint:{} to TARGET for database: {}", ReplConst.REPL_FAILOVER_ENDPOINT, db.getName());
               params.put(ReplConst.REPL_FAILOVER_ENDPOINT, MetaStoreUtils.FailoverEndpoint.TARGET.toString());
               LOG.info("Setting {} for database: {}", ReplConst.REPL_ENABLE_BACKGROUND_THREAD, db.getName());
               params.put(ReplConst.REPL_ENABLE_BACKGROUND_THREAD,"true");
+
+              // we are here due to planned failover
+              params.put(ReplConst.REPL_METRICS_LAST_FAILOVER_TYPE, ReplConst.FailoverType.PLANNED.toString());
+              LOG.info("Replication Metrics: Setting last failover type for database: {} to: {} ", db.getName(), ReplConst.FailoverType.PLANNED.toString());
+
+              int failoverCount = 1 + NumberUtils.toInt(params.getOrDefault(ReplConst.REPL_METRICS_FAILOVER_COUNT, "0"), 0);
+              LOG.info("Replication Metrics: Setting replication metrics failover count for database: {} to: {} ", db.getName(), failoverCount);
+              params.put(ReplConst.REPL_METRICS_FAILOVER_COUNT, Integer.toString(failoverCount));
+
+              db.setParameters(params);
               getHive().alterDatabase(work.getTargetDatabase(), db);
             } catch (HiveException e) {
               throw new SemanticException(e);
@@ -640,16 +648,26 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
             try {
               Hive hiveDb = getHive();
               Database db = hiveDb.getDatabase(work.getTargetDatabase());
-              LinkedHashMap<String, String> params = new LinkedHashMap<>(db.getParameters());
+              HashMap<String, String> params = new HashMap<>(db.getParameters());
               LOG.debug("Database {} properties before removal {}", work.getTargetDatabase(), params);
               params.remove(REPL_RESUME_STARTED_AFTER_FAILOVER);
               params.remove(SOURCE_OF_REPLICATION);
               if (!work.shouldFailover()) {
                 params.remove(REPL_FAILOVER_ENDPOINT);
               }
-              db.setParameters(params);
+
               LOG.info("Removed {} property from database {} after successful optimised bootstrap load.",
                   SOURCE_OF_REPLICATION, work.getTargetDatabase());
+
+              int failbackCount = 1 + NumberUtils.toInt(params.getOrDefault(ReplConst.REPL_METRICS_FAILBACK_COUNT, "0"), 0);
+              LOG.info("Replication Metrics: Setting replication metrics failback count for database: {} to: {} ", db.getName(), failbackCount);
+              params.put(ReplConst.REPL_METRICS_FAILBACK_COUNT, Integer.toString(failbackCount));
+
+              long failbackEndTime = System.currentTimeMillis();
+              params.put(ReplConst.REPL_METRICS_LAST_FAILBACK_ENDTIME, Long.toString(failbackEndTime));
+              LOG.info("Replication Metrics: Setting replication metrics failback end time for database: {} to: {} ", db.getName(), failbackEndTime);
+
+              db.setParameters(params);
               hiveDb.alterDatabase(work.getTargetDatabase(), db);
               LOG.debug("Database {} poperties after removal {}", work.getTargetDatabase(), params);
             } catch (HiveException e) {
@@ -777,6 +795,23 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         LOG.error("The database {} is already source of replication.", targetDb.getName());
         throw new Exception("Failover target was not source of replication");
       }
+      Map<String, String> params = targetDb.getParameters();
+      if (params == null) {
+        params = new HashMap<>();
+      }
+
+      long failbackStartTime = System.currentTimeMillis();
+      params.put(ReplConst.REPL_METRICS_LAST_FAILBACK_STARTTIME, Long.toString(failbackStartTime));
+      LOG.info("Replication Metrics: Setting replication metrics failback starttime for database: {} to: {} ", targetDb.getName(), failbackStartTime);
+      if (!MetaStoreUtils.isDbBeingPlannedFailedOver(targetDb)) { // if this is failback due to unplanned failover
+        LOG.info("Replication Metrics: Setting last failover type for database: {} to: {} ", targetDb.getName(), ReplConst.FailoverType.UNPLANNED.toString());
+        params.put(ReplConst.REPL_METRICS_LAST_FAILOVER_TYPE, ReplConst.FailoverType.UNPLANNED.toString());
+
+        int failoverCount = 1 + NumberUtils.toInt(params.getOrDefault(ReplConst.REPL_METRICS_FAILOVER_COUNT, "0"), 0);
+        LOG.info("Replication Metrics: Setting replication metrics failover count for database: {} to: {} ", targetDb.getName(), failoverCount);
+        params.put(ReplConst.REPL_METRICS_FAILOVER_COUNT, Integer.toString(failoverCount));
+      }
+
       work.getMetricCollector().reportStageStart(STAGE_NAME, new HashMap<>());
       boolean isTableDiffPresent =
           checkFileExists(new Path(work.dumpDirectory).getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
@@ -804,6 +839,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       createReplLoadCompleteAckTask();
       work.getMetricCollector().reportStageEnd(STAGE_NAME, Status.SUCCESS);
       work.getMetricCollector().reportEnd(Status.SUCCESS);
+      targetDb.setParameters(params);
+      getHive().alterDatabase(work.dbNameToLoadIn, targetDb);
       return 0;
     } else if (work.isSecondFailover) {
       // DROP the tables extra on target, which are not on source cluster.
@@ -838,7 +875,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (!MetaStoreUtils.isTargetOfReplication(targetDb)) {
       props.put(ReplConst.TARGET_OF_REPLICATION, ReplConst.TRUE);
     }
-    if (!work.shouldFailover() && MetaStoreUtils.isDbBeingFailedOver(targetDb)) {
+    if (!work.shouldFailover() && MetaStoreUtils.isDbBeingPlannedFailedOver(targetDb)) {
       props.put(ReplConst.REPL_FAILOVER_ENDPOINT, "");
     }
     if (!props.isEmpty()) {
