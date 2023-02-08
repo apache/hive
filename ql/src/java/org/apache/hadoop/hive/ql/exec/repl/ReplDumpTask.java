@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -260,6 +261,25 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               // Before starting optimised bootstrap, check if the first incremental is done to ensure database is in
               // consistent state.
               isFirstIncrementalPending(work.dbNameOrPattern, getHive());
+              Database database = getHive().getDatabase(work.dbNameOrPattern);
+              if (database != null) {
+                HashMap<String, String> params = new HashMap<>(database.getParameters());
+                long failbackStartTime = System.currentTimeMillis();
+                params.put(ReplConst.REPL_METRICS_LAST_FAILBACK_STARTTIME, Long.toString(failbackStartTime));
+                LOG.info("Replication Metrics: Setting replication metrics failback start time for database: {} to: {} ", work.dbNameOrPattern, failbackStartTime);
+                if (!MetaStoreUtils.isDbBeingPlannedFailedOver(database)) { // if this is failback due to unplanned failover
+                  LOG.info("Replication Metrics: Setting last failover type for database: {} to: {} ", work.dbNameOrPattern, ReplConst.FailoverType.UNPLANNED.toString());
+                  params.put(ReplConst.REPL_METRICS_LAST_FAILOVER_TYPE, ReplConst.FailoverType.UNPLANNED.toString());
+
+                  int failoverCount = 1 + NumberUtils.toInt(params.getOrDefault(ReplConst.REPL_METRICS_FAILOVER_COUNT, "0"), 0);
+                  LOG.info("Replication Metrics: Setting replication metrics failover count for database: {} to: {} ", work.dbNameOrPattern, failoverCount);
+                  params.put(ReplConst.REPL_METRICS_FAILOVER_COUNT, Integer.toString(failoverCount));
+                }
+                database.setParameters(params);
+                getHive().alterDatabase(work.dbNameOrPattern, database);
+              } else {
+                LOG.debug("Database {} does not exist. Cannot set replication failover failback metrics", work.dbNameOrPattern);
+              }
               // Get the last replicated event id from the database.
               String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive());
               // Get the last replicated event id from the database with respect to target.
@@ -369,12 +389,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     FileSystem fs = previousValidHiveDumpDir.getFileSystem(conf);
     Database db = getHive().getDatabase(work.dbNameOrPattern);
     if (isPrevFailoverReadyMarkerPresent) {
-      if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.SOURCE)) {
+      if (MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.SOURCE)) {
         //Since previous valid dump is failover ready and repl.failover.endpoint is set for source, just rollback
         // the failover process initiated in the previous iteration.
         LOG.info("Rolling back failover initiated in previous dump iteration.");
         fs.delete(new Path(previousValidHiveDumpDir, ReplAck.FAILOVER_READY_MARKER.toString()), true);
-      } else if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET)) {
+      } else if (MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET)) {
         //Since previous valid dump is failover ready and repl.failover.endpoint is set for target,
         // this means it is first dump operation in the reverse direction.
         LOG.info("Switching to bootstrap dump as this is the first dump execution after failover.");
@@ -481,6 +501,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
 
   private void finishRemainingTasks() throws HiveException {
+    Database database = getHive().getDatabase(work.dbNameOrPattern);
     boolean isFailoverInProgress = shouldFailover() && !work.isBootstrap() && !createEventMarker;
     if (isFailoverInProgress) {
       Utils.create(new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + File.separator
@@ -492,26 +513,38 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
     // Check if we need to unset database properties after successful optimised bootstrap.
     if (work.isSecondDumpAfterFailover()) {
-      Hive hiveDb = getHive();
-      Database database = hiveDb.getDatabase(work.dbNameOrPattern);
-      LinkedHashMap<String, String> dbParams = new LinkedHashMap<>(database.getParameters());
-      LOG.debug("Database {} params before removal {}", work.dbNameOrPattern, dbParams);
-      dbParams.remove(TARGET_OF_REPLICATION);
-      dbParams.remove(CURR_STATE_ID_TARGET.toString());
-      dbParams.remove(CURR_STATE_ID_SOURCE.toString());
-      dbParams.remove(REPL_TARGET_DB_PROPERTY);
-      dbParams.remove(ReplConst.REPL_ENABLE_BACKGROUND_THREAD);
-      dbParams.remove(REPL_RESUME_STARTED_AFTER_FAILOVER);
-      if (!isFailoverInProgress) {
-        // if we have failover endpoint from controlled failover remove it.
-        dbParams.remove(ReplConst.REPL_FAILOVER_ENDPOINT);
+      if (database != null) {
+        HashMap<String, String> dbParams = new HashMap<>(database.getParameters());
+        LOG.debug("Database {} params before removal {}", work.dbNameOrPattern, dbParams);
+        dbParams.remove(TARGET_OF_REPLICATION);
+        dbParams.remove(CURR_STATE_ID_TARGET.toString());
+        dbParams.remove(CURR_STATE_ID_SOURCE.toString());
+        dbParams.remove(REPL_TARGET_DB_PROPERTY);
+        dbParams.remove(ReplConst.REPL_ENABLE_BACKGROUND_THREAD);
+        dbParams.remove(REPL_RESUME_STARTED_AFTER_FAILOVER);
+        if (!isFailoverInProgress) {
+          // if we have failover endpoint from controlled failover remove it.
+          dbParams.remove(ReplConst.REPL_FAILOVER_ENDPOINT);
+        }
+
+        LOG.info("Removing {} property from the database {} after successful optimised bootstrap dump", String.join(",",
+            new String[]{TARGET_OF_REPLICATION, CURR_STATE_ID_TARGET.toString(), CURR_STATE_ID_SOURCE.toString(),
+                REPL_TARGET_DB_PROPERTY}), work.dbNameOrPattern);
+
+        int failbackCount = 1 + NumberUtils.toInt(dbParams.getOrDefault(ReplConst.REPL_METRICS_FAILBACK_COUNT, "0"), 0);
+        LOG.info("Replication Metrics: Setting replication metrics failback count for database: {} to: {} ", work.dbNameOrPattern, failbackCount);
+        dbParams.put(ReplConst.REPL_METRICS_FAILBACK_COUNT, Integer.toString(failbackCount));
+
+        long failbackEndTime = System.currentTimeMillis();
+        dbParams.put(ReplConst.REPL_METRICS_LAST_FAILBACK_ENDTIME, Long.toString(failbackEndTime));
+        LOG.info("Replication Metrics: Setting replication metrics failback end time for database: {} to: {} ", work.dbNameOrPattern, failbackEndTime);
+
+        database.setParameters(dbParams);
+        getHive().alterDatabase(work.dbNameOrPattern, database);
+        LOG.debug("Database {} params after removal {}", work.dbNameOrPattern, dbParams);
+      } else {
+        LOG.debug("Database {} does not exist. Cannot set replication failover and failback metrics", work.dbNameOrPattern);
       }
-      database.setParameters(dbParams);
-      LOG.info("Removing {} property from the database {} after successful optimised bootstrap dump", String.join(",",
-          new String[] { TARGET_OF_REPLICATION, CURR_STATE_ID_TARGET.toString(), CURR_STATE_ID_SOURCE.toString(),
-              REPL_TARGET_DB_PROPERTY }), work.dbNameOrPattern);
-      hiveDb.alterDatabase(work.dbNameOrPattern, database);
-      LOG.debug("Database {} params after removal {}", work.dbNameOrPattern, dbParams);
     }
     Utils.create(dumpAckFile, conf);
     prepareReturnValues(work.getResultValues());
@@ -850,8 +883,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       setReplSourceFor(hiveDb, dbName, db);
     }
     if (shouldFailover()) {
-      if (!MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.SOURCE)) {
-        setReplFailoverEnabledAtSource(db);
+      if (!MetaStoreUtils.isDbBeingPlannedFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.SOURCE)) {
+        // set repl failover enabled at source
+        HashMap<String, String> params = new HashMap<>(db.getParameters());
+        params.put(ReplConst.REPL_FAILOVER_ENDPOINT, MetaStoreUtils.FailoverEndpoint.SOURCE.toString());
+
+        params.put(ReplConst.REPL_METRICS_LAST_FAILOVER_TYPE, ReplConst.FailoverType.PLANNED.toString());
+        LOG.info("Replication Metrics: Setting last failover type for database: {} to: {} ", dbName, ReplConst.FailoverType.PLANNED.toString());
+
+        int failoverCount = 1 + NumberUtils.toInt(params.getOrDefault(ReplConst.REPL_METRICS_FAILOVER_COUNT, "0"), 0);
+        LOG.info("Replication Metrics: Setting replication metrics failover count for target database: {} to: {} ", dbName, failoverCount);
+        params.put(ReplConst.REPL_METRICS_FAILOVER_COUNT, Integer.toString(failoverCount));
+
+        db.setParameters(params);
+        getHive().alterDatabase(work.dbNameOrPattern, db);
       }
       fetchFailoverMetadata(hiveDb);
       assert work.getFailoverMetadata().isValidMetadata();
@@ -1129,7 +1174,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       collector = new BootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf, executorId);
     } else if (isFailover) {
       // db property ReplConst.FAILOVER_ENDPOINT is only set during planned failover.
-      String failoverType = MetaStoreUtils.isDbBeingFailedOver(getHive().getDatabase(work.dbNameOrPattern)) ?
+      String failoverType = MetaStoreUtils.isDbBeingPlannedFailedOver(getHive().getDatabase(work.dbNameOrPattern)) ?
           ReplConst.FailoverType.PLANNED.toString() : ReplConst.FailoverType.UNPLANNED.toString();
       if (isPreOptimisedBootstrap) {
         collector = new PreOptimizedBootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf, executorId,
@@ -1209,8 +1254,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     );
     EventHandler eventHandler = EventHandlerFactory.handlerFor(ev);
     eventHandler.handle(context);
-    eventsDumpMetadata.incrementEventsDumpedCount();
-    work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.EVENTS.name(), 1);
+    if (context.isDmdCreated()) {
+      eventsDumpMetadata.incrementEventsDumpedCount();
+      work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.EVENTS.name(), 1);
+    }
     work.getReplLogger().eventLog(String.valueOf(ev.getEventId()), eventHandler.dumpType().toString());
   }
 
@@ -1435,18 +1482,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dmd.write(true);
     }
   }
-
-  private void setReplFailoverEnabledAtSource(Database db) throws HiveException {
-    Map<String, String> params = db.getParameters();
-    if (params != null) {
-      params.put(ReplConst.REPL_FAILOVER_ENDPOINT, MetaStoreUtils.FailoverEndpoint.SOURCE.toString());
-    } else {
-      db.setParameters(Collections.singletonMap(ReplConst.REPL_FAILOVER_ENDPOINT,
-              MetaStoreUtils.FailoverEndpoint.SOURCE.toString()));
-    }
-    getHive().alterDatabase(work.dbNameOrPattern, db);
-  }
-
   private void setReplSourceFor(Hive hiveDb, String dbName, Database db) throws HiveException {
     if (!ReplChangeManager.isSourceOfReplication(db)) {
       // Check if the schedule name is available else set the query value

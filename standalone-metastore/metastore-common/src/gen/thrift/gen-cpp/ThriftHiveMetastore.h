@@ -26,6 +26,7 @@ namespace Apache { namespace Hadoop { namespace Hive {
 class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookServiceIf {
  public:
   virtual ~ThriftHiveMetastoreIf() {}
+  virtual void abort_Compactions(AbortCompactResponse& _return, const AbortCompactionRequest& rqst) = 0;
   virtual void getMetaConf(std::string& _return, const std::string& key) = 0;
   virtual void setMetaConf(const std::string& key, const std::string& value) = 0;
   virtual void create_catalog(const CreateCatalogRequest& catalog) = 0;
@@ -326,6 +327,9 @@ class ThriftHiveMetastoreIfSingletonFactory : virtual public ThriftHiveMetastore
 class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual public  ::facebook::fb303::FacebookServiceNull {
  public:
   virtual ~ThriftHiveMetastoreNull() {}
+  void abort_Compactions(AbortCompactResponse& /* _return */, const AbortCompactionRequest& /* rqst */) override {
+    return;
+  }
   void getMetaConf(std::string& /* _return */, const std::string& /* key */) override {
     return;
   }
@@ -1170,6 +1174,110 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_all_write_event_info(std::vector<WriteEventInfo> & /* _return */, const GetAllWriteEventInfoRequest& /* request */) override {
     return;
   }
+};
+
+typedef struct _ThriftHiveMetastore_abort_Compactions_args__isset {
+  _ThriftHiveMetastore_abort_Compactions_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_abort_Compactions_args__isset;
+
+class ThriftHiveMetastore_abort_Compactions_args {
+ public:
+
+  ThriftHiveMetastore_abort_Compactions_args(const ThriftHiveMetastore_abort_Compactions_args&);
+  ThriftHiveMetastore_abort_Compactions_args& operator=(const ThriftHiveMetastore_abort_Compactions_args&);
+  ThriftHiveMetastore_abort_Compactions_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_abort_Compactions_args() noexcept;
+  AbortCompactionRequest rqst;
+
+  _ThriftHiveMetastore_abort_Compactions_args__isset __isset;
+
+  void __set_rqst(const AbortCompactionRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_abort_Compactions_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_abort_Compactions_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_abort_Compactions_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_abort_Compactions_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_abort_Compactions_pargs() noexcept;
+  const AbortCompactionRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_abort_Compactions_result__isset {
+  _ThriftHiveMetastore_abort_Compactions_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_abort_Compactions_result__isset;
+
+class ThriftHiveMetastore_abort_Compactions_result {
+ public:
+
+  ThriftHiveMetastore_abort_Compactions_result(const ThriftHiveMetastore_abort_Compactions_result&);
+  ThriftHiveMetastore_abort_Compactions_result& operator=(const ThriftHiveMetastore_abort_Compactions_result&);
+  ThriftHiveMetastore_abort_Compactions_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_abort_Compactions_result() noexcept;
+  AbortCompactResponse success;
+
+  _ThriftHiveMetastore_abort_Compactions_result__isset __isset;
+
+  void __set_success(const AbortCompactResponse& val);
+
+  bool operator == (const ThriftHiveMetastore_abort_Compactions_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_abort_Compactions_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_abort_Compactions_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_abort_Compactions_presult__isset {
+  _ThriftHiveMetastore_abort_Compactions_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_abort_Compactions_presult__isset;
+
+class ThriftHiveMetastore_abort_Compactions_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_abort_Compactions_presult() noexcept;
+  AbortCompactResponse* success;
+
+  _ThriftHiveMetastore_abort_Compactions_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
 };
 
 typedef struct _ThriftHiveMetastore_getMetaConf_args__isset {
@@ -34106,6 +34214,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
+  void abort_Compactions(AbortCompactResponse& _return, const AbortCompactionRequest& rqst) override;
+  void send_abort_Compactions(const AbortCompactionRequest& rqst);
+  void recv_abort_Compactions(AbortCompactResponse& _return);
   void getMetaConf(std::string& _return, const std::string& key) override;
   void send_getMetaConf(const std::string& key);
   void recv_getMetaConf(std::string& _return);
@@ -34929,6 +35040,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   typedef  void (ThriftHiveMetastoreProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);
   typedef std::map<std::string, ProcessFunction> ProcessMap;
   ProcessMap processMap_;
+  void process_abort_Compactions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getMetaConf(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_setMetaConf(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -35204,6 +35316,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   ThriftHiveMetastoreProcessor(::std::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
     iface_(iface) {
+    processMap_["abort_Compactions"] = &ThriftHiveMetastoreProcessor::process_abort_Compactions;
     processMap_["getMetaConf"] = &ThriftHiveMetastoreProcessor::process_getMetaConf;
     processMap_["setMetaConf"] = &ThriftHiveMetastoreProcessor::process_setMetaConf;
     processMap_["create_catalog"] = &ThriftHiveMetastoreProcessor::process_create_catalog;
@@ -35508,6 +35621,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_.push_back(iface);
   }
  public:
+  void abort_Compactions(AbortCompactResponse& _return, const AbortCompactionRequest& rqst) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->abort_Compactions(_return, rqst);
+    }
+    ifaces_[i]->abort_Compactions(_return, rqst);
+    return;
+  }
+
   void getMetaConf(std::string& _return, const std::string& key) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -38128,6 +38251,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
+  void abort_Compactions(AbortCompactResponse& _return, const AbortCompactionRequest& rqst) override;
+  int32_t send_abort_Compactions(const AbortCompactionRequest& rqst);
+  void recv_abort_Compactions(AbortCompactResponse& _return, const int32_t seqid);
   void getMetaConf(std::string& _return, const std::string& key) override;
   int32_t send_getMetaConf(const std::string& key);
   void recv_getMetaConf(std::string& _return, const int32_t seqid);

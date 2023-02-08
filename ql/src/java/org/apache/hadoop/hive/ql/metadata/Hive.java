@@ -181,6 +181,8 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchRequest;
+import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
+import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -2024,9 +2026,7 @@ public class Hive {
    * (false), or it cannot be determined (null). The latest case may happen e.g. when the
    * materialized view definition uses external tables.
    */
-  public Boolean isOutdatedMaterializedView(HiveTxnManager txnManager, TableName tableName) throws HiveException {
-
-    Table table = getTable(tableName.getDb(), tableName.getTable());
+  public Boolean isOutdatedMaterializedView(HiveTxnManager txnManager, Table table) throws HiveException {
 
     String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if (validTxnsList == null) {
@@ -6594,6 +6594,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
       storageHandler.executeOperation(table, executeSpec);
     } catch (MetaException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws HiveException {
+    try {
+      return getMSC().abortCompactions(request);
+    } catch (Exception e) {
+      LOG.error("Failed abortCompactions", e);
       throw new HiveException(e);
     }
   }
