@@ -274,7 +274,7 @@ public class MetaStoreUtils {
     return dbParameters != null && ReplConst.TRUE.equalsIgnoreCase(dbParameters.get(ReplConst.REPL_INCOMPATIBLE));
   }
 
-  public static boolean isDbBeingFailedOver(Database db) {
+  public static boolean isDbBeingPlannedFailedOver(Database db) {
     assert (db != null);
     Map<String, String> dbParameters = db.getParameters();
     if (dbParameters == null) {
@@ -285,7 +285,7 @@ public class MetaStoreUtils {
             || FailoverEndpoint.TARGET.toString().equalsIgnoreCase(dbFailoverEndPoint);
   }
 
-  public static boolean isDbBeingFailedOverAtEndpoint(Database db, FailoverEndpoint endPoint) {
+  public static boolean isDbBeingPlannedFailedOverAtEndpoint(Database db, FailoverEndpoint endPoint) {
     if (db == null) {
       return false;
     }
@@ -310,7 +310,7 @@ public class MetaStoreUtils {
     assert (db != null);
     if (isBackgroundThreadsEnabledForRepl(db)) {
       return false;
-    } else if (isDbBeingFailedOver(db)) {
+    } else if (isDbBeingPlannedFailedOver(db)) {
       LOG.info("Skipping all the tables which belong to database: {} as it is being failed over", db.getName());
       return true;
     } else if (isTargetOfReplication(db)) {
