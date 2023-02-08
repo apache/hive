@@ -29,7 +29,10 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
+import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
+import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.thrift.TException;
 
 /**
  * An interface wrapper for HMSHandler.  This interface contains methods that need to be
@@ -123,4 +126,6 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
    */
   DataConnector get_dataconnector_core(final String name)
       throws NoSuchObjectException, MetaException;
+
+    AbortCompactResponse abort_Compactions(AbortCompactionRequest rqst) throws TException;
 }
