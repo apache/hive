@@ -1132,6 +1132,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (asOfTimeIndex != -1 || asOfVersionIndex != -1 || asOfVersionFromIndex != -1) {
       String asOfVersion = asOfVersionIndex == -1 ? null : tabref.getChild(asOfVersionIndex).getChild(0).getText();
+      String asOfVersionFrom =
+          asOfVersionFromIndex == -1 ? null : tabref.getChild(asOfVersionFromIndex).getChild(0).getText();
       String asOfTime = null;
       
       if (asOfTimeIndex != -1) {
@@ -1145,7 +1147,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
       Pair<String, String> asOf = Pair.of(asOfVersion, asOfTime);
-      qb.setAsOf(alias, asOf);
+      qb.setAsOf(alias, new QBAsOf(asOfVersion, asOfVersionFrom, asOfTime));
     }
 
     // If the alias is already there then we have a conflict
