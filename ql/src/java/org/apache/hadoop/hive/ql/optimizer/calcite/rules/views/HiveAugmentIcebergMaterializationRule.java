@@ -105,7 +105,7 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
         tableSnapshot.getSnapshotId(), snapshotIdType, false);
     conds.add(
         rexBuilder.makeCall(
-            SqlStdOperatorTable.EQUALS,
+            SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
             ImmutableList.of(snapshotIdInputRef, literalHighWatermark)));
     relBuilder.filter(conds);
     call.transformTo(relBuilder.build());
