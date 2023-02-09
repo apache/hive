@@ -81,7 +81,10 @@ public class RowResolver implements Serializable{
   public void putExpression(ASTNode node, ColumnInfo colInfo) {
     String treeAsString = node.toStringTree();
     expressionMap.put(treeAsString, node);
-    put("", treeAsString, colInfo);
+    if (!putInternal("", treeAsString, colInfo)) {
+      return;
+    }
+    colInfo.setAlias(treeAsString);
   }
 
   /**
@@ -100,18 +103,26 @@ public class RowResolver implements Serializable{
     return expressionMap.get(node.toStringTree());
   }
 
-  public void put(String tab_alias, String col_alias, ColumnInfo colInfo) {
-    if (!addMappingOnly(tab_alias, col_alias, colInfo)) {
+  public void put(String tabAlias, String colAlias, ColumnInfo colInfo) {
+    if (!putInternal(tabAlias, colAlias, colInfo)) {
+      return;
+    }
+    if (colAlias != null) {
+      colInfo.setAlias(colAlias.toLowerCase());
+    }
+  }
+
+  private boolean putInternal(String tabAlias, String colAlias, ColumnInfo colInfo) {
+    if (!addMappingOnly(tabAlias, colAlias, colInfo)) {
       //Make sure that the table alias and column alias are stored
       //in the column info
-      if (tab_alias != null) {
-        colInfo.setTabAlias(tab_alias.toLowerCase());
-      }
-      if (col_alias != null) {
-        colInfo.setAlias(col_alias.toLowerCase());
+      if (tabAlias != null) {
+        colInfo.setTabAlias(tabAlias.toLowerCase());
       }
       rowSchema.getSignature().add(colInfo);
+      return true;
     }
+    return false;
   }
 
   private void keepAmbiguousInfo(String col_alias, String tab_alias) {
@@ -481,11 +492,16 @@ public class RowResolver implements Serializable{
   public RowResolver duplicate() {
     RowResolver resolver = new RowResolver();
     resolver.rowSchema = new RowSchema(rowSchema);
-    resolver.rslvMap.putAll(rslvMap);
+    for (Map.Entry<String, Map<String, ColumnInfo>> entry : rslvMap.entrySet()) {
+      resolver.rslvMap.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+    }
     resolver.invRslvMap.putAll(invRslvMap);
     resolver.altInvRslvMap.putAll(altInvRslvMap);
     resolver.expressionMap.putAll(expressionMap);
     resolver.isExprResolver = isExprResolver;
+    for (Map.Entry<String, Map<String, String>> entry : ambiguousColumns.entrySet()) {
+      resolver.ambiguousColumns.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+    }
     resolver.ambiguousColumns.putAll(ambiguousColumns);
     resolver.checkForAmbiguity = checkForAmbiguity;
     return resolver;
