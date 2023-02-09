@@ -534,11 +534,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return asOfVersion;
   }
 
-  @Explain(displayName = "Version internal from")
-  public String getVersionIntervalFromExplain() {
-    return versionIntervalFrom.toString();
-  }
-
+  @Explain(displayName = "Version interval from")
   public String getVersionIntervalFrom() {
     return versionIntervalFrom;
   }
