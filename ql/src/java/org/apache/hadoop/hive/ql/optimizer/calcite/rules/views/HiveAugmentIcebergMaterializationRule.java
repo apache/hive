@@ -30,8 +30,10 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -83,22 +85,28 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
 
     table.setVersionIntervalFrom(tableSnapshot.toString());
 
-    int rowIDPos = tableScan.getTable().getRowType().getField(
-        VirtualColumn.ROWID.getName(), false, false).getIndex();
-    RexNode rowIDFieldAccess = rexBuilder.makeFieldAccess(
-        rexBuilder.makeInputRef(tableScan.getTable().getRowType().getFieldList().get(rowIDPos).getType(), rowIDPos),
-        0);
+    int snapshotIdIndex = tableScan.getTable().getRowType().getField(
+        VirtualColumn.SNAPSHOT_ID.getName(), false, false).getIndex();
+    RexNode snapshotIdInputRef = rexBuilder.makeInputRef(
+        tableScan.getTable().getRowType().getFieldList().get(snapshotIdIndex).getType(), snapshotIdIndex);
 
     final RelBuilder relBuilder = call.builder();
     relBuilder.push(tableScan);
     List<RexNode> conds = new ArrayList<>();
-    RelDataType varcharType = relBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR);
+    RelDataType snapshotIdType;
+    try {
+      snapshotIdType = relBuilder.getTypeFactory().createSqlType(
+          TypeConverter.convert(VirtualColumn.SNAPSHOT_ID.getTypeInfo(),
+              call.builder().getTypeFactory()).getSqlTypeName());
+    } catch (CalciteSemanticException e) {
+      throw new RuntimeException(e);
+    }
     final RexNode literalHighWatermark = rexBuilder.makeLiteral(
-        tableSnapshot.toString(), varcharType, false);
+        tableSnapshot.getSnapshotId(), snapshotIdType, false);
     conds.add(
         rexBuilder.makeCall(
-            SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
-            ImmutableList.of(rowIDFieldAccess, literalHighWatermark)));
+            SqlStdOperatorTable.EQUALS,
+            ImmutableList.of(snapshotIdInputRef, literalHighWatermark)));
     relBuilder.filter(conds);
     call.transformTo(relBuilder.build());
   }

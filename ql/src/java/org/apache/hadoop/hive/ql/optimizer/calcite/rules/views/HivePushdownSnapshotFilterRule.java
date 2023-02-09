@@ -19,16 +19,20 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -40,52 +44,92 @@ public class HivePushdownSnapshotFilterRule extends RelOptRule {
         HiveRelFactories.HIVE_BUILDER, "HivePushdownSnapshotFilterRule");
   }
 
-  static class SnapshotContextVisitor extends RexVisitorImpl<String> {
+  static class SnapshotContextVisitor extends RexVisitorImpl<Long> {
 
-    protected SnapshotContextVisitor() {
+    private final int snapshotIdIndex;
+
+    protected SnapshotContextVisitor(int snapshotIdIndex) {
       super(true);
+      this.snapshotIdIndex = snapshotIdIndex;
     }
+
+//    @Override
+//    public String visitLiteral(RexLiteral literal) {
+//      if (literal.getType().getSqlTypeName().getFamily() != SqlTypeFamily.CHARACTER) {
+//        return null;
+//      }
+//      String value = literal.getValueAs(String.class);
+//      if (value.contains(SnapshotContext.class.getSimpleName())) {
+//        return value;
+//      }
+//
+//      return null;
+//    }
 
     @Override
-    public String visitLiteral(RexLiteral literal) {
-      if (literal.getType().getSqlTypeName().getFamily() != SqlTypeFamily.CHARACTER) {
-        return null;
-      }
-      String value = literal.getValueAs(String.class);
-      if (value.contains(SnapshotContext.class.getSimpleName())) {
-        return value;
+    public Long visitCall(RexCall call) {
+      if (call.operands.size() == 2) {
+        Long r = getSnapshotId(call.operands.get(0), call.operands.get(1));
+        if (r != null) {
+          return r;
+        }
+        r = getSnapshotId(call.operands.get(1), call.operands.get(0));
+        if (r != null) {
+          return r;
+        }
       }
 
-      return null;
-    }
-
-    @Override public String visitCall(RexCall call) {
       for (RexNode operand : call.operands) {
-        String r = operand.accept(this);
-        if (isNotBlank(r)) {
+        Long r = operand.accept(this);
+        if (r != null) {
           return r;
         }
       }
       return null;
     }
+
+    private Long getSnapshotId(RexNode op1, RexNode op2) {
+      if (!(op1 instanceof RexInputRef)) {
+        return null;
+      }
+
+      RexInputRef inputRef = (RexInputRef) op1;
+      if (inputRef.getIndex() != snapshotIdIndex) {
+        return null;
+      }
+
+      if (!(op2 instanceof RexLiteral)) {
+        return null;
+      }
+
+      RexLiteral literal = (RexLiteral) op2;
+      if (literal.getType().getSqlTypeName().getFamily() != SqlTypeFamily.NUMERIC) {
+        return null;
+      }
+
+      return literal.getValueAs(Long.class);
+    }
   }
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    HiveFilter filter = call.rel(0);
-    String snapshotContextText = filter.getCondition().accept(new SnapshotContextVisitor());
-
-    if (isBlank(snapshotContextText)) {
+    HiveTableScan tableScan = call.rel(1);
+    RelDataTypeField snapshotIdField = tableScan.getTable().getRowType().getField(
+        VirtualColumn.SNAPSHOT_ID.getName(), false, false);
+    if (snapshotIdField == null) {
       return;
     }
 
-    snapshotContextText = snapshotContextText.substring(snapshotContextText.indexOf('=') + 1);
-    snapshotContextText = snapshotContextText.substring(0, snapshotContextText.length() - 1);
+    HiveFilter filter = call.rel(0);
+    Long snapshotId = filter.getCondition().accept(new SnapshotContextVisitor(snapshotIdField.getIndex()));
 
-    TableScan tableScan = call.rel(1);
+    if (snapshotId == null) {
+      return;
+    }
+
     RelOptHiveTable hiveTable = (RelOptHiveTable) tableScan.getTable();
     Table table = hiveTable.getHiveTableMD();
-    table.setVersionIntervalFrom(snapshotContextText);
+    table.setVersionIntervalFrom(Long.toString(snapshotId));
 
     call.transformTo(call.builder().push(tableScan).build());
   }

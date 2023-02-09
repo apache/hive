@@ -2947,6 +2947,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           if (AcidUtils.isNonNativeAcidTable(tabMetaData, false)) {
             virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
           }
+          if (tabMetaData.isNonNative() && tabMetaData.getStorageHandler().areSnapshotsSupported()) {
+            virtualCols.add(VirtualColumn.SNAPSHOT_ID);
+          }
           for (VirtualColumn vc : virtualCols) {
             colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true,
                 vc.getIsHidden());
