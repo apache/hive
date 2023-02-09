@@ -1,5 +1,7 @@
 -- Mask random uuid
 --! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
+-- Mask random snapshot id
+--! qt:replace:/('current-snapshot-id'=')\d+/$1#SnapshotId#/
 
 DROP TABLE IF EXISTS ice_t;
 CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY ICEBERG;
@@ -16,3 +18,8 @@ SHOW CREATE TABLE ice_t_transform_prop;
 DROP TABLE IF EXISTS ice_t_identity_part;
 CREATE EXTERNAL TABLE ice_t_identity_part (a int) PARTITIONED BY (b string) STORED BY ICEBERG;
 SHOW CREATE TABLE ice_t_identity_part;
+
+DROP TABLE IF EXISTS ice_data;
+CREATE EXTERNAL TABLE ice_data (i int, s string) STORED BY ICEBERG;
+INSERT INTO ice_data VALUES (1, 'ABC'),(2, 'CCC'),(3, 'DBD');
+SHOW CREATE TABLE ice_data;
