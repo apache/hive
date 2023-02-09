@@ -111,6 +111,7 @@ public class TestTezOutputCommitter {
     HiveConf conf = ENVIRONMENT.getTestCtx().hiveConf;
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    conf.setVar(HiveConf.ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER, "org.apache.tez.mapreduce.committer.MROutputCommitter");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setInt("tez.am.task.max.failed.attempts", MAX_TASK_ATTEMPTS);
     conf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
