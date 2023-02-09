@@ -185,7 +185,7 @@ public class VectorGroupByOperatorBench extends AbstractOperatorBench {
     AggregationDesc agg = new AggregationDesc();
     ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
     GenericUDAFEvaluator genericUDAFEvaluator = FunctionRegistry.getGenericUDAFEvaluator(aggregate,
-      ImmutableList.of(oi).asList(), false, false);
+      ImmutableList.of(oi).asList(), false, false, false);
     agg.setGenericUDAFEvaluator(genericUDAFEvaluator);
     if (aggregate.equals("bloom_filter")) {
       GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator udafBloomFilterEvaluator =
