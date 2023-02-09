@@ -98,6 +98,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId#
 	engine.hive.enabled 	true                
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
@@ -247,6 +248,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId#
 	engine.hive.enabled 	true                
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
@@ -396,6 +398,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId#
 	engine.hive.enabled 	true                
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####

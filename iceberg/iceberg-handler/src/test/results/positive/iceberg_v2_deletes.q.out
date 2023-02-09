@@ -131,6 +131,7 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
+  'current-snapshot-id'='#SnapshotId#', 
   'engine.hive.enabled'='true', 
   'format-version'='2', 
   'iceberg.delete.skiprowdata'='true', 
@@ -272,6 +273,7 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
+  'current-snapshot-id'='#SnapshotId#', 
   'engine.hive.enabled'='true', 
   'format-version'='2', 
   'iceberg.delete.skiprowdata'='true', 

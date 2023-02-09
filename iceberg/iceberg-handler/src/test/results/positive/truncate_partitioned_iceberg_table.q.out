@@ -95,6 +95,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId#
 	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	false               
@@ -188,6 +189,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId#
 	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	false               
