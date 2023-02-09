@@ -113,6 +113,7 @@ public class TestTezOutputCommitter {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setInt("tez.am.task.max.failed.attempts", MAX_TASK_ATTEMPTS);
+    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
     conf.set("mapred.output.committer.class", committerClass);
     SessionState.start(conf);
     return DriverFactory.newDriver(conf);

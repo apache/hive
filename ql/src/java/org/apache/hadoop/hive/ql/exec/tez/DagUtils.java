@@ -1463,8 +1463,10 @@ public class DagUtils {
       }
     }
 
+    // If there is a fileSink add a DataSink to the vertex
+    boolean hasFileSink = work.getAllOperators().stream().anyMatch(o -> o instanceof FileSinkOperator);
     // final vertices need to have at least one output
-    if (!hasChildren) {
+    if (!hasChildren || hasFileSink) {
       OutputCommitterDescriptor ocd = null;
       if (HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER) != null) {
         ocd = OutputCommitterDescriptor.create("org.apache.tez.mapreduce.committer.MROutputCommitter");
