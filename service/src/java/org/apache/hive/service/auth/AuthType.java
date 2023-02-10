@@ -58,7 +58,7 @@ public class AuthType {
       // single authentication type has no conflicts
       return;
     }
-    if (typeBits.get(HiveAuthConstants.AuthTypes.SAML.ordinal()) &&
+    if ((typeBits.get(HiveAuthConstants.AuthTypes.SAML.ordinal()) || typeBits.get(HiveAuthConstants.AuthTypes.JWT.ordinal())) &&
         !typeBits.get(HiveAuthConstants.AuthTypes.NOSASL.ordinal()) &&
         !typeBits.get(HiveAuthConstants.AuthTypes.KERBEROS.ordinal()) &&
         !typeBits.get(HiveAuthConstants.AuthTypes.NONE.ordinal()) &&

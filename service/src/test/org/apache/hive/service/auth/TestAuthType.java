@@ -55,6 +55,13 @@ public class TestAuthType {
     testOnePasswordAuthWithSAML(HiveAuthConstants.AuthTypes.CUSTOM);
   }
 
+  @Test
+  public void testOnePasswordAuthWithJWT() throws Exception {
+    testOnePasswordAuthWithJWT(HiveAuthConstants.AuthTypes.LDAP);
+    testOnePasswordAuthWithJWT(HiveAuthConstants.AuthTypes.PAM);
+    testOnePasswordAuthWithJWT(HiveAuthConstants.AuthTypes.CUSTOM);
+  }
+
   private void testOnePasswordAuthWithSAML(HiveAuthConstants.AuthTypes type) throws Exception {
     AuthType authType = new AuthType("SAML," + type.getAuthName());
     Assert.assertTrue(authType.isEnabled(HiveAuthConstants.AuthTypes.SAML));
@@ -63,6 +70,21 @@ public class TestAuthType {
     Set<HiveAuthConstants.AuthTypes> disabledAuthTypes = Arrays.stream(HiveAuthConstants.AuthTypes.values())
         .collect(Collectors.toSet());
     disabledAuthTypes.remove(HiveAuthConstants.AuthTypes.SAML);
+    disabledAuthTypes.remove(type);
+    for (HiveAuthConstants.AuthTypes disabledType : disabledAuthTypes) {
+      Assert.assertFalse(authType.isEnabled(disabledType));
+    }
+    Assert.assertEquals(type.getAuthName(), authType.getPasswordBasedAuthStr());
+  }
+
+  private void testOnePasswordAuthWithJWT(HiveAuthConstants.AuthTypes type) throws Exception {
+    AuthType authType = new AuthType("JWT," + type.getAuthName());
+    Assert.assertTrue(authType.isEnabled(HiveAuthConstants.AuthTypes.JWT));
+    Assert.assertTrue(authType.isEnabled(type));
+
+    Set<HiveAuthConstants.AuthTypes> disabledAuthTypes = Arrays.stream(HiveAuthConstants.AuthTypes.values())
+        .collect(Collectors.toSet());
+    disabledAuthTypes.remove(HiveAuthConstants.AuthTypes.JWT);
     disabledAuthTypes.remove(type);
     for (HiveAuthConstants.AuthTypes disabledType : disabledAuthTypes) {
       Assert.assertFalse(authType.isEnabled(disabledType));
@@ -108,5 +130,41 @@ public class TestAuthType {
   @Test(expected = Exception.class)
   public void testNotExistAuth() throws Exception {
     AuthType authType = new AuthType("SAML,OTHER");
+    authType = new AuthType("JWT,OTHER");
+  }
+
+  @Test(expected = Exception.class)
+  public void testKerberosWithJWT() throws Exception {
+    AuthType authType = new AuthType("KERBEROS,JWT");
+  }
+
+  @Test(expected = Exception.class)
+  public void testKerberosWithJWTAndLdap() throws Exception {
+    AuthType authType = new AuthType("KERBEROS,JWT,LDAP");
+  }
+
+  @Test(expected = Exception.class)
+  public void testNoneWithJWT() throws Exception {
+    AuthType authType = new AuthType("NONE,JWT");
+  }
+
+  @Test(expected = Exception.class)
+  public void testNoSaslWithJWT() throws Exception {
+    AuthType authType = new AuthType("NOSASL,JWT");
+  }
+
+  @Test(expected = Exception.class)
+  public void testMultiPasswordAuthWithJWT() throws Exception {
+    AuthType authType = new AuthType("JWT,LDAP,PAM,CUSTOM");
+  }
+
+  @Test
+  public void testLDAPWithSAMLAndJWT() throws Exception {
+    AuthType authType = new AuthType("JWT,SAML,LDAP");
+  }
+
+  @Test
+  public void testSAMLWithJWT() throws Exception {
+    AuthType authType = new AuthType("JWT,SAML");
   }
 }
