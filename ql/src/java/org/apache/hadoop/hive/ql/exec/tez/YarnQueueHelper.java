@@ -94,19 +94,15 @@ public class YarnQueueHelper {
   }
 
   public void checkQueueAccess(
-      String queueName, String userName) throws IOException, InterruptedException {
+      String queueName, String userName) throws IOException {
     UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
     try {
       ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
         checkQueueAccessInternal(queueName, userName);
         return null;
       });
-    } finally {
-      try {
-        FileSystem.closeAllForUGI(ugi);
-      } catch (IOException exception) {
-        LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
-      }
+    } catch (Exception exception) {
+      LOG.error("Cannot check queue access against UGI: " + ugi, exception);
     }
   }
 
