@@ -80,6 +80,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	                    
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
+file_sequence_number	bigint              	                    
 data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
 PREHOOK: query: describe default.ice_meta_desc.history
 PREHOOK: type: DESCTABLE
@@ -178,6 +179,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	                    
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
+file_sequence_number	bigint              	                    
 data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
 PREHOOK: query: describe formatted default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
@@ -211,6 +213,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	                    
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
+file_sequence_number	bigint              	                    
 data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
 PREHOOK: query: describe formatted default.ice_meta_desc.history
 PREHOOK: type: DESCTABLE
@@ -316,6 +319,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	                    
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
+file_sequence_number	bigint              	                    
 data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
 PREHOOK: query: describe extended default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
@@ -347,6 +351,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	                    
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
+file_sequence_number	bigint              	                    
 data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
 PREHOOK: query: describe extended default.ice_meta_desc.history
 PREHOOK: type: DESCTABLE
@@ -445,6 +450,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	                    
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
+file_sequence_number	bigint              	                    
 data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
 PREHOOK: query: drop table ice_meta_desc
 PREHOOK: type: DROPTABLE
