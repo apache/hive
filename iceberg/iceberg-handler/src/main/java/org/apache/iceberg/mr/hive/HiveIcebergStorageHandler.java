@@ -1119,7 +1119,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void prepareAlterTableEnvironmentContext(AbstractAlterTableDesc alterTableDesc,
       EnvironmentContext environmentContext) {
     if (alterTableDesc instanceof AlterTableSetPropertiesDesc &&
-            alterTableDesc.getProps().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+        alterTableDesc.getProps().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
       // signal manual iceberg metadata location updated by user
       environmentContext.putToProperties(HiveIcebergMetaHook.MANUAL_ICEBERG_METADATA_LOCATION_CHANGE, "true");
     }
