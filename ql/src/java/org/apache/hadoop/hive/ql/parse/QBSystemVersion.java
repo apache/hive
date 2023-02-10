@@ -18,17 +18,12 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-/**
- * Implementation of the query block.
- *
- **/
-
-public class QBAsOf {
+public class QBSystemVersion {
   private final String asOfVersion;
   private final String asOfVersionFrom;
   private final String asOfTime;
 
-  public QBAsOf(String asOfVersion, String asOfVersionFrom, String asOfTime) {
+  public QBSystemVersion(String asOfVersion, String asOfVersionFrom, String asOfTime) {
     this.asOfVersion = asOfVersion;
     this.asOfVersionFrom = asOfVersionFrom;
     this.asOfTime = asOfTime;

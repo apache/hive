@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import org.apache.calcite.plan.RelOptRule;
@@ -26,16 +27,12 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.type.SqlTypeFamily;
-import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class HivePushdownSnapshotFilterRule extends RelOptRule {
 
@@ -52,19 +49,6 @@ public class HivePushdownSnapshotFilterRule extends RelOptRule {
       super(true);
       this.snapshotIdIndex = snapshotIdIndex;
     }
-
-//    @Override
-//    public String visitLiteral(RexLiteral literal) {
-//      if (literal.getType().getSqlTypeName().getFamily() != SqlTypeFamily.CHARACTER) {
-//        return null;
-//      }
-//      String value = literal.getValueAs(String.class);
-//      if (value.contains(SnapshotContext.class.getSimpleName())) {
-//        return value;
-//      }
-//
-//      return null;
-//    }
 
     @Override
     public Long visitCall(RexCall call) {

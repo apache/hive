@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import com.google.common.collect.ImmutableList;
@@ -25,7 +26,6 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -53,6 +53,22 @@ import java.util.Set;
  * no filter is created.
  */
 public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
+
+  private static RelDataType snapshotIdType = null;
+
+  private static RelDataType snapshotIdType(RelBuilder relBuilder) {
+    if (snapshotIdType == null) {
+      try {
+        snapshotIdType = relBuilder.getTypeFactory().createSqlType(
+            TypeConverter.convert(VirtualColumn.SNAPSHOT_ID.getTypeInfo(),
+                relBuilder.getTypeFactory()).getSqlTypeName());
+      } catch (CalciteSemanticException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    return snapshotIdType;
+  }
 
   private final RexBuilder rexBuilder;
   private final Set<RelNode> visited;
@@ -93,16 +109,8 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
     final RelBuilder relBuilder = call.builder();
     relBuilder.push(tableScan);
     List<RexNode> conds = new ArrayList<>();
-    RelDataType snapshotIdType;
-    try {
-      snapshotIdType = relBuilder.getTypeFactory().createSqlType(
-          TypeConverter.convert(VirtualColumn.SNAPSHOT_ID.getTypeInfo(),
-              call.builder().getTypeFactory()).getSqlTypeName());
-    } catch (CalciteSemanticException e) {
-      throw new RuntimeException(e);
-    }
     final RexNode literalHighWatermark = rexBuilder.makeLiteral(
-        tableSnapshot.getSnapshotId(), snapshotIdType, false);
+        tableSnapshot.getSnapshotId(), snapshotIdType(relBuilder), false);
     conds.add(
         rexBuilder.makeCall(
             SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
