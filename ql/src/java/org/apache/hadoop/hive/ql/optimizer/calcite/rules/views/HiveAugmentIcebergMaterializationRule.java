@@ -99,8 +99,6 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
       return;
     }
 
-    table.setVersionIntervalFrom(tableSnapshot.toString());
-
     int snapshotIdIndex = tableScan.getTable().getRowType().getField(
         VirtualColumn.SNAPSHOT_ID.getName(), false, false).getIndex();
     RexNode snapshotIdInputRef = rexBuilder.makeInputRef(
