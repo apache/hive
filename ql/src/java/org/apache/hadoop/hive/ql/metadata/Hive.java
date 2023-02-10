@@ -2122,33 +2122,34 @@ public class Hive {
   private Materialization getMaterializationInvalidationInfo(MaterializedViewMetadata metadata)
       throws TException, HiveException {
     MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
-    if (mvSnapshot.getTableSnapshots() != null && !mvSnapshot.getTableSnapshots().isEmpty()) {
-      boolean hasDelete = false;
-      for (SourceTable sourceTable : metadata.getSourceTables()) {
-        Table table = getTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
-        HiveStorageHandler storageHandler = table.getStorageHandler();
-        if (storageHandler == null) {
-          Materialization materialization = new Materialization();
-          materialization.setSourceTablesCompacted(true);
-          return materialization;
-        }
-        Boolean b = storageHandler.hasDeleteOperation(
-            table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()));
-        if (b == null) {
-          Materialization materialization = new Materialization();
-          materialization.setSourceTablesCompacted(true);
-          return materialization;
-        } else if (b) {
-          hasDelete = true;
-        }
-      }
-      Materialization materialization = new Materialization();
-      materialization.setSourceTablesCompacted(false);
-      materialization.setSourceTablesUpdateDeleteModified(hasDelete);
-      return materialization;
+    if (mvSnapshot.getTableSnapshots() == null || mvSnapshot.getTableSnapshots().isEmpty()) {
+      return getMSC().getMaterializationInvalidationInfo(
+          metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
     }
 
-    return getMSC().getMaterializationInvalidationInfo(metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
+    boolean hasDelete = false;
+    for (SourceTable sourceTable : metadata.getSourceTables()) {
+      Table table = getTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
+      HiveStorageHandler storageHandler = table.getStorageHandler();
+      if (storageHandler == null) {
+        Materialization materialization = new Materialization();
+        materialization.setSourceTablesCompacted(true);
+        return materialization;
+      }
+      Boolean b = storageHandler.hasDeleteOperation(
+          table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()));
+      if (b == null) {
+        Materialization materialization = new Materialization();
+        materialization.setSourceTablesCompacted(true);
+        return materialization;
+      } else if (b) {
+        hasDelete = true;
+      }
+    }
+    Materialization materialization = new Materialization();
+    materialization.setSourceTablesCompacted(false);
+    materialization.setSourceTablesUpdateDeleteModified(hasDelete);
+    return materialization;
   }
 
   /**
