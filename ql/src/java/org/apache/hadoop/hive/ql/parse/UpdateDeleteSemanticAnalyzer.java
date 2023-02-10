@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -164,11 +165,28 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
           "Expected where clause, but found " + where.getName();
 
       if (shouldOverwrite) {
-        assert where.getChildCount() < 2 : "Overwrite mode not supported with more than 1 children in where clause.";
-        for (int i = 0; i < where.getChildCount(); i++) {
-          ASTNode node = new ASTNode(new CommonToken(HiveParser.KW_NOT, "!"));
-          node.addChild(where.getChild(i));
-          where.setChild(i, node);
+        if (where.getChildCount() == 1) {
+
+          // Add isNull check for the where clause condition, since null is treated as false in where condition and
+          // not null also resolves to false, so we need to explicitly handle this case.
+          ASTNode functionNode = new ASTNode(new CommonToken(HiveParser.TOK_FUNCTION, "TOK_FUNCTION"));
+          ASTNode nullFunctionNode = new ASTNode(new CommonToken(HiveParser.KW_IS, "isNull"));
+          nullFunctionNode.addChild(where.getChild(0));
+          nullFunctionNode.setChildIndex(0);
+          functionNode.addChild(nullFunctionNode);
+          functionNode.addChild(where.getChild(0));
+
+          ASTNode orNode =  new ASTNode(new CommonToken(HiveParser.KW_OR, "OR"));
+          orNode.addChild(functionNode);
+
+          // Add the inverted where clause condition, since we want to hold the records which doesn't satisfy this
+          // condition.
+          ASTNode notNode = new ASTNode(new CommonToken(HiveParser.KW_NOT, "!"));
+          notNode.addChild(where.getChild(0));
+          orNode.addChild(notNode);
+          where.setChild(0, orNode);
+        } else if (where.getChildCount() > 1) {
+          throw new SemanticException("Overwrite mode not supported with more than 1 children in where clause.");
         }
       }
     }
@@ -191,7 +209,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     } else if (deleting()) {
       if (shouldOverwrite) {
         // We are now actually executing an Insert query, so set the modes accordingly.
-        rewrittenCtx.setOperation(Context.Operation.OTHER);
         rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.INSERT);
       } else {
         rewrittenCtx.setOperation(Context.Operation.DELETE);

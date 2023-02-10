@@ -132,7 +132,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String TABLE_NAME_SEPARATOR = "..";
   private static final String ICEBERG = "iceberg";
   private static final String PUFFIN = "puffin";
-
+  public static final String COPY_ON_WRITE = "copy-on-write";
+  public static final String MERGE_ON_READ = "merge-on-read";
   /**
    * Function template for producing a custom sort expression function:
    * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
@@ -1130,9 +1131,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     String formatVersion = origParams.get(TableProperties.FORMAT_VERSION);
     if ("2".equals(formatVersion)) {
       tbl.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
-      tbl.getParameters().put(TableProperties.DELETE_MODE, "merge-on-read");
-      tbl.getParameters().put(TableProperties.UPDATE_MODE, "merge-on-read");
-      tbl.getParameters().put(TableProperties.MERGE_MODE, "merge-on-read");
+      tbl.getParameters().put(TableProperties.DELETE_MODE, MERGE_ON_READ);
+      tbl.getParameters().put(TableProperties.UPDATE_MODE, MERGE_ON_READ);
+      tbl.getParameters().put(TableProperties.MERGE_MODE, MERGE_ON_READ);
     }
 
     // check if the table is being created as managed table, in that case we translate it to external
@@ -1175,6 +1176,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       mode = mTable.getTTable().getParameters()
           .getOrDefault(TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT);
     }
-    return "copy-on-write".equalsIgnoreCase(mode);
+    return COPY_ON_WRITE.equalsIgnoreCase(mode);
   }
 }
