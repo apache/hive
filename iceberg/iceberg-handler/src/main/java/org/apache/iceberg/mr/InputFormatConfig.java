@@ -43,7 +43,6 @@ public class InputFormatConfig {
   public static final String READ_SCHEMA = "iceberg.mr.read.schema";
   public static final String SNAPSHOT_ID = "iceberg.mr.snapshot.id";
   public static final String SNAPSHOT_INTERVAL_FROM = "iceberg.mr.snapshot.interval.from";
-  public static final String SNAPSHOT_INTERVAL_TO = "iceberg.mr.snapshot.interval.to";
   public static final String SPLIT_SIZE = "iceberg.mr.split.size";
   public static final String SCHEMA_AUTO_CONVERSION = "iceberg.mr.schema.auto.conversion";
   public static final String TABLE_IDENTIFIER = "iceberg.mr.table.identifier";
@@ -178,12 +177,6 @@ public class InputFormatConfig {
 
     public ConfigBuilder snapshotId(long snapshotId) {
       conf.setLong(SNAPSHOT_ID, snapshotId);
-      return this;
-    }
-
-    public ConfigBuilder snapshotInterval(long snapshotIdFrom, long snapshotIdTo) {
-      conf.setLong(SNAPSHOT_INTERVAL_FROM, snapshotIdFrom);
-      conf.setLong(SNAPSHOT_INTERVAL_TO, snapshotIdTo);
       return this;
     }
 
