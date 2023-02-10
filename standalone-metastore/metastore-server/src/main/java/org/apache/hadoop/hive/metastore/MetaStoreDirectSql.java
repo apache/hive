@@ -195,16 +195,12 @@ class MetaStoreDirectSql {
 
     this.dbType = dbType;
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_PARTITION_BATCH_SIZE);
+    this.directSqlInsertPart = new DirectSqlInsertPart(pm, dbType, batchSize);
     if (batchSize == DETECT_BATCHING) {
       batchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
     this.updateStat = new DirectSqlUpdateStat(pm, conf, dbType, batchSize);
-
-    // TODO: Oracle supports to insert more than 1000 rows with a single insert query. Can use NO_BATCHING for oracle db
-    //  too during batch detection(DETECT_BATCHING) for insert queries as future improvement. Currently, used the same
-    //  limit as IN clause/operator limit(i.e., 1000) during batch detection.
-    this.directSqlInsertPart = new DirectSqlInsertPart(pm, dbType, batchSize);
     ImmutableMap.Builder<String, String> fieldNameToTableNameBuilder =
         new ImmutableMap.Builder<>();
 
