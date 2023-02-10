@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.repeat;
-import static org.apache.hadoop.hive.metastore.Batchable.NO_BATCHING;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,7 +82,14 @@ class DirectSqlInsertPart {
     if (rowCount == 0 || columnCount == 0) {
       return;
     }
-    int maxRowsInBatch = (batchSize == NO_BATCHING) ? rowCount : batchSize;
+    int maxRowsInBatch = batchSize > 0 ? batchSize : rowCount;
+    if (dbType.isSQLSERVER()) {
+      // SQL Server supports a maximum of 2100 parameters in a request. Adjust the maxRowsInBatch accordingly
+      int maxAllowedRows = (2100 - columnCount) / columnCount;
+      if (maxRowsInBatch > maxAllowedRows) {
+        maxRowsInBatch = maxAllowedRows;
+      }
+    }
     int maxBatches = rowCount / maxRowsInBatch;
     int last = rowCount % maxRowsInBatch;
     String rowFormat = "(" + repeat(",?", columnCount).substring(1) + ")";
