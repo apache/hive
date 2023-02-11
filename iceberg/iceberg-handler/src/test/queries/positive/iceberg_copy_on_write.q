@@ -51,6 +51,12 @@ delete from ice01 where name!=null;
 
 select * from ice01;
 
+--disable cbo due to HIVE-27070
+set hive.cbo.enable=false;
+
+delete from ice01 where name is null;
+
+select * from ice01;
+
 -- clean up
 drop table if exists ice01;
-drop table if exists icepart01;

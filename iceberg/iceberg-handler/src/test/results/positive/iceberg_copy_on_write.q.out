@@ -165,6 +165,24 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	ABC
 3	NULL
 4	POPI
+PREHOOK: query: delete from ice01 where name is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where name is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+4	POPI
 PREHOOK: query: drop table if exists ice01
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice01
@@ -173,7 +191,3 @@ POSTHOOK: query: drop table if exists ice01
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
-PREHOOK: query: drop table if exists icepart01
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists icepart01
-POSTHOOK: type: DROPTABLE
