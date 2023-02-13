@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -1172,7 +1173,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     String mode = null;
     String formatVersion = mTable.getTTable().getParameters().get(TableProperties.FORMAT_VERSION);
     // As of now only delete mode is supported, for all others return false
-    if ("2".equals(formatVersion) && operationName.equalsIgnoreCase("delete")) {
+    if ("2".equals(formatVersion) && operationName.equalsIgnoreCase(Context.Operation.DELETE.toString())) {
       mode = mTable.getTTable().getParameters()
           .getOrDefault(TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT);
     }
