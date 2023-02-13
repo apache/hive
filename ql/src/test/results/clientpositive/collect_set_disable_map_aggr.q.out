@@ -1,0 +1,44 @@
+PREHOOK: query: drop table tb1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tb1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tb1 (key int, startTime string, endTime string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tb1
+POSTHOOK: query: create table tb1 (key int, startTime string, endTime string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tb1
+PREHOOK: query: insert into tb1 values (1, "100", "101")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tb1
+POSTHOOK: query: insert into tb1 values (1, "100", "101")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tb1
+POSTHOOK: Lineage: tb1.endtime SCRIPT []
+POSTHOOK: Lineage: tb1.key SCRIPT []
+POSTHOOK: Lineage: tb1.starttime SCRIPT []
+PREHOOK: query: insert into tb1 values (2, "200", "201")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tb1
+POSTHOOK: query: insert into tb1 values (2, "200", "201")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tb1
+POSTHOOK: Lineage: tb1.endtime SCRIPT []
+POSTHOOK: Lineage: tb1.key SCRIPT []
+POSTHOOK: Lineage: tb1.starttime SCRIPT []
+PREHOOK: query: select key, collect_set(array(startTime, endTime)) as col1 from tb1 group by key order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tb1
+#### A masked pattern was here ####
+POSTHOOK: query: select key, collect_set(array(startTime, endTime)) as col1 from tb1 group by key order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tb1
+#### A masked pattern was here ####
+1	[["100","101"]]
+2	[["200","201"]]
