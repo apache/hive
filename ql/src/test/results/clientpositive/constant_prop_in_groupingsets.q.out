@@ -1,0 +1,43 @@
+PREHOOK: query: drop table tb1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tb1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tb1 (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tb1
+POSTHOOK: query: create table tb1 (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tb1
+PREHOOK: query: insert into tb1 values("a", "b")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tb1
+POSTHOOK: query: insert into tb1 values("a", "b")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tb1
+POSTHOOK: Lineage: tb1.key SCRIPT []
+POSTHOOK: Lineage: tb1.value SCRIPT []
+PREHOOK: query: with mid1 as (
+    select 'test_value' as test_field, * from tb1
+)
+select key, nvl(test_field, 'default_test_value')
+from mid1 group by key, test_field
+grouping sets(key, test_field, (key, test_field))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tb1
+#### A masked pattern was here ####
+POSTHOOK: query: with mid1 as (
+    select 'test_value' as test_field, * from tb1
+)
+select key, nvl(test_field, 'default_test_value')
+from mid1 group by key, test_field
+grouping sets(key, test_field, (key, test_field))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tb1
+#### A masked pattern was here ####
+a	test_value
+a	default_test_value
+NULL	test_value
