@@ -130,6 +130,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
+  private static final String ICEBERG = "iceberg";
+  private static final String PUFFIN = "puffin";
+
   /**
    * Function template for producing a custom sort expression function:
    * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
@@ -312,24 +315,34 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
+    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM).toLowerCase();
     Map<String, String> stats = Maps.newHashMap();
-    if (table.currentSnapshot() != null) {
-      Map<String, String> summary = table.currentSnapshot().summary();
-      if (summary != null) {
-        if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
-          stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
+    switch (statsSource) {
+      case ICEBERG:
+        if (table.currentSnapshot() != null) {
+          Map<String, String> summary = table.currentSnapshot().summary();
+          if (summary != null) {
+            if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
+              stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
+            }
+            if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
+              stats.put(StatsSetupConst.ROW_COUNT, summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
+            }
+            if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
+              stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
+            }
+          }
+        } else {
+          stats.put(StatsSetupConst.NUM_FILES, "0");
+          stats.put(StatsSetupConst.ROW_COUNT, "0");
+          stats.put(StatsSetupConst.TOTAL_SIZE, "0");
         }
-        if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
-          stats.put(StatsSetupConst.ROW_COUNT, summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
-        }
-        if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
-          stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
-        }
-      }
-    } else {
-      stats.put(StatsSetupConst.NUM_FILES, "0");
-      stats.put(StatsSetupConst.ROW_COUNT, "0");
-      stats.put(StatsSetupConst.TOTAL_SIZE, "0");
+        break;
+      case PUFFIN:
+        // place holder for puffin
+        break;
+      default:
+        // fall back to metastore
     }
     return stats;
   }
