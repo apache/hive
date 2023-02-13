@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +119,7 @@ public class CompactorUtil {
   }
 
   public static boolean isDynPartAbort(Table t, String partName) {
-    return Optional.ofNullable(t).map(Table::getPartitionKeys).filter(pk -> pk.size() > 0).isPresent()
+    return Optional.ofNullable(t).map(Table::getPartitionKeys).filter(pk -> !pk.isEmpty()).isPresent()
             && partName == null;
   }
 
@@ -145,5 +146,25 @@ public class CompactorUtil {
    */
   public static boolean runJobAsSelf(String owner) {
     return (owner.equals(System.getProperty("user.name")));
+  }
+
+  public static List<Path> getObsoleteDirs(AcidDirectory dir, boolean isDynPartAbort) {
+    List<Path> obsoleteDirs = dir.getObsolete();
+    /*
+     * add anything in 'dir'  that only has data from aborted transactions - no one should be
+     * trying to read anything in that dir (except getAcidState() that only reads the name of
+     * this dir itself)
+     * So this may run ahead of {@link CompactionInfo#highestWriteId} but it's ok (suppose there
+     * are no active txns when cleaner runs).  The key is to not delete metadata about aborted
+     * txns with write IDs > {@link CompactionInfo#highestWriteId}.
+     * See {@link TxnStore#markCleaned(CompactionInfo)}
+     */
+    obsoleteDirs.addAll(dir.getAbortedDirectories());
+    if (isDynPartAbort) {
+      // In the event of an aborted DP operation, we should only consider the aborted directories for cleanup.
+      // Including obsolete directories for partitioned tables can result in data loss.
+      obsoleteDirs = dir.getAbortedDirectories();
+    }
+    return obsoleteDirs;
   }
 }

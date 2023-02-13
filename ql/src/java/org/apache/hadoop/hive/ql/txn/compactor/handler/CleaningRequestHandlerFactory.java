@@ -15,12 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.txn.compactor;
+package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.ql.txn.compactor.handler.CompactionHandler;
-import org.apache.hadoop.hive.ql.txn.compactor.handler.Handler;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,20 +26,20 @@ import java.util.List;
 /**
  * A factory class to fetch handlers.
  */
-public class HandlerFactory {
-  private static final HandlerFactory INSTANCE = new HandlerFactory();
+public class CleaningRequestHandlerFactory {
+  private static final CleaningRequestHandlerFactory INSTANCE = new CleaningRequestHandlerFactory();
 
-  static HandlerFactory getInstance() {
+  public static CleaningRequestHandlerFactory getInstance() {
     return INSTANCE;
   }
 
   /**
    * Factory class, no need to expose constructor.
    */
-  private HandlerFactory() {
+  private CleaningRequestHandlerFactory() {
   }
 
-  public List<Handler> getHandlers(HiveConf conf, TxnStore txnHandler, boolean metricsEnabled) {
-    return Arrays.asList(new CompactionHandler(conf, txnHandler, metricsEnabled));
+  public List<CleaningRequestHandler> getHandlers(HiveConf conf, TxnStore txnHandler, boolean metricsEnabled) {
+    return Arrays.asList(new CompactionCleaningRequestHandler(conf, txnHandler, metricsEnabled));
   }
 }

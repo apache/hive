@@ -17,13 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.hadoop.fs.FileSystem;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,20 +33,10 @@ public class CompactionCleaningRequest extends CleaningRequest {
   private final CompactionInfo compactionInfo;
   private final Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots;
 
-  public CompactionCleaningRequest(String location, CompactionInfo info, List<Path> obsoleteDirs,
-                                   boolean purge, FileSystem fs, Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots,
-                                   boolean dropPartition) {
-    super(RequestType.COMPACTION, location, obsoleteDirs, purge, fs);
-    this.compactionInfo = info;
-    this.dbName = compactionInfo.dbname;
-    this.tableName = compactionInfo.tableName;
-    this.partitionName = compactionInfo.partName;
-    this.dirSnapshots = dirSnapshots;
-    this.cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
-            (compactionInfo.type != null ? compactionInfo.type.toString().toLowerCase() : null);
-    this.runAs = compactionInfo.runAs;
-    this.dropPartition = dropPartition;
-    this.fullPartitionName = compactionInfo.getFullPartitionName();
+  public CompactionCleaningRequest(CompactionCleaningRequestBuilder builder) {
+    super(builder);
+    this.compactionInfo = builder.compactionInfo;
+    this.dirSnapshots = builder.dirSnapshots;
   }
 
   public CompactionInfo getCompactionInfo() {
@@ -60,11 +49,45 @@ public class CompactionCleaningRequest extends CleaningRequest {
 
   @Override
   public String toString() {
-    return String.join("Compaction cleaning request: [Request Type: ", this.getType().toString(),
-            ", Compaction Info: [", this.compactionInfo.toString(),
-            "], Obsolete directories: ", CompactorUtil.getDebugInfo(this.getObsoleteDirs()),
-            ", Cleaner metric: ", this.cleanerMetric,
-            ", Drop partition: ", Boolean.toString(this.dropPartition));
+    return new ToStringBuilder(this)
+            .append("Request type", getType().toString())
+            .append("Compaction Info", getCompactionInfo().toString())
+            .append("Obsolete directories", getObsoleteDirs())
+            .append("Cleaner metric", getObsoleteDirs())
+            .append("Drop partition", isDropPartition()).build();
+  }
 
+  /**
+   * A builder specific to compaction cleaning request
+   */
+  public static class CompactionCleaningRequestBuilder extends
+          CleaningRequestBuilder<CompactionCleaningRequestBuilder> {
+    private CompactionInfo compactionInfo;
+    private Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots;
+
+    public CompactionCleaningRequestBuilder setCompactionInfo(CompactionInfo compactionInfo) {
+      this.compactionInfo = compactionInfo;
+      return self();
+    }
+
+    public CompactionCleaningRequestBuilder setDirSnapshots(Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots) {
+      this.dirSnapshots = dirSnapshots;
+      return self();
+    }
+
+    @Override
+    public CompactionCleaningRequest build() {
+      this.setType(RequestType.COMPACTION);
+      this.setCleanerMetric(MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
+              (compactionInfo.type != null ? compactionInfo.type.toString().toLowerCase() : null));
+      if (compactionInfo != null) {
+        this.setDbName(compactionInfo.dbname)
+                .setTableName(compactionInfo.tableName)
+                .setPartitionName(compactionInfo.partName)
+                .setRunAs(compactionInfo.runAs)
+                .setFullPartitionName(compactionInfo.getFullPartitionName());
+      }
+      return new CompactionCleaningRequest(this);
+    }
   }
 }

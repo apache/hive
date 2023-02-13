@@ -35,20 +35,27 @@ public class CleaningRequest {
   private final List<Path> obsoleteDirs;
   private final boolean purge;
   private final FileSystem fs;
-  protected String runAs;
-  protected String cleanerMetric;
-  protected String dbName;
-  protected String tableName;
-  protected String partitionName;
-  protected boolean dropPartition;
-  protected String fullPartitionName;
+  private final String runAs;
+  private final String cleanerMetric;
+  private final String dbName;
+  private final String tableName;
+  private final String partitionName;
+  private final boolean dropPartition;
+  private final String fullPartitionName;
 
-  public CleaningRequest(RequestType type, String location, List<Path> obsoleteDirs, boolean purge, FileSystem fs) {
-    this.type = type;
-    this.location = location;
-    this.obsoleteDirs = obsoleteDirs;
-    this.purge = purge;
-    this.fs = fs;
+  public CleaningRequest(CleaningRequestBuilder<? extends CleaningRequestBuilder<?>> builder) {
+    this.type = builder.type;
+    this.location = builder.location;
+    this.obsoleteDirs = builder.obsoleteDirs;
+    this.purge = builder.purge;
+    this.fs = builder.fs;
+    this.runAs = builder.runAs;
+    this.cleanerMetric = builder.cleanerMetric;
+    this.dbName = builder.dbName;
+    this.tableName = builder.tableName;
+    this.partitionName = builder.partitionName;
+    this.dropPartition = builder.dropPartition;
+    this.fullPartitionName = builder.fullPartitionName;
   }
 
   public RequestType getType() {
@@ -97,5 +104,93 @@ public class CleaningRequest {
 
   public String getFullPartitionName() {
     return fullPartitionName;
+  }
+
+  /**
+   * This builder supports explicit type-casting of sub-class builders by using recursion and generics.
+   * @param <T> Sub-class that is going to extend this cleaning request builder
+   */
+  public static class CleaningRequestBuilder<T extends CleaningRequestBuilder<T>> {
+    private RequestType type;
+    private String location;
+    private List<Path> obsoleteDirs;
+    private boolean purge;
+    private FileSystem fs;
+    private String runAs;
+    private String cleanerMetric;
+    private String dbName;
+    private String tableName;
+    private String partitionName;
+    private boolean dropPartition;
+    private String fullPartitionName;
+
+    public T setType(RequestType type) {
+      this.type = type;
+      return self();
+    }
+
+    public T setLocation(String location) {
+      this.location = location;
+      return self();
+    }
+
+    public T setObsoleteDirs(List<Path> obsoleteDirs) {
+      this.obsoleteDirs = obsoleteDirs;
+      return self();
+    }
+
+    public T setPurge(boolean purge) {
+      this.purge = purge;
+      return self();
+    }
+
+    public T setFs(FileSystem fs) {
+      this.fs = fs;
+      return self();
+    }
+
+    public T setCleanerMetric(String cleanerMetric) {
+      this.cleanerMetric = cleanerMetric;
+      return self();
+    }
+
+    public T setDbName(String dbName) {
+      this.dbName = dbName;
+      return self();
+    }
+
+    public T setTableName(String tableName) {
+      this.tableName = tableName;
+      return self();
+    }
+
+    public T setPartitionName(String partitionName) {
+      this.partitionName = partitionName;
+      return self();
+    }
+
+    public T setRunAs(String runAs) {
+      this.runAs = runAs;
+      return self();
+    }
+
+    public T setFullPartitionName(String fullPartitionName) {
+      this.fullPartitionName = fullPartitionName;
+      return self();
+    }
+
+    public T setDropPartition(boolean dropPartition) {
+      this.dropPartition = dropPartition;
+      return self();
+    }
+
+    @SuppressWarnings("unchecked")
+    final T self() {
+      return (T) this;
+    }
+
+    public CleaningRequest build() {
+      return new CleaningRequest(this);
+    }
   }
 }

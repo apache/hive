@@ -25,9 +25,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.txn.compactor.CleaningRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.thrift.TBase;
@@ -46,24 +44,20 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 /**
  * An abstract class which defines the list of utility methods for performing cleanup activities.
  */
-public abstract class Handler {
+public abstract class CleaningRequestHandler<T extends CleaningRequest> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(Handler.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CleaningRequestHandler.class.getName());
   protected final TxnStore txnHandler;
   protected final HiveConf conf;
   protected final boolean metricsEnabled;
   private Optional<Cache<String, TBase>> metaCache;
 
-  Handler(HiveConf conf, TxnStore txnHandler, boolean metricsEnabled) {
+  CleaningRequestHandler(HiveConf conf, TxnStore txnHandler, boolean metricsEnabled) {
     this.conf = conf;
     this.txnHandler = txnHandler;
     boolean tableCacheOn = MetastoreConf.getBoolVar(this.conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_TABLECACHE_ON);
     this.metaCache = initializeCache(tableCacheOn);
     this.metricsEnabled = metricsEnabled;
-  }
-
-  public HiveConf getConf() {
-    return conf;
   }
 
   public TxnStore getTxnHandler() {
@@ -75,24 +69,31 @@ public abstract class Handler {
   }
 
   /**
+   * The type of requests handled by this handler
+   * @return Request type handled by this handler
+   */
+  public abstract CleaningRequest.RequestType getRequestType();
+
+  /**
    * Find the list of objects which are ready for cleaning.
    * @return Cleaning requests
    */
-  public abstract List<CleaningRequest> findReadyToClean() throws MetaException;
+  public abstract List<T> findReadyToClean() throws MetaException;
 
   /**
    * Execute just before cleanup
    * @param cleaningRequest - Cleaning request
    */
-  public abstract void beforeExecutingCleaningRequest(CleaningRequest cleaningRequest) throws MetaException;
+  public abstract void beforeExecutingCleaningRequest(T cleaningRequest) throws MetaException;
 
   /**
    * Execute just after cleanup
    * @param cleaningRequest Cleaning request
    * @param deletedFiles List of deleted files
+   * @return True if cleanup was successful, false otherwise
    * @throws MetaException
    */
-  public abstract void afterExecutingCleaningRequest(CleaningRequest cleaningRequest, List<Path> deletedFiles) throws MetaException;
+  public abstract boolean afterExecutingCleaningRequest(T cleaningRequest, List<Path> deletedFiles) throws MetaException;
 
   /**
    * Execute in the event of failure
@@ -100,7 +101,7 @@ public abstract class Handler {
    * @param ex Failure exception
    * @throws MetaException
    */
-  public abstract void failureExecutingCleaningRequest(CleaningRequest cleaningRequest, Exception ex) throws MetaException;
+  public abstract void failureExecutingCleaningRequest(T cleaningRequest, Exception ex) throws MetaException;
 
   public Table resolveTable(String dbName, String tableName) throws MetaException {
     try {
@@ -116,7 +117,7 @@ public abstract class Handler {
       List<Partition> parts;
       try {
         parts = CompactorUtil.getPartitionsByNames(conf, dbName, tableName, partName);
-        if (parts == null || parts.size() == 0) {
+        if (parts == null || parts.isEmpty()) {
           // The partition got dropped before we went looking for it.
           return null;
         }
@@ -135,10 +136,10 @@ public abstract class Handler {
     }
   }
 
-  public <T extends TBase<T,?>> T computeIfAbsent(String key, Callable<T> callable) throws Exception {
+  public <B extends TBase<B,?>> B computeIfAbsent(String key, Callable<B> callable) throws Exception {
     if (metaCache.isPresent()) {
       try {
-        return (T) metaCache.get().get(key, callable);
+        return (B) metaCache.get().get(key, callable);
       } catch (ExecutionException e) {
         throw (Exception) e.getCause();
       }
@@ -155,25 +156,5 @@ public abstract class Handler {
 
   public void invalidateMetaCache() {
     metaCache.ifPresent(Cache::invalidateAll);
-  }
-
-  protected List<Path> getObsoleteDirs(AcidDirectory dir, boolean isDynPartAbort) {
-    List<Path> obsoleteDirs = dir.getObsolete();
-    /**
-     * add anything in 'dir'  that only has data from aborted transactions - no one should be
-     * trying to read anything in that dir (except getAcidState() that only reads the name of
-     * this dir itself)
-     * So this may run ahead of {@link CompactionInfo#highestWriteId} but it's ok (suppose there
-     * are no active txns when cleaner runs).  The key is to not delete metadata about aborted
-     * txns with write IDs > {@link CompactionInfo#highestWriteId}.
-     * See {@link TxnStore#markCleaned(CompactionInfo)}
-     */
-    obsoleteDirs.addAll(dir.getAbortedDirectories());
-    if (isDynPartAbort) {
-      // In the event of an aborted DP operation, we should only consider the aborted directories for cleanup.
-      // Including obsolete directories for partitioned tables can result in data loss.
-      obsoleteDirs = dir.getAbortedDirectories();
-    }
-    return obsoleteDirs;
   }
 }

@@ -40,11 +40,13 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.CleaningRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactionCleaningRequest;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactionCleaningRequest.CompactionCleaningRequestBuilder;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -61,21 +63,27 @@ import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getIntVar;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
 
 /**
- * A compaction based implementation of Handler.
+ * A compaction based implementation of CleaningRequestHandler.
  * Provides implementation of finding ready to clean items, preprocessing of cleaning request,
  * postprocessing of cleaning request and failure handling of cleaning request.
  */
-public class CompactionHandler extends Handler {
+class CompactionCleaningRequestHandler extends CleaningRequestHandler<CompactionCleaningRequest> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(CompactionHandler.class.getName());
+  private static final CleaningRequest.RequestType requestType = CleaningRequest.RequestType.COMPACTION;
+  private static final Logger LOG = LoggerFactory.getLogger(CompactionCleaningRequestHandler.class.getName());
 
-  public CompactionHandler(HiveConf conf, TxnStore txnHandler, boolean metricsEnabled) {
+  public CompactionCleaningRequestHandler(HiveConf conf, TxnStore txnHandler, boolean metricsEnabled) {
     super(conf, txnHandler, metricsEnabled);
   }
 
   @Override
-  public List<CleaningRequest> findReadyToClean() throws MetaException {
-    List<CleaningRequest> cleaningRequests = new ArrayList<>();
+  public CleaningRequest.RequestType getRequestType() {
+    return requestType;
+  }
+
+  @Override
+  public List<CompactionCleaningRequest> findReadyToClean() throws MetaException {
+    List<CompactionCleaningRequest> cleaningRequests = new ArrayList<>();
     long retentionTime = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
             ? HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS)
             : 0;
@@ -139,81 +147,71 @@ public class CompactionHandler extends Handler {
                     ? CompactorUtil.resolveStorageDescriptor(t, p).getLocation()
                     : location;
             boolean dropPartition = ci.partName != null && p == null;
-            if (dropPartition) {
-              //check if partition wasn't re-created
-              if (resolvePartition(ci.dbname, ci.tableName, ci.partName) == null) {
-                String strIfPurge = ci.getProperty("ifPurge");
-                boolean ifPurge = strIfPurge != null || Boolean.parseBoolean(ci.getProperty("ifPurge"));
 
-                Path obsoletePath = new Path(path);
-                cleaningRequests.add(new CompactionCleaningRequest(path, ci, Collections.singletonList(obsoletePath), ifPurge,
-                        obsoletePath.getFileSystem(conf), null, true));
-                continue;
+            //check if partition wasn't re-created
+            if (dropPartition && resolvePartition(ci.dbname, ci.tableName, ci.partName) == null) {
+              cleaningRequests.add(getCleaningRequestBasedOnLocation(ci, path, true));
+            } else {
+              ValidTxnList validTxnList =
+                      TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), cleanerWaterMark);
+              //save it so that getAcidState() sees it
+              conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+              /*
+               * {@code validTxnList} is capped by minOpenTxnGLB so if
+               * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
+               * produced by a compactor, that means every reader that could be active right now see it
+               * as well.  That means if this base/delta shadows some earlier base/delta, the it will be
+               * used in favor of any files that it shadows.  Thus the shadowed files are safe to delete.
+               *
+               *
+               * The metadata about aborted writeIds (and consequently aborted txn IDs) cannot be deleted
+               * above COMPACTION_QUEUE.CQ_HIGHEST_WRITE_ID.
+               * See {@link TxnStore#markCleaned(CompactionInfo)} for details.
+               * For example given partition P1, txnid:150 starts and sees txnid:149 as open.
+               * Say compactor runs in txnid:160, but 149 is still open and P1 has the largest resolved
+               * writeId:17.  Compactor will produce base_17_c160.
+               * Suppose txnid:149 writes delta_18_18
+               * to P1 and aborts.  Compactor can only remove TXN_COMPONENTS entries
+               * up to (inclusive) writeId:17 since delta_18_18 may be on disk (and perhaps corrupted) but
+               * not visible based on 'validTxnList' capped at minOpenTxn so it will not not be cleaned by
+               * {@link #removeFiles(String, ValidWriteIdList, CompactionInfo)} and so we must keep the
+               * metadata that says that 18 is aborted.
+               * In a slightly different case, whatever txn created delta_18 (and all other txn) may have
+               * committed by the time cleaner runs and so cleaner will indeed see delta_18_18 and remove
+               * it (since it has nothing but aborted data).  But we can't tell which actually happened
+               * in markCleaned() so make sure it doesn't delete meta above CG_CQ_HIGHEST_WRITE_ID.
+               *
+               * We could perhaps make cleaning of aborted and obsolete and remove all aborted files up
+               * to the current Min Open Write Id, this way aborted TXN_COMPONENTS meta can be removed
+               * as well up to that point which may be higher than CQ_HIGHEST_WRITE_ID.  This could be
+               * useful if there is all of a sudden a flood of aborted txns.  (For another day).
+               */
+
+              // Creating 'reader' list since we are interested in the set of 'obsolete' files
+              ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
+              LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
+
+              Path loc = new Path(path);
+              FileSystem fs = loc.getFileSystem(conf);
+
+              // Collect all the files/dirs
+              Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshotsForCleaner(fs, loc);
+              AcidDirectory dir = AcidUtils.getAcidState(fs, loc, conf, validWriteIdList, Ref.from(false), false,
+                      dirSnapshots);
+              Table table = computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
+              boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, ci.partName);
+
+              List<Path> obsoleteDirs = CompactorUtil.getObsoleteDirs(dir, isDynPartAbort);
+              if (isDynPartAbort || dir.hasUncompactedAborts()) {
+                ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
               }
+
+              cleaningRequests.add(new CompactionCleaningRequestBuilder().setLocation(path)
+                      .setCompactionInfo(ci).setObsoleteDirs(obsoleteDirs).setPurge(true).setFs(fs)
+                      .setDirSnapshots(dirSnapshots).setDropPartition(false).build());
             }
-
-            ValidTxnList validTxnList =
-                    TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), cleanerWaterMark);
-            //save it so that getAcidState() sees it
-            conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
-            /*
-             * {@code validTxnList} is capped by minOpenTxnGLB so if
-             * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
-             * produced by a compactor, that means every reader that could be active right now see it
-             * as well.  That means if this base/delta shadows some earlier base/delta, the it will be
-             * used in favor of any files that it shadows.  Thus the shadowed files are safe to delete.
-             *
-             *
-             * The metadata about aborted writeIds (and consequently aborted txn IDs) cannot be deleted
-             * above COMPACTION_QUEUE.CQ_HIGHEST_WRITE_ID.
-             * See {@link TxnStore#markCleaned(CompactionInfo)} for details.
-             * For example given partition P1, txnid:150 starts and sees txnid:149 as open.
-             * Say compactor runs in txnid:160, but 149 is still open and P1 has the largest resolved
-             * writeId:17.  Compactor will produce base_17_c160.
-             * Suppose txnid:149 writes delta_18_18
-             * to P1 and aborts.  Compactor can only remove TXN_COMPONENTS entries
-             * up to (inclusive) writeId:17 since delta_18_18 may be on disk (and perhaps corrupted) but
-             * not visible based on 'validTxnList' capped at minOpenTxn so it will not not be cleaned by
-             * {@link #removeFiles(String, ValidWriteIdList, CompactionInfo)} and so we must keep the
-             * metadata that says that 18 is aborted.
-             * In a slightly different case, whatever txn created delta_18 (and all other txn) may have
-             * committed by the time cleaner runs and so cleaner will indeed see delta_18_18 and remove
-             * it (since it has nothing but aborted data).  But we can't tell which actually happened
-             * in markCleaned() so make sure it doesn't delete meta above CG_CQ_HIGHEST_WRITE_ID.
-             *
-             * We could perhaps make cleaning of aborted and obsolete and remove all aborted files up
-             * to the current Min Open Write Id, this way aborted TXN_COMPONENTS meta can be removed
-             * as well up to that point which may be higher than CQ_HIGHEST_WRITE_ID.  This could be
-             * useful if there is all of a sudden a flood of aborted txns.  (For another day).
-             */
-
-            // Creating 'reader' list since we are interested in the set of 'obsolete' files
-            ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
-            LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
-
-            Path loc = new Path(path);
-            FileSystem fs = loc.getFileSystem(conf);
-
-            // Collect all the files/dirs
-            Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshotsForCleaner(fs, loc);
-            AcidDirectory dir = AcidUtils.getAcidState(fs, loc, conf, validWriteIdList, Ref.from(false), false,
-                    dirSnapshots);
-            Table table = computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
-            boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, ci.partName);
-
-            List<Path> obsoleteDirs = getObsoleteDirs(dir, isDynPartAbort);
-            if (isDynPartAbort || dir.hasUncompactedAborts()) {
-              ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
-            }
-
-            cleaningRequests.add(new CompactionCleaningRequest(path, ci, obsoleteDirs, true, fs, dirSnapshots, false));
           } else {
-            String strIfPurge = ci.getProperty("ifPurge");
-            boolean ifPurge = strIfPurge != null || Boolean.parseBoolean(ci.getProperty("ifPurge"));
-
-            Path obsoletePath = new Path(location);
-            cleaningRequests.add(new CompactionCleaningRequest(location, ci, Collections.singletonList(obsoletePath), ifPurge,
-                    obsoletePath.getFileSystem(conf), null, false));
+            cleaningRequests.add(getCleaningRequestBasedOnLocation(ci, location, false));
           }
         } catch (Exception e) {
           LOG.warn("Cleaning request was not successful generated for : {} due to {}", idWatermark(ci), e.getMessage());
@@ -228,16 +226,27 @@ public class CompactionHandler extends Handler {
     return cleaningRequests;
   }
 
+  private CompactionCleaningRequest getCleaningRequestBasedOnLocation(CompactionInfo ci, String location, boolean isDropPartition) throws IOException {
+    String strIfPurge = ci.getProperty("ifPurge");
+    boolean ifPurge = strIfPurge != null || Boolean.parseBoolean(ci.getProperty("ifPurge"));
+
+    Path obsoletePath = new Path(location);
+    return new CompactionCleaningRequestBuilder()
+            .setLocation(location).setCompactionInfo(ci)
+            .setObsoleteDirs(Collections.singletonList(obsoletePath)).setPurge(ifPurge)
+            .setFs(obsoletePath.getFileSystem(conf)).setDirSnapshots(null).setDropPartition(isDropPartition).build();
+  }
+
   @Override
-  public void beforeExecutingCleaningRequest(CleaningRequest cleaningRequest) throws MetaException {
-    CompactionInfo ci = ((CompactionCleaningRequest) cleaningRequest).getCompactionInfo();
+  public void beforeExecutingCleaningRequest(CompactionCleaningRequest cleaningRequest) throws MetaException {
+    CompactionInfo ci = cleaningRequest.getCompactionInfo();
     txnHandler.markCleanerStart(ci);
   }
 
   @Override
-  public void afterExecutingCleaningRequest(CleaningRequest cleaningRequest, List<Path> deletedFiles) throws MetaException {
-    CompactionInfo ci = ((CompactionCleaningRequest) cleaningRequest).getCompactionInfo();
-    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = ((CompactionCleaningRequest) cleaningRequest).getHdfsDirSnapshots();
+  public boolean afterExecutingCleaningRequest(CompactionCleaningRequest cleaningRequest, List<Path> deletedFiles) throws MetaException {
+    CompactionInfo ci = cleaningRequest.getCompactionInfo();
+    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = cleaningRequest.getHdfsDirSnapshots();
     // Make sure there are no leftovers below the compacted watermark
     if (dirSnapshots != null) {
       conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
@@ -251,7 +260,7 @@ public class CompactionHandler extends Handler {
 
         table = computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
         boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, ci.partName);
-        List<Path> remained = subtract(getObsoleteDirs(dir, isDynPartAbort), deletedFiles);
+        List<Path> remained = subtract(CompactorUtil.getObsoleteDirs(dir, isDynPartAbort), deletedFiles);
         if (!remained.isEmpty()) {
           LOG.warn("{} Remained {} obsolete directories from {}. {}", idWatermark(ci), remained.size(),
                   cleaningRequest.getLocation(), CompactorUtil.getDebugInfo(remained));
@@ -267,12 +276,15 @@ public class CompactionHandler extends Handler {
       } else {
         txnHandler.clearCleanerStart(ci);
       }
+      return success;
     } else {
       // A case of deleting a single directory based on location.
       if (!deletedFiles.isEmpty()) {
         txnHandler.markCleaned(ci);
+        return true;
       } else {
         txnHandler.clearCleanerStart(ci);
+        return false;
       }
     }
   }
@@ -305,8 +317,8 @@ public class CompactionHandler extends Handler {
   }
 
   @Override
-  public void failureExecutingCleaningRequest(CleaningRequest cleaningRequest, Exception ex) throws MetaException {
-    CompactionInfo ci = ((CompactionCleaningRequest) cleaningRequest).getCompactionInfo();
+  public void failureExecutingCleaningRequest(CompactionCleaningRequest cleaningRequest, Exception ex) throws MetaException {
+    CompactionInfo ci = cleaningRequest.getCompactionInfo();
     ci.errorMessage = ex.getMessage();
     if (metricsEnabled) {
       Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER).inc();

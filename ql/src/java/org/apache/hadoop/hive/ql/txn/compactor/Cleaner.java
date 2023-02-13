@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
-import org.apache.hadoop.hive.ql.txn.compactor.handler.Handler;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.CleaningRequestHandler;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.CleaningRequestHandlerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -46,7 +48,15 @@ public class Cleaner extends MetaStoreCompactorThread {
   private boolean metricsEnabled = false;
 
   private ExecutorService cleanerExecutor;
-  private List<Handler> handlers;
+  private List<CleaningRequestHandler> cleaningRequestHandlers;
+  private FSRemover fsRemover;
+
+  public Cleaner() {
+  }
+
+  public Cleaner(List<CleaningRequestHandler> cleaningRequestHandlers) {
+    this.cleaningRequestHandlers = cleaningRequestHandlers;
+  }
 
   @Override
   public void init(AtomicBoolean stop) throws Exception {
@@ -58,18 +68,19 @@ public class Cleaner extends MetaStoreCompactorThread {
             COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
+    if (cleaningRequestHandlers == null || cleaningRequestHandlers.isEmpty()) {
+      cleaningRequestHandlers = CleaningRequestHandlerFactory.getInstance().getHandlers(conf, txnHandler, metricsEnabled);
+    }
+    fsRemover = new FSRemover(conf, cleaningRequestHandlers, ReplChangeManager.getInstance(conf));
   }
 
   @Override
   public void run() {
     LOG.info("Starting Cleaner thread");
-    if (handlers == null) {
-      handlers = HandlerFactory.getInstance().getHandlers(conf, txnHandler, metricsEnabled);
-    }
     try {
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
-        handlers.forEach(Handler::invalidateMetaCache);
+        cleaningRequestHandlers.forEach(CleaningRequestHandler::invalidateMetaCache);
         long startedAt = -1;
 
         // Make sure nothing escapes this run method and kills the metastore at large,
@@ -85,33 +96,37 @@ public class Cleaner extends MetaStoreCompactorThread {
                     new CleanerCycleUpdater(MetricsConstants.COMPACTION_CLEANER_CYCLE_DURATION, startedAt));
           }
 
-          for (Handler handler : handlers) {
-            List<CleaningRequest> readyToClean = handler.findReadyToClean();
-            checkInterrupt();
+          for (CleaningRequestHandler cleaningRequestHandler : cleaningRequestHandlers) {
+            try {
+              List<CleaningRequest> readyToClean = cleaningRequestHandler.findReadyToClean();
+              checkInterrupt();
 
-            if (!readyToClean.isEmpty()) {
-              List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
-              for (CleaningRequest cr : readyToClean) {
+              if (!readyToClean.isEmpty()) {
+                List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
+                for (CleaningRequest cr : readyToClean) {
 
-                //Check for interruption before scheduling each cleaning request and return if necessary
-                checkInterrupt();
+                  //Check for interruption before scheduling each cleaning request and return if necessary
+                  checkInterrupt();
 
-                CompletableFuture<Void> asyncJob = CompletableFuture.runAsync(
-                  ThrowingRunnable.unchecked(new FSRemover(handler, cr)), cleanerExecutor)
-                .exceptionally(t -> {
-                  LOG.error("Error clearing: {}", cr.getFullPartitionName(), t);
-                  return null;
-                });
-                cleanerList.add(asyncJob);
+                  CompletableFuture<Void> asyncJob = CompletableFuture.runAsync(
+                                  ThrowingRunnable.unchecked(() -> fsRemover.clean(cr)), cleanerExecutor)
+                          .exceptionally(t -> {
+                            LOG.error("Error clearing: {}", cr.getFullPartitionName(), t);
+                            return null;
+                          });
+                  cleanerList.add(asyncJob);
+                }
+
+                //Use get instead of join, so we can receive InterruptedException and shutdown gracefully
+                CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).get();
               }
-
-              //Use get instead of join, so we can receive InterruptedException and shutdown gracefully
-              CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).get();
+            } catch (InterruptedException e) {
+              return;
+            } catch (Throwable t) {
+              LOG.error("Caught an exception while executing cleaningRequestHandler loop : {} of compactor cleaner, {}",
+                      cleaningRequestHandler.getClass().getName(), StringUtils.stringifyException(t));
             }
           }
-        } catch (InterruptedException e) {
-          // do not ignore interruption requests
-          return;
         } catch (Throwable t) {
           LOG.error("Caught an exception in the main loop of compactor cleaner, " +
               StringUtils.stringifyException(t));
@@ -138,10 +153,6 @@ public class Cleaner extends MetaStoreCompactorThread {
         cleanerExecutor.shutdownNow();
       }
     }
-  }
-
-  public void setHandlers(List<Handler> handlers) {
-    this.handlers = handlers;
   }
 
   private static class CleanerCycleUpdater implements Runnable {
