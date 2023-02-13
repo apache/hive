@@ -72,7 +72,7 @@
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
-        <version>4.11.1</version>
+        <version>4.9.3</version>
         <configuration>
           <visitor>false</visitor>
           <listener>true</listener>
