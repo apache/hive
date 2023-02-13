@@ -1146,12 +1146,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
       // HIVE-13704 states that we should use run() instead of execute() due to a hadoop known issue
       // added by HADOOP-10459
-      int rc = runDistCpInternal(distcp, params);
-      if (rc == 0) {
-        return true;
-      } else {
-        return false;
-      }
+      return runDistCpInternal(distcp, params) ==  0;
     } catch (Exception e) {
       throw new IOException("Cannot execute DistCp process: ", e);
     } finally {
@@ -1233,8 +1228,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   protected void ensureMapReduceQueue(Configuration conf) {
     String queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
-    LOG.debug("Checking tez.queue.name {}", queueName);
-    if (queueName != null && queueName.length() > 0) {
+    boolean isTez = conf.get("hive.execution.engine", "tez").equalsIgnoreCase("tez");
+    boolean shouldMapredJobsFollowTezQueue = conf.getBoolean("hive.mapred.job.follow.tez.queue", false);
+
+    LOG.debug("Checking tez.queue.name {}, isTez: {}, shouldMapredJobsFollowTezQueue: {}", queueName, isTez,
+        shouldMapredJobsFollowTezQueue);
+    if (isTez && shouldMapredJobsFollowTezQueue && queueName != null && queueName.length() > 0) {
       LOG.info("Setting mapreduce.job.queuename (current: '{}') to become tez.queue.name: '{}'",
           conf.get(MRJobConfig.QUEUE_NAME), queueName);
       conf.set(MRJobConfig.QUEUE_NAME, queueName);
