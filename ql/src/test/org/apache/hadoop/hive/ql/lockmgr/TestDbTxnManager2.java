@@ -3495,6 +3495,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   @Test
   public void testRemoveDuplicateCompletedTxnComponents() throws Exception {
     dropTable(new String[] {"tab_acid"});
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
 
     driver.run("create table if not exists tab_acid (a int) partitioned by (p string) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
