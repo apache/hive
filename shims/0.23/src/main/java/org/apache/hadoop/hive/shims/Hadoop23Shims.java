@@ -1228,7 +1228,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   protected void ensureMapReduceQueue(Configuration conf) {
     String queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
-    boolean isTez = conf.get("hive.execution.engine", "tez").equalsIgnoreCase("tez");
+    boolean isTez = "tez".equalsIgnoreCase(conf.get("hive.execution.engine"));
     boolean shouldMapredJobsFollowTezQueue = conf.getBoolean("hive.mapred.job.follow.tez.queue", false);
 
     LOG.debug("Checking tez.queue.name {}, isTez: {}, shouldMapredJobsFollowTezQueue: {}", queueName, isTez,
