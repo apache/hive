@@ -185,8 +185,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     boolean isEnoughToCompact;
 
     if (ci.isRebalanceCompaction()) {
-      //However thresholds are used to schedule REBALANCE compaction, manual triggering is always allowed if the
-      //table and query engine supports it
+      //TODO: For now, we are allowing rebalance compaction regardless of the table state. Thresholds will be added later.
       return true;
     } else if (ci.isMajorCompaction()) {
       isEnoughToCompact =
