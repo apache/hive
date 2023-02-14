@@ -3741,6 +3741,9 @@ public class HiveConf extends Configuration {
     TEZ_LLAP_MIN_REDUCER_PER_EXECUTOR("hive.tez.llap.min.reducer.per.executor", 0.95f,
         "If above 0, the min number of reducers for auto-parallelism for LLAP scheduling will\n" +
         "be set to this fraction of the number of executors."),
+    TEZ_MAPREDUCE_OUTPUT_COMMITTER("hive.tez.mapreduce.output.committer.class",
+        "org.apache.tez.mapreduce.committer.MROutputCommitter",
+        "Output committer class which should be invoked at the setup/commit lifecycle points of vertex executions."),
     TEZ_MAX_PARTITION_FACTOR("hive.tez.max.partition.factor", 2f,
         "When auto reducer parallelism is enabled this factor will be used to over-partition data in shuffle edges."),
     TEZ_MIN_PARTITION_FACTOR("hive.tez.min.partition.factor", 0.25f,

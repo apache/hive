@@ -172,4 +172,13 @@ public interface HiveStorageHandler extends Configurable {
   default LockType getLockType(WriteEntity writeEntity){
     return LockType.EXCLUSIVE;
   }
+
+  /**
+   * Check if CTAS operations should behave in a direct-insert manner.
+   *
+   * @return whether direct insert CTAS is required.
+   */
+  default boolean directInsert() {
+    return false;
+  }
 }
