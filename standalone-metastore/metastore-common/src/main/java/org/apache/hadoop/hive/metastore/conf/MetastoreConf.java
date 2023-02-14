@@ -1155,7 +1155,7 @@ public class MetastoreConf {
     // Partition management task params
     PARTITION_MANAGEMENT_TASK_FREQUENCY("metastore.partition.management.task.frequency",
       "metastore.partition.management.task.frequency",
-      300, TimeUnit.SECONDS, "Frequency at which timer task runs to do automatic partition management for tables\n" +
+      6, TimeUnit.HOURS, "Frequency at which timer task runs to do automatic partition management for tables\n" +
       "with table property 'discover.partitions'='true'. Partition management include 2 pieces. One is partition\n" +
       "discovery and other is partition retention period. When 'discover.partitions'='true' is set, partition\n" +
       "management will look for partitions in table location and add partitions objects for it in metastore.\n" +
