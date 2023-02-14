@@ -113,7 +113,7 @@ public class VectorFilterOperator extends FilterOperator
 
     //The selected vector represents selected rows.
     //Clone the selected vector
-    System.arraycopy(vrg.selected, 0, temporarySelected, 0, vrg.size);
+    System.arraycopy(vrg.selected, 0, temporarySelected, 0, vrg.selected.length);
     int [] selectedBackup = vrg.selected;
     vrg.selected = temporarySelected;
     int sizeBackup = vrg.size;
