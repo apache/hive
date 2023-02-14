@@ -26,6 +26,7 @@ select summary from default.ice01.snapshots;
 ALTER TABLE ice01 SET TBLPROPERTIES ('write.delete.mode'='copy-on-write');
 
 -- delete some values
+explain delete from ice01 where id>4 OR id=2;
 delete from ice01 where id>4 OR id=2;
 
 select * from ice01;
