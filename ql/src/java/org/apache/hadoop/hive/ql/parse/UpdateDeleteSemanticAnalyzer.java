@@ -169,22 +169,19 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
           // Add isNull check for the where clause condition, since null is treated as false in where condition and
           // not null also resolves to false, so we need to explicitly handle this case.
-          ASTNode functionNode = new ASTNode(new CommonToken(HiveParser.TOK_FUNCTION, "TOK_FUNCTION"));
-          ASTNode nullFunctionNode = new ASTNode(new CommonToken(HiveParser.KW_IS, "isNull"));
-          nullFunctionNode.addChild(where.getChild(0));
-          nullFunctionNode.setChildIndex(0);
-          functionNode.addChild(nullFunctionNode);
-          functionNode.addChild(where.getChild(0));
+          ASTNode isNullFuncNodeExpr = new ASTNode(new CommonToken(HiveParser.TOK_FUNCTION, "TOK_FUNCTION"));
+          isNullFuncNodeExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, "isNull")));
+          isNullFuncNodeExpr.addChild(where.getChild(0));
 
-          ASTNode orNode =  new ASTNode(new CommonToken(HiveParser.KW_OR, "OR"));
-          orNode.addChild(functionNode);
+          ASTNode orNodeExpr = new ASTNode(new CommonToken(HiveParser.KW_OR, "OR"));
+          orNodeExpr.addChild(isNullFuncNodeExpr);
 
           // Add the inverted where clause condition, since we want to hold the records which doesn't satisfy this
           // condition.
-          ASTNode notNode = new ASTNode(new CommonToken(HiveParser.KW_NOT, "!"));
-          notNode.addChild(where.getChild(0));
-          orNode.addChild(notNode);
-          where.setChild(0, orNode);
+          ASTNode notNodeExpr = new ASTNode(new CommonToken(HiveParser.KW_NOT, "!"));
+          notNodeExpr.addChild(where.getChild(0));
+          orNodeExpr.addChild(notNodeExpr);
+          where.setChild(0, orNodeExpr);
         } else if (where.getChildCount() > 1) {
           throw new SemanticException("Overwrite mode not supported with more than 1 children in where clause.");
         }
