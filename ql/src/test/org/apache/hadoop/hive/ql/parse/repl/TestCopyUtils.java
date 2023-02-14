@@ -226,7 +226,7 @@ public class TestCopyUtils {
     ReplChangeManager.FileInfo srcFileInfo = new ReplChangeManager.FileInfo(fs, source, "path1");
     List<ReplChangeManager.FileInfo> srcFiles = Arrays.asList(srcFileInfo);
     doNothing().when(copyUtilsSpy).doCopy(Mockito.any(), Mockito.any(),
-      Mockito.anyBoolean(), Mockito.anyBoolean());
+      Mockito.anyBoolean(), Mockito.anyBoolean(), Mockito.any());
     copyUtilsSpy.copyAndVerify(destination, srcFiles, source, true, true);
     Class<Collection<? extends Callable<Void>>> listClass =
       (Class<Collection<? extends Callable<Void>>>)(Class)List.class;
