@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
@@ -96,6 +97,14 @@ public class Msck {
     if (msc == null) {
       setConf(conf);
       this.msc = new HiveMetaStoreClient(conf);
+      if (!MetastoreConf.isEmbeddedMetaStore(MetastoreConf.getVar(conf,
+          MetastoreConf.ConfVars.THRIFT_URIS))) {
+        try {
+          updateExpressionProxy(getProxyClass(getMsckConf(conf)));
+        } catch (TException e) {
+          MetaStoreUtils.throwMetaException(e);
+        }
+      }
     }
   }
 

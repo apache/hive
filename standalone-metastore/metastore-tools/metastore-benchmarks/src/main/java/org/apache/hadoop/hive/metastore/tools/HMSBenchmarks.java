@@ -19,6 +19,10 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.PartitionManagementTask;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.thrift.TException;
@@ -27,13 +31,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitions;
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitionsNoException;
+import static org.apache.hadoop.hive.metastore.tools.Util.createSchema;
 import static org.apache.hadoop.hive.metastore.tools.Util.throwingSupplierWrapper;
 
 /**
@@ -445,6 +452,66 @@ final class HMSBenchmarks {
     HMSClient client = data.getClient();
     return benchmark.measure(() ->
         throwingSupplierWrapper(client::getCurrentNotificationId));
+  }
+
+  static DescriptiveStatistics benchmarkPartitionManagement(@NotNull MicroBenchmark bench,
+                                                            @NotNull BenchData data,
+                                                            int tableCount) {
+
+    String dbName = data.dbName + "_" + tableCount, tableNamePrefix = data.tableName;
+    final HMSClient client = data.getClient();
+    final PartitionManagementTask partitionManagementTask = new PartitionManagementTask();
+    final List<Path> paths = new ArrayList<>();
+    final FileSystem fs;
+    try {
+      fs = FileSystem.get(client.getHadoopConf());
+      client.getHadoopConf().set("hive.metastore.uris", client.getServerURI().toString());
+      partitionManagementTask.setConf(client.getHadoopConf());
+
+      client.createDatabase(dbName);
+      for (int i = 0; i < tableCount; i++) {
+        String tableName = tableNamePrefix + "_" + i;
+        Util.TableBuilder tableBuilder = new Util.TableBuilder(dbName, tableName).withType(TableType.MANAGED_TABLE)
+            .withColumns(createSchema(Arrays.asList(new String[] {"astring:string", "aint:int", "adouble:double", "abigint:bigint"})))
+            .withPartitionKeys(createSchema(Collections.singletonList("d")));
+        boolean enableDynamicPart = i % 5 == 0;
+        if (enableDynamicPart) {
+          tableBuilder.withParameter("discover.partitions", "true");
+        }
+        client.createTable(tableBuilder.build());
+        addManyPartitionsNoException(client, dbName, tableName, null, Collections.singletonList("d"), 500);
+        if (enableDynamicPart) {
+          Table t = client.getTable(dbName, tableName);
+          Path tabLoc = new Path(t.getSd().getLocation());
+          for (int j = 501; j <= 1000; j++) {
+            paths.add(new Path(tabLoc, "d=d" + j));
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    final AtomicBoolean createPath = new AtomicBoolean(true);
+    Runnable preRun = () -> {
+      try {
+        if (createPath.get()) {
+          for (Path path : paths) {
+            fs.mkdirs(path);
+          }
+          createPath.set(false);
+        } else {
+          for (Path path : paths) {
+            fs.delete(path, true);
+          }
+          createPath.set(true);
+        }
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    };
+
+    return bench.measure(preRun, partitionManagementTask, null);
   }
 
 }
