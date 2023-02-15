@@ -102,13 +102,9 @@ class CompactorTestUtil {
    */
   static List<String> getBucketFileNames(FileSystem fs, Table table, String partitionName, String deltaName)
       throws IOException {
-    boolean insertOnly = AcidUtils.isInsertOnlyTable(table.getParameters());
     Path path = partitionName == null ? new Path(table.getSd().getLocation(), deltaName) : new Path(
         new Path(table.getSd().getLocation()), new Path(partitionName, deltaName));
-    return Arrays.stream(fs.listStatus(path, insertOnly? AcidUtils.originalBucketFilter : AcidUtils.bucketFileFilter))
-        .map(FileStatus::getPath)
-        .map(Path::getName)
-        .sorted()
+    return Arrays.stream(fs.listStatus(path, AcidUtils.bucketFileFilter)).map(FileStatus::getPath).map(Path::getName).sorted()
         .collect(Collectors.toList());
   }
 
