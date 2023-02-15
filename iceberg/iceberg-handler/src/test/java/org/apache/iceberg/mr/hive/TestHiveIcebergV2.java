@@ -241,7 +241,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
 
     // verify delete mode set to merge-on-read
-    Assert.assertEquals("merge-on-read",
+    Assert.assertEquals(HiveIcebergStorageHandler.MERGE_ON_READ,
         shell.metastore().getTable("default", "customers")
             .getParameters().get(TableProperties.DELETE_MODE));
 

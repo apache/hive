@@ -550,9 +550,9 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     // Create a V2 table with merge-on-read.
     TableIdentifier target = TableIdentifier.of("default", "target");
     Map<String, String> opTypes = ImmutableMap.of(
-        TableProperties.DELETE_MODE, "merge-on-read",
-        TableProperties.MERGE_MODE, "merge-on-read",
-        TableProperties.UPDATE_MODE, "merge-on-read");
+        TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ,
+        TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ,
+        TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
 
     Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2, opTypes);
