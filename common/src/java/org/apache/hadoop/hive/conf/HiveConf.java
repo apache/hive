@@ -2207,6 +2207,8 @@ public class HiveConf extends Configuration {
         "padding tolerance config (hive.exec.orc.block.padding.tolerance)."),
     HIVE_ORC_CODEC_POOL("hive.use.orc.codec.pool", false,
         "Whether to use codec pool in ORC. Disable if there are bugs with codec reuse."),
+    HIVE_USE_STATS_FROM("hive.use.stats.from","iceberg","Use stats from iceberg table snapshot for query " +
+        "planning. This has three values metastore, puffin and iceberg"),
 
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
@@ -4018,6 +4020,9 @@ public class HiveConf extends Configuration {
       "true", new StringSet("true", "false", "ignore"),
       "Whether Tez session pool should allow submitting queries to custom queues. The options\n" +
       "are true, false (error out), ignore (accept the query but ignore the queue setting)."),
+    HIVE_MAPRED_JOB_FOLLOW_TEZ_QUEUE("hive.mapred.job.follow.tez.queue", false,
+        "Whether the MR jobs initiated by a query should be enforced to run in the queue denoted by "
+            + "'tez.queue.name', e.g. DistCp jobs."),
 
     // Operation log configuration
     HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,

@@ -69,6 +69,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
@@ -917,9 +918,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     // tables that don't have this (the default is copy-on-write). We set this at table creation and v1->v2 conversion.
     if ((icebergTable == null || ((BaseTable) icebergTable).operations().current().formatVersion() == 1) &&
         "2".equals(newProps.get(TableProperties.FORMAT_VERSION))) {
-      newProps.put(TableProperties.DELETE_MODE, "merge-on-read");
-      newProps.put(TableProperties.UPDATE_MODE, "merge-on-read");
-      newProps.put(TableProperties.MERGE_MODE, "merge-on-read");
+      newProps.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+      newProps.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+      newProps.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
     }
   }
 
@@ -928,6 +929,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable != null) {
       try {
         Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
+        Snapshot snapshot = tbl.currentSnapshot();
+        if (snapshot != null) {
+          hmsTable.getParameters().put("current-snapshot-id", String.valueOf(snapshot.snapshotId()));
+        }
         String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
         // If it is not the default format version, then set it in the table properties.
         if (!"1".equals(formatVersion)) {

@@ -342,17 +342,15 @@ class CompactionTxnHandler extends TxnHandler {
   public void markCompacted(CompactionInfo info) throws MetaException {
     try {
       Connection dbConn = null;
-      PreparedStatement pstmt = null;
+      Statement stmt = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
-        String sql = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = ?, "
-            + "\"CQ_WORKER_ID\" = NULL, \"CQ_ERROR_MESSAGE\" = ? WHERE \"CQ_ID\" = ?";
-        pstmt = dbConn.prepareStatement(sql);
-        pstmt.setString(1, Character.toString(READY_FOR_CLEANING));
-        pstmt.setString(2, StringUtils.isNotBlank(info.errorMessage) ? info.errorMessage : null);
-        pstmt.setLong(3, info.id);
-        LOG.debug("Going to execute update <{}>", sql);
-        int updCnt = pstmt.executeUpdate();
+        stmt = dbConn.createStatement();
+        String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = '" + READY_FOR_CLEANING + "', "
+            + "\"CQ_WORKER_ID\" = NULL"
+            + " WHERE \"CQ_ID\" = " + info.id;
+        LOG.debug("Going to execute update <{}>", s);
+        int updCnt = stmt.executeUpdate(s);
         if (updCnt != 1) {
           LOG.error("Unable to set cq_state={} for compaction record: {}. updCnt={}", READY_FOR_CLEANING, info, updCnt);
           LOG.debug("Going to rollback");
@@ -368,7 +366,7 @@ class CompactionTxnHandler extends TxnHandler {
         throw new MetaException("Unable to connect to transaction database " +
           e.getMessage());
       } finally {
-        closeStmt(pstmt);
+        closeStmt(stmt);
         closeDbConn(dbConn);
       }
     } catch (RetryException e) {

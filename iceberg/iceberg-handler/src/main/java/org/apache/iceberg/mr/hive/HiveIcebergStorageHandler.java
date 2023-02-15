@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -130,6 +131,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
+  private static final String ICEBERG = "iceberg";
+  private static final String PUFFIN = "puffin";
+  public static final String COPY_ON_WRITE = "copy-on-write";
+  public static final String MERGE_ON_READ = "merge-on-read";
   /**
    * Function template for producing a custom sort expression function:
    * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
@@ -312,24 +317,34 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
+    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM).toLowerCase();
     Map<String, String> stats = Maps.newHashMap();
-    if (table.currentSnapshot() != null) {
-      Map<String, String> summary = table.currentSnapshot().summary();
-      if (summary != null) {
-        if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
-          stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
+    switch (statsSource) {
+      case ICEBERG:
+        if (table.currentSnapshot() != null) {
+          Map<String, String> summary = table.currentSnapshot().summary();
+          if (summary != null) {
+            if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
+              stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
+            }
+            if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
+              stats.put(StatsSetupConst.ROW_COUNT, summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
+            }
+            if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
+              stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
+            }
+          }
+        } else {
+          stats.put(StatsSetupConst.NUM_FILES, "0");
+          stats.put(StatsSetupConst.ROW_COUNT, "0");
+          stats.put(StatsSetupConst.TOTAL_SIZE, "0");
         }
-        if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
-          stats.put(StatsSetupConst.ROW_COUNT, summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
-        }
-        if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
-          stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
-        }
-      }
-    } else {
-      stats.put(StatsSetupConst.NUM_FILES, "0");
-      stats.put(StatsSetupConst.ROW_COUNT, "0");
-      stats.put(StatsSetupConst.TOTAL_SIZE, "0");
+        break;
+      case PUFFIN:
+        // place holder for puffin
+        break;
+      default:
+        // fall back to metastore
     }
     return stats;
   }
@@ -627,7 +642,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   // TODO: remove the checks as copy-on-write mode implementation for these DML ops get added
   private static void checkDMLOperationMode(org.apache.hadoop.hive.ql.metadata.Table table) {
     Map<String, String> opTypes = ImmutableMap.of(
-        TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT,
         TableProperties.MERGE_MODE, TableProperties.MERGE_MODE_DEFAULT,
         TableProperties.UPDATE_MODE, TableProperties.UPDATE_MODE_DEFAULT);
 
@@ -1118,9 +1132,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     String formatVersion = origParams.get(TableProperties.FORMAT_VERSION);
     if ("2".equals(formatVersion)) {
       tbl.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
-      tbl.getParameters().put(TableProperties.DELETE_MODE, "merge-on-read");
-      tbl.getParameters().put(TableProperties.UPDATE_MODE, "merge-on-read");
-      tbl.getParameters().put(TableProperties.MERGE_MODE, "merge-on-read");
+      tbl.getParameters().put(TableProperties.DELETE_MODE, MERGE_ON_READ);
+      tbl.getParameters().put(TableProperties.UPDATE_MODE, MERGE_ON_READ);
+      tbl.getParameters().put(TableProperties.MERGE_MODE, MERGE_ON_READ);
     }
 
     // check if the table is being created as managed table, in that case we translate it to external
@@ -1152,5 +1166,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     props.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(origTable.schema()));
     props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(origTable.spec()));
     return props;
+  }
+
+  @Override
+  public boolean shouldOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String operationName) {
+    String mode = null;
+    String formatVersion = mTable.getTTable().getParameters().get(TableProperties.FORMAT_VERSION);
+    // As of now only delete mode is supported, for all others return false
+    if ("2".equals(formatVersion) && operationName.equalsIgnoreCase(Context.Operation.DELETE.toString())) {
+      mode = mTable.getTTable().getParameters()
+          .getOrDefault(TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT);
+    }
+    return COPY_ON_WRITE.equalsIgnoreCase(mode);
   }
 }

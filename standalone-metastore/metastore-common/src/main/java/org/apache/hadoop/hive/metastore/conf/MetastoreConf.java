@@ -67,6 +67,9 @@ public class MetastoreConf {
   static final String DEFAULT_STORAGE_SCHEMA_READER_CLASS =
       "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader";
   @VisibleForTesting
+  static final String SERDE_STORAGE_SCHEMA_READER_CLASS =
+      "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader";
+  @VisibleForTesting
   static final String HIVE_ALTER_HANDLE_CLASS =
       "org.apache.hadoop.hive.metastore.HiveAlterHandler";
   @VisibleForTesting
@@ -432,15 +435,6 @@ public class MetastoreConf {
         "Time after Initiator will ignore metastore.compactor.initiator.failed.compacts.threshold "
             + "and retry with compaction again. This will try to auto heal tables with previous failed compaction "
             + "without manual intervention. Setting it to 0 or negative value will disable this feature."),
-    COMPACTOR_INITIATOR_REBALANCE_MINIMUM_SIZE("metastore.compactor.initiator.rebalance.min.size",
-        "hive.compactor.initiator.rebalance.min.size", 1024*1024*100,
-        "Minimum table/partition size for which a rebalancing compaction can be initiated."),
-    COMPACTOR_INITIATOR_REBALANCE_THRESHOLD("metastore.compactor.initiator.rebalance.threshold",
-        "hive.compactor.initiator.rebalance.threshold", 0.2d,
-        "Threshold for the rebalancing compaction. If the std_dev/average_bucket_size (where std_dev is the " +
-            "standard deviation of the bucket sizes) is larger than the threshold, a rebalance compaction is initiated. " +
-            "In other words (assuming that the value is 0.2): If the standard deviation is larger than 20% of the average " +
-            "bucket size, a rebalancing compaction is initiated. "),
     COMPACTOR_RUN_AS_USER("metastore.compactor.run.as.user", "hive.compactor.run.as.user", "",
         "Specify the user to run compactor Initiator and Worker as. If empty string, defaults to table/partition " +
         "directory owner."),
@@ -1152,7 +1146,7 @@ public class MetastoreConf {
     // Partition management task params
     PARTITION_MANAGEMENT_TASK_FREQUENCY("metastore.partition.management.task.frequency",
       "metastore.partition.management.task.frequency",
-      300, TimeUnit.SECONDS, "Frequency at which timer task runs to do automatic partition management for tables\n" +
+      6, TimeUnit.HOURS, "Frequency at which timer task runs to do automatic partition management for tables\n" +
       "with table property 'discover.partitions'='true'. Partition management include 2 pieces. One is partition\n" +
       "discovery and other is partition retention period. When 'discover.partitions'='true' is set, partition\n" +
       "management will look for partitions in table location and add partitions objects for it in metastore.\n" +
@@ -1375,7 +1369,7 @@ public class MetastoreConf {
         "hive.metastore.stats.auto.analyze.worker.count", 1,
         "Number of parallel analyze commands to run for background stats update."),
     STORAGE_SCHEMA_READER_IMPL("metastore.storage.schema.reader.impl", "metastore.storage.schema.reader.impl",
-        DEFAULT_STORAGE_SCHEMA_READER_CLASS,
+        SERDE_STORAGE_SCHEMA_READER_CLASS,
         "The class to use to read schemas from storage.  It must implement " +
         "org.apache.hadoop.hive.metastore.StorageSchemaReader"),
     STORE_MANAGER_TYPE("datanucleus.storeManagerType", "datanucleus.storeManagerType", "rdbms", "metadata store type"),

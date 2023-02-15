@@ -42,6 +42,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
+import org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
@@ -482,6 +483,8 @@ public class TestMetastoreConf {
   public void testClassNames() {
     Assert.assertEquals(MetastoreConf.DEFAULT_STORAGE_SCHEMA_READER_CLASS,
         DefaultStorageSchemaReader.class.getName());
+    Assert.assertEquals(MetastoreConf.SERDE_STORAGE_SCHEMA_READER_CLASS,
+        SerDeStorageSchemaReader.class.getName());
     Assert.assertEquals(MetastoreConf.HIVE_ALTER_HANDLE_CLASS,
         HiveAlterHandler.class.getName());
     Assert.assertEquals(MetastoreConf.MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS,
