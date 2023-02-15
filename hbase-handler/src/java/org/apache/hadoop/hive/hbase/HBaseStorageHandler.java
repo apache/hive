@@ -143,6 +143,11 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       LOG.debug("Using TableSnapshotInputFormat");
       return HiveHBaseTableSnapshotInputFormat.class;
     }
+
+    if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_HBASE_INPUTFORMAT_V2)) {
+      LOG.debug("Using HiveHBaseTableInputFormatV2");
+      return HiveHBaseTableInputFormatV2.class;
+    }
     LOG.debug("Using HiveHBaseTableInputFormat");
     return HiveHBaseTableInputFormat.class;
   }
