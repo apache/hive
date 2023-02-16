@@ -217,5 +217,5 @@ POSTHOOK: Input: default@ext_auth1
 POSTHOOK: Input: default@ext_auth2
 POSTHOOK: Input: default@hive_table
 #### A masked pattern was here ####
-20	20	20.0	20.0	20
-20	20	20.0	20.0	20
+20	20	20.0	20.0
+20	20	20.0	20.0
