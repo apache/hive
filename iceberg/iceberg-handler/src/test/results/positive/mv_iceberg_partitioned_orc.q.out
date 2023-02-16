@@ -61,7 +61,11 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"b\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"c\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#SnapshotId#
+	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"1282\",\"changed-partition-count\":\"2\",\"total-records\":\"2\",\"total-files-size\":\"1282\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	1676557421218       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
 	engine.hive.enabled 	true                
 	format-version      	1                   
 	iceberg.orc.files.only	false               
@@ -69,6 +73,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	1282                
@@ -140,7 +145,11 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"b\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"c\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#SnapshotId#
+	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"1282\",\"changed-partition-count\":\"2\",\"total-records\":\"2\",\"total-files-size\":\"1282\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	1676557425935       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
 	engine.hive.enabled 	true                
 	format-version      	2                   
 	iceberg.orc.files.only	false               
@@ -148,6 +157,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	1282                

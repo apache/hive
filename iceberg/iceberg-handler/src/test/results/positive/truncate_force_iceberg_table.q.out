@@ -91,8 +91,8 @@ Table Parameters:
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"3\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"10\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"3\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
-	current-snapshot-timestamp-ms	#Masked#
-	engine.hive.enabled 	true
+	current-snapshot-timestamp-ms	#Masked#       
+	engine.hive.enabled 	true                
 	external.table.purge	false               
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
@@ -102,7 +102,7 @@ Table Parameters:
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	3
+	snapshot-count      	3                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                
@@ -162,8 +162,8 @@ Table Parameters:
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"deleted-data-files\":\"3\",\"deleted-records\":\"10\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"0\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"0\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
-	current-snapshot-timestamp-ms	#Masked#
-	engine.hive.enabled 	true
+	current-snapshot-timestamp-ms	#Masked#       
+	engine.hive.enabled 	true                
 	external.table.purge	false               
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
@@ -173,7 +173,7 @@ Table Parameters:
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	4
+	snapshot-count      	4                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                   
