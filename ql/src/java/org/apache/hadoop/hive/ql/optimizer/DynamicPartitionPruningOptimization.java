@@ -678,7 +678,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     ArrayList<ColumnInfo> groupbyColInfos = new ArrayList<ColumnInfo>();
     groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(0), key.getTypeInfo(), "", false));
     groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(1), key.getTypeInfo(), "", false));
-    groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(2), key.getTypeInfo(), "", false));
+    groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(2), TypeInfoFactory.binaryTypeInfo, "", false));
 
     GroupByOperator groupByOp = (GroupByOperator)OperatorFactory.getAndMakeChild(
             groupBy, new RowSchema(groupbyColInfos), selectOp);
@@ -686,30 +686,26 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     groupByOp.setColumnExprMap(new HashMap<String, ExprNodeDesc>());
 
     // Get the column names of the aggregations for reduce sink
-    int colPos = 0;
     ArrayList<ExprNodeDesc> rsValueCols = new ArrayList<ExprNodeDesc>();
     Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
-    for (int i = 0; i < aggs.size() - 1; i++) {
-      ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(key.getTypeInfo(),
-              gbOutputNames.get(colPos), "", false);
+    ArrayList<ColumnInfo> rsColInfos = new ArrayList<>();
+    for (int colPos = 0; colPos < aggs.size(); colPos++) {
+      TypeInfo typInfo = groupbyColInfos.get(colPos).getType();
+      ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(typInfo, gbOutputNames.get(colPos), "", false);
       rsValueCols.add(colExpr);
-      columnExprMap.put(gbOutputNames.get(colPos), colExpr);
-      colPos++;
-    }
+      columnExprMap.put(Utilities.ReduceField.VALUE + "." + gbOutputNames.get(colPos), colExpr);
 
-    // Bloom Filter uses binary
-    ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(TypeInfoFactory.binaryTypeInfo,
-        gbOutputNames.get(colPos), "", false);
-    rsValueCols.add(colExpr);
-    columnExprMap.put(gbOutputNames.get(colPos), colExpr);
-    colPos++;
+      ColumnInfo colInfo =
+          new ColumnInfo(Utilities.ReduceField.VALUE + "." + gbOutputNames.get(colPos), typInfo, "", false);
+      rsColInfos.add(colInfo);
+    }
 
     // Create the reduce sink operator
     ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(
             new ArrayList<ExprNodeDesc>(), rsValueCols, gbOutputNames, false,
             -1, 0, 1, Operation.NOT_ACID, NullOrdering.defaultNullOrder(parseContext.getConf()));
     ReduceSinkOperator rsOp = (ReduceSinkOperator)OperatorFactory.getAndMakeChild(
-            rsDesc, new RowSchema(groupByOp.getSchema()), groupByOp);
+            rsDesc, new RowSchema(rsColInfos), groupByOp);
     rsOp.setColumnExprMap(columnExprMap);
 
     rsOp.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.QUICKSTART));
@@ -782,7 +778,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
             groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
             null, false, 0, false);
     GroupByOperator groupByOpFinal = (GroupByOperator)OperatorFactory.getAndMakeChild(
-            groupByDescFinal, new RowSchema(rsOp.getSchema()), rsOp);
+            groupByDescFinal, new RowSchema(groupByOp.getSchema()), rsOp);
     groupByOpFinal.setColumnExprMap(new HashMap<String, ExprNodeDesc>());
 
     createFinalRsForSemiJoinOp(parseContext, ts, groupByOpFinal, key,
@@ -796,31 +792,29 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
           ExprNodeDesc key, String keyBaseAlias, ExprNodeDesc colExpr,
           boolean isHint) throws SemanticException {
     ArrayList<String> gbOutputNames = new ArrayList<>();
-    // One each for min, max and bloom filter
-    gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(0));
-    gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(1));
-    gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(2));
-
-    int colPos = 0;
     ArrayList<ExprNodeDesc> rsValueCols = new ArrayList<ExprNodeDesc>();
-    for (int i = 0; i < gbOutputNames.size() - 1; i++) {
-      ExprNodeColumnDesc expr = new ExprNodeColumnDesc(key.getTypeInfo(),
-              gbOutputNames.get(colPos++), "", false);
-      rsValueCols.add(expr);
-    }
+    Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
+    ArrayList<ColumnInfo> rsColInfos = new ArrayList<>();
+    for (int colPos = 0; colPos < gb.getSchema().getSignature().size(); colPos++) {
+      String gbyColName = gb.getSchema().getSignature().get(colPos).getInternalName();
+      gbOutputNames.add(gbyColName);
 
-    // Bloom Filter uses binary
-    ExprNodeColumnDesc colBFExpr = new ExprNodeColumnDesc(TypeInfoFactory.binaryTypeInfo,
-            gbOutputNames.get(colPos++), "", false);
-    rsValueCols.add(colBFExpr);
+      TypeInfo typInfo = gb.getSchema().getSignature().get(colPos).getType();
+      ExprNodeColumnDesc rsValExpr = new ExprNodeColumnDesc(typInfo, gbyColName, "", false);
+      rsValueCols.add(rsValExpr);
+      columnExprMap.put(Utilities.ReduceField.VALUE + "." + gbyColName, rsValExpr);
+
+      ColumnInfo colInfo =
+          new ColumnInfo(Utilities.ReduceField.VALUE + "." + gbyColName, typInfo, "", false);
+      rsColInfos.add(colInfo);
+    }
 
     // Create the final Reduce Sink Operator
     ReduceSinkDesc rsDescFinal = PlanUtils.getReduceSinkDesc(
             new ArrayList<ExprNodeDesc>(), rsValueCols, gbOutputNames, false,
             -1, 0, 1, Operation.NOT_ACID, NullOrdering.defaultNullOrder(parseContext.getConf()));
     ReduceSinkOperator rsOpFinal = (ReduceSinkOperator)OperatorFactory.getAndMakeChild(
-            rsDescFinal, new RowSchema(gb.getSchema()), gb);
-    Map<String, ExprNodeDesc> columnExprMap = new HashMap<>();
+            rsDescFinal, new RowSchema(rsColInfos), gb);
     rsOpFinal.setColumnExprMap(columnExprMap);
 
     LOG.debug("DynamicSemiJoinPushdown: Saving RS to TS mapping: " + rsOpFinal + ": " + ts);
