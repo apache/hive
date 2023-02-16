@@ -21,17 +21,15 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
+import org.junit.Assert;
+
+import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -39,57 +37,12 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorFilterDesc;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Test cases for vectorized filter operator.
  */
-public class TestVectorFilterOperator {
-
-  HiveConf hconf = new HiveConf();
-
-  /**
-   * Fundamental logic and performance tests for vector filters belong here.
-   *
-   * For tests about filters to cover specific operator and data type combinations,
-   * see also the other filter tests under org.apache.hadoop.hive.ql.exec.vector.expressions
-   */
-  public static class FakeDataReader {
-    private final int size;
-    private final VectorizedRowBatch vrg;
-    private int currentSize = 0;
-    private final int numCols;
-    private final int len = 1024;
-
-    public FakeDataReader(int size, int numCols) {
-      this.size = size;
-      this.numCols = numCols;
-      vrg = new VectorizedRowBatch(numCols, len);
-      for (int i = 0; i < numCols; i++) {
-        try {
-          Thread.sleep(2);
-        } catch (InterruptedException ignore) {}
-        vrg.cols[i] = getLongVector(len);
-      }
-    }
-
-    public VectorizedRowBatch getNext() {
-      if (currentSize >= size) {
-        vrg.size = 0;
-        return vrg;
-      } else {
-        vrg.size = len;
-        currentSize += vrg.size;
-        vrg.selectedInUse = false;
-        return vrg;
-      }
-    }
-
-    private LongColumnVector getLongVector(int len) {
-      LongColumnVector lcv = new LongColumnVector(len);
-      TestVectorizedRowBatch.setRandomLongCol(lcv);
-      return lcv;
-    }
-  }
+public class TestVectorFilterOperator extends TestVectorOperator{
 
   private VectorFilterOperator getAVectorFilterOperator() throws HiveException {
     ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Long.class, "col1", "table", false);
@@ -110,14 +63,9 @@ public class TestVectorFilterOperator {
   @Test
   public void testBasicFilterOperator() throws HiveException {
     VectorFilterOperator vfo = getAVectorFilterOperator();
-    vfo.initialize(hconf, null);
-    VectorExpression ve1 = new FilterLongColGreaterLongColumn(0,1);
-    VectorExpression ve2 = new FilterLongColEqualDoubleScalar(2, 0);
-    VectorExpression ve3 = new FilterExprAndExpr();
-    ve3.setChildExpressions(new VectorExpression[] {ve1, ve2});
-    vfo.setFilterCondition(ve3);
+    prepareVectorFilterOperation(vfo);
 
-    FakeDataReader fdr = new FakeDataReader(1024*1, 3);
+    FakeDataReader fdr = new FakeDataReader(1024*1, 3, FakeDataSampleType.Random);
 
     VectorizedRowBatch vrg = fdr.getNext();
 
@@ -139,14 +87,9 @@ public class TestVectorFilterOperator {
   @Test
   public void testBasicFilterLargeData() throws HiveException {
     VectorFilterOperator vfo = getAVectorFilterOperator();
-    vfo.initialize(hconf, null);
-    VectorExpression ve1 = new FilterLongColGreaterLongColumn(0,1);
-    VectorExpression ve2 = new FilterLongColEqualDoubleScalar(2, 0);
-    VectorExpression ve3 = new FilterExprAndExpr();
-    ve3.setChildExpressions(new VectorExpression[] {ve1, ve2});
-    vfo.setFilterCondition(ve3);
+    prepareVectorFilterOperation(vfo);
 
-    FakeDataReader fdr = new FakeDataReader(16*1024*1024, 3);
+    FakeDataReader fdr = new FakeDataReader(16*1024*1024, 3, FakeDataSampleType.Random);
 
     long startTime = System.currentTimeMillis();
     VectorizedRowBatch vrg = fdr.getNext();
@@ -160,7 +103,7 @@ public class TestVectorFilterOperator {
 
     //Base time
 
-    fdr = new FakeDataReader(16*1024*1024, 3);
+    fdr = new FakeDataReader(16*1024*1024, 3, FakeDataSampleType.Random);
 
     long startTime1 = System.currentTimeMillis();
     vrg = fdr.getNext();
@@ -177,6 +120,33 @@ public class TestVectorFilterOperator {
     }
     long endTime1 = System.currentTimeMillis();
     System.out.println("testBaseFilterOperator base Op Time = "+(endTime1-startTime1));
+  }
+
+  @Test
+  public void testVectorFilterHasSelectedSmallerThanBatchDoNotThrowException() throws HiveException {
+
+    VectorFilterOperator vfo = getAVectorFilterOperator();
+
+    FakeDataReader fdr = new FakeDataReader(1024*1, 3, FakeDataSampleType.OrderedSequence);
+
+    prepareVectorFilterOperation(vfo);
+
+    VectorizedRowBatch vrg = fdr.getNext();
+
+    vrg.selected = new int[] { 1, 2, 3, 4};
+
+    Assertions.assertDoesNotThrow(() -> vfo.process(vrg, 0));
+  }
+
+  private void prepareVectorFilterOperation(VectorFilterOperator vfo) throws HiveException {
+    vfo.initialize(hiveConf, null);
+
+    VectorExpression ve1 = new FilterLongColGreaterLongColumn(0,1);
+    VectorExpression ve2 = new FilterLongColEqualDoubleScalar(2, 0);
+    VectorExpression ve3 = new FilterExprAndExpr();
+    ve3.setChildExpressions(new VectorExpression[] {ve1, ve2});
+
+    vfo.setFilterCondition(ve3);
   }
 }
 

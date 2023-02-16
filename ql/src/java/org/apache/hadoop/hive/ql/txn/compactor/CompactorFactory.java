@@ -104,21 +104,13 @@ public final class CompactorFactory {
         case MAJOR:
           return new CompactorPipeline(new MergeCompactor())
                   .addCompactor(new MmMajorQueryCompactor());
-        case REBALANCE:
-          // REBALANCE COMPACTION on an insert-only table is simply a MAJOR compaction. Since there is no ACID row data,
-          // there is no acid row order to keep, and the number of buckets cannot be set at all (it will be calculated
-          // and created by TEZ dynamically). Initiator won't schedule REBALANCE compactions for insert-only tables,
-          // however users can request it. In these cases we simply fall back to MAJOR compaction
-          return new CompactorPipeline(new MmMajorQueryCompactor());
         default:
           throw new HiveException(
               compactionInfo.type.name() + " compaction is not supported on insert only tables.");
       }
-    } else {
-      throw new HiveException("Only transactional tables can be compacted, " + table.getTableName() + "is not suitable " +
-          "for compaction!");
     }
-    throw new HiveException("No suitable compactor found for table: " + table.getTableName());
+    throw new HiveException("Only transactional tables can be compacted, " + table.getTableName() + "is not suitable " +
+        "for compaction!");
   }
 
 }
