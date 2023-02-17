@@ -74,7 +74,7 @@ where ss_sold_date_sk = d_date_sk and d_moy=1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select ss_item_sk
 from (
@@ -89,7 +89,7 @@ where ss_sold_date_sk = d_date_sk and d_moy=1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -302,7 +302,7 @@ where ss_sold_date_sk = d_date_sk and d_moy=1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select ss_item_sk
 from (
     select ss_item_sk, ss_sold_date_sk from x1_store_sales
@@ -316,7 +316,7 @@ where ss_sold_date_sk = d_date_sk and d_moy=1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 1
 1
