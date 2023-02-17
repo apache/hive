@@ -57,6 +57,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+@Ignore("HIVE-27092: Flaky test")
 public class TestRpc {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestRpc.class);
