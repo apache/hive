@@ -3525,6 +3525,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     resEle.setStatus(status);
     return resEle;
   }
+
   private void compactPartition(String table, CompactionType type, String partition)
       throws Exception {
     CompactionRequest compactionRequest = new CompactionRequest("default", table, type);
