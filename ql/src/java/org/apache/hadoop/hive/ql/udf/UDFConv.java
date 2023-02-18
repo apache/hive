@@ -17,7 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf;
 
-import java.util.Arrays;
+import java.math.BigInteger;
+import java.util.Locale;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -39,104 +40,6 @@ import org.apache.hadoop.io.Text;
     + "  > SELECT _FUNC_(-10, 16, -10) FROM src LIMIT 1;\n" + "  '16'")
 public class UDFConv extends UDF {
   private final Text result = new Text();
-  private final byte[] value = new byte[64];
-
-  /**
-   * Divide x by m as if x is an unsigned 64-bit integer. Examples:
-   * unsignedLongDiv(-1, 2) == Long.MAX_VALUE unsignedLongDiv(6, 3) == 2
-   * unsignedLongDiv(0, 5) == 0
-   *
-   * @param x
-   *          is treated as unsigned
-   * @param m
-   *          is treated as signed
-   */
-  private long unsignedLongDiv(long x, int m) {
-    if (x >= 0) {
-      return x / m;
-    }
-
-    // Let uval be the value of the unsigned long with the same bits as x
-    // Two's complement => x = uval - 2*MAX - 2
-    // => uval = x + 2*MAX + 2
-    // Now, use the fact: (a+b)/c = a/c + b/c + (a%c+b%c)/c
-    return x / m + 2 * (Long.MAX_VALUE / m) + 2 / m
-        + (x % m + 2 * (Long.MAX_VALUE % m) + 2 % m) / m;
-  }
-
-  /**
-   * Decode val into value[].
-   *
-   * @param val
-   *          is treated as an unsigned 64-bit integer
-   * @param radix
-   *          must be between MIN_RADIX and MAX_RADIX
-   */
-  private void decode(long val, int radix) {
-    Arrays.fill(value, (byte) 0);
-    for (int i = value.length - 1; val != 0; i--) {
-      long q = unsignedLongDiv(val, radix);
-      value[i] = (byte) (val - q * radix);
-      val = q;
-    }
-  }
-
-  /**
-   * Convert value[] into a long. On overflow, return -1 (as mySQL does). If a
-   * negative digit is found, ignore the suffix starting there.
-   *
-   * @param radix
-   *          must be between MIN_RADIX and MAX_RADIX
-   * @param fromPos
-   *          is the first element that should be conisdered
-   * @return the result should be treated as an unsigned 64-bit integer.
-   */
-  private long encode(int radix, int fromPos) {
-    long val = 0;
-    long bound = unsignedLongDiv(-1 - radix, radix); // Possible overflow once
-    // val
-    // exceeds this value
-    for (int i = fromPos; i < value.length && value[i] >= 0; i++) {
-      if (val >= bound) {
-        // Check for overflow
-        if (unsignedLongDiv(-1 - value[i], radix) < val) {
-          return -1;
-        }
-      }
-      val = val * radix + value[i];
-    }
-    return val;
-  }
-
-  /**
-   * Convert the bytes in value[] to the corresponding chars.
-   *
-   * @param radix
-   *          must be between MIN_RADIX and MAX_RADIX
-   * @param fromPos
-   *          is the first nonzero element
-   */
-  private void byte2char(int radix, int fromPos) {
-    for (int i = fromPos; i < value.length; i++) {
-      value[i] = (byte) Character.toUpperCase(Character.forDigit(value[i],
-          radix));
-    }
-  }
-
-  /**
-   * Convert the chars in value[] to the corresponding integers. Convert invalid
-   * characters to -1.
-   *
-   * @param radix
-   *          must be between MIN_RADIX and MAX_RADIX
-   * @param fromPos
-   *          is the first nonzero element
-   */
-  private void char2byte(int radix, int fromPos) {
-    for (int i = fromPos; i < value.length; i++) {
-      value[i] = (byte) Character.digit(value[i], radix);
-    }
-  }
 
   /**
    * Convert numbers between different number bases. If toBase&gt;0 the result is
@@ -156,49 +59,62 @@ public class UDFConv extends UDF {
       return null;
     }
 
-    byte[] num = n.getBytes();
-    if (num.length == 0) {
+    String num = n.toString();
+    if (num.isEmpty()) {
       return null;
     }
-    boolean negative = (num[0] == '-');
-    int first = 0;
-    if (negative) {
-      first = 1;
+
+    String validNum = getLongestValidPrefix(num, fromBs);
+    if (validNum == null) {
+      return null;
     }
 
-    // Copy the digits in the right side of the array
-    for (int i = 1; i <= n.getLength() - first; i++) {
-      value[value.length - i] = num[n.getLength() - i];
-    }
-    char2byte(fromBs, value.length - n.getLength() + first);
+    BigInteger bigInteger = new BigInteger(validNum, fromBs);
+    BigInteger bigIntegerResolved = toBs > 0 ? getUnsignedBigInt(bigInteger) : bigInteger;
+    String convertedValue = bigIntegerResolved
+            .toString(toBs)
+            .toUpperCase(Locale.ROOT);
+    result.set(convertedValue);
+    return result;
+  }
 
-    // Do the conversion by going through a 64 bit integer
-    long val = encode(fromBs, value.length - n.getLength() + first);
-    if (negative && toBs > 0) {
-      if (val < 0) {
-        val = -1;
+  private boolean isSign(char c) {
+    return c == '-' || c == '+';
+  }
+
+  private String getLongestValidPrefix(String num, int radix) {
+    boolean isSigned = isSign(num.charAt(0));
+    StringBuilder builder = new StringBuilder();
+    int startIndex = 0;
+    if (isSigned) {
+      builder.append(num.charAt(0));
+      startIndex = 1;
+    }
+
+    char[] charNumbers = num.toCharArray();
+    for (int i = startIndex; i < charNumbers.length; i++) {
+      char charNumber = charNumbers[i];
+      if (Character.digit(charNumber, radix) >= 0) {
+        builder.append(charNumber);
       } else {
-        val = -val;
+        break;
       }
     }
-    if (toBs < 0 && val < 0) {
-      val = -val;
-      negative = true;
-    }
-    decode(val, Math.abs(toBs));
 
-    // Find the first non-zero digit or the last digits if all are zero.
-    for (first = 0; first < value.length - 1 && value[first] == 0; first++) {
-      ;
+    if (isSigned && builder.length() == 1) {
+      return null;
     }
 
-    byte2char(Math.abs(toBs), first);
+    return builder.toString();
+  }
 
-    if (negative && toBs < 0) {
-      value[--first] = '-';
+  private BigInteger getUnsignedBigInt(BigInteger bigInteger) {
+    boolean isValueSigned = bigInteger.signum() < 0;
+    if (isValueSigned) {
+      BigInteger shiftedOne = BigInteger.ONE.shiftLeft(Math.max(bigInteger.bitLength(), 64));
+      return bigInteger.add(shiftedOne);
+    } else {
+      return bigInteger;
     }
-
-    result.set(value, first, value.length - first);
-    return result;
   }
 }
