@@ -166,7 +166,7 @@ public class Partition implements Serializable {
       return;
     }
 
-    if (table.isPartitioned()) {
+    if (table.isPartitioned() && tPartition.isSetSd()) {
       try {
         if (tPartition.getSd().getLocation() == null) {
           // set default if location is not set and this is a physical
