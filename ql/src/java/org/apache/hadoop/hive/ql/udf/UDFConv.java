@@ -53,9 +53,10 @@ public class UDFConv extends UDF {
 
     int fromBs = fromBase.get();
     int toBs = toBase.get();
+    int toBaseAbsoluteValue = Math.abs(toBs);
     if (fromBs < Character.MIN_RADIX || fromBs > Character.MAX_RADIX
-        || Math.abs(toBs) < Character.MIN_RADIX
-        || Math.abs(toBs) > Character.MAX_RADIX) {
+        || toBaseAbsoluteValue < Character.MIN_RADIX
+        || toBaseAbsoluteValue > Character.MAX_RADIX) {
       return null;
     }
 
@@ -65,14 +66,14 @@ public class UDFConv extends UDF {
     }
 
     String validNum = getLongestValidPrefix(num, fromBs);
-    if (validNum == null) {
+    if (validNum == null || validNum.isEmpty()) {
       return null;
     }
 
     BigInteger bigInteger = new BigInteger(validNum, fromBs);
     BigInteger bigIntegerResolved = toBs > 0 ? getUnsignedBigInt(bigInteger) : bigInteger;
     String convertedValue = bigIntegerResolved
-            .toString(toBs)
+            .toString(toBaseAbsoluteValue)
             .toUpperCase(Locale.ROOT);
     result.set(convertedValue);
     return result;
