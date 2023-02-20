@@ -1168,7 +1168,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return props;
   }
 
-<<<<<<< HEAD
   @Override
   public boolean shouldOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String operationName) {
     String mode = null;
