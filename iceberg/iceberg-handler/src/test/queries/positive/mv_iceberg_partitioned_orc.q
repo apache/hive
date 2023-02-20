@@ -2,6 +2,8 @@
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 -- Mask random snapshot id
 --! qt:replace:/(\s+current-snapshot-id\s+)\d+(\s*)/$1#SnapshotId#/
+-- Mask current-snapshot-timestamp-ms
+--! qt:replace:/(\s+current-snapshot-timestamp-ms\s+)\S+(\s*)/$1#Masked#$2/
 -- SORT_QUERY_RESULTS
 
 drop materialized view if exists mat1;
