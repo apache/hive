@@ -68,7 +68,7 @@ Table Parameters:
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
 	engine.hive.enabled 	true                
 	format-version      	1                   
-	iceberg.orc.files.only	false               
+	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	2                   
 	numRows             	2                   
@@ -76,9 +76,10 @@ Table Parameters:
 	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1282                
+	totalSize           	#Masked#                 
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.format.default	orc                 
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -152,7 +153,7 @@ Table Parameters:
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
 	engine.hive.enabled 	true                
 	format-version      	2                   
-	iceberg.orc.files.only	false               
+	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	2                   
 	numRows             	2                   
@@ -160,10 +161,11 @@ Table Parameters:
 	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1282                
+	totalSize           	#Masked#                 
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
 	write.merge.mode    	merge-on-read       
 	write.update.mode   	merge-on-read       
 	 	 

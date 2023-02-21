@@ -185,8 +185,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     boolean isEnoughToCompact;
 
     if (ci.isRebalanceCompaction()) {
-      //However thresholds are used to schedule REBALANCE compaction, manual triggering is always allowed if the
-      //table and query engine supports it
+      //TODO: For now, we are allowing rebalance compaction regardless of the table state. Thresholds will be added later.
       return true;
     } else if (ci.isMajorCompaction()) {
       isEnoughToCompact =
@@ -282,7 +281,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       findNextCompactRequest.setWorkerVersion(runtimeVersion);
       findNextCompactRequest.setPoolName(this.getPoolName());
       ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
-      ci.errorMessage = "";
       LOG.info("Processing compaction request {}", ci);
 
       if (ci == null) {
@@ -330,19 +328,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return false;
       }
 
-      if (LOG.isWarnEnabled()) {
-        boolean insertOnly = AcidUtils.isInsertOnlyTable(table.getParameters());
-        if (ci.type.equals(CompactionType.REBALANCE) && insertOnly) {
-          ci.errorMessage += "Falling back to MAJOR compaction as REBALANCE compaction is supported only on full-acid tables. ";
-          LOG.warn("REBALANCE compaction requested on an insert-only table ({}). Falling back to MAJOR compaction as " +
-              "REBALANCE compaction is supported only on full-acid tables", table.getTableName());
-        }
-        if ((!ci.type.equals(CompactionType.REBALANCE) || insertOnly) && ci.numberOfBuckets > 0) {
-          ci.errorMessage += "Only REBALANCE compaction on a full-acid table accepts the number of buckets clause. " +
-              "(CLUSTERED INTO {N} BUCKETS).";
-          LOG.warn("Only REBALANCE compaction on a full-acid table accepts the number of buckets clause " +
-                  "(CLUSTERED INTO {N} BUCKETS). Since the compaction request is {} and the table is {}, it will be ignored.",
-              ci.type, insertOnly ? "insert-only" : "full-acid");
+      if (!ci.type.equals(CompactionType.REBALANCE) && ci.numberOfBuckets > 0) {
+        if (LOG.isWarnEnabled()) {
+          LOG.warn("Only the REBALANCE compaction accepts the number of buckets clause (CLUSTERED INTO {N} BUCKETS). " +
+              "Since the compaction request is {}, it will be ignored.", ci.type);
         }
       }
 
