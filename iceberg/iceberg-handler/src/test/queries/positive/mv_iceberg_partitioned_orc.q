@@ -1,5 +1,9 @@
 -- MV data is stored by partitioned iceberg testing the existing Hive syntax (also used by native mv) to specify partition cols.
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
+-- Mask random snapshot id
+--! qt:replace:/(\s+current-snapshot-id\s+)\d+(\s*)/$1#SnapshotId#/
+-- Mask the totalSize value as it can change at file format library update
+--! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 -- SORT_QUERY_RESULTS
 
 drop materialized view if exists mat1;

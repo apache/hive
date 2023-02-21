@@ -260,7 +260,7 @@ class DirectSqlUpdateStat {
         preparedStatement.setObject(15, mPartitionColumnStatistics.getNumNulls());
         preparedStatement.setObject(16, mPartitionColumnStatistics.getNumDVs());
         preparedStatement.setObject(17, mPartitionColumnStatistics.getBitVector());
-        preparedStatement.setObject(18, mPartitionColumnStatistics.getHistogram());
+        preparedStatement.setBytes(18, mPartitionColumnStatistics.getHistogram());
         preparedStatement.setObject(19, mPartitionColumnStatistics.getAvgColLen());
         preparedStatement.setObject(20, mPartitionColumnStatistics.getMaxColLen());
         preparedStatement.setObject(21, mPartitionColumnStatistics.getNumTrues());

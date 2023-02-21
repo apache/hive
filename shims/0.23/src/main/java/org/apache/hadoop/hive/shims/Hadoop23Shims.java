@@ -1146,11 +1146,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
       // HIVE-13704 states that we should use run() instead of execute() due to a hadoop known issue
       // added by HADOOP-10459
-      if (distcp.run(params.toArray(new String[0])) == 0) {
-        return true;
-      } else {
-        return false;
-      }
+      return runDistCpInternal(distcp, params) ==  0;
     } catch (Exception e) {
       throw new IOException("Cannot execute DistCp process: ", e);
     } finally {
@@ -1172,7 +1168,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     try {
       DistCp distcp = new DistCp(conf, null);
       distcp.getConf().setBoolean("mapred.mapper.new-api", true);
-      int returnCode = distcp.run(params.toArray(new String[0]));
+      int returnCode = runDistCpInternal(distcp, params);
       if (returnCode == 0) {
         return true;
       } else if (returnCode == DistCpConstants.INVALID_ARGUMENT) {
@@ -1188,13 +1184,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
               + "snapshot: {}", srcPaths, dst, oldSnapshot);
           List<String> rParams = constructDistCpWithSnapshotParams(srcPaths, dst, ".", oldSnapshot, conf, "-rdiff");
           DistCp rDistcp = new DistCp(conf, null);
-          returnCode = rDistcp.run(rParams.toArray(new String[0]));
+          returnCode = runDistCpInternal(rDistcp, rParams);
           if (returnCode == 0) {
             LOG.info("Target restored to previous state.  source: {} target: {} snapshot: {}. Reattempting to copy.",
                 srcPaths, dst, oldSnapshot);
             dst.getFileSystem(conf).deleteSnapshot(dst, oldSnapshot);
             dst.getFileSystem(conf).createSnapshot(dst, oldSnapshot);
-            returnCode = distcp.run(params.toArray(new String[0]));
+            returnCode = runDistCpInternal(distcp, params);
             if (returnCode == 0) {
               return true;
             } else {
@@ -1209,6 +1205,39 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       throw new IOException("Cannot execute DistCp process: ", e);
     }
     return false;
+  }
+
+  protected int runDistCpInternal(DistCp distcp, List<String> params) {
+    ensureMapReduceQueue(distcp.getConf());
+    return distcp.run(params.toArray(new String[0]));
+  }
+
+  /**
+   * This method ensures if there is an explicit tez.queue.name set, the hadoop shim will submit jobs
+   * to the same yarn queue. This solves a security issue where e.g settings have the following values:
+   * tez.queue.name=sample
+   * hive.server2.tez.queue.access.check=true
+   * In this case, when a query submits Tez DAGs, the tez client layer checks whether the end user has access to
+   * the yarn queue 'sample' via YarnQueueHelper, but this is not respected in case of MR jobs that run
+   * even if the query execution engine is Tez. E.g. an EXPORT TABLE can submit DistCp MR jobs at some stages when
+   * certain criteria are met. We tend to restrict the setting of mapreduce.job.queuename in order to bypass this
+   * security flaw, and even the default queue is unexpected if we explicitly set tez.queue.name.
+   * Under the hood the desired behavior is to have DistCp jobs in the same yarn queue as other parts
+   * of the query. Most of the time, the user isn't aware that a query involves DistCp jobs, hence isn't aware
+   * of these details.
+   */
+  protected void ensureMapReduceQueue(Configuration conf) {
+    String queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
+    boolean isTez = "tez".equalsIgnoreCase(conf.get("hive.execution.engine"));
+    boolean shouldMapredJobsFollowTezQueue = conf.getBoolean("hive.mapred.job.follow.tez.queue", false);
+
+    LOG.debug("Checking tez.queue.name {}, isTez: {}, shouldMapredJobsFollowTezQueue: {}", queueName, isTez,
+        shouldMapredJobsFollowTezQueue);
+    if (isTez && shouldMapredJobsFollowTezQueue && queueName != null && queueName.length() > 0) {
+      LOG.info("Setting mapreduce.job.queuename (current: '{}') to become tez.queue.name: '{}'",
+          conf.get(MRJobConfig.QUEUE_NAME), queueName);
+      conf.set(MRJobConfig.QUEUE_NAME, queueName);
+    }
   }
 
   /**

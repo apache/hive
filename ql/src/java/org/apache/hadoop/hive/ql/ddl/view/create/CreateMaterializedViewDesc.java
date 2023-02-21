@@ -349,6 +349,12 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
           getStorageHandler());
     }
+    if (getSerdeProps() != null) {
+      for (Map.Entry<String, String> entry : getSerdeProps().entrySet()) {
+        tbl.setSerdeParam(entry.getKey(), entry.getValue());
+      }
+    }
+
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
 
     setColumnsAndStorePartitionTransformSpecOfTable(getSchema(), getPartCols(), conf, tbl);

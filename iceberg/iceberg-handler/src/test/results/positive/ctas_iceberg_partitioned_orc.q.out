@@ -295,6 +295,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	current-snapshot-id 	#SnapshotId#
 	engine.hive.enabled 	true                
 	format-version      	2                   
 	iceberg.orc.files.only	true                
