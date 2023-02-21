@@ -3479,19 +3479,19 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(4).getState());
     Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(5).getState());
     Map<Long, AbortCompactionResponseElement> expectedResponseMap = new HashMap<Long, AbortCompactionResponseElement>() {{
-      put(Long.parseLong("6"),new AbortCompactionResponseElement(Long.parseLong("6"), "Success",
+      put(Long.parseLong("6"),getAbortCompactionResponseElement(Long.parseLong("6"), "Success",
               "Successfully aborted compaction"));
-      put(Long.parseLong("1") ,new AbortCompactionResponseElement(Long.parseLong("1"), "Error",
+      put(Long.parseLong("1") ,getAbortCompactionResponseElement(Long.parseLong("1"), "Error",
               "Error while aborting compaction as compaction is in state-refused"));
-      put(Long.parseLong("2"),new AbortCompactionResponseElement(Long.parseLong("2"), "Error",
+      put(Long.parseLong("2"),getAbortCompactionResponseElement(Long.parseLong("2"), "Error",
               "Error while aborting compaction as compaction is in state-succeeded"));
-      put(Long.parseLong("3"),new AbortCompactionResponseElement(Long.parseLong("3"), "Error",
+      put(Long.parseLong("3"),getAbortCompactionResponseElement(Long.parseLong("3"), "Error",
               "Error while aborting compaction as compaction is in state-ready for cleaning"));
-      put(Long.parseLong("4"),new AbortCompactionResponseElement(Long.parseLong("4"), "Error",
+      put(Long.parseLong("4"),getAbortCompactionResponseElement(Long.parseLong("4"), "Error",
               "Error while aborting compaction as compaction is in state-ready for cleaning"));
-      put(Long.parseLong("5"),new AbortCompactionResponseElement(Long.parseLong("5"), "Error",
+      put(Long.parseLong("5"),getAbortCompactionResponseElement(Long.parseLong("5"), "Error",
               "Error while aborting compaction as compaction is in state-refused"));
-      put(Long.parseLong("12"),new AbortCompactionResponseElement(Long.parseLong("12"), "Error",
+      put(Long.parseLong("12"),getAbortCompactionResponseElement(Long.parseLong("12"), "Error",
               "No Such Compaction Id Available"));
     }};
 
@@ -3517,6 +3517,13 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(4).getState());
     Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(5).getState());
 
+  }
+
+  private AbortCompactionResponseElement getAbortCompactionResponseElement(long compactionId, String status, String message){
+    AbortCompactionResponseElement resEle = new AbortCompactionResponseElement(compactionId);
+    resEle.setMessage(message);
+    resEle.setStatus(status);
+    return resEle;
   }
 
   private void compactPartition(String table, CompactionType type, String partition)
