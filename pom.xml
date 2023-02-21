@@ -151,7 +151,6 @@
     <jackson.version>2.12.7</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
-    <javaewah.version>1.1.7</javaewah.version>
     <javax-servlet.version>3.1.0</javax-servlet.version>
     <javax-servlet-jsp.version>2.3.1</javax-servlet-jsp.version>
     <javolution.version>5.5.1</javolution.version>
@@ -314,11 +313,6 @@
             <artifactId>hamcrest-core</artifactId>
           </exclusion>
         </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>com.googlecode.javaewah</groupId>
-        <artifactId>JavaEWAH</artifactId>
-        <version>${javaewah.version}</version>
       </dependency>
       <dependency>
         <groupId>com.zaxxer</groupId>
