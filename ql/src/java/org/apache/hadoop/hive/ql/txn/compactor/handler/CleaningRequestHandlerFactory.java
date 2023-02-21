@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.ql.txn.compactor.CacheContainer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,7 +40,7 @@ public class CleaningRequestHandlerFactory {
   private CleaningRequestHandlerFactory() {
   }
 
-  public List<CleaningRequestHandler> getHandlers(HiveConf conf, TxnStore txnHandler, boolean metricsEnabled) {
-    return Arrays.asList(new CompactionCleaningRequestHandler(conf, txnHandler, metricsEnabled));
+  public List<CleaningRequestHandler> getHandlers(HiveConf conf, TxnStore txnHandler, CacheContainer cacheContainer, boolean metricsEnabled) {
+    return Arrays.asList(new CompactionCleaningRequestHandler(conf, txnHandler, cacheContainer, metricsEnabled));
   }
 }

@@ -102,7 +102,8 @@ public class TestCleaner extends CompactorTest {
 
     //Prevent cleaner from marking the compaction as cleaned
     TxnStore mockedHandler = spy(txnHandler);
-    List<CleaningRequestHandler> cleaningRequestHandlers = CleaningRequestHandlerFactory.getInstance().getHandlers(conf, mockedHandler, false);
+    CacheContainer cacheContainer = new CacheContainer();
+    List<CleaningRequestHandler> cleaningRequestHandlers = CleaningRequestHandlerFactory.getInstance().getHandlers(conf, mockedHandler, cacheContainer, false);
     doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     Table t = newTable("default", "retry_test", false);
@@ -124,8 +125,9 @@ public class TestCleaner extends CompactorTest {
     Thread.sleep(retentionTime + 100);
 
     for (int i = 1; i < 4; i++) {
-      Cleaner cleaner = new Cleaner(cleaningRequestHandlers);
+      Cleaner cleaner = new Cleaner();
       cleaner.setConf(conf);
+      cleaner.setCleaningRequestHandlers(cleaningRequestHandlers);
       cleaner.init(new AtomicBoolean(true));
       FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
@@ -150,8 +152,9 @@ public class TestCleaner extends CompactorTest {
     }
 
     //Do a final run to reach the maximum retry attempts, so the state finally should be set to failed
-    Cleaner cleaner = new Cleaner(cleaningRequestHandlers);
+    Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
+    cleaner.setCleaningRequestHandlers(cleaningRequestHandlers);
     cleaner.init(new AtomicBoolean(true));
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
@@ -185,13 +188,15 @@ public class TestCleaner extends CompactorTest {
 
     //Prevent cleaner from marking the compaction as cleaned
     TxnStore mockedHandler = spy(txnHandler);
+    CacheContainer cacheContainer = new CacheContainer();
     List<CleaningRequestHandler> cleaningRequestHandlers = CleaningRequestHandlerFactory.getInstance()
-            .getHandlers(conf, mockedHandler, false);
+            .getHandlers(conf, mockedHandler, cacheContainer, false);
     doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     //Do a run to fail the clean and set the retention time
-    Cleaner cleaner = new Cleaner(cleaningRequestHandlers);
+    Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
+    cleaner.setCleaningRequestHandlers(cleaningRequestHandlers);
     cleaner.init(new AtomicBoolean(true));
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
@@ -205,8 +210,9 @@ public class TestCleaner extends CompactorTest {
     }).when(mockedHandler).findReadyToClean(anyLong(), anyLong());
 
     //Do a final run and check if the compaction is not picked up again
-    cleaner = new Cleaner(cleaningRequestHandlers);
+    cleaner = new Cleaner();
     cleaner.setConf(conf);
+    cleaner.setCleaningRequestHandlers(cleaningRequestHandlers);
     cleaner.init(new AtomicBoolean(true));
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 

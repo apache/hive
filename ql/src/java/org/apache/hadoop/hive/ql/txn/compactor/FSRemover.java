@@ -48,7 +48,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
@@ -60,30 +61,23 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
  */
 public class FSRemover {
   private static final Logger LOG = LoggerFactory.getLogger(FSRemover.class);
-  private final Map<CleaningRequest.RequestType, CleaningRequestHandler> handlerMap;
   private final HiveConf conf;
   private final ReplChangeManager replChangeManager;
 
-  public FSRemover(HiveConf conf, List<CleaningRequestHandler> cleaningRequestHandlers,
-                   ReplChangeManager replChangeManager) {
+  public FSRemover(HiveConf conf, ReplChangeManager replChangeManager) {
     this.conf = conf;
-    handlerMap = new EnumMap<>(CleaningRequest.RequestType.class);
-    for (CleaningRequestHandler cleaningRequestHandler : cleaningRequestHandlers) {
-      handlerMap.put(cleaningRequestHandler.getRequestType(), cleaningRequestHandler);
-    }
     this.replChangeManager = replChangeManager;
   }
 
-  public void clean(CleaningRequest cr) throws MetaException {
+  public void clean(CleaningRequestHandler handler, CleaningRequest cr) throws MetaException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    CleaningRequestHandler crHandler = handlerMap.get(cr.getType());
     try {
-      if (crHandler.isMetricsEnabled()) {
+      if (handler.isMetricsEnabled()) {
         perfLogger.perfLogBegin(FSRemover.class.getName(), cr.getCleanerMetric());
       }
-      crHandler.beforeExecutingCleaningRequest(cr);
+      handler.beforeExecutingCleaningRequest(cr);
       Callable<List<Path>> cleanUpTask;
-      cleanUpTask = () -> removeFiles(cr, crHandler);
+      cleanUpTask = () -> removeFiles(cr, handler);
 
       Ref<List<Path>> removedFiles = Ref.from(new ArrayList<>());
       if (CompactorUtil.runJobAsSelf(cr.runAs())) {
@@ -101,7 +95,7 @@ public class FSRemover {
           closeUgi(cr, ugi);
         }
       }
-      boolean success = crHandler.afterExecutingCleaningRequest(cr, removedFiles.value);
+      boolean success = handler.afterExecutingCleaningRequest(cr, removedFiles.value);
       if (success) {
         LOG.info("FSRemover has successfully cleaned up the cleaning request: {}", cr);
       } else {
@@ -110,9 +104,9 @@ public class FSRemover {
     } catch (Exception ex) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", cr,
               StringUtils.stringifyException(ex));
-      crHandler.failureExecutingCleaningRequest(cr, ex);
+      handler.failureExecutingCleaningRequest(cr, ex);
     } finally {
-      if (crHandler.isMetricsEnabled()) {
+      if (handler.isMetricsEnabled()) {
         perfLogger.perfLogEnd(FSRemover.class.getName(), cr.getCleanerMetric());
       }
     }

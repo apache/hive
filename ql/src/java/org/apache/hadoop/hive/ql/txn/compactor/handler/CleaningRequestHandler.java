@@ -17,26 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.ql.txn.compactor.CacheContainer;
 import org.apache.hadoop.hive.ql.txn.compactor.CleaningRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
-import org.apache.thrift.TBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -50,13 +44,12 @@ public abstract class CleaningRequestHandler<T extends CleaningRequest> {
   protected final TxnStore txnHandler;
   protected final HiveConf conf;
   protected final boolean metricsEnabled;
-  private Optional<Cache<String, TBase>> metaCache;
+  protected final CacheContainer cacheContainer;
 
-  CleaningRequestHandler(HiveConf conf, TxnStore txnHandler, boolean metricsEnabled) {
+  CleaningRequestHandler(HiveConf conf, TxnStore txnHandler, CacheContainer cacheContainer, boolean metricsEnabled) {
     this.conf = conf;
     this.txnHandler = txnHandler;
-    boolean tableCacheOn = MetastoreConf.getBoolVar(this.conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_TABLECACHE_ON);
-    this.metaCache = initializeCache(tableCacheOn);
+    this.cacheContainer = cacheContainer;
     this.metricsEnabled = metricsEnabled;
   }
 
@@ -67,12 +60,6 @@ public abstract class CleaningRequestHandler<T extends CleaningRequest> {
   public boolean isMetricsEnabled() {
     return metricsEnabled;
   }
-
-  /**
-   * The type of requests handled by this handler
-   * @return Request type handled by this handler
-   */
-  public abstract CleaningRequest.RequestType getRequestType();
 
   /**
    * Find the list of objects which are ready for cleaning.
@@ -134,27 +121,5 @@ public abstract class CleaningRequestHandler<T extends CleaningRequest> {
     } else {
       return null;
     }
-  }
-
-  public <B extends TBase<B,?>> B computeIfAbsent(String key, Callable<B> callable) throws Exception {
-    if (metaCache.isPresent()) {
-      try {
-        return (B) metaCache.get().get(key, callable);
-      } catch (ExecutionException e) {
-        throw (Exception) e.getCause();
-      }
-    }
-    return callable.call();
-  }
-
-  Optional<Cache<String, TBase>> initializeCache(boolean tableCacheOn) {
-    if (tableCacheOn) {
-      metaCache = Optional.of(CacheBuilder.newBuilder().softValues().build());
-    }
-    return metaCache;
-  }
-
-  public void invalidateMetaCache() {
-    metaCache.ifPresent(Cache::invalidateAll);
   }
 }

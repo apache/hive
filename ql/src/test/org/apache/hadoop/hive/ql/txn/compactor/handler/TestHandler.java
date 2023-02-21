@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.ql.txn.compactor.CacheContainer;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.CleaningRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.TestCleaner;
@@ -60,8 +61,9 @@ public class TestHandler extends TestCleaner {
     CompactionRequest rqst = new CompactionRequest(t.getDbName(), t.getTableName(), CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
+    CacheContainer cacheContainer = Mockito.spy(CacheContainer.class);
 
-    CleaningRequestHandler cleaningRequestHandler = new CompactionCleaningRequestHandler(conf, txnHandler, false);
+    CleaningRequestHandler cleaningRequestHandler = new CompactionCleaningRequestHandler(conf, txnHandler, cacheContainer, false);
 
     // Fetch the compaction request using the cleaningRequestHandler
     List<CleaningRequest> cleaningRequests = cleaningRequestHandler.findReadyToClean();
@@ -75,8 +77,9 @@ public class TestHandler extends TestCleaner {
     // Check whether appropriate cleaningRequestHandler utility methods are called exactly once in a successful compaction scenario.
     CleaningRequestHandler mockedCleaningRequestHandler = Mockito.spy(cleaningRequestHandler);
     AtomicBoolean stop = new AtomicBoolean(true);
-    Cleaner cleaner = new Cleaner(Arrays.asList(mockedCleaningRequestHandler));
+    Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
+    cleaner.setCleaningRequestHandlers(Arrays.asList(mockedCleaningRequestHandler));
     cleaner.init(stop);
     cleaner.run();
 
@@ -104,10 +107,12 @@ public class TestHandler extends TestCleaner {
     // Check whether appropriate handler utility methods are called exactly once in a failure compaction scenario.
     TxnStore mockedTxnHandler = Mockito.spy(txnHandler);
     doThrow(new RuntimeException()).when(mockedTxnHandler).markCleanerStart(any());
-    CleaningRequestHandler mockedCleaningRequestHandler = Mockito.spy(new CompactionCleaningRequestHandler(conf, mockedTxnHandler, false));
+    CacheContainer cacheContainer = Mockito.spy(CacheContainer.class);
+    CleaningRequestHandler mockedCleaningRequestHandler = Mockito.spy(new CompactionCleaningRequestHandler(conf, mockedTxnHandler, cacheContainer, false));
     AtomicBoolean stop = new AtomicBoolean(true);
-    Cleaner cleaner = new Cleaner(Arrays.asList(mockedCleaningRequestHandler));
+    Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
+    cleaner.setCleaningRequestHandlers(Arrays.asList(mockedCleaningRequestHandler));
     cleaner.init(stop);
     cleaner.run();
 
@@ -133,11 +138,14 @@ public class TestHandler extends TestCleaner {
     addBaseFile(t, null, 25L, 25, compactTxn);
 
     //Prevent cleaner from marking the compaction as cleaned
+    CacheContainer mockedCacheContainer = Mockito.spy(CacheContainer.class);
+    mockedCacheContainer.initializeCache(true);
     TxnStore mockedHandler = spy(txnHandler);
     doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
-    CleaningRequestHandler cleaningRequestHandler = Mockito.spy(new CompactionCleaningRequestHandler(conf, mockedHandler, false));
-    Cleaner cleaner = new Cleaner(Arrays.asList(cleaningRequestHandler));
+    CleaningRequestHandler cleaningRequestHandler = Mockito.spy(new CompactionCleaningRequestHandler(conf, mockedHandler, mockedCacheContainer, false));
+    Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
+    cleaner.setCleaningRequestHandlers(Arrays.asList(cleaningRequestHandler));
     cleaner.init(new AtomicBoolean(true));
     cleaner.run();
     cleaner.run();
@@ -145,7 +153,7 @@ public class TestHandler extends TestCleaner {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(1, compacts.size());
-    Mockito.verify(cleaningRequestHandler, times(3)).computeIfAbsent(Mockito.any(),Mockito.any());
+    Mockito.verify(mockedCacheContainer, times(3)).computeIfAbsent(Mockito.any(),Mockito.any());
     Mockito.verify(cleaningRequestHandler, times(1)).resolveTable(Mockito.any(), Mockito.any());
   }
 }

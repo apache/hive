@@ -56,8 +56,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
   protected TxnStore txnHandler;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
-
-  private Optional<Cache<String, TBase>> metaCache = Optional.empty();
+  protected CacheContainer cacheContainer;
 
   @Override
   public void init(AtomicBoolean stop) throws Exception {
@@ -65,6 +64,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
     // Get our own instance of the transaction handler
     txnHandler = TxnUtils.getTxnStore(conf);
+    cacheContainer = new CacheContainer();
     // Initialize the RawStore, with the flag marked as true. Since its stored as a ThreadLocal variable in the
     // HMSHandlerContext, it will use the compactor related pool.
     MetastoreConf.setBoolVar(conf, COMPACTOR_USE_CUSTOM_POOL, true);
@@ -130,28 +130,6 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
       return elapsed;
     }
     return 0;
-  }
-
-  <T extends TBase<T,?>> T computeIfAbsent(String key, Callable<T> callable) throws Exception {
-    if (metaCache.isPresent()) {
-      try {
-        return (T) metaCache.get().get(key, callable);
-      } catch (ExecutionException e) {
-        throw (Exception) e.getCause();
-      }
-    }
-    return callable.call();
-  }
-
-  Optional<Cache<String, TBase>> initializeCache(boolean tableCacheOn) {
-    if (tableCacheOn) {
-      metaCache = Optional.of(CacheBuilder.newBuilder().softValues().build());
-    }
-    return metaCache;
-  }
-
-  void invalidateMetaCache(){
-    metaCache.ifPresent(Cache::invalidateAll);
   }
 
 }

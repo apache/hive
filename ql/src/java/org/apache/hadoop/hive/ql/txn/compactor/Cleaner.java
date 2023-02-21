@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,10 +56,6 @@ public class Cleaner extends MetaStoreCompactorThread {
   public Cleaner() {
   }
 
-  public Cleaner(List<CleaningRequestHandler> cleaningRequestHandlers) {
-    this.cleaningRequestHandlers = cleaningRequestHandlers;
-  }
-
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
@@ -68,10 +66,14 @@ public class Cleaner extends MetaStoreCompactorThread {
             COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
-    if (cleaningRequestHandlers == null || cleaningRequestHandlers.isEmpty()) {
-      cleaningRequestHandlers = CleaningRequestHandlerFactory.getInstance().getHandlers(conf, txnHandler, metricsEnabled);
+    boolean tableCacheOn = MetastoreConf.getBoolVar(conf,
+            MetastoreConf.ConfVars.COMPACTOR_CLEANER_TABLECACHE_ON);
+    if (CollectionUtils.isEmpty(cleaningRequestHandlers)) {
+      cacheContainer.initializeCache(tableCacheOn);
+      cleaningRequestHandlers = CleaningRequestHandlerFactory.getInstance()
+              .getHandlers(conf, txnHandler, cacheContainer, metricsEnabled);
     }
-    fsRemover = new FSRemover(conf, cleaningRequestHandlers, ReplChangeManager.getInstance(conf));
+    fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf));
   }
 
   @Override
@@ -80,7 +82,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     try {
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
-        cleaningRequestHandlers.forEach(CleaningRequestHandler::invalidateMetaCache);
+        cacheContainer.invalidateMetaCache();
         long startedAt = -1;
 
         // Make sure nothing escapes this run method and kills the metastore at large,
@@ -109,7 +111,7 @@ public class Cleaner extends MetaStoreCompactorThread {
                   checkInterrupt();
 
                   CompletableFuture<Void> asyncJob = CompletableFuture.runAsync(
-                                  ThrowingRunnable.unchecked(() -> fsRemover.clean(cr)), cleanerExecutor)
+                                  ThrowingRunnable.unchecked(() -> fsRemover.clean(cleaningRequestHandler, cr)), cleanerExecutor)
                           .exceptionally(t -> {
                             LOG.error("Error clearing: {}", cr.getFullPartitionName(), t);
                             return null;
@@ -153,6 +155,11 @@ public class Cleaner extends MetaStoreCompactorThread {
         cleanerExecutor.shutdownNow();
       }
     }
+  }
+
+  @VisibleForTesting
+  public void setCleaningRequestHandlers(List<CleaningRequestHandler> cleaningRequestHandlers) {
+    this.cleaningRequestHandlers = cleaningRequestHandlers;
   }
 
   private static class CleanerCycleUpdater implements Runnable {

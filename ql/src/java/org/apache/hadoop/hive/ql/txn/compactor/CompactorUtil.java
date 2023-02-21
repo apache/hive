@@ -128,7 +128,7 @@ public class CompactorUtil {
       return getMSForConf(conf).getPartitionsByNames(getDefaultCatalog(conf), dbName, tableName,
               Collections.singletonList(partName));
     } catch (Exception e) {
-      LOG.error("Unable to get partitions by name for CompactionInfo= {}.{}.{}", dbName, tableName, partName);
+      LOG.error("Unable to get partitions by name = {}.{}.{}", dbName, tableName, partName);
       throw new MetaException(e.toString());
     }
   }

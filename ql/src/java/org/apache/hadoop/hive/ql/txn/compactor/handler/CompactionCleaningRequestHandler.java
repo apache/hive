@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.txn.compactor.CacheContainer;
 import org.apache.hadoop.hive.ql.txn.compactor.CleaningRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactionCleaningRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactionCleaningRequest.CompactionCleaningRequestBuilder;
@@ -69,16 +70,10 @@ import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
  */
 class CompactionCleaningRequestHandler extends CleaningRequestHandler<CompactionCleaningRequest> {
 
-  private static final CleaningRequest.RequestType requestType = CleaningRequest.RequestType.COMPACTION;
   private static final Logger LOG = LoggerFactory.getLogger(CompactionCleaningRequestHandler.class.getName());
 
-  public CompactionCleaningRequestHandler(HiveConf conf, TxnStore txnHandler, boolean metricsEnabled) {
-    super(conf, txnHandler, metricsEnabled);
-  }
-
-  @Override
-  public CleaningRequest.RequestType getRequestType() {
-    return requestType;
+  public CompactionCleaningRequestHandler(HiveConf conf, TxnStore txnHandler, CacheContainer cacheContainer, boolean metricsEnabled) {
+    super(conf, txnHandler, cacheContainer, metricsEnabled);
   }
 
   @Override
@@ -111,7 +106,7 @@ class CompactionCleaningRequestHandler extends CleaningRequestHandler<Compaction
           Partition p = null;
 
           if (location == null) {
-            t = computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
+            t = cacheContainer.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
             if (t == null) {
               // The table was dropped before we got around to cleaning it.
               LOG.info("Unable to find table {}, assuming it was dropped. {}", ci.getFullTableName(),
@@ -198,7 +193,7 @@ class CompactionCleaningRequestHandler extends CleaningRequestHandler<Compaction
               Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshotsForCleaner(fs, loc);
               AcidDirectory dir = AcidUtils.getAcidState(fs, loc, conf, validWriteIdList, Ref.from(false), false,
                       dirSnapshots);
-              Table table = computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
+              Table table = cacheContainer.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
               boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, ci.partName);
 
               List<Path> obsoleteDirs = CompactorUtil.getObsoleteDirs(dir, isDynPartAbort);
@@ -258,7 +253,7 @@ class CompactionCleaningRequestHandler extends CleaningRequestHandler<Compaction
                         ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
                 Ref.from(false), false, dirSnapshots);
 
-        table = computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
+        table = cacheContainer.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
         boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, ci.partName);
         List<Path> remained = subtract(CompactorUtil.getObsoleteDirs(dir, isDynPartAbort), deletedFiles);
         if (!remained.isEmpty()) {
