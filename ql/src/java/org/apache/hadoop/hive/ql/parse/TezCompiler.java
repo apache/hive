@@ -1622,10 +1622,10 @@ public class TezCompiler extends TaskCompiler {
       ColStatistics tsStats = tsOp.getStatistics().getColumnStatisticsFromColName(tsKeyCol.getColumn());
 
       if (canUseNDV(mjStats)) {
-        mjKeyCardinality = mjStats.getCountDistinct();
+        mjKeyCardinality = mjStats.getCountDistint();
       }
       if (canUseNDV(tsStats)) {
-        tsKeyCardinality = tsStats.getCountDistinct();
+        tsKeyCardinality = tsStats.getCountDistint();
       }
     }
     return mjKeyCardinality / (double) tsKeyCardinality;
@@ -1644,7 +1644,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private static boolean canUseNDV(ColStatistics colStats) {
-    return (colStats != null) && (colStats.getCountDistinct() >= 0);
+    return (colStats != null) && (colStats.getCountDistint() >= 0);
   }
 
   private static double getBloomFilterCost(
@@ -1670,7 +1670,7 @@ public class TezCompiler extends TaskCompiler {
       return -1;
     }
 
-    long selColSourceNdv = canUseNDV(selColSourceStat) ? selColSourceStat.getCountDistinct() : -1;
+    long selColSourceNdv = canUseNDV(selColSourceStat) ? selColSourceStat.getCountDistint() : -1;
     boolean semiJoinKeyIsPK = StatsUtils.inferForeignKey(selColStat, tsColStat);
     if (semiJoinKeyIsPK) {
       // PK/FQ relationship: NDV of selColSourceStat is a superset of what is in tsColStat
@@ -1682,7 +1682,7 @@ public class TezCompiler extends TaskCompiler {
       if (selColSourceNdv >= 0) {
         // If semijoin keys and ts keys completely unrelated, the cardinality of both sets
         // could be obtained by adding both cardinalities. Would there be an average case?
-        keyDomainCardinality = selColSourceNdv + tsColStat.getCountDistinct();
+        keyDomainCardinality = selColSourceNdv + tsColStat.getCountDistint();
 
         // Don't exceed the range if we have one.
         if (StatsUtils.hasDiscreteRange(selColStat)
@@ -1730,7 +1730,7 @@ public class TezCompiler extends TaskCompiler {
       ColStatistics selColStat = selStats.getColumnStatisticsFromColName(selCol.getColumn());
       ColStatistics filColStat = filStats.getColumnStatisticsFromColName(tsCol.getColumn());
       if (canUseNDV(selColStat)) {
-        selKeyCardinality = selColStat.getCountDistinct();
+        selKeyCardinality = selColStat.getCountDistint();
       }
       // Get colstats for the original table column for selCol if possible, this would have
       // more accurate information about the original NDV of the column before any filtering.
@@ -2069,7 +2069,7 @@ public class TezCompiler extends TaskCompiler {
               // No column stats found for semijoin edge
               break;
             }
-            long nDVs = colStatisticsSJ.getCountDistinct();
+            long nDVs = colStatisticsSJ.getCountDistint();
             if (nDVs > 0) {
               // Lookup nDVs on TS side.
               RuntimeValuesInfo rti = procCtx.parseContext
@@ -2089,7 +2089,7 @@ public class TezCompiler extends TaskCompiler {
                 // No column stats found on target
                 break;
               }
-              long nDVsOfTS = colStatisticsTarget.getCountDistinct();
+              long nDVsOfTS = colStatisticsTarget.getCountDistint();
               double nDVsOfTSFactored = nDVsOfTS * procCtx.conf.getFloatVar(
                       ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_DPP_FACTOR);
               if ((long)nDVsOfTSFactored > nDVs) {

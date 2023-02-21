@@ -551,7 +551,7 @@ public class StatsRulesProcFactory {
         factor *= children.size() - 1;
       }
       for (int i = 0; i < columnStats.size(); i++) {
-        long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistinct();
+        long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
         long intersectionSize = estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
         // (num of distinct vals for col in IN clause  / num of distinct vals for col )
         double columnFactor = dvs == 0 ? 0.5d : (1.0d / dvs);
@@ -1404,7 +1404,7 @@ public class StatsRulesProcFactory {
 
               ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
-                long dvs = cs.getCountDistinct();
+                long dvs = cs.getCountDistint();
                 numRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
                 return numRows;
               }
@@ -1425,7 +1425,7 @@ public class StatsRulesProcFactory {
 
                 ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
                 if (cs != null) {
-                  long dvs = cs.getCountDistinct();
+                  long dvs = cs.getCountDistint();
                   numRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
                   return numRows;
                 }
@@ -1617,7 +1617,7 @@ public class StatsRulesProcFactory {
         }
         final long maxColumnNDV = colStats.stream()
                 .filter(Objects::nonNull)
-                .mapToLong(ColStatistics::getCountDistinct)
+                .mapToLong(ColStatistics::getCountDistint)
                 .max()
                 .orElse(-1);
         if (interReduction) {
@@ -1754,7 +1754,7 @@ public class StatsRulesProcFactory {
             String colName = ci.getInternalName();
             String colType = ci.getTypeName();
             ColStatistics cs = new ColStatistics(colName, colType);
-            cs.setCountDistinct(stats.getNumRows());
+            cs.setCountDistint(stats.getNumRows());
             cs.setNumNulls(0);
             cs.setAvgColLen(StatsUtils.getAvgColLenOf(conf, ci.getObjectInspector(), colType));
             computeAggregateColumnMinMax(cs, conf, aggDesc.get(idx++), colType, parentStats);
@@ -1802,7 +1802,7 @@ public class StatsRulesProcFactory {
         if (parentCS != null && parentCS.getRange() != null &&
             parentCS.getRange().minValue != null && parentCS.getRange().maxValue != null) {
           long valuesCount = agg.getDistinct() ?
-              parentCS.getCountDistinct() :
+              parentCS.getCountDistint() :
               parentStats.getNumRows() - parentCS.getNumNulls();
           Range range = parentCS.getRange();
           // Get the aggregate function matching the name in the query.
@@ -1905,7 +1905,7 @@ public class StatsRulesProcFactory {
         long avgKeySize = 0;
         for (ColStatistics cs : colStats) {
           if (cs != null) {
-            numEstimatedRows = StatsUtils.safeMult(numEstimatedRows, cs.getCountDistinct());
+            numEstimatedRows = StatsUtils.safeMult(numEstimatedRows, cs.getCountDistint());
             avgKeySize += Math.ceil(cs.getAvgColLen());
           }
         }
@@ -2114,7 +2114,7 @@ public class StatsRulesProcFactory {
               String col = joinKeys.get(i).get(idx);
               ColStatistics cs = joinStats.get(i).getColumnStatisticsFromColName(col);
               if (cs != null) {
-                perAttrDVs.add(cs.getCountDistinct());
+                perAttrDVs.add(cs.getCountDistint());
               }
             }
             distinctVals.add(getDenominator(perAttrDVs));
@@ -2318,7 +2318,7 @@ public class StatsRulesProcFactory {
       for (String col: joinKeys) {
         ColStatistics cs = statistics.getColumnStatisticsFromColName(col);
         if (cs != null) {
-          distinctVals.add(cs.getCountDistinct());
+          distinctVals.add(cs.getCountDistint());
         }
       }
       // Compute the number of distinct values based on configuration property
@@ -2449,11 +2449,11 @@ public class StatsRulesProcFactory {
           rowCounts.add(newrows);
 
           // 2.1 The ndv is the minimum of the PK and the FK.
-          distinctVals.add(Math.min(csFK.getCountDistinct(), csPK.getCountDistinct()));
+          distinctVals.add(Math.min(csFK.getCountDistint(), csPK.getCountDistint()));
         } else {
           // 2.2 All the other FKs.
           rowCounts.add(parentStats.getNumRows());
-          distinctVals.add(csFK.getCountDistinct());
+          distinctVals.add(csFK.getCountDistint());
         }
       }
       long newNumRows;
@@ -2709,7 +2709,7 @@ public class StatsRulesProcFactory {
       for (ColStatistics cs : colStats) {
         colNameStatsAvailable.add(cs.getColumnName());
         int pos = jop.getConf().getReversedExprs().get(cs.getColumnName());
-        long oldDV = cs.getCountDistinct();
+        long oldDV = cs.getCountDistint();
 
         boolean useCalciteForNdvReadjustment
             = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_JOIN_NDV_READJUSTMENT);
@@ -2730,7 +2730,7 @@ public class StatsRulesProcFactory {
             newDV = (long) Math.ceil(ratio * oldDV);
           }
         }
-        cs.setCountDistinct(newDV);
+        cs.setCountDistint(newDV);
         updateNumNulls(cs, leftUnmatchedRows, rightUnmatchedRows, newNumRows, pos, jop);
       }
       stats.setColumnStats(colStats);
@@ -2838,8 +2838,8 @@ public class StatsRulesProcFactory {
           int pos = entry.getKey();
           String key = entry.getValue().get(joinColIdx);
           ColStatistics cs = joinStats.get(pos).getColumnStatisticsFromColName(key);
-          if (cs != null && cs.getCountDistinct() < minNDV) {
-            minNDV = cs.getCountDistinct();
+          if (cs != null && cs.getCountDistint() < minNDV) {
+            minNDV = cs.getCountDistint();
           }
         }
 
@@ -2850,7 +2850,7 @@ public class StatsRulesProcFactory {
             String key = entry.getValue().get(joinColIdx);
             ColStatistics cs = joinStats.get(pos).getColumnStatisticsFromColName(key);
             if (cs != null) {
-              cs.setCountDistinct(minNDV);
+              cs.setCountDistint(minNDV);
             }
           }
         }

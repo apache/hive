@@ -1657,7 +1657,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   private static long estimateNDV(long numRows, List<ColStatistics> columnStats) {
     // If there is a single column, return the number of distinct values
     if (columnStats.size() == 1) {
-      return columnStats.get(0).getCountDistinct();
+      return columnStats.get(0).getCountDistint();
     }
 
     // The expected number of distinct values when choosing p values
@@ -1668,7 +1668,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     // distributed attribute with N1 * ... * Nm distinct values.
     long n = 1L;
     for (ColStatistics cs : columnStats) {
-      final long ndv = cs.getCountDistinct();
+      final long ndv = cs.getCountDistint();
       if (ndv > 1) {
         n = StatsUtils.safeMult(n, ndv);
       }

@@ -61,11 +61,11 @@ public class ColStatistics {
     this.colType = colType;
   }
 
-  public long getCountDistinct() {
+  public long getCountDistint() {
     return countDistinct;
   }
 
-  public void setCountDistinct(long countDistinct) {
+  public void setCountDistint(long countDistinct) {
     this.countDistinct = countDistinct;
   }
 
@@ -162,7 +162,7 @@ public class ColStatistics {
   public ColStatistics clone() {
     ColStatistics clone = new ColStatistics(colName, colType);
     clone.setAvgColLen(avgColLen);
-    clone.setCountDistinct(countDistinct);
+    clone.setCountDistint(countDistinct);
     clone.setNumNulls(numNulls);
     clone.setNumTrues(numTrues);
     clone.setNumFalses(numFalses);

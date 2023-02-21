@@ -59,7 +59,7 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     List<ColStatistics> colStats = htRel.getColStat(projIndxLst);
     Double noDistinctRows = 1.0;
     for (ColStatistics cStat : colStats) {
-      noDistinctRows *= cStat.getCountDistinct();
+      noDistinctRows *= cStat.getCountDistint();
     }
 
     return Math.min(noDistinctRows, mq.getRowCount(htRel));
