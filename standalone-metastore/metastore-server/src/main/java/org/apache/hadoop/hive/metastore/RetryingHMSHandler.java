@@ -23,7 +23,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.concurrent.TimeUnit;
+
+import javax.jdo.JDOException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -206,7 +210,7 @@ public class RetryingHMSHandler implements InvocationHandler {
       Throwable rootCause = ExceptionUtils.getRootCause(caughtException);
       String errorMessage = ExceptionUtils.getMessage(caughtException) +
               (rootCause == null ? "" : ("\nRoot cause: " + rootCause));
-      if (retryCount >= retryLimit) {
+      if (retryCount >= retryLimit || !isRecoverableException(caughtException)) {
         LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
         throw new MetaException(errorMessage);
       }
@@ -225,6 +229,26 @@ public class RetryingHMSHandler implements InvocationHandler {
       gotNewConnectUrl = MetaStoreInit.updateConnectionURL(origConf, getActiveConf(),
         lastUrl, metaStoreInitData);
     }
+  }
+
+  private Class<SQLException>[] unrecoverableSqlExceptions = new Class[]{
+          // TODO: collect more unrecoverable SQLExceptions
+          SQLIntegrityConstraintViolationException.class
+  };
+
+  private boolean isRecoverableException(Throwable t) {
+    assert t != null && (t instanceof JDOException || t instanceof NucleusException);
+
+    Throwable cause = t.getCause();
+    while (cause != null) {
+      for (Class<SQLException> unrecoverableSqlException : unrecoverableSqlExceptions) {
+        if (unrecoverableSqlException.isAssignableFrom(cause.getClass())) {
+          return false;
+        }
+      }
+      cause = cause.getCause();
+    }
+    return true;
   }
 
   public Configuration getActiveConf() {
