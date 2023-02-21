@@ -116,14 +116,6 @@ package org.apache.hadoop.hive.metastore.api;
     setCompactionIdIsSet(true);
   }
 
-  public AbortCompactionResponseElement(long compactionId, String status,String message ) {
-
-    this.compactionId = compactionId;
-    setCompactionIdIsSet(true);
-    this.status = status;
-    this.message = message;
-  }
-
   /**
    * Performs a deep copy on <i>other</i>.
    */

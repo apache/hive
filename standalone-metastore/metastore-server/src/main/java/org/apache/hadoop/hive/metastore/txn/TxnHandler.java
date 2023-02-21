@@ -6290,8 +6290,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       throw new NoSuchCompactionException("Compaction ids missing in request. No compactions to abort");
     }
     reqst.getCompactionIds().forEach(x -> {
-      abortCompactionResponseElements.put(x, new AbortCompactionResponseElement(x, "Error",
-              "No Such Compaction Id Available"));
+      abortCompactionResponseElements.put(x, getAbortCompactionResponseElement(x,"Error","No Such Compaction Id Available"));
     });
 
     List<CompactionInfo> eligibleCompactionsToAbort = findEligibleCompactionsToAbort(abortCompactionResponseElements,
@@ -6300,6 +6299,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       abortCompactionResponseElements.put(compactionInfo.id, abortCompaction(compactionInfo));
     }
     return response;
+  }
+
+  private AbortCompactionResponseElement getAbortCompactionResponseElement(long compactionId, String status, String message) {
+    AbortCompactionResponseElement resEle = new AbortCompactionResponseElement(compactionId);
+    resEle.setMessage(message);
+    resEle.setStatus(status);
+    return resEle;
   }
 
   @RetrySemantics.SafeToRetry
@@ -6314,8 +6320,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (updCount != 1) {
           LOG.error("Unable to update compaction record: {}. updCnt={}", compactionInfo, updCount);
           dbConn.rollback();
-          return new AbortCompactionResponseElement(compactionInfo.id,
-                  "Error", "Error while aborting compaction:Unable to update compaction record in COMPLETED_COMPACTIONS");
+          return getAbortCompactionResponseElement(compactionInfo.id, "Error",
+                  "Error while aborting compaction:Unable to update compaction record in COMPLETED_COMPACTIONS");
         } else {
           LOG.debug("Inserted {} entries into COMPLETED_COMPACTIONS", updCount);
           try (PreparedStatement stmt = dbConn.prepareStatement("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?")) {
@@ -6325,24 +6331,24 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             if (updCount != 1) {
               LOG.error("Unable to update compaction record: {}. updCnt={}", compactionInfo, updCount);
               dbConn.rollback();
-              return new AbortCompactionResponseElement(compactionInfo.id,
-                      "Error", "Error while aborting compaction: Unable to update compaction record in COMPACTION_QUEUE");
+              return getAbortCompactionResponseElement(compactionInfo.id, "Error",
+                      "Error while aborting compaction: Unable to update compaction record in COMPACTION_QUEUE");
             } else {
               dbConn.commit();
-              return new AbortCompactionResponseElement(compactionInfo.id,
-                      "Success", "Successfully aborted compaction");
+              return getAbortCompactionResponseElement(compactionInfo.id, "Success",
+                      "Successfully aborted compaction");
             }
           } catch (SQLException e) {
             dbConn.rollback();
-            return new AbortCompactionResponseElement(compactionInfo.id,
-                    "Error", "Error while aborting compaction:" + e.getMessage());
+            return getAbortCompactionResponseElement(compactionInfo.id, "Error",
+                    "Error while aborting compaction:"+ e.getMessage());
           }
         }
       } catch (SQLException e) {
         LOG.error("Unable to connect to transaction database: " + e.getMessage());
         checkRetryable(e, "abortCompaction(" + compactionInfo + ")");
-        return new AbortCompactionResponseElement(compactionInfo.id,
-                "Error", "Error while aborting compaction:" + e.getMessage());
+        return getAbortCompactionResponseElement(compactionInfo.id, "Error",
+                "Error while aborting compaction:" + e.getMessage());
       }
     } catch (RetryException e) {
       return abortCompaction(compactionInfo);
@@ -6367,7 +6373,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (CompactionState.INITIATED.equals(CompactionState.fromSqlConst(compState))) {
             compactionInfoList.add(CompactionInfo.loadFullFromCompactionQueue(rs));
           } else {
-            abortCompactionResponseElements.put(compID, new AbortCompactionResponseElement(compID, "Error",
+            abortCompactionResponseElements.put(compID, getAbortCompactionResponseElement(compID,"Error",
                     "Error while aborting compaction as compaction is in state-" + CompactionState.fromSqlConst(compState)));
           }
         }
