@@ -72,14 +72,14 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
 
   private final RexBuilder rexBuilder;
   private final Set<RelNode> visited;
-  private final Map<String, SnapshotContext> storedSnapshot;
+  private final Map<String, SnapshotContext> mvMetaStoredSnapshot;
 
   public HiveAugmentIcebergMaterializationRule(
-          RexBuilder rexBuilder, Map<String, SnapshotContext> storedSnapshot) {
+          RexBuilder rexBuilder, Map<String, SnapshotContext> mvMetaStoredSnapshot) {
     super(operand(TableScan.class, any()),
         HiveRelFactories.HIVE_BUILDER, "HiveAugmentMaterializationRule");
     this.rexBuilder = rexBuilder;
-    this.storedSnapshot = storedSnapshot;
+    this.mvMetaStoredSnapshot = mvMetaStoredSnapshot;
     this.visited = new HashSet<>();
   }
 
@@ -94,10 +94,12 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
     RelOptHiveTable hiveTable = (RelOptHiveTable) tableScan.getTable();
     Table table = hiveTable.getHiveTableMD();
 
-    SnapshotContext tableSnapshot = storedSnapshot.get(table.getFullyQualifiedName());
-    if (tableSnapshot.equals(table.getStorageHandler().getCurrentSnapshotContext(table))) {
+    SnapshotContext mvMetaTableSnapshot = mvMetaStoredSnapshot.get(table.getFullyQualifiedName());
+    if (mvMetaTableSnapshot.equals(table.getStorageHandler().getCurrentSnapshotContext(table))) {
       return;
     }
+
+    table.setVersionIntervalFrom(Long.toString(mvMetaTableSnapshot.getSnapshotId()));
 
     int snapshotIdIndex = tableScan.getTable().getRowType().getField(
         VirtualColumn.SNAPSHOT_ID.getName(), false, false).getIndex();
@@ -108,7 +110,7 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
     relBuilder.push(tableScan);
     List<RexNode> conds = new ArrayList<>();
     final RexNode literalHighWatermark = rexBuilder.makeLiteral(
-        tableSnapshot.getSnapshotId(), snapshotIdType(relBuilder), false);
+        mvMetaTableSnapshot.getSnapshotId(), snapshotIdType(relBuilder), false);
     conds.add(
         rexBuilder.makeCall(
             SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
