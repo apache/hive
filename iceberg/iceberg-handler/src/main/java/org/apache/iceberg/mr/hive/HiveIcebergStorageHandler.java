@@ -1190,7 +1190,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           foundSince = true;
         }
       } else {
-        if ("delete".equals(snapshot.operation())) {
+        if (!"append".equals(snapshot.operation())) {
           return true;
         }
       }

@@ -2130,7 +2130,9 @@ public class Hive {
       }
     }
     Materialization materialization = new Materialization();
-    materialization.setSourceTablesCompacted(false);
+    // TODO: delete operations are not supported yet.
+    // Set setSourceTablesCompacted to false when delete is supported
+    materialization.setSourceTablesCompacted(hasDelete);
     materialization.setSourceTablesUpdateDeleteModified(hasDelete);
     return materialization;
   }
