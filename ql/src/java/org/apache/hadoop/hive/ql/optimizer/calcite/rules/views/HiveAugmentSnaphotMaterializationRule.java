@@ -52,7 +52,7 @@ import java.util.Set;
  * If the data in the source table matches the current data in the snapshot,
  * no filter is created.
  */
-public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
+public class HiveAugmentSnaphotMaterializationRule extends RelOptRule {
 
   private static RelDataType snapshotIdType = null;
 
@@ -74,7 +74,7 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
   private final Set<RelNode> visited;
   private final Map<String, SnapshotContext> mvMetaStoredSnapshot;
 
-  public HiveAugmentIcebergMaterializationRule(
+  public HiveAugmentSnaphotMaterializationRule(
           RexBuilder rexBuilder, Map<String, SnapshotContext> mvMetaStoredSnapshot) {
     super(operand(TableScan.class, any()),
         HiveRelFactories.HIVE_BUILDER, "HiveAugmentMaterializationRule");

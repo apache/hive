@@ -282,7 +282,7 @@ public class HiveMaterializedViewUtils {
     // Augment
     final RexBuilder rexBuilder = materialization.queryRel.getCluster().getRexBuilder();
     final HepProgramBuilder augmentMaterializationProgram = new HepProgramBuilder()
-        .addRuleInstance(new HiveAugmentIcebergMaterializationRule(rexBuilder, snapshot.getTableSnapshots()));
+        .addRuleInstance(new HiveAugmentSnaphotMaterializationRule(rexBuilder, snapshot.getTableSnapshots()));
     final HepPlanner augmentMaterializationPlanner = new HepPlanner(
         augmentMaterializationProgram.build());
     augmentMaterializationPlanner.setRoot(materialization.queryRel);
