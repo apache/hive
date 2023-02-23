@@ -234,10 +234,10 @@ public final class ArchiveUtils {
 
   /**
    * Determines if one can insert into partition(s), or there's a conflict with
-   * archive. It can be because partition is itself archived or it is to be
+   * archive. It can be because partition is itself archived, or it is to be
    * created inside existing archive. The second case is when partition doesn't
-   * exist yet, but it would be inside of an archive if it existed. This one is
-   * quite tricky to check, we need to find at least one partition inside of
+   * exist yet, but it would be inside an archive if it existed. This one is
+   * quite tricky to check, we need to find at least one partition inside
    * the parent directory. If it is archived and archiving level tells that
    * the archival was done of directory partition is in it means we cannot
    * insert; otherwise we can.

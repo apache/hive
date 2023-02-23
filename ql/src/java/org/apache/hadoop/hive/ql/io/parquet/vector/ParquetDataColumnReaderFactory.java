@@ -83,7 +83,7 @@ public final class ParquetDataColumnReaderFactory {
     protected Dictionary dict;
 
     // After the data is read in the parquet type, isValid will be set to true if the data can be
-    // returned in the type defined in HMS.  Otherwise isValid is set to false.
+    // returned in the type defined in HMS. Otherwise, isValid is set to false.
     boolean isValid = true;
 
     protected int hivePrecision = 0;
