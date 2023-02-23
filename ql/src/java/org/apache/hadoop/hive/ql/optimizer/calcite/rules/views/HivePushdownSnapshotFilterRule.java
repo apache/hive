@@ -19,102 +19,111 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.plan.RelOptTable;
+import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexTableInputRef;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeFamily;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+
+import java.util.Set;
 
 public class HivePushdownSnapshotFilterRule extends RelOptRule {
 
   public HivePushdownSnapshotFilterRule() {
-    super(operand(HiveFilter.class, operand(TableScan.class, any())),
+    super(operand(HiveFilter.class, any()),
         HiveRelFactories.HIVE_BUILDER, "HivePushdownSnapshotFilterRule");
   }
 
-  static class SnapshotContextVisitor extends RexVisitorImpl<Long> {
+  public static class SnapshotIdShuttle extends RexShuttle {
 
-    private final int snapshotIdIndex;
+    private final RexBuilder rexBuilder;
+    private final RelMetadataQuery metadataQuery;
+    private final RelNode startNode;
 
-    protected SnapshotContextVisitor(int snapshotIdIndex) {
-      super(true);
-      this.snapshotIdIndex = snapshotIdIndex;
+    public SnapshotIdShuttle(RexBuilder rexBuilder, RelMetadataQuery metadataQuery, RelNode startNode) {
+      this.rexBuilder = rexBuilder;
+      this.metadataQuery = metadataQuery;
+      this.startNode = startNode;
     }
 
     @Override
-    public Long visitCall(RexCall call) {
+    public RexNode visitCall(RexCall call) {
       if (call.operands.size() == 2) {
-        Long r = getSnapshotId(call.operands.get(0), call.operands.get(1));
-        if (r != null) {
-          return r;
-        }
-        r = getSnapshotId(call.operands.get(1), call.operands.get(0));
-        if (r != null) {
-          return r;
+        if (setSnapShotId(call.operands.get(0), call.operands.get(1)) ||
+            setSnapShotId(call.operands.get(1), call.operands.get(0))) {
+          return rexBuilder.makeLiteral(true);
         }
       }
 
-      for (RexNode operand : call.operands) {
-        Long r = operand.accept(this);
-        if (r != null) {
-          return r;
-        }
-      }
-      return null;
+      return super.visitCall(call);
     }
 
-    private Long getSnapshotId(RexNode op1, RexNode op2) {
-      if (!(op1 instanceof RexInputRef)) {
-        return null;
+    private boolean setSnapShotId(RexNode op1, RexNode op2) {
+      if (!op1.isA(SqlKind.LITERAL)) {
+        return false;
       }
 
-      RexInputRef inputRef = (RexInputRef) op1;
-      if (inputRef.getIndex() != snapshotIdIndex) {
-        return null;
-      }
-
-      if (!(op2 instanceof RexLiteral)) {
-        return null;
-      }
-
-      RexLiteral literal = (RexLiteral) op2;
+      RexLiteral literal = (RexLiteral) op1;
       if (literal.getType().getSqlTypeName().getFamily() != SqlTypeFamily.NUMERIC) {
+        return false;
+      }
+
+      long snapshotId = literal.getValueAs(Long.class);
+
+      RelOptTable relOptTable = getRelOptTableOf(op2);
+      if (relOptTable == null) {
+        return false;
+      }
+
+      RelOptHiveTable hiveTable = (RelOptHiveTable) relOptTable;
+      hiveTable.getHiveTableMD().setVersionIntervalFrom(Long.toString(snapshotId));
+      return true;
+    }
+
+    private RelOptTable getRelOptTableOf(RexNode rexNode) {
+      if (!(rexNode instanceof RexInputRef)) {
         return null;
       }
 
-      return literal.getValueAs(Long.class);
+      RexInputRef rexInputRef = (RexInputRef) rexNode;
+      Set<RexNode> rexNodeSet = metadataQuery.getExpressionLineage(startNode, rexInputRef);
+      if (rexNodeSet == null || rexNodeSet.size() != 1) {
+        return null;
+      }
+
+      RexNode resultRexNode = rexNodeSet.iterator().next();
+      if (!(resultRexNode instanceof RexTableInputRef)) {
+        return null;
+      }
+      RexTableInputRef tableInputRef = (RexTableInputRef) resultRexNode;
+
+      RelOptTable relOptTable = tableInputRef.getTableRef().getTable();
+      RelDataTypeField snapshotIdField = relOptTable.getRowType().getField(
+          VirtualColumn.SNAPSHOT_ID.getName(), false, false);
+      if (snapshotIdField == null) {
+        return null;
+      }
+
+      return snapshotIdField.getIndex() == tableInputRef.getIndex() ? relOptTable : null;
     }
   }
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    HiveTableScan tableScan = call.rel(1);
-    RelDataTypeField snapshotIdField = tableScan.getTable().getRowType().getField(
-        VirtualColumn.SNAPSHOT_ID.getName(), false, false);
-    if (snapshotIdField == null) {
-      return;
-    }
-
     HiveFilter filter = call.rel(0);
-    Long snapshotId = filter.getCondition().accept(new SnapshotContextVisitor(snapshotIdField.getIndex()));
-
-    if (snapshotId == null) {
-      return;
-    }
-
-    RelOptHiveTable hiveTable = (RelOptHiveTable) tableScan.getTable();
-    Table table = hiveTable.getHiveTableMD();
-    table.setVersionIntervalFrom(Long.toString(snapshotId));
-
-    call.transformTo(call.builder().push(tableScan).build());
+    RexNode newCondition = filter.getCondition().accept(new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter));
+    call.transformTo(call.builder().push(filter.getInput()).filter(newCondition).build());
   }
 }
