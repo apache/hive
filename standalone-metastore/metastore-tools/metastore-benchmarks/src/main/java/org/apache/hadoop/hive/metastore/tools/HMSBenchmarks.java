@@ -36,7 +36,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitions;
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitionsNoException;
@@ -466,6 +470,7 @@ final class HMSBenchmarks {
     try {
       fs = FileSystem.get(client.getHadoopConf());
       client.getHadoopConf().set("hive.metastore.uris", client.getServerURI().toString());
+      client.getHadoopConf().set("metastore.partition.management.database.pattern", dbName);
       partitionManagementTask.setConf(client.getHadoopConf());
 
       client.createDatabase(dbName);
@@ -484,7 +489,8 @@ final class HMSBenchmarks {
           Table t = client.getTable(dbName, tableName);
           Path tabLoc = new Path(t.getSd().getLocation());
           for (int j = 501; j <= 1000; j++) {
-            paths.add(new Path(tabLoc, "d=d" + j));
+            Path path = new Path(tabLoc, "d=d" + j + "_1");
+            paths.add(path);
           }
         }
       }
@@ -492,26 +498,45 @@ final class HMSBenchmarks {
       throw new RuntimeException(e);
     }
 
-    final AtomicBoolean createPath = new AtomicBoolean(true);
+    final AtomicLong id = new AtomicLong(0);
+    ExecutorService service = Executors.newFixedThreadPool(20);
     Runnable preRun = () -> {
-      try {
-        if (createPath.get()) {
-          for (Path path : paths) {
-            fs.mkdirs(path);
+      int len = paths.size() / 20;
+      id.getAndIncrement();
+      List<Future> futures = new ArrayList<>();
+      for (int i = 0; i <= 20; i++) {
+        int k = i;
+        futures.add(service.submit((Callable<Void>) () -> {
+          for (int j = k * len; j < (k + 1) * len && j < paths.size(); j++) {
+            Path path = paths.get(j);
+            if (id.get() == 1) {
+              fs.mkdirs(path);
+            } else {
+              String fileName = path.getName().split("_")[0];
+              long seq = id.get();
+              Path destPath = new Path(path.getParent(), fileName + "_" + seq);
+              Path sourcePath = new Path(path.getParent(), fileName + "_" + (seq-1));
+              fs.rename(sourcePath, destPath);
+            }
           }
-          createPath.set(false);
-        } else {
-          for (Path path : paths) {
-            fs.delete(path, true);
-          }
-          createPath.set(true);
+          return null;
+        }));
+      }
+      for (Future future : futures) {
+        try {
+          future.get();
+        } catch (Exception e) {
+          service.shutdown();
+          throw new RuntimeException(e);
         }
-      } catch (Exception e) {
-        throw new RuntimeException(e);
       }
     };
 
-    return bench.measure(preRun, partitionManagementTask, null);
+    try {
+      return bench.measure(preRun, partitionManagementTask, null);
+    } finally {
+      service.shutdown();
+    }
   }
 
 }
