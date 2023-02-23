@@ -86,6 +86,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
@@ -178,6 +179,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSearchExpandRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
@@ -1876,6 +1878,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
       rules.add(HiveAggregateReduceRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER)) {
+        rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
+            o -> o.operand(Filter.class).anyInputs()).toRule());
+        rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
+            o -> o.operand(Project.class).anyInputs()).toRule());
         rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
         rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
         rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
@@ -2433,6 +2439,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveInBetweenExpandRule.JOIN_INSTANCE,
             HiveInBetweenExpandRule.PROJECT_INSTANCE);
       }
+
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+          new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
+              o -> o.operand(Filter.class).anyInputs()).toRule(),
+          new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
+              o -> o.operand(Project.class).anyInputs()).toRule());
 
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
