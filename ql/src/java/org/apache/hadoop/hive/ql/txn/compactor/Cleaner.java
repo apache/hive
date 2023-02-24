@@ -22,18 +22,15 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
-import org.apache.hadoop.hive.ql.txn.compactor.handler.CleaningRequestHandler;
-import org.apache.hadoop.hive.ql.txn.compactor.handler.CleaningRequestHandlerFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.RequestHandler;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.RequestHandlerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.StringUtils;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,30 +47,27 @@ public class Cleaner extends MetaStoreCompactorThread {
   private boolean metricsEnabled = false;
 
   private ExecutorService cleanerExecutor;
-  private List<CleaningRequestHandler> cleaningRequestHandlers;
-  private FSRemover fsRemover;
-
-  public Cleaner() {
-  }
+  private List<RequestHandler> requestHandlers;
 
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     checkInterval = conf.getTimeVar(
             HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
-    cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
-            COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
-    boolean tableCacheOn = MetastoreConf.getBoolVar(conf,
-            MetastoreConf.ConfVars.COMPACTOR_CLEANER_TABLECACHE_ON);
-    if (CollectionUtils.isEmpty(cleaningRequestHandlers)) {
-      cacheContainer.initializeCache(tableCacheOn);
-      cleaningRequestHandlers = CleaningRequestHandlerFactory.getInstance()
-              .getHandlers(conf, txnHandler, cacheContainer, metricsEnabled);
+    if (CollectionUtils.isEmpty(requestHandlers)) {
+      cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
+              conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
+              COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
+      boolean tableCacheOn = MetastoreConf.getBoolVar(conf,
+              MetastoreConf.ConfVars.COMPACTOR_CLEANER_TABLECACHE_ON);
+      metadataCache.initializeCache(tableCacheOn);
+      FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
+      requestHandlers = RequestHandlerFactory.getInstance()
+              .getHandlers(conf, txnHandler, metadataCache,
+                      metricsEnabled, fsRemover, cleanerExecutor);
     }
-    fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf));
   }
 
   @Override
@@ -82,7 +76,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     try {
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
-        cacheContainer.invalidateMetaCache();
+        metadataCache.invalidateMetaCache();
         long startedAt = -1;
 
         // Make sure nothing escapes this run method and kills the metastore at large,
@@ -98,39 +92,25 @@ public class Cleaner extends MetaStoreCompactorThread {
                     new CleanerCycleUpdater(MetricsConstants.COMPACTION_CLEANER_CYCLE_DURATION, startedAt));
           }
 
-          for (CleaningRequestHandler cleaningRequestHandler : cleaningRequestHandlers) {
+          for (RequestHandler requestHandler : requestHandlers) {
             try {
-              List<CleaningRequest> readyToClean = cleaningRequestHandler.findReadyToClean();
               checkInterrupt();
-
-              if (!readyToClean.isEmpty()) {
-                List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
-                for (CleaningRequest cr : readyToClean) {
-
-                  //Check for interruption before scheduling each cleaning request and return if necessary
-                  checkInterrupt();
-
-                  CompletableFuture<Void> asyncJob = CompletableFuture.runAsync(
-                                  ThrowingRunnable.unchecked(() -> fsRemover.clean(cleaningRequestHandler, cr)), cleanerExecutor)
-                          .exceptionally(t -> {
-                            LOG.error("Error clearing: {}", cr.getFullPartitionName(), t);
-                            return null;
-                          });
-                  cleanerList.add(asyncJob);
-                }
-
-                //Use get instead of join, so we can receive InterruptedException and shutdown gracefully
-                CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).get();
-              }
+              requestHandler.process();
             } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
               return;
             } catch (Throwable t) {
-              LOG.error("Caught an exception while executing cleaningRequestHandler loop : {} of compactor cleaner, {}",
-                      cleaningRequestHandler.getClass().getName(), StringUtils.stringifyException(t));
+              LOG.error("Caught an exception while executing RequestHandler loop : {} of compactor cleaner, {}",
+                      requestHandler.getClass().getName(), t.getMessage());
+              throw t;
             }
           }
+          checkInterrupt();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
         } catch (Throwable t) {
-          LOG.error("Caught an exception in the main loop of compactor cleaner, " +
+          LOG.error("Caught an exception in the main loop of compactor cleaner, {}",
               StringUtils.stringifyException(t));
         } finally {
           if (handle != null) {
@@ -145,7 +125,8 @@ public class Cleaner extends MetaStoreCompactorThread {
         doPostLoopActions(System.currentTimeMillis() - startedAt);
       } while (!stop.get());
     } catch (InterruptedException ie) {
-      LOG.error("Compactor cleaner thread interrupted, exiting " +
+      Thread.currentThread().interrupt();
+      LOG.error("Compactor cleaner thread interrupted, exiting {}",
         StringUtils.stringifyException(ie));
     } finally {
       if (Thread.currentThread().isInterrupted()) {
@@ -158,8 +139,8 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   @VisibleForTesting
-  public void setCleaningRequestHandlers(List<CleaningRequestHandler> cleaningRequestHandlers) {
-    this.cleaningRequestHandlers = cleaningRequestHandlers;
+  public void setRequestHandlers(List<RequestHandler> requestHandlers) {
+    this.requestHandlers = requestHandlers;
   }
 
   private static class CleanerCycleUpdater implements Runnable {

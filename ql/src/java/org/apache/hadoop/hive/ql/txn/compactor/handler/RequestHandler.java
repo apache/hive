@@ -17,20 +17,22 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.ql.txn.compactor.CacheContainer;
-import org.apache.hadoop.hive.ql.txn.compactor.CleaningRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
+import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
+import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -38,59 +40,45 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 /**
  * An abstract class which defines the list of utility methods for performing cleanup activities.
  */
-public abstract class CleaningRequestHandler<T extends CleaningRequest> {
+public abstract class RequestHandler {
 
-  private static final Logger LOG = LoggerFactory.getLogger(CleaningRequestHandler.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(RequestHandler.class.getName());
   protected final TxnStore txnHandler;
   protected final HiveConf conf;
   protected final boolean metricsEnabled;
-  protected final CacheContainer cacheContainer;
+  protected final MetadataCache metadataCache;
+  protected final FSRemover fsRemover;
+  protected final ExecutorService cleanerExecutor;
 
-  CleaningRequestHandler(HiveConf conf, TxnStore txnHandler, CacheContainer cacheContainer, boolean metricsEnabled) {
+  RequestHandler(HiveConf conf, TxnStore txnHandler, MetadataCache metadataCache,
+                         boolean metricsEnabled, FSRemover fsRemover, ExecutorService cleanerExecutor) {
     this.conf = conf;
     this.txnHandler = txnHandler;
-    this.cacheContainer = cacheContainer;
+    this.metadataCache = metadataCache;
     this.metricsEnabled = metricsEnabled;
+    this.fsRemover = fsRemover;
+    this.cleanerExecutor = cleanerExecutor;
   }
 
-  public TxnStore getTxnHandler() {
-    return txnHandler;
+  protected abstract List<Runnable> fetchCleanTasks() throws MetaException;
+
+  public void process() throws Exception {
+    List<Runnable> tasks = fetchCleanTasks();
+    List<CompletableFuture<Void>> asyncTasks = new ArrayList<>();
+    for (Runnable task : tasks) {
+      CompletableFuture<Void> asyncTask = CompletableFuture.runAsync(
+                      task, cleanerExecutor)
+              .exceptionally(t -> {
+                LOG.error("Error clearing due to :", t);
+                return null;
+              });
+      asyncTasks.add(asyncTask);
+    }
+    //Use get instead of join, so we can receive InterruptedException and shutdown gracefully
+    CompletableFuture.allOf(asyncTasks.toArray(new CompletableFuture[0])).get();
   }
 
-  public boolean isMetricsEnabled() {
-    return metricsEnabled;
-  }
-
-  /**
-   * Find the list of objects which are ready for cleaning.
-   * @return Cleaning requests
-   */
-  public abstract List<T> findReadyToClean() throws MetaException;
-
-  /**
-   * Execute just before cleanup
-   * @param cleaningRequest - Cleaning request
-   */
-  public abstract void beforeExecutingCleaningRequest(T cleaningRequest) throws MetaException;
-
-  /**
-   * Execute just after cleanup
-   * @param cleaningRequest Cleaning request
-   * @param deletedFiles List of deleted files
-   * @return True if cleanup was successful, false otherwise
-   * @throws MetaException
-   */
-  public abstract boolean afterExecutingCleaningRequest(T cleaningRequest, List<Path> deletedFiles) throws MetaException;
-
-  /**
-   * Execute in the event of failure
-   * @param cleaningRequest Cleaning request
-   * @param ex Failure exception
-   * @throws MetaException
-   */
-  public abstract void failureExecutingCleaningRequest(T cleaningRequest, Exception ex) throws MetaException;
-
-  public Table resolveTable(String dbName, String tableName) throws MetaException {
+  protected Table resolveTable(String dbName, String tableName) throws MetaException {
     try {
       return getMSForConf(conf).getTable(getDefaultCatalog(conf), dbName, tableName);
     } catch (MetaException e) {

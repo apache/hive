@@ -25,7 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-public class CacheContainer {
+public class MetadataCache {
 
   private Optional<Cache<String, TBase>> metaCache = Optional.empty();
 

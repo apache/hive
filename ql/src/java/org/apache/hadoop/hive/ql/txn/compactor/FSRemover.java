@@ -20,26 +20,11 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.LockComponentBuilder;
-import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
-import org.apache.hadoop.hive.metastore.api.TxnOpenException;
-import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
-import org.apache.hadoop.hive.metastore.api.UnlockRequest;
-import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
-import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
-import org.apache.hadoop.hive.ql.txn.compactor.handler.CleaningRequestHandler;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
@@ -63,23 +48,20 @@ public class FSRemover {
   private static final Logger LOG = LoggerFactory.getLogger(FSRemover.class);
   private final HiveConf conf;
   private final ReplChangeManager replChangeManager;
+  private final MetadataCache metadataCache;
 
-  public FSRemover(HiveConf conf, ReplChangeManager replChangeManager) {
+  public FSRemover(HiveConf conf, ReplChangeManager replChangeManager, MetadataCache metadataCache) {
     this.conf = conf;
     this.replChangeManager = replChangeManager;
+    this.metadataCache = metadataCache;
   }
 
-  public void clean(CleaningRequestHandler handler, CleaningRequest cr) throws MetaException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
+  public List<Path> clean(CleanupRequest cr) throws MetaException {
+    Ref<List<Path>> removedFiles = Ref.from(new ArrayList<>());
     try {
-      if (handler.isMetricsEnabled()) {
-        perfLogger.perfLogBegin(FSRemover.class.getName(), cr.getCleanerMetric());
-      }
-      handler.beforeExecutingCleaningRequest(cr);
       Callable<List<Path>> cleanUpTask;
-      cleanUpTask = () -> removeFiles(cr, handler);
+      cleanUpTask = () -> removeFiles(cr);
 
-      Ref<List<Path>> removedFiles = Ref.from(new ArrayList<>());
       if (CompactorUtil.runJobAsSelf(cr.runAs())) {
         removedFiles.value = cleanUpTask.call();
       } else {
@@ -92,65 +74,26 @@ public class FSRemover {
             return null;
           });
         } finally {
-          closeUgi(cr, ugi);
+          try {
+            FileSystem.closeAllForUGI(ugi);
+          } catch (IOException exception) {
+            LOG.error("Could not clean up file-system handles for UGI: {} for {}",
+                    ugi, cr.getFullPartitionName(), exception);
+          }
         }
-      }
-      boolean success = handler.afterExecutingCleaningRequest(cr, removedFiles.value);
-      if (success) {
-        LOG.info("FSRemover has successfully cleaned up the cleaning request: {}", cr);
-      } else {
-        LOG.info("FSRemover has failed to clean up the cleaning request: {}", cr);
       }
     } catch (Exception ex) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", cr,
               StringUtils.stringifyException(ex));
-      handler.failureExecutingCleaningRequest(cr, ex);
-    } finally {
-      if (handler.isMetricsEnabled()) {
-        perfLogger.perfLogEnd(FSRemover.class.getName(), cr.getCleanerMetric());
-      }
     }
+    return removedFiles.value;
   }
 
   /**
    * @param cr Cleaning request
    * @return List of deleted files if any files were removed
    */
-  private List<Path> removeFiles(CleaningRequest cr, CleaningRequestHandler crHandler)
-          throws IOException, MetaException {
-    List<Path> deleted = new ArrayList<>();
-    if (cr.isDropPartition()) {
-      LockRequest lockRequest = createLockRequest(cr, 0, LockType.EXCL_WRITE, DataOperationType.DELETE);
-      LockResponse res = null;
-
-      try {
-        res = crHandler.getTxnHandler().lock(lockRequest);
-        if (res.getState() == LockState.ACQUIRED) {
-          deleted = remove(cr);
-        }
-      } catch (NoSuchTxnException | TxnAbortedException e) {
-        LOG.error("Error while trying to acquire exclusive write lock: {}", e.getMessage());
-        throw new MetaException(e.getMessage());
-      } finally {
-        if (res != null) {
-          try {
-            crHandler.getTxnHandler().unlock(new UnlockRequest(res.getLockid()));
-          } catch (NoSuchLockException | TxnOpenException e) {
-            LOG.error("Error while trying to release exclusive write lock: {}", e.getMessage());
-          }
-        }
-      }
-    } else {
-      deleted = remove(cr);
-    }
-    if (!deleted.isEmpty()) {
-      AcidMetricService.updateMetricsFromCleaner(cr.getDbName(), cr.getTableName(), cr.getPartitionName(),
-              deleted, conf, crHandler.getTxnHandler());
-    }
-    return deleted;
-  }
-
-  private List<Path> remove(CleaningRequest cr)
+  private List<Path> removeFiles(CleanupRequest cr)
           throws MetaException, IOException {
     List<Path> deleted = new ArrayList<>();
     if (cr.getObsoleteDirs().isEmpty()) {
@@ -160,53 +103,24 @@ public class FSRemover {
             cr.getLocation(), CompactorUtil.getDebugInfo(cr.getObsoleteDirs()));
     boolean needCmRecycle;
     try {
-      Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), cr.getDbName());
+      Database db = metadataCache.computeIfAbsent(cr.getDbName(), () -> getMSForConf(conf).getDatabase(getDefaultCatalog(conf), cr.getDbName()));
       needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
     } catch (NoSuchObjectException ex) {
       // can not drop a database which is a source of replication
       needCmRecycle = false;
+    } catch (Exception ex) {
+      throw new MetaException(ex.getMessage());
     }
+    FileSystem fs = new Path(cr.getLocation()).getFileSystem(conf);
     for (Path dead : cr.getObsoleteDirs()) {
       LOG.debug("Going to delete path: {}", dead);
       if (needCmRecycle) {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, cr.isPurge());
       }
-      if (FileUtils.moveToTrash(cr.getFs(), dead, conf, cr.isPurge())) {
+      if (FileUtils.moveToTrash(fs, dead, conf, cr.isPurge())) {
         deleted.add(dead);
       }
     }
     return deleted;
-  }
-
-  protected LockRequest createLockRequest(CleaningRequest cr, long txnId, LockType lockType, DataOperationType opType) {
-    String agentInfo = Thread.currentThread().getName();
-    LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
-    requestBuilder.setUser(cr.runAs());
-    requestBuilder.setTransactionId(txnId);
-
-    LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
-            .setLock(lockType)
-            .setOperationType(opType)
-            .setDbName(cr.getDbName())
-            .setTableName(cr.getTableName())
-            .setIsTransactional(true);
-
-    if (cr.getPartitionName() != null) {
-      lockCompBuilder.setPartitionName(cr.getPartitionName());
-    }
-    requestBuilder.addLockComponent(lockCompBuilder.build());
-
-    requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
-            !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
-    return requestBuilder.build();
-  }
-
-  private void closeUgi(CleaningRequest cr, UserGroupInformation ugi) {
-    try {
-      FileSystem.closeAllForUGI(ugi);
-    } catch (IOException exception) {
-      LOG.error("Could not clean up file-system handles for UGI: {} for {}", ugi,
-              cr.getFullPartitionName(), exception);
-    }
   }
 }

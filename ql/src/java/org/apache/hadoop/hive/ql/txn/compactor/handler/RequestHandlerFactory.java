@@ -19,28 +19,32 @@ package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.ql.txn.compactor.CacheContainer;
+import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
+import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * A factory class to fetch handlers.
  */
-public class CleaningRequestHandlerFactory {
-  private static final CleaningRequestHandlerFactory INSTANCE = new CleaningRequestHandlerFactory();
+public class RequestHandlerFactory {
+  private static final RequestHandlerFactory INSTANCE = new RequestHandlerFactory();
 
-  public static CleaningRequestHandlerFactory getInstance() {
+  public static RequestHandlerFactory getInstance() {
     return INSTANCE;
   }
 
   /**
    * Factory class, no need to expose constructor.
    */
-  private CleaningRequestHandlerFactory() {
+  private RequestHandlerFactory() {
   }
 
-  public List<CleaningRequestHandler> getHandlers(HiveConf conf, TxnStore txnHandler, CacheContainer cacheContainer, boolean metricsEnabled) {
-    return Arrays.asList(new CompactionCleaningRequestHandler(conf, txnHandler, cacheContainer, metricsEnabled));
+  public List<RequestHandler> getHandlers(HiveConf conf, TxnStore txnHandler, MetadataCache metadataCache,
+                                                  boolean metricsEnabled, FSRemover fsRemover, ExecutorService cleanerExecutor) {
+    return Arrays.asList(new CompactionCleanHandler(conf, txnHandler, metadataCache,
+            metricsEnabled, fsRemover, cleanerExecutor));
   }
 }

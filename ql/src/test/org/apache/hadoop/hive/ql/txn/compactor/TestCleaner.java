@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
@@ -41,8 +42,8 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.txn.compactor.handler.CleaningRequestHandler;
-import org.apache.hadoop.hive.ql.txn.compactor.handler.CleaningRequestHandlerFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.RequestHandler;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.RequestHandlerFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,10 +57,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME;
@@ -102,8 +105,13 @@ public class TestCleaner extends CompactorTest {
 
     //Prevent cleaner from marking the compaction as cleaned
     TxnStore mockedHandler = spy(txnHandler);
-    CacheContainer cacheContainer = new CacheContainer();
-    List<CleaningRequestHandler> cleaningRequestHandlers = CleaningRequestHandlerFactory.getInstance().getHandlers(conf, mockedHandler, cacheContainer, false);
+    MetadataCache metadataCache = new MetadataCache();
+    FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
+    ExecutorService cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
+            COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
+    List<RequestHandler> requestHandlers = RequestHandlerFactory.getInstance()
+            .getHandlers(conf, mockedHandler, metadataCache, false, fsRemover, cleanerExecutor);
     doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     Table t = newTable("default", "retry_test", false);
@@ -127,7 +135,7 @@ public class TestCleaner extends CompactorTest {
     for (int i = 1; i < 4; i++) {
       Cleaner cleaner = new Cleaner();
       cleaner.setConf(conf);
-      cleaner.setCleaningRequestHandlers(cleaningRequestHandlers);
+      cleaner.setRequestHandlers(requestHandlers);
       cleaner.init(new AtomicBoolean(true));
       FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
@@ -154,7 +162,7 @@ public class TestCleaner extends CompactorTest {
     //Do a final run to reach the maximum retry attempts, so the state finally should be set to failed
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
-    cleaner.setCleaningRequestHandlers(cleaningRequestHandlers);
+    cleaner.setRequestHandlers(requestHandlers);
     cleaner.init(new AtomicBoolean(true));
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
@@ -188,15 +196,19 @@ public class TestCleaner extends CompactorTest {
 
     //Prevent cleaner from marking the compaction as cleaned
     TxnStore mockedHandler = spy(txnHandler);
-    CacheContainer cacheContainer = new CacheContainer();
-    List<CleaningRequestHandler> cleaningRequestHandlers = CleaningRequestHandlerFactory.getInstance()
-            .getHandlers(conf, mockedHandler, cacheContainer, false);
+    MetadataCache metadataCache = new MetadataCache();
+    FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
+    ExecutorService cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
+            COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
+    List<RequestHandler> cleaningRequestHandlers = RequestHandlerFactory.getInstance()
+            .getHandlers(conf, mockedHandler, metadataCache, false, fsRemover, cleanerExecutor);
     doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     //Do a run to fail the clean and set the retention time
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
-    cleaner.setCleaningRequestHandlers(cleaningRequestHandlers);
+    cleaner.setRequestHandlers(cleaningRequestHandlers);
     cleaner.init(new AtomicBoolean(true));
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
@@ -212,7 +224,7 @@ public class TestCleaner extends CompactorTest {
     //Do a final run and check if the compaction is not picked up again
     cleaner = new Cleaner();
     cleaner.setConf(conf);
-    cleaner.setCleaningRequestHandlers(cleaningRequestHandlers);
+    cleaner.setRequestHandlers(cleaningRequestHandlers);
     cleaner.init(new AtomicBoolean(true));
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 

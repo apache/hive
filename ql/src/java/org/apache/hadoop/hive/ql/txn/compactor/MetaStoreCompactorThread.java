@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -32,16 +30,12 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
@@ -56,7 +50,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
   protected TxnStore txnHandler;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
-  protected CacheContainer cacheContainer;
+  protected MetadataCache metadataCache;
 
   @Override
   public void init(AtomicBoolean stop) throws Exception {
@@ -64,7 +58,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
     // Get our own instance of the transaction handler
     txnHandler = TxnUtils.getTxnStore(conf);
-    cacheContainer = new CacheContainer();
+    metadataCache = new MetadataCache();
     // Initialize the RawStore, with the flag marked as true. Since its stored as a ThreadLocal variable in the
     // HMSHandlerContext, it will use the compactor related pool.
     MetastoreConf.setBoolVar(conf, COMPACTOR_USE_CUSTOM_POOL, true);
