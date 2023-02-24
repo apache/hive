@@ -212,7 +212,7 @@ public class FlatFileInputFormat<T> extends
      * (potentially decompressed) and creates the deserializer.
      *
      * @param conf
-     *          the jobconf
+     *          the JobConf
      * @param split
      *          the split for this file
      */

@@ -378,7 +378,7 @@ public final class ParseUtils {
         return;
       }
 
-      // Then, find the leftmost logical sibling select, because that's what Hive uses for aliases. 
+      // Then, find the leftmost logical sibling select, because that's what Hive uses for aliases.
       while (true) {
         CommonTree queryOfSelect = select.parent;
         while (queryOfSelect != null && queryOfSelect.getType() != HiveParser.TOK_QUERY) {
@@ -480,7 +480,7 @@ public final class ParseUtils {
         return false;
       }
       if (!aliases.add(colAlias)) {
-        // TODO: if a side of the union has 2 columns with the same name, noone on the higher
+        // TODO: if a side of the union has 2 columns with the same name, none on the higher
         //       level can refer to them. We could change the alias in the original node.
         LOG.debug("Replacing SETCOLREF with ALLCOLREF because of duplicate alias " + colAlias);
         return false;

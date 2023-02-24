@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
 /**
- * Hive query executer driver.
+ * Hive query executor driver.
  */
 @InterfaceAudience.Private
 @InterfaceStability.Unstable

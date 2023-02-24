@@ -386,7 +386,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
 
   // Given a groupset this tries to find out if the cardinality of the grouping columns could have changed
-  // because if not and it consist of keys (unique + not null OR pk), we can safely remove rest of the columns
+  // because if not, and it consists of keys (unique + not null OR pk), we can safely remove rest of the columns
   // if those are columns are not being used further up
   private ImmutableBitSet generateGroupSetIfCardinalitySame(final Aggregate aggregate,
       final ImmutableBitSet originalGroupSet, final ImmutableBitSet fieldsUsed) {

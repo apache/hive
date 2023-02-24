@@ -51,7 +51,7 @@ public class PartitionIterable implements Iterable<Partition> {
     return new Iterator<Partition>(){
 
       private boolean initialized = false;
-      private Iterator<Partition> ptnsIterator = null;
+      private Iterator<Partition> partitionIterator = null;
 
       private Iterator<String> partitionNamesIter = null;
       private Iterator<Partition> batchIter = null;
@@ -59,7 +59,7 @@ public class PartitionIterable implements Iterable<Partition> {
       private void initialize(){
         if(!initialized){
           if (currType == Type.LIST_PROVIDED){
-            ptnsIterator = ptnsProvided.iterator();
+            partitionIterator = ptnsProvided.iterator();
           } else {
             partitionNamesIter = partitionNames.iterator();
           }
@@ -71,7 +71,7 @@ public class PartitionIterable implements Iterable<Partition> {
       public boolean hasNext() {
         initialize();
         if (currType == Type.LIST_PROVIDED){
-          return ptnsIterator.hasNext();
+          return partitionIterator.hasNext();
         } else {
           return ((batchIter != null) && batchIter.hasNext()) || partitionNamesIter.hasNext();
         }
@@ -81,7 +81,7 @@ public class PartitionIterable implements Iterable<Partition> {
       public Partition next() {
         initialize();
         if (currType == Type.LIST_PROVIDED){
-          return ptnsIterator.next();
+          return partitionIterator.next();
         }
 
         if ((batchIter == null) || !batchIter.hasNext()){

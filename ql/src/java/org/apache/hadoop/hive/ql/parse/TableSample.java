@@ -21,13 +21,13 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.List;
 
 /**
- * 
+ *
  * This class stores all the information specified in the TABLESAMPLE clause.
  * e.g. for the clause "FROM t TABLESAMPLE(1 OUT OF 2 ON c1) it will store the
  * numerator 1, the denominator 2 and the list of expressions(in this case c1)
- * in the appropriate fields. The afore-mentioned sampling clause causes the 1st
+ * in the appropriate fields. The aforementioned sampling clause causes the 1st
  * bucket to be picked out of the 2 buckets created by hashing on c1.
- * 
+ *
  */
 public class TableSample {
 
@@ -59,7 +59,7 @@ public class TableSample {
   /**
    * Constructs the TableSample given the numerator, denominator and the list of
    * ON clause expressions.
-   * 
+   *
    * @param num
    *          The numerator
    * @param den
@@ -81,7 +81,7 @@ public class TableSample {
 
   /**
    * Gets the numerator.
-   * 
+   *
    * @return int
    */
   public int getNumerator() {
@@ -90,7 +90,7 @@ public class TableSample {
 
   /**
    * Sets the numerator.
-   * 
+   *
    * @param num
    *          The numerator
    */
@@ -100,7 +100,7 @@ public class TableSample {
 
   /**
    * Gets the denominator.
-   * 
+   *
    * @return int
    */
   public int getDenominator() {
@@ -109,7 +109,7 @@ public class TableSample {
 
   /**
    * Sets the denominator.
-   * 
+   *
    * @param den
    *          The denominator
    */
@@ -119,7 +119,7 @@ public class TableSample {
 
   /**
    * Gets the ON part's expression list.
-   * 
+   *
    * @return ArrayList&lt;ASTNode&gt;
    */
   public List<ASTNode> getExprs() {
@@ -128,7 +128,7 @@ public class TableSample {
 
   /**
    * Sets the expression list.
-   * 
+   *
    * @param exprs
    *          The expression list
    */
@@ -138,7 +138,7 @@ public class TableSample {
 
   /**
    * Gets the flag that indicates whether input pruning is possible.
-   * 
+   *
    * @return boolean
    */
   public boolean getInputPruning() {
@@ -147,7 +147,7 @@ public class TableSample {
 
   /**
    * Sets the flag that indicates whether input pruning is possible or not.
-   * 
+   *
    * @param inputPruning
    *          true if input pruning is possible
    */

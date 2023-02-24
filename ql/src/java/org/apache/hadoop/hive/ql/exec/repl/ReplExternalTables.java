@@ -84,7 +84,7 @@ public class ReplExternalTables {
     }
     if (!TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
       throw new IllegalArgumentException(
-              "only External tables can be writen via this writer, provided table is " + table
+              "only External tables can be written via this writer, provided table is " + table
                       .getTableType());
     }
     Path fullyQualifiedDataLocation = PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));

@@ -1471,7 +1471,7 @@ public class StatsRulesProcFactory {
 
   /**
    * GROUPBY operator changes the number of rows. The number of rows emitted by GBY operator will be
-   * atleast 1 or utmost T(R) (number of rows in relation T) based on the aggregation. A better
+   * at least 1 or utmost T(R) (number of rows in relation T) based on the aggregation. A better
    * estimate can be found if we have column statistics on the columns that we are grouping on.
    * <p>
    * Suppose if we are grouping by attributes A,B,C and if statistics for columns A,B,C are

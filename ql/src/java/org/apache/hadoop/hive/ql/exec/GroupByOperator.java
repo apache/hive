@@ -1129,7 +1129,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     int groupingSetPosition = desc.getGroupingSetPosition();
     List<Long> listGroupingSets = desc.getListGroupingSets();
     // groupingSets are known at map/reducer side; but have to do real processing
-    // hence grouppingSetsPresent is true only at map side
+    // hence groupingSetsPresent is true only at map side
     if (groupingSetPosition >= 0 && listGroupingSets != null) {
       Long emptyGrouping = (1L << groupingSetPosition) - 1;
       if (listGroupingSets.contains(emptyGrouping)) {

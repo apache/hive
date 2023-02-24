@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
  * Checks the query plan for conditions that would make the plan unsuitable for
  * materialized views or query caching:
  * - References to temporary or external tables
- * - References to non-determinisitc functions.
+ * - References to non-deterministic functions.
  */
 public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
   static final Logger LOG = LoggerFactory.getLogger(HiveRelOptMaterializationValidator.class);

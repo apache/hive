@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
-import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.thrift.TException;
 import com.google.common.collect.Collections2;
@@ -164,7 +163,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         addAtlasLoadTask();
       }
       if (conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_HANDLE_DENY_POLICY_TARGET)) {
-        initiateRangerDenytask();
+        initiateRangerDenyTask();
       }
       if (shouldLoadAuthorizationMetadata()) {
         initiateAuthorizationLoadTask();
@@ -203,7 +202,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA);
   }
 
-  private void initiateRangerDenytask() throws SemanticException {
+  private void initiateRangerDenyTask() throws SemanticException {
     if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
       LOG.info("Adding Ranger Deny Policy Task for {} ", work.dbNameToLoadIn);
       RangerDenyWork rangerDenyWork = new RangerDenyWork(new Path(work.getDumpDirectory()), work.getSourceDbName(),
@@ -669,7 +668,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
               db.setParameters(params);
               hiveDb.alterDatabase(work.getTargetDatabase(), db);
-              LOG.debug("Database {} poperties after removal {}", work.getTargetDatabase(), params);
+              LOG.debug("Database {} properties after removal {}", work.getTargetDatabase(), params);
             } catch (HiveException e) {
               throw new SemanticException(e);
             }
@@ -851,7 +850,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
       Hive db = getHive();
       for (String table : work.tablesToDrop) {
-        LOG.info("Dropping table {} for optimised bootstarap", work.dbNameToLoadIn + "." + table);
+        LOG.info("Dropping table {} for optimised bootstrap", work.dbNameToLoadIn + "." + table);
         db.dropTable(work.dbNameToLoadIn + "." + table, true);
       }
       Database sourceDb = getSourceDbMetadata();  //This sourceDb was the actual target prior to failover.

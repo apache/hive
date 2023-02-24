@@ -1742,8 +1742,8 @@ public class AcidUtils {
       sb.append("Path: " + dirPath);
       sb.append("; ");
       sb.append("Files: { ");
-      for (FileStatus fstatus : files) {
-        sb.append(fstatus);
+      for (FileStatus fStatus : files) {
+        sb.append(fStatus);
         sb.append(", ");
       }
       sb.append(" }");
@@ -2608,7 +2608,7 @@ public class AcidUtils {
      */
     public static final int ORC_ACID_VERSION = 2;
     /**
-     * Inlucde current acid version in file footer.
+     * Include current acid version in file footer.
      * @param writer - file written
      */
     public static void setAcidVersionInDataFile(Writer writer) {

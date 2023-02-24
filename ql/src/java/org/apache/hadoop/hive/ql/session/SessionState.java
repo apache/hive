@@ -1092,7 +1092,7 @@ public class SessionState implements ISessionAuthState{
   public static Registry getRegistryForWrite() {
     Registry registry = getRegistry();
     if (registry == null) {
-      throw new RuntimeException("Function registery for session is not initialized");
+      throw new RuntimeException("Function registry for session is not initialized");
     }
     return registry;
   }

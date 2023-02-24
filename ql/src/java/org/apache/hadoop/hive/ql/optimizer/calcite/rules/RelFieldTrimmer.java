@@ -1094,7 +1094,7 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
    * <p>The mapping is a
    * {@link org.apache.calcite.util.mapping.Mappings.SourceMapping}, which means
    * that no column can be used more than once, and some columns are not used.
-   * {@code columnsUsed.getSource(i)} returns the source of the i'th output
+   * {@code columnsUsed.getSource(i)} returns the source of the i-th output
    * field.
    *
    * <p>For example, consider the mapping for a relational expression that
