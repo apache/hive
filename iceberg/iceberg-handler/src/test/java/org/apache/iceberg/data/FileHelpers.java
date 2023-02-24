@@ -22,7 +22,6 @@ package org.apache.iceberg.data;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
@@ -52,22 +51,22 @@ public class FileHelpers {
   }
 
   public static Pair<DeleteFile, CharSequenceSet> writeDeleteFile(Table table, OutputFile out,
-                                                                  List<Pair<CharSequence, Long>> deletes)
+                                                                    List<Pair<CharSequence, Long>> deletes)
       throws IOException {
     return writeDeleteFile(table, out, null, deletes);
   }
 
   public static Pair<DeleteFile, CharSequenceSet> writeDeleteFile(Table table, OutputFile out, StructLike partition,
-                                                                  List<Pair<CharSequence, Long>> deletes)
+                                                                    List<Pair<CharSequence, Long>> deletes)
       throws IOException {
     FileFormat format = defaultFormat(table.properties());
     FileAppenderFactory<Record> factory = new GenericAppenderFactory(table.schema(), table.spec());
 
     PositionDeleteWriter<Record> writer =
         factory.newPosDeleteWriter(encrypt(out), format, partition);
+    PositionDelete<Record> posDelete = PositionDelete.create();
     try (Closeable toClose = writer) {
       for (Pair<CharSequence, Long> delete : deletes) {
-        PositionDelete<Record> posDelete = PositionDelete.create();
         writer.write(posDelete.set(delete.first(), delete.second(), null));
       }
     }
@@ -140,6 +139,6 @@ public class FileHelpers {
 
   private static FileFormat defaultFormat(Map<String, String> properties) {
     String formatString = properties.getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT);
-    return FileFormat.valueOf(formatString.toUpperCase(Locale.ENGLISH));
+    return FileFormat.fromString(formatString);
   }
 }
