@@ -62,7 +62,7 @@ public class HookContext {
     DRIVER_RUN_HOOKS(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class,
       "Hooks that Will be run at the beginning and end of Driver.run"),
     QUERY_REDACTOR_HOOKS(HiveConf.ConfVars.QUERYREDACTORHOOKS, Redactor.class,
-      "Hooks to be invoked for each query which can tranform the query before it's placed in the job.xml file"),
+      "Hooks to be invoked for each query which can transform the query before it's placed in the job.xml file"),
     // The HiveSessionHook.class cannot access, use Hook.class instead
     HIVE_SERVER2_SESSION_HOOK(HiveConf.ConfVars.HIVE_SERVER2_SESSION_HOOK, Hook.class,
       "Hooks to be executed when session manager starts a new session");

@@ -465,11 +465,11 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     }
 
     private String getRequestUser(HookContext hookContext) {
-      String requestuser = hookContext.getUserName();
-      if (requestuser == null) {
-        requestuser = hookContext.getUgi().getUserName();
+      String requestUser = hookContext.getUserName();
+      if (requestUser == null) {
+        requestUser = hookContext.getUgi().getUserName();
       }
-      return requestuser;
+      return requestUser;
     }
 
     private String getQueueName(ExecutionMode mode, HiveConf conf) {
@@ -555,7 +555,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       EventLogger logger = EventLogger.getInstance(hookContext.getConf());
       logger.handle(hookContext);
     } catch (Exception e) {
-      LOG.error("Got exceptoin while processing event: ", e);
+      LOG.error("Got exception while processing event: ", e);
     }
   }
 }

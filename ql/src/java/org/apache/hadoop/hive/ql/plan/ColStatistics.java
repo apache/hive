@@ -22,7 +22,7 @@ public class ColStatistics {
 
   private String colName;
   private String colType;
-  private long countDistint;
+  private long countDistinct;
   private long numNulls;
   private double avgColLen;
   private long numTrues;
@@ -62,11 +62,11 @@ public class ColStatistics {
   }
 
   public long getCountDistint() {
-    return countDistint;
+    return countDistinct;
   }
 
-  public void setCountDistint(long countDistint) {
-    this.countDistint = countDistint;
+  public void setCountDistint(long countDistinct) {
+    this.countDistinct = countDistinct;
   }
 
   public long getNumNulls() {
@@ -137,7 +137,7 @@ public class ColStatistics {
     sb.append(" colType: ");
     sb.append(colType);
     sb.append(" countDistincts: ");
-    sb.append(countDistint);
+    sb.append(countDistinct);
     sb.append(" numNulls: ");
     sb.append(numNulls);
     sb.append(" avgColLen: ");
@@ -162,7 +162,7 @@ public class ColStatistics {
   public ColStatistics clone() {
     ColStatistics clone = new ColStatistics(colName, colType);
     clone.setAvgColLen(avgColLen);
-    clone.setCountDistint(countDistint);
+    clone.setCountDistint(countDistinct);
     clone.setNumNulls(numNulls);
     clone.setNumTrues(numTrues);
     clone.setNumFalses(numFalses);
@@ -225,11 +225,11 @@ public class ColStatistics {
 
   private void setIsFilteredColumn(boolean isFilteredColumn2) {
     isFilteredColumn=isFilteredColumn2;
-    
+
   }
-  
+
   public boolean isFilteredColumn() {
     return isFilteredColumn;
   }
-  
+
 }

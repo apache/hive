@@ -88,7 +88,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    LOG.debug("ReplicationSemanticAanalyzer: analyzeInternal");
+    LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal");
     LOG.debug(ast.getName() + ":" + ast.getToken().getText() + "=" + ast.getText());
     // Some of the txn related configs were not set when ReplicationSemanticAnalyzer.conf was initialized.
     // It should be set first.

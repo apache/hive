@@ -23,7 +23,7 @@ import org.apache.calcite.plan.RelOptUtil;
 
 /***
  * NOTE:<br>
- * 1. Hivecost normalizes cpu and io in to time.<br>
+ * 1. HiveCost normalizes cpu and io in to time.<br>
  * 2. CPU, IO cost is added together to find the query latency.<br>
  * 3. If query latency is equal then row count is compared.
  */

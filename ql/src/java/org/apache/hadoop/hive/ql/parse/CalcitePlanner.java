@@ -1920,7 +1920,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 8. Rerun PPD through Project as column pruning would have introduced
       // DT above scans; By pushing filter just above TS, Hive can push it into
-      // storage (incase there are filters on non partition cols). This only
+      // storage (in case there are filters on non partition cols). This only
       // matches FIL-PROJ-TS
       // Also merge, remove and reduce Project if possible
       generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,

@@ -426,7 +426,7 @@ public class JoinUtil {
   private static ObjectInspector unflattenObjInspector(ObjectInspector oi) {
     if (oi instanceof StructObjectInspector) {
       // Check if all fields start with "key." or "value."
-      // If so, then unflatten by adding an additional level of nested key and value structs
+      // If so, then unflatten by adding a level of nested key and value structs
       // Example: { "key.reducesinkkey0":int, "key.reducesinkkey1": int, "value._col6":int }
       // Becomes
       //   { "key": { "reducesinkkey0":int, "reducesinkkey1":int }, "value": { "_col6":int } }

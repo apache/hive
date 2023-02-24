@@ -738,7 +738,7 @@ public abstract class BaseSemanticAnalyzer {
    * Escapes the string for AST; doesn't enclose it in quotes, however.
    */
   public static String escapeSQLString(String b) {
-    // There's usually nothing to escape so we will be optimistic.
+    // There's usually nothing to escape, so we will be optimistic.
     String result = b;
     for (int i = 0; i < result.length(); ++i) {
       char currentChar = result.charAt(i);
@@ -1302,7 +1302,7 @@ public abstract class BaseSemanticAnalyzer {
           specType = SpecType.STATIC_PARTITION;
         }
       } else if(createDynPartSpec(ast) && allowDynamicPartitionsSpec) {
-        // if user hasn't specify partition spec generate it from table's partition spec
+        // if user hasn't specified partition spec generate it from table's partition spec
         // do this only if it is INSERT/INSERT INTO/INSERT OVERWRITE/ANALYZE
         List<FieldSchema> parts = tableHandle.getPartitionKeys();
         partSpec = new LinkedHashMap<String, String>(parts.size());
@@ -1714,7 +1714,7 @@ public abstract class BaseSemanticAnalyzer {
           TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(expectedType);
       //  Since partVal is a constant, it is safe to cast ExprNodeDesc to ExprNodeConstantDesc.
       //  Its value should be in normalized format (e.g. no leading zero in integer, date is in
-      //  format of YYYY-MM-DD etc)
+      //  format of YYYY-MM-DD etc.)
       Object value = ((ExprNodeConstantDesc)astExprNodePair.getValue()).getValue();
       Object convertedValue = value;
       if (!inputOI.getTypeName().equals(outputOI.getTypeName())) {
