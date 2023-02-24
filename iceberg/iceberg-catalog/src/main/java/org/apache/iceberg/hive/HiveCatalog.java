@@ -36,12 +36,10 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.iceberg.BaseMetastoreCatalog;
 import org.apache.iceberg.BaseMetastoreTableOperations;
-import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.TableMetadata;
-import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
@@ -49,14 +47,16 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.MoreObjects;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.util.LocationUtil;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,12 +72,14 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   private FileIO fileIO;
   private ClientPool<IMetaStoreClient, TException> clients;
   private boolean listAllTables = false;
+  private Map<String, String> catalogProperties;
 
   public HiveCatalog() {
   }
 
   @Override
   public void initialize(String inputName, Map<String, String> properties) {
+    this.catalogProperties = ImmutableMap.copyOf(properties);
     this.name = inputName;
     if (conf == null) {
       LOG.warn("No Hadoop Configuration was set, using the default environment Configuration");
@@ -89,7 +91,8 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     }
 
     if (properties.containsKey(CatalogProperties.WAREHOUSE_LOCATION)) {
-      this.conf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, properties.get(CatalogProperties.WAREHOUSE_LOCATION));
+      this.conf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+          LocationUtil.stripTrailingSlash(properties.get(CatalogProperties.WAREHOUSE_LOCATION)));
     }
 
     this.listAllTables = Boolean.parseBoolean(properties.getOrDefault(LIST_ALL_TABLES, LIST_ALL_TABLES_DEFAULT));
@@ -152,11 +155,16 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     String database = identifier.namespace().level(0);
 
     TableOperations ops = newTableOps(identifier);
-    TableMetadata lastMetadata;
-    if (purge && ops.current() != null) {
-      lastMetadata = ops.current();
-    } else {
-      lastMetadata = null;
+    TableMetadata lastMetadata = null;
+    if (purge) {
+      try {
+        lastMetadata = ops.current();
+      } catch (NotFoundException e) {
+        LOG.warn(
+            "Failed to load table metadata for table: {}, continuing drop without purge",
+            identifier,
+            e);
+      }
     }
 
     try {
@@ -227,23 +235,6 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       Thread.currentThread().interrupt();
       throw new RuntimeException("Interrupted in call to rename", e);
     }
-  }
-
-  @Override
-  public org.apache.iceberg.Table registerTable(TableIdentifier identifier, String metadataFileLocation) {
-    Preconditions.checkArgument(isValidIdentifier(identifier), "Invalid identifier: %s", identifier);
-
-    // Throw an exception if this table already exists in the catalog.
-    if (tableExists(identifier)) {
-      throw new org.apache.iceberg.exceptions.AlreadyExistsException("Table already exists: %s", identifier);
-    }
-
-    TableOperations ops = newTableOps(identifier);
-    InputFile metadataFile = fileIO.newInputFile(metadataFileLocation);
-    TableMetadata metadata = TableMetadataParser.read(ops.io(), metadataFile);
-    ops.commit(null, metadata);
-
-    return new BaseTable(ops, identifier.toString());
   }
 
   @Override
@@ -465,19 +456,17 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       throw new RuntimeException("Interrupted during commit", e);
     }
 
-    // Otherwise stick to the {WAREHOUSE_DIR}/{DB_NAME}.db/{TABLE_NAME} path
-    String warehouseLocation = getWarehouseLocation();
-    return String.format(
-        "%s/%s.db/%s",
-        warehouseLocation,
-        tableIdentifier.namespace().levels()[0],
-        tableIdentifier.name());
+    // Otherwise, stick to the {WAREHOUSE_DIR}/{DB_NAME}.db/{TABLE_NAME} path
+    String databaseLocation = databaseLocation(tableIdentifier.namespace().levels()[0]);
+    return String.format("%s/%s", databaseLocation, tableIdentifier.name());
   }
 
-  private String getWarehouseLocation() {
+  private String databaseLocation(String databaseName) {
     String warehouseLocation = conf.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname);
-    Preconditions.checkNotNull(warehouseLocation, "Warehouse location is not set: hive.metastore.warehouse.dir=null");
-    return warehouseLocation;
+    Preconditions.checkNotNull(
+            warehouseLocation, "Warehouse location is not set: hive.metastore.warehouse.dir=null");
+    warehouseLocation = LocationUtil.stripTrailingSlash(warehouseLocation);
+    return String.format("%s/%s.db", warehouseLocation, databaseName);
   }
 
   private String getExternalWarehouseLocation() {
@@ -510,7 +499,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
 
     database.setName(namespace.level(0));
     database.setLocationUri(new Path(getExternalWarehouseLocation(), namespace.level(0)).toString() + ".db");
-    database.setManagedLocationUri(new Path(getWarehouseLocation(), namespace.level(0)).toString() + ".db");
+    database.setManagedLocationUri(databaseLocation(namespace.level(0)));
 
     meta.forEach((key, value) -> {
       if (key.equals("comment")) {
@@ -543,6 +532,11 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   @Override
   public Configuration getConf() {
     return conf;
+  }
+
+  @Override
+  protected Map<String, String> properties() {
+    return catalogProperties == null ? ImmutableMap.of() : catalogProperties;
   }
 
   @VisibleForTesting

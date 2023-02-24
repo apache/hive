@@ -98,7 +98,10 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
-	current-snapshot-id 	#SnapshotId#
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	#Masked#       
 	engine.hive.enabled 	true                
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
@@ -114,6 +117,7 @@ Table Parameters:
 	                           	  \"field-id\" : 2, 
 	                           	  \"names\" : [ \"b\" ]
 	                           	} ]                 
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                 
@@ -248,7 +252,10 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
-	current-snapshot-id 	#SnapshotId#
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	#Masked#       
 	engine.hive.enabled 	true                
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
@@ -264,6 +271,7 @@ Table Parameters:
 	                           	  \"field-id\" : 2, 
 	                           	  \"names\" : [ \"b\" ]
 	                           	} ]                 
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                 
@@ -398,7 +406,10 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
-	current-snapshot-id 	#SnapshotId#
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	#Masked#       
 	engine.hive.enabled 	true                
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
@@ -414,6 +425,7 @@ Table Parameters:
 	                           	  \"field-id\" : 2, 
 	                           	  \"names\" : [ \"b\" ]
 	                           	} ]                 
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                 

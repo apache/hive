@@ -41,10 +41,12 @@ TBLPROPERTIES (
   'TRANSLATED_TO_EXTERNAL'='TRUE', 
   'bucketing_version'='2', 
   'created_with_ctlt'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"a","required":false,"type":"int"}]}', 
   'engine.hive.enabled'='true', 
   'format-version'='2', 
   'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
   'uuid'='#Masked#', 
@@ -123,10 +125,13 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company","transform":"identity","source-id":2,"field-id":1000}]}', 
   'engine.hive.enabled'='true', 
   'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
   'serialization.format'='1', 
+  'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
   'uuid'='#Masked#')
@@ -160,9 +165,12 @@ TBLPROPERTIES (
   'TRANSLATED_TO_EXTERNAL'='TRUE', 
   'bucketing_version'='2', 
   'created_with_ctlt'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company","transform":"identity","source-id":2,"field-id":1000}]}', 
   'engine.hive.enabled'='true', 
   'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
   'uuid'='#Masked#')
@@ -225,9 +233,12 @@ TBLPROPERTIES (
   'TRANSLATED_TO_EXTERNAL'='TRUE', 
   'bucketing_version'='2', 
   'created_with_ctlt'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company","transform":"identity","source-id":2,"field-id":1000}]}', 
   'engine.hive.enabled'='true', 
   'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
   'uuid'='#Masked#')
