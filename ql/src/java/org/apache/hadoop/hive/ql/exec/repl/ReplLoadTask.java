@@ -838,7 +838,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       createReplLoadCompleteAckTask();
       work.getMetricCollector().reportStageEnd(STAGE_NAME, Status.SUCCESS);
-      work.getMetricCollector().reportEnd(Status.SUCCESS);
+      if (Boolean.parseBoolean(targetDb.getParameters().get(REPL_RESUME_STARTED_AFTER_FAILOVER))) {
+        work.getMetricCollector().reportEnd(Status.RESUME_READY);
+      } else {
+        work.getMetricCollector().reportEnd(Status.SUCCESS);
+      }
       targetDb.setParameters(params);
       getHive().alterDatabase(work.dbNameToLoadIn, targetDb);
       return 0;
