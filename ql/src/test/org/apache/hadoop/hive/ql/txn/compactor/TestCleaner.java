@@ -21,6 +21,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -300,6 +302,9 @@ public class TestCleaner extends CompactorTest {
     txnHandler.markCompacted(ci);
     // Open a query during compaction
     long longQuery = openTxn();
+    if (useMinHistoryWriteId()) {
+      allocateTableWriteId("default", "camtc", longQuery);
+    }
     txnHandler.commitTxn(new CommitTxnRequest(compactTxn));
 
     startCleaner();
@@ -1080,8 +1085,10 @@ public class TestCleaner extends CompactorTest {
     burnThroughTransactions(dbName, tblName, 22);
 
     // block cleaner with an open txn
-    openTxn();
-    
+    long txnId = openTxn();
+    if (useMinHistoryWriteId()) {
+      allocateTableWriteId(dbName, tblName, txnId);
+    }
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
     rqst.setPartitionname(partName);
     long ctxnid = compactInTxn(rqst);
@@ -1128,5 +1135,12 @@ public class TestCleaner extends CompactorTest {
     Mockito.verify(cleaner, times(1)).resolveTable(Mockito.any());
   }
 
+  private void allocateTableWriteId(String dbName, String tblName, long txnId) throws Exception {
+    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
+    awiRqst.setTxnIds(Collections.singletonList(txnId));
+    AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
 
+    txnHandler.addWriteIdsToMinHistory(txnId, Collections.singletonMap(dbName + "." + tblName,
+      awiResp.getTxnToWriteIds().get(0).getWriteId()));
+  }
 }

@@ -396,7 +396,7 @@ class CompactionTxnHandler extends TxnHandler {
           " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - \"CQ_RETRY_RETENTION\" - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
         
         String queryStr = 
-          "SELECT \"CQ_ID\", cq1.\"CQ_DATABASE\", cq1.\"CQ_TABLE\", cq1.\"CQ_PARTITION\"," + 
+          "SELECT \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," + 
           "  \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\", \"CQ_RETRY_RETENTION\", " +
           "  \"CQ_NEXT_TXN_ID\"";
         if (useMinHistoryWriteId) {
