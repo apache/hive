@@ -40,10 +40,27 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 
 import java.util.Set;
 
+/**
+ * Calcite rule to push down predicates contains {@link VirtualColumn#SNAPSHOT_ID} reference to TableScan.
+ * <br/>
+ * <br/>
+ * This rule traverse the logical expression in {@link HiveFilter} operators and search for
+ * predicates like
+ * <br/>
+ * <br/>
+ * <code>
+ *   snapshotId <= 12345677899
+ * <code/>
+ * <br/>
+ * <br/>
+ * The literal is set in the {@link RelOptHiveTable#getHiveTableMD()} object wrapped by
+ * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan}
+ * and the original predicate in the {@link HiveFilter} is replaced with literal true.
+ */
 public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshotFilterRule.Config> {
 
   public static RelOptRule INSTANCE =
-          HivePushdownSnapshotFilterRule.Config.EMPTY.as(HivePushdownSnapshotFilterRule.Config.class)
+          RelRule.Config.EMPTY.as(HivePushdownSnapshotFilterRule.Config.class)
             .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
             .withOperandSupplier(operandBuilder -> operandBuilder.operand(HiveFilter.class).anyInputs())
             .withDescription("HivePushdownSnapshotFilterRule")
@@ -60,7 +77,14 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
     super(config);
   }
 
-  public static class SnapshotIdShuttle extends RexShuttle {
+  @Override
+  public void onMatch(RelOptRuleCall call) {
+    HiveFilter filter = call.rel(0);
+    RexNode newCondition = filter.getCondition().accept(new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter));
+    call.transformTo(call.builder().push(filter.getInput()).filter(newCondition).build());
+  }
+
+  static class SnapshotIdShuttle extends RexShuttle {
 
     private final RexBuilder rexBuilder;
     private final RelMetadataQuery metadataQuery;
@@ -74,11 +98,10 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
 
     @Override
     public RexNode visitCall(RexCall call) {
-      if (call.operands.size() == 2) {
-        if (setSnapShotId(call.operands.get(0), call.operands.get(1)) ||
-                setSnapShotId(call.operands.get(1), call.operands.get(0))) {
-          return rexBuilder.makeLiteral(true);
-        }
+      if (call.operands.size() == 2 &&
+              (setSnapShotId(call.operands.get(0), call.operands.get(1)) ||
+                      setSnapShotId(call.operands.get(1), call.operands.get(0)))) {
+        return rexBuilder.makeLiteral(true);
       }
 
       return super.visitCall(call);
@@ -132,12 +155,5 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
 
       return snapshotIdField.getIndex() == tableInputRef.getIndex() ? relOptTable : null;
     }
-  }
-
-  @Override
-  public void onMatch(RelOptRuleCall call) {
-    HiveFilter filter = call.rel(0);
-    RexNode newCondition = filter.getCondition().accept(new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter));
-    call.transformTo(call.builder().push(filter.getInput()).filter(newCondition).build());
   }
 }

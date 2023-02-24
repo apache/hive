@@ -23,8 +23,6 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rel.rules.materialize.MaterializedViewOnlyAggregateRule;
-import org.apache.calcite.rel.rules.materialize.MaterializedViewRule;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
@@ -55,11 +53,21 @@ import java.util.Set;
  * outdated materialization data and the new original data in the source tables.
  * If the data in the source table matches the current data in the snapshot,
  * no filter is created.
+ * In case of tables supports snapshots the filtering should be performed in the
+ * TableScan operator to read records only from the relevant snapshots.
+ * However, the union rewrite algorithm needs a so-called compensation predicate in
+ * a Filter operator to build the union branch produces the delta records.
+ * After union rewrite algorithm is executed the predicates on SnapshotIds
+ * are pushed down to the corresponding TableScan operator and removed from the Filter
+ * operator. So the reference to the {@link VirtualColumn#SNAPSHOT_ID} is temporal in the
+ * logical plan.
+ *
+ * @see HivePushdownSnapshotFilterRule
  */
 public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentSnapshotMaterializationRule.Config> {
 
   public static RelOptRule with(Map<String, SnapshotContext> mvMetaStoredSnapshot) {
-    return Config.EMPTY.as(HiveAugmentSnapshotMaterializationRule.Config.class)
+    return RelRule.Config.EMPTY.as(HiveAugmentSnapshotMaterializationRule.Config.class)
             .withMvMetaStoredSnapshot(mvMetaStoredSnapshot)
             .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
             .withOperandSupplier(operandBuilder -> operandBuilder.operand(TableScan.class).anyInputs())

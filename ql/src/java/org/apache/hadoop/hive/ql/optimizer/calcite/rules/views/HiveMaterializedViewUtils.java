@@ -33,7 +33,6 @@ import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
@@ -238,7 +237,6 @@ public class HiveMaterializedViewUtils {
       MaterializationSnapshot snapshot) throws LockException {
 
     if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
-      // Not supported yet for Iceberg tables
       return augmentMaterializationWithTimeInformation(materialization, snapshot);
     }
 
