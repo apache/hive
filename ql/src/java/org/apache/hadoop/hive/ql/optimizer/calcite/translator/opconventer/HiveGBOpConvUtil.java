@@ -158,7 +158,7 @@ final class HiveGBOpConvUtil {
     return gbPhysicalPipelineMode;
   }
 
-  // For each of the GB op in the logical GB this should be called seperately;
+  // For each of the GB op in the logical GB this should be called separately;
   // otherwise GBevaluator and expr nodes may get shared among multiple GB ops
   private static GBInfo getGBInfo(HiveAggregate aggRel, OpAttr inputOpAf, HiveConf hc) throws SemanticException {
     GBInfo gbInfo = new GBInfo();

@@ -101,7 +101,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * TaskCompiler is a the base class for classes that compile
+ * TaskCompiler is the base class for classes that compile
  * operator pipelines into tasks.
  */
 public abstract class TaskCompiler {
@@ -270,7 +270,7 @@ public abstract class TaskCompiler {
       }
       if (outerQueryLimit == 0) {
         // Believe it or not, some tools do generate queries with limit 0 and than expect
-        // query to run quickly. Lets meet their requirement.
+        // query to run quickly. Let's meet their requirement.
         LOG.info("Limit 0. No query execution needed.");
         return;
       }
@@ -751,7 +751,7 @@ public abstract class TaskCompiler {
   protected abstract void setInputFormat(Task<?> rootTask);
 
   /*
-   * Called to generate the taks tree from the parse context/operator tree
+   * Called to generate the tasks tree from the parse context/operator tree
    */
   protected abstract void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;

@@ -97,7 +97,7 @@ public class BoundaryCache extends TreeMap<Integer, Object> {
   }
 
   /**
-   * Returns entry corresponding to highest row index.
+   * Returns entry corresponding to the highest row index.
    * @return max entry.
    */
   public Map.Entry<Integer, Object> getMaxEntry() {
@@ -105,7 +105,7 @@ public class BoundaryCache extends TreeMap<Integer, Object> {
   }
 
   /**
-   * Removes eldest entry from the boundary cache.
+   * Removes the eldest entry from the boundary cache.
    */
   public void evictOne() {
     if (queue.isEmpty()) {

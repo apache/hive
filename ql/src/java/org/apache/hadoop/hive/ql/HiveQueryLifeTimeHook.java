@@ -87,11 +87,11 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
         if (table != null) {
           LOG.info("Performing cleanup as part of rollback: {}", table.getFullTableName().toString());
           try {
-            CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(), CompactionType.MAJOR);
-            rqst.setRunas(TxnUtils.findUserToRunAs(tblPath.toString(), table.getTTable(), conf));
-            rqst.putToProperties(META_TABLE_LOCATION, tblPath.toString());
-            rqst.putToProperties(IF_PURGE, Boolean.toString(true));
-            boolean success = Hive.get(conf).getMSC().submitForCleanup(rqst, writeId,
+            CompactionRequest request = new CompactionRequest(table.getDbName(), table.getTableName(), CompactionType.MAJOR);
+            request.setRunas(TxnUtils.findUserToRunAs(tblPath.toString(), table.getTTable(), conf));
+            request.putToProperties(META_TABLE_LOCATION, tblPath.toString());
+            request.putToProperties(IF_PURGE, Boolean.toString(true));
+            boolean success = Hive.get(conf).getMSC().submitForCleanup(request, writeId,
                     pCtx.getQueryState().getTxnManager().getCurrentTxnId());
             if (success) {
               LOG.info("The cleanup request has been submitted");
