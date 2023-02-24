@@ -548,8 +548,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     Utils.create(dumpAckFile, conf);
     prepareReturnValues(work.getResultValues());
-    work.getMetricCollector().reportEnd(isFailoverInProgress ? Status.FAILOVER_READY : Status.SUCCESS);
+    if (isFailoverInProgress) {
+      work.getMetricCollector().reportEnd(Status.FAILOVER_READY);
+    } else {
+      work.getMetricCollector().reportEnd(isFirstCycleOfResume(database) ?
+                                          Status.RESUME_READY :
+                                          Status.SUCCESS);
+    }
     deleteAllPreviousDumpMeta(work.getCurrentDumpPath());
+  }
+
+  private boolean isFirstCycleOfResume(Database database) {
+    return createEventMarker && database.getParameters().containsKey(REPL_RESUME_STARTED_AFTER_FAILOVER);
   }
 
   private void prepareReturnValues(List<String> values) throws SemanticException {

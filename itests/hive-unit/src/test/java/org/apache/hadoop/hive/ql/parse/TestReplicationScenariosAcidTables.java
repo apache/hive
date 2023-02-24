@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metric;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
@@ -71,7 +72,7 @@ import org.junit.Test;
 import org.junit.BeforeClass;
 
 import javax.annotation.Nullable;
-
+import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -103,6 +104,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables.
  */
@@ -3796,5 +3799,88 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(eventCountFromStagingDir < eventCountFromMetrics);
     // ensure event count is captured appropriately in EventsDumpMetadata.
     assertEquals(eventsCountInAckFile, eventCountFromStagingDir);
+  }
+
+  @Test
+  public void testResumeWorkFlow() throws Throwable {
+    isMetricsEnabledForTests(true);
+
+    MetricCollector.getInstance().getMetrics().clear();
+
+    // Do bootstrap
+    primary.run("use " + primaryDbName)
+      .run("create table tb1(id int)")
+      .run("insert into tb1 values(10)")
+      .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+
+    // incremental
+    primary.run("use " + primaryDbName)
+      .run("insert into tb1 values(20)")
+      .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+
+    // suppose this is the point of failover
+    List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'");
+    primary.dump(primaryDbName, failoverConfigs);
+    replica.load(replicatedDbName, primaryDbName, failoverConfigs);
+
+    // let's modify replica/target after failover
+    replica.run("use " + replicatedDbName)
+      .run("insert into tb1 values(30),(40)")
+      .run("create table tb2(id int)")
+      .run("insert into tb2 values(10),(20)");
+
+    // orchestrator will do the swapping and setting correct db params
+    Map<String, String> dbParams = replica.getDatabase(replicatedDbName).getParameters();
+    String lastId = dbParams.get("repl.last.id");
+    String targetLastId = dbParams.get("repl.target.last.id");
+
+    primary.run("alter database " + primaryDbName
+      + " set dbproperties('repl.resume.started'='true', 'repl.source.for'='', 'repl.target" +
+      ".for'='true', 'repl.last.id'='" + targetLastId + "' ,'repl.target.last.id'='" + lastId +
+      "')");
+
+    replica.run("alter database " + replicatedDbName
+      + " set dbproperties('repl.target.for'='', 'repl.source.for'='p1','repl.resume" +
+      ".started'='true')");
+
+    // initiate RESET (1st cycle of optimised bootstrap)
+    primary.dump(primaryDbName);
+
+    MetricCollector collector = MetricCollector.getInstance();
+    ReplicationMetric metric = collector.getMetrics().getLast();
+    assertEquals(Status.RESUME_READY, metric.getProgress().getStatus());
+
+    replica.load(replicatedDbName, primaryDbName);
+    metric = collector.getMetrics().getLast();
+    assertEquals(Status.RESUME_READY, metric.getProgress().getStatus());
+
+    // this will be completion cycle for RESET
+    primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+
+    // AFTER RESET : 1. New table got dropped
+    //               2. Changes made on existing table got discarded.
+    replica.run("use "+ replicatedDbName)
+           .run("select id from tb1")
+           .verifyResults(new String[]{"10", "20"})
+           .run("show tables in " + replicatedDbName)
+           .verifyResults(new String[]{"tb1"});
+
+    // verify that the db params got reset after RESUME
+    Map<String, String> srcParams = primary.getDatabase(primaryDbName).getParameters();
+    assertNotNull(srcParams.get("repl.source.for"));
+    assertNull(srcParams.get("repl.target.for"));
+    assertNull(srcParams.get("repl.resume.started"));
+    assertNull(srcParams.get("repl.target.last.id"));
+    assertNull(srcParams.get("repl.last.id"));
+
+    Map<String, String> targetParams = replica.getDatabase(replicatedDbName).getParameters();
+    assertTrue(Boolean.parseBoolean(targetParams.get("repl.target.for")));
+    assertNull(targetParams.get("repl.source.for"));
+    assertNull(targetParams.get("repl.resume.started"));
+    assertNotNull(targetParams.get("repl.target.last.id"));
+    assertNotNull(targetParams.get("repl.last.id"));
   }
 }
