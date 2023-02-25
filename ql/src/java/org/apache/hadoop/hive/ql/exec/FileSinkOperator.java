@@ -1136,8 +1136,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
       rowOutWriters = fpaths.outWriters;
-      // check if all record writers implement statistics. if atleast one RW
-      // doesn't implement stats interface we will fallback to conventional way
+      // check if all record writers implement statistics. if at least one RW
+      // doesn't implement stats interface we will fall back to conventional way
       // of gathering stats
       isCollectRWStats = areAllTrue(statsFromRecordWriter);
       if (conf.isGatherStats() && !isCollectRWStats) {
@@ -1637,7 +1637,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
     }
     if (conf.getTableInfo().isNonNative()) {
-      //check the ouput specs only if it is a storage handler (native tables's outputformats does
+      //check the output specs only if it is a storage handler (native tables's outputformats does
       //not set the job's output properties correctly)
       try {
         hiveOutputFormat.checkOutputSpecs(ignored, job);

@@ -59,7 +59,7 @@ public class ResetProcessor implements CommandProcessor {
     }
     String[] parts = command.split("\\s+");
     boolean isDefault = false;
-    List<String> varnames = new ArrayList<>(parts.length);
+    List<String> varNames = new ArrayList<>(parts.length);
     for (String part : parts) {
       if (part.isEmpty()) {
         continue;
@@ -67,22 +67,22 @@ public class ResetProcessor implements CommandProcessor {
       if (DEFAULT_ARG.equals(part)) {
         isDefault = true;
       } else {
-        varnames.add(part);
+        varNames.add(part);
       }
     }
-    if (varnames.isEmpty()) {
+    if (varNames.isEmpty()) {
       throw new CommandProcessorException(1, -1, "No variable names specified", "42000", null);
     }
     String variableNames = "";
-    for (String varname : varnames) {
+    for (String varName : varNames) {
       if (isDefault) {
         if (!variableNames.isEmpty()) {
           variableNames += ", ";
         }
-        variableNames += varname;
-        resetToDefault(ss, varname);
+        variableNames += varName;
+        resetToDefault(ss, varName);
       } else {
-        resetOverrideOnly(ss, varname);
+        resetOverrideOnly(ss, varName);
       }
     }
     String message = isDefault ? "Resetting " + variableNames + " to default values" : null;
@@ -100,32 +100,32 @@ public class ResetProcessor implements CommandProcessor {
     ss.getOverriddenConfigurations().clear();
   }
 
-  private static void resetOverrideOnly(SessionState ss, String varname) {
-    if (!ss.getOverriddenConfigurations().containsKey(varname)) {
+  private static void resetOverrideOnly(SessionState ss, String varName) {
+    if (!ss.getOverriddenConfigurations().containsKey(varName)) {
       return;
     }
-    setSessionVariableFromConf(ss, varname, new HiveConf());
-    ss.getOverriddenConfigurations().remove(varname);
+    setSessionVariableFromConf(ss, varName, new HiveConf());
+    ss.getOverriddenConfigurations().remove(varName);
   }
 
-  private static void setSessionVariableFromConf(SessionState ss, String varname, HiveConf conf) {
-    String value = conf.get(varname);
+  private static void setSessionVariableFromConf(SessionState ss, String varName, HiveConf conf) {
+    String value = conf.get(varName);
     if (value != null) {
-      SetProcessor.setConf(ss, varname, varname, value, false);
+      SetProcessor.setConf(ss, varName, varName, value, false);
     }
   }
 
-  private static CommandProcessorResponse resetToDefault(SessionState ss, String varname)
+  private static CommandProcessorResponse resetToDefault(SessionState ss, String varName)
       throws CommandProcessorException {
-    varname = varname.trim();
+    varName = varName.trim();
     try {
       String nonErrorMessage = null;
-      if (varname.startsWith(SystemVariables.HIVECONF_PREFIX)){
-        String propName = varname.substring(SystemVariables.HIVECONF_PREFIX.length());
+      if (varName.startsWith(SystemVariables.HIVECONF_PREFIX)){
+        String propName = varName.substring(SystemVariables.HIVECONF_PREFIX.length());
         nonErrorMessage = SetProcessor.setConf(
-            varname, propName, getConfVar(propName).getDefaultValue(), false);
-      } else if (varname.startsWith(SystemVariables.METACONF_PREFIX)) {
-        String propName = varname.substring(SystemVariables.METACONF_PREFIX.length());
+            varName, propName, getConfVar(propName).getDefaultValue(), false);
+      } else if (varName.startsWith(SystemVariables.METACONF_PREFIX)) {
+        String propName = varName.substring(SystemVariables.METACONF_PREFIX.length());
         HiveConf.ConfVars confVars = getConfVar(propName);
         Hive.get(ss.getConf()).setMetaConf(propName, new VariableSubstitution(new HiveVariableSource() {
           @Override
@@ -134,9 +134,9 @@ public class ResetProcessor implements CommandProcessor {
           }
         }).substitute(ss.getConf(), confVars.getDefaultValue()));
       } else {
-        String defaultVal = getConfVar(varname).getDefaultValue();
-        nonErrorMessage = SetProcessor.setConf(varname, varname, defaultVal, true);
-        if (varname.equals(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED.toString())) {
+        String defaultVal = getConfVar(varName).getDefaultValue();
+        nonErrorMessage = SetProcessor.setConf(varName, varName, defaultVal, true);
+        if (varName.equals(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED.toString())) {
           SessionState.get().updateHistory(Boolean.parseBoolean(defaultVal), ss);
         }
       }

@@ -209,10 +209,10 @@ public class PartitionColumnsSeparator extends Transform {
      * Has atleast one subexpression containing a partition/virtualcolumn and has
      * exactly refer to a single table alias.
      * @param en Expression Node Descriptor
-     * @return true if there is atleast one subexpression with partition/virtual column
+     * @return true if there is at least one subexpression with partition/virtual column
      * and has exactly refer to a single table alias. If not, return false.
      */
-    private boolean hasAtleastOneSubExprWithPartColOrVirtualColWithOneTableAlias(ExprNodeDesc en) {
+    private boolean hasAtLeastOneSubExprWithPartColOrVirtualColWithOneTableAlias(ExprNodeDesc en) {
       if (en == null || en.getChildren() == null) {
         return false;
       }
@@ -362,19 +362,19 @@ public class PartitionColumnsSeparator extends Transform {
         return null;
       }
 
-      // 3. See if the IN (STRUCT(EXP1, EXP2,..) has atleast one expression with partition
+      // 3. See if the IN (STRUCT(EXP1, EXP2,..) has at least one expression with partition
       // column with single table alias. If not bail out.
       // We might have expressions containing only partitioning columns, say, T1.A + T2.B
       // where T1.A and T2.B are both partitioning columns.
       // However, these expressions should not be considered as valid expressions for separation.
-      if (!hasAtleastOneSubExprWithPartColOrVirtualColWithOneTableAlias(children.get(0))) {
+      if (!hasAtLeastOneSubExprWithPartColOrVirtualColWithOneTableAlias(children.get(0))) {
         LOG.debug(
             "Partition columns not separated for {}, there are no expression containing partition columns in struct fields",
             fd);
         return null;
       }
 
-      // 4. See if all the field expressions of the left hand side of IN are expressions 
+      // 4. See if all the field expressions of the left hand side of IN are expressions
       // containing constants or only partition columns coming from same table.
       // If so, we need not perform this optimization and we should bail out.
       if (hasAllSubExprWithConstOrPartColOrVirtualColWithOneTableAlias(children.get(0))) {

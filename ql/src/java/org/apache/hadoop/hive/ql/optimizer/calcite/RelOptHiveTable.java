@@ -275,7 +275,7 @@ public class RelOptHiveTable implements RelOptTable {
     final PrimaryKeyInfo primaryKeyInfo = hiveTblMetadata.getPrimaryKeyInfo();
     final UniqueConstraint uniqueKeyInfo = hiveTblMetadata.getUniqueKeyInfo();
     ImmutableList.Builder<ImmutableBitSet> builder = ImmutableList.builder();
-    ImmutableList.Builder<ImmutableBitSet> nonNullbuilder = ImmutableList.builder();
+    ImmutableList.Builder<ImmutableBitSet> nonNullBuilder = ImmutableList.builder();
     // First PK
     if (primaryKeyInfo != null && !primaryKeyInfo.getColNames().isEmpty()) {
       ImmutableBitSet.Builder keys = ImmutableBitSet.builder();
@@ -294,7 +294,7 @@ public class RelOptHiveTable implements RelOptTable {
       }
       ImmutableBitSet key = keys.build();
       builder.add(key);
-      nonNullbuilder.add(key);
+      nonNullBuilder.add(key);
     }
     // Then UKs
     if (uniqueKeyInfo != null && !uniqueKeyInfo.getUniqueConstraints().isEmpty()) {
@@ -321,11 +321,11 @@ public class RelOptHiveTable implements RelOptTable {
         ImmutableBitSet key = keys.build();
         builder.add(key);
         if (isNonNullable) {
-          nonNullbuilder.add(key);
+          nonNullBuilder.add(key);
         }
       }
     }
-    return new Pair<>(builder.build(), nonNullbuilder.build());
+    return new Pair<>(builder.build(), nonNullBuilder.build());
   }
 
   private List<RelReferentialConstraint> generateReferentialConstraints() {

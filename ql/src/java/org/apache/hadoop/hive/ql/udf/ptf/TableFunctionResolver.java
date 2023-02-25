@@ -61,7 +61,7 @@ public abstract class TableFunctionResolver {
   /*
    * - called during translation.
    * - invokes createEvaluator which must be implemented by a subclass
-   * - sets up the evaluator with references to the TableDef, PartitionClass, PartitionMemsize and
+   * - sets up the evaluator with references to the TableDef, PartitionClass, PartitionMemSize and
    *   the transformsRawInput boolean.
    */
   public void initialize(HiveConf cfg, PTFDesc ptfDesc, PartitionedTableFunctionDef tDef)
@@ -198,7 +198,7 @@ public abstract class TableFunctionResolver {
   /**
    * Provide referenced columns names to be used in partition function
    *
-   * @return null for unknown (will get all columns from table including virtual columns) 
+   * @return null for unknown (will get all columns from table including virtual columns)
    * @throws SemanticException
    */
   public List<String> getReferencedColumns() throws SemanticException {

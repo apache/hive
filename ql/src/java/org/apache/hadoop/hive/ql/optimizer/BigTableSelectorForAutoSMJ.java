@@ -25,8 +25,8 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /*
- * This is a plug-able policy to chose the candidate map-join table for converting a join to a
- * sort merge join. The policy can decide the big table position. Some of the existing policies
+ * This is a plug-able policy to choose the candidate map-join table for converting a join to a
+ * sort merge join. The policy can decide the big table position. Some existing policies
  * decide the big table based on size or position of the tables.
  */
 public interface BigTableSelectorForAutoSMJ {

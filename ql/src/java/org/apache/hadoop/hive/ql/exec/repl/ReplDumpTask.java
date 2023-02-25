@@ -109,7 +109,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -548,8 +547,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     Utils.create(dumpAckFile, conf);
     prepareReturnValues(work.getResultValues());
-    work.getMetricCollector().reportEnd(isFailoverInProgress ? Status.FAILOVER_READY : Status.SUCCESS);
+    if (isFailoverInProgress) {
+      work.getMetricCollector().reportEnd(Status.FAILOVER_READY);
+    } else {
+      work.getMetricCollector().reportEnd(isFirstCycleOfResume(database) ?
+                                          Status.RESUME_READY :
+                                          Status.SUCCESS);
+    }
     deleteAllPreviousDumpMeta(work.getCurrentDumpPath());
+  }
+
+  private boolean isFirstCycleOfResume(Database database) {
+    return createEventMarker && database.getParameters().containsKey(REPL_RESUME_STARTED_AFTER_FAILOVER);
   }
 
   private void prepareReturnValues(List<String> values) throws SemanticException {
@@ -798,7 +807,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return !ReplUtils.tableIncludedInReplScope(work.oldReplScope, table.getTableName());
   }
 
-  private boolean isTableSatifiesConfig(Table table) {
+  private boolean doesTableSatisfyConfig(Table table) {
     if (table == null) {
       return false;
     }
@@ -1095,7 +1104,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                 dumpTable(exportService, matchedDbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
                         hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
               }
-              if (tableList != null && isTableSatifiesConfig(table)) {
+              if (tableList != null && doesTableSatisfyConfig(table)) {
                 tableList.add(tableName);
               }
             } catch (InvalidTableException te) {
@@ -1418,7 +1427,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               LOG.debug(te.getMessage());
             }
             dumpConstraintMetadata(dbName, tblName, dbRoot, hiveDb, table != null ? table.getTTable().getId() : -1);
-            if (tableList != null && isTableSatifiesConfig(table)) {
+            if (tableList != null && doesTableSatisfyConfig(table)) {
               tableList.add(tblName);
             }
           }
@@ -1650,7 +1659,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // phase won't be able to replicate those txns. So, the logic is to wait for the given amount
     // of time to see if all open txns < current txn is getting aborted/committed. If not, then
     // we forcefully abort those txns just like AcidHouseKeeperService.
-    //Exclude readonly and repl created tranasactions
+    //Exclude readonly and repl created transactions
     HiveTxnManager hiveTxnManager = getTxnMgr();
     ValidTxnList validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
     while (System.currentTimeMillis() < waitUntilTime) {
