@@ -1066,7 +1066,7 @@ public class TestCleaner extends CompactorTest {
 
     List<Path> paths = getDirectories(conf, t, null);
     Assert.assertEquals(1, paths.size());
-    Assert.assertEquals("delta_0000020_0000020", paths.get(0).getName());
+    Assert.assertEquals(makeDeltaDirName(20,20), paths.get(0).getName());
   }
 
   @Test
