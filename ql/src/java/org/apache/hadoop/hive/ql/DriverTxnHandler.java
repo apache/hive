@@ -345,7 +345,7 @@ class DriverTxnHandler {
   ValidTxnWriteIdList recordValidWriteIds() throws LockException {
     String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (Strings.isNullOrEmpty(txnString)) {
-      throw new IllegalStateException("calling addWriteIdsToMinHistory() without initializing ValidTxnList " +
+      throw new IllegalStateException("calling recordValidWriteIds() without initializing ValidTxnList " +
           JavaUtils.txnIdToString(driverContext.getTxnManager().getCurrentTxnId()));
     }
 
