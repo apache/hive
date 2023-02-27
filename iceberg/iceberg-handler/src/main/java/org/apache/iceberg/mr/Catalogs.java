@@ -243,10 +243,13 @@ public final class Catalogs {
    * @return complete map of catalog properties
    */
   private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName, String catalogType) {
-    String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
     Map<String, String> catalogProperties = Streams.stream(conf.iterator())
-            .filter(e -> e.getKey().startsWith(keyPrefix))
-            .collect(Collectors.toMap(e -> e.getKey().substring(keyPrefix.length() + 1), Map.Entry::getValue));
+        .filter(e -> e.getKey().startsWith(InputFormatConfig.GLOBAL_CATALOG_CONFIG_PREFIX)).collect(
+            Collectors.toMap(e -> e.getKey().substring(InputFormatConfig.GLOBAL_CATALOG_CONFIG_PREFIX.length()),
+                Map.Entry::getValue));
+    String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
+    catalogProperties.putAll(Streams.stream(conf.iterator()).filter(e -> e.getKey().startsWith(keyPrefix))
+        .collect(Collectors.toMap(e -> e.getKey().substring(keyPrefix.length() + 1), Map.Entry::getValue)));
     return addCatalogPropertiesIfMissing(conf, catalogType, catalogProperties);
   }
 

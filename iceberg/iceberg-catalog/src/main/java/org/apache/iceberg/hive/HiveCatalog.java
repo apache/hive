@@ -98,8 +98,12 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     this.listAllTables = Boolean.parseBoolean(properties.getOrDefault(LIST_ALL_TABLES, LIST_ALL_TABLES_DEFAULT));
 
     String fileIOImpl = properties.get(CatalogProperties.FILE_IO_IMPL);
-    this.fileIO = fileIOImpl == null ? new HadoopFileIO(conf) : CatalogUtil.loadFileIO(fileIOImpl, properties, conf);
-
+    if (fileIOImpl == null) {
+      this.fileIO = new HadoopFileIO(conf);
+      this.fileIO.initialize(properties);
+    } else {
+      this.fileIO = CatalogUtil.loadFileIO(fileIOImpl, properties, conf);
+    }
     this.clients = new CachedClientPool(conf, properties);
   }
 
@@ -535,7 +539,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   }
 
   @Override
-  protected Map<String, String> properties() {
+  public Map<String, String> properties() {
     return catalogProperties == null ? ImmutableMap.of() : catalogProperties;
   }
 
