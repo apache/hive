@@ -42,17 +42,14 @@ import java.util.Set;
 
 /**
  * Calcite rule to push down predicates contains {@link VirtualColumn#SNAPSHOT_ID} reference to TableScan.
- * <br/>
- * <br/>
+ * <p>
  * This rule traverse the logical expression in {@link HiveFilter} operators and search for
  * predicates like
- * <br/>
- * <br/>
+ * <p>
  * <code>
- *   snapshotId <= 12345677899
- * <code/>
- * <br/>
- * <br/>
+ *   snapshotId &lt;= 12345677899
+ * </code>
+ * <p>
  * The literal is set in the {@link RelOptHiveTable#getHiveTableMD()} object wrapped by
  * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan}
  * and the original predicate in the {@link HiveFilter} is replaced with literal true.
