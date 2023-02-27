@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Msck;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -47,6 +48,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -211,8 +213,7 @@ public class TestMsckDropPartitionsInBatches {
 
         // only first call throws exception
         doThrow(MetaException.class).doCallRealMethod().doCallRealMethod().when(spyDb)
-            .dropPartitions(eq(table.getCatName()), eq(table.getDbName()),
-            eq(table.getTableName()), anyList(), any(PartitionDropOptions.class));
+            .dropPartitions(any(), any(PartitionDropOptions.class));
       }
 
       expectedBatchSizes = new int[expectedCallCount];
@@ -248,8 +249,7 @@ public class TestMsckDropPartitionsInBatches {
       }
       // all calls fail
       doThrow(MetaException.class).when(spyDb)
-          .dropPartitions(eq(table.getCatName()), eq(table.getDbName()), eq(table.getTableName()),
-            anyList(), any(PartitionDropOptions.class));
+          .dropPartitions(any(), any(PartitionDropOptions.class));
 
       Exception ex = null;
       try {
@@ -264,13 +264,14 @@ public class TestMsckDropPartitionsInBatches {
 
     // there should be expectedCallCount calls to drop partitions with each batch size of
     // actualBatchSize
-    ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
+    ArgumentCaptor<DropPartitionsRequest> argument = ArgumentCaptor.forClass(DropPartitionsRequest.class);
     verify(spyDb, times(expectedCallCount))
-        .dropPartitions(eq(table.getCatName()), eq(table.getDbName()), eq(table.getTableName()),
-        argument.capture(), any(PartitionDropOptions.class));
+        .dropPartitions(argument.capture(), any(PartitionDropOptions.class));
 
     // confirm the batch sizes were as expected
-    List<List> droppedParts = argument.getAllValues();
+    List<List> droppedParts = argument.getAllValues()
+        .stream().map(dpr -> dpr.getParts().getNames())
+        .collect(Collectors.toList());
 
     assertEquals(expectedCallCount, droppedParts.size());
     for (int i = 0; i < expectedCallCount; i++) {
