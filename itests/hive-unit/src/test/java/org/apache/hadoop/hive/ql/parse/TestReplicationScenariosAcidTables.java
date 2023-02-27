@@ -3858,7 +3858,28 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     // this will be completion cycle for RESET
     primary.dump(primaryDbName);
+    metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress()
+                       .getStages()
+                       .get(0)
+                       .getMetrics()
+                       .stream()
+                       .filter(m -> Objects.equals(m.getName(), "TABLES"))
+                       .findFirst()
+                       .get()
+                       .getTotalCount(), 1);
+
     replica.load(replicatedDbName, primaryDbName);
+    metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress()
+                       .getStages()
+                       .get(0)
+                       .getMetrics()
+                       .stream()
+                       .filter(m -> Objects.equals(m.getName(), "TABLES"))
+                       .findFirst()
+                       .get()
+                       .getTotalCount(), 1);
 
     // AFTER RESET : 1. New table got dropped
     //               2. Changes made on existing table got discarded.
