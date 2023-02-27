@@ -407,7 +407,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     Map<String, Long> writeIds = plan.getInputs().stream()
       .filter(input -> !input.isDummy() && AcidUtils.isTransactionalTable(input.getTable()))
       .map(input -> input.getTable().getFullyQualifiedName())
-      .collect(Collectors.toSet()).stream()
+      .distinct()
       .collect(Collectors.toMap(Function.identity(), table -> getMinOpenWriteId(txnWriteIds, table)));
 
     if (!writeIds.isEmpty()) {

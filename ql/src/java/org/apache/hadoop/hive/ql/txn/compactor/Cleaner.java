@@ -161,10 +161,10 @@ public class Cleaner extends MetaStoreCompactorThread {
               CompletableFuture<Void> asyncJob =
                   CompletableFuture.runAsync(
                       ThrowingRunnable.unchecked(() -> {
-                        long minOpenTxnGLB = (ci.minOpenWriteId > 0) ? 
+                        long minOpenTxn = (ci.minOpenWriteId > 0) ? 
                             ci.nextTxnId + 1 : Math.min(minOpenTxnId, txnHandler.findMinTxnIdSeenOpen());
-                        LOG.info("Cleaning based on min open txn id: " + minOpenTxnGLB);
-                        clean(ci, minOpenTxnGLB, metricsEnabled);
+                        LOG.info("Cleaning based on min open txn id: " + minOpenTxn);
+                        clean(ci, minOpenTxn, metricsEnabled);
                       }), cleanerExecutor)
                   .exceptionally(t -> {
                     LOG.error("Error clearing {}", ci.getFullPartitionName(), t);
@@ -207,7 +207,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
   }
 
-  private void clean(CompactionInfo ci, long minOpenTxnGLB, boolean metricsEnabled) throws MetaException {
+  private void clean(CompactionInfo ci, long minOpenTxn, boolean metricsEnabled) throws MetaException {
     LOG.info("Starting cleaning for " + ci);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
@@ -261,7 +261,7 @@ public class Cleaner extends MetaStoreCompactorThread {
             ? resolveStorageDescriptor(t, p).getLocation()
             : location;
         boolean dropPartition = ci.partName != null && p == null;
-        cleanUpTask = () -> removeFiles(path, minOpenTxnGLB, ci, dropPartition);
+        cleanUpTask = () -> removeFiles(path, minOpenTxn, ci, dropPartition);
       } else {
         cleanUpTask = () -> removeFiles(location, ci);
       }
@@ -356,7 +356,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     return " id=" + ci.id;
   }
 
-  private boolean removeFiles(String location, long minOpenTxnGLB, CompactionInfo ci, boolean dropPartition)
+  private boolean removeFiles(String location, long minOpenTxn, CompactionInfo ci, boolean dropPartition)
       throws Exception {
 
     if (dropPartition) {
@@ -385,11 +385,11 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
 
     ValidTxnList validTxnList =
-      TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
+      TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxn);
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     /**
-     * {@code validTxnList} is capped by minOpenTxnGLB so if
+     * {@code validTxnList} is capped by minOpenTxn so if
      * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
      * produced by a compactor, that means every reader that could be active right now see it
      * as well.  That means if this base/delta shadows some earlier base/delta, the it will be
