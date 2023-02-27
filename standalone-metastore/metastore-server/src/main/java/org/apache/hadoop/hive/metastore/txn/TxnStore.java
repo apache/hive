@@ -517,6 +517,19 @@ public interface TxnStore extends Configurable {
   List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException;
 
   /**
+   * Find the aborted entries in TXN_COMPONENTS which can be used to
+   * clean directories belonging to transactions in aborted state.
+   * @param abortedTimeThreshold Age of table/partition's oldest aborted transaction involving a given table
+   *                            or partition that will trigger cleanup.
+   * @param abortedThreshold Number of aborted transactions involving a given table or partition
+   *                         that will trigger cleanup.
+   * @return Information of potential abort items that needs to be cleaned.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  List<CompactionInfo> findReadyToCleanForAborts(long minOpenTxnId, long abortedTimeThreshold, int abortedThreshold) throws MetaException;
+
+  /**
    * Sets the cleaning start time for a particular compaction
    *
    * @param info info on the compaction entry
@@ -540,6 +553,15 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.CannotRetry
   void markCleaned(CompactionInfo info) throws MetaException;
+
+  /**
+   * This will remove an aborted entries from TXN_COMPONENTS table after
+   * the aborted directories are removed from the filesystem.
+   * @param info info on the aborted directories cleanup that needs to be removed
+   * @throws MetaException
+   */
+  @RetrySemantics.CannotRetry
+  void markCleanedForAborts(CompactionInfo info) throws MetaException;
 
   /**
    * Mark a compaction entry as failed.  This will move it to the compaction history queue with a

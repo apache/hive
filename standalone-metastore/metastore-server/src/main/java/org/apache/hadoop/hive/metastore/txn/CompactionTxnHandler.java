@@ -162,31 +162,33 @@ class CompactionTxnHandler extends TxnHandler {
         }
         rs.close();
 
-        // Check for aborted txns: number of aborted txns past threshold and age of aborted txns
-        // past time threshold
-        boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
-        String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
-          "MIN(\"TXN_STARTED\"), COUNT(*) FROM \"TXNS\", \"TXN_COMPONENTS\" " +
-          "   WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " " +
-          "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" " +
-              (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold);
+        if (!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER)) {
+          // Check for aborted txns: number of aborted txns past threshold and age of aborted txns
+          // past time threshold
+          boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
+          String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
+                  "MIN(\"TXN_STARTED\"), COUNT(*) FROM \"TXNS\", \"TXN_COMPONENTS\" " +
+                  "   WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " " +
+                  "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" " +
+                  (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold);
 
-        LOG.debug("Going to execute query <{}>", sCheckAborted);
-        rs = stmt.executeQuery(sCheckAborted);
-        long systemTime = System.currentTimeMillis();
-        while (rs.next()) {
-          boolean pastTimeThreshold =
-              checkAbortedTimeThreshold && rs.getLong(4) + abortedTimeThreshold < systemTime;
-          int numAbortedTxns = rs.getInt(5);
-          if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
-            CompactionInfo info = new CompactionInfo();
-            info.dbname = rs.getString(1);
-            info.tableName = rs.getString(2);
-            info.partName = rs.getString(3);
-            info.tooManyAborts = numAbortedTxns > abortedThreshold;
-            info.hasOldAbort = pastTimeThreshold;
-            LOG.debug("Found potential compaction: {}", info);
-            response.add(info);
+          LOG.debug("Going to execute query <{}>", sCheckAborted);
+          rs = stmt.executeQuery(sCheckAborted);
+          long systemTime = System.currentTimeMillis();
+          while (rs.next()) {
+            boolean pastTimeThreshold =
+                    checkAbortedTimeThreshold && rs.getLong(4) + abortedTimeThreshold < systemTime;
+            int numAbortedTxns = rs.getInt(5);
+            if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
+              CompactionInfo info = new CompactionInfo();
+              info.dbname = rs.getString(1);
+              info.tableName = rs.getString(2);
+              info.partName = rs.getString(3);
+              info.tooManyAborts = numAbortedTxns > abortedThreshold;
+              info.hasOldAbort = pastTimeThreshold;
+              LOG.debug("Found potential compaction: {}", info);
+              response.add(info);
+            }
           }
         }
       } catch (SQLException e) {
@@ -464,6 +466,49 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 
+  @Override
+  @RetrySemantics.ReadOnly
+  public List<CompactionInfo> findReadyToCleanForAborts(long minOpenTxnId, long abortedTimeThreshold, int abortedThreshold) throws MetaException {
+    try {
+      List<CompactionInfo> readyToCleanAborts = new ArrayList<>();
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
+           Statement stmt = dbConn.createStatement()) {
+        boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
+        String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", MAX(\"TC_WRITEID\"), " +
+                "MIN(\"TXN_STARTED\"), COUNT(*) FROM \"TXNS\", \"TXN_COMPONENTS\" " +
+                " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TC_TXNID\" < " + minOpenTxnId +
+                " AND \"TXN_STATE\" = " + TxnStatus.ABORTED +
+                " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" " +
+                (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold);
+
+        LOG.debug("Going to execute query <{}>", sCheckAborted);
+        try (ResultSet rs = stmt.executeQuery(sCheckAborted)) {
+          long systemTime = System.currentTimeMillis();
+          while(rs.next()) {
+            boolean pastTimeThreshold =
+                    checkAbortedTimeThreshold && rs.getLong(5) + abortedTimeThreshold < systemTime;
+            int numAbortedTxns = rs.getInt(6);
+            if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
+              CompactionInfo info = new CompactionInfo();
+              info.dbname = rs.getString(1);
+              info.tableName = rs.getString(2);
+              info.partName = rs.getString(3);
+              info.highestWriteId = rs.getLong(4);
+              readyToCleanAborts.add(info);
+            }
+          }
+        }
+        return readyToCleanAborts;
+      } catch (SQLException e) {
+        LOG.error("Unable to select next element for cleaning, " + e.getMessage());
+        checkRetryable(e, "findReadyToCleanForAborts");
+        throw new MetaException("Unable to connect to transaction database " +
+                e.getMessage());
+      }
+    } catch (RetryException e) {
+      return findReadyToCleanForAborts(minOpenTxnId, abortedTimeThreshold, abortedThreshold);
+    }
+  }
 
   /**
    * Mark the cleaning start time for a particular compaction
@@ -699,6 +744,80 @@ class CompactionTxnHandler extends TxnHandler {
       }
     } catch (RetryException e) {
       markCleaned(info);
+    }
+  }
+
+  @Override
+  public void markCleanedForAborts(CompactionInfo info) throws MetaException {
+    // Do cleanup of TXN_COMPONENTS table
+    LOG.debug("Running markCleanedForAborts with CompactionInfo: {}", info);
+    try {
+      Connection dbConn = null;
+      PreparedStatement pStmt = null;
+      ResultSet rs = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
+        String s = "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
+                + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED + ") "
+                + "AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? "
+                + "AND \"TC_PARTITION\" "+ (info.partName != null ? "= ?" : "IS NULL");
+
+        List<String> queries = new ArrayList<>();
+        Iterator<Long> writeIdsIter = null;
+        List<Integer> counts = null;
+
+        if (info.writeIds != null && !info.writeIds.isEmpty()) {
+          StringBuilder prefix = new StringBuilder(s).append(" AND ");
+          List<String> questions = Collections.nCopies(info.writeIds.size(), "?");
+
+          counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix,
+                  new StringBuilder(), questions, "\"TC_WRITEID\"", false, false);
+          writeIdsIter = info.writeIds.iterator();
+        } else if (!info.hasUncompactedAborts){
+          if (info.highestWriteId != 0) {
+            s += " AND \"TC_WRITEID\" <= ?";
+          }
+          queries.add(s);
+        }
+
+        for (int i = 0; i < queries.size(); i++) {
+          String query = queries.get(i);
+          int writeIdCount = (counts != null) ? counts.get(i) : 0;
+
+          LOG.debug("Going to execute update <{}>", query);
+          pStmt = dbConn.prepareStatement(query);
+          int paramCount = 1;
+
+          pStmt.setString(paramCount++, info.dbname);
+          pStmt.setString(paramCount++, info.tableName);
+          if (info.partName != null) {
+            pStmt.setString(paramCount++, info.partName);
+          }
+          if (info.highestWriteId != 0 && writeIdCount == 0) {
+            pStmt.setLong(paramCount, info.highestWriteId);
+          }
+          for (int j = 0; j < writeIdCount; j++) {
+            if (writeIdsIter.hasNext()) {
+              pStmt.setLong(paramCount + j, writeIdsIter.next());
+            }
+          }
+          int rc = pStmt.executeUpdate();
+          LOG.debug("Removed {} records from txn_components", rc);
+        }
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      } catch (SQLException e) {
+        LOG.error("Unable to delete from txn components due to {}", e.getMessage());
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(e, "markCleanedForAborts(" + info + ")");
+        throw new MetaException("Unable to connect to transaction database " +
+                e.getMessage());
+      } finally {
+        close(rs, pStmt, dbConn);
+      }
+    } catch (RetryException e) {
+      markCleanedForAborts(info);
     }
   }
 
