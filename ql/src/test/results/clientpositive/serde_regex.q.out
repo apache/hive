@@ -263,6 +263,8 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_regex2
 POSTHOOK: query: EXPLAIN
 CREATE TABLE serde_regex2(
   key STRING,
@@ -274,21 +276,22 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@serde_regex2
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.RegexSerDe
-          serde properties:
-            input.regex ([^ ]*),([^ ]*)
-            serialization.encoding ISO8859_1
-          name: default.serde_regex2
+    Create Table
+      columns: key string, value string
+      name: default.serde_regex2
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.RegexSerDe
+      serde properties:
+        input.regex ([^ ]*),([^ ]*)
+        serialization.encoding ISO8859_1
 
 PREHOOK: query: CREATE TABLE serde_regex2(
   key STRING,
@@ -330,10 +333,10 @@ POSTHOOK: query: SELECT key, value FROM serde_regex2 ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_regex2
 #### A masked pattern was here ####
-JÃ¸rgensen	JÃ¸rgen
-MÃ¼ller	Thomas
-NÃ¥m	FÃ¦k
-PeÃ±a	AndrÃ©s
+Jørgensen	Jørgen
+Müller	Thomas
+Nåm	Fæk
+Peña	Andrés
 PREHOOK: query: DROP TABLE serde_regex2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@serde_regex2

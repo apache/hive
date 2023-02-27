@@ -53,6 +53,7 @@ STAGE PLANS:
         escapeChar \
         quoteChar '
         separatorChar ,
+        serialization.encoding ISO8859_1
 
 PREHOOK: query: CREATE TABLE serde_opencsv(
                           words STRING,
@@ -108,7 +109,3 @@ POSTHOOK: query: SELECT * FROM serde_opencsv
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_opencsv
 #### A masked pattern was here ####
-why hello there	42	3	100	1412341	true	42.43	85.23423424
-another record	98	4	101	9999999	false	99.89	0.00000009
-third record	45	5	102	999999999	true	89.99	0.00000000000009
-MÃ¼ller Thomas	42	3	100	1412341	true	42.43	85.23423424
