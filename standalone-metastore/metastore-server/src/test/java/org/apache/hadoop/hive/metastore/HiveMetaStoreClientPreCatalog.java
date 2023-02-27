@@ -3625,6 +3625,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public List<Partition> dropPartitions(DropPartitionsRequest req, PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void alter_partition(String catName, String dbName, String tblName, Partition newPart,
                               EnvironmentContext environmentContext) throws
       InvalidOperationException, MetaException, TException {

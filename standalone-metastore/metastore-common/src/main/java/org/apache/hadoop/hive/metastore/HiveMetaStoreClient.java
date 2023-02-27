@@ -1887,6 +1887,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     rps.setExprs(exprs);
     DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
     req.setCatName(catName);
+    return dropPartitions(req, options);
+  }
+
+  @Override
+  public List<Partition> dropPartitions(DropPartitionsRequest req, PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException {
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);

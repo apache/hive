@@ -38,12 +38,14 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
@@ -586,8 +588,10 @@ public class Msck {
             // so 3rd parameter (deleteData) is set to false
             // msck is doing a clean up of hms.  if for some reason the partition is already
             // deleted, then it is good.  So, the last parameter ifexists is set to true
-            List<Pair<Integer, byte[]>> partExprs = getPartitionExpr(dropParts);
-            metastoreClient.dropPartitions(table.getCatName(), table.getDbName(), table.getTableName(), partExprs, dropOptions);
+            DropPartitionsRequest request = new DropPartitionsRequest(table.getDbName(),
+                table.getTableName(), RequestPartsSpec.names(dropParts));
+            request.setCatName(table.getCatName());
+            metastoreClient.dropPartitions(request, dropOptions);
             // if last batch is successful remove it from partsNotInFs
             batchWork.removeAll(lastBatch);
             repairOutput.addAll(dropMsgs);

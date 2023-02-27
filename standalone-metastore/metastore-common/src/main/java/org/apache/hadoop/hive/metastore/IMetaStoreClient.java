@@ -2088,6 +2088,18 @@ public interface IMetaStoreClient {
   }
 
   /**
+   * Drop partitions based on the given request
+   * @param req
+   * @param options PartitionDropOptions for the operation
+   * @return list of deleted partitions.
+   * @throws NoSuchObjectException No partition matches the expression(s), and ifExists was false.
+   * @throws MetaException error access the RDBMS or storage.
+   * @throws TException Thrift transport error.
+   */
+  List<Partition> dropPartitions(DropPartitionsRequest req, PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException;
+
+  /**
    * Drop partitions based on an expression.
    * @param dbName database name.
    * @param tblName table name.
