@@ -172,7 +172,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:s_key:bigint, 1:year:int]
+                      vectorizationSchemaColumns: [0:s_key:bigint, 1:year:int, 2:PARTITION__SPEC__ID:int, 3:PARTITION__HASH:bigint, 4:FILE__PATH:string, 5:ROW__POSITION:bigint]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -207,12 +207,59 @@ STAGE PLANS:
                     scratchColumnTypeNames: []
         Map 10 
             Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:skey:bigint, 1:hierarchy_number:string, 2:hierarchy_name:string, 3:language_id:int, 4:hierarchy_display:string, 5:orderby:string, 6:PARTITION__SPEC__ID:int, 7:PARTITION__HASH:bigint, 8:FILE__PATH:string, 9:ROW__POSITION:bigint]
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 0:bigint, val 1090969), SelectColumnIsNotNull(col 4:string))
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [6, 7, 8, 9, 10, 1, 2, 3, 5, 11, 1, 2, 3, 4, 5]
+                          selectExpressions: ConstantVectorExpression(val 1090969) -> 10:bigint, ConstantVectorExpression(val 1090969) -> 11:bigint
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkStringOperator
+                            keyColumns: 4:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 6:int, 7:bigint, 8:string, 9:bigint, 10:bigint, 1:string, 2:string, 3:int, 5:string, 11:bigint, 1:string, 2:string, 3:int, 5:string
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 3), FilterLongColEqualLongScalar(col 0:bigint, val 1090969))
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [4]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 4:string
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 4:string
+            Execution mode: vectorized
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
-                notVectorizedReason: Select expression for SELECT operator: Virtual column PARTITION__SPEC__ID is not supported
-                vectorized: false
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 6
+                    includeColumns: [0, 1, 2, 3, 4, 5]
+                    dataColumns: skey:bigint, hierarchy_number:string, hierarchy_name:string, language_id:int, hierarchy_display:string, orderby:string
+                    neededVirtualColumns: [PARTITION_SPEC_ID, FILE_PATH, ROW_POSITION, PARTITION_HASH]
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint]
         Reducer 2 
             MergeJoin Vectorization:
                 enabled: false
