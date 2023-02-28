@@ -1101,6 +1101,7 @@
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.roaringbitmap:RoaringBitmap</include>
                   <include>org.roaringbitmap:shims</include>
+                  <include>com.github.luben:zstd-jni</include>
                 </includes>
               </artifactSet>
               <filters>
