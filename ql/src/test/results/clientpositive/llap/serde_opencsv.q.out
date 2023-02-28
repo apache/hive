@@ -53,6 +53,7 @@ STAGE PLANS:
         escapeChar \
         quoteChar '
         separatorChar ,
+        serialization.encoding ISO8859_1
 
 PREHOOK: query: CREATE TABLE serde_opencsv(
                           words STRING,
