@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -120,7 +121,7 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
   @Override public void close(boolean abort) throws IOException {
     if (abort) {
       LOG.info("Aborting is set to TRUE, Closing writerId [{}] without flush.", writerId);
-      producer.close(0, TimeUnit.MICROSECONDS);
+      producer.close(Duration.ofMillis(0));
       return;
     } else {
       LOG.info("Flushing Kafka Producer with writerId [{}]", writerId);
@@ -159,7 +160,7 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
   private void checkExceptions() throws IOException {
     if (sendExceptionRef.get() != null) {
       LOG.error("Send Exception Aborting write from writerId [{}]", writerId);
-      producer.close(0, TimeUnit.MICROSECONDS);
+      producer.close(Duration.ofMillis(0));
       throw new IOException(sendExceptionRef.get());
     }
   }
