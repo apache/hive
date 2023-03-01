@@ -68,7 +68,7 @@ public class CreateFunctionAnalyzer extends AbstractFunctionAnalyzer {
     CreateFunctionDesc desc = new CreateFunctionDesc(functionName, className, isTemporary, resources, null);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
-    addEntities(functionName, className, isTemporary, resources);
+    addEntities(functionName, className, isTemporary, resources, true);
   }
 
   private static final Map<Integer, ResourceType> TOKEN_TYPE_TO_RESOURCE_TYPE = ImmutableMap.of(

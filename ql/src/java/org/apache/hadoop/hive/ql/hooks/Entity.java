@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -69,6 +70,11 @@ public class Entity implements Serializable {
    * The partition.This is null if this object is not a partition.
    */
   private Partition p;
+
+  /**
+   * The metastore api function. This is null if this object is not a partition
+   */
+  private Function f;
 
   /**
    * The directory if this is a directory
@@ -293,23 +299,18 @@ public class Entity implements Serializable {
   }
 
   /**
-   * Create an entity representing a object with given name, database namespace and type
-   * @param database - database namespace
-   * @param strObj - object name as string
-   * @param className - function class name
-   * @param type - the entity type. this constructor only supports FUNCTION type currently
+   * Constructor for a function.
+   *
+   * @param f
+   *          Function that is read or written to.
    */
-  public Entity(Database database, String strObj, String className, Type type) {
-    if (type != Type.FUNCTION) {
-      throw new IllegalArgumentException("This constructor is supported only for type:"
-          + Type.FUNCTION);
-    }
-    this.database = database;
-    this.stringObject = strObj;
-    this.className = className;
-    this.typ = type;
-    this.complete = true;
+  public Entity(Function f, boolean complete) {
+    d = null;
+    p = null;
+    this.f = f;
+    typ = Type.FUNCTION;
     name = computeName();
+    this.complete = complete;
   }
 
   /**
@@ -374,6 +375,13 @@ public class Entity implements Serializable {
     return t;
   }
 
+  /**
+   * Get the function associated with the entity.
+   */
+  public Function getFunction() {
+    return f;
+  }
+
   public boolean isDummy() {
     if (typ == Type.DATABASE) {
       return database.getName().equals(SemanticAnalyzer.DUMMY_DATABASE);
@@ -408,9 +416,9 @@ public class Entity implements Serializable {
       return p.getName();
     case FUNCTION:
       if (database != null) {
-        return database.getName() + "." + stringObject;
+        return database.getName() + "." + f.getFunctionName();
       }
-      return stringObject;
+      return f.getFunctionName();
     case SERVICE_NAME:
       return stringObject;
     case DATACONNECTOR:

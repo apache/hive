@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.ddl.function;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
@@ -29,6 +32,7 @@ import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Abstract ancestor of function related ddl analyzer classes.
@@ -42,7 +46,7 @@ public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
    * Add write entities to the semantic analyzer to restrict function creation to privileged users.
    */
   protected void addEntities(String functionName, String className, boolean isTemporary,
-      List<ResourceUri> resources) throws SemanticException {
+      List<ResourceUri> resources, boolean isCreate) throws SemanticException {
     // If the function is being added under a database 'namespace', then add an entity representing
     // the database (only applicable to permanent/metastore functions).
     // We also add a second entity representing the function name.
@@ -68,8 +72,20 @@ public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
       outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
     }
 
-    // Add the function name as a WriteEntity
-    outputs.add(new WriteEntity(database, functionName, className, Type.FUNCTION, WriteEntity.WriteType.DDL_NO_LOCK));
+    // Add the function as a WriteEntity
+    Function function;
+    if (isCreate) {
+      function = new Function(functionName, database.getName(), className,
+              SessionState.getUserFromAuthenticator(), PrincipalType.USER,
+              (int) (System.currentTimeMillis() / 1000), FunctionType.JAVA, resources);
+    } else {
+      try {
+        function = db.getFunction(database.getName(), functionName);
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    outputs.add(new WriteEntity(function, WriteEntity.WriteType.DDL_NO_LOCK));
 
     if (resources != null) {
       for (ResourceUri resource : resources) {

@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
@@ -116,16 +117,13 @@ public class ReadEntity extends Entity implements Serializable {
   }
 
   /**
-   * Constructor for objects represented as String. Currently applicable only
-   * for function names.
+   * Constructor for function
    *
-   * @param db
-   * @param objName
-   * @param className
-   * @param type
+   * @param f
+   *              The Function that the query reads from.
    */
-  public ReadEntity(Database db, String objName, String className, Type type) {
-    super(db, objName, className, type);
+  public ReadEntity(Function f) {
+    super(f, true);
   }
 
   /**
