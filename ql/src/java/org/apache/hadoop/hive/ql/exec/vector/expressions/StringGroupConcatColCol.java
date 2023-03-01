@@ -402,7 +402,7 @@ public class StringGroupConcatColCol extends VectorExpression {
    * @param sel selected value position array
    * @param n number of qualifying rows
    * @param inV input vector
-   * @param outV ouput vector
+   * @param outV output vector
    */
   private static void propagateNulls(boolean selectedInUse, int n, int[] sel, ColumnVector inV,
       ColumnVector outV) {

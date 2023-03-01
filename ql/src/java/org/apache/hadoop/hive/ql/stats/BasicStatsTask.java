@@ -167,7 +167,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
 
       // The collectable stats for the aggregator needs to be cleared.
-      // For eg. if a file is being loaded, the old number of rows are not valid
+      // For example, if a file is being loaded, the old number of rows are not valid
       // XXX: makes no sense for me... possibly not needed anymore
       if (work.isClearAggregatorStats()) {
         // we choose to keep the invalid stats and only change the setting.
@@ -492,7 +492,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       if (!table.isPartitioned()) {
         return null;
       }
-      // get all partitions that matches with the partition spec
+      // get all partitions that match with the partition spec
       return tblSpec.partitions != null ? unmodifiableList(tblSpec.partitions) : emptyList();
     } else if (work.getLoadTableDesc() != null) {
 

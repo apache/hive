@@ -148,6 +148,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
 	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"}]}
 	engine.hive.enabled 	true                
 	format-version      	2                   
 	iceberg.orc.files.only	false               
@@ -156,6 +157,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	serialization.format	1                   
+	snapshot-count      	0                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	0                   
@@ -189,6 +191,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\"}}
 	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"int\"}]}
 	engine.hive.enabled 	true                
 	format-version      	2                   
 	iceberg.orc.files.only	false               
@@ -197,6 +200,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	serialization.format	1                   
+	snapshot-count      	0                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	0                   

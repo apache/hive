@@ -173,7 +173,7 @@ public class ASTBuilder {
     // NOTE: Calcite considers tbls to be equal if their names are the same. Hence
     // we need to provide Calcite the fully qualified table name (dbname.tblname)
     // and not the user provided aliases.
-    // However in HIVE DB name can not appear in select list; in case of join
+    // However, in HIVE DB name can not appear in select list; in case of join
     // where table names differ only in DB name, Hive would require user
     // introducing explicit aliases for tbl.
     b.add(HiveParser.Identifier, hts.getTableAlias());

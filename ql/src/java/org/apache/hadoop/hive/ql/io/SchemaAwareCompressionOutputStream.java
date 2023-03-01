@@ -24,7 +24,7 @@ import org.apache.hadoop.io.compress.*;
 
 /**
  *
- * SchemaAwareCompressionOutputStream adds the ability to inform the comression stream
+ * SchemaAwareCompressionOutputStream adds the ability to inform the compression stream
  * the current column being compressed.
  *
  */

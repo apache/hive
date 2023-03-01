@@ -13509,7 +13509,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * This api is used to determine where to create acid tables are not.
-   * if the default table type is set to external, then create transcational table should result in acid tables,
+   * if the default table type is set to external, then create transactional table should result in acid tables,
    * else create table should result in external table.
    * */
   private boolean isExternalTableChanged (Map<String, String> tblProp, boolean isTransactional, boolean isExt, boolean isTableTypeChanged) {

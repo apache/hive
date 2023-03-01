@@ -89,7 +89,7 @@ public class Compiler {
 
   /**
    * @param deferClose indicates if the close/destroy should be deferred when the process has been interrupted
-   *             it should be set to true if the compile is called within another method like runInternal,
+   *             it should be set to true if the compile method is called within another method like runInternal,
    *             which defers the close to the called in that method.
    */
   public QueryPlan compile(String rawCommand, boolean deferClose) throws CommandProcessorException {
