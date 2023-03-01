@@ -186,6 +186,12 @@ public class JsonSerDe extends AbstractEncodingAwareSerDe {
     return Text.class;
   }
 
+  /**
+   * Transform Writable data from UTF-8 to charset before serialize.
+   * @param blob
+   * @return
+   */
+  
   @Override
   protected Writable transformFromUTF8(Writable blob) {
     Text text = (Text)blob;
