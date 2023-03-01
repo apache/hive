@@ -101,6 +101,15 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/opencsv-data.txt" INTO
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@serde_opencsv
+PREHOOK: query: SELECT count(*) FROM serde_opencsv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@serde_opencsv
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM serde_opencsv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@serde_opencsv
+#### A masked pattern was here ####
+4
 PREHOOK: query: SELECT * FROM serde_opencsv
 PREHOOK: type: QUERY
 PREHOOK: Input: default@serde_opencsv

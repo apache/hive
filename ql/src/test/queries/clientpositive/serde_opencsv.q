@@ -35,4 +35,6 @@ WITH SERDEPROPERTIES(
 
 LOAD DATA LOCAL INPATH "../../data/files/opencsv-data.txt" INTO TABLE serde_opencsv;
 
+SELECT count(*) FROM serde_opencsv;
+
 SELECT * FROM serde_opencsv;
