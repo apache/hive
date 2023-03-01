@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
@@ -38,7 +37,6 @@ import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.iceberg.relocated.com.google.common.collect.Streams;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
@@ -243,14 +241,21 @@ public final class Catalogs {
    * @return complete map of catalog properties
    */
   private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName, String catalogType) {
-    Map<String, String> catalogProperties = Streams.stream(conf.iterator())
-        .filter(e -> e.getKey().startsWith(InputFormatConfig.GLOBAL_CATALOG_CONFIG_PREFIX)).collect(
-            Collectors.toMap(e -> e.getKey().substring(InputFormatConfig.GLOBAL_CATALOG_CONFIG_PREFIX.length()),
-                Map.Entry::getValue));
+    Map<String, String> globalCatalogProperties = Maps.newHashMap();
+    Map<String, String> catalogProperties = Maps.newHashMap();
     String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
-    catalogProperties.putAll(Streams.stream(conf.iterator()).filter(e -> e.getKey().startsWith(keyPrefix))
-        .collect(Collectors.toMap(e -> e.getKey().substring(keyPrefix.length() + 1), Map.Entry::getValue)));
-    return addCatalogPropertiesIfMissing(conf, catalogType, catalogProperties);
+    for (Map.Entry<String, String> config : conf) {
+      if (config.getKey().startsWith(InputFormatConfig.GLOBAL_CATALOG_CONFIG_PREFIX)) {
+        globalCatalogProperties.put(config.getKey().substring(InputFormatConfig.GLOBAL_CATALOG_CONFIG_PREFIX.length()),
+            config.getValue());
+      } else if (config.getKey().startsWith(keyPrefix)) {
+        catalogProperties.put(config.getKey().substring(keyPrefix.length() + 1), config.getValue());
+      }
+    }
+
+    // Add any catalog specific properties.
+    globalCatalogProperties.putAll(catalogProperties);
+    return addCatalogPropertiesIfMissing(conf, catalogType, globalCatalogProperties);
   }
 
   /**
