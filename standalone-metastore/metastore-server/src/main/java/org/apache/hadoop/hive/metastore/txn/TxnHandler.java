@@ -1561,7 +1561,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           assert true;
         }
 
-        if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn && txnType != TxnType.COMPACTION && txnType != TxnType.REBALANCE_COMPACTION) {
+        if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn && txnType != TxnType.REBALANCE_COMPACTION) {
           moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
         } else if (isReplayedReplTxn) {
           if (rqst.isSetWriteEventInfos()) {

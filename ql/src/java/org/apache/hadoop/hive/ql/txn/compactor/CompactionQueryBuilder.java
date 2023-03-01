@@ -248,11 +248,7 @@ class CompactionQueryBuilder {
       query.append(" temporary external");
     }
     if (operation == Operation.INSERT) {
-      if (compactionType.equals(CompactionType.REBALANCE)) {
-        query.append(" overwrite");
-      } else {
-        query.append(" into");
-      }
+      query.append(CompactionType.REBALANCE.equals(compactionType) ? " overwrite" : " into");
     }
     query.append(" table ");
 
