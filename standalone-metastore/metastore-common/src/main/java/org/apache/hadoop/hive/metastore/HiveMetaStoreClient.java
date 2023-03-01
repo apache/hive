@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.security.auth.login.LoginException;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -621,6 +622,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return transport;
   }
 
+  private Map<String, String> getAdditionalHeaders() {
+    Map<String, String> headers = new HashMap<>();
+    String keyValuePairs = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS);
+    try {
+      List<String> headerKeyValues = Splitter
+              .on(',')
+              .trimResults()
+              .splitToList(keyValuePairs);
+      for (String header : headerKeyValues) {
+        String[] parts = header.split("=");
+        headers.put(parts[0].trim(), parts[1].trim());
+      }
+    } catch (Exception ex) {
+      LOG.warn("Could not parse the headers provided in " + ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS, ex);
+    }
+    return headers;
+  }
+
   /*
   Creates a THttpClient if HTTP mode is enabled. If Client auth mode is set to JWT,
   then the method fetches JWT from environment variable: HMS_JWT and sets in auth
@@ -633,6 +652,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
     String authType = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
+    Map<String, String> additionalHeaders = getAdditionalHeaders();
     if (authType.equalsIgnoreCase("jwt")) {
       // fetch JWT token from environment and set it in Auth Header in HTTP request
       String jwtToken = System.getenv("HMS_JWT");
@@ -646,6 +666,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         public void process(HttpRequest httpRequest, HttpContext httpContext)
             throws HttpException, IOException {
           httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
+          for (String key : additionalHeaders.keySet()) {
+            httpRequest.addHeader(key, additionalHeaders.get(key));
+          }
         }
       });
     } else {
