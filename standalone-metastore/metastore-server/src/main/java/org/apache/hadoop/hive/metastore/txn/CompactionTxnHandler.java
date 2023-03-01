@@ -1556,6 +1556,9 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.Idempotent
   public long findMinOpenTxnIdForCleaner() throws MetaException {
+    if (useMinHistoryWriteId) {
+      return Long.MAX_VALUE;
+    }
     try {
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction)) {
         return getMinOpenTxnIdWaterMark(dbConn);
@@ -1579,7 +1582,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.Idempotent
   @Deprecated
   public long findMinTxnIdSeenOpen() throws MetaException {
-    if (!useMinHistoryLevel) {
+    if (!useMinHistoryLevel || useMinHistoryWriteId) {
       return Long.MAX_VALUE;
     }
     try {
