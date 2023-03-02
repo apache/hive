@@ -4034,7 +4034,7 @@ uint32_t ThriftHiveMetastore_drop_dataconnector_args::read(::apache::thrift::pro
           xfer += iprot->skip(ftype);
         }
         break;
-      case -1:
+      case 2:
         if (ftype == ::apache::thrift::protocol::T_BOOL) {
           xfer += iprot->readBool(this->ifNotExists);
           this->__isset.ifNotExists = true;
@@ -4042,7 +4042,7 @@ uint32_t ThriftHiveMetastore_drop_dataconnector_args::read(::apache::thrift::pro
           xfer += iprot->skip(ftype);
         }
         break;
-      case -2:
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_BOOL) {
           xfer += iprot->readBool(this->checkReferences);
           this->__isset.checkReferences = true;
@@ -4067,16 +4067,16 @@ uint32_t ThriftHiveMetastore_drop_dataconnector_args::write(::apache::thrift::pr
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_drop_dataconnector_args");
 
-  xfer += oprot->writeFieldBegin("checkReferences", ::apache::thrift::protocol::T_BOOL, -2);
-  xfer += oprot->writeBool(this->checkReferences);
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->name);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("ifNotExists", ::apache::thrift::protocol::T_BOOL, -1);
+  xfer += oprot->writeFieldBegin("ifNotExists", ::apache::thrift::protocol::T_BOOL, 2);
   xfer += oprot->writeBool(this->ifNotExists);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldBegin("checkReferences", ::apache::thrift::protocol::T_BOOL, 3);
+  xfer += oprot->writeBool(this->checkReferences);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -4094,16 +4094,16 @@ uint32_t ThriftHiveMetastore_drop_dataconnector_pargs::write(::apache::thrift::p
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_drop_dataconnector_pargs");
 
-  xfer += oprot->writeFieldBegin("checkReferences", ::apache::thrift::protocol::T_BOOL, -2);
-  xfer += oprot->writeBool((*(this->checkReferences)));
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->name)));
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("ifNotExists", ::apache::thrift::protocol::T_BOOL, -1);
+  xfer += oprot->writeFieldBegin("ifNotExists", ::apache::thrift::protocol::T_BOOL, 2);
   xfer += oprot->writeBool((*(this->ifNotExists)));
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString((*(this->name)));
+  xfer += oprot->writeFieldBegin("checkReferences", ::apache::thrift::protocol::T_BOOL, 3);
+  xfer += oprot->writeBool((*(this->checkReferences)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
