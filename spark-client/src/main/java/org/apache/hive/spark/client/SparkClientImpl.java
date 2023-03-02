@@ -240,9 +240,9 @@ class SparkClientImpl implements SparkClient {
     }
 
     String driverJavaOpts = Joiner.on(" ").skipNulls().join(
-        "-verbose:class", "-Dhive.spark.log.dir=" + sparkLogDir, osxTestOpts, conf.get(DRIVER_OPTS_KEY));
+        "-Dhive.spark.log.dir=" + sparkLogDir, osxTestOpts, conf.get(DRIVER_OPTS_KEY));
     String executorJavaOpts = Joiner.on(" ").skipNulls().join(
-            "-verbose:class","-Dhive.spark.log.dir=" + sparkLogDir, osxTestOpts, conf.get(EXECUTOR_OPTS_KEY));
+            "-Dhive.spark.log.dir=" + sparkLogDir, osxTestOpts, conf.get(EXECUTOR_OPTS_KEY));
 
     // Create a file with all the job properties to be read by spark-submit. Change the
     // file's permissions so that only the owner can read it. This avoid having the

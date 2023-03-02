@@ -120,8 +120,8 @@ public class RemoteDriver {
       }
     }
 
-    conf.set("spark.driver.extraJavaOptions", "-verbose:class");
-    conf.set("spark.executor.extraJavaOptions", "-verbose:class");
+    // conf.set("spark.driver.extraJavaOptions", "-verbose:class");
+    // conf.set("spark.executor.extraJavaOptions", "-verbose:class");
     executor = Executors.newCachedThreadPool();
 
     LOG.info("Connecting to: {}:{}", serverAddress, serverPort);

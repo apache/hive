@@ -236,7 +236,7 @@
 
 <property>
   <name>spark.executor.cores</name>
-  <value>4</value>
+  <value>2</value>
 </property>
 
 <property>
@@ -303,6 +303,11 @@
 <property>
   <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
   <value>99</value>
+</property>
+
+<property>
+  <name>yarn.minicluster.yarn.nodemanager.resource.memory-mb</name>
+  <value>4096</value>
 </property>
 
 <!-- remove this after HIVE-18139 -->
