@@ -22813,12 +22813,12 @@ class drop_dataconnector_args(object):
                     self.name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
-            elif fid == -1:
+            elif fid == 2:
                 if ftype == TType.BOOL:
                     self.ifNotExists = iprot.readBool()
                 else:
                     iprot.skip(ftype)
-            elif fid == -2:
+            elif fid == 3:
                 if ftype == TType.BOOL:
                     self.checkReferences = iprot.readBool()
                 else:
@@ -22833,17 +22833,17 @@ class drop_dataconnector_args(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('drop_dataconnector_args')
-        if self.checkReferences is not None:
-            oprot.writeFieldBegin('checkReferences', TType.BOOL, -2)
-            oprot.writeBool(self.checkReferences)
-            oprot.writeFieldEnd()
-        if self.ifNotExists is not None:
-            oprot.writeFieldBegin('ifNotExists', TType.BOOL, -1)
-            oprot.writeBool(self.ifNotExists)
-            oprot.writeFieldEnd()
         if self.name is not None:
             oprot.writeFieldBegin('name', TType.STRING, 1)
             oprot.writeString(self.name.encode('utf-8') if sys.version_info[0] == 2 else self.name)
+            oprot.writeFieldEnd()
+        if self.ifNotExists is not None:
+            oprot.writeFieldBegin('ifNotExists', TType.BOOL, 2)
+            oprot.writeBool(self.ifNotExists)
+            oprot.writeFieldEnd()
+        if self.checkReferences is not None:
+            oprot.writeFieldBegin('checkReferences', TType.BOOL, 3)
+            oprot.writeBool(self.checkReferences)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -22862,7 +22862,12 @@ class drop_dataconnector_args(object):
     def __ne__(self, other):
         return not (self == other)
 all_structs.append(drop_dataconnector_args)
-drop_dataconnector_args.thrift_spec = ()
+drop_dataconnector_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'name', 'UTF8', None, ),  # 1
+    (2, TType.BOOL, 'ifNotExists', None, None, ),  # 2
+    (3, TType.BOOL, 'checkReferences', None, None, ),  # 3
+)
 
 
 class drop_dataconnector_result(object):
