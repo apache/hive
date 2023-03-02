@@ -321,9 +321,4 @@
   <value>false</value>
 </property>
 
-<property>
-  <name>spark.executor.extraJavaOptions</name>
-  <value>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/</value>
-</property>
-
 </configuration>

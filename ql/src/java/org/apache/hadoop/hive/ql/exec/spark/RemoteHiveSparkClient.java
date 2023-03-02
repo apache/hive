@@ -161,7 +161,6 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private int getExecutorCount(long timeout, TimeUnit unit) throws Exception {
     Future<Integer> handler = remoteClient.getExecutorCount();
     int result = handler.get(timeout, unit);
-    LOG.info("VIHANG-DEBUG: Number of executor count: " + result);
     return result;
   }
 

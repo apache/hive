@@ -322,7 +322,6 @@ class SparkClientImpl implements SparkClient {
           SparkClientUtilities.isYarnClientMode(master, deployMode) ||
           master.startsWith("spark")) {
         String mem = conf.get("spark.driver.memory");
-        LOG.info("VIHANG-DEBUG: spark driver memory is " + mem);
         if (mem != null) {
           argv.add("-Xms" + mem);
           argv.add("-Xmx" + mem);
@@ -360,7 +359,6 @@ class SparkClientImpl implements SparkClient {
       }
 
       String executorMemory = conf.get("spark.executor.memory");
-      LOG.info("VIHANG-DEBUG: Executor memory is set to " + executorMemory);
       if (executorMemory != null) {
         argv.add("--executor-memory");
         argv.add(executorMemory);
