@@ -2485,7 +2485,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   void create_dataconnector(1:DataConnector connector) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   DataConnector get_dataconnector_req(1:GetDataConnectorRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  void drop_dataconnector(1:string name, bool ifNotExists, bool checkReferences) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+  void drop_dataconnector(1:string name, 2:bool ifNotExists, 3:bool checkReferences) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_dataconnectors() throws(1:MetaException o1)
   void alter_dataconnector(1:string name, 2:DataConnector connector) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 

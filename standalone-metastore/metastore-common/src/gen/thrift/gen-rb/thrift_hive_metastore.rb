@@ -8520,8 +8520,8 @@ module ThriftHiveMetastore
   class Drop_dataconnector_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     NAME = 1
-    IFNOTEXISTS = -1
-    CHECKREFERENCES = -2
+    IFNOTEXISTS = 2
+    CHECKREFERENCES = 3
 
     FIELDS = {
       NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
