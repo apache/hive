@@ -305,11 +305,6 @@
   <value>99</value>
 </property>
 
-<property>
-  <name>yarn.minicluster.yarn.nodemanager.resource.memory-mb</name>
-  <value>4096</value>
-</property>
-
 <!-- remove this after HIVE-18139 -->
 <property>
   <name>hive.stats.column.autogather</name>
