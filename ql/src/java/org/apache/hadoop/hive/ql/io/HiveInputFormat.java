@@ -800,6 +800,29 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         Operator op = mrwork.getAliasToWork().get(aliases.get(0));
         if ((op != null) && (op instanceof TableScanOperator)) {
           tableScan = (TableScanOperator) op;
+
+          if (!currentDirs.isEmpty() &&
+              inputFormatClass.equals(currentInputFormatClass) &&
+              table.equals(currentTable) &&
+              tableScan == currentTableScan) {
+            currentDirs.add(dir);
+            continue;
+          }
+
+          if (!currentDirs.isEmpty()) {
+            LOG.info("Generating splits as currentDirs is not empty. currentDirs: {}", currentDirs);
+
+            // set columns to read in conf
+            if (pushDownProjection) {
+              pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer, fetchVirtualColumns);
+            }
+
+            addSplitsForGroup(currentDirs, currentTableScan, newjob,
+                getInputFormatFromCache(currentInputFormatClass, job),
+                currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
+                currentTable, result);
+          }
+
           //Reset buffers to store filter push down columns
           readColumnsBuffer.setLength(0);
           readColumnNamesBuffer.setLength(0);
@@ -818,28 +841,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         }
       }
 
-      if (!currentDirs.isEmpty() &&
-          inputFormatClass.equals(currentInputFormatClass) &&
-          table.equals(currentTable) &&
-          tableScan == currentTableScan) {
-        currentDirs.add(dir);
-        continue;
-      }
-
-      if (!currentDirs.isEmpty()) {
-        LOG.info("Generating splits as currentDirs is not empty. currentDirs: {}", currentDirs);
-
-        // set columns to read in conf
-        if (pushDownProjection) {
-          pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer, fetchVirtualColumns);
-        }
-
-        addSplitsForGroup(currentDirs, currentTableScan, newjob,
-            getInputFormatFromCache(currentInputFormatClass, job),
-            currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
-            currentTable, result);
-      }
-
       currentDirs.clear();
       currentDirs.add(dir);
       currentTableScan = tableScan;
@@ -852,8 +853,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer, fetchVirtualColumns);
     }
 
-    if (dirs.length != 0) { // TODO: should this be currentDirs?
-      LOG.info("Generating splits for dirs: {}", dirs);
+    if (!currentDirs.isEmpty()) {
+      LOG.info("Generating splits for dirs: {}", currentDirs);
       addSplitsForGroup(currentDirs, currentTableScan, newjob,
           getInputFormatFromCache(currentInputFormatClass, job),
           currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
