@@ -25,11 +25,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.AbstractEncodingAwareSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -70,10 +71,10 @@ import org.apache.hadoop.io.Writable;
  * based Regex library.
  */
 @SerDeSpec(schemaProps = {
-    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES, serdeConstants.SERIALIZATION_ENCODING,
     RegexSerDe.INPUT_REGEX, RegexSerDe.OUTPUT_FORMAT_STRING,
     RegexSerDe.INPUT_REGEX_CASE_SENSITIVE })
-public class RegexSerDe extends AbstractSerDe {
+public class RegexSerDe extends AbstractEncodingAwareSerDe {
 
   public static final String INPUT_REGEX = "input.regex";
   public static final String OUTPUT_FORMAT_STRING = "output.format.string";
@@ -156,7 +157,7 @@ public class RegexSerDe extends AbstractSerDe {
   }
 
   @Override
-  public Object deserialize(Writable blob) throws SerDeException {
+  public Object doDeserialize(Writable blob) throws SerDeException {
 
     if (inputPattern == null) {
       throw new SerDeException(
@@ -200,7 +201,7 @@ public class RegexSerDe extends AbstractSerDe {
   Text outputRowText;
 
   @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector)
+  public Writable doSerialize(Object obj, ObjectInspector objInspector)
       throws SerDeException {
 
     if (outputFormatString == null) {
@@ -250,6 +251,18 @@ public class RegexSerDe extends AbstractSerDe {
     }
     outputRowText.set(outputRowString);
     return outputRowText;
+  }
+
+  @Override
+  protected Writable transformFromUTF8(Writable blob) {
+    Text text = (Text)blob;
+    return SerDeUtils.transformTextFromUTF8(text, this.charset);
+  }
+
+  @Override
+  protected Writable transformToUTF8(Writable blob) {
+    Text text = (Text)blob;
+    return SerDeUtils.transformTextToUTF8(text, this.charset);
   }
 
 }

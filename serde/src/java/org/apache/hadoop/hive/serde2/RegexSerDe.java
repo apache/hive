@@ -67,9 +67,9 @@ import com.google.common.collect.Lists;
  * based Regex library.
  */
 @SerDeSpec(schemaProps = {
-    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES, serdeConstants.SERIALIZATION_ENCODING,
     RegexSerDe.INPUT_REGEX, RegexSerDe.INPUT_REGEX_CASE_SENSITIVE })
-public class RegexSerDe extends AbstractSerDe {
+public class RegexSerDe extends AbstractEncodingAwareSerDe {
 
   public static final String INPUT_REGEX = "input.regex";
   public static final String INPUT_REGEX_CASE_SENSITIVE = "input.regex.case.insensitive";
@@ -159,7 +159,7 @@ public class RegexSerDe extends AbstractSerDe {
   long partialMatchedRowsCount = 0;
 
   @Override
-  public Object deserialize(Writable blob) throws SerDeException {
+  public Object doDeserialize(Writable blob) throws SerDeException {
 
     Text rowText = (Text) blob;
     Matcher m = inputPattern.matcher(rowText.toString());
@@ -267,9 +267,21 @@ public class RegexSerDe extends AbstractSerDe {
   }
 
   @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector)
+  public Writable doSerialize(Object obj, ObjectInspector objInspector)
       throws SerDeException {
         throw new UnsupportedOperationException(
           "Regex SerDe doesn't support the serialize() method");
+  }
+
+  @Override
+  protected Writable transformFromUTF8(Writable blob) {
+    Text text = (Text)blob;
+    return SerDeUtils.transformTextFromUTF8(text, this.charset);
+  }
+
+  @Override
+  protected Writable transformToUTF8(Writable blob) {
+    Text text = (Text)blob;
+    return SerDeUtils.transformTextToUTF8(text, this.charset);
   }
 }
