@@ -205,6 +205,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual int64_t get_latest_txnid_in_conflict(const int64_t txnId) = 0;
   virtual void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) = 0;
   virtual void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) = 0;
+  virtual void add_write_ids_to_min_history(const int64_t txnId, const std::map<std::string, int64_t> & writeIds) = 0;
   virtual void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) = 0;
   virtual void get_max_allocated_table_write_id(MaxAllocatedTableWriteIdResponse& _return, const MaxAllocatedTableWriteIdRequest& rqst) = 0;
   virtual void seed_write_id(const SeedTableWriteIdsRequest& rqst) = 0;
@@ -890,6 +891,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_valid_write_ids(GetValidWriteIdsResponse& /* _return */, const GetValidWriteIdsRequest& /* rqst */) override {
+    return;
+  }
+  void add_write_ids_to_min_history(const int64_t /* txnId */, const std::map<std::string, int64_t> & /* writeIds */) override {
     return;
   }
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& /* _return */, const AllocateTableWriteIdsRequest& /* rqst */) override {
@@ -23695,6 +23699,118 @@ class ThriftHiveMetastore_get_valid_write_ids_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_write_ids_to_min_history_args__isset {
+  _ThriftHiveMetastore_add_write_ids_to_min_history_args__isset() : txnId(false), writeIds(false) {}
+  bool txnId :1;
+  bool writeIds :1;
+} _ThriftHiveMetastore_add_write_ids_to_min_history_args__isset;
+
+class ThriftHiveMetastore_add_write_ids_to_min_history_args {
+ public:
+
+  ThriftHiveMetastore_add_write_ids_to_min_history_args(const ThriftHiveMetastore_add_write_ids_to_min_history_args&);
+  ThriftHiveMetastore_add_write_ids_to_min_history_args& operator=(const ThriftHiveMetastore_add_write_ids_to_min_history_args&);
+  ThriftHiveMetastore_add_write_ids_to_min_history_args() noexcept
+                                                        : txnId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_add_write_ids_to_min_history_args() noexcept;
+  int64_t txnId;
+  std::map<std::string, int64_t>  writeIds;
+
+  _ThriftHiveMetastore_add_write_ids_to_min_history_args__isset __isset;
+
+  void __set_txnId(const int64_t val);
+
+  void __set_writeIds(const std::map<std::string, int64_t> & val);
+
+  bool operator == (const ThriftHiveMetastore_add_write_ids_to_min_history_args & rhs) const
+  {
+    if (!(txnId == rhs.txnId))
+      return false;
+    if (!(writeIds == rhs.writeIds))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_write_ids_to_min_history_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_write_ids_to_min_history_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_write_ids_to_min_history_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_write_ids_to_min_history_pargs() noexcept;
+  const int64_t* txnId;
+  const std::map<std::string, int64_t> * writeIds;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_write_ids_to_min_history_result__isset {
+  _ThriftHiveMetastore_add_write_ids_to_min_history_result__isset() : o2(false) {}
+  bool o2 :1;
+} _ThriftHiveMetastore_add_write_ids_to_min_history_result__isset;
+
+class ThriftHiveMetastore_add_write_ids_to_min_history_result {
+ public:
+
+  ThriftHiveMetastore_add_write_ids_to_min_history_result(const ThriftHiveMetastore_add_write_ids_to_min_history_result&);
+  ThriftHiveMetastore_add_write_ids_to_min_history_result& operator=(const ThriftHiveMetastore_add_write_ids_to_min_history_result&);
+  ThriftHiveMetastore_add_write_ids_to_min_history_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_add_write_ids_to_min_history_result() noexcept;
+  MetaException o2;
+
+  _ThriftHiveMetastore_add_write_ids_to_min_history_result__isset __isset;
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_write_ids_to_min_history_result & rhs) const
+  {
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_write_ids_to_min_history_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_write_ids_to_min_history_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_write_ids_to_min_history_presult__isset {
+  _ThriftHiveMetastore_add_write_ids_to_min_history_presult__isset() : o2(false) {}
+  bool o2 :1;
+} _ThriftHiveMetastore_add_write_ids_to_min_history_presult__isset;
+
+class ThriftHiveMetastore_add_write_ids_to_min_history_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_write_ids_to_min_history_presult() noexcept;
+  MetaException o2;
+
+  _ThriftHiveMetastore_add_write_ids_to_min_history_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_allocate_table_write_ids_args__isset {
   _ThriftHiveMetastore_allocate_table_write_ids_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -34751,6 +34867,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) override;
   void send_get_valid_write_ids(const GetValidWriteIdsRequest& rqst);
   void recv_get_valid_write_ids(GetValidWriteIdsResponse& _return);
+  void add_write_ids_to_min_history(const int64_t txnId, const std::map<std::string, int64_t> & writeIds) override;
+  void send_add_write_ids_to_min_history(const int64_t txnId, const std::map<std::string, int64_t> & writeIds);
+  void recv_add_write_ids_to_min_history();
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) override;
   void send_allocate_table_write_ids(const AllocateTableWriteIdsRequest& rqst);
   void recv_allocate_table_write_ids(AllocateTableWriteIdsResponse& _return);
@@ -35219,6 +35338,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_latest_txnid_in_conflict(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_repl_tbl_writeid_state(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_valid_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_write_ids_to_min_history(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_allocate_table_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_max_allocated_table_write_id(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_seed_write_id(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -35495,6 +35615,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_latest_txnid_in_conflict"] = &ThriftHiveMetastoreProcessor::process_get_latest_txnid_in_conflict;
     processMap_["repl_tbl_writeid_state"] = &ThriftHiveMetastoreProcessor::process_repl_tbl_writeid_state;
     processMap_["get_valid_write_ids"] = &ThriftHiveMetastoreProcessor::process_get_valid_write_ids;
+    processMap_["add_write_ids_to_min_history"] = &ThriftHiveMetastoreProcessor::process_add_write_ids_to_min_history;
     processMap_["allocate_table_write_ids"] = &ThriftHiveMetastoreProcessor::process_allocate_table_write_ids;
     processMap_["get_max_allocated_table_write_id"] = &ThriftHiveMetastoreProcessor::process_get_max_allocated_table_write_id;
     processMap_["seed_write_id"] = &ThriftHiveMetastoreProcessor::process_seed_write_id;
@@ -37338,6 +37459,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void add_write_ids_to_min_history(const int64_t txnId, const std::map<std::string, int64_t> & writeIds) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_write_ids_to_min_history(txnId, writeIds);
+    }
+    ifaces_[i]->add_write_ids_to_min_history(txnId, writeIds);
+  }
+
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -38788,6 +38918,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) override;
   int32_t send_get_valid_write_ids(const GetValidWriteIdsRequest& rqst);
   void recv_get_valid_write_ids(GetValidWriteIdsResponse& _return, const int32_t seqid);
+  void add_write_ids_to_min_history(const int64_t txnId, const std::map<std::string, int64_t> & writeIds) override;
+  int32_t send_add_write_ids_to_min_history(const int64_t txnId, const std::map<std::string, int64_t> & writeIds);
+  void recv_add_write_ids_to_min_history(const int32_t seqid);
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) override;
   int32_t send_allocate_table_write_ids(const AllocateTableWriteIdsRequest& rqst);
   void recv_allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const int32_t seqid);

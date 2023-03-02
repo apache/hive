@@ -14349,11 +14349,12 @@ class LockRequest(object):
      - agentInfo
      - zeroWaitReadEnabled
      - exclusiveCTAS
+     - locklessReadsEnabled
 
     """
 
 
-    def __init__(self, component=None, txnid=None, user=None, hostname=None, agentInfo="Unknown", zeroWaitReadEnabled=False, exclusiveCTAS=False,):
+    def __init__(self, component=None, txnid=None, user=None, hostname=None, agentInfo="Unknown", zeroWaitReadEnabled=False, exclusiveCTAS=False, locklessReadsEnabled=False,):
         self.component = component
         self.txnid = txnid
         self.user = user
@@ -14361,6 +14362,7 @@ class LockRequest(object):
         self.agentInfo = agentInfo
         self.zeroWaitReadEnabled = zeroWaitReadEnabled
         self.exclusiveCTAS = exclusiveCTAS
+        self.locklessReadsEnabled = locklessReadsEnabled
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -14412,6 +14414,11 @@ class LockRequest(object):
                     self.exclusiveCTAS = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.BOOL:
+                    self.locklessReadsEnabled = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -14452,6 +14459,10 @@ class LockRequest(object):
         if self.exclusiveCTAS is not None:
             oprot.writeFieldBegin('exclusiveCTAS', TType.BOOL, 7)
             oprot.writeBool(self.exclusiveCTAS)
+            oprot.writeFieldEnd()
+        if self.locklessReadsEnabled is not None:
+            oprot.writeFieldBegin('locklessReadsEnabled', TType.BOOL, 8)
+            oprot.writeBool(self.locklessReadsEnabled)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -31570,6 +31581,7 @@ LockRequest.thrift_spec = (
     (5, TType.STRING, 'agentInfo', 'UTF8', "Unknown", ),  # 5
     (6, TType.BOOL, 'zeroWaitReadEnabled', None, False, ),  # 6
     (7, TType.BOOL, 'exclusiveCTAS', None, False, ),  # 7
+    (8, TType.BOOL, 'locklessReadsEnabled', None, False, ),  # 8
 )
 all_structs.append(LockResponse)
 LockResponse.thrift_spec = (

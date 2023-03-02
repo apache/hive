@@ -81,6 +81,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Map;
 
 /**
  * A handler to answer transaction related calls that come into the metastore
@@ -252,6 +253,9 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.ReadOnly
   GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst)
           throws NoSuchTxnException,  MetaException;
+
+  @RetrySemantics.SafeToRetry
+  void addWriteIdsToMinHistory(long txnId, Map<String, Long> minOpenWriteIds) throws MetaException;
 
   /**
    * Allocate a write ID for the given table and associate it with a transaction

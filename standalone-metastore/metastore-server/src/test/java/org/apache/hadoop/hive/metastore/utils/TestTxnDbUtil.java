@@ -216,6 +216,7 @@ public final class TestTxnDbUtil {
       // We want to try these, whether they succeed or fail.
       success &= truncateTable(conn, conf, stmt, "TXN_COMPONENTS");
       success &= truncateTable(conn, conf, stmt, "COMPLETED_TXN_COMPONENTS");
+      success &= truncateTable(conn, conf, stmt, "MIN_HISTORY_WRITE_ID");
       success &= truncateTable(conn, conf, stmt, "TXNS");
       success &= truncateTable(conn, conf, stmt, "TXN_TO_WRITE_ID");
       success &= truncateTable(conn, conf, stmt, "NEXT_WRITE_ID");
