@@ -339,11 +339,11 @@ public class TestCatalogs {
   }
 
   @Test
-  public void testGlobalCatalogProperties() {
+  public void testDefaultCatalogProperties() {
     String catalogProperty = "io.manifest.cache-enabled";
     // Set global property
-    final String globalCatalogProperty = InputFormatConfig.GLOBAL_CATALOG_CONFIG_PREFIX + catalogProperty;
-    conf.setBoolean(globalCatalogProperty, true);
+    final String defaultCatalogProperty = InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX + catalogProperty;
+    conf.setBoolean(defaultCatalogProperty, true);
     HiveCatalog defaultCatalog = (HiveCatalog) Catalogs.loadCatalog(conf, null).get();
     Assert.assertEquals("true", defaultCatalog.properties().get(catalogProperty));
     Assert.assertEquals("true",
