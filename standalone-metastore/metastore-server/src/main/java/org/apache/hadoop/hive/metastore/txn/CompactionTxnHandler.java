@@ -1563,9 +1563,9 @@ class CompactionTxnHandler extends TxnHandler {
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction)) {
         return getMinOpenTxnIdWaterMark(dbConn);
       } catch (SQLException e) {
-        LOG.error("Unable to findMinOpenTxnIdForCleaner", e);
+        LOG.error("Unable to fetch minOpenTxnId for Cleaner", e);
         checkRetryable(e, "findMinOpenTxnIdForCleaner");
-        throw new MetaException("Unable to execute getMinOpenTxnIfForCleaner() " + e.getMessage());
+        throw new MetaException("Unable to execute findMinOpenTxnIdForCleaner() " + e.getMessage());
       } 
     } catch (RetryException e) {
       return findMinOpenTxnIdForCleaner();
