@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
 /**
  * GenericUDFArrayExcept
  */
-@Description(name = "array_except", value = "_FUNC_(array, value) - Returns an array of the elements in array1 but not in array2.", extended =
+@Description(name = "array_except", value = "_FUNC_(array1, array2) - Returns an array of the elements in array1 but not in array2.", extended =
     "Example:\n" + "  > SELECT _FUNC_(array(1, 2, 3,4), array(2,3)) FROM src LIMIT 1;\n"
-        + "  [1,4]") @NDV(maxNdv = 2) public class GenericUDFArrayExcept extends AbstractGenericUDFArrayBase {
+        + "  [1,4]") public class GenericUDFArrayExcept extends AbstractGenericUDFArrayBase {
   static final int ARRAY2_IDX = 1;
   private static final String FUNC_NAME = "ARRAY_EXCEPT";
 

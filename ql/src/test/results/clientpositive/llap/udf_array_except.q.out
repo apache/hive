@@ -2,12 +2,12 @@ PREHOOK: query: DESCRIBE FUNCTION array_except
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION array_except
 POSTHOOK: type: DESCFUNCTION
-array_except(array, value) - Returns an array of the elements in array1 but not in array2.
+array_except(array1, array2) - Returns an array of the elements in array1 but not in array2.
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED array_except
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED array_except
 POSTHOOK: type: DESCFUNCTION
-array_except(array, value) - Returns an array of the elements in array1 but not in array2.
+array_except(array1, array2) - Returns an array of the elements in array1 but not in array2.
 Example:
   > SELECT array_except(array(1, 2, 3,4), array(2,3)) FROM src LIMIT 1;
   [1,4]
@@ -110,3 +110,25 @@ POSTHOOK: Input: default@test_null_array
 NULL
 []
 []
+PREHOOK: query: select value, array_except(value,value) from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select value, array_except(value,value) from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+[]	NULL
+[]	[]
+[]	[]
+PREHOOK: query: SELECT array_except(array(1, 2, 3, null,3,4),value) from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_except(array(1, 2, 3, null,3,4),value) from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+[1,2,3,null,4]
+[1,2,3,null,4]
+[1,2,3,null,4]

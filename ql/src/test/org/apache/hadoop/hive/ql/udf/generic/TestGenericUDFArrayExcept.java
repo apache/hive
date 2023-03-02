@@ -55,12 +55,10 @@ public class TestGenericUDFArrayExcept {
         Object i2 = new IntWritable(2);
         Object i3 = new IntWritable(4);
         Object i4 = new IntWritable(5);
-
         Object i5 = new IntWritable(1);
         Object i6 = new IntWritable(3);
         Object i7 = new IntWritable(2);
         Object i8 = new IntWritable(9);
-
         List<Object> inputList = new ArrayList<>();
         inputList.add(i1);
         inputList.add(i2);
@@ -68,11 +66,11 @@ public class TestGenericUDFArrayExcept {
         inputList.add(i4);
 
         runAndVerify(inputList, asList(i5, i6, i7, i8), asList(i3,i4));
+
         i1 = new FloatWritable(3.3f);
         i2 = new FloatWritable(1.1f);
         i3 = new FloatWritable(4.3f);
         i4 = new FloatWritable(2.22f);
-
         i5 = new FloatWritable(3.3f);
         i6 = new FloatWritable(1.1f);
         i7 = new FloatWritable(2.28f);
@@ -83,7 +81,21 @@ public class TestGenericUDFArrayExcept {
         inputListf.add(i3);
         inputListf.add(i4);
 
-        runAndVerify(inputListf, asList(i5, i6, i7, i8), asList(i3, i4));
+        runAndVerify(new ArrayList<>(inputListf), asList(i5, i6, i7, i8), asList(i3, i4));
+
+        runAndVerify(new ArrayList<>(inputListf),inputList,asList(i1,i2,i3,i4)); // Int & float arrays
+
+        Object s1 = new Text("1");
+        Object s2 = new Text("2");
+        Object s3 = new Text("4");
+        Object s4 = new Text("5");
+        List<Object> inputLists = new ArrayList<>();
+        inputLists.add(s1);
+        inputLists.add(s2);
+        inputLists.add(s3);
+        inputLists.add(s4);
+
+        runAndVerify(new ArrayList<>(inputListf),inputLists,asList(i1,i2,i3,i4)); // float and string arrays
     }
 
     @Test

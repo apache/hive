@@ -35,4 +35,8 @@ select value from test_null_array;
 
 select array_except(value,value) from test_null_array;
 
+select value, array_except(value,value) from test_null_array;
+
+SELECT array_except(array(1, 2, 3, null,3,4),value) from test_null_array;
+
 dfs -rm -r ${system:test.tmp.dir}/test_null_array;
