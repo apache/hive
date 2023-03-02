@@ -60,6 +60,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public boolean hasOldAbort = false;
   public long retryRetention = 0;
   public long nextTxnId = 0;
+  public long minOpenWriteId = -1;
   public long txnId = 0;
   public long commitTime = 0;
   public String poolName;

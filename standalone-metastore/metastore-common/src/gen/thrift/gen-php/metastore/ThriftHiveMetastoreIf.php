@@ -1396,6 +1396,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_valid_write_ids(\metastore\GetValidWriteIdsRequest $rqst);
     /**
+     * @param int $txnId
+     * @param array $writeIds
+     * @throws \metastore\MetaException
+     */
+    public function add_write_ids_to_min_history($txnId, array $writeIds);
+    /**
      * @param \metastore\AllocateTableWriteIdsRequest $rqst
      * @return \metastore\AllocateTableWriteIdsResponse
      * @throws \metastore\NoSuchTxnException
