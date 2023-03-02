@@ -1217,7 +1217,8 @@ struct LockRequest {
     4: required string hostname, // used in 'show locks' to help admins find who has open locks
     5: optional string agentInfo = "Unknown",
     6: optional bool zeroWaitReadEnabled = false,
-    7: optional bool exclusiveCTAS = false
+    7: optional bool exclusiveCTAS = false,
+    8: optional bool locklessReadsEnabled = false
 }
 
 struct LockResponse {
@@ -3003,6 +3004,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void repl_tbl_writeid_state(1: ReplTblWriteIdStateRequest rqst)
   GetValidWriteIdsResponse get_valid_write_ids(1:GetValidWriteIdsRequest rqst)
       throws (1:NoSuchTxnException o1, 2:MetaException o2)
+  void add_write_ids_to_min_history(1:i64 txnId, 2: map<string, i64> writeIds) throws (1:MetaException o2)
   AllocateTableWriteIdsResponse allocate_table_write_ids(1:AllocateTableWriteIdsRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:MetaException o3)
   MaxAllocatedTableWriteIdResponse get_max_allocated_table_write_id(1:MaxAllocatedTableWriteIdRequest rqst)

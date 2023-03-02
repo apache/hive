@@ -140,21 +140,15 @@ public class Cleaner extends MetaStoreCompactorThread {
                     HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_DURATION_UPDATE_INTERVAL, TimeUnit.MILLISECONDS),
                     new CleanerCycleUpdater(MetricsConstants.COMPACTION_CLEANER_CYCLE_DURATION, startedAt));
           }
-
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
-
           checkInterrupt();
 
           List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, retentionTime);
-
           checkInterrupt();
 
           if (!readyToClean.isEmpty()) {
-            long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
-            final long cleanerWaterMark =
-                minTxnIdSeenOpen < 0 ? minOpenTxnId : Math.min(minOpenTxnId, minTxnIdSeenOpen);
-
-            LOG.info("Cleaning based on min open txn id: " + cleanerWaterMark);
+            long minTxnIdSeenOpen = Math.min(minOpenTxnId, txnHandler.findMinTxnIdSeenOpen());
+            
             List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
             // For checking which compaction can be cleaned we can use the minOpenTxnId
             // However findReadyToClean will return all records that were compacted with old version of HMS
@@ -162,19 +156,21 @@ public class Cleaner extends MetaStoreCompactorThread {
             // to the clean method, to avoid cleaning up deltas needed for running queries
             // when min_history_level is finally dropped, than every HMS will commit compaction the new way
             // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
-            for (CompactionInfo compactionInfo : readyToClean) {
-
+            for (CompactionInfo ci : readyToClean) {
               //Check for interruption before scheduling each compactionInfo and return if necessary
               checkInterrupt();
-
+              long cleanerWaterMark = (ci.minOpenWriteId > 0) ? ci.nextTxnId + 1 : minTxnIdSeenOpen;
+              
               CompletableFuture<Void> asyncJob =
                   CompletableFuture.runAsync(
-                          ThrowingRunnable.unchecked(() -> clean(compactionInfo, cleanerWaterMark, metricsEnabled)),
-                          cleanerExecutor)
-                      .exceptionally(t -> {
-                        LOG.error("Error clearing {}", compactionInfo.getFullPartitionName(), t);
-                        return null;
-                      });
+                      ThrowingRunnable.unchecked(() -> {
+                        LOG.info("Cleaning based on min open txn id: " + cleanerWaterMark);
+                        clean(ci, cleanerWaterMark, metricsEnabled);
+                      }), cleanerExecutor)
+                  .exceptionally(t -> {
+                    LOG.error("Error clearing {}", ci.getFullPartitionName(), t);
+                    return null;
+                  });
               cleanerList.add(asyncJob);
             }
 
@@ -212,7 +208,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
   }
 
-  private void clean(CompactionInfo ci, long minOpenTxnGLB, boolean metricsEnabled) throws MetaException {
+  private void clean(CompactionInfo ci, long minOpenTxn, boolean metricsEnabled) throws MetaException {
     LOG.info("Starting cleaning for " + ci);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
@@ -266,7 +262,7 @@ public class Cleaner extends MetaStoreCompactorThread {
             ? resolveStorageDescriptor(t, p).getLocation()
             : location;
         boolean dropPartition = ci.partName != null && p == null;
-        cleanUpTask = () -> removeFiles(path, minOpenTxnGLB, ci, dropPartition);
+        cleanUpTask = () -> removeFiles(path, minOpenTxn, ci, dropPartition);
       } else {
         cleanUpTask = () -> removeFiles(location, ci);
       }
@@ -361,7 +357,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     return " id=" + ci.id;
   }
 
-  private boolean removeFiles(String location, long minOpenTxnGLB, CompactionInfo ci, boolean dropPartition)
+  private boolean removeFiles(String location, long minOpenTxn, CompactionInfo ci, boolean dropPartition)
       throws Exception {
 
     if (dropPartition) {
@@ -390,11 +386,11 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
 
     ValidTxnList validTxnList =
-      TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
+      TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxn);
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     /**
-     * {@code validTxnList} is capped by minOpenTxnGLB so if
+     * {@code validTxnList} is capped by minOpenTxn so if
      * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
      * produced by a compactor, that means every reader that could be active right now see it
      * as well.  That means if this base/delta shadows some earlier base/delta, the it will be
@@ -455,7 +451,9 @@ public class Cleaner extends MetaStoreCompactorThread {
           txnHandler);
     }
     // Make sure there are no leftovers below the compacted watermark
-    conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
+    if (ci.minOpenWriteId < 0) {
+      conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
+    }
     dir = AcidUtils.getAcidState(fs, path, conf, new ValidReaderWriteIdList(
         ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
       Ref.from(false), false, dirSnapshots);
@@ -490,7 +488,8 @@ public class Cleaner extends MetaStoreCompactorThread {
     return obsoleteDirs;
   }
 
-  private boolean removeFiles(String location, CompactionInfo ci) throws IOException, MetaException {
+  private boolean removeFiles(String location, CompactionInfo ci) 
+      throws IOException, MetaException {
     String strIfPurge = ci.getProperty("ifPurge");
     boolean ifPurge = strIfPurge != null || Boolean.parseBoolean(ci.getProperty("ifPurge"));
     
