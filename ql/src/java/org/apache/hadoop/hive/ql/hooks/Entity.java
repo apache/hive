@@ -435,10 +435,10 @@ public class Entity implements Serializable {
     case DUMMYPARTITION:
       return p.getName();
     case FUNCTION:
-      if (database != null) {
-        return database.getName() + "." + f.getFunctionName();
+      if (f != null) {
+        return f.getDbName() + "." + f.getFunctionName();
       }
-      return f != null ? f.getFunctionName() : stringObject;
+      return database != null ? database.getName() + "." + stringObject : stringObject;
     case SERVICE_NAME:
       return stringObject;
     case DATACONNECTOR:
