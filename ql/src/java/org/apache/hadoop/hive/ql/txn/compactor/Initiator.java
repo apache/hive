@@ -149,7 +149,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
           // Currently we invalidate all entries after each cycle, because the bootstrap replication is marked via
           // table property hive.repl.first.inc.pending which would be cached.
-          invalidateMetaCache();
+          metadataCache.invalidate();
           Set<String> skipDBs = Sets.newConcurrentHashSet();
           Set<String> skipTables = Sets.newConcurrentHashSet();
 
@@ -179,7 +179,7 @@ public class Initiator extends MetaStoreCompactorThread {
                 return;
               }
 
-              Table t = computeIfAbsent(ci.getFullTableName(),() -> resolveTable(ci));
+              Table t = metadataCache.computeIfAbsent(ci.getFullTableName(),() -> resolveTable(ci));
               String poolName = getPoolName(ci, t);
               Partition p = resolvePartition(ci);
               if (p == null && ci.partName != null) {
@@ -246,6 +246,12 @@ public class Initiator extends MetaStoreCompactorThread {
     }
   }
 
+  @Override
+  public boolean isCacheEnabled() {
+    return MetastoreConf.getBoolVar(conf,
+            MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
+  }
+
   private void scheduleCompactionIfRequired(CompactionInfo ci, Table t, Partition p, String poolName,
                                             String runAs, boolean metricsEnabled)
       throws MetaException {
@@ -280,7 +286,7 @@ public class Initiator extends MetaStoreCompactorThread {
     Map<String, String> params = t.getParameters();
     String poolName = params == null ? null : params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
     if (StringUtils.isBlank(poolName)) {
-      params = computeIfAbsent(ci.dbname, () -> resolveDatabase(ci)).getParameters();
+      params = metadataCache.computeIfAbsent(ci.dbname, () -> resolveDatabase(ci)).getParameters();
       poolName = params == null ? null : params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
     }
     return poolName;
@@ -329,9 +335,6 @@ public class Initiator extends MetaStoreCompactorThread {
     compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
             COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
-    boolean tableCacheOn = MetastoreConf.getBoolVar(conf,
-        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
-    initializeCache(tableCacheOn);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
   }
@@ -593,7 +596,7 @@ public class Initiator extends MetaStoreCompactorThread {
         return false;
       }
 
-      Table t = computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci));
+      Table t = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci));
       if (t == null) {
         LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
             "table or has been dropped and moving on.");
@@ -605,7 +608,7 @@ public class Initiator extends MetaStoreCompactorThread {
         return false;
       }
 
-      Map<String, String> dbParams = computeIfAbsent(ci.dbname, () -> resolveDatabase(ci)).getParameters();
+      Map<String, String> dbParams = metadataCache.computeIfAbsent(ci.dbname, () -> resolveDatabase(ci)).getParameters();
       if (MetaStoreUtils.isNoAutoCompactSet(dbParams, t.getParameters())) {
         if (Boolean.parseBoolean(MetaStoreUtils.getNoAutoCompact(dbParams))) {
           skipDBs.add(ci.dbname);
