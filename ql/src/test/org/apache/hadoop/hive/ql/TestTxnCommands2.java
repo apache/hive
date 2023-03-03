@@ -29,11 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -1456,21 +1456,28 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     txnHandler.compact(req);
     MRCompactor mrCompactor = Mockito.spy(new MRCompactor(HiveMetaStoreUtils.getHiveMetastoreClient(hiveConf)));
 
+    CountDownLatch ddlStart = new CountDownLatch(1);
     Mockito.doAnswer((Answer<JobConf>) invocationOnMock -> {
       JobConf job = (JobConf) invocationOnMock.callRealMethod();
       job.setMapperClass(SlowCompactorMap.class);
+      //let concurrent DDL oparetaions to start in the middle of the Compaction Txn, right before SlowCompactorMap will
+      //mimic a long-running compaction
+      ddlStart.countDown();
       return job;
     }).when(mrCompactor).createBaseJobConf(any(), any(), any(), any(), any(), any());
 
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
     when(mockedFactory.getCompactorPipeline(any(), any(), any(), any())).thenReturn(new CompactorPipeline(mrCompactor));
 
-    Worker worker = Mockito.spy(new Worker(mockedFactory));
+    Worker worker = new Worker(mockedFactory);
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
 
     CompletableFuture<Void> compactionJob = CompletableFuture.runAsync(worker);
-    Thread.sleep(1000);
+
+    if (!ddlStart.await(5000, TimeUnit.MILLISECONDS)) {
+      Assert.fail("Waiting too long for compaction to start!");
+    }
 
     int compHistory = 0;
     switch (opType) {
