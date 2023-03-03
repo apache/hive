@@ -70,22 +70,23 @@ public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
     }
     if (database != null) {
       outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
-
-    // Add the function as a WriteEntity
-    Function function;
-    if (isCreate) {
-      function = new Function(functionName, database.getName(), className,
-              SessionState.getUserFromAuthenticator(), PrincipalType.USER,
-              (int) (System.currentTimeMillis() / 1000), FunctionType.JAVA, resources);
-    } else {
-      try {
-        function = db.getFunction(database.getName(), functionName);
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
+      // Add the permanent function as a WriteEntity
+      Function function;
+      if (isCreate) {
+        function = new Function(functionName, database.getName(), className,
+                SessionState.getUserFromAuthenticator(), PrincipalType.USER,
+                (int) (System.currentTimeMillis() / 1000), FunctionType.JAVA, resources);
+      } else {
+        try {
+          function = db.getFunction(database.getName(), functionName);
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        }
       }
+      outputs.add(new WriteEntity(function, WriteEntity.WriteType.DDL_NO_LOCK));
+    } else { // Temporary functions
+      outputs.add(new WriteEntity(database, functionName, className, Type.FUNCTION, WriteEntity.WriteType.DDL_NO_LOCK));
     }
-    outputs.add(new WriteEntity(function, WriteEntity.WriteType.DDL_NO_LOCK));
 
     if (resources != null) {
       for (ResourceUri resource : resources) {

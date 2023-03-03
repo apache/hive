@@ -299,6 +299,26 @@ public class Entity implements Serializable {
   }
 
   /**
+   * Create an entity representing a object with given name, database namespace and type
+   * @param database - database namespace
+   * @param strObj - object name as string
+   * @param className - function class name
+   * @param type - the entity type. this constructor only supports FUNCTION type currently
+   */
+  public Entity(Database database, String strObj, String className, Type type) {
+    if (type != Type.FUNCTION) {
+      throw new IllegalArgumentException("This constructor is supported only for type:"
+              + Type.FUNCTION);
+    }
+    this.database = database;
+    this.stringObject = strObj;
+    this.className = className;
+    this.typ = type;
+    this.complete = true;
+    name = computeName();
+  }
+
+  /**
    * Constructor for a function.
    *
    * @param f
@@ -418,7 +438,7 @@ public class Entity implements Serializable {
       if (database != null) {
         return database.getName() + "." + f.getFunctionName();
       }
-      return f.getFunctionName();
+      return f != null ? f.getFunctionName() : stringObject;
     case SERVICE_NAME:
       return stringObject;
     case DATACONNECTOR:
