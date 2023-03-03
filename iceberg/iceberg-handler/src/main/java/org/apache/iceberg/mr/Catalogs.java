@@ -241,21 +241,19 @@ public final class Catalogs {
    * @return complete map of catalog properties
    */
   private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName, String catalogType) {
-    Map<String, String> defaultCatalogProperties = Maps.newHashMap();
     Map<String, String> catalogProperties = Maps.newHashMap();
-    String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
-    for (Map.Entry<String, String> config : conf) {
+    conf.forEach(config -> {
       if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
-        defaultCatalogProperties.put(
+        catalogProperties.putIfAbsent(
             config.getKey().substring(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX.length()), config.getValue());
-      } else if (config.getKey().startsWith(keyPrefix)) {
-        catalogProperties.put(config.getKey().substring(keyPrefix.length() + 1), config.getValue());
+      } else if (config.getKey().startsWith(InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName)) {
+        catalogProperties.put(
+            config.getKey().substring((InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName).length() + 1),
+            config.getValue());
       }
-    }
+    });
 
-    // Add any catalog specific properties.
-    defaultCatalogProperties.putAll(catalogProperties);
-    return addCatalogPropertiesIfMissing(conf, catalogType, defaultCatalogProperties);
+    return addCatalogPropertiesIfMissing(conf, catalogType, catalogProperties);
   }
 
   /**
