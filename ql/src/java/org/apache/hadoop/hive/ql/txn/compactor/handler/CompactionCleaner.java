@@ -64,7 +64,6 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -81,18 +80,18 @@ import static java.util.Objects.isNull;
  * A compaction based implementation of RequestHandler.
  * Provides implementation of creation of compaction clean tasks.
  */
-class CompactionCleanHandler extends RequestHandler {
+class CompactionCleaner extends TaskHandler {
 
-  private static final Logger LOG = LoggerFactory.getLogger(CompactionCleanHandler.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CompactionCleaner.class.getName());
 
-  public CompactionCleanHandler(HiveConf conf, TxnStore txnHandler,
+  public CompactionCleaner(HiveConf conf, TxnStore txnHandler,
                                 MetadataCache metadataCache, boolean metricsEnabled,
-                                FSRemover fsRemover, ExecutorService cleanerExecutor) {
-    super(conf, txnHandler, metadataCache, metricsEnabled, fsRemover, cleanerExecutor);
+                                FSRemover fsRemover) {
+    super(conf, txnHandler, metadataCache, metricsEnabled, fsRemover);
   }
 
   @Override
-  protected List<Runnable> fetchCleanTasks() throws MetaException {
+  public List<Runnable> getTasks() throws MetaException {
     long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
     long retentionTime = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
             ? HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS)
@@ -100,18 +99,17 @@ class CompactionCleanHandler extends RequestHandler {
     List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, retentionTime);
     if (!readyToClean.isEmpty()) {
       long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
-      final long cleanerWaterMark =
-              minTxnIdSeenOpen < 0 ? minOpenTxnId : Math.min(minOpenTxnId, minTxnIdSeenOpen);
-
-      LOG.info("Cleaning based on min open txn id: {}", cleanerWaterMark);
       // For checking which compaction can be cleaned we can use the minOpenTxnId
       // However findReadyToClean will return all records that were compacted with old version of HMS
       // where the CQ_NEXT_TXN_ID is not set. For these compactions we need to provide minTxnIdSeenOpen
       // to the clean method, to avoid cleaning up deltas needed for running queries
       // when min_history_level is finally dropped, than every HMS will commit compaction the new way
       // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
-      return readyToClean.stream().map(ci -> ThrowingRunnable.unchecked(() -> clean(ci, cleanerWaterMark, metricsEnabled)))
-              .collect(Collectors.toList());
+      return readyToClean.stream().map(ci -> {
+        long cleanerWaterMark = (ci.minOpenWriteId > 0) ? ci.nextTxnId + 1 : minTxnIdSeenOpen;
+        LOG.info("Cleaning based on min open txn id: {}", cleanerWaterMark);
+        return ThrowingRunnable.unchecked(() -> clean(ci, cleanerWaterMark, metricsEnabled));
+      }).collect(Collectors.toList());
     }
     return Collections.emptyList();
   }
@@ -123,7 +121,7 @@ class CompactionCleanHandler extends RequestHandler {
             (!isNull(ci.type) ? ci.type.toString().toLowerCase() : null);
     try {
       if (metricsEnabled) {
-        perfLogger.perfLogBegin(CompactionCleanHandler.class.getName(), cleanerMetric);
+        perfLogger.perfLogBegin(CompactionCleaner.class.getName(), cleanerMetric);
       }
       final String location = ci.getProperty("location");
 
@@ -189,7 +187,7 @@ class CompactionCleanHandler extends RequestHandler {
       handleCleanerAttemptFailure(ci);
     }  finally {
       if (metricsEnabled) {
-        perfLogger.perfLogEnd(CompactionCleanHandler.class.getName(), cleanerMetric);
+        perfLogger.perfLogEnd(CompactionCleaner.class.getName(), cleanerMetric);
       }
     }
   }

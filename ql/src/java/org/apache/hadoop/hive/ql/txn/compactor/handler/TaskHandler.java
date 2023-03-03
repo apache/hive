@@ -28,11 +28,8 @@ import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -40,43 +37,25 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 /**
  * An abstract class which defines the list of utility methods for performing cleanup activities.
  */
-public abstract class RequestHandler {
+public abstract class TaskHandler {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RequestHandler.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TaskHandler.class.getName());
   protected final TxnStore txnHandler;
   protected final HiveConf conf;
   protected final boolean metricsEnabled;
   protected final MetadataCache metadataCache;
   protected final FSRemover fsRemover;
-  protected final ExecutorService cleanerExecutor;
 
-  RequestHandler(HiveConf conf, TxnStore txnHandler, MetadataCache metadataCache,
-                         boolean metricsEnabled, FSRemover fsRemover, ExecutorService cleanerExecutor) {
+  TaskHandler(HiveConf conf, TxnStore txnHandler, MetadataCache metadataCache,
+                         boolean metricsEnabled, FSRemover fsRemover) {
     this.conf = conf;
     this.txnHandler = txnHandler;
     this.metadataCache = metadataCache;
     this.metricsEnabled = metricsEnabled;
     this.fsRemover = fsRemover;
-    this.cleanerExecutor = cleanerExecutor;
   }
 
-  protected abstract List<Runnable> fetchCleanTasks() throws MetaException;
-
-  public void process() throws Exception {
-    List<Runnable> tasks = fetchCleanTasks();
-    List<CompletableFuture<Void>> asyncTasks = new ArrayList<>();
-    for (Runnable task : tasks) {
-      CompletableFuture<Void> asyncTask = CompletableFuture.runAsync(
-                      task, cleanerExecutor)
-              .exceptionally(t -> {
-                LOG.error("Error clearing due to :", t);
-                return null;
-              });
-      asyncTasks.add(asyncTask);
-    }
-    //Use get instead of join, so we can receive InterruptedException and shutdown gracefully
-    CompletableFuture.allOf(asyncTasks.toArray(new CompletableFuture[0])).get();
-  }
+  public abstract List<Runnable> getTasks() throws MetaException;
 
   protected Table resolveTable(String dbName, String tableName) throws MetaException {
     try {

@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -29,7 +28,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.CleanupRequest;
-import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.apache.hadoop.hive.ql.txn.compactor.TestCleaner;
@@ -39,10 +37,8 @@ import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -64,24 +60,19 @@ public class TestHandler extends TestCleaner {
     CompactionRequest rqst = new CompactionRequest(t.getDbName(), t.getTableName(), CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
-    MetadataCache metadataCache = new MetadataCache();
+    MetadataCache metadataCache = new MetadataCache(true);
     FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
-    ExecutorService cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
-            COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
-
-    RequestHandler mockedRequestHandler = Mockito.spy(new CompactionCleanHandler(conf, txnHandler, metadataCache,
-            false, mockedFSRemover, cleanerExecutor));
+    TaskHandler mockedTaskHandler = Mockito.spy(new CompactionCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover));
     AtomicBoolean stop = new AtomicBoolean(true);
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
-    cleaner.setRequestHandlers(Arrays.asList(mockedRequestHandler));
+    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
     cleaner.init(stop);
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedRequestHandler, Mockito.times(1)).process();
-    Mockito.verify(mockedRequestHandler, Mockito.times(1)).fetchCleanTasks();
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
   }
 
   @Test
@@ -100,18 +91,14 @@ public class TestHandler extends TestCleaner {
     addBaseFile(t, null, 25L, 25, compactTxn);
 
     //Prevent cleaner from marking the compaction as cleaned
-    MetadataCache mockedMetadataCache = Mockito.spy(MetadataCache.class);
-    mockedMetadataCache.initializeCache(true);
+    MetadataCache mockedMetadataCache = Mockito.spy(new MetadataCache(true));
     TxnStore mockedTxnHandler = spy(txnHandler);
     FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), mockedMetadataCache);
-    ExecutorService cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
-            COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
-    RequestHandler mockedRequestHandler = Mockito.spy(new CompactionCleanHandler(conf, mockedTxnHandler, mockedMetadataCache,
-            false, fsRemover, cleanerExecutor));
+    TaskHandler mockedTaskHandler = Mockito.spy(new CompactionCleaner(conf, mockedTxnHandler, mockedMetadataCache,
+            false, fsRemover));
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
-    cleaner.setRequestHandlers(Arrays.asList(mockedRequestHandler));
+    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
     cleaner.init(new AtomicBoolean(true));
     cleaner.run();
 
@@ -119,6 +106,6 @@ public class TestHandler extends TestCleaner {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(1, compacts.size());
     Mockito.verify(mockedMetadataCache, times(3)).computeIfAbsent(any(), any());
-    Mockito.verify(mockedRequestHandler, times(1)).resolveTable(any(), any());
+    Mockito.verify(mockedTaskHandler, times(1)).resolveTable(any(), any());
   }
 }

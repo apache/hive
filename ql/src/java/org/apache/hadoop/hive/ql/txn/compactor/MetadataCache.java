@@ -21,18 +21,23 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.apache.thrift.TBase;
 
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 public class MetadataCache {
 
-  private Optional<Cache<String, TBase>> metaCache = Optional.empty();
+  private Cache<String, TBase> metaCache;
+
+  public MetadataCache(boolean tableCacheOn) {
+    if (tableCacheOn) {
+      metaCache = CacheBuilder.newBuilder().softValues().build();
+    }
+  }
 
   public <T extends TBase<T,?>> T computeIfAbsent(String key, Callable<T> callable) throws Exception {
-    if (metaCache.isPresent()) {
+    if (metaCache != null) {
       try {
-        return (T) metaCache.get().get(key, callable);
+        return (T) metaCache.get(key, callable);
       } catch (ExecutionException e) {
         throw (Exception) e.getCause();
       }
@@ -40,14 +45,9 @@ public class MetadataCache {
     return callable.call();
   }
 
-  public Optional<Cache<String, TBase>> initializeCache(boolean tableCacheOn) {
-    if (tableCacheOn) {
-      metaCache = Optional.of(CacheBuilder.newBuilder().softValues().build());
+  public void invalidate() {
+    if (metaCache != null) {
+      metaCache.invalidateAll();
     }
-    return metaCache;
-  }
-
-  public void invalidateMetaCache() {
-    metaCache.ifPresent(Cache::invalidateAll);
   }
 }

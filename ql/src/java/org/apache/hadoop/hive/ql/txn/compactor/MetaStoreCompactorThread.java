@@ -46,7 +46,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
  * Compactor threads that runs in the metastore. It uses a {@link TxnStore}
  * to access the internal database.
  */
-public class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread {
+public abstract class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread {
 
   protected TxnStore txnHandler;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
@@ -58,7 +58,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
     // Get our own instance of the transaction handler
     txnHandler = TxnUtils.getTxnStore(conf);
-    metadataCache = new MetadataCache();
+    metadataCache = new MetadataCache(isCacheEnabled());
     // Initialize the RawStore, with the flag marked as true. Since its stored as a ThreadLocal variable in the
     // HMSHandlerContext, it will use the compactor related pool.
     MetastoreConf.setBoolVar(conf, COMPACTOR_USE_CUSTOM_POOL, true);
@@ -92,6 +92,8 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
   @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
     return CompactorUtil.getPartitionsByNames(conf, ci.dbname, ci.tableName, ci.partName);
   }
+
+  public abstract boolean isCacheEnabled();
 
   protected void startCycleUpdater(long updateInterval, Runnable taskToRun) {
     if (cycleUpdaterExecutorService == null) {
