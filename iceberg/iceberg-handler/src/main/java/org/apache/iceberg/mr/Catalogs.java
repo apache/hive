@@ -246,8 +246,8 @@ public final class Catalogs {
     String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
     for (Map.Entry<String, String> config : conf) {
       if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
-        defaultCatalogProperties.put(config.getKey().substring(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX.length()),
-            config.getValue());
+        defaultCatalogProperties.put(
+            config.getKey().substring(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX.length()), config.getValue());
       } else if (config.getKey().startsWith(keyPrefix)) {
         catalogProperties.put(config.getKey().substring(keyPrefix.length() + 1), config.getValue());
       }
