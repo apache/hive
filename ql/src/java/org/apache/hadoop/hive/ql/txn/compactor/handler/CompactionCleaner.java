@@ -26,8 +26,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -44,7 +42,6 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -77,10 +74,10 @@ import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
 import static java.util.Objects.isNull;
 
 /**
- * A compaction based implementation of RequestHandler.
+ * A compaction based implementation of TaskHandler.
  * Provides implementation of creation of compaction clean tasks.
  */
-class CompactionCleaner extends TaskHandler {
+class CompactionCleaner extends AcidTxnCleaner {
 
   private static final Logger LOG = LoggerFactory.getLogger(CompactionCleaner.class.getName());
 
@@ -337,18 +334,10 @@ class CompactionCleaner extends TaskHandler {
     return " id=" + ci.id;
   }
 
-  private ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
+  @Override
+  protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
           throws NoSuchTxnException, MetaException {
-    List<String> tblNames = Collections.singletonList(AcidUtils.getFullTableName(ci.dbname, ci.tableName));
-    GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(tblNames);
-    request.setValidTxnList(validTxnList.writeToString());
-    GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(request);
-    // we could have no write IDs for a table if it was never written to but
-    // since we are in the Cleaner phase of compactions, there must have
-    // been some delta/base dirs
-    assert rsp != null && rsp.getTblValidWriteIdsSize() == 1;
-    ValidReaderWriteIdList validWriteIdList =
-            TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
+    ValidReaderWriteIdList validWriteIdList = super.getValidCleanerWriteIdList(ci, validTxnList);
     /*
      * We need to filter the obsoletes dir list, to only remove directories that were made obsolete by this compaction
      * If we have a higher retentionTime it is possible for a second compaction to run on the same partition. Cleaning up the first compaction

@@ -23,12 +23,13 @@ import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -53,24 +54,22 @@ import java.util.stream.Collectors;
 import static java.util.Objects.isNull;
 import static org.apache.commons.collections4.ListUtils.subtract;
 
-public class AbortCleanHandler extends TaskHandler {
+class TxnAbortedCleaner extends AcidTxnCleaner {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AbortCleanHandler.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TxnAbortedCleaner.class.getName());
 
-  public AbortCleanHandler(HiveConf conf, TxnStore txnHandler,
+  public TxnAbortedCleaner(HiveConf conf, TxnStore txnHandler,
                            MetadataCache metadataCache, boolean metricsEnabled,
                            FSRemover fsRemover) {
     super(conf, txnHandler, metadataCache, metricsEnabled, fsRemover);
   }
 
   /**
-   The following cleanup is based on the following ideas - <br>
+   The following cleanup is based on the following idea - <br>
    1. Aborted cleanup is independent of compaction. This is because directories which are written by
       aborted txns are not visible by any open txns. It is only visible while determining the AcidState (which
-      only sees the aborted deltas and does not read the file).<br>
-   2. There is no limiting factors for aborted directories cleanup (unlike min open txn ID of a table
-      in the case of compaction). As long as the associated aborted directories and its associated metadata in
-      TXN_COMPONENTS is removed, we should be OK.<br><br>
+      only sees the aborted deltas and does not read the file).<br><br>
+
    The following algorithm is used to clean the set of aborted directories - <br>
       a. Find the list of entries which are suitable for cleanup (This is done in {@link TxnStore#findReadyToCleanForAborts(long, long, int)}).<br>
       b. If the table/partition does not exist, then remove the associated aborted entry in TXN_COMPONENTS table. <br>
@@ -105,7 +104,7 @@ public class AbortCleanHandler extends TaskHandler {
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_";
     try {
       if (metricsEnabled) {
-        perfLogger.perfLogBegin(AbortCleanHandler.class.getName(), cleanerMetric);
+        perfLogger.perfLogBegin(TxnAbortedCleaner.class.getName(), cleanerMetric);
       }
       Table t;
       Partition p = null;
@@ -138,15 +137,16 @@ public class AbortCleanHandler extends TaskHandler {
       }
 
       String location = CompactorUtil.resolveStorageDescriptor(t,p).getLocation();
+      ci.runAs = TxnUtils.findUserToRunAs(location, t, conf);
       abortCleanUsingAcidDir(ci, location, minOpenTxn);
 
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", ci,
               e.getMessage());
-
+      throw new MetaException(e.getMessage());
     } finally {
       if (metricsEnabled) {
-        perfLogger.perfLogEnd(AbortCleanHandler.class.getName(), cleanerMetric);
+        perfLogger.perfLogEnd(TxnAbortedCleaner.class.getName(), cleanerMetric);
       }
     }
   }
@@ -158,6 +158,11 @@ public class AbortCleanHandler extends TaskHandler {
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 
     ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
+
+    // Set the highestWriteId of the cleanup equal to the highest watermark.
+    // This is necessary for looking at the complete state of the table till min open txn id.
+    // This is used later on while deleting the records in TXN_COMPONENTS table.
+    ci.highestWriteId = validWriteIdList.getHighWatermark();
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
     Path path = new Path(location);
@@ -206,28 +211,5 @@ public class AbortCleanHandler extends TaskHandler {
       LOG.warn("Leaving aborted entry {} in TXN_COMPONENTS table.", ci);
     }
 
-  }
-
-  private ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
-          throws NoSuchTxnException, MetaException {
-    List<String> tblNames = Collections.singletonList(AcidUtils.getFullTableName(ci.dbname, ci.tableName));
-    GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(tblNames);
-    request.setValidTxnList(validTxnList.writeToString());
-    GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(request);
-    // we could have no write IDs for a table if it was never written to but
-    // since we are in the Cleaner phase of compactions, there must have
-    // been some delta/base dirs
-    assert rsp != null && rsp.getTblValidWriteIdsSize() == 1;
-    ValidReaderWriteIdList validWriteIdList =
-            TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
-    /*
-     * We need to filter the obsoletes dir list, to only remove directories that were made obsolete by this compaction
-     * If we have a higher retentionTime it is possible for a second compaction to run on the same partition. Cleaning up the first compaction
-     * should not touch the newer obsolete directories to not to violate the retentionTime for those.
-     */
-    if (ci.highestWriteId < validWriteIdList.getHighWatermark()) {
-      validWriteIdList = validWriteIdList.updateHighWatermark(ci.highestWriteId);
-    }
-    return validWriteIdList;
   }
 }

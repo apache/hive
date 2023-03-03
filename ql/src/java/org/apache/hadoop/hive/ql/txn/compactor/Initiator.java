@@ -245,7 +245,7 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   @Override
-  public boolean isCacheEnabled() {
+  protected boolean isCacheEnabled() {
     return MetastoreConf.getBoolVar(conf,
             MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
   }

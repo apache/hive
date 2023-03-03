@@ -135,6 +135,8 @@ public abstract class CompactorTest {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, useMinHistoryWriteId());
+    // Set this config to false in the base class, there are extended test classes which set this config to true.
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, false);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);
@@ -347,7 +349,7 @@ public abstract class CompactorTest {
       } else if (open == null || !open.contains(tid)) {
         txnHandler.commitTxn(new CommitTxnRequest(tid));
       } else if (open.contains(tid) && useMinHistoryWriteId()){
-        txnHandler.addWriteIdsToMinHistory(tid, 
+        txnHandler.addWriteIdsToMinHistory(tid,
           Collections.singletonMap(dbName + "." + tblName, minOpenWriteId));
       }
     }
@@ -664,7 +666,7 @@ public abstract class CompactorTest {
    * are used since new (1.3) code has to be able to read old files.
    */
   abstract boolean useHive130DeltaDirName();
-  
+
   protected boolean useMinHistoryWriteId() {
     return false;
   }

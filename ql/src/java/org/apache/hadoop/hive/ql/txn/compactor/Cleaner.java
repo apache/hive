@@ -150,7 +150,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   @Override
-  public boolean isCacheEnabled() {
+  protected boolean isCacheEnabled() {
     return MetastoreConf.getBoolVar(conf,
             MetastoreConf.ConfVars.COMPACTOR_CLEANER_TABLECACHE_ON);
   }

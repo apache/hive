@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -1065,6 +1066,7 @@ public class TestCompactor extends TestCompactorBase {
   }
 
   private void assertAndCompactCleanAbort(String dbName, String tblName, boolean partialAbort, boolean singleSession) throws Exception {
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     Table table = msClient.getTable(dbName, tblName);
@@ -1083,14 +1085,17 @@ public class TestCompactor extends TestCompactorBase {
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
     // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
     // with rows in TXN_COMPONENTS
-    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 1, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"),
+            useCleanerForAbortCleanup ? 0 : 1, count);
     runWorker(conf);
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, rsp.getCompacts().size());
-    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
-    Assert.assertEquals("cws", rsp.getCompacts().get(0).getTablename());
-    Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
+    Assert.assertEquals(useCleanerForAbortCleanup ? 0 : 1, rsp.getCompacts().size());
+    if (!useCleanerForAbortCleanup) {
+      Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+      Assert.assertEquals("cws", rsp.getCompacts().get(0).getTablename());
+      Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
+    }
 
     runCleaner(conf);
 
@@ -1108,10 +1113,12 @@ public class TestCompactor extends TestCompactorBase {
     }
 
     rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, rsp.getCompacts().size());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
-    Assert.assertEquals("cws", rsp.getCompacts().get(0).getTablename());
-    Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
+    Assert.assertEquals(useCleanerForAbortCleanup ? 0 : 1, rsp.getCompacts().size());
+    if (!useCleanerForAbortCleanup) {
+      Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+      Assert.assertEquals("cws", rsp.getCompacts().get(0).getTablename());
+      Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
+    }
   }
 
   @Test
@@ -1119,6 +1126,7 @@ public class TestCompactor extends TestCompactorBase {
     String dbName = "default";
     String tblName1 = "cws1";
     String tblName2 = "cws2";
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
 
     HiveStreamingConnection connection1 = prepareTableAndConnection(dbName, tblName1, 1);
     HiveStreamingConnection connection2 = prepareTableAndConnection(dbName, tblName2, 1);
@@ -1155,7 +1163,8 @@ public class TestCompactor extends TestCompactorBase {
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
     // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
     // with rows in TXN_COMPONENTS
-    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 2, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"),
+            useCleanerForAbortCleanup ? 0 : 2, count);
 
     runWorker(conf);
     runWorker(conf);
@@ -1203,6 +1212,7 @@ public class TestCompactor extends TestCompactorBase {
 
   @Test
   public void testCleanDynPartAbortNoDataLoss() throws Exception {
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
     String dbName = "default";
     String tblName = "cws";
 
@@ -1226,7 +1236,8 @@ public class TestCompactor extends TestCompactorBase {
     runInitiator(conf);
 
     int count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
-    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 4, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"),
+            useCleanerForAbortCleanup ? 3 : 4, count);
 
     runWorker(conf);
     runWorker(conf);
@@ -1258,6 +1269,7 @@ public class TestCompactor extends TestCompactorBase {
   public void testCleanAbortAndMinorCompact() throws Exception {
     String dbName = "default";
     String tblName = "cws";
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
 
     HiveStreamingConnection connection = prepareTableAndConnection(dbName, tblName, 1);
 
@@ -1273,7 +1285,8 @@ public class TestCompactor extends TestCompactorBase {
     runInitiator(conf);
 
     int count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
-    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 2, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"),
+            useCleanerForAbortCleanup ? 1 : 2, count);
 
     runWorker(conf);
     runWorker(conf);

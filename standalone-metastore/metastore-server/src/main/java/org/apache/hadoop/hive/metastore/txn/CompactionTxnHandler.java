@@ -474,7 +474,7 @@ class CompactionTxnHandler extends TxnHandler {
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
            Statement stmt = dbConn.createStatement()) {
         boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
-        String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", MAX(\"TC_WRITEID\"), " +
+        String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
                 "MIN(\"TXN_STARTED\"), COUNT(*) FROM \"TXNS\", \"TXN_COMPONENTS\" " +
                 " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TC_TXNID\" < " + minOpenTxnId +
                 " AND \"TXN_STATE\" = " + TxnStatus.ABORTED +
@@ -486,14 +486,13 @@ class CompactionTxnHandler extends TxnHandler {
           long systemTime = System.currentTimeMillis();
           while(rs.next()) {
             boolean pastTimeThreshold =
-                    checkAbortedTimeThreshold && rs.getLong(5) + abortedTimeThreshold < systemTime;
-            int numAbortedTxns = rs.getInt(6);
+                    checkAbortedTimeThreshold && rs.getLong(4) + abortedTimeThreshold < systemTime;
+            int numAbortedTxns = rs.getInt(5);
             if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
               CompactionInfo info = new CompactionInfo();
               info.dbname = rs.getString(1);
               info.tableName = rs.getString(2);
               info.partName = rs.getString(3);
-              info.highestWriteId = rs.getLong(4);
               readyToCleanAborts.add(info);
             }
           }
