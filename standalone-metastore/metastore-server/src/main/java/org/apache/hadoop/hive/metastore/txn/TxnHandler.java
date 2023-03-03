@@ -3647,9 +3647,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             + "no record found in next_compaction_queue_id");
       }
       long id = rs.getLong(1);
-      s = "UPDATE \"NEXT_COMPACTION_QUEUE_ID\" SET \"NCQ_NEXT\" = " + (id + 1);
+      s = "UPDATE \"NEXT_COMPACTION_QUEUE_ID\" SET \"NCQ_NEXT\" = " + (id + 1) + " WHERE \"NCQ_NEXT\" = " + id;
       LOG.debug("Going to execute update <{}>", s);
-      stmt.executeUpdate(s);
+      if (stmt.executeUpdate(s) != 1) {
+        LOG.debug("The returned compaction ID already taken, obtaining new");
+        return generateCompactionQueueId(stmt);
+      }
       return id;
     }
   }
