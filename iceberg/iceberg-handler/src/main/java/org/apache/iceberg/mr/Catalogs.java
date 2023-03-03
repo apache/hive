@@ -245,7 +245,8 @@ public final class Catalogs {
     conf.forEach(config -> {
       if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
         catalogProperties.putIfAbsent(
-            config.getKey().substring(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX.length()), config.getValue());
+            config.getKey().substring(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX.length()),
+            config.getValue());
       } else if (config.getKey().startsWith(InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName)) {
         catalogProperties.put(
             config.getKey().substring((InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName).length() + 1),
