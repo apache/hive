@@ -73,6 +73,10 @@ public class TestDanglingQOuts {
     for (File file : qfiles) {
       String baseName = file.getName();
       String rd = config.getResultsDir();
+if (baseName.equals("nway_join_with_filters.q")) {
+  System.out.println(rd);
+  System.out.println(baseName);
+}
       File of = new File(rd, baseName + ".out");
       if (outsNeeded.containsKey(of)) {
         System.err.printf("duplicate: [%s;%s] %s\n", config.getClass().getSimpleName(),
