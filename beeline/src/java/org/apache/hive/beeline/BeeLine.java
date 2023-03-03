@@ -1366,15 +1366,22 @@ public class BeeLine implements Closeable {
 
     while (!exit) {
       try {
-        // Execute one instruction; terminate on executing a script if there is an error
-        // in silent mode, prevent the query and prompt being echoed back to terminal
-        String line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
-            .readLine(null, mask) : reader.readLine(getPrompt());
-
-        // trim line
-        if (line != null) {
-          line = line.trim();
+        String line;
+        StringBuilder qsb = new StringBuilder();
+        while ((line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
+                .readLine(null, mask) : reader.readLine(getPrompt())) != null) {
+          // Skipping through comments
+          if (! line.startsWith("--")) {
+            qsb.append(line + "\n");
+          }
         }
+
+        if (line == null)
+        {
+          exit = true;
+          lastExecutionResult = ERRNO_OTHER;
+        }
+        line = qsb.toString();
 
         if (!dispatch(line)) {
           lastExecutionResult = ERRNO_OTHER;
@@ -1499,8 +1506,6 @@ public class BeeLine implements Closeable {
     if (line.trim().length() == 0) {
       return true;
     }
-
-    line = line.trim();
 
     // save it to the current script, if any
     if (scriptOutputFile != null) {

@@ -1208,10 +1208,9 @@ public class Commands {
       beeLine.handleException(e);
     }
 
-    line = line.trim();
     List<String> cmdList = getCmdList(line, entireLineAsCommand);
     for (int i = 0; i < cmdList.size(); i++) {
-      String sql = cmdList.get(i).trim();
+      String sql = cmdList.get(i);
       if (sql.length() != 0) {
         if (!executeInternal(sql, call)) {
           return false;
