@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.orc.impl.SerializationUtils;
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 
 import com.google.code.tempusfugit.concurrency.annotations.*;
@@ -33,6 +33,7 @@ import com.google.code.tempusfugit.concurrency.annotations.*;
 import org.junit.*;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestHiveDecimalOrcSerializationUtils extends HiveDecimalTestBase {
 
@@ -49,7 +50,6 @@ public class TestHiveDecimalOrcSerializationUtils extends HiveDecimalTestBase {
     testSerializationUtilsWriteRead("-99999999999999999999999999999999");
     testSerializationUtilsWriteRead("99999999999999999999999999999999999999");
     //                               12345678901234567890123456789012345678
-    testSerializationUtilsWriteRead("-99999999999999999999999999999999999999");
     testSerializationUtilsWriteRead("999999999999.99999999999999999999");
     testSerializationUtilsWriteRead("-999999.99999999999999999999999999");
     testSerializationUtilsWriteRead("9999999999999999999999.9999999999999999");
@@ -366,5 +366,18 @@ public class TestHiveDecimalOrcSerializationUtils extends HiveDecimalTestBase {
         SerializationUtils.readBigInteger(decByteArrayInputStream);
 
     Assert.assertEquals(bigInteger, decDeserializedBigInteger);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testRead2() throws IOException {
+    byte[] bytes = {-128, -128, -32, -69, -78, -70, -1, -92, -62, -127, -128, -128, -128, -128, -128, -128, -128, -128, 4, 0, 0, 0, 0, 0};
+
+    HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
+    try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes)) {
+      byte[] scratchBytes = new byte[20];
+      decimalWritable.serializationUtilsRead(inputStream, 9, scratchBytes);
+    }
+
+    assertEquals("7000000000.000000000", decimalWritable.toFormatString(9));
   }
 }

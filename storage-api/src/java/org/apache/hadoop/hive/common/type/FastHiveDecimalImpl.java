@@ -1894,7 +1894,8 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
       } else if (offset < 126) {
         middleWord63 = work;
       } else if (offset < 189) {
-        highWord63 =work;
+        work &= 0x3;
+        highWord63 = work;
       } else {
         throw new EOFException("Reading more than 3 words of BigInteger");
       }
