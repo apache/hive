@@ -3650,7 +3650,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       s = "UPDATE \"NEXT_COMPACTION_QUEUE_ID\" SET \"NCQ_NEXT\" = " + (id + 1) + " WHERE \"NCQ_NEXT\" = " + id;
       LOG.debug("Going to execute update <{}>", s);
       if (stmt.executeUpdate(s) != 1) {
-        LOG.debug("The returned compaction ID already taken, obtaining new");
+        //TODO: Eliminate this id generation by implementing: https://issues.apache.org/jira/browse/HIVE-27121
+        LOG.info("The returned compaction ID ({}) already taken, obtaining new", id);
         return generateCompactionQueueId(stmt);
       }
       return id;
