@@ -1561,7 +1561,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           assert true;
         }
 
-        if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn && txnType != TxnType.REBALANCE_COMPACTION) {
+        if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn && !MetaStoreServerUtils.isCompactionTxn(txnType)) {
           moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
         } else if (isReplayedReplTxn) {
           if (rqst.isSetWriteEventInfos()) {
@@ -3757,7 +3757,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               buf.append(", \"CQ_NUMBER_OF_BUCKETS\"");
             }
             if (rqst.isSetOrderByClause()) {
-              buf.append(", \"CQ_ORDER_BY_CLAUSE\"");
+              buf.append(", \"CQ_ORDER_BY\"");
             }
             if (rqst.getProperties() != null) {
               buf.append(", \"CQ_TBLPROPERTIES\"");

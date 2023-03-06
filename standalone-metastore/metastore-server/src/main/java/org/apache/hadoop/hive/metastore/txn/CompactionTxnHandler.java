@@ -67,7 +67,7 @@ class CompactionTxnHandler extends TxnHandler {
           + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
           + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
           + "\"CQ_RETRY_RETENTION\", \"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\", \"CQ_POOL_NAME\", "
-          + "\"CQ_NUMBER_OF_BUCKETS\", \"CQ_ORDER_BY_CLAUSE\" "
+          + "\"CQ_NUMBER_OF_BUCKETS\", \"CQ_ORDER_BY\" "
           + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
   private static final String SELECT_COMPACTION_METRICS_CACHE_QUERY =
       "SELECT \"CMC_METRIC_VALUE\", \"CMC_VERSION\" FROM \"COMPACTION_METRICS_CACHE\" " +
@@ -247,7 +247,7 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
-          "\"CQ_TYPE\", \"CQ_POOL_NAME\", \"CQ_NUMBER_OF_BUCKETS\", \"CQ_ORDER_BY_CLAUSE\", " +
+          "\"CQ_TYPE\", \"CQ_POOL_NAME\", \"CQ_NUMBER_OF_BUCKETS\", \"CQ_ORDER_BY\", " +
             "\"CQ_TBLPROPERTIES\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '" + INITIATED_STATE + "' AND ");
         boolean hasPoolName = StringUtils.isNotBlank(rqst.getPoolName());
         if(hasPoolName) {
@@ -558,14 +558,14 @@ class CompactionTxnHandler extends TxnHandler {
             + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", \"CC_ENQUEUE_TIME\", "
             + "\"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\", "
             + "\"CC_NEXT_TXN_ID\", \"CC_TXN_ID\", \"CC_COMMIT_TIME\", \"CC_POOL_NAME\", \"CC_NUMBER_OF_BUCKETS\","
-            + "\"CC_ORDER_BY_CLAUSE\") "
+            + "\"CC_ORDER_BY\") "
           + "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
             + quoteChar(SUCCEEDED_STATE) + ", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", "
             + getEpochFn(dbProduct) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
             + "\"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", \"CQ_ENQUEUE_TIME\", "
             + "\"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
             + "\"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\", \"CQ_POOL_NAME\", \"CQ_NUMBER_OF_BUCKETS\", "
-            + "\"CQ_ORDER_BY_CLAUSE\" "
+            + "\"CQ_ORDER_BY\" "
             + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
         pStmt = dbConn.prepareStatement(s);
         pStmt.setLong(1, info.id);
@@ -1386,7 +1386,7 @@ class CompactionTxnHandler extends TxnHandler {
                 + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
                 + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
                 + "\"CQ_RETRY_RETENTION\", \"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\", \"CQ_POOL_NAME\", "
-                + "\"CQ_NUMBER_OF_BUCKETS\", \"CQ_ORDER_BY_CLAUSE\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
+                + "\"CQ_NUMBER_OF_BUCKETS\", \"CQ_ORDER_BY\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, ci.id);
         rs = pStmt.executeQuery();
         if (rs.next()) {
