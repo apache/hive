@@ -1181,7 +1181,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public Boolean hasDeleteOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
+  public Boolean hasDeletes(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     boolean foundSince = false;

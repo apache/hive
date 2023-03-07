@@ -2119,7 +2119,7 @@ public class Hive {
         materialization.setSourceTablesCompacted(true);
         return materialization;
       }
-      Boolean b = storageHandler.hasDeleteOperation(
+      Boolean b = storageHandler.hasDeletes(
           table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()));
       if (b == null) {
         Materialization materialization = new Materialization();
