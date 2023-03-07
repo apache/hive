@@ -585,7 +585,7 @@ public abstract class BaseSemanticAnalyzer {
         asOfTimeIndex = index;
       } else if (ct.getToken().getType() == HiveParser.TOK_AS_OF_VERSION) {
         asOfVersionIndex = index;
-      } else if (ct.getToken().getType() == HiveParser.TOK_AS_OF_VERSION_FROM) {
+      } else if (ct.getToken().getType() == HiveParser.TOK_FROM_VERSION) {
         asOfVersionFromIndex = index;
       } else {
         aliasIndex = index;

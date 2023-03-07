@@ -100,7 +100,7 @@ public class ASTBuilder {
     }
 
     if (hTbl.getHiveTableMD().getVersionIntervalFrom() != null) {
-      ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_AS_OF_VERSION_FROM, "TOK_AS_OF_VERSION_FROM")
+      ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_FROM_VERSION, "TOK_FROM_VERSION")
           .add(HiveParser.Number, hTbl.getHiveTableMD().getVersionIntervalFrom());
       b.add(asOfBuilder);
     }
