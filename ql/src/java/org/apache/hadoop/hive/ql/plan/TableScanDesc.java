@@ -112,8 +112,8 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   public static final String AS_OF_VERSION =
       "hive.io.as.of.version";
 
-  public static final String VERSION_INTERVAL_FROM =
-      "hive.io.version.interval.from";
+  public static final String FROM_VERSION =
+      "hive.io.version.from";
 
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
