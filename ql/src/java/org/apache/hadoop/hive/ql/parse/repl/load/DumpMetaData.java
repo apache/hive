@@ -214,10 +214,10 @@ public class DumpMetaData {
     return (this.dumpType == DumpType.OPTIMIZED_BOOTSTRAP);
   }
 
-  public void setOptimizedBootstrapToDumpMetadataFile() throws SemanticException {
+  public void setOptimizedBootstrapToDumpMetadataFile(long executionId) throws SemanticException {
 
     assert (this.getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
-    this.setDump(DumpType.OPTIMIZED_BOOTSTRAP, -1L, -1L, null, -1L, false);
+    this.setDump(DumpType.OPTIMIZED_BOOTSTRAP, -1L, -1L, null, executionId, false);
     this.write(true);
   }
 

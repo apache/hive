@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -368,7 +369,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                 metricCollector, dmd.isReplScopeModified());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         if (dmd.isPreOptimizedBootstrapDump()) {
-          dmd.setOptimizedBootstrapToDumpMetadataFile();
+          dmd.setOptimizedBootstrapToDumpMetadataFile(conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L));
         }
       } else {
         ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED, null, conf,  sourceDbNameOrPattern, null);
