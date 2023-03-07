@@ -20,6 +20,7 @@ package org.apache.hive.common.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -1174,4 +1175,25 @@ public class HiveStringUtils {
     return lineTrimmed.startsWith("#") || lineTrimmed.startsWith("--");
   }
 
+  /**
+   * Returns integer value of a string. If the string value exceeds max int, returns Integer.MAX_VALUE
+   * else if the string value is less than min int, returns Integer.MAX_VALUE
+   *
+   * @param value value of the input string
+   * @return integer
+   */
+  public static int convertStringToBoundedInt(String value) {
+    try {
+      BigInteger bigIntValue = new BigInteger(value);
+      if (bigIntValue.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
+        return Integer.MAX_VALUE;
+      } else if ((bigIntValue.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) < 0)) {
+        return Integer.MIN_VALUE;
+      } else {
+        return bigIntValue.intValue();
+      }
+    } catch(NumberFormatException nfe){
+      throw new IllegalArgumentException("Please specify integer option. Provided option is " + value);
+    }
+  }
 }

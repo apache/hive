@@ -309,6 +309,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 
+
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
@@ -318,6 +319,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
+
+import org.apache.hive.common.util.HiveStringUtils;
 
 /**
  * Implementation of the semantic analyzer. It generates the query plan.
@@ -1879,9 +1882,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         queryProperties.setHasLimit(true);
         if (ast.getChildCount() == 2) {
           qbp.setDestLimit(ctx_1.dest,
-              Integer.valueOf(ast.getChild(0).getText()), Integer.valueOf(ast.getChild(1).getText()));
+                  HiveStringUtils.convertStringToBoundedInt(ast.getChild(0).getText()),
+                  HiveStringUtils.convertStringToBoundedInt(ast.getChild(1).getText()));
         } else {
-          qbp.setDestLimit(ctx_1.dest, Integer.valueOf(0), Integer.valueOf(ast.getChild(0).getText()));
+          qbp.setDestLimit(ctx_1.dest, 0,
+                  HiveStringUtils.convertStringToBoundedInt(ast.getChild(0).getText()));
         }
         break;
 
