@@ -2104,11 +2104,24 @@ public class Hive {
 
   private Materialization getMaterializationInvalidationInfo(MaterializedViewMetadata metadata)
       throws TException, HiveException {
-    MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
-    if (mvSnapshot.getTableSnapshots() == null || mvSnapshot.getTableSnapshots().isEmpty()) {
-      return getMSC().getMaterializationInvalidationInfo(
-          metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
+    Optional<SourceTable> first = metadata.getSourceTables().stream().findFirst();
+    if (!first.isPresent()) {
+      // This is unexpected: all MV must have at least one source
+      Materialization materialization = new Materialization();
+      materialization.setSourceTablesCompacted(true);
+      materialization.setSourceTablesUpdateDeleteModified(true);
+      return new Materialization();
+    } else {
+      Table table = getTable(first.get().getTable().getDbName(), first.get().getTable().getTableName());
+      if (!(table.isNonNative() && table.getStorageHandler().areSnapshotsSupported())) {
+        // Mixing native and non-native acid source tables are not supported. If the first source is native acid
+        // the rest is expected to be native acid
+        return getMSC().getMaterializationInvalidationInfo(
+                metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
+      }
     }
+
+    MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
 
     boolean hasDelete = false;
     for (SourceTable sourceTable : metadata.getSourceTables()) {
