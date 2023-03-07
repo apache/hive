@@ -1,4 +1,5 @@
 set hive.cli.print.header=true;
+set hive.auto.convert.anti.join=true;
 
 create table t1 (a int, b varchar(10));
 create table t2 (c int, d varchar(10));

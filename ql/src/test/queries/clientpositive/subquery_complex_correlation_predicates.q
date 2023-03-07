@@ -1,5 +1,7 @@
 -- Test cases with subqueries having complex correlation predicates. 
 
+set hive.auto.convert.anti.join=true;
+
 -- HIVE-24957: Wrong results when subquery has COALESCE in correlation predicate
 create table author
 (
