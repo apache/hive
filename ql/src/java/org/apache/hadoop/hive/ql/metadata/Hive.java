@@ -2127,6 +2127,7 @@ public class Hive {
         return materialization;
       } else if (b) {
         hasDelete = true;
+        break;
       }
     }
     Materialization materialization = new Materialization();
