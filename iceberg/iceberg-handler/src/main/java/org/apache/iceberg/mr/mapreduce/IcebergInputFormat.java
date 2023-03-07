@@ -112,15 +112,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     TableScan scan = table.newScan()
         .caseSensitive(conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT));
     long snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
+    long snapshotIdIntervalFrom = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
     if (snapshotId != -1) {
       scan = scan.useSnapshot(snapshotId);
-    }
-
-    if (snapshotId == -1) {
-      long snapshotIntervalFrom = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
-      if (snapshotIntervalFrom != -1) {
-        scan = scan.appendsBetween(snapshotIntervalFrom, table.currentSnapshot().snapshotId());
-      }
+    } else if (snapshotIdIntervalFrom != -1) {
+      scan = scan.appendsBetween(snapshotIdIntervalFrom, table.currentSnapshot().snapshotId());
     }
 
     long asOfTime = conf.getLong(InputFormatConfig.AS_OF_TIMESTAMP, -1);
