@@ -2276,7 +2276,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.TIME_TRAVEL_NOT_ALLOWED, alias);
         }
         tab.setAsOfVersion(asOf.getAsOfVersion());
-        tab.setVersionIntervalFrom(asOf.getAsOfVersionFrom());
+        tab.setVersionIntervalFrom(asOf.getFromVersion());
         tab.setAsOfTimestamp(asOf.getAsOfTime());
       }
 

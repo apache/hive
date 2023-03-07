@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.ql.parse;
 
 public class QBSystemVersion {
   private final String asOfVersion;
-  private final String asOfVersionFrom;
+  private final String fromVersion;
   private final String asOfTime;
 
-  public QBSystemVersion(String asOfVersion, String asOfVersionFrom, String asOfTime) {
+  public QBSystemVersion(String asOfVersion, String fromVersion, String asOfTime) {
     this.asOfVersion = asOfVersion;
-    this.asOfVersionFrom = asOfVersionFrom;
+    this.fromVersion = fromVersion;
     this.asOfTime = asOfTime;
   }
 
@@ -37,7 +37,7 @@ public class QBSystemVersion {
     return asOfVersion;
   }
 
-  public String getAsOfVersionFrom() {
-    return asOfVersionFrom;
+  public String getFromVersion() {
+    return fromVersion;
   }
 }
