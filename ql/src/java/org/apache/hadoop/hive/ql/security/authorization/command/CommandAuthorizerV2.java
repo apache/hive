@@ -71,7 +71,7 @@ final class CommandAuthorizerV2 {
 
     List<ReadEntity> inputList = new ArrayList<ReadEntity>(inputs);
     List<WriteEntity> outputList = new ArrayList<WriteEntity>(outputs);
-    addPermanentFunctionEntities(ss, inputList, sem);
+    addPermanentFunctionEntities(ss, inputList);
 
     List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputList, selectTab2Cols, hiveOpType, sem);
     List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputList, updateTab2Cols, hiveOpType, sem);
@@ -84,7 +84,7 @@ final class CommandAuthorizerV2 {
     ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs, authzContextBuilder.build());
   }
 
-  private static void addPermanentFunctionEntities(SessionState ss, List<ReadEntity> inputList, BaseSemanticAnalyzer sem) throws HiveException {
+  private static void addPermanentFunctionEntities(SessionState ss, List<ReadEntity> inputList) throws HiveException {
     for (Entry<String, FunctionInfo> function : ss.getCurrentFunctionsInUse().entrySet()) {
       if (function.getValue().getFunctionType() != FunctionType.PERSISTENT) {
         // Built-in function access is allowed to all users. If user can create a temp function, they may use it.
@@ -92,8 +92,9 @@ final class CommandAuthorizerV2 {
       }
 
       String[] qualifiedFunctionName = FunctionUtils.getQualifiedFunctionNameParts(function.getKey());
-      // For the purpose of authorization, we need to send full function object.
-      inputList.add(new ReadEntity(sem.getDb().getFunction(qualifiedFunctionName[0], qualifiedFunctionName[1])));
+      // this is only for the purpose of authorization, only the name matters.
+      Database db = new Database(qualifiedFunctionName[0], "", "", null);
+      inputList.add(new ReadEntity(db, qualifiedFunctionName[1], function.getValue().getClassName(), Type.FUNCTION));
     }
   }
 
@@ -219,9 +220,15 @@ final class CommandAuthorizerV2 {
           actionType, null, null, null, null);
       break;
     case FUNCTION:
-      String dbName = privObject.getDatabase() != null ? privObject.getDatabase().getName() : null;
-      hivePrivObject = new HivePrivilegeObject(privObjType, dbName, privObject.getFunctionName(),
-          null, null, actionType, null, privObject.getClassName(), null, null);
+      if (privObject.getFunction() != null) {
+        Function function = privObject.getFunction();
+        hivePrivObject = new HivePrivilegeObject(privObjType, function.getDbName(), function.getFunctionName(),
+                null, null, actionType, null, function.getClassName(), function.getOwnerName(), function.getOwnerType());
+      } else {
+        String dbName = privObject.getDatabase() != null ? privObject.getDatabase().getName() : null;
+        hivePrivObject = new HivePrivilegeObject(privObjType, dbName, privObject.getFunctionName(),
+                null, null, actionType, null, privObject.getClassName(), null, null);
+      }
       break;
     case DUMMYPARTITION:
     case PARTITION:

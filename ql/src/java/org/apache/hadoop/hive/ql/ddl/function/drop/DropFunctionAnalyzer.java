@@ -62,6 +62,6 @@ public class DropFunctionAnalyzer extends AbstractFunctionAnalyzer {
     DropFunctionDesc desc = new DropFunctionDesc(functionName, isTemporary, null);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
-    addEntities(functionName, info.getClassName(), isTemporary, null, false);
+    addEntities(functionName, info.getClassName(), isTemporary, null);
   }
 }

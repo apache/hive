@@ -117,13 +117,16 @@ public class ReadEntity extends Entity implements Serializable {
   }
 
   /**
-   * Constructor for function
+   * Constructor for objects represented as String. Currently applicable only
+   * for function names.
    *
-   * @param f
-   *              The Function that the query reads from.
+   * @param db
+   * @param objName
+   * @param className
+   * @param type
    */
-  public ReadEntity(Function f) {
-    super(f, true);
+  public ReadEntity(Database db, String objName, String className, Type type) {
+    super(db, objName, className, type);
   }
 
   /**

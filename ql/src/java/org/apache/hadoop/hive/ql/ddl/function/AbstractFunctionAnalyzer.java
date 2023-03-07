@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -46,7 +47,7 @@ public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
    * Add write entities to the semantic analyzer to restrict function creation to privileged users.
    */
   protected void addEntities(String functionName, String className, boolean isTemporary,
-      List<ResourceUri> resources, boolean isCreate) throws SemanticException {
+      List<ResourceUri> resources) throws SemanticException {
     // If the function is being added under a database 'namespace', then add an entity representing
     // the database (only applicable to permanent/metastore functions).
     // We also add a second entity representing the function name.
@@ -72,7 +73,7 @@ public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
       outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
       // Add the permanent function as a WriteEntity
       Function function;
-      if (isCreate) {
+      if (queryState.getHiveOperation().equals(HiveOperation.CREATEFUNCTION)) {
         function = new Function(functionName, database.getName(), className,
                 SessionState.getUserFromAuthenticator(), PrincipalType.USER,
                 (int) (System.currentTimeMillis() / 1000), FunctionType.JAVA, resources);
