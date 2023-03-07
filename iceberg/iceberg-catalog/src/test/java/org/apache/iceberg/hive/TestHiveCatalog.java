@@ -250,7 +250,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
         DB_NAME,
         "tbl_default_owner",
         ImmutableMap.of(),
-        UserGroupInformation.getCurrentUser().getUserName());
+        UserGroupInformation.getCurrentUser().getShortUserName());
   }
 
   private void createTableAndVerifyOwner(
@@ -351,7 +351,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
     createNamespaceAndVerifyOwnership(
         "default_ownership_1",
         ImmutableMap.of(),
-        UserGroupInformation.getCurrentUser().getUserName(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
         PrincipalType.USER);
 
     createNamespaceAndVerifyOwnership(
@@ -359,7 +359,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
         ImmutableMap.of(
             "non_owner_prop1", "value1",
             "non_owner_prop2", "value2"),
-        UserGroupInformation.getCurrentUser().getUserName(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
         PrincipalType.USER);
 
     createNamespaceAndVerifyOwnership(
@@ -657,9 +657,9 @@ public class TestHiveCatalog extends HiveMetastoreTest {
         "set_ownership_noop_3",
         ImmutableMap.of(),
         ImmutableMap.of(),
-        UserGroupInformation.getCurrentUser().getUserName(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
         PrincipalType.USER,
-        UserGroupInformation.getCurrentUser().getUserName(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
         PrincipalType.USER);
 
     setNamespaceOwnershipAndVerify(
@@ -721,7 +721,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
         ImmutableSet.of(HiveCatalog.HMS_DB_OWNER, HiveCatalog.HMS_DB_OWNER_TYPE),
         "some_owner",
         PrincipalType.USER,
-        UserGroupInformation.getCurrentUser().getUserName(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
         PrincipalType.USER);
 
     removeNamespaceOwnershipAndVerify(
@@ -734,25 +734,25 @@ public class TestHiveCatalog extends HiveMetastoreTest {
         ImmutableSet.of(HiveCatalog.HMS_DB_OWNER, HiveCatalog.HMS_DB_OWNER_TYPE),
         "some_group_owner",
         PrincipalType.GROUP,
-        UserGroupInformation.getCurrentUser().getUserName(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
         PrincipalType.USER);
 
     removeNamespaceOwnershipAndVerify(
         "remove_ownership_on_default_noop_1",
         ImmutableMap.of(),
         ImmutableSet.of(HiveCatalog.HMS_DB_OWNER, HiveCatalog.HMS_DB_OWNER_TYPE),
-        UserGroupInformation.getCurrentUser().getUserName(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
         PrincipalType.USER,
-        UserGroupInformation.getCurrentUser().getUserName(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
         PrincipalType.USER);
 
     removeNamespaceOwnershipAndVerify(
         "remove_ownership_on_default_noop_2",
         ImmutableMap.of(),
         ImmutableSet.of(),
-        UserGroupInformation.getCurrentUser().getUserName(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
         PrincipalType.USER,
-        UserGroupInformation.getCurrentUser().getUserName(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
         PrincipalType.USER);
 
     removeNamespaceOwnershipAndVerify(
