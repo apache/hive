@@ -81,7 +81,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_INTIATOR_THREAD_NAME_FORMAT;
-import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -179,7 +178,7 @@ public class Initiator extends MetaStoreCompactorThread {
                 return;
               }
 
-              Table t = metadataCache.computeIfAbsent(ci.getFullTableName(),() -> resolveTable(ci));
+              Table t = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci));
               String poolName = getPoolName(ci, t);
               Partition p = resolvePartition(ci);
               if (p == null && ci.partName != null) {
@@ -292,14 +291,8 @@ public class Initiator extends MetaStoreCompactorThread {
     return poolName;
   }
 
-
   private Database resolveDatabase(CompactionInfo ci) throws MetaException, NoSuchObjectException {
-    try {
-      return getMSForConf(conf).getDatabase(MetaStoreUtils.getDefaultCatalog(conf), ci.dbname);
-    } catch (NoSuchObjectException e) {
-      LOG.error("Unable to find database " + ci.dbname + ", " + e.getMessage());
-      throw e;
-    }
+    return CompactorUtil.resolveDatabase(conf, ci.dbname);
   }
 
   private ValidWriteIdList resolveValidWriteIds(Table t) throws NoSuchTxnException, MetaException {
