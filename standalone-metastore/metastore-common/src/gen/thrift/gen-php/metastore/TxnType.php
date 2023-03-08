@@ -30,6 +30,8 @@ final class TxnType
 
     const SOFT_DELETE = 5;
 
+    const REBALANCE_COMPACTION = 6;
+
     static public $__names = array(
         0 => 'DEFAULT',
         1 => 'REPL_CREATED',
@@ -37,6 +39,7 @@ final class TxnType
         3 => 'COMPACTION',
         4 => 'MATER_VIEW_REBUILD',
         5 => 'SOFT_DELETE',
+        6 => 'REBALANCE_COMPACTION',
     );
 }
 
