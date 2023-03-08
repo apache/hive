@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.slf4j.Logger;
@@ -130,6 +133,24 @@ public class CompactorUtil {
     } catch (Exception e) {
       LOG.error("Unable to get partitions by name = {}.{}.{}", dbName, tableName, partName);
       throw new MetaException(e.toString());
+    }
+  }
+
+  public static Database resolveDatabase(HiveConf conf, String dbName) throws MetaException, NoSuchObjectException {
+    try {
+      return getMSForConf(conf).getDatabase(MetaStoreUtils.getDefaultCatalog(conf), dbName);
+    } catch (NoSuchObjectException e) {
+      LOG.error("Unable to find database {}, {}", dbName, e.getMessage());
+      throw e;
+    }
+  }
+
+  public static Table resolveTable(HiveConf conf, String dbName, String tableName) throws MetaException {
+    try {
+      return getMSForConf(conf).getTable(MetaStoreUtils.getDefaultCatalog(conf), dbName, tableName);
+    } catch (MetaException e) {
+      LOG.error("Unable to find table {}.{}, {}", dbName, tableName, e.getMessage());
+      throw e;
     }
   }
 

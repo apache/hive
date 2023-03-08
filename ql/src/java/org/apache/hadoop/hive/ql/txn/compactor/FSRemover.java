@@ -37,9 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-
 /**
  * A runnable class which takes in cleaningRequestHandler and cleaning request and deletes the files
  * according to the cleaning request.
@@ -103,11 +100,19 @@ public class FSRemover {
             cr.getLocation(), CompactorUtil.getDebugInfo(cr.getObsoleteDirs()));
     boolean needCmRecycle;
     try {
-      Database db = metadataCache.computeIfAbsent(cr.getDbName(), () -> getMSForConf(conf).getDatabase(getDefaultCatalog(conf), cr.getDbName()));
+      Database db = metadataCache.computeIfAbsent(cr.getDbName(),
+              () -> CompactorUtil.resolveDatabase(conf, cr.getDbName()));
       needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
     } catch (NoSuchObjectException ex) {
       // can not drop a database which is a source of replication
       needCmRecycle = false;
+    } catch (RuntimeException ex) {
+      if (ex.getCause() instanceof NoSuchObjectException) {
+        // can not drop a database which is a source of replication
+        needCmRecycle = false;
+      } else {
+        throw ex;
+      }
     } catch (Exception ex) {
       throw new MetaException(ex.getMessage());
     }

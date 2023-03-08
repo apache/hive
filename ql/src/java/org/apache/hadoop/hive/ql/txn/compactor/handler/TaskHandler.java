@@ -31,9 +31,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-
 /**
  * An abstract class which defines the list of utility methods for performing cleanup activities.
  */
@@ -58,12 +55,7 @@ public abstract class TaskHandler {
   public abstract List<Runnable> getTasks() throws MetaException;
 
   protected Table resolveTable(String dbName, String tableName) throws MetaException {
-    try {
-      return getMSForConf(conf).getTable(getDefaultCatalog(conf), dbName, tableName);
-    } catch (MetaException e) {
-      LOG.error("Unable to find table {}.{}, {}", dbName, tableName, e.getMessage());
-      throw e;
-    }
+    return CompactorUtil.resolveTable(conf, dbName, tableName);
   }
 
   protected Partition resolvePartition(String dbName, String tableName, String partName) throws MetaException {
