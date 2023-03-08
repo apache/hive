@@ -656,14 +656,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       if (useSSL) {
         String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
+        if (trustStorePath.isEmpty()) {
+          throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH
+                  + " Not configured for SSL connection");
+        }
         String trustStorePassword =
-            MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
+                MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
         String trustStoreType =
-            MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
+                MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
         String trustStoreAlgorithm =
-            MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+                MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
         tHttpClient = SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword,
-            trustStoreAlgorithm, trustStoreType, httpClientBuilder);
+                trustStoreAlgorithm, trustStoreType, httpClientBuilder);
       }  else {
         tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
       }
