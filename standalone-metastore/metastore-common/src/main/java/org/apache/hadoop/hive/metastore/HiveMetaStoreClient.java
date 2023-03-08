@@ -35,19 +35,8 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -649,7 +638,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private THttpClient createHttpClient(URI store, boolean useSSL) throws MetaException,
       TTransportException {
     String path = MetaStoreUtils.getHttpPath(MetastoreConf.getVar(conf, ConfVars.THRIFT_HTTP_PATH));
-    String httpUrl = (useSSL ? "https://" : "http://") + store.getHost() + ":" + store.getPort() + path;
+    String urlScheme;
+    if (useSSL || Objects.equals(store.getScheme(), "https")) {
+      urlScheme = "https://";
+    } else {
+      urlScheme = "http://";
+    }
+    String httpUrl = urlScheme + store.getHost() + ":" + store.getPort() + path;
 
     HttpClientBuilder httpClientBuilder = createHttpClientBuilder();
     THttpClient tHttpClient;
