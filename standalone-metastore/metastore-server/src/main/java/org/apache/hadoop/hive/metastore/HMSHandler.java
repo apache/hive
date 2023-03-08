@@ -577,7 +577,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return getMSForConf(conf);
   }
 
-  public static RawStore getMSForConf(Configuration conf) throws MetaException {
+  public static synchronized RawStore getMSForConf(Configuration conf) throws MetaException {
     RawStore ms = getRawStore();
     if (ms == null) {
       ms = newRawStoreForConf(conf);

@@ -44,7 +44,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.EOFException;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -185,23 +187,32 @@ public abstract class CompactorOnTezTest {
   }
 
   protected HiveHookEvents.HiveHookEventProto getRelatedTezEvent(String dbTableName) throws Exception {
-    List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
-    for (ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader : readers) {
-      HiveHookEvents.HiveHookEventProto event = reader.readEvent();
-      boolean getRelatedEvent = false;
-      while (!getRelatedEvent) {
-        while (event != null && ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
-          event = reader.readEvent();
+    int retryCount = 3;
+    while (retryCount-- > 0) {
+      try {
+        List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+        for (ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader : readers) {
+          HiveHookEvents.HiveHookEventProto event = reader.readEvent();
+          boolean getRelatedEvent = false;
+          while (!getRelatedEvent) {
+            while (event != null && ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
+              event = reader.readEvent();
+            }
+            // Tables read is the table picked for compaction.
+            if (event != null && event.getTablesReadCount() > 0 && dbTableName.equalsIgnoreCase(event.getTablesRead(0))) {
+              getRelatedEvent = true;
+            } else {
+              event = reader.readEvent();
+            }
+          }
+          if (getRelatedEvent) {
+            return event;
+          }
         }
-        // Tables read is the table picked for compaction.
-        if (event.getTablesReadCount() > 0 && dbTableName.equalsIgnoreCase(event.getTablesRead(0))) {
-          getRelatedEvent = true;
-        } else {
-          event = reader.readEvent();
-        }
-      }
-      if (getRelatedEvent) {
-        return event;
+      } catch (EOFException e) {
+        //Since Event writing is async it may happen that the event we are looking for is not yet written out.
+        //Let's retry it after waiting a bit
+        Thread.sleep(2000);
       }
     }
     return null;
