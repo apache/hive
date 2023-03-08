@@ -66,12 +66,7 @@ public abstract class MetaStoreCompactorThread extends CompactorThread implement
   }
 
   @Override Table resolveTable(CompactionInfo ci) throws MetaException {
-    try {
-      return getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
-    } catch (MetaException e) {
-      LOG.error("Unable to find table " + ci.getFullTableName() + ", " + e.getMessage());
-      throw e;
-    }
+    return CompactorUtil.resolveTable(conf, ci.dbname, ci.tableName);
   }
 
   @Override boolean replIsCompactionDisabledForDatabase(String dbName) throws TException {
