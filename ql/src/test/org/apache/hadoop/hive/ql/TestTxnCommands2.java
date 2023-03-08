@@ -1434,6 +1434,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     execDDLOpAndCompactionConcurrently("TRUNCATE_PARTITION", true);
   }
   private void execDDLOpAndCompactionConcurrently(String opType, boolean isPartioned) throws Exception {
+    // Stats gathering needs to be disabled as it runs in a separate transaction, and it cannot be synchronized using
+    // countdownlatch, because the Statsupdater instance is private and static.
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
 
     String tblName = "hive12352";
