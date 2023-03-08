@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -286,7 +287,7 @@ public abstract class CompactorOnTezTest {
 
     void createDb(String dbName, String poolName) throws Exception {
       executeStatementOnDriver("drop database if exists " + dbName + " cascade", driver);
-      executeStatementOnDriver("create database " + dbName + " WITH DBPROPERTIES('hive.compactor.worker.pool'='" + poolName + "')", driver);
+      executeStatementOnDriver("create database " + dbName + " WITH DBPROPERTIES('" + Constants.HIVE_COMPACTOR_WORKER_POOL + "'='" + poolName + "')", driver);
     }
 
     /**
