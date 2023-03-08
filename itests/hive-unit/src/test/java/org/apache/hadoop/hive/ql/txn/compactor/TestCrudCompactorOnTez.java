@@ -92,19 +92,6 @@ import static org.mockito.Mockito.*;
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
-  public void testRebalanceCompactionWithParallelDeleteAsFirstOptimisticLock() throws Exception {
-    testRebalanceCompactionWithParallelDeleteAsFirst(true);
-  }
-
-  @Test
-  public void testRebalanceCompactionWithParallelDeleteAsFirstPessimisticLock() throws Exception {
-    testRebalanceCompactionWithParallelDeleteAsFirst(false);
-  }
-
-  private void testRebalanceCompactionWithParallelDeleteAsFirst(boolean optimisticLock) throws Exception {
-  }
-
-  @Test
   public void testRebalanceCompactionWithParallelDeleteAsSecondOptimisticLock() throws Exception {
     testRebalanceCompactionWithParallelDeleteAsSecond(true);
   }
