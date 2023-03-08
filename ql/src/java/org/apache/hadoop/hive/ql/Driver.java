@@ -289,6 +289,7 @@ public class Driver implements IDriver {
           }
           // Since we're reusing the compiled plan, we need to update its start time for current run
           driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
+          driverContext.setRetrial(false);
         }
         // Re-check snapshot only in case we had to release locks and open a new transaction,
         // otherwise exclusive locks should protect output tables/partitions in snapshot from concurrent writes.

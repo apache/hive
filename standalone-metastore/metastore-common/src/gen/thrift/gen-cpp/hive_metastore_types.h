@@ -300,7 +300,8 @@ struct TxnType {
     READ_ONLY = 2,
     COMPACTION = 3,
     MATER_VIEW_REBUILD = 4,
-    SOFT_DELETE = 5
+    SOFT_DELETE = 5,
+    REBALANCE_COMPACTION = 6
   };
 };
 
@@ -10648,7 +10649,7 @@ void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b);
 std::ostream& operator<<(std::ostream& out, const HeartbeatTxnRangeResponse& obj);
 
 typedef struct _CompactionRequest__isset {
-  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false), numberOfBuckets(false) {}
+  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false), numberOfBuckets(false), orderByClause(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -10656,6 +10657,7 @@ typedef struct _CompactionRequest__isset {
   bool initiatorVersion :1;
   bool poolName :1;
   bool numberOfBuckets :1;
+  bool orderByClause :1;
 } _CompactionRequest__isset;
 
 class CompactionRequest : public virtual ::apache::thrift::TBase {
@@ -10672,7 +10674,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
                       initiatorId(),
                       initiatorVersion(),
                       poolName(),
-                      numberOfBuckets(0) {
+                      numberOfBuckets(0),
+                      orderByClause() {
   }
 
   virtual ~CompactionRequest() noexcept;
@@ -10690,6 +10693,7 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   std::string initiatorVersion;
   std::string poolName;
   int32_t numberOfBuckets;
+  std::string orderByClause;
 
   _CompactionRequest__isset __isset;
 
@@ -10712,6 +10716,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   void __set_poolName(const std::string& val);
 
   void __set_numberOfBuckets(const int32_t val);
+
+  void __set_orderByClause(const std::string& val);
 
   bool operator == (const CompactionRequest & rhs) const
   {
@@ -10749,6 +10755,10 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.numberOfBuckets && !(numberOfBuckets == rhs.numberOfBuckets))
       return false;
+    if (__isset.orderByClause != rhs.__isset.orderByClause)
+      return false;
+    else if (__isset.orderByClause && !(orderByClause == rhs.orderByClause))
+      return false;
     return true;
   }
   bool operator != (const CompactionRequest &rhs) const {
@@ -10768,7 +10778,7 @@ void swap(CompactionRequest &a, CompactionRequest &b);
 std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj);
 
 typedef struct _CompactionInfoStruct__isset {
-  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false), numberOfBuckets(false) {}
+  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false), numberOfBuckets(false), orderByClause(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -10783,6 +10793,7 @@ typedef struct _CompactionInfoStruct__isset {
   bool retryRetention :1;
   bool poolname :1;
   bool numberOfBuckets :1;
+  bool orderByClause :1;
 } _CompactionInfoStruct__isset;
 
 class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
@@ -10808,7 +10819,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
                          enqueueTime(0),
                          retryRetention(0),
                          poolname(),
-                         numberOfBuckets(0) {
+                         numberOfBuckets(0),
+                         orderByClause() {
   }
 
   virtual ~CompactionInfoStruct() noexcept;
@@ -10834,6 +10846,7 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   int64_t retryRetention;
   std::string poolname;
   int32_t numberOfBuckets;
+  std::string orderByClause;
 
   _CompactionInfoStruct__isset __isset;
 
@@ -10872,6 +10885,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   void __set_poolname(const std::string& val);
 
   void __set_numberOfBuckets(const int32_t val);
+
+  void __set_orderByClause(const std::string& val);
 
   bool operator == (const CompactionInfoStruct & rhs) const
   {
@@ -10938,6 +10953,10 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
     if (__isset.numberOfBuckets != rhs.__isset.numberOfBuckets)
       return false;
     else if (__isset.numberOfBuckets && !(numberOfBuckets == rhs.numberOfBuckets))
+      return false;
+    if (__isset.orderByClause != rhs.__isset.orderByClause)
+      return false;
+    else if (__isset.orderByClause && !(orderByClause == rhs.orderByClause))
       return false;
     return true;
   }

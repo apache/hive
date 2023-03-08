@@ -605,10 +605,15 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
      * @throws TException
      */
     void open(CompactionInfo ci) throws TException {
-      this.txnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
+      this.txnId = msc.openTxn(ci.runAs, ci.type == CompactionType.REBALANCE ? TxnType.REBALANCE_COMPACTION : TxnType.COMPACTION);
       status = TxnStatus.OPEN;
 
-      LockRequest lockRequest = createLockRequest(ci, txnId, LockType.SHARED_READ, DataOperationType.SELECT);
+      LockRequest lockRequest;
+      if (CompactionType.REBALANCE.equals(ci.type)) {
+        lockRequest = createLockRequest(ci, txnId, LockType.EXCL_WRITE, DataOperationType.UPDATE);
+      } else {
+        lockRequest = createLockRequest(ci, txnId, LockType.SHARED_READ, DataOperationType.SELECT);
+      }
       LockResponse res = msc.lock(lockRequest);
       if (res.getState() != LockState.ACQUIRED) {
         throw new TException("Unable to acquire lock(s) on {" + ci.getFullPartitionName()

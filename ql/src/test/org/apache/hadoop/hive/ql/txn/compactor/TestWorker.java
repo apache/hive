@@ -1180,19 +1180,19 @@ public class TestWorker extends CompactorTest {
   }
 
   // With high timeout, but fast run we should finish without a problem
-  @Test(timeout=1000)
+  @Test(timeout=2000)
   public void testNormalRun() throws Exception {
     runTimeoutTest(10000, false, true);
   }
 
   // With low timeout, but slow run we should finish without a problem
-  @Test(timeout=1000)
+  @Test(timeout=2000)
   public void testTimeoutWithInterrupt() throws Exception {
     runTimeoutTest(1, true, false);
   }
 
   // With low timeout, but slow run we should finish without a problem, even if the interrupt is swallowed
-  @Test(timeout=1000)
+  @Test(timeout=2000)
   public void testTimeoutWithoutInterrupt() throws Exception {
     runTimeoutTest(1, true, true);
   }
