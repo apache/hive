@@ -113,6 +113,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.UUID;
@@ -943,8 +944,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.EVENTS.name(), estimatedNumEvents);
       int size = tablesForBootstrap.size();
+      if (db != null && db.getParameters()!=null &&
+        Boolean.parseBoolean(db.getParameters().get(REPL_RESUME_STARTED_AFTER_FAILOVER))) {
+        Collection<String> allTables = Utils.getAllTables(hiveDb, dbName, work.replScope);
+        allTables.retainAll(tablesForBootstrap);
+        size = allTables.size();
+      }
       if (size > 0) {
-        metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) tablesForBootstrap.size());
+        metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) size);
       }
       if (shouldFailover()) {
         Map<String, String> params = db.getParameters();
