@@ -65,6 +65,7 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 /**
  * Hive specific implementation of alter
+ * // test commit
  */
 public class HiveAlterHandler implements AlterHandler {
 
