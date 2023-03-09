@@ -93,7 +93,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   private Iterator<String> externalTableDataCopyItr;
   private ReplStatsTracker replStatsTracker;
   private String scheduledQueryName;
-  private String executionId;
+  private Long executionId;
   private boolean shouldFailover;
   public boolean isFirstFailover;
   public boolean isSecondFailover;
@@ -205,7 +205,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       scheduledQueryName = hiveConf.get(SCHEDULED_QUERY_SCHEDULENAME, "");
       // If the scheduled query name isn't available we don't enable JMX.
       if (!StringUtils.isEmpty(scheduledQueryName) || enableMBeansRegistrationForTests) {
-        executionId = hiveConf.get(SCHEDULED_QUERY_EXECUTIONID, "N/A");
+        executionId = hiveConf.getLong(SCHEDULED_QUERY_EXECUTIONID, 0L);
         String metricsName = "Database-" + dbNameToLoadIn + " Policy-" + scheduledQueryName;
         // Clean-up any MBean registered previously, which couldn't be cleaned up due to some previous error.
         unRegisterMBeanIfRegistered("HiveServer2", metricsName, Collections.emptyMap());
@@ -378,7 +378,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   }
 
   @Override
-  public String getExecutionId() {
+  public Long getExecutionId() {
     return executionId;
   }
 

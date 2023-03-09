@@ -45,9 +45,10 @@ public interface ReplLoadWorkMBean {
 
   /**
    * Gets the execution id of the policy.
+   *
    * @return the execution id.
    */
-  public String getExecutionId();
+  public Long getExecutionId();
 
   /**
    * Gets the dump directory.
