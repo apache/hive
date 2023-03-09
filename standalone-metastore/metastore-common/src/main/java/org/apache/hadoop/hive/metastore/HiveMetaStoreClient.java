@@ -686,8 +686,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         @Override public void process(HttpRequest httpRequest, HttpContext httpContext)
             throws HttpException, IOException {
           httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
-          for (String key : additionalHeaders.keySet()) {
-            httpRequest.addHeader(key, additionalHeaders.get(key));
+          for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+            httpRequest.addHeader(entry.getKey(), entry.getValue());
           }
         }
       });
@@ -705,8 +705,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         @Override public void process(HttpRequest httpRequest, HttpContext httpContext)
             throws HttpException, IOException {
           httpRequest.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
-          for (String key : additionalHeaders.keySet()) {
-            httpRequest.addHeader(key, additionalHeaders.get(key));
+          for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+            httpRequest.addHeader(entry.getKey(), entry.getValue());
           }
         }
       });
