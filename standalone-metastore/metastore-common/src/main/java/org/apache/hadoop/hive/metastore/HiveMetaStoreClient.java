@@ -615,10 +615,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     Map<String, String> headers = new HashMap<>();
     String keyValuePairs = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS);
     try {
-      List<String> headerKeyValues = Splitter
-              .on(',')
-              .trimResults()
-              .splitToList(keyValuePairs);
+      List<String> headerKeyValues = Splitter.on(',').trimResults().splitToList(keyValuePairs);
       for (String header : headerKeyValues) {
         String[] parts = header.split("=");
         headers.put(parts[0].trim(), parts[1].trim());
@@ -635,8 +632,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   then the method fetches JWT from environment variable: HMS_JWT and sets in auth
   header in http request
    */
-  private THttpClient createHttpClient(URI store, boolean useSSL) throws MetaException,
-      TTransportException {
+  private THttpClient createHttpClient(URI store, boolean useSSL) throws MetaException, TTransportException {
     String path = MetaStoreUtils.getHttpPath(MetastoreConf.getVar(conf, ConfVars.THRIFT_HTTP_PATH));
     String urlScheme;
     if (useSSL || Objects.equals(store.getScheme(), "https")) {
@@ -652,26 +648,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       if (useSSL) {
         String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
         if (trustStorePath.isEmpty()) {
-          throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH
-                  + " Not configured for SSL connection");
+          throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH + " Not configured for SSL connection");
         }
-        String trustStorePassword =
-                MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
-        String trustStoreType =
-                MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
-        String trustStoreAlgorithm =
-                MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
-        tHttpClient = SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword,
-                trustStoreAlgorithm, trustStoreType, httpClientBuilder);
-      }  else {
+        String trustStorePassword = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
+        String trustStoreType = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
+        String trustStoreAlgorithm = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+        tHttpClient =
+            SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword, trustStoreAlgorithm,
+                trustStoreType, httpClientBuilder);
+      } else {
         tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
       }
     } catch (Exception e) {
       if (e instanceof TTransportException) {
-        throw (TTransportException)e;
+        throw (TTransportException) e;
       } else {
-        throw new MetaException("Failed to create http transport client to url: " + httpUrl
-            + ". Error:" + e);
+        throw new MetaException("Failed to create http transport client to url: " + httpUrl + ". Error:" + e);
       }
     }
     LOG.debug("Created thrift http client for URL: " + httpUrl);
@@ -687,13 +679,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       String jwtToken = System.getenv("HMS_JWT");
       if (jwtToken == null || jwtToken.isEmpty()) {
         LOG.debug("No jwt token set in environment variable: HMS_JWT");
-        throw new MetaException("For auth mode JWT, valid signed jwt token must be provided in the "
-                + "environment variable HMS_JWT");
+        throw new MetaException(
+            "For auth mode JWT, valid signed jwt token must be provided in the " + "environment variable HMS_JWT");
       }
       httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
-        @Override
-        public void process(HttpRequest httpRequest, HttpContext httpContext)
-                throws HttpException, IOException {
+        @Override public void process(HttpRequest httpRequest, HttpContext httpContext)
+            throws HttpException, IOException {
           httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
           for (String key : additionalHeaders.keySet()) {
             httpRequest.addHeader(key, additionalHeaders.get(key));
@@ -711,9 +702,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       }
       final String httpUser = user;
       httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
-        @Override
-        public void process(HttpRequest httpRequest, HttpContext httpContext)
-                throws HttpException, IOException {
+        @Override public void process(HttpRequest httpRequest, HttpContext httpContext)
+            throws HttpException, IOException {
           httpRequest.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
           for (String key : additionalHeaders.keySet()) {
             httpRequest.addHeader(key, additionalHeaders.get(key));

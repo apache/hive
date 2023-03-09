@@ -39,70 +39,65 @@ import java.io.IOException;
 
 import static org.junit.Assert.*;
 
-@Category(MetastoreCheckinTest.class)
-public class TestHiveMetastoreHttpHeaders {
-    private static Configuration conf;
-    private static HiveMetaStoreClient msc;
-    private static int port;
-    private static final String testHeaderKey1 = "X-XXXX";
-    private static final String testHeaderVal1 = "yyyy";
-    private static final String testHeaderKey2 = "X-ZZZZ";
-    private static final String testHeaderVal2 = "aaaa";
+@Category(MetastoreCheckinTest.class) public class TestHiveMetastoreHttpHeaders {
+  private static Configuration conf;
+  private static HiveMetaStoreClient msc;
+  private static int port;
+  private static final String testHeaderKey1 = "X-XXXX";
+  private static final String testHeaderVal1 = "yyyy";
+  private static final String testHeaderKey2 = "X-ZZZZ";
+  private static final String testHeaderVal2 = "aaaa";
 
-    static class TestHiveMetaStoreClient extends HiveMetaStoreClient {
-        public TestHiveMetaStoreClient(Configuration conf) throws MetaException {
-            super(conf);
+  static class TestHiveMetaStoreClient extends HiveMetaStoreClient {
+    public TestHiveMetaStoreClient(Configuration conf) throws MetaException {
+      super(conf);
+    }
+
+    @Override protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
+      HttpClientBuilder builder = super.createHttpClientBuilder();
+      builder.addInterceptorLast(new HttpRequestInterceptor() {
+        @Override public void process(HttpRequest httpRequest, HttpContext httpContext)
+            throws HttpException, IOException {
+          Header header1 = httpRequest.getFirstHeader(testHeaderKey1);
+          assertEquals(testHeaderVal1, header1.getValue());
+          Header header2 = httpRequest.getFirstHeader(testHeaderKey2);
+          assertEquals(testHeaderVal2, header2.getValue());
         }
-
-        @Override
-        protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
-            HttpClientBuilder builder = super.createHttpClientBuilder();
-            builder.addInterceptorLast(new HttpRequestInterceptor() {
-                @Override
-                public void process(HttpRequest httpRequest, HttpContext httpContext)
-                        throws HttpException, IOException {
-                    Header header1 = httpRequest.getFirstHeader(testHeaderKey1);
-                    assertEquals(testHeaderVal1, header1.getValue());
-                    Header header2 = httpRequest.getFirstHeader(testHeaderKey2);
-                    assertEquals(testHeaderVal2, header2.getValue());
-                }
-            });
-            return builder;
-        }
+      });
+      return builder;
     }
+  }
 
-    @Before
-    public void setUp() throws Exception {
-        conf = MetastoreConf.newMetastoreConf();
+  @Before public void setUp() throws Exception {
+    conf = MetastoreConf.newMetastoreConf();
 
-        MetaStoreTestUtils.setConfForStandloneMode(conf);
-        MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
-        MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_TRANSPORT_MODE, "http");
-        MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE, "http");
-        port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
-        MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_TRANSPORT_MODE, "http");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE, "http");
+    port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+  }
+
+  @Test public void testHttpHeaders() throws Exception {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS,
+        String.format("%s=%s,%s=%s", testHeaderKey1, testHeaderVal1, testHeaderKey2, testHeaderVal2));
+    msc = new TestHiveMetaStoreClient(conf);
+    Database db = new DatabaseBuilder().setName("testHttpHeader").create(msc, conf);
+    msc.dropDatabase(db.getName());
+  }
+
+  @Test public void testIllegalHttpHeaders() throws Exception {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS,
+        String.format("%s%s", testHeaderKey1, testHeaderVal1));
+    msc = new TestHiveMetaStoreClient(conf);
+    boolean exceptionThrown = false;
+    try {
+      Database db = new DatabaseBuilder().setName("testHttpHeader").create(msc, conf);
+      msc.dropDatabase(db.getName());
+    } catch (Exception e) {
+      exceptionThrown = true;
     }
-
-    @Test
-    public void testHttpHeaders() throws Exception {
-        MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS,
-                String.format("%s=%s,%s=%s", testHeaderKey1, testHeaderVal1, testHeaderKey2, testHeaderVal2));
-        msc = new TestHiveMetaStoreClient(conf);
-        Database db = new DatabaseBuilder().setName("testHttpHeader").create(msc, conf);
-        msc.dropDatabase(db.getName());
-    }
-
-    @Test
-    public void testIllegalHttpHeaders() throws Exception {
-        MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS, String.format("%s%s", testHeaderKey1, testHeaderVal1));
-        msc = new TestHiveMetaStoreClient(conf);
-        boolean exceptionThrown = false;
-        try {
-            Database db = new DatabaseBuilder().setName("testHttpHeader").create(msc, conf);
-            msc.dropDatabase(db.getName());
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue("Illegal header should invoke thrown exception", exceptionThrown);
-    }
+    assertTrue("Illegal header should invoke thrown exception", exceptionThrown);
+  }
 }

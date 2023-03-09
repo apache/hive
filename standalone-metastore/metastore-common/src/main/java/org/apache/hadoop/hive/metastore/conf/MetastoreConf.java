@@ -1590,11 +1590,8 @@ public class MetastoreConf {
                 + "environment variable HMS_JWT and set it in Authorization header in http request"),
 
     METASTORE_CLIENT_ADDITIONAL_HEADERS("metastore.client.http.additional.headers",
-            "hive.metastore.client.http.additional.headers",
-            "",
-            "Comma separated list of headers which are passed to the " +
-                    "metastore service in the http headers"
-    ),
+        "hive.metastore.client.http.additional.headers", "",
+        "Comma separated list of headers which are passed to the metastore service in the http headers"),
     METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
             "hive.metastore.client.plain.username",  "",
         "The username used by the metastore client when " +
