@@ -35,8 +35,20 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -613,16 +625,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   private Map<String, String> getAdditionalHeaders() {
     Map<String, String> headers = new HashMap<>();
-    String keyValuePairs = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS);
+    String keyValuePairs = MetastoreConf.getVar(conf,
+        ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS);
     try {
-      List<String> headerKeyValues = Splitter.on(',').trimResults().splitToList(keyValuePairs);
+      List<String> headerKeyValues =
+          Splitter.on(',').trimResults().splitToList(keyValuePairs);
       for (String header : headerKeyValues) {
         String[] parts = header.split("=");
         headers.put(parts[0].trim(), parts[1].trim());
-        LOG.warn(parts[0].trim() + "=" + parts[1].trim());
       }
     } catch (Exception ex) {
-      LOG.warn("Could not parse the headers provided in " + ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS, ex);
+      LOG.warn("Could not parse the headers provided in "
+          + ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS, ex);
     }
     return headers;
   }
@@ -670,6 +684,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return configureThriftMaxMessageSize(tHttpClient);
   }
 
+  @VisibleForTesting
   protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
     String authType = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
@@ -679,11 +694,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       String jwtToken = System.getenv("HMS_JWT");
       if (jwtToken == null || jwtToken.isEmpty()) {
         LOG.debug("No jwt token set in environment variable: HMS_JWT");
-        throw new MetaException(
-            "For auth mode JWT, valid signed jwt token must be provided in the " + "environment variable HMS_JWT");
+        throw new MetaException("For auth mode JWT, valid signed jwt token must be provided in the "
+            + "environment variable HMS_JWT");
       }
       httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
-        @Override public void process(HttpRequest httpRequest, HttpContext httpContext)
+        @Override
+        public void process(HttpRequest httpRequest, HttpContext httpContext)
             throws HttpException, IOException {
           httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
           for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
@@ -702,7 +718,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       }
       final String httpUser = user;
       httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
-        @Override public void process(HttpRequest httpRequest, HttpContext httpContext)
+        @Override
+        public void process(HttpRequest httpRequest, HttpContext httpContext)
             throws HttpException, IOException {
           httpRequest.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
           for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {

@@ -37,9 +37,10 @@ import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
-@Category(MetastoreCheckinTest.class) public class TestHiveMetastoreHttpHeaders {
+@Category(MetastoreCheckinTest.class)
+public class TestHiveMetastoreHttpHeaders {
   private static Configuration conf;
   private static HiveMetaStoreClient msc;
   private static int port;
@@ -53,22 +54,24 @@ import static org.junit.Assert.*;
       super(conf);
     }
 
-    @Override protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
+    @Override
+    protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
       HttpClientBuilder builder = super.createHttpClientBuilder();
       builder.addInterceptorLast(new HttpRequestInterceptor() {
-        @Override public void process(HttpRequest httpRequest, HttpContext httpContext)
-            throws HttpException, IOException {
+        @Override
+        public void process(HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
           Header header1 = httpRequest.getFirstHeader(testHeaderKey1);
-          assertEquals(testHeaderVal1, header1.getValue());
+          Assert.assertEquals(testHeaderVal1, header1.getValue());
           Header header2 = httpRequest.getFirstHeader(testHeaderKey2);
-          assertEquals(testHeaderVal2, header2.getValue());
+          Assert.assertEquals(testHeaderVal2, header2.getValue());
         }
       });
       return builder;
     }
   }
 
-  @Before public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
@@ -79,7 +82,8 @@ import static org.junit.Assert.*;
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
   }
 
-  @Test public void testHttpHeaders() throws Exception {
+  @Test
+  public void testHttpHeaders() throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS,
         String.format("%s=%s,%s=%s", testHeaderKey1, testHeaderVal1, testHeaderKey2, testHeaderVal2));
     msc = new TestHiveMetaStoreClient(conf);
@@ -87,7 +91,8 @@ import static org.junit.Assert.*;
     msc.dropDatabase(db.getName());
   }
 
-  @Test public void testIllegalHttpHeaders() throws Exception {
+  @Test
+  public void testIllegalHttpHeaders() throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS,
         String.format("%s%s", testHeaderKey1, testHeaderVal1));
     msc = new TestHiveMetaStoreClient(conf);
@@ -98,6 +103,6 @@ import static org.junit.Assert.*;
     } catch (Exception e) {
       exceptionThrown = true;
     }
-    assertTrue("Illegal header should invoke thrown exception", exceptionThrown);
+    Assert.assertTrue("Illegal header should invoke thrown exception", exceptionThrown);
   }
 }
