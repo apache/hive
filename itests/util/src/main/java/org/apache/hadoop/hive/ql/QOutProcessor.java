@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.QTestUtil.FsType;
 public class QOutProcessor {
   public static final String PATH_HDFS_REGEX = "(hdfs://)([a-zA-Z0-9:/_\\-\\.=])+";
   public static final String PATH_HDFS_WITH_DATE_USER_GROUP_REGEX =
-      "([a-z\\.]+) ([a-z]+)([ ]+)([0-9]+) ([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}) "
+      "([a-z]+) ([a-z]+)([ ]+)([0-9]+) ([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}) "
           + PATH_HDFS_REGEX;
 
   public static final String HDFS_MASK = "### HDFS PATH ###";

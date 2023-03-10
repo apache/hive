@@ -65,12 +65,6 @@ public class TestQOutProcessor {
             QOutProcessor.HDFS_GROUP_MASK, QOutProcessor.HDFS_DATE_MASK, QOutProcessor.HDFS_MASK),
         processLine(
             "-rw-r--r--   3 hiveptest supergroup       2557 2018-01-11 17:09 hdfs://hello_hdfs_path"));
-
-    Assert.assertEquals(
-            String.format("-rw-r--r--   3 %s %s       2557 %s hdfs://%s", QOutProcessor.HDFS_USER_MASK,
-                    QOutProcessor.HDFS_GROUP_MASK, QOutProcessor.HDFS_DATE_MASK, QOutProcessor.HDFS_MASK),
-            processLine(
-                    "-rw-r--r--   3 firstname.lastname supergroup       2557 2018-01-11 17:09 hdfs://hello_hdfs_path"));
   }
 
   private String processLine(String line) {
