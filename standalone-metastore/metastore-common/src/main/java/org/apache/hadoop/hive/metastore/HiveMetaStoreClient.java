@@ -646,7 +646,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   then the method fetches JWT from environment variable: HMS_JWT and sets in auth
   header in http request
    */
-  private THttpClient createHttpClient(URI store, boolean useSSL) throws MetaException, TTransportException {
+  private THttpClient createHttpClient(URI store, boolean useSSL) throws MetaException,
+      TTransportException {
     String path = MetaStoreUtils.getHttpPath(MetastoreConf.getVar(conf, ConfVars.THRIFT_HTTP_PATH));
     String urlScheme;
     if (useSSL || Objects.equals(store.getScheme(), "https")) {
