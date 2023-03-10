@@ -114,6 +114,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public enum FeedType {
     DYNAMIC_PARTITIONS, // list of dynamic partitions
+    ALTERED_PARTITIONS  // list of altered partitions
   }
 
   /**

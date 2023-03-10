@@ -86,6 +86,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
   private Table table;
   private Collection<Partition> dpPartSpecs;
+  private Collection<Partition> alteredPartitions;
   public boolean followedColStats;
   private BasicStatsWork work;
   private HiveConf conf;
@@ -377,7 +378,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         }
 
         if (!updates.isEmpty()) {
-          db.alterPartitions(tableFullName, updates, environmentContext, true);
+          List<Partition> nonAlteredPartitions = updates
+                  .stream()
+                  .filter(partition -> !alteredPartitions.contains(partition))
+                  .collect(Collectors.toList());
+          db.alterPartitions(tableFullName, nonAlteredPartitions, environmentContext, true);
         }
 
         for (TransactionalStatsProcessor transactionalStatsProcessor : transactionalStatsProcessors) {
@@ -524,6 +529,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
   @Override
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
     this.dpPartSpecs = dpPartSpecs;
+  }
+
+  @Override
+  public void setAlteredPartitions(Collection<Partition> alteredPartitions) {
+    this.alteredPartitions = alteredPartitions;
   }
 
   public static String getAggregationPrefix(Table table, Partition partition) throws MetaException {

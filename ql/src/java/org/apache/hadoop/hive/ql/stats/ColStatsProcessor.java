@@ -229,6 +229,10 @@ public class ColStatsProcessor implements IStatsProcessor {
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
   }
 
+  @Override
+  public void setAlteredPartitions(Collection<Partition> alteredPartitions) {
+  }
+
   /**
    * Enumeration of column stats fields that can currently
    * be computed. Each one has a field name associated.

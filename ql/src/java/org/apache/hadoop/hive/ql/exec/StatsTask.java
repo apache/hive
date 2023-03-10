@@ -104,6 +104,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
       for (IStatsProcessor task : processors) {
         task.setDpPartSpecs(dpPartSpecs);
+        task.setAlteredPartitions(alteredPartitions);
         ret = task.process(db, tbl);
         if (ret != 0) {
           return ret;
@@ -133,6 +134,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   }
 
   private Collection<Partition> dpPartSpecs;
+  private Collection<Partition> alteredPartitions; 
 
   @Override
   protected void receiveFeed(FeedType feedType, Object feedValue) {
@@ -140,6 +142,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     // partitions generated
     if (feedType == FeedType.DYNAMIC_PARTITIONS) {
       dpPartSpecs = (Collection<Partition>) feedValue;
+    }
+    if (feedType == FeedType.ALTERED_PARTITIONS) {
+      alteredPartitions = (Collection<Partition>)feedValue;
     }
   }
 

@@ -478,6 +478,10 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
   }
 
+  @Override
+  public void setAlteredPartitions(Collection<Partition> alteredPartitions) {
+  }
+
   /**
    * Utility class to process file level stats in parallel.
    */

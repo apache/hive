@@ -3076,12 +3076,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
    */
-  public Map<Map<String, String>, Partition> loadDynamicPartitions(final LoadTableDesc tbd, final int numLB,
+  public Map<String, Object> loadDynamicPartitions(final LoadTableDesc tbd, final int numLB,
       final boolean isAcid, final long writeId, final int stmtId, final boolean resetStatistics,
       final AcidUtils.Operation operation, Map<Path, PartitionDetails> partitionDetailsMap) throws HiveException {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
+
+    Map<String, Object> result = new HashMap<>();
 
     final Path loadPath = tbd.getSourcePath();
     final Table tbl = getTable(tbd.getTable().getTableName());
@@ -3201,13 +3203,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("load-dynamic-partitionsToAdd-%d").build());
 
     List<Future<Partition>> futures = Lists.newLinkedList();
-    Map<Map<String, String>, Partition> result = Maps.newLinkedHashMap();
+    Map<Map<String, String>, Partition> dp = Maps.newLinkedHashMap();
     try {
       futures = executor.invokeAll(tasks);
       LOG.info("Number of partitionsToAdd to be added is " + futures.size());
       for (Future<Partition> future : futures) {
         Partition partition = future.get();
-        result.put(partition.getSpec(), partition);
+        dp.put(partition.getSpec(), partition);
       }
       // add new partitions in batch
 
@@ -3251,11 +3253,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
         addWriteNotificationLogInBatch(tbl, requestList);
       }
 
-      setStatsPropAndAlterPartitions(resetStatistics, tbl,
-              partitionDetailsMap.entrySet().stream()
-                      .filter(entry -> entry.getValue().hasOldPartition)
-                      .map(entry -> entry.getValue().partition)
-                      .collect(Collectors.toList()), tableSnapshot);
+      List<Partition> partitionsToAlter = partitionDetailsMap.entrySet().stream()
+              .map(entry -> entry.getValue().partition)
+              .collect(Collectors.toList());
+              
+      setStatsPropAndAlterPartitions(resetStatistics, tbl, partitionsToAlter, tableSnapshot);
+      result.put("alteredPartitions", partitionsToAlter);
 
     } catch (InterruptedException | ExecutionException e) {
       throw new HiveException("Exception when loading " + partitionDetailsMap.size() + " partitions"
@@ -3289,20 +3292,22 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       if (isTxnTable) {
         List<String> partNames =
-                result.values().stream().map(Partition::getName).collect(Collectors.toList());
+                dp.values().stream().map(Partition::getName).collect(Collectors.toList());
         getMSC().addDynamicPartitions(parentSession.getTxnMgr().getCurrentTxnId(), writeId,
                 tbl.getDbName(), tbl.getTableName(), partNames,
                 AcidUtils.toDataOperationType(operation));
       }
-      LOG.info("Loaded " + result.size() + "partitionsToAdd");
+      LOG.info("Loaded " + dp.size() + "partitionsToAdd");
 
       perfLogger.perfLogEnd("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
+      
+      result.put("dp", dp);
 
       return result;
     } catch (TException te) {
       LOG.error("Failed loadDynamicPartitions", te);
       throw new HiveException("Exception updating metastore for acid table "
-          + tbd.getTable().getTableName() + " with partitions " + result.values(), te);
+          + tbd.getTable().getTableName() + " with partitions " + dp.values(), te);
     }
   }
 

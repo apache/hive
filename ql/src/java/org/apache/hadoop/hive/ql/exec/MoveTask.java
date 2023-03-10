@@ -646,7 +646,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     // iterate over it and call loadPartition() here.
     // The reason we don't do inside HIVE-1361 is the latter is large and we
     // want to isolate any potential issue it may introduce.
-    Map<Map<String, String>, Partition> dp =
+    Map<String, Object> result =
       db.loadDynamicPartitions(tbd,
         (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
@@ -658,9 +658,18 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         dps
         );
 
+    Map<Map<String, String>, Partition> dp = (Map<Map<String, String>, Partition>)result.get("dp");
+    
     // publish DP columns to its subscribers
     if (dp != null && dp.size() > 0) {
       pushFeed(FeedType.DYNAMIC_PARTITIONS, dp.values());
+    }
+
+    List<Partition> alteredPartitions = (List<Partition>)result.get("alteredPartitions");
+
+    // publish list of altered partitions to its subscribers
+    if (alteredPartitions != null && alteredPartitions.size() > 0) {
+      pushFeed(FeedType.ALTERED_PARTITIONS, alteredPartitions);
     }
 
     String loadTime = "\t Time taken to load dynamic partitions: "  +

@@ -32,5 +32,6 @@ public interface IStatsProcessor {
   int process(Hive db, Table tbl) throws Exception;
 
   void setDpPartSpecs(Collection<Partition> dpPartSpecs);
-
+  
+  void setAlteredPartitions(Collection<Partition> alteredPartitions);
 }
