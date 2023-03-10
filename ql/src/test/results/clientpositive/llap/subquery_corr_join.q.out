@@ -258,7 +258,7 @@ POSTHOOK: Input: default@tb
 POSTHOOK: Input: default@tc
 #### A masked pattern was here ####
 1	a1
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select *
 from ta
 where not exists
