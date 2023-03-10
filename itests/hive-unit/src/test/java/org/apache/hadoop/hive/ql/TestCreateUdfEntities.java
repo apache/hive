@@ -59,7 +59,7 @@ public class TestCreateUdfEntities {
     assertEquals("default", outputEntities[0].getDatabase().getName());
 
     assertEquals(Entity.Type.FUNCTION, outputEntities[1].getType());
-    assertEquals(funcName, outputEntities[1].getFunctionName());
+    assertEquals(funcName, outputEntities[1].getFunction().getFunctionName());
 
     assertEquals(Entity.Type.LOCAL_DIR, outputEntities[2].getType());
     assertEquals("file:///tmp/udf1.jar", outputEntities[2].getLocation().toString());
@@ -77,7 +77,7 @@ public class TestCreateUdfEntities {
     assertEquals("default", outputEntities[0].getDatabase().getName());
 
     assertEquals(Entity.Type.FUNCTION, outputEntities[1].getType());
-    assertEquals(funcName, outputEntities[1].getFunctionName());
+    assertEquals(funcName, outputEntities[1].getFunction().getFunctionName());
 
     assertEquals(Entity.Type.DFS_DIR, outputEntities[2].getType());
     assertEquals("hdfs:///tmp/udf1.jar", outputEntities[2].getLocation().toString());
