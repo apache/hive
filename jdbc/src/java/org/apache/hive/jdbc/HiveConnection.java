@@ -163,7 +163,6 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   public HiveConnection(String uri, Properties info) throws SQLException {
-    setupLoginTimeout();
     try {
       connParams = Utils.parseURL(uri, info);
     } catch (ZooKeeperHiveClientException e) {
@@ -178,6 +177,8 @@ public class HiveConnection implements java.sql.Connection {
     host = Utils.getCanonicalHostName(connParams.getHost());
     port = connParams.getPort();
     sessConfMap = connParams.getSessionVars();
+    setupLoginTimeout();
+
     isEmbeddedMode = connParams.isEmbeddedMode();
 
     if (sessConfMap.containsKey(JdbcConnectionParams.FETCH_SIZE)) {
@@ -807,11 +808,19 @@ public class HiveConnection implements java.sql.Connection {
     return varValue;
   }
 
-  // copy loginTimeout from driver manager. Thrift timeout needs to be in millis
+  // use socketTimeout from jdbc connection url. Thrift timeout needs to be in millis
   private void setupLoginTimeout() {
-    long timeOut = TimeUnit.SECONDS.toMillis(DriverManager.getLoginTimeout());
+    String socketTimeoutStr = sessConfMap.getOrDefault(JdbcConnectionParams.SOCKET_TIMEOUT, "0");
+    long timeOut = 0;
+    try {
+      timeOut = Long.parseLong(socketTimeoutStr);
+    } catch (NumberFormatException e) {
+      LOG.info("Failed to parse socketTimeout of value " + socketTimeoutStr);
+    }
     if (timeOut > Integer.MAX_VALUE) {
       loginTimeout = Integer.MAX_VALUE;
+    } else if (timeOut < 0) {
+      loginTimeout = 0;
     } else {
       loginTimeout = (int) timeOut;
     }
