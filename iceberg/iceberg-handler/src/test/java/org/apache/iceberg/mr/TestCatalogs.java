@@ -338,6 +338,27 @@ public class TestCatalogs {
         "Unknown catalog type:", () -> Catalogs.loadCatalog(conf, catalogName));
   }
 
+  @Test
+  public void testDefaultCatalogProperties() {
+    String catalogProperty = "io.manifest.cache-enabled";
+    // Set global property
+    final String defaultCatalogProperty = InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX + catalogProperty;
+    conf.setBoolean(defaultCatalogProperty, true);
+    HiveCatalog defaultCatalog = (HiveCatalog) Catalogs.loadCatalog(conf, null).get();
+    Assert.assertEquals("true", defaultCatalog.properties().get(catalogProperty));
+    Assert.assertEquals("true",
+        defaultCatalog.newTableOps(TableIdentifier.of("default", "iceberg")).io().properties().get(catalogProperty));
+
+    // set property at catalog level, and that should take precedence over the global property.
+    conf.setBoolean(
+        String.format("%s%s.%s", InputFormatConfig.CATALOG_CONFIG_PREFIX, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME,
+            catalogProperty), false);
+    defaultCatalog = (HiveCatalog) Catalogs.loadCatalog(conf, null).get();
+    Assert.assertEquals("false", defaultCatalog.properties().get(catalogProperty));
+    Assert.assertEquals("false",
+        defaultCatalog.newTableOps(TableIdentifier.of("default", "iceberg")).io().properties().get(catalogProperty));
+  }
+
   public static class CustomHadoopCatalog extends HadoopCatalog {
 
     public CustomHadoopCatalog() {
