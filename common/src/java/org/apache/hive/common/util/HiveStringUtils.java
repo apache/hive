@@ -1177,7 +1177,7 @@ public class HiveStringUtils {
 
   /**
    * Returns integer value of a string. If the string value exceeds max int, returns Integer.MAX_VALUE
-   * else if the string value is less than min int, returns Integer.MAX_VALUE
+   * else if the string value is less than min int, returns Integer.MIN_VALUE
    *
    * @param value value of the input string
    * @return integer
