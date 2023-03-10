@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -87,6 +88,11 @@ public class WriteEntity extends Entity implements Serializable {
 
   public WriteEntity(Table t, WriteType type, boolean complete) {
     super(t, complete);
+    setWriteTypeInternal(type);
+  }
+
+  public WriteEntity(Function function, WriteType type) {
+    super(function, true);
     setWriteTypeInternal(type);
   }
 

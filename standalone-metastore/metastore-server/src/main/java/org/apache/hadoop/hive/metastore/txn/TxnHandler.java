@@ -285,6 +285,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "WHERE \"HL_LAST_HEARTBEAT\" < %s - ? AND \"HL_TXNID\" = 0";
   private static final String TXN_TO_WRITE_ID_INSERT_QUERY = "INSERT INTO \"TXN_TO_WRITE_ID\" (\"T2W_TXNID\", " +
       "\"T2W_DATABASE\", \"T2W_TABLE\", \"T2W_WRITEID\") VALUES (?, ?, ?, ?)";
+  private static final String MIN_HISTORY_WRITE_ID_INSERT_QUERY = "INSERT INTO \"MIN_HISTORY_WRITE_ID\" (\"MH_TXNID\", " +
+      "\"MH_DATABASE\", \"MH_TABLE\", \"MH_WRITEID\") VALUES (?, ?, ?, ?)";
   private static final String SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID =
       "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = ? AND \"NWI_TABLE\" = ?";
   private static final String SELECT_METRICS_INFO_QUERY =
@@ -298,7 +300,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         TxnStatus.ABORTED + "') \"A\" CROSS JOIN (" +
       "SELECT COUNT(*), ({0} - MIN(\"HL_ACQUIRED_AT\"))/1000 FROM \"HIVE_LOCKS\") \"HL\" CROSS JOIN (" +
       "SELECT ({0} - MIN(\"CQ_COMMIT_TIME\"))/1000 from \"COMPACTION_QUEUE\" WHERE " +
-          "\"CQ_STATE\"=''" + Character.toString(READY_FOR_CLEANING) + "'') OLDEST_CLEAN";
+          "\"CQ_STATE\"=''" + READY_FOR_CLEANING + "'') OLDEST_CLEAN";
   private static final String SELECT_TABLES_WITH_X_ABORTED_TXNS =
       "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
           "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
@@ -340,6 +342,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // Whether to use min_history_level table or not.
   // At startup we read it from the config, but set it to false if min_history_level does nto exists.
   static boolean useMinHistoryLevel;
+  static boolean useMinHistoryWriteId;
 
   /**
    * Derby specific concurrency control
@@ -411,12 +414,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     maxBatchSize = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
 
     openTxnTimeOutMillis = MetastoreConf.getTimeVar(conf, ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS);
-
+    
     try {
-      boolean minHistoryConfig = MetastoreConf.getBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_LEVEL);
+      useMinHistoryWriteId = checkIfTableIsUsable("MIN_HISTORY_WRITE_ID", 
+        MetastoreConf.getBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID));
+      
       // override the config if table does not exists anymore
       // this helps to roll out his feature when multiple HMS is accessing the same backend DB
-      useMinHistoryLevel = checkMinHistoryLevelTable(minHistoryConfig);
+      useMinHistoryLevel = checkIfTableIsUsable("MIN_HISTORY_LEVEL",
+        MetastoreConf.getBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_LEVEL));
     } catch (MetaException e) {
       String msg = "Error during TxnHandler startup, " + e.getMessage();
       LOG.error(msg);
@@ -435,11 +441,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * Check if min_history_level table is usable
+   * Check if provided table is usable
    * @return
    * @throws MetaException
    */
-  private boolean checkMinHistoryLevelTable(boolean configValue) throws MetaException {
+  private boolean checkIfTableIsUsable(String tableName, boolean configValue) throws MetaException {
     if (!configValue) {
       // don't check it if disabled
       return false;
@@ -450,17 +456,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
       try (Statement stmt = dbConn.createStatement()) {
         // Dummy query to see if table exists
-        try (ResultSet rs = stmt.executeQuery("SELECT 1 FROM \"MIN_HISTORY_LEVEL\"")) {
+        try (ResultSet rs = stmt.executeQuery("SELECT 1 FROM \"" + tableName + "\"")) {
           rs.next();
         }
       }
     } catch (SQLException e) {
-      LOG.debug("Catching sql exception in min history level check", e);
+      LOG.debug("Catching sql exception in " + tableName + " check", e);
       if (dbProduct.isTableNotExistsError(e)) {
         tableExists = false;
       } else {
         throw new MetaException(
-            "Unable to select from transaction database: " + getMessage(e) + StringUtils.stringifyException(e));
+          "Unable to select from transaction database: " + getMessage(e) + StringUtils.stringifyException(e));
       }
     } finally {
       closeDbConn(dbConn);
@@ -1561,7 +1567,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           assert true;
         }
 
-        if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn) {
+        if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn && !MetaStoreServerUtils.isCompactionTxn(txnType)) {
           moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
         } else if (isReplayedReplTxn) {
           if (rqst.isSetWriteEventInfos()) {
@@ -1591,6 +1597,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempCommitId);
         removeTxnsFromMinHistoryLevel(dbConn, ImmutableList.of(txnid));
+        removeWriteIdsFromMinHistory(dbConn, ImmutableList.of(txnid));
         if (rqst.isSetKeyValue()) {
           updateKeyValueAssociatedWithTxn(rqst, stmt);
         }
@@ -2035,7 +2042,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return getValidWriteIds(rqst);
     }
   }
-
+  
   // Method to get the Valid write ids list for the given table
   // Input fullTableName is expected to be of format <db_name>.<table_name>
   private TableValidWriteIds getValidWriteIdsForTable(Connection dbConn, String fullTableName,
@@ -3640,9 +3647,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             + "no record found in next_compaction_queue_id");
       }
       long id = rs.getLong(1);
-      s = "UPDATE \"NEXT_COMPACTION_QUEUE_ID\" SET \"NCQ_NEXT\" = " + (id + 1);
+      s = "UPDATE \"NEXT_COMPACTION_QUEUE_ID\" SET \"NCQ_NEXT\" = " + (id + 1) + " WHERE \"NCQ_NEXT\" = " + id;
       LOG.debug("Going to execute update <{}>", s);
-      stmt.executeUpdate(s);
+      if (stmt.executeUpdate(s) != 1) {
+        //TODO: Eliminate this id generation by implementing: https://issues.apache.org/jira/browse/HIVE-27121
+        LOG.info("The returned compaction ID ({}) already taken, obtaining new", id);
+        return generateCompactionQueueId(stmt);
+      }
       return id;
     }
   }
@@ -3756,6 +3767,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             if (rqst.isSetNumberOfBuckets()) {
               buf.append(", \"CQ_NUMBER_OF_BUCKETS\"");
             }
+            if (rqst.isSetOrderByClause()) {
+              buf.append(", \"CQ_ORDER_BY\"");
+            }
             if (rqst.getProperties() != null) {
               buf.append(", \"CQ_TBLPROPERTIES\"");
             }
@@ -3790,6 +3804,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             params.add(rqst.getPoolName());
             if (rqst.isSetNumberOfBuckets()) {
               buf.append(", ").append(rqst.getNumberOfBuckets());
+            }
+            if (rqst.isSetOrderByClause()) {
+              buf.append(", ?");
+              params.add(rqst.getOrderByClause());
             }
             if (rqst.getProperties() != null) {
               buf.append(", ?");
@@ -5123,6 +5141,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Collections.sort(txnids);
     LOG.debug("Aborting {} transaction(s) {} due to {}", txnids.size(), txnids, txnErrorMsg);
     removeTxnsFromMinHistoryLevel(dbConn, txnids);
+    removeWriteIdsFromMinHistory(dbConn, txnids);
     try {
       stmt = dbConn.createStatement();
       //This is an update statement, thus at any Isolation level will take Write locks so will block
@@ -5894,6 +5913,63 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  @Override
+  @RetrySemantics.SafeToRetry
+  public void addWriteIdsToMinHistory(long txnid, Map<String, Long> minOpenWriteIds) throws MetaException {
+    if (!useMinHistoryWriteId) {
+      return;
+    }
+    // Need to register minimum open writeId for current transactions into MIN_HISTORY_WRITE_ID table.
+    try {
+      Connection dbConn = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        try (PreparedStatement pstmt = dbConn.prepareStatement(MIN_HISTORY_WRITE_ID_INSERT_QUERY)) {
+          int writeId = 0;
+
+          for (Map.Entry<String, Long> validWriteId : minOpenWriteIds.entrySet()) {
+            String[] names = TxnUtils.getDbTableName(validWriteId.getKey());
+
+            pstmt.setLong(1, txnid);
+            pstmt.setString(2, names[0]);
+            pstmt.setString(3, names[1]);
+            pstmt.setLong(4, validWriteId.getValue());
+
+            pstmt.addBatch();
+            writeId++;
+            if (writeId % maxBatchSize == 0) {
+              LOG.debug("Executing a batch of <" + TXN_TO_WRITE_ID_INSERT_QUERY + "> queries. " +
+                "Batch size: " + maxBatchSize);
+              pstmt.executeBatch();
+            }
+          }
+          if (writeId % maxBatchSize != 0) {
+            LOG.debug("Executing a batch of <" + TXN_TO_WRITE_ID_INSERT_QUERY + "> queries. " +
+              "Batch size: " + writeId % maxBatchSize);
+            pstmt.executeBatch();
+          }
+        }
+        dbConn.commit();
+        LOG.info("Added entries to MIN_HISTORY_WRITE_ID for current txn: {} with min_open_write_ids: ({})", txnid, minOpenWriteIds);
+      } catch (SQLException e) {
+        if (dbProduct.isTableNotExistsError(e)) {
+          // If the table does not exists anymore, we disable the flag and start to work the new way
+          // This enables to switch to the new functionality without a restart
+          useMinHistoryWriteId = false;
+        } else {
+          LOG.error("Caught exception while storing minOpenWriteIds: ", e);
+          rollbackDBConn(dbConn);
+          checkRetryable(e, "addWriteIdsToMinHistory");
+          throw new MetaException(e.getMessage());
+        }
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      addWriteIdsToMinHistory(txnid, minOpenWriteIds);
+    }
+  }
+
   /**
    * Remove txns from min_history_level table
    * @param dbConn connection
@@ -5905,19 +5981,43 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (!useMinHistoryLevel) {
       return;
     }
+    List<String> queries = new ArrayList<>();
+    StringBuilder prefix = new StringBuilder("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE ");
     try (Statement stmt = dbConn.createStatement()) {
-      List<String> queries = new ArrayList<>();
-      StringBuilder prefix = new StringBuilder();
-      prefix.append("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE ");
-      TxnUtils.buildQueryWithINClause(conf, queries, prefix, new StringBuilder(), txnids, "\"MHL_TXNID\"", false,
-          false);
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, new StringBuilder(), txnids, "\"MHL_TXNID\"", false, false);
       executeQueriesInBatchNoCount(dbProduct, stmt, queries, maxBatchSize);
       LOG.info("Removed transactions: ({}) from MIN_HISTORY_LEVEL", txnids);
     } catch (SQLException e) {
       if (dbProduct.isTableNotExistsError(e)) {
         // If the table does not exists anymore, we disable the flag and start to work the new way
-        // This enables to switch to the new funcionality without a restart
+        // This enables to switch to the new functionality without a restart
         useMinHistoryLevel = false;
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Remove minOpenWriteIds from min_history_write_id tables
+   * @param dbConn connection
+   * @param txnids transactions
+   */
+  private void removeWriteIdsFromMinHistory(Connection dbConn, List<Long> txnids) throws SQLException {
+    if (!useMinHistoryWriteId) {
+      return;
+    }
+    List<String> queries = new ArrayList<>();
+    StringBuilder prefix = new StringBuilder("DELETE FROM \"MIN_HISTORY_WRITE_ID\" WHERE ");
+    try (Statement stmt = dbConn.createStatement()) {
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, new StringBuilder(), txnids, "\"MH_TXNID\"", false, false);
+      executeQueriesInBatchNoCount(dbProduct, stmt, queries, maxBatchSize);
+      LOG.info("Removed transactions: ({}) from MIN_HISTORY_WRITE_ID", txnids);
+    } catch (SQLException e) {
+      if (dbProduct.isTableNotExistsError(e)) {
+        // If the table does not exists anymore, we disable the flag and start to work the new way
+        // This enables to switch to the new functionality without a restart
+        useMinHistoryWriteId = false;
       } else {
         throw e;
       }

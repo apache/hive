@@ -577,7 +577,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return getMSForConf(conf);
   }
 
-  public static RawStore getMSForConf(Configuration conf) throws MetaException {
+  public static synchronized RawStore getMSForConf(Configuration conf) throws MetaException {
     RawStore ms = getRawStore();
     if (ms == null) {
       ms = newRawStoreForConf(conf);
@@ -8788,6 +8788,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst) throws TException {
     return getTxnHandler().getValidWriteIds(rqst);
+  }
+
+  @Override
+  public void add_write_ids_to_min_history(long txnId, Map<String, Long> validWriteIds) throws TException {
+     getTxnHandler().addWriteIdsToMinHistory(txnId, validWriteIds);
   }
 
   @Override

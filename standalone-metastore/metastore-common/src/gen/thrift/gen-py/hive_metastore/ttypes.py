@@ -381,6 +381,7 @@ class TxnType(object):
     COMPACTION = 3
     MATER_VIEW_REBUILD = 4
     SOFT_DELETE = 5
+    REBALANCE_COMPACTION = 6
 
     _VALUES_TO_NAMES = {
         0: "DEFAULT",
@@ -389,6 +390,7 @@ class TxnType(object):
         3: "COMPACTION",
         4: "MATER_VIEW_REBUILD",
         5: "SOFT_DELETE",
+        6: "REBALANCE_COMPACTION",
     }
 
     _NAMES_TO_VALUES = {
@@ -398,6 +400,7 @@ class TxnType(object):
         "COMPACTION": 3,
         "MATER_VIEW_REBUILD": 4,
         "SOFT_DELETE": 5,
+        "REBALANCE_COMPACTION": 6,
     }
 
 
@@ -14349,11 +14352,12 @@ class LockRequest(object):
      - agentInfo
      - zeroWaitReadEnabled
      - exclusiveCTAS
+     - locklessReadsEnabled
 
     """
 
 
-    def __init__(self, component=None, txnid=None, user=None, hostname=None, agentInfo="Unknown", zeroWaitReadEnabled=False, exclusiveCTAS=False,):
+    def __init__(self, component=None, txnid=None, user=None, hostname=None, agentInfo="Unknown", zeroWaitReadEnabled=False, exclusiveCTAS=False, locklessReadsEnabled=False,):
         self.component = component
         self.txnid = txnid
         self.user = user
@@ -14361,6 +14365,7 @@ class LockRequest(object):
         self.agentInfo = agentInfo
         self.zeroWaitReadEnabled = zeroWaitReadEnabled
         self.exclusiveCTAS = exclusiveCTAS
+        self.locklessReadsEnabled = locklessReadsEnabled
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -14412,6 +14417,11 @@ class LockRequest(object):
                     self.exclusiveCTAS = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.BOOL:
+                    self.locklessReadsEnabled = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -14452,6 +14462,10 @@ class LockRequest(object):
         if self.exclusiveCTAS is not None:
             oprot.writeFieldBegin('exclusiveCTAS', TType.BOOL, 7)
             oprot.writeBool(self.exclusiveCTAS)
+            oprot.writeFieldEnd()
+        if self.locklessReadsEnabled is not None:
+            oprot.writeFieldBegin('locklessReadsEnabled', TType.BOOL, 8)
+            oprot.writeBool(self.locklessReadsEnabled)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -15344,11 +15358,12 @@ class CompactionRequest(object):
      - initiatorVersion
      - poolName
      - numberOfBuckets
+     - orderByClause
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None, poolName=None, numberOfBuckets=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None, poolName=None, numberOfBuckets=None, orderByClause=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -15359,6 +15374,7 @@ class CompactionRequest(object):
         self.initiatorVersion = initiatorVersion
         self.poolName = poolName
         self.numberOfBuckets = numberOfBuckets
+        self.orderByClause = orderByClause
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15425,6 +15441,11 @@ class CompactionRequest(object):
                     self.numberOfBuckets = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.STRING:
+                    self.orderByClause = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15479,6 +15500,10 @@ class CompactionRequest(object):
             oprot.writeFieldBegin('numberOfBuckets', TType.I32, 10)
             oprot.writeI32(self.numberOfBuckets)
             oprot.writeFieldEnd()
+        if self.orderByClause is not None:
+            oprot.writeFieldBegin('orderByClause', TType.STRING, 11)
+            oprot.writeString(self.orderByClause.encode('utf-8') if sys.version_info[0] == 2 else self.orderByClause)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -15524,11 +15549,12 @@ class CompactionInfoStruct(object):
      - retryRetention
      - poolname
      - numberOfBuckets
+     - orderByClause
 
     """
 
 
-    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None, poolname=None, numberOfBuckets=None,):
+    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None, poolname=None, numberOfBuckets=None, orderByClause=None,):
         self.id = id
         self.dbname = dbname
         self.tablename = tablename
@@ -15547,6 +15573,7 @@ class CompactionInfoStruct(object):
         self.retryRetention = retryRetention
         self.poolname = poolname
         self.numberOfBuckets = numberOfBuckets
+        self.orderByClause = orderByClause
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15647,6 +15674,11 @@ class CompactionInfoStruct(object):
                     self.numberOfBuckets = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 19:
+                if ftype == TType.STRING:
+                    self.orderByClause = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15728,6 +15760,10 @@ class CompactionInfoStruct(object):
         if self.numberOfBuckets is not None:
             oprot.writeFieldBegin('numberOfBuckets', TType.I32, 18)
             oprot.writeI32(self.numberOfBuckets)
+            oprot.writeFieldEnd()
+        if self.orderByClause is not None:
+            oprot.writeFieldBegin('orderByClause', TType.STRING, 19)
+            oprot.writeString(self.orderByClause.encode('utf-8') if sys.version_info[0] == 2 else self.orderByClause)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -31570,6 +31606,7 @@ LockRequest.thrift_spec = (
     (5, TType.STRING, 'agentInfo', 'UTF8', "Unknown", ),  # 5
     (6, TType.BOOL, 'zeroWaitReadEnabled', None, False, ),  # 6
     (7, TType.BOOL, 'exclusiveCTAS', None, False, ),  # 7
+    (8, TType.BOOL, 'locklessReadsEnabled', None, False, ),  # 8
 )
 all_structs.append(LockResponse)
 LockResponse.thrift_spec = (
@@ -31655,6 +31692,7 @@ CompactionRequest.thrift_spec = (
     (8, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 8
     (9, TType.STRING, 'poolName', 'UTF8', None, ),  # 9
     (10, TType.I32, 'numberOfBuckets', None, None, ),  # 10
+    (11, TType.STRING, 'orderByClause', 'UTF8', None, ),  # 11
 )
 all_structs.append(CompactionInfoStruct)
 CompactionInfoStruct.thrift_spec = (
@@ -31677,6 +31715,7 @@ CompactionInfoStruct.thrift_spec = (
     (16, TType.I64, 'retryRetention', None, None, ),  # 16
     (17, TType.STRING, 'poolname', 'UTF8', None, ),  # 17
     (18, TType.I32, 'numberOfBuckets', None, None, ),  # 18
+    (19, TType.STRING, 'orderByClause', 'UTF8', None, ),  # 19
 )
 all_structs.append(OptionalCompactionInfoStruct)
 OptionalCompactionInfoStruct.thrift_spec = (

@@ -3010,6 +3010,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_valid_write_ids failed: unknown result')
     end
 
+    def add_write_ids_to_min_history(txnId, writeIds)
+      send_add_write_ids_to_min_history(txnId, writeIds)
+      recv_add_write_ids_to_min_history()
+    end
+
+    def send_add_write_ids_to_min_history(txnId, writeIds)
+      send_message('add_write_ids_to_min_history', Add_write_ids_to_min_history_args, :txnId => txnId, :writeIds => writeIds)
+    end
+
+    def recv_add_write_ids_to_min_history()
+      result = receive_message(Add_write_ids_to_min_history_result)
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
     def allocate_table_write_ids(rqst)
       send_allocate_table_write_ids(rqst)
       return recv_allocate_table_write_ids()
@@ -6818,6 +6833,17 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_valid_write_ids', seqid)
     end
 
+    def process_add_write_ids_to_min_history(seqid, iprot, oprot)
+      args = read_args(iprot, Add_write_ids_to_min_history_args)
+      result = Add_write_ids_to_min_history_result.new()
+      begin
+        @handler.add_write_ids_to_min_history(args.txnId, args.writeIds)
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'add_write_ids_to_min_history', seqid)
+    end
+
     def process_allocate_table_write_ids(seqid, iprot, oprot)
       args = read_args(iprot, Allocate_table_write_ids_args)
       result = Allocate_table_write_ids_result.new()
@@ -8520,8 +8546,8 @@ module ThriftHiveMetastore
   class Drop_dataconnector_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     NAME = 1
-    IFNOTEXISTS = -1
-    CHECKREFERENCES = -2
+    IFNOTEXISTS = 2
+    CHECKREFERENCES = 3
 
     FIELDS = {
       NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
@@ -14588,6 +14614,40 @@ module ThriftHiveMetastore
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetValidWriteIdsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_write_ids_to_min_history_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TXNID = 1
+    WRITEIDS = 2
+
+    FIELDS = {
+      TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'},
+      WRITEIDS => {:type => ::Thrift::Types::MAP, :name => 'writeIds', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_write_ids_to_min_history_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O2 = 1
+
+    FIELDS = {
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 
