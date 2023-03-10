@@ -43,7 +43,7 @@ import org.apache.thrift.TException;
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
-public interface IMetaStoreClient {
+public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Returns whether current client is compatible with conf argument or not
