@@ -288,7 +288,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
      */
     if (nonDefaultUser || !hasInitialSessions || hasQueue || jobNameSet) {
       LOG.info("QueueName: {} nonDefaultUser: {} defaultQueuePool: {} hasInitialSessions: {}" +
-                      " jobNameSet: ", queueName, nonDefaultUser, defaultSessionPool,
+                      " jobNameSet: {}.", queueName, nonDefaultUser, defaultSessionPool,
               hasInitialSessions, jobNameSet);
       return getNewSessionState(conf, queueName, doOpen);
     }
