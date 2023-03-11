@@ -32,20 +32,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
@@ -579,10 +578,9 @@ public class Msck {
             // so 3rd parameter (deleteData) is set to false
             // msck is doing a clean up of hms.  if for some reason the partition is already
             // deleted, then it is good.  So, the last parameter ifexists is set to true
-            DropPartitionsRequest request = new DropPartitionsRequest(table.getDbName(),
-                table.getTableName(), RequestPartsSpec.names(dropParts));
-            request.setCatName(table.getCatName());
-            metastoreClient.dropPartitions(request, dropOptions);
+            List<Pair<Integer, byte[]>> partExprs = getPartitionExpr(dropParts);
+            metastoreClient.dropPartitions(table.getCatName(), table.getDbName(), table.getTableName(), partExprs, dropOptions);
+
             // if last batch is successful remove it from partsNotInFs
             batchWork.removeAll(lastBatch);
             repairOutput.addAll(dropMsgs);
@@ -594,7 +592,9 @@ public class Msck {
       }
 
       private List<Pair<Integer, byte[]>> getPartitionExpr(final List<String> parts) throws MetaException {
-        List<Pair<Integer, byte[]>> expr = new ArrayList<>(parts.size());
+        StringBuilder exprBuilder = new StringBuilder();
+        String orExpr = " OR ";
+        //List<Pair<Integer, byte[]>> expr = new ArrayList<>(parts.size());
         for (int i = 0; i < parts.size(); i++) {
           String partName = parts.get(i);
           Map<String, String> partSpec = Warehouse.makeSpecFromName(partName);
@@ -602,9 +602,13 @@ public class Msck {
           if (LOG.isDebugEnabled()) {
             LOG.debug("Generated partExpr: {} for partName: {}", partExpr, partName);
           }
-          expr.add(Pair.of(i, partExpr.getBytes(StandardCharsets.UTF_8)));
+          exprBuilder.append(partExpr).append(orExpr);
         }
-        return expr;
+        if (exprBuilder.length() > 0) {
+          exprBuilder.setLength(exprBuilder.length() - orExpr.length());
+        }
+        return Lists.newArrayList(Pair.of(parts.size(),
+            exprBuilder.toString().getBytes(StandardCharsets.UTF_8)));
       }
     }.run();
   }

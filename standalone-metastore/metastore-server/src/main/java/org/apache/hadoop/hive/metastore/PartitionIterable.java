@@ -106,7 +106,6 @@ public class PartitionIterable implements Iterable<Partition> {
           nameBatch.add(partitionNamesIter.next());
           batch_counter++;
         }
-
         try {
           if (request != null) {
             request.setFilterSpec(new GetPartitionsFilterSpec());
