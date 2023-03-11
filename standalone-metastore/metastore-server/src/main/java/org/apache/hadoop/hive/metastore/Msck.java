@@ -504,9 +504,9 @@ public class Msck {
     }.run();
   }
 
-  public static String makePartExpr(Map<String, String> spec)
+  private static String makePartExpr(Map<String, String> spec)
     throws MetaException {
-    StringBuilder suffixBuf = new StringBuilder();
+    StringBuilder suffixBuf = new StringBuilder("(");
     int i = 0;
     for (Map.Entry<String, String> e : spec.entrySet()) {
       if (e.getValue() == null || e.getValue().length() == 0) {
@@ -520,6 +520,7 @@ public class Msck {
       suffixBuf.append("'").append(Warehouse.escapePathName(e.getValue())).append("'");
       i++;
     }
+    suffixBuf.append(")");
     return suffixBuf.toString();
   }
 
@@ -594,7 +595,6 @@ public class Msck {
       private List<Pair<Integer, byte[]>> getPartitionExpr(final List<String> parts) throws MetaException {
         StringBuilder exprBuilder = new StringBuilder();
         String orExpr = " OR ";
-        //List<Pair<Integer, byte[]>> expr = new ArrayList<>(parts.size());
         for (int i = 0; i < parts.size(); i++) {
           String partName = parts.get(i);
           Map<String, String> partSpec = Warehouse.makeSpecFromName(partName);

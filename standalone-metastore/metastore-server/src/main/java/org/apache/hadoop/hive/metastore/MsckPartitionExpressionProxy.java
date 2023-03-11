@@ -60,9 +60,10 @@ public class MsckPartitionExpressionProxy implements PartitionExpressionProxy {
     }
     //This is to find in partitionNames all that match expr
     //reverse of the Msck.makePartExpr
-    Set<String> filterPartitions = new HashSet<>();
+    Set<String> filterParts = new HashSet<>();
     String[] partitions = partExpr.split(" OR ");
     for (String part : partitions) {
+      part = part.substring(1, part.length() - 1);
       String[] pKeyValues = part.split(" AND ");
       StringBuilder builder = new StringBuilder();
       for (String pKeyValue : pKeyValues) {
@@ -73,16 +74,16 @@ public class MsckPartitionExpressionProxy implements PartitionExpressionProxy {
         builder.append(key + "=" + value).append("/");
       }
       builder.setLength(builder.length() - 1);
-      filterPartitions.add(builder.toString());
+      filterParts.add(builder.toString());
     }
 
     List<String> partNamesSeq =  new ArrayList<>();
-    for (String partition : partitionNames){
+    for (String part : partitionNames) {
       //list of partitions [year=2001/month=1, year=2002/month=2, year=2001/month=3]
       //Given expr: e.g. year='2001' AND month='1'. Only when all the expressions in the expr can be found,
       //do we add the partition to the filtered result [year=2001/month=1]
-      if (filterPartitions.contains(partition)) {
-        partNamesSeq.add(partition);
+      if (filterParts.contains(FileUtils.unescapePathName(part))) {
+        partNamesSeq.add(part);
       }
     }
     partitionNames.clear();
