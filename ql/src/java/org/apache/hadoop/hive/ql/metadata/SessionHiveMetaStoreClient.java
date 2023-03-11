@@ -61,8 +61,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
-import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
@@ -1463,40 +1461,6 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       }
     }
     return result;
-  }
-
-  @Override
-  public List<Partition> dropPartitions(DropPartitionsRequest req, PartitionDropOptions options)
-      throws NoSuchObjectException, MetaException, TException {
-    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDbName(), req.getTblName());
-    if (table == null) {
-      return super.dropPartitions(req, options);
-    }
-    TempTable tt = getPartitionedTempTable(table);
-    if (req.getParts().isSetExprs()) {
-      List<DropPartitionsExpr> exprs = req.getParts().getExprs();
-      List<Pair<Integer, byte[]>> partExprs = new ArrayList<>();
-      exprs.forEach(expr ->
-        partExprs.add(Pair.of(expr.getPartArchiveLevel(), expr.getExpr())));
-      return dropPartitions(req.getCatName(), req.getTblName(), req.getTblName(), partExprs, options);
-    } else if (req.getParts().isSetNames()) {
-      List<Partition> result = new ArrayList<>();
-      List<Partition> partitions = tt.getPartitionsByNames(req.getParts().getNames());
-      for (Partition p : partitions) {
-        Partition droppedPartition = tt.dropPartition(p.getValues());
-        if (droppedPartition != null) {
-          result.add(droppedPartition);
-          boolean purgeData = options != null ? options.purgeData : true;
-          boolean deleteData = options != null ? options.deleteData : true;
-          if (deleteData && !tt.isExternal()) {
-            deletePartitionLocation(droppedPartition, purgeData);
-          }
-        }
-      }
-      return result;
-    } else {
-      throw new MetaException("DropPartitionsRequest is not properly set: " + req);
-    }
   }
 
   @Override
