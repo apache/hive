@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -51,6 +52,11 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
+import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
+import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandler;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandlerFactory;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
 import org.apache.hive.streaming.StreamingException;
@@ -77,10 +83,7 @@ import static org.apache.hadoop.hive.ql.TestTxnCommands2.runInitiator;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 
 /**
@@ -1063,6 +1066,78 @@ public class TestCompactor extends TestCompactorBase {
 
     connection1.close();
     connection2.close();
+  }
+
+  @Test
+  public void testAbortAfterMarkCleaned() throws Exception {
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
+    if (useCleanerForAbortCleanup) {
+      String dbName = "default";
+      String tableName = "cws";
+
+      String agentInfo = "UT_" + Thread.currentThread().getName();
+
+      executeStatementOnDriver("drop table if exists " + tableName, driver);
+      executeStatementOnDriver("CREATE TABLE " + tableName + "(a STRING, b STRING) " + //currently ACID requires table to be bucketed
+              " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+      executeStatementOnDriver("insert into table " + tableName + " values ('1', '2'), ('3', '4') ", driver);
+      executeStatementOnDriver("insert into table " + tableName + " values ('1', '2'), ('3', '4') ", driver);
+
+
+      StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+              .withFieldDelimiter(',')
+              .build();
+
+      // Create three folders with two different transactions
+      HiveStreamingConnection connection1 = HiveStreamingConnection.newBuilder()
+              .withDatabase(dbName)
+              .withTable(tableName)
+              .withAgentInfo(agentInfo)
+              .withHiveConf(conf)
+              .withRecordWriter(writer)
+              .withStreamingOptimizations(true)
+              .withTransactionBatchSize(1)
+              .connect();
+
+      HiveStreamingConnection connection2 = HiveStreamingConnection.newBuilder()
+              .withDatabase(dbName)
+              .withTable(tableName)
+              .withAgentInfo(agentInfo)
+              .withHiveConf(conf)
+              .withRecordWriter(writer)
+              .withStreamingOptimizations(true)
+              .withTransactionBatchSize(1)
+              .connect();
+
+      // Abort a transaction which writes data.
+      connection1.beginTransaction();
+      connection1.write("1,1".getBytes());
+      connection1.write("2,1".getBytes());
+      connection1.abortTransaction();
+
+      // Open a txn which is opened and long running.
+      connection2.beginTransaction();
+      connection2.write("3,1".getBytes());
+
+      Cleaner cleaner = new Cleaner();
+      TxnStore mockedTxnHandler = Mockito.spy(TxnUtils.getTxnStore(conf));
+      doAnswer(invocationOnMock -> {
+        connection2.abortTransaction();
+        return invocationOnMock.callRealMethod();
+      }).when(mockedTxnHandler).markCleanedForAborts(any());
+
+      MetadataCache metadataCache = new MetadataCache(false);
+      FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
+      cleaner.setConf(conf);
+      List<TaskHandler> cleanupHandlers = TaskHandlerFactory.getInstance()
+              .getHandlers(conf, mockedTxnHandler, metadataCache, false, fsRemover);
+      cleaner.init(new AtomicBoolean(true));
+      cleaner.setCleanupHandlers(cleanupHandlers);
+      cleaner.run();
+
+      int count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
+      Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 1, count);
+    }
   }
 
   private void assertAndCompactCleanAbort(String dbName, String tblName, boolean partialAbort, boolean singleSession) throws Exception {

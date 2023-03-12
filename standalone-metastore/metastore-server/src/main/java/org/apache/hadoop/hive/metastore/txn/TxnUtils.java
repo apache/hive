@@ -60,7 +60,7 @@ import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.D
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
 
-  public static ValidTxnList createValidTxnListForCleaner(GetOpenTxnsResponse txns, long minOpenTxnGLB) {
+  public static ValidTxnList createValidTxnListForCompactionCleaner(GetOpenTxnsResponse txns, long minOpenTxnGLB) {
     long highWaterMark = minOpenTxnGLB - 1;
     long[] abortedTxns = new long[txns.getOpen_txnsSize()];
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
@@ -83,6 +83,28 @@ public class TxnUtils {
     //add ValidCleanerTxnList? - could be problematic for all the places that read it from
     // string as they'd have to know which object to instantiate
     return new ValidReadTxnList(abortedTxns, bitSet, highWaterMark, Long.MAX_VALUE);
+  }
+
+  public static ValidTxnList createValidTxnListForTxnAbortedCleaner(GetOpenTxnsResponse txns, long minOpenTxnGLB) {
+    long highWaterMark = minOpenTxnGLB - 1;
+    long[] exceptions = new long[txns.getOpen_txnsSize()];
+    int i = 0;
+    BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
+    // getOpen_txns() guarantees that the list contains only aborted & open txns.
+    // exceptions list must contain both txn types since validWriteIdList filters out the aborted ones and valid ones for that table.
+    // If a txn is not in exception list, it is considered as a valid one and thought of as an uncompacted write.
+    // See TxnHandler#getValidWriteIdsForTable() for more details.
+    for(long txnId : txns.getOpen_txns()) {
+      if(txnId > highWaterMark) {
+        break;
+      }
+      exceptions[i] = txnId;
+      i++;
+    }
+    exceptions = Arrays.copyOf(exceptions, i);
+    //add ValidCleanerTxnList? - could be problematic for all the places that read it from
+    // string as they'd have to know which object to instantiate
+    return new ValidReadTxnList(exceptions, abortedBits, highWaterMark, Long.MAX_VALUE);
   }
   /**
    * Transform a {@link org.apache.hadoop.hive.metastore.api.TableValidWriteIds} to a

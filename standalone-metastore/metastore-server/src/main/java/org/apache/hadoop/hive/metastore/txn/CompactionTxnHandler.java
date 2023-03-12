@@ -759,7 +759,7 @@ class CompactionTxnHandler extends TxnHandler {
         String s = "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
                 + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED + ") "
                 + "AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? "
-                + "AND \"TC_PARTITION\" "+ (info.partName != null ? "= ?" : "IS NULL");
+                + "AND \"TC_PARTITION\" " + (info.partName != null ? "= ?" : "IS NULL");
 
         List<String> queries = new ArrayList<>();
         Iterator<Long> writeIdsIter = null;

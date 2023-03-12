@@ -221,7 +221,7 @@ class CompactionCleaner extends AcidTxnCleaner {
 
   private void cleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxnGLB) throws Exception {
     ValidTxnList validTxnList =
-            TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
+            TxnUtils.createValidTxnListForCompactionCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     /*

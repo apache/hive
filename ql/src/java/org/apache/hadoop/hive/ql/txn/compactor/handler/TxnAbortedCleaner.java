@@ -85,14 +85,10 @@ class TxnAbortedCleaner extends AcidTxnCleaner {
     long abortedTimeThreshold = HiveConf
               .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
                       TimeUnit.MILLISECONDS);
-    List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanForAborts(minOpenTxnId,
-            abortedTimeThreshold, abortedThreshold);
+    List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanForAborts(minOpenTxnId, abortedTimeThreshold, abortedThreshold);
 
     if (!readyToCleanAborts.isEmpty()) {
-      long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
-      final long cleanerWaterMark =
-              minTxnIdSeenOpen < 0 ? minOpenTxnId : Math.min(minOpenTxnId, minTxnIdSeenOpen);
-      return readyToCleanAborts.stream().map(ci -> ThrowingRunnable.unchecked(() -> clean(ci, cleanerWaterMark, metricsEnabled)))
+      return readyToCleanAborts.stream().map(ci -> ThrowingRunnable.unchecked(() -> clean(ci, Long.MAX_VALUE, metricsEnabled)))
               .collect(Collectors.toList());
     }
     return Collections.emptyList();
@@ -153,16 +149,18 @@ class TxnAbortedCleaner extends AcidTxnCleaner {
 
   private void abortCleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxn) throws Exception {
     ValidTxnList validTxnList =
-            TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxn);
+            TxnUtils.createValidTxnListForTxnAbortedCleaner(txnHandler.getOpenTxns(), minOpenTxn);
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 
     ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
 
-    // Set the highestWriteId of the cleanup equal to the highest watermark.
-    // This is necessary for looking at the complete state of the table till min open txn id.
+    // Set the highestWriteId of the cleanup equal to the min(minOpenWriteId - 1, highWatermark).
+    // This is necessary for looking at the complete state of the table till the min open write Id
+    // (if there is an open txn on the table) or the highestWatermark.
     // This is used later on while deleting the records in TXN_COMPONENTS table.
-    ci.highestWriteId = validWriteIdList.getHighWatermark();
+    ci.highestWriteId = Math.min(isNull(validWriteIdList.getMinOpenWriteId()) ?
+            Long.MAX_VALUE : validWriteIdList.getMinOpenWriteId() - 1, validWriteIdList.getHighWatermark());
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
     Path path = new Path(location);
