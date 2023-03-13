@@ -17,42 +17,31 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.io.AcidDirectory;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.txn.compactor.CleanupRequest.CleanupRequestBuilder;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
 import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
-import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
-import static org.apache.commons.collections4.ListUtils.subtract;
 
 class TxnAbortedCleaner extends AcidTxnCleaner {
 
@@ -161,48 +150,10 @@ class TxnAbortedCleaner extends AcidTxnCleaner {
     // This is used later on while deleting the records in TXN_COMPONENTS table.
     ci.highestWriteId = Math.min(isNull(validWriteIdList.getMinOpenWriteId()) ?
             Long.MAX_VALUE : validWriteIdList.getMinOpenWriteId() - 1, validWriteIdList.getHighWatermark());
+    Table table = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
-    Path path = new Path(location);
-    FileSystem fs = path.getFileSystem(conf);
-
-    // Collect all the files/dirs
-    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshotsForCleaner(fs, path);
-    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, validWriteIdList, Ref.from(false), false,
-            dirSnapshots);
-    Table table = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
-    boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, ci.partName);
-
-    List<Path> obsoleteDirs = CompactorUtil.getObsoleteDirs(dir, isDynPartAbort);
-    if (isDynPartAbort || dir.hasUncompactedAborts()) {
-      ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
-    }
-
-    List<Path> deleted = fsRemover.clean(new CleanupRequestBuilder().setLocation(location)
-            .setDbName(ci.dbname).setFullPartitionName(ci.getFullPartitionName())
-            .setRunAs(ci.runAs).setObsoleteDirs(obsoleteDirs).setPurge(true)
-            .build());
-
-    if (!deleted.isEmpty()) {
-      AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
-              txnHandler);
-    }
-
-    // Make sure there are no leftovers below the compacted watermark
-    boolean success = false;
-    conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
-    dir = AcidUtils.getAcidState(fs, path, conf, new ValidReaderWriteIdList(
-                    ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
-            Ref.from(false), false, dirSnapshots);
-
-    List<Path> remained = subtract(CompactorUtil.getObsoleteDirs(dir, isDynPartAbort), deleted);
-    if (!remained.isEmpty()) {
-      LOG.warn("Remained {} obsolete directories from {}. {}",
-              remained.size(), location, CompactorUtil.getDebugInfo(remained));
-    } else {
-      LOG.debug("All cleared below the watermark: {} from {}", ci.highestWriteId, location);
-      success = true;
-    }
+    boolean success = cleanAndVerifyObsoleteDirectories(ci, location, validWriteIdList, table);
     if (success || CompactorUtil.isDynPartAbort(table, ci.partName)) {
       txnHandler.markCleanedForAborts(ci);
     } else {

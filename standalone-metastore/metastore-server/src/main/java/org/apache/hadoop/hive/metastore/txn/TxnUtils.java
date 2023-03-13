@@ -60,8 +60,8 @@ import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.D
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
 
-  public static ValidTxnList createValidTxnListForCompactionCleaner(GetOpenTxnsResponse txns, long minOpenTxnGLB) {
-    long highWaterMark = minOpenTxnGLB - 1;
+  public static ValidTxnList createValidTxnListForCompactionCleaner(GetOpenTxnsResponse txns, long minOpenTxn) {
+    long highWaterMark = minOpenTxn - 1;
     long[] abortedTxns = new long[txns.getOpen_txnsSize()];
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
     int i = 0;
@@ -85,8 +85,8 @@ public class TxnUtils {
     return new ValidReadTxnList(abortedTxns, bitSet, highWaterMark, Long.MAX_VALUE);
   }
 
-  public static ValidTxnList createValidTxnListForTxnAbortedCleaner(GetOpenTxnsResponse txns, long minOpenTxnGLB) {
-    long highWaterMark = minOpenTxnGLB - 1;
+  public static ValidTxnList createValidTxnListForTxnAbortedCleaner(GetOpenTxnsResponse txns, long minOpenTxn) {
+    long highWaterMark = minOpenTxn - 1;
     long[] exceptions = new long[txns.getOpen_txnsSize()];
     int i = 0;
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
