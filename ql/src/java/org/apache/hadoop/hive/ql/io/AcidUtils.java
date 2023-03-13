@@ -1538,9 +1538,9 @@ public class AcidUtils {
   public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path)
       throws IOException {
     Map<Path, HdfsDirSnapshot> dirToSnapshots = new HashMap<>();
-    RemoteIterator<LocatedFileStatus> itr = FileUtils.listFiles(fs, path, true, acidHiddenFileFilter);
-    while (itr.hasNext()) {
-      FileStatus fStatus = itr.next();
+    List<FileStatus> fileStatusList = new ArrayList<>();
+    FileUtils.listStatusRecursively(fs, fs.getFileStatus(path), fileStatusList);
+    for (FileStatus fStatus : fileStatusList) {
       Path fPath = fStatus.getPath();
       if (fStatus.isDirectory() && acidTempDirFilter.accept(fPath)) {
         addToSnapshot(dirToSnapshots, fPath);
