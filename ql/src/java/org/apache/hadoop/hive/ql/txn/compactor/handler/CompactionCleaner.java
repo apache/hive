@@ -111,7 +111,7 @@ class CompactionCleaner extends AcidTxnCleaner {
     return Collections.emptyList();
   }
 
-  private void clean(CompactionInfo ci, long minOpenTxnGLB, boolean metricsEnabled) throws MetaException {
+  private void clean(CompactionInfo ci, long minOpenTxn, boolean metricsEnabled) throws MetaException {
     LOG.info("Starting cleaning for {}", ci);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
@@ -169,7 +169,7 @@ class CompactionCleaner extends AcidTxnCleaner {
         if (dropPartition && isNull(resolvePartition(ci.dbname, ci.tableName, ci.partName))) {
           cleanUsingLocation(ci, path, true);
         } else {
-          cleanUsingAcidDir(ci, path, minOpenTxnGLB);
+          cleanUsingAcidDir(ci, path, minOpenTxn);
         }
       } else {
         cleanUsingLocation(ci, location, false);
@@ -219,9 +219,9 @@ class CompactionCleaner extends AcidTxnCleaner {
     }
   }
 
-  private void cleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxnGLB) throws Exception {
+  private void cleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxn) throws Exception {
     ValidTxnList validTxnList =
-            TxnUtils.createValidTxnListForCompactionCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
+            TxnUtils.createValidTxnListForCompactionCleaner(txnHandler.getOpenTxns(), minOpenTxn);
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     /*

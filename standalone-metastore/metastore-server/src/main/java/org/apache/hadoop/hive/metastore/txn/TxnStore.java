@@ -527,7 +527,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  List<CompactionInfo> findReadyToCleanForAborts(long minOpenTxnId, long abortedTimeThreshold, int abortedThreshold) throws MetaException;
+  List<CompactionInfo> findReadyToCleanForAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
 
   /**
    * Sets the cleaning start time for a particular compaction

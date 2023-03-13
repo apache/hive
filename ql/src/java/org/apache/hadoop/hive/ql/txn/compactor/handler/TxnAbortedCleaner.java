@@ -71,7 +71,7 @@ class TxnAbortedCleaner extends AcidTxnCleaner {
       only sees the aborted deltas and does not read the file).<br><br>
 
    The following algorithm is used to clean the set of aborted directories - <br>
-      a. Find the list of entries which are suitable for cleanup (This is done in {@link TxnStore#findReadyToCleanForAborts(long, long, int)}).<br>
+      a. Find the list of entries which are suitable for cleanup (This is done in {@link TxnStore#findReadyToCleanForAborts(long, int)}).<br>
       b. If the table/partition does not exist, then remove the associated aborted entry in TXN_COMPONENTS table. <br>
       c. Get the AcidState of the table by using the min open txnID, database name, tableName, partition name, highest write ID <br>
       d. Fetch the aborted directories and delete the directories. <br>
@@ -79,16 +79,16 @@ class TxnAbortedCleaner extends AcidTxnCleaner {
    **/
   @Override
   public List<Runnable> getTasks() throws MetaException {
-    long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
     int abortedThreshold = HiveConf.getIntVar(conf,
               HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD);
     long abortedTimeThreshold = HiveConf
               .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
                       TimeUnit.MILLISECONDS);
-    List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanForAborts(minOpenTxnId, abortedTimeThreshold, abortedThreshold);
+    List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanForAborts(abortedTimeThreshold, abortedThreshold);
 
     if (!readyToCleanAborts.isEmpty()) {
-      return readyToCleanAborts.stream().map(ci -> ThrowingRunnable.unchecked(() -> clean(ci, Long.MAX_VALUE, metricsEnabled)))
+      return readyToCleanAborts.stream().map(ci -> ThrowingRunnable.unchecked(() ->
+                      clean(ci, ci.txnId > 0 ? ci.txnId : Long.MAX_VALUE, metricsEnabled)))
               .collect(Collectors.toList());
     }
     return Collections.emptyList();
