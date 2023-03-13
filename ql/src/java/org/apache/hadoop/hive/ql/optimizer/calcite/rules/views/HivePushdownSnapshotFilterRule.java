@@ -53,6 +53,8 @@ import java.util.Set;
  * The literal is set in the {@link RelOptHiveTable#getHiveTableMD()} object wrapped by
  * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan}
  * and the original predicate in the {@link HiveFilter} is replaced with literal true.
+ *
+ * @see HiveAugmentSnapshotMaterializationRule
  */
 public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshotFilterRule.Config> {
 
