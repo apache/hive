@@ -59,7 +59,7 @@ import java.util.Set;
  * a Filter operator to build the union branch produces the delta records.
  * After union rewrite algorithm is executed the predicates on SnapshotIds
  * are pushed down to the corresponding TableScan operator and removed from the Filter
- * operator. So the reference to the {@link VirtualColumn#SNAPSHOT_ID} is temporal in the
+ * operator. So the reference to the {@link VirtualColumn#SNAPSHOT_ID} is temporary in the
  * logical plan.
  *
  * @see HivePushdownSnapshotFilterRule
