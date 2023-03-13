@@ -2123,7 +2123,7 @@ public class Hive {
 
     MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
 
-    boolean hasDelete = false;
+    boolean hasAppendsOnly = false;
     for (SourceTable sourceTable : metadata.getSourceTables()) {
       Table table = getTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
       HiveStorageHandler storageHandler = table.getStorageHandler();
@@ -2132,22 +2132,22 @@ public class Hive {
         materialization.setSourceTablesCompacted(true);
         return materialization;
       }
-      Boolean b = storageHandler.hasDeletes(
+      Boolean b = storageHandler.hasAppendsOnly(
           table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()));
       if (b == null) {
         Materialization materialization = new Materialization();
         materialization.setSourceTablesCompacted(true);
         return materialization;
       } else if (b) {
-        hasDelete = true;
+        hasAppendsOnly = true;
         break;
       }
     }
     Materialization materialization = new Materialization();
     // TODO: delete operations are not supported yet.
     // Set setSourceTablesCompacted to false when delete is supported
-    materialization.setSourceTablesCompacted(hasDelete);
-    materialization.setSourceTablesUpdateDeleteModified(hasDelete);
+    materialization.setSourceTablesCompacted(!hasAppendsOnly);
+    materialization.setSourceTablesUpdateDeleteModified(!hasAppendsOnly);
     return materialization;
   }
 

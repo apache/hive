@@ -1181,7 +1181,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public Boolean hasDeletes(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
+  public Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     boolean foundSince = false;
@@ -1192,13 +1192,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         }
       } else {
         if (!"append".equals(snapshot.operation())) {
-          return true;
+          return false;
         }
       }
     }
 
     if (foundSince) {
-      return false;
+      return true;
     }
 
     return null;

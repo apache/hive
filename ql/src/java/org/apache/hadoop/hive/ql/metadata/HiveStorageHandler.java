@@ -553,7 +553,7 @@ public interface HiveStorageHandler extends Configurable {
       EnvironmentContext environmentContext) {
   }
 
-  default Boolean hasDeletes(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
+  default Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     return null;
   }
 }
