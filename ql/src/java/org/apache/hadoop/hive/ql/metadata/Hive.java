@@ -2123,7 +2123,7 @@ public class Hive {
 
     MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
 
-    boolean hasAppendsOnly = false;
+    boolean hasAppendsOnly = true;
     for (SourceTable sourceTable : metadata.getSourceTables()) {
       Table table = getTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
       HiveStorageHandler storageHandler = table.getStorageHandler();
@@ -2138,8 +2138,8 @@ public class Hive {
         Materialization materialization = new Materialization();
         materialization.setSourceTablesCompacted(true);
         return materialization;
-      } else if (b) {
-        hasAppendsOnly = true;
+      } else if (!b) {
+        hasAppendsOnly = false;
         break;
       }
     }
