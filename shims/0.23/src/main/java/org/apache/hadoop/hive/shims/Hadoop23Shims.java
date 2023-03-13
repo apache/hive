@@ -1419,15 +1419,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      *
      * @param path1 First  path to compare
      * @param path2 Second path to compare
+     * @param encryptionShim2 The encryption-shim corresponding to path2.
      * @return 1 if path1 is stronger; 0 if paths are equals; -1 if path1 is weaker.
      * @throws IOException If an error occurred attempting to get key metadata
      */
     @Override
-    public int comparePathKeyStrength(Path path1, Path path2) throws IOException {
+    public int comparePathKeyStrength(Path path1, Path path2, HadoopShims.HdfsEncryptionShim encryptionShim2) throws IOException {
       EncryptionZone zone1, zone2;
 
       zone1 = getEncryptionZoneForPath(path1);
-      zone2 = getEncryptionZoneForPath(path2);
+      zone2 = ((HdfsEncryptionShim)encryptionShim2).hdfsAdmin.getEncryptionZoneForPath(path2);
 
       if (zone1 == null && zone2 == null) {
         return 0;

@@ -2589,15 +2589,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws HiveException If an error occurs while comparing key strengths.
    */
   private int comparePathKeyStrength(Path p1, Path p2) throws HiveException {
-    HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
+    try {
+      HadoopShims.HdfsEncryptionShim hdfsEncryptionShim1;
+      HadoopShims.HdfsEncryptionShim hdfsEncryptionShim2;
+      hdfsEncryptionShim1 = SessionState.get().getHdfsEncryptionShim(p1.getFileSystem(conf), conf);
+      hdfsEncryptionShim2 = SessionState.get().getHdfsEncryptionShim(p2.getFileSystem(conf), conf);
 
-    hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim();
-    if (hdfsEncryptionShim != null) {
-      try {
-        return hdfsEncryptionShim.comparePathKeyStrength(p1, p2);
-      } catch (Exception e) {
-        throw new HiveException("Unable to compare key strength for " + p1 + " and " + p2 + " : " + e, e);
+      if (hdfsEncryptionShim1 != null && hdfsEncryptionShim2 != null) {
+        return hdfsEncryptionShim1.comparePathKeyStrength(p1, p2, hdfsEncryptionShim2);
       }
+    } catch (Exception e) {
+      throw new HiveException("Unable to compare key strength for " + p1 + " and " + p2 + " : " + e, e);
     }
 
     return 0; // Non-encrypted path (or equals strength)
