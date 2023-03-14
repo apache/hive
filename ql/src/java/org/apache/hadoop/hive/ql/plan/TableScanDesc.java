@@ -34,12 +34,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -115,6 +112,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   public static final String AS_OF_VERSION =
       "hive.io.as.of.version";
 
+  public static final String FROM_VERSION =
+      "hive.io.version.from";
+
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
 
@@ -140,6 +140,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private int numBuckets = -1;
 
   private String asOfVersion = null;
+  private String versionIntervalFrom = null;
 
   private String asOfTimestamp = null;
 
@@ -172,6 +173,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
       numBuckets = tblMetadata.getNumBuckets();
       asOfTimestamp = tblMetadata.getAsOfTimestamp();
       asOfVersion = tblMetadata.getAsOfVersion();
+      versionIntervalFrom = tblMetadata.getVersionIntervalFrom();
     }
     isTranscationalTable = AcidUtils.isTransactionalTable(this.tableMetadata);
     if (isTranscationalTable) {
@@ -529,6 +531,11 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   @Explain(displayName = "As of version")
   public String getAsOfVersion() {
     return asOfVersion;
+  }
+
+  @Explain(displayName = "Version interval from")
+  public String getVersionIntervalFrom() {
+    return versionIntervalFrom;
   }
 
   @Explain(displayName = "As of timestamp")

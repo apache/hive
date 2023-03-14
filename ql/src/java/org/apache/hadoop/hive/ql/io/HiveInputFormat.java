@@ -993,6 +993,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (scanDesc.getAsOfVersion() != null) {
       jobConf.set(TableScanDesc.AS_OF_VERSION, scanDesc.getAsOfVersion());
     }
+
+    if (scanDesc.getVersionIntervalFrom() != null) {
+      jobConf.set(TableScanDesc.FROM_VERSION, scanDesc.getVersionIntervalFrom());
+    }
   }
 
   protected void pushProjectionsAndFiltersAndAsOf(JobConf jobConf, Path splitPath) {

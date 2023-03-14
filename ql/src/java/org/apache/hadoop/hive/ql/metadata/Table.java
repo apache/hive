@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -60,7 +59,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
@@ -134,6 +132,7 @@ public class Table implements Serializable {
    * The version of the table. For Iceberg tables this is the snapshotId.
    */
   private String asOfVersion = null;
+  private String versionIntervalFrom = null;
 
   /**
    * The version of the table at the given timestamp. The format will be parsed with
@@ -180,6 +179,7 @@ public class Table implements Serializable {
 
     newTab.setAsOfTimestamp(this.asOfTimestamp);
     newTab.setAsOfVersion(this.asOfVersion);
+    newTab.setVersionIntervalFrom(this.versionIntervalFrom);
 
     newTab.setMetaTable(this.getMetaTable());
     return newTab;
@@ -593,6 +593,9 @@ public class Table implements Serializable {
       return false;
     }
     if (!Objects.equals(asOfVersion, other.asOfVersion)) {
+      return false;
+    }
+    if (!Objects.equals(versionIntervalFrom, other.versionIntervalFrom)) {
       return false;
     }
     return true;
@@ -1325,6 +1328,14 @@ public class Table implements Serializable {
 
   public void setAsOfVersion(String asOfVersion) {
     this.asOfVersion = asOfVersion;
+  }
+
+  public String getVersionIntervalFrom() {
+    return versionIntervalFrom;
+  }
+
+  public void setVersionIntervalFrom(String versionIntervalFrom) {
+    this.versionIntervalFrom = versionIntervalFrom;
   }
 
   public String getAsOfTimestamp() {

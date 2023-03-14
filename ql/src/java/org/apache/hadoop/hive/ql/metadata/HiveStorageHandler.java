@@ -552,4 +552,8 @@ public interface HiveStorageHandler extends Configurable {
   default void prepareAlterTableEnvironmentContext(AbstractAlterTableDesc alterTableDesc,
       EnvironmentContext environmentContext) {
   }
+
+  default Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
+    return null;
+  }
 }

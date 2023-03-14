@@ -63,4 +63,11 @@ public class SnapshotContext {
   public int hashCode() {
     return Objects.hash(snapshotId);
   }
+
+  @Override
+  public String toString() {
+    return "SnapshotContext{" +
+        "snapshotId=" + snapshotId +
+        '}';
+  }
 }

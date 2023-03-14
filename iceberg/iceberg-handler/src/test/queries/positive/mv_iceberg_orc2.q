@@ -1,5 +1,6 @@
 -- MV data is stored by iceberg v1
 -- SORT_QUERY_RESULTS
+--! qt:replace:/(.*fromVersion=\[)\S+(\].*)/$1#Masked#$2/
 
 set hive.explain.user=false;
 set hive.support.concurrency=true;

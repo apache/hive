@@ -99,6 +99,12 @@ public class ASTBuilder {
       b.add(asOfBuilder);
     }
 
+    if (hTbl.getHiveTableMD().getVersionIntervalFrom() != null) {
+      ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_FROM_VERSION, "TOK_FROM_VERSION")
+          .add(HiveParser.Number, hTbl.getHiveTableMD().getVersionIntervalFrom());
+      b.add(asOfBuilder);
+    }
+
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
     if (scan instanceof DruidQuery) {
       //Passing query spec, column names and column types to be used as part of Hive Physical execution
