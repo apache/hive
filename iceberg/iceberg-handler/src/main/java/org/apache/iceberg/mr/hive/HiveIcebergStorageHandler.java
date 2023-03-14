@@ -1179,4 +1179,28 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
     return COPY_ON_WRITE.equalsIgnoreCase(mode);
   }
+
+  @Override
+  public Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    boolean foundSince = false;
+    for (Snapshot snapshot : table.snapshots()) {
+      if (!foundSince) {
+        if (snapshot.snapshotId() == since.getSnapshotId()) {
+          foundSince = true;
+        }
+      } else {
+        if (!"append".equals(snapshot.operation())) {
+          return false;
+        }
+      }
+    }
+
+    if (foundSince) {
+      return true;
+    }
+
+    return null;
+  }
 }
