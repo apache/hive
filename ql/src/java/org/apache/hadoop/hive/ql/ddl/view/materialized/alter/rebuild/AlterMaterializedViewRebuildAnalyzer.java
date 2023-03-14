@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertInc
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HivePushdownSnapshotFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveIncrementalRelMdRowCount;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -243,6 +244,10 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       // Add materialization for rebuild to planner
       // Optimize plan
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider, singletonList(materialization));
+
+      program = new HepProgramBuilder();
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST, HivePushdownSnapshotFilterRule.INSTANCE);
+      basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
 
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
 
