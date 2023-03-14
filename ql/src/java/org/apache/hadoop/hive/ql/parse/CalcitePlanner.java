@@ -353,6 +353,7 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ANY;
 
@@ -2946,6 +2947,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
           virtualCols = VirtualColumn.getRegistry(conf);
           if (AcidUtils.isNonNativeAcidTable(tabMetaData, false)) {
             virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
+          }
+          if (tabMetaData.isNonNative() && tabMetaData.getStorageHandler().areSnapshotsSupported() &&
+              isBlank(tabMetaData.getMetaTable())) {
+            virtualCols.add(VirtualColumn.SNAPSHOT_ID);
           }
           for (VirtualColumn vc : virtualCols) {
             colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true,
