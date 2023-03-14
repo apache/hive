@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantPropagateOption;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
+import org.apache.hadoop.hive.ql.optimizer.ExtendParentReduceSinkOfMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
 import org.apache.hadoop.hive.ql.optimizer.ParallelEdgeFixer;
@@ -238,6 +239,8 @@ public class TezCompiler extends TaskCompiler {
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run reduce sink after join algorithm selection");
 
     semijoinRemovalBasedTransformations(procCtx);
+
+    extendParentReduceSinkOfMapJoin(procCtx);
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     if (procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
@@ -490,6 +493,18 @@ public class TezCompiler extends TaskCompiler {
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     SemanticGraphWalker ogw = new ForwardWalker(disp);
+    ogw.startWalking(topNodes, null);
+  }
+
+  private void extendParentReduceSinkOfMapJoin(OptimizeTezProcContext procCtx) throws SemanticException {
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<>();
+    opRules.put(
+        new RuleRegExp("Extend parent RS of MapJoin", MapJoinOperator.getOperatorName() + "%"),
+        new ExtendParentReduceSinkOfMapJoin());
+
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
+    List<Node> topNodes = new ArrayList<>(procCtx.parseContext.getTopOps().values());
     ogw.startWalking(topNodes, null);
   }
 
