@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.AcidTxnInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
@@ -52,11 +52,11 @@ import static org.apache.commons.collections.ListUtils.subtract;
 
 /**
  * An abstract class extending TaskHandler which contains the common methods from
- * CompactionCleaner and TxnAbortedCleaner.
+ * CompactionCleaner and AbortedTxnCleaner.
  */
 abstract class AcidTxnCleaner extends TaskHandler {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TxnAbortedCleaner.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(AcidTxnCleaner.class.getName());
 
   AcidTxnCleaner(HiveConf conf, TxnStore txnHandler,
                  MetadataCache metadataCache, boolean metricsEnabled,
@@ -64,9 +64,9 @@ abstract class AcidTxnCleaner extends TaskHandler {
     super(conf, txnHandler, metadataCache, metricsEnabled, fsRemover);
   }
 
-  protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
+  protected ValidReaderWriteIdList getValidCleanerWriteIdList(AcidTxnInfo acidTxnInfo, ValidTxnList validTxnList)
           throws NoSuchTxnException, MetaException {
-    List<String> tblNames = Collections.singletonList(AcidUtils.getFullTableName(ci.dbname, ci.tableName));
+    List<String> tblNames = Collections.singletonList(AcidUtils.getFullTableName(acidTxnInfo.dbname, acidTxnInfo.tableName));
     GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(tblNames);
     request.setValidTxnList(validTxnList.writeToString());
     GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(request);
@@ -78,7 +78,7 @@ abstract class AcidTxnCleaner extends TaskHandler {
     return TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
   }
 
-  protected boolean cleanAndVerifyObsoleteDirectories(CompactionInfo ci, String location,
+  protected boolean cleanAndVerifyObsoleteDirectories(AcidTxnInfo acidTxnInfo, String location,
                                                       ValidReaderWriteIdList validWriteIdList, Table table) throws MetaException, IOException {
     Path path = new Path(location);
     FileSystem fs = path.getFileSystem(conf);
@@ -87,20 +87,20 @@ abstract class AcidTxnCleaner extends TaskHandler {
     Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshotsForCleaner(fs, path);
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, validWriteIdList, Ref.from(false), false,
             dirSnapshots);
-    boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, ci.partName);
+    boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, acidTxnInfo.partName);
 
     List<Path> obsoleteDirs = CompactorUtil.getObsoleteDirs(dir, isDynPartAbort);
     if (isDynPartAbort || dir.hasUncompactedAborts()) {
-      ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
+      acidTxnInfo.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
     }
 
     List<Path> deleted = fsRemover.clean(new CleanupRequestBuilder().setLocation(location)
-            .setDbName(ci.dbname).setFullPartitionName(ci.getFullPartitionName())
-            .setRunAs(ci.runAs).setObsoleteDirs(obsoleteDirs).setPurge(true)
+            .setDbName(acidTxnInfo.dbname).setFullPartitionName(acidTxnInfo.getFullPartitionName())
+            .setRunAs(acidTxnInfo.runAs).setObsoleteDirs(obsoleteDirs).setPurge(true)
             .build());
 
     if (!deleted.isEmpty()) {
-      AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
+      AcidMetricService.updateMetricsFromCleaner(acidTxnInfo.dbname, acidTxnInfo.tableName, acidTxnInfo.partName, dir.getObsolete(), conf,
               txnHandler);
     }
 
@@ -108,7 +108,7 @@ abstract class AcidTxnCleaner extends TaskHandler {
     boolean success = false;
     conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
     dir = AcidUtils.getAcidState(fs, path, conf, new ValidReaderWriteIdList(
-                    ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
+                    acidTxnInfo.getFullTableName(), new long[0], new BitSet(), acidTxnInfo.highestWriteId, Long.MAX_VALUE),
             Ref.from(false), false, dirSnapshots);
 
     List<Path> remained = subtract(CompactorUtil.getObsoleteDirs(dir, isDynPartAbort), deleted);
@@ -116,7 +116,7 @@ abstract class AcidTxnCleaner extends TaskHandler {
       LOG.warn("Remained {} obsolete directories from {}. {}",
               remained.size(), location, CompactorUtil.getDebugInfo(remained));
     } else {
-      LOG.debug("All cleared below the watermark: {} from {}", ci.highestWriteId, location);
+      LOG.debug("All cleared below the watermark: {} from {}", acidTxnInfo.highestWriteId, location);
       success = true;
     }
 

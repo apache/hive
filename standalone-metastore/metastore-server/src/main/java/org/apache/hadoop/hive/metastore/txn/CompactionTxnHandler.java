@@ -468,9 +468,9 @@ class CompactionTxnHandler extends TxnHandler {
 
   @Override
   @RetrySemantics.ReadOnly
-  public List<CompactionInfo> findReadyToCleanForAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException {
+  public List<AcidTxnInfo> findReadyToCleanForAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException {
     try {
-      List<CompactionInfo> readyToCleanAborts = new ArrayList<>();
+      List<AcidTxnInfo> readyToCleanAborts = new ArrayList<>();
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
            Statement stmt = dbConn.createStatement()) {
         boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
@@ -493,7 +493,7 @@ class CompactionTxnHandler extends TxnHandler {
                     checkAbortedTimeThreshold && rs.getLong(4) + abortedTimeThreshold < systemTime;
             int numAbortedTxns = rs.getInt(5);
             if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
-              CompactionInfo info = new CompactionInfo();
+              AcidTxnInfo info = new AcidTxnInfo();
               info.dbname = rs.getString(1);
               info.tableName = rs.getString(2);
               info.partName = rs.getString(3);
@@ -700,7 +700,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   @Override
-  public void markCleanedForAborts(CompactionInfo info) throws MetaException {
+  public void markCleanedForAborts(AcidTxnInfo info) throws MetaException {
     // Do cleanup of TXN_COMPONENTS table
     LOG.debug("Running markCleanedForAborts with CompactionInfo: {}", info);
     try {
@@ -725,7 +725,7 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 
-  private void markAbortCleaned(Connection dbConn, CompactionInfo info) throws MetaException, RetryException {
+  private void markAbortCleaned(Connection dbConn, AcidTxnInfo info) throws MetaException, RetryException {
     PreparedStatement pStmt = null;
     ResultSet rs = null;
     try {

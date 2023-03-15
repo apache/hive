@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.AcidTxnInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -43,11 +43,15 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
-class TxnAbortedCleaner extends AcidTxnCleaner {
+/**
+ * Abort-cleanup based implementation of TaskHandler.
+ * Provides implementation of creation of abort clean tasks.
+ */
+class AbortedTxnCleaner extends AcidTxnCleaner {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TxnAbortedCleaner.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(AbortedTxnCleaner.class.getName());
 
-  public TxnAbortedCleaner(HiveConf conf, TxnStore txnHandler,
+  public AbortedTxnCleaner(HiveConf conf, TxnStore txnHandler,
                            MetadataCache metadataCache, boolean metricsEnabled,
                            FSRemover fsRemover) {
     super(conf, txnHandler, metadataCache, metricsEnabled, fsRemover);
@@ -73,7 +77,7 @@ class TxnAbortedCleaner extends AcidTxnCleaner {
     long abortedTimeThreshold = HiveConf
               .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
                       TimeUnit.MILLISECONDS);
-    List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanForAborts(abortedTimeThreshold, abortedThreshold);
+    List<AcidTxnInfo> readyToCleanAborts = txnHandler.findReadyToCleanForAborts(abortedTimeThreshold, abortedThreshold);
 
     if (!readyToCleanAborts.isEmpty()) {
       return readyToCleanAborts.stream().map(ci -> ThrowingRunnable.unchecked(() ->
@@ -83,81 +87,81 @@ class TxnAbortedCleaner extends AcidTxnCleaner {
     return Collections.emptyList();
   }
 
-  private void clean(CompactionInfo ci, long minOpenTxn, boolean metricsEnabled) throws MetaException {
-    LOG.info("Starting cleaning for {}", ci);
+  private void clean(AcidTxnInfo info, long minOpenTxn, boolean metricsEnabled) throws MetaException {
+    LOG.info("Starting cleaning for {}", info);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_";
     try {
       if (metricsEnabled) {
-        perfLogger.perfLogBegin(TxnAbortedCleaner.class.getName(), cleanerMetric);
+        perfLogger.perfLogBegin(AbortedTxnCleaner.class.getName(), cleanerMetric);
       }
       Table t;
       Partition p = null;
-      t = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
+      t = metadataCache.computeIfAbsent(info.getFullTableName(), () -> resolveTable(info.dbname, info.tableName));
       if (isNull(t)) {
         // The table was dropped before we got around to cleaning it.
-        LOG.info("Unable to find table {}, assuming it was dropped.", ci.getFullTableName());
-        txnHandler.markCleanedForAborts(ci);
+        LOG.info("Unable to find table {}, assuming it was dropped.", info.getFullTableName());
+        txnHandler.markCleanedForAborts(info);
         return;
       }
       if (MetaStoreUtils.isNoCleanUpSet(t.getParameters())) {
         // The table was marked no clean up true.
-        LOG.info("Skipping table {} clean up, as NO_CLEANUP set to true", ci.getFullTableName());
+        LOG.info("Skipping table {} clean up, as NO_CLEANUP set to true", info.getFullTableName());
         return;
       }
-      if (!isNull(ci.partName)) {
-        p = resolvePartition(ci.dbname, ci.tableName, ci.partName);
+      if (!isNull(info.partName)) {
+        p = resolvePartition(info.dbname, info.tableName, info.partName);
         if (isNull(p)) {
           // The partition was dropped before we got around to cleaning it.
           LOG.info("Unable to find partition {}, assuming it was dropped.",
-                  ci.getFullPartitionName());
-          txnHandler.markCleanedForAborts(ci);
+                  info.getFullPartitionName());
+          txnHandler.markCleanedForAborts(info);
           return;
         }
         if (MetaStoreUtils.isNoCleanUpSet(p.getParameters())) {
           // The partition was marked no clean up true.
-          LOG.info("Skipping partition {} clean up, as NO_CLEANUP set to true", ci.getFullPartitionName());
+          LOG.info("Skipping partition {} clean up, as NO_CLEANUP set to true", info.getFullPartitionName());
           return;
         }
       }
 
       String location = CompactorUtil.resolveStorageDescriptor(t,p).getLocation();
-      ci.runAs = TxnUtils.findUserToRunAs(location, t, conf);
-      abortCleanUsingAcidDir(ci, location, minOpenTxn);
+      info.runAs = TxnUtils.findUserToRunAs(location, t, conf);
+      abortCleanUsingAcidDir(info, location, minOpenTxn);
 
     } catch (Exception e) {
-      LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", ci,
+      LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", info,
               e.getMessage());
       throw new MetaException(e.getMessage());
     } finally {
       if (metricsEnabled) {
-        perfLogger.perfLogEnd(TxnAbortedCleaner.class.getName(), cleanerMetric);
+        perfLogger.perfLogEnd(AbortedTxnCleaner.class.getName(), cleanerMetric);
       }
     }
   }
 
-  private void abortCleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxn) throws Exception {
+  private void abortCleanUsingAcidDir(AcidTxnInfo info, String location, long minOpenTxn) throws Exception {
     ValidTxnList validTxnList =
             TxnUtils.createValidTxnListForTxnAbortedCleaner(txnHandler.getOpenTxns(), minOpenTxn);
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 
-    ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
+    ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(info, validTxnList);
 
     // Set the highestWriteId of the cleanup equal to the min(minOpenWriteId - 1, highWatermark).
     // This is necessary for looking at the complete state of the table till the min open write Id
     // (if there is an open txn on the table) or the highestWatermark.
     // This is used later on while deleting the records in TXN_COMPONENTS table.
-    ci.highestWriteId = Math.min(isNull(validWriteIdList.getMinOpenWriteId()) ?
+    info.highestWriteId = Math.min(isNull(validWriteIdList.getMinOpenWriteId()) ?
             Long.MAX_VALUE : validWriteIdList.getMinOpenWriteId() - 1, validWriteIdList.getHighWatermark());
-    Table table = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
+    Table table = metadataCache.computeIfAbsent(info.getFullTableName(), () -> resolveTable(info.dbname, info.tableName));
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
-    boolean success = cleanAndVerifyObsoleteDirectories(ci, location, validWriteIdList, table);
-    if (success || CompactorUtil.isDynPartAbort(table, ci.partName)) {
-      txnHandler.markCleanedForAborts(ci);
+    boolean success = cleanAndVerifyObsoleteDirectories(info, location, validWriteIdList, table);
+    if (success || CompactorUtil.isDynPartAbort(table, info.partName)) {
+      txnHandler.markCleanedForAborts(info);
     } else {
-      LOG.warn("Leaving aborted entry {} in TXN_COMPONENTS table.", ci);
+      LOG.warn("Leaving aborted entry {} in TXN_COMPONENTS table.", info);
     }
 
   }

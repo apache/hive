@@ -527,7 +527,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  List<CompactionInfo> findReadyToCleanForAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
+  List<AcidTxnInfo> findReadyToCleanForAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
 
   /**
    * Sets the cleaning start time for a particular compaction
@@ -561,7 +561,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.CannotRetry
-  void markCleanedForAborts(CompactionInfo info) throws MetaException;
+  void markCleanedForAborts(AcidTxnInfo info) throws MetaException;
 
   /**
    * Mark a compaction entry as failed.  This will move it to the compaction history queue with a

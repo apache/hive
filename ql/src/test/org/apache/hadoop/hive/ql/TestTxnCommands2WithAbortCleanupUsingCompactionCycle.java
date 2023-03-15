@@ -15,14 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.txn.compactor;
+package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
-public class TestInitiatorWithAbortCleanupUsingCleaner extends TestInitiator {
+/**
+ * Same as TestTxnCommands2 but tests ACID tables with abort cleanup happening explicitly using
+ * compaction cycle by default, and having 'transactional_properties' set to 'default'. This
+ * specifically tests the abort cleanup done exclusively using compaction cycle for ACID tables.
+ */
+public class TestTxnCommands2WithAbortCleanupUsingCompactionCycle extends TestTxnCommands2 {
+  public TestTxnCommands2WithAbortCleanupUsingCompactionCycle() {
+    super();
+  }
+
   @Override
-  public void setup() throws Exception {
-    super.setup();
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
+  void initHiveConf() {
+    super.initHiveConf();
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, false);
   }
 }

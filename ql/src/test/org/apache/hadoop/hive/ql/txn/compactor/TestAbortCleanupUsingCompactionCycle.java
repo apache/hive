@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,14 +18,13 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.txn.compactor.TestCompactor;
 import org.junit.Before;
 
-public class TestCompactorWithAbortCleanupUsingCleaner extends TestCompactor {
+public class TestAbortCleanupUsingCompactionCycle extends TestCleaner {
   @Override
   @Before
   public void setup() throws Exception {
     super.setup();
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, false);
   }
 }
