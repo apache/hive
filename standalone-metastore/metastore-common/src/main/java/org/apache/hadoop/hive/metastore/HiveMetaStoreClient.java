@@ -457,10 +457,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     boolean compatible = true;
     for (ConfVars oneVar : MetastoreConf.metaVars) {
-      // METASTORE_TOKEN_SIGNATURE is no need to check
-      if (oneVar.equals(ConfVars.TOKEN_SIGNATURE)) {
-        continue;
-      }
       // Since metaVars are all of different types, use string for comparison
       String oldVar = currentMetaVarsCopy.get(oneVar.getVarname());
       String newVar = MetastoreConf.getAsString(conf, oneVar);
