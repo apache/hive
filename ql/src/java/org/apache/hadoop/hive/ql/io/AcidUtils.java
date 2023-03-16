@@ -1538,10 +1538,10 @@ public class AcidUtils {
   public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path)
       throws IOException {
     Map<Path, HdfsDirSnapshot> dirToSnapshots = new HashMap<>();
-    Deque<RemoteIterator<FileStatus>> stack = new ArrayDeque<>();
-    stack.push(FileUtils.listStatusIterator(fs, path, acidHiddenFileFilter));
+    Deque<RemoteIterator<LocatedFileStatus>> stack = new ArrayDeque<>();
+    stack.push(FileUtils.listLocatedStatusIterator(fs, path, acidHiddenFileFilter));
     while (!stack.isEmpty()) {
-      RemoteIterator<FileStatus> itr = stack.pop();
+      RemoteIterator<LocatedFileStatus> itr = stack.pop();
       while (itr.hasNext()) {
         FileStatus fStatus = itr.next();
         Path fPath = fStatus.getPath();
@@ -1549,7 +1549,7 @@ public class AcidUtils {
           addToSnapshot(dirToSnapshots, fPath);
         }
         if (fStatus.isDirectory()) {
-          stack.push(FileUtils.listStatusIterator(fs, fPath, acidHiddenFileFilter));
+          stack.push(FileUtils.listLocatedStatusIterator(fs, fPath, acidHiddenFileFilter));
         } else {
           Path parentDirPath = fPath.getParent();
           if (acidTempDirFilter.accept(parentDirPath)) {

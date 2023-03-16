@@ -1376,6 +1376,12 @@ public final class FileUtils {
         status -> filter.accept(status.getPath()));
   }
 
+  public static RemoteIterator<LocatedFileStatus> listLocatedStatusIterator(FileSystem fs, Path path, PathFilter filter)
+      throws IOException {
+    return RemoteIterators.filteringRemoteIterator(fs.listLocatedStatus(path),
+        status -> filter.accept(status.getPath()));
+  }
+
   public static RemoteIterator<LocatedFileStatus> listFiles(FileSystem fs, Path path, boolean recursive, PathFilter filter)
         throws IOException {
     return RemoteIterators.filteringRemoteIterator(fs.listFiles(path, recursive),
