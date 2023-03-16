@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
@@ -4787,7 +4788,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (!FileUtils.copy(sourceFs, sourcePath, destFs, destFilePath,
           false,   // delete source
           false,  // overwrite destination
-          conf)) {
+          conf,
+          new DataCopyStatistics())) {
         LOG.error("Copy failed for source: " + sourcePath + " to destination: " + destFilePath);
         throw new IOException("File copy failed.");
       }
@@ -4919,7 +4921,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
           return FileUtils.copy(srcf.getFileSystem(conf), srcf, destf.getFileSystem(conf), destf,
               true,    // delete source
               replace, // overwrite destination
-              conf);
+              conf,
+              new DataCopyStatistics());
         } else {
           if (srcIsSubDirOfDest || destIsSubDirOfSrc) {
             FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);

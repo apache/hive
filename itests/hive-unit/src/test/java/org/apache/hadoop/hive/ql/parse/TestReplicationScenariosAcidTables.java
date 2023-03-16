@@ -2524,6 +2524,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
   @Test
   public void testCheckPointingDataDumpFailureBootstrapDuringIncremental() throws Throwable {
+    isMetricsEnabledForTests(false);
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
             "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
@@ -2598,7 +2599,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
   @Test
   public void testCheckPointingBootstrapDuringIncrementalRegularCopy() throws Throwable {
-
+    isMetricsEnabledForTests(false);
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
             .run("create table t1(a int) stored as orc TBLPROPERTIES ('transactional'='true')")
             .run("insert into t1 values (1)")
@@ -3903,5 +3904,121 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertNull(targetParams.get("repl.resume.started"));
     assertNotNull(targetParams.get("repl.target.last.id"));
     assertNotNull(targetParams.get("repl.last.id"));
+  }
+
+  @Test
+  public void testSizeOfDatabaseReplicationViaDistCp() throws Throwable {
+    testSizeOfDatabaseReplication(true);
+  }
+
+  @Test
+  public void testSizeOfDatabaseReplicationViaRegularCopy() throws Throwable {
+    testSizeOfDatabaseReplication(false);
+
+  }
+  private void testSizeOfDatabaseReplication(boolean useDistcp) throws Throwable {
+    isMetricsEnabledForTests(true);
+    HiveConf primaryConf = primary.getConf();
+    HiveConf replicaConf = replica.getConf();
+
+    MetastoreConf.setTimeVar(primaryConf, MetastoreConf.ConfVars.REPL_METRICS_UPDATE_FREQUENCY, 10,
+        TimeUnit.MINUTES);
+    MetastoreConf.setTimeVar(replicaConf, MetastoreConf.ConfVars.REPL_METRICS_UPDATE_FREQUENCY, 10,
+        TimeUnit.MINUTES);
+
+    List<String> withClause = new ArrayList<>();
+    withClause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
+    if (useDistcp) {
+      List<String> clauseForDistcp = Arrays.asList(
+          "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+          "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
+          "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+          "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+              + UserGroupInformation.getCurrentUser().getUserName() + "'");
+      withClause.addAll(clauseForDistcp);
+    }
+
+    List<String> managedTblList = new ArrayList<String>();
+
+    primary.run("use " + primaryDbName);
+
+    int pt = 2;
+    for (int i = 0; i < 2; i++) {
+      primary.run("CREATE TABLE ptnmgned" + i + " (a int) partitioned by (b int)");
+      managedTblList.add("ptnmgned" + i);
+
+      for (int j = 0; j < pt; j++) {
+        primary.run("ALTER TABLE ptnmgned" + i + " ADD PARTITION(b=" + j + ")");
+        // insert some rows in each partitions of table
+        for (int k = 0; k < pt; k++) {
+          primary.run("INSERT INTO TABLE ptnmgned" + i + " PARTITION(b=" + j + ") VALUES (" + k + ")");
+        }
+      }
+    }
+    // create 2 un-partitioned table
+    for (int i = 0; i < 2; i++) {
+      primary.run("CREATE TABLE unptnmgned" + i + " (a int)");
+      managedTblList.add("unptnmgned" + i);
+      //insert some rows in each tables
+      for (int j = 0; j < 2; j++) {
+        primary.run("INSERT INTO TABLE unptnmgned" + i + " VALUES (" + j + ")");
+      }
+    }
+    // start bootstrap dump
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, withClause);
+
+    List<String> newTableList = new ArrayList<String>();
+    newTableList.addAll(managedTblList);
+
+    // start bootstrap load
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("show tables")
+        .verifyResults(newTableList);
+
+    MetricCollector collector = MetricCollector.getInstance();
+    ReplicationMetric metric = collector.getMetrics().getLast();
+    double dataReplicationSizeInKB = metric.getMetadata().getReplicatedDBSizeInKB();
+    assertNotEquals(0.0, dataReplicationSizeInKB);
+
+    primary.run("use " + primaryDbName);
+    // create 2 un-partitioned table for incremental dump
+    for (int i = 0; i < 2; i++) {
+      primary.run("CREATE TABLE incrunptnmgned" + i + "(a int)");
+      managedTblList.add("incrunptnmgned" + i);
+      // insert some rows in each tables
+      for (int j = 0; j < 2; j++) {
+        primary.run("INSERT INTO TABLE incrunptnmgned" + i + " VALUES (" + j + ")");
+      }
+    }
+
+    for (int i = 0; i < 2; i++) {
+      //insert some rows in each tables
+      for (int j = 2; j < 4; j++) {
+        primary.run("INSERT INTO TABLE unptnmgned" + i + " VALUES (" + j + ")");
+      }
+    }
+
+    newTableList.clear();
+    newTableList.addAll(managedTblList);
+
+    //start incremental dump
+    WarehouseInstance.Tuple newTuple = primary.dump(primaryDbName, withClause);
+
+    //start incremental load
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("show tables")
+        .verifyResults(newTableList);
+
+    metric = collector.getMetrics().getLast();
+    dataReplicationSizeInKB = metric.getMetadata().getReplicatedDBSizeInKB();
+    assertNotEquals(0.0, dataReplicationSizeInKB);
+
+    MetastoreConf.setTimeVar(primaryConf, MetastoreConf.ConfVars.REPL_METRICS_UPDATE_FREQUENCY, 1,
+        TimeUnit.MINUTES);
+    MetastoreConf.setTimeVar(replicaConf, MetastoreConf.ConfVars.REPL_METRICS_UPDATE_FREQUENCY, 1,
+        TimeUnit.MINUTES);
+    isMetricsEnabledForTests(false);
   }
 }
