@@ -167,21 +167,23 @@ public class StatsRulesProcFactory {
       PrunedPartitionList partList = aspCtx.getParseContext().getPrunedPartitions(tsop);
       ColumnStatsList colStatsCached = aspCtx.getParseContext().getColStatsCached(partList);
       Table table = tsop.getConf().getTableMetadata();
+      boolean skipStatsCollection = table.isNonNative() && !HiveConf.getBoolVar(aspCtx.getConf(),
+          ConfVars.HIVE_STATS_COLLECT_NON_NATIVE_TABLES);
+      if (!skipStatsCollection) {
+        try {
+          // gather statistics for the first time and the attach it to table scan operator
+          Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
 
-      try {
-        // gather statistics for the first time and the attach it to table scan operator
-        Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
+          stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, tsop);
+          tsop.setStatistics(stats);
 
-        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, tsop);
-        tsop.setStatistics(stats);
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("[0] STATS-" + tsop.toString() + " (" + table.getTableName() + "): " +
-              stats.extendedToString());
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("[0] STATS-" + tsop.toString() + " (" + table.getTableName() + "): " + stats.extendedToString());
+          }
+        } catch (HiveException e) {
+          LOG.debug("Failed to retrieve stats ", e);
+          throw new SemanticException(e);
         }
-      } catch (HiveException e) {
-        LOG.debug("Failed to retrieve stats ", e);
-        throw new SemanticException(e);
       }
       return null;
     }

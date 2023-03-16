@@ -2764,6 +2764,10 @@ public class HiveConf extends Configuration {
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
         "Estimate statistics in absence of statistics."),
+    HIVE_STATS_COLLECT_NON_NATIVE_TABLES("hive.stats.collect.non.native.tables", true,
+        "Collect statistics for non native Hive table while doing query processing. Compute stats for "
+            + "non-native Hive tables before enabling this feature to avoid unexpected map joins "
+            + "leading to out of memory issue"),
     HIVE_STATS_NDV_ESTIMATE_PERC("hive.stats.ndv.estimate.percent", (float)20,
         "This many percentage of rows will be estimated as count distinct in absence of statistics."),
     HIVE_STATS_JOIN_NDV_READJUSTMENT("hive.stats.join.ndv.readjustment", false,
