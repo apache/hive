@@ -594,7 +594,6 @@ public class Msck {
 
       private List<Pair<Integer, byte[]>> getPartitionExpr(final List<String> parts) throws MetaException {
         StringBuilder exprBuilder = new StringBuilder();
-        String orExpr = " OR ";
         for (int i = 0; i < parts.size(); i++) {
           String partName = parts.get(i);
           Map<String, String> partSpec = Warehouse.makeSpecFromName(partName);
@@ -602,10 +601,10 @@ public class Msck {
           if (LOG.isDebugEnabled()) {
             LOG.debug("Generated partExpr: {} for partName: {}", partExpr, partName);
           }
-          exprBuilder.append(partExpr).append(orExpr);
-        }
-        if (exprBuilder.length() > 0) {
-          exprBuilder.setLength(exprBuilder.length() - orExpr.length());
+          if (i > 0) {
+            exprBuilder.append(" OR ");
+          }
+          exprBuilder.append(partExpr);
         }
         return Lists.newArrayList(Pair.of(parts.size(),
             exprBuilder.toString().getBytes(StandardCharsets.UTF_8)));

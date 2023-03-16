@@ -108,9 +108,10 @@ public class PartitionIterable implements Iterable<Partition> {
         }
         try {
           if (request != null) {
-            request.setFilterSpec(new GetPartitionsFilterSpec());
-            request.getFilterSpec().setFilterMode(PartitionFilterMode.BY_NAMES);
-            request.getFilterSpec().setFilters(nameBatch);
+            GetPartitionsFilterSpec getPartitionsFilterSpec = new GetPartitionsFilterSpec();
+            getPartitionsFilterSpec.setFilterMode(PartitionFilterMode.BY_NAMES);
+            getPartitionsFilterSpec.setFilters(nameBatch);
+            request.setFilterSpec(getPartitionsFilterSpec);
             batchIter = MetaStoreServerUtils.getPartitionsByProjectSpec(msc, request).iterator();
           } else {
             String dbName = prependCatalogToDbName(table.getCatName(), table.getDbName(), null);
