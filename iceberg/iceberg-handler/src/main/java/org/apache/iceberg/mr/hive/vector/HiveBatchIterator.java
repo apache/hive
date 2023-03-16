@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.vector;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -36,8 +37,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.io.CloseableIterator;
-
-import static org.apache.iceberg.MetadataColumns.PARTITION_COLUMN_ID;
 
 /**
  * Iterator wrapper around Hive's VectorizedRowBatch producer (MRv1 implementing) record readers.
@@ -93,8 +92,11 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
           }
         }
 
-        Map<String, Integer> indexMap = IntStream.range(0, vrbCtx.getRowColumnNames().length).boxed()
-          .collect(Collectors.toMap(index -> vrbCtx.getRowColumnNames()[index], index -> index));
+        Map<String, Integer> indexMap = IntStream.range(0, vrbCtx.getRowColumnNames().length)
+            .boxed()
+            .filter(idx -> MetadataColumns.isMetadataColumn(vrbCtx.getRowColumnNames()[idx]))
+            .collect(Collectors.toMap(idx -> vrbCtx.getRowColumnNames()[idx], Function.identity()));
+
         for (VirtualColumn vc : vrbCtx.getNeededVirtualColumns()) {
           Object value;
           int colIdx = indexMap.get(vc.getName());
@@ -104,7 +106,7 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], value, colIdx);
               break;
             case PARTITION_HASH:
-              value = idToConstant.get(PARTITION_COLUMN_ID);
+              value = idToConstant.get(MetadataColumns.PARTITION_COLUMN_ID);
               vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], value, colIdx);
               break;
             case FILE_PATH:
@@ -119,13 +121,12 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               }
               break;
             case ROW_POSITION:
+              value = LongStream.range(rowOffset, rowOffset + batch.size).toArray();
               LongColumnVector lcv = (LongColumnVector) batch.cols[colIdx];
-              lcv.isRepeating = false;
               lcv.noNulls = true;
               Arrays.fill(lcv.isNull, false);
-
-              System.arraycopy(LongStream.rangeClosed(rowOffset, rowOffset + vrbCtx.getVirtualColumnCount()).toArray(),
-                0, lcv.vector, 0, vrbCtx.getVirtualColumnCount());
+              lcv.isRepeating = false;
+              System.arraycopy(value, 0, lcv.vector, 0, batch.size);
               break;
           }
         }
