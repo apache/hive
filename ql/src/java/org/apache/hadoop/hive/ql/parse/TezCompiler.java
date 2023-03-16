@@ -240,14 +240,14 @@ public class TezCompiler extends TaskCompiler {
 
     semijoinRemovalBasedTransformations(procCtx);
 
-    extendParentReduceSinkOfMapJoin(procCtx);
-
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     if (procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
       new SharedWorkOptimizer().transform(procCtx.parseContext);
       new ParallelEdgeFixer().transform(procCtx.parseContext);
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
+
+    extendParentReduceSinkOfMapJoin(procCtx);
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.

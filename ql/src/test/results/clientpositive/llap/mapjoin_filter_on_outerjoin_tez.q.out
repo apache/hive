@@ -5,7 +5,7 @@ PREHOOK: query: SELECT * FROM src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
@@ -13,7 +13,7 @@ POSTHOOK: query: SELECT * FROM src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 NULL	NULL	128		128	val_128
 NULL	NULL	128		128	val_128
 NULL	NULL	128		128	val_128
@@ -44,7 +44,7 @@ SELECT /*+ mapjoin(src1, src2) */ * FROM src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
@@ -53,7 +53,7 @@ SELECT /*+ mapjoin(src1, src2) */ * FROM src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -184,7 +184,7 @@ PREHOOK: query: SELECT /*+ mapjoin(src1, src2) */ * FROM src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
@@ -192,7 +192,7 @@ POSTHOOK: query: SELECT /*+ mapjoin(src1, src2) */ * FROM src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 NULL	NULL	128		128	val_128
 NULL	NULL	128		128	val_128
 NULL	NULL	128		128	val_128
@@ -223,7 +223,7 @@ SELECT * FROM src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
@@ -232,7 +232,7 @@ SELECT * FROM src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -266,7 +266,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 8 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: string), (UDFToShort((UDFToDouble(_col0) > 10.0D)) * 1S) (type: smallint)
+                        value expressions: _col1 (type: string)
                   Filter Operator
                     predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 8 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
@@ -310,8 +310,8 @@ STAGE PLANS:
                           2 _col0 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                         input vertices:
-                          0 Reducer 2
-                          1 Map 1
+                          0 Map 1
+                          1 Reducer 2
                         Statistics: Num rows: 8 Data size: 4224 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col2 (type: string), _col4 (type: string)
@@ -333,7 +333,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 8 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col1 (type: string)
+                  value expressions: _col1 (type: string), (UDFToShort((UDFToDouble(_col0) > 10.0D)) * 1S) (type: smallint)
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -362,7 +362,7 @@ PREHOOK: query: SELECT * FROM src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
@@ -370,7 +370,7 @@ POSTHOOK: query: SELECT * FROM src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 NULL	NULL	128		128	val_128
 NULL	NULL	128		128	val_128
 NULL	NULL	128		128	val_128
@@ -393,3 +393,295 @@ NULL	NULL	278	val_278	278	val_278
 NULL	NULL	66	val_66	66	val_66
 NULL	NULL	98	val_98	98	val_98
 NULL	NULL	98	val_98	98	val_98
+PREHOOK: query: explain
+SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string), (UDFToDouble(key) < 10.0D) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 25 Data size: 4475 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 25 Data size: 4475 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string), _col2 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Full Outer Join 0 to 1
+                filter predicates:
+                  0 {VALUE._col1}
+                  1 
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col3, _col4
+                Statistics: Num rows: 50 Data size: 17500 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col4 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 50 Data size: 17500 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 50 Data size: 17500 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+		NULL	NULL
+		NULL	NULL
+		NULL	NULL
+		NULL	NULL
+	val_165	NULL	NULL
+	val_193	NULL	NULL
+	val_265	NULL	NULL
+	val_27	NULL	NULL
+	val_409	NULL	NULL
+	val_484	NULL	NULL
+128		NULL	NULL
+146	val_146	NULL	NULL
+150	val_150	NULL	NULL
+213	val_213	NULL	NULL
+224		NULL	NULL
+238	val_238	NULL	NULL
+255	val_255	NULL	NULL
+273	val_273	NULL	NULL
+278	val_278	NULL	NULL
+311	val_311	NULL	NULL
+369		NULL	NULL
+401	val_401	NULL	NULL
+406	val_406	NULL	NULL
+66	val_66	NULL	NULL
+98	val_98	NULL	NULL
+NULL	NULL		
+NULL	NULL		
+NULL	NULL		
+NULL	NULL		
+NULL	NULL		val_165
+NULL	NULL		val_193
+NULL	NULL		val_265
+NULL	NULL		val_27
+NULL	NULL		val_409
+NULL	NULL		val_484
+NULL	NULL	128	
+NULL	NULL	146	val_146
+NULL	NULL	150	val_150
+NULL	NULL	213	val_213
+NULL	NULL	224	
+NULL	NULL	238	val_238
+NULL	NULL	255	val_255
+NULL	NULL	273	val_273
+NULL	NULL	278	val_278
+NULL	NULL	311	val_311
+NULL	NULL	369	
+NULL	NULL	401	val_401
+NULL	NULL	406	val_406
+NULL	NULL	66	val_66
+NULL	NULL	98	val_98
+PREHOOK: query: explain
+SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src2.key < 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src2.key < 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string), (UDFToDouble(key) < 10.0D) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 25 Data size: 4475 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 25 Data size: 4475 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string), _col2 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Full Outer Join 0 to 1
+                filter predicates:
+                  0 
+                  1 {VALUE._col1}
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 50 Data size: 17500 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 50 Data size: 17500 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src2.key < 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src2.key < 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+		NULL	NULL
+		NULL	NULL
+		NULL	NULL
+		NULL	NULL
+	val_165	NULL	NULL
+	val_193	NULL	NULL
+	val_265	NULL	NULL
+	val_27	NULL	NULL
+	val_409	NULL	NULL
+	val_484	NULL	NULL
+128		NULL	NULL
+146	val_146	NULL	NULL
+150	val_150	NULL	NULL
+213	val_213	NULL	NULL
+224		NULL	NULL
+238	val_238	NULL	NULL
+255	val_255	NULL	NULL
+273	val_273	NULL	NULL
+278	val_278	NULL	NULL
+311	val_311	NULL	NULL
+369		NULL	NULL
+401	val_401	NULL	NULL
+406	val_406	NULL	NULL
+66	val_66	NULL	NULL
+98	val_98	NULL	NULL
+NULL	NULL		
+NULL	NULL		
+NULL	NULL		
+NULL	NULL		
+NULL	NULL		val_165
+NULL	NULL		val_193
+NULL	NULL		val_265
+NULL	NULL		val_27
+NULL	NULL		val_409
+NULL	NULL		val_484
+NULL	NULL	128	
+NULL	NULL	146	val_146
+NULL	NULL	150	val_150
+NULL	NULL	213	val_213
+NULL	NULL	224	
+NULL	NULL	238	val_238
+NULL	NULL	255	val_255
+NULL	NULL	273	val_273
+NULL	NULL	278	val_278
+NULL	NULL	311	val_311
+NULL	NULL	369	
+NULL	NULL	401	val_401
+NULL	NULL	406	val_406
+NULL	NULL	66	val_66
+NULL	NULL	98	val_98
