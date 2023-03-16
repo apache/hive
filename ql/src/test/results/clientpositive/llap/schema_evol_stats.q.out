@@ -294,7 +294,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	8                   
 	rawDataSize         	1148                
-	totalSize           	852                 
+	totalSize           	866                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -331,7 +331,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	4                   
 	rawDataSize         	400                 
-	totalSize           	325                 
+	totalSize           	332                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -370,7 +370,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	4                   
 	rawDataSize         	748                 
-	totalSize           	527                 
+	totalSize           	534                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
