@@ -19,14 +19,25 @@
 package org.apache.iceberg.mr.hive.vector;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.io.CloseableIterator;
+
+import static org.apache.iceberg.MetadataColumns.PARTITION_COLUMN_ID;
 
 /**
  * Iterator wrapper around Hive's VectorizedRowBatch producer (MRv1 implementing) record readers.
@@ -41,15 +52,17 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
   private final Object[] partitionValues;
   private boolean advanced = false;
   private long rowOffset = Long.MIN_VALUE;
+  private Map<Integer, ?> idToConstant;
 
   HiveBatchIterator(RecordReader<NullWritable, VectorizedRowBatch> recordReader, JobConf job,
-      int[] partitionColIndices, Object[] partitionValues) {
+      int[] partitionColIndices, Object[] partitionValues, Map<Integer, ?> idToConstant) {
     this.recordReader = recordReader;
     this.key = recordReader.createKey();
     this.batch = recordReader.createValue();
     this.vrbCtx = LlapHiveUtils.findMapWork(job).getVectorizedRowBatchCtx();
     this.partitionColIndices = partitionColIndices;
     this.partitionValues = partitionValues;
+    this.idToConstant = idToConstant;
   }
 
   @Override
@@ -77,6 +90,43 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
             if (batch.cols[colIdx] != null) {
               vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], partitionValues[i], partitionColIndices[i]);
             }
+          }
+        }
+
+        Map<String, Integer> indexMap = IntStream.range(0, vrbCtx.getRowColumnNames().length).boxed()
+          .collect(Collectors.toMap(index -> vrbCtx.getRowColumnNames()[index], index -> index));
+        for (VirtualColumn vc : vrbCtx.getNeededVirtualColumns()) {
+          Object value;
+          int colIdx = indexMap.get(vc.getName());
+          switch (vc) {
+            case PARTITION_SPEC_ID:
+              value = idToConstant.get(MetadataColumns.SPEC_ID.fieldId());
+              vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], value, colIdx);
+              break;
+            case PARTITION_HASH:
+              value = idToConstant.get(PARTITION_COLUMN_ID);
+              vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], value, colIdx);
+              break;
+            case FILE_PATH:
+              value = idToConstant.get(MetadataColumns.FILE_PATH.fieldId());
+              BytesColumnVector bcv = (BytesColumnVector) batch.cols[colIdx];
+              if (value == null) {
+                bcv.noNulls = false;
+                bcv.isNull[0] = true;
+                bcv.isRepeating = true;
+              } else {
+                bcv.fill(((String) value).getBytes());
+              }
+              break;
+            case ROW_POSITION:
+              LongColumnVector lcv = (LongColumnVector) batch.cols[colIdx];
+              lcv.isRepeating = false;
+              lcv.noNulls = true;
+              Arrays.fill(lcv.isNull, false);
+
+              System.arraycopy(LongStream.rangeClosed(rowOffset, rowOffset + vrbCtx.getVirtualColumnCount()).toArray(),
+                0, lcv.vector, 0, vrbCtx.getVirtualColumnCount());
+              break;
           }
         }
       } catch (IOException ioe) {

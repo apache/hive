@@ -259,7 +259,7 @@ STAGE PLANS:
                     dataColumnCount: 6
                     includeColumns: [0, 1, 2, 3, 4, 5]
                     dataColumns: skey:bigint, hierarchy_number:string, hierarchy_name:string, language_id:int, hierarchy_display:string, orderby:string
-                    neededVirtualColumns: [ROW_POSITION, PARTITION_SPEC_ID, PARTITION_HASH, FILE_PATH]
+                    neededVirtualColumns: [ROW_POSITION, PARTITION_SPEC_ID, FILE_PATH, PARTITION_HASH]
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint, bigint]
         Reducer 2 
@@ -422,3 +422,86 @@ POSTHOOK: Input: default@display
 #### A masked pattern was here ####
 1090969	NULL	NULL	3	f9e59bae9b131de1d8f02d887ee91e20-mergeupdated1-updated1	NULL
 1090969	NULL	NULL	3	f9e59bae9b131de1d8f02d887ee91e20-mergeupdated1-updated1-insertnew1	NULL
+Warning: Shuffle Join MERGEJOIN[62][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
+PREHOOK: query: MERGE INTO display USING (
+  SELECT distinct display_skey, display, display as orig_display
+  FROM (
+    SELECT D.skey display_skey, D.hierarchy_display display
+    FROM (
+      SELECT s_key FROM calls WHERE s_key =  1090969
+    ) R
+    INNER JOIN display D
+      ON R.s_key = D.skey AND D.language_id = 3
+    GROUP BY D.skey,
+      D.hierarchy_display
+  ) sub1
+
+  UNION ALL
+
+  SELECT distinct display_skey, null as display, display as orig_display
+  FROM (
+    SELECT D.skey display_skey, D.hierarchy_display display
+    FROM (
+      SELECT s_key FROM calls WHERE s_key =  1090969
+    ) R
+    INNER JOIN display D
+      ON R.s_key = D.skey AND D.language_id = 3
+    GROUP BY D.skey,
+      D.hierarchy_display
+  ) sub2
+) sub
+ON display.skey = sub.display_skey
+    and display.hierarchy_display = sub.display
+
+WHEN MATCHED THEN
+  UPDATE SET hierarchy_display = concat(sub.display, '-mergeupdated1')
+WHEN NOT MATCHED THEN
+  INSERT (skey, language_id, hierarchy_display) values (sub.display_skey, 3, concat(sub.orig_display, '-mergenew1'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calls
+PREHOOK: Input: default@display
+PREHOOK: Output: default@display
+PREHOOK: Output: default@display
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: MERGE INTO display USING (
+  SELECT distinct display_skey, display, display as orig_display
+  FROM (
+    SELECT D.skey display_skey, D.hierarchy_display display
+    FROM (
+      SELECT s_key FROM calls WHERE s_key =  1090969
+    ) R
+    INNER JOIN display D
+      ON R.s_key = D.skey AND D.language_id = 3
+    GROUP BY D.skey,
+      D.hierarchy_display
+  ) sub1
+
+  UNION ALL
+
+  SELECT distinct display_skey, null as display, display as orig_display
+  FROM (
+    SELECT D.skey display_skey, D.hierarchy_display display
+    FROM (
+      SELECT s_key FROM calls WHERE s_key =  1090969
+    ) R
+    INNER JOIN display D
+      ON R.s_key = D.skey AND D.language_id = 3
+    GROUP BY D.skey,
+      D.hierarchy_display
+  ) sub2
+) sub
+ON display.skey = sub.display_skey
+    and display.hierarchy_display = sub.display
+
+WHEN MATCHED THEN
+  UPDATE SET hierarchy_display = concat(sub.display, '-mergeupdated1')
+WHEN NOT MATCHED THEN
+  INSERT (skey, language_id, hierarchy_display) values (sub.display_skey, 3, concat(sub.orig_display, '-mergenew1'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calls
+POSTHOOK: Input: default@display
+POSTHOOK: Output: default@display
+POSTHOOK: Output: default@display
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(display)display.null, ]

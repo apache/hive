@@ -1,4 +1,5 @@
 set hive.optimize.shared.work.merge.ts.schema=true;
+set hive.vectorized.execution.enabled=true;
 
 CREATE EXTERNAL TABLE calls (
   s_key bigint, 
@@ -63,3 +64,39 @@ WHEN NOT MATCHED THEN
 
 
 SELECT * FROM display; 
+
+
+MERGE INTO display USING (
+  SELECT distinct display_skey, display, display as orig_display
+  FROM (
+    SELECT D.skey display_skey, D.hierarchy_display display
+    FROM (
+      SELECT s_key FROM calls WHERE s_key =  1090969
+    ) R
+    INNER JOIN display D
+      ON R.s_key = D.skey AND D.language_id = 3
+    GROUP BY D.skey,
+      D.hierarchy_display
+  ) sub1
+
+  UNION ALL
+
+  SELECT distinct display_skey, null as display, display as orig_display
+  FROM (
+    SELECT D.skey display_skey, D.hierarchy_display display
+    FROM (
+      SELECT s_key FROM calls WHERE s_key =  1090969
+    ) R
+    INNER JOIN display D
+      ON R.s_key = D.skey AND D.language_id = 3
+    GROUP BY D.skey,
+      D.hierarchy_display
+  ) sub2
+) sub
+ON display.skey = sub.display_skey
+    and display.hierarchy_display = sub.display
+
+WHEN MATCHED THEN
+  UPDATE SET hierarchy_display = concat(sub.display, '-mergeupdated1')
+WHEN NOT MATCHED THEN
+  INSERT (skey, language_id, hierarchy_display) values (sub.display_skey, 3, concat(sub.orig_display, '-mergenew1'));
