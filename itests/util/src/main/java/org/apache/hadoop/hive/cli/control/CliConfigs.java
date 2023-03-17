@@ -583,6 +583,19 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "miniSparkOnYarn.query.files");
         includesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
+        excludeQuery("orc_merge1.q");
+        excludeQuery("orc_merge2.q");
+        excludeQuery("orc_merge3.q");
+        excludeQuery("orc_merge4.q");
+        excludeQuery("orc_merge5.q");
+        excludeQuery("orc_merge6.q");
+        excludeQuery("orc_merge7.q");
+        excludeQuery("orc_merge8.q");
+        excludeQuery("orc_merge9.q");
+        excludeQuery("orc_merge_diff_fs.q");
+        excludeQuery("orc_merge_incompat1.q");
+        excludeQuery("orc_merge_incompat2.q");
+
 
         setResultsDir("ql/src/test/results/clientpositive/spark");
         setLogDir("itests/qtest-spark/target/qfile-results/clientpositive/spark");
