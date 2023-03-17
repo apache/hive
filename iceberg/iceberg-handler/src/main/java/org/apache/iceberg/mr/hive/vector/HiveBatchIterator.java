@@ -37,6 +37,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.io.CloseableIterator;
+import org.apache.iceberg.mr.hive.IcebergAcidUtil;
+import org.apache.iceberg.util.StructProjection;
 
 /**
  * Iterator wrapper around Hive's VectorizedRowBatch producer (MRv1 implementing) record readers.
@@ -94,7 +96,7 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
 
         Map<String, Integer> indexMap = IntStream.range(0, vrbCtx.getRowColumnNames().length)
             .boxed()
-            .filter(idx -> MetadataColumns.isMetadataColumn(vrbCtx.getRowColumnNames()[idx]))
+            .filter(idx -> VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(vrbCtx.getRowColumnNames()[idx]))
             .collect(Collectors.toMap(idx -> vrbCtx.getRowColumnNames()[idx], Function.identity()));
 
         for (VirtualColumn vc : vrbCtx.getNeededVirtualColumns()) {
@@ -106,7 +108,8 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], value, colIdx);
               break;
             case PARTITION_HASH:
-              value = idToConstant.get(MetadataColumns.PARTITION_COLUMN_ID);
+              value = IcebergAcidUtil.computeHash(
+                  (StructProjection) idToConstant.get(MetadataColumns.PARTITION_COLUMN_ID));
               vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], value, colIdx);
               break;
             case FILE_PATH:

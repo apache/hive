@@ -202,7 +202,7 @@ public class IcebergAcidUtil {
     return rec.get(FILE_READ_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
   }
 
-  private static long computeHash(StructProjection struct) {
+  public static long computeHash(StructProjection struct) {
     long partHash = -1;
     if (struct != null) {
       Object[] partFields = new Object[struct.size()];
