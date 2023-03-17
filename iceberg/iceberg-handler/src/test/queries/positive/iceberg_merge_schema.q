@@ -1,4 +1,8 @@
 -- SORT_QUERY_RESULTS
+
+-- Mask neededVirtualColumns due to non-strict order
+--! qt:replace:/(\s+neededVirtualColumns:\s)(.*)/$1#Masked#/
+
 set hive.optimize.shared.work.merge.ts.schema=true;
 set hive.vectorized.execution.enabled=true;
 

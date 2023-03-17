@@ -21,9 +21,6 @@ package org.apache.iceberg.mr.hive.vector;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -93,28 +90,23 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
             }
           }
         }
-
-        Map<String, Integer> indexMap = IntStream.range(0, vrbCtx.getRowColumnNames().length)
-            .boxed()
-            .filter(idx -> VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(vrbCtx.getRowColumnNames()[idx]))
-            .collect(Collectors.toMap(idx -> vrbCtx.getRowColumnNames()[idx], Function.identity()));
-
+        // Fill virtual columns
         for (VirtualColumn vc : vrbCtx.getNeededVirtualColumns()) {
           Object value;
-          int colIdx = indexMap.get(vc.getName());
+          int idx = vrbCtx.findVirtualColumnNum(vc);
           switch (vc) {
             case PARTITION_SPEC_ID:
               value = idToConstant.get(MetadataColumns.SPEC_ID.fieldId());
-              vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], value, colIdx);
+              vrbCtx.addPartitionColsToBatch(batch.cols[idx], value, idx);
               break;
             case PARTITION_HASH:
               value = IcebergAcidUtil.computeHash(
                   (StructProjection) idToConstant.get(MetadataColumns.PARTITION_COLUMN_ID));
-              vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], value, colIdx);
+              vrbCtx.addPartitionColsToBatch(batch.cols[idx], value, idx);
               break;
             case FILE_PATH:
               value = idToConstant.get(MetadataColumns.FILE_PATH.fieldId());
-              BytesColumnVector bcv = (BytesColumnVector) batch.cols[colIdx];
+              BytesColumnVector bcv = (BytesColumnVector) batch.cols[idx];
               if (value == null) {
                 bcv.noNulls = false;
                 bcv.isNull[0] = true;
@@ -125,7 +117,7 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               break;
             case ROW_POSITION:
               value = LongStream.range(rowOffset, rowOffset + batch.size).toArray();
-              LongColumnVector lcv = (LongColumnVector) batch.cols[colIdx];
+              LongColumnVector lcv = (LongColumnVector) batch.cols[idx];
               lcv.noNulls = true;
               Arrays.fill(lcv.isNull, false);
               lcv.isRepeating = false;
