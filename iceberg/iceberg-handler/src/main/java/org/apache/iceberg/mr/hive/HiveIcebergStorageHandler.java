@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -34,15 +35,21 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -112,6 +119,12 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.puffin.Blob;
+import org.apache.iceberg.puffin.BlobMetadata;
+import org.apache.iceberg.puffin.Puffin;
+import org.apache.iceberg.puffin.PuffinCompressionCodec;
+import org.apache.iceberg.puffin.PuffinReader;
+import org.apache.iceberg.puffin.PuffinWriter;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
@@ -121,7 +134,10 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
+import org.apache.iceberg.relocated.com.google.common.collect.Streams;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ByteBuffers;
+import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,6 +152,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String PUFFIN = "puffin";
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
+  public static final String STATS = "/stats/";
   /**
    * Function template for producing a custom sort expression function:
    * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
@@ -360,6 +377,96 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
     return table;
   }
+
+
+  @Override
+  public boolean canSetColStatistics() {
+    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM).toLowerCase();
+    return statsSource.equals(PUFFIN);
+  }
+
+  @Override
+  public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = tbl;
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
+    if (table.currentSnapshot() != null) {
+      String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_COL_STATS_SOURCE).toLowerCase();
+      String statsPath = table.location() + STATS + table.name() + table.currentSnapshot().snapshotId();
+      if (statsSource.equals(PUFFIN)) {
+        try (FileSystem fs = new Path(table.location()).getFileSystem(conf)) {
+          if (fs.exists(new Path(statsPath))) {
+            return true;
+          }
+        } catch (IOException e) {
+          LOG.warn(e.getMessage());
+        }
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = tbl;
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
+    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_COL_STATS_SOURCE).toLowerCase();
+    switch (statsSource) {
+      case ICEBERG:
+        // Place holder for iceberg stats
+        break;
+      case PUFFIN:
+        String snapshotId = table.name() + table.currentSnapshot().snapshotId();
+        String statsPath = table.location() + STATS + snapshotId;
+        LOG.info("Using stats from puffin file at:" + statsPath);
+        try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
+          BlobMetadata blobMetadata = reader.fileMetadata().blobs().get(0);
+          Map<BlobMetadata, List<ColumnStatistics>> collect =
+              Streams.stream(reader.readAll(ImmutableList.of(blobMetadata))).collect(Collectors.toMap(Pair::first,
+                  blobMetadataByteBufferPair -> SerializationUtils.deserialize(
+                      ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
+
+          return collect.entrySet().stream().iterator().next().getValue().get(0).getStatsObj();
+        } catch (IOException e) {
+          LOG.info(String.valueOf(e));
+        }
+        break;
+      default:
+        // fall back to metastore
+    }
+    return null;
+  }
+
+
+  @Override
+  public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table table,
+      List<ColumnStatistics> colStats) {
+    TableDesc tableDesc = Utilities.getTableDesc(table);
+    Table tbl = Catalogs.loadTable(conf, tableDesc.getProperties());
+    String snapshotId = tbl.name() + tbl.currentSnapshot().snapshotId();
+    byte[] serializeColStats = SerializationUtils.serialize((Serializable) colStats);
+
+    try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(tbl.location() + STATS + snapshotId))
+        .createdBy("Hive").build()) {
+      writer.add(
+          new Blob(
+              tbl.name() + "-" + snapshotId,
+              ImmutableList.of(1),
+              tbl.currentSnapshot().snapshotId(),
+              tbl.currentSnapshot().sequenceNumber(),
+              ByteBuffer.wrap(serializeColStats),
+              PuffinCompressionCodec.NONE,
+              ImmutableMap.of()));
+      writer.finish();
+    } catch (IOException e) {
+      LOG.info(String.valueOf(e));
+    }
+    return false;
+  }
+
 
   /**
    * No need for exclusive locks when writing, since Iceberg tables use optimistic concurrency when writing
