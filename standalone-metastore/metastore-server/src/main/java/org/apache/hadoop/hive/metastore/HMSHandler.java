@@ -4903,7 +4903,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ms.addPartition(destPartition);
         destPartitions.add(destPartition);
         ms.dropPartition(parsedSourceDbName[CAT_NAME], partition.getDbName(), sourceTable.getTableName(),
-            partition.getValues());
+            Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues()));
       }
       Path destParentPath = destPath.getParent();
       if (!wh.isDir(destParentPath)) {
@@ -5026,7 +5026,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         verifyIsWritablePath(partPath);
       }
 
-      if (!ms.dropPartition(catName, db_name, tbl_name, part_vals)) {
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part_vals);
+      if (!ms.dropPartition(catName, db_name, tbl_name, partName)) {
         throw new MetaException("Unable to drop partition");
       } else {
         if (!transactionalListeners.isEmpty()) {

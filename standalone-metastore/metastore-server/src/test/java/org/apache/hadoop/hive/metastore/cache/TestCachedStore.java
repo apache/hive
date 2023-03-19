@@ -1030,8 +1030,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
         Warehouse.makePartName(tbl.getPartitionKeys(), partVals1), partVals1, colName, CacheUtils.HIVE_ENGINE);
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
         Warehouse.makePartName(tbl.getPartitionKeys(), partVals2), partVals2, colName, CacheUtils.HIVE_ENGINE);
-    objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals1);
-    objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals2);
+    objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), "col=1");
+    objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), "col=2");
     objectStore.dropTable(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName());
     objectStore.dropDatabase(DEFAULT_CATALOG_NAME, db.getName());
     cachedStore.shutdown();

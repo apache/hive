@@ -439,14 +439,14 @@ public class TestObjectStore {
     Assert.assertEquals(2, numPartitions);
 
     try (AutoCloseable c = deadline()) {
-      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value1);
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=CA");
       partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
     }
     Assert.assertEquals(1, partitions.size());
     Assert.assertEquals(222, partitions.get(0).getCreateTime());
 
     try (AutoCloseable c = deadline()) {
-      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value2);
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=MA");
       objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
       objectStore.dropDatabase(db1.getCatalogName(), DB1);
     }
@@ -519,8 +519,9 @@ public class TestObjectStore {
     tableParams.put("EXTERNAL", "false");
     FieldSchema partitionKey1 = new FieldSchema("Country", ColumnType.STRING_TYPE_NAME, "");
     FieldSchema partitionKey2 = new FieldSchema("State", ColumnType.STRING_TYPE_NAME, "");
+    List<FieldSchema> partCols = Arrays.asList(partitionKey1, partitionKey2);
     Table tbl1 =
-      new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2),
+      new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, partCols,
         tableParams, null, null, "MANAGED_TABLE");
     objectStore.createTable(tbl1);
     HashMap<String, String> partitionParams = new HashMap<>();
@@ -545,10 +546,11 @@ public class TestObjectStore {
         () -> {
           ObjectStore threadObjectStore = new ObjectStore();
           threadObjectStore.setConf(conf);
-          for (List<String> p : partNames) {
+          for (List<String> partVals : partNames) {
             try {
-              threadObjectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, p);
-              System.out.println("Dropping partition: " + p.get(0));
+              String partName = Warehouse.makePartName(partCols, partVals);
+              threadObjectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, partName);
+              System.out.println("Dropping partition: " + partName);
             } catch (Exception e) {
               throw new RuntimeException(e);
             }
@@ -949,10 +951,8 @@ public class TestObjectStore {
         for (String db : dbs) {
           List<String> tbls = store.getAllTables(DEFAULT_CATALOG_NAME, db);
           for (String tbl : tbls) {
-            List<Partition> parts = store.getPartitions(DEFAULT_CATALOG_NAME, db, tbl, 100);
-            for (Partition part : parts) {
-              store.dropPartition(DEFAULT_CATALOG_NAME, db, tbl, part.getValues());
-            }
+            List<String> partNames = store.listPartitionNames(DEFAULT_CATALOG_NAME, db, tbl, (short) -1);
+            store.dropPartitions(DEFAULT_CATALOG_NAME, db, tbl, partNames);
             // Find any constraints and drop them
             Set<String> constraints = new HashSet<>();
             List<SQLPrimaryKey> pk = store.getPrimaryKeys(DEFAULT_CATALOG_NAME, db, tbl);

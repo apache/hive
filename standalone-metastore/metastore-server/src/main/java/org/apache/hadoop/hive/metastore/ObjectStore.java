@@ -37,6 +37,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,7 +66,6 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -251,7 +251,6 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
@@ -3084,14 +3083,12 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean dropPartition(String catName, String dbName, String tableName,
-    List<String> part_vals) throws MetaException, NoSuchObjectException, InvalidObjectException,
-    InvalidInputException {
+  public boolean dropPartition(String catName, String dbName, String tableName, String partName)
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean success = false;
     try {
       openTransaction();
-      MPartition part = getMPartition(catName, dbName, tableName, part_vals, null);
-      dropPartitionCommon(part);
+      dropPartitionsInternal(catName, dbName, tableName, Arrays.asList(partName), true, true);
       success = commitTransaction();
     } finally {
       if (!success) {
@@ -3163,65 +3160,6 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
-  }
-
-  /**
-   * Drop an MPartition and cascade deletes (e.g., delete partition privilege grants,
-   *   drop the storage descriptor cleanly, etc.)
-   */
-  private boolean dropPartitionCommon(MPartition part) throws MetaException,
-    InvalidObjectException, InvalidInputException {
-    boolean success = false;
-    try {
-      openTransaction();
-      if (part != null) {
-        List<MFieldSchema> schemas = part.getTable().getPartitionKeys();
-        List<String> colNames = new ArrayList<>();
-        for (MFieldSchema col: schemas) {
-          colNames.add(col.getName());
-        }
-        String partName = FileUtils.makePartName(colNames, part.getValues());
-
-        List<MPartitionPrivilege> partGrants = listPartitionGrants(
-            part.getTable().getDatabase().getCatalogName(),
-            part.getTable().getDatabase().getName(),
-            part.getTable().getTableName(),
-            Lists.newArrayList(partName));
-
-        if (CollectionUtils.isNotEmpty(partGrants)) {
-          pm.deletePersistentAll(partGrants);
-        }
-
-        List<MPartitionColumnPrivilege> partColumnGrants = listPartitionAllColumnGrants(
-            part.getTable().getDatabase().getCatalogName(),
-            part.getTable().getDatabase().getName(),
-            part.getTable().getTableName(),
-            Lists.newArrayList(partName));
-        if (CollectionUtils.isNotEmpty(partColumnGrants)) {
-          pm.deletePersistentAll(partColumnGrants);
-        }
-
-        String catName = part.getTable().getDatabase().getCatalogName();
-        String dbName = part.getTable().getDatabase().getName();
-        String tableName = part.getTable().getTableName();
-
-        // delete partition level column stats if it exists
-       try {
-          deletePartitionColumnStatistics(catName, dbName, tableName, partName, part.getValues(), null, null);
-        } catch (NoSuchObjectException e) {
-          LOG.info("No column statistics records found to delete");
-        }
-
-        preDropStorageDescriptor(part.getSd());
-        pm.deletePersistent(part);
-      }
-      success = commitTransaction();
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
-    return success;
   }
 
   @Override
