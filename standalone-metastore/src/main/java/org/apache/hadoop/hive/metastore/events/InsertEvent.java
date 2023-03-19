@@ -18,9 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
@@ -35,7 +33,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
@@ -66,7 +65,7 @@ public class InsertEvent extends ListenerEvent {
     // TODO MS-SPLIT Switch this back once HiveMetaStoreClient is moved.
     //req.setCapabilities(HiveMetaStoreClient.TEST_VERSION);
     req.setCapabilities(new ClientCapabilities(
-        Lists.newArrayList(ClientCapability.TEST_CAPABILITY, ClientCapability.INSERT_ONLY_TABLES)));
+      Lists.newArrayList(ClientCapability.TEST_CAPABILITY)));
     try {
       this.tableObj = handler.get_table_req(req).getTable();
       if (partVals != null) {
