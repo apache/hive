@@ -1,0 +1,26 @@
+name: Test:TestPartitionManagement.testPartitionDiscoveryNonDefaultCatalog
+run-name: Flaky test
+on: [push]
+jobs:
+  Test_Without_Nondex_Shuffling:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Set up JDK 8'
+        uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+      - name: 'Test'
+        run: mvn -pl standalone-metastore/metastore-server test -Dtest=org.apache.hadoop.hive.metastore.TestPartitionManagement#testPartitionDiscoveryNonDefaultCatalog
+        
+  Test_With_Nondex_Shuffling:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Set up JDK 8'
+        uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+      - name: 'Test'
+        run: mvn -pl standalone-metastore/metastore-server edu.illinois:nondex-maven-plugin:1.1.2:nondex -Dtest=org.apache.hadoop.hive.metastore.TestPartitionManagement#testPartitionDiscoveryNonDefaultCatalog
+   
