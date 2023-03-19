@@ -25,6 +25,7 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import javax.jdo.JDOException;
@@ -48,6 +49,11 @@ public class RetryingHMSHandler implements InvocationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(RetryingHMSHandler.class);
   private static final String CLASS_NAME = RetryingHMSHandler.class.getName();
+  private static final Class<SQLException>[] unrecoverableSqlExceptions = new Class[]{
+      // TODO: collect more unrecoverable SQLExceptions
+      SQLIntegrityConstraintViolationException.class
+  };
+
 
   private static class Result {
     private final Object result;
@@ -231,20 +237,17 @@ public class RetryingHMSHandler implements InvocationHandler {
     }
   }
 
-  private Class<SQLException>[] unrecoverableSqlExceptions = new Class[]{
-          // TODO: collect more unrecoverable SQLExceptions
-          SQLIntegrityConstraintViolationException.class
-  };
-
   private boolean isRecoverableException(Throwable t) {
-    assert t != null && (t instanceof JDOException || t instanceof NucleusException);
+    if (!(t instanceof JDOException || t instanceof NucleusException)) {
+      return false;
+    }
 
     Throwable cause = t.getCause();
     while (cause != null) {
-      for (Class<SQLException> unrecoverableSqlException : unrecoverableSqlExceptions) {
-        if (unrecoverableSqlException.isAssignableFrom(cause.getClass())) {
-          return false;
-        }
+      final Throwable currentCause = cause;
+      if (Arrays.stream(unrecoverableSqlExceptions)
+                .anyMatch(exception -> exception.isAssignableFrom(currentCause.getClass()))) {
+        return false;
       }
       cause = cause.getCause();
     }
