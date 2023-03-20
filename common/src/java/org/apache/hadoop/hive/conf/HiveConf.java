@@ -796,8 +796,6 @@ public class HiveConf extends Configuration {
         "If not set, defaults to the codec extension for text files (e.g. \".gz\"), or no extension otherwise."),
 
     HIVE_IN_TEST("hive.in.test", false, "internal usage only, true in test mode", true),
-    HIVE_IN_TEST_ICEBERG("hive.in.iceberg.test", false, "internal usage only, true when " +
-        "testing iceberg", true),
     HIVE_IN_TEST_SSL("hive.in.ssl.test", false, "internal usage only, true in SSL test mode", true),
     // TODO: this needs to be removed; see TestReplicationScenarios* comments.
     HIVE_IN_TEST_REPL("hive.in.repl.test", false, "internal usage only, true in replication test mode", true),
