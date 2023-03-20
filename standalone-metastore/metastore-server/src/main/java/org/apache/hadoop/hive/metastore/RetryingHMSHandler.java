@@ -25,8 +25,8 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.jdo.JDOException;
 
@@ -242,16 +242,8 @@ public class RetryingHMSHandler implements InvocationHandler {
       return false;
     }
 
-    Throwable cause = t.getCause();
-    while (cause != null) {
-      final Throwable currentCause = cause;
-      if (Arrays.stream(unrecoverableSqlExceptions)
-                .anyMatch(exception -> exception.isAssignableFrom(currentCause.getClass()))) {
-        return false;
-      }
-      cause = cause.getCause();
-    }
-    return true;
+    return Stream.of(unrecoverableSqlExceptions)
+                 .allMatch(ex -> ExceptionUtils.indexOfType(t, ex) < 0);
   }
 
   public Configuration getActiveConf() {
