@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -293,7 +294,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     private CloseableIterator<T> nextTask() {
       CloseableIterator<T> closeableIterator = open(tasks.next(), expectedSchema).iterator();
-      if (!fetchVirtualColumns) {
+      if (!fetchVirtualColumns || Utilities.getIsVectorized(conf)) {
         return closeableIterator;
       }
       return new IcebergAcidUtil.VirtualColumnAwareIterator<T>(closeableIterator, expectedSchema, conf);

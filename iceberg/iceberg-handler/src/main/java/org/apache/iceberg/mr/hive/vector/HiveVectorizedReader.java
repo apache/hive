@@ -166,7 +166,7 @@ public class HiveVectorizedReader {
       }
 
       CloseableIterable<HiveBatchContext> vrbIterable =
-          createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues);
+          createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues, idToConstant);
 
       return deleteFilter != null ? deleteFilter.filterBatch(vrbIterable) : vrbIterable;
 
@@ -251,10 +251,10 @@ public class HiveVectorizedReader {
 
   private static CloseableIterable<HiveBatchContext> createVectorizedRowBatchIterable(
       RecordReader<NullWritable, VectorizedRowBatch> hiveRecordReader, JobConf job, int[] partitionColIndices,
-      Object[] partitionValues) {
+      Object[] partitionValues, Map<Integer, ?> idToConstant) {
 
     HiveBatchIterator iterator =
-        new HiveBatchIterator(hiveRecordReader, job, partitionColIndices, partitionValues);
+        new HiveBatchIterator(hiveRecordReader, job, partitionColIndices, partitionValues, idToConstant);
 
     return new CloseableIterable<HiveBatchContext>() {
 
