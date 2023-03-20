@@ -111,6 +111,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col7 (type: int)
                         Statistics: Num rows: 4 Data size: 1212 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col5 (type: string), _col6 (type: int), _col8 (type: int)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
