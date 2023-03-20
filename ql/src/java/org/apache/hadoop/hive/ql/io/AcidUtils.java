@@ -1545,9 +1545,6 @@ public class AcidUtils {
       while (itr.hasNext()) {
         FileStatus fStatus = itr.next();
         Path fPath = fStatus.getPath();
-        if (fStatus.isDirectory() && acidTempDirFilter.accept(fPath)) {
-          addToSnapshot(dirToSnapshots, fPath);
-        }
         if (fStatus.isDirectory()) {
           stack.push(FileUtils.listLocatedStatusIterator(fs, fPath, acidHiddenFileFilter));
         } else {
