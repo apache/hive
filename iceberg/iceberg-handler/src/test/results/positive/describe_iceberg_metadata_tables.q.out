@@ -34,22 +34,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 id                  	int                 	                    
 value               	string              	                    
-PREHOOK: query: describe default.ice_meta_desc
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@ice_meta_desc
-POSTHOOK: query: describe default.ice_meta_desc
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@ice_meta_desc
-id                  	int                 	                    
-value               	string              	                    
-PREHOOK: query: describe default.ice_meta_desc
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@ice_meta_desc
-POSTHOOK: query: describe default.ice_meta_desc
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@ice_meta_desc
-id                  	int                 	                    
-value               	string              	                    
 PREHOOK: query: describe default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -181,6 +165,113 @@ snapshot_id         	bigint
 sequence_number     	bigint              	                    
 file_sequence_number	bigint              	                    
 data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
+PREHOOK: query: describe default.ice_meta_desc.data_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.data_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe default.ice_meta_desc.delete_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.delete_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe default.ice_meta_desc.metadata_log_entries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.metadata_log_entries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+timestamp           	timestamp with local time zone	                    
+file                	string              	                    
+latest_snapshot_id  	bigint              	                    
+latest_schema_id    	int                 	                    
+latest_sequence_number	bigint              	                    
+PREHOOK: query: describe default.ice_meta_desc.refs
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.refs
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+name                	string              	                    
+type                	string              	                    
+snapshot_id         	bigint              	                    
+max_reference_age_in_ms	bigint              	                    
+min_snapshots_to_keep	int                 	                    
+max_snapshot_age_in_ms	bigint              	                    
+PREHOOK: query: describe default.ice_meta_desc.all_delete_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.all_delete_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe default.ice_meta_desc.all_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.all_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
 PREHOOK: query: describe formatted default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -321,6 +412,119 @@ snapshot_id         	bigint
 sequence_number     	bigint              	                    
 file_sequence_number	bigint              	                    
 data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
+PREHOOK: query: describe formatted default.ice_meta_desc.data_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.data_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe formatted default.ice_meta_desc.delete_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.delete_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe formatted default.ice_meta_desc.metadata_log_entries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.metadata_log_entries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+timestamp           	timestamp with local time zone	                    
+file                	string              	                    
+latest_snapshot_id  	bigint              	                    
+latest_schema_id    	int                 	                    
+latest_sequence_number	bigint              	                    
+PREHOOK: query: describe formatted default.ice_meta_desc.refs
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.refs
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+name                	string              	                    
+type                	string              	                    
+snapshot_id         	bigint              	                    
+max_reference_age_in_ms	bigint              	                    
+min_snapshots_to_keep	int                 	                    
+max_snapshot_age_in_ms	bigint              	                    
+PREHOOK: query: describe formatted default.ice_meta_desc.all_delete_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.all_delete_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe formatted default.ice_meta_desc.all_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.all_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
 PREHOOK: query: describe extended default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -452,6 +656,119 @@ snapshot_id         	bigint
 sequence_number     	bigint              	                    
 file_sequence_number	bigint              	                    
 data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
+PREHOOK: query: describe formatted default.ice_meta_desc.data_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.data_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe formatted default.ice_meta_desc.delete_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.delete_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe formatted default.ice_meta_desc.metadata_log_entries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.metadata_log_entries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+timestamp           	timestamp with local time zone	                    
+file                	string              	                    
+latest_snapshot_id  	bigint              	                    
+latest_schema_id    	int                 	                    
+latest_sequence_number	bigint              	                    
+PREHOOK: query: describe formatted default.ice_meta_desc.refs
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.refs
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+name                	string              	                    
+type                	string              	                    
+snapshot_id         	bigint              	                    
+max_reference_age_in_ms	bigint              	                    
+min_snapshots_to_keep	int                 	                    
+max_snapshot_age_in_ms	bigint              	                    
+PREHOOK: query: describe formatted default.ice_meta_desc.all_delete_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.all_delete_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe formatted default.ice_meta_desc.all_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.all_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
 PREHOOK: query: drop table ice_meta_desc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice_meta_desc
