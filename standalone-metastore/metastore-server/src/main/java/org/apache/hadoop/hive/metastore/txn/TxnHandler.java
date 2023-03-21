@@ -3194,19 +3194,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     try (PreparedStatement pstmt = dbConn.prepareStatement(insertLocksQuery)) {
       for (LockComponent lc : rqst.getComponent()) {
-        if (lc.isSetOperationType() && lc.getOperationType() == DataOperationType.UNSET &&
-                ((MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) ||
-                    MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEZ_TEST)) &&
-                    !MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST_ICEBERG))) {
-          //Old version of thrift client should have (lc.isSetOperationType() == false), but they do not
-          //If you add a default value to a variable, isSet() for that variable is true regardless of the where the
-          //message was created (for object variables).
-          //It works correctly for boolean vars, e.g. LockComponent.isTransactional).
-          //in test mode, upgrades are not tested, so client version and server version of thrift always matches so
-          //we see UNSET here it means something didn't set the appropriate value.
-          throw new IllegalStateException("Bug: operationType=" + lc.getOperationType() + " for component "
-                  + lc + " agentInfo=" + rqst.getAgentInfo());
-        }
         intLockId++;
         String lockType = LockTypeUtil.getEncodingAsStr(lc.getType());
 
