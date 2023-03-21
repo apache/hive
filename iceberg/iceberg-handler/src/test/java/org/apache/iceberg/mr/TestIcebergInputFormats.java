@@ -64,6 +64,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -200,6 +201,36 @@ public class TestIcebergInputFormats {
     // skip residual filtering
     builder.skipResidualFiltering();
     testInputFormat.create(builder.conf()).validate(writeRecords);
+  }
+
+  @Test
+  public void testFailedResidualFiltering() throws Exception {
+    helper.createTable();
+
+    List<Record> expectedRecords = helper.generateRandomRecords(2, 0L);
+    expectedRecords.get(0).set(2, "2020-03-20");
+    expectedRecords.get(1).set(2, "2020-03-20");
+
+    helper.appendToTable(Row.of("2020-03-20", 0), expectedRecords);
+
+    builder
+        .useHiveRows()
+        .filter(
+            Expressions.and(Expressions.equal("date", "2020-03-20"), Expressions.equal("id", 0)));
+
+    Assertions.assertThatThrownBy(() -> testInputFormat.create(builder.conf()))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage(
+            "Filter expression ref(name=\"id\") == 0 is not completely satisfied. Additional rows can be returned " +
+                    "not satisfied by the filter expression");
+
+    builder.usePigTuples();
+
+    Assertions.assertThatThrownBy(() -> testInputFormat.create(builder.conf()))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage(
+            "Filter expression ref(name=\"id\") == 0 is not completely satisfied. Additional rows can be returned " +
+                    "not satisfied by the filter expression");
   }
 
   @Test
