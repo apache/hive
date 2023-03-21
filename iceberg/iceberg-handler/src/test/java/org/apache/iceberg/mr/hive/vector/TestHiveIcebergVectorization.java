@@ -261,7 +261,7 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
    * @return JobConf instance
    * @throws HiveException any failure during job creation
    */
-  private JobConf prepareMockJob(Schema schema, Path dataFilePath) throws HiveException {
+  static JobConf prepareMockJob(Schema schema, Path dataFilePath) throws HiveException {
     StructObjectInspector oi = (StructObjectInspector) IcebergObjectInspector.create(schema);
     String hiveColumnNames = String.join(",", oi.getAllStructFieldRefs().stream()
         .map(sf -> sf.getFieldName()).collect(Collectors.toList()));
@@ -287,6 +287,7 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     rbCtx.init(oi, new String[0]);
     mapWork.setVectorMode(true);
     mapWork.setVectorizedRowBatchCtx(rbCtx);
+    mapWork.deriveLlap(conf, false);
     Utilities.setMapWork(vectorJob, mapWork);
     return vectorJob;
   }
