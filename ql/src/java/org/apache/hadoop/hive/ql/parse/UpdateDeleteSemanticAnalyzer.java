@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -99,14 +99,32 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
    */
   private void reparseAndSuperAnalyze(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     List<? extends Node> children = tree.getChildren();
+    
+    boolean shouldTruncate = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_REPLACE_DELETE_WITH_TRUNCATE) 
+      && children.size() == 1 && deleting();
+    if (shouldTruncate) {
+      StringBuilder rewrittenQueryStr = new StringBuilder("truncate ").append(getFullTableNameForSQL(tabNameNode));
+      ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
+      Context rewrittenCtx = rr.rewrittenCtx;
+      ASTNode rewrittenTree = rr.rewrittenTree;
 
+      BaseSemanticAnalyzer truncate = SemanticAnalyzerFactory.get(queryState, rewrittenTree);
+      // Note: this will overwrite this.ctx with rewrittenCtx
+      rewrittenCtx.setEnableUnparse(false);
+      truncate.analyze(rewrittenTree, rewrittenCtx);
+      
+      rootTasks = truncate.getRootTasks();
+      outputs = truncate.getOutputs();
+      updateOutputs(mTable);
+      return;
+    }
+    
     boolean shouldOverwrite = false;
     HiveStorageHandler storageHandler = mTable.getStorageHandler();
     if (storageHandler != null) {
       shouldOverwrite = storageHandler.shouldOverwrite(mTable, operation.name());
     }
-
-
+    
     StringBuilder rewrittenQueryStr = new StringBuilder();
     if (shouldOverwrite) {
       rewrittenQueryStr.append("insert overwrite table ");
