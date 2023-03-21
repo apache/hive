@@ -117,7 +117,11 @@ public class QBParseInfo {
   // Use SimpleEntry to save the offset and rowcount of limit clause
   // KEY of SimpleEntry: offset
   // VALUE of SimpleEntry: rowcount
+  private final Map<String, ASTNode> destToASTLimit;
+  private final Map<String, ASTNode> destToASTOffset;
+
   private final Map<String, SimpleEntry<Integer, Integer>> destToLimit;
+
   private int outerQueryLimit;
 
   // used by GroupBy
@@ -150,6 +154,8 @@ public class QBParseInfo {
     destToDistributeby = new HashMap<String, ASTNode>();
     destToSortby = new HashMap<String, ASTNode>();
     destToOrderby = new HashMap<String, ASTNode>();
+    destToASTLimit = new HashMap<String, ASTNode>();
+    destToASTOffset = new HashMap<String, ASTNode>();
     destToLimit = new HashMap<String, SimpleEntry<Integer, Integer>>();
     destToOpType = new HashMap<>();
     insertIntoTables = new HashMap<String, ASTNode>();
@@ -496,6 +502,21 @@ public class QBParseInfo {
 
   public void setExprToColumnAlias(ASTNode expr, String alias) {
     exprToColumnAlias.put(expr,  StringInternUtils.internIfNotNull(alias));
+  }
+
+  public void setDestASTLimit(String dest, ASTNode limitExpr) {
+    destToASTLimit.put(dest, limitExpr);
+  }
+
+  public ASTNode getDestASTLimit(String dest) {
+    return destToASTLimit.get(dest);
+  }
+  public void setDestASTOffset(String dest, ASTNode offsetExpr) {
+    destToASTOffset.put(dest, offsetExpr);
+  }
+
+  public ASTNode getDestASTOffset(String dest) {
+    return destToASTOffset.get(dest);
   }
 
   public void setDestLimit(String dest, Integer offset, Integer limit) {

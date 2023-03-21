@@ -4182,21 +4182,28 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode genLimitLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
       HiveRelNode sortRel = null;
       QBParseInfo qbp = getQBParseInfo(qb);
-      SimpleEntry<Integer,Integer> entry =
-          qbp.getDestToLimit().get(qbp.getClauseNames().iterator().next());
-      Integer offset = (entry == null) ? null : entry.getKey();
-      Integer fetch = (entry == null) ? null : entry.getValue();
-
-      if (fetch != null) {
-        RexNode offsetRN = (offset == null || offset == 0) ?
-            null : cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(offset));
-        RexNode fetchRN = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(fetch));
-        RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
-        RelCollation canonizedCollation = traitSet.canonize(RelCollations.EMPTY);
-        sortRel = new HiveSortLimit(cluster, traitSet, srcRel, canonizedCollation, offsetRN, fetchRN);
-
+      ASTNode limitExpr = qbp.getDestASTLimit(qbp.getClauseNames().iterator().next());
+      ASTNode offsetExpr = qbp.getDestASTOffset(qbp.getClauseNames().iterator().next());
+      if (limitExpr != null) {
         RowResolver inputRR = relToHiveRR.get(srcRel);
         RowResolver outputRR = inputRR.duplicate();
+        RexNode limitRNFoldedExpr = new HiveFunctionHelper(
+                cluster.getRexBuilder()).foldExpression(genRexNode(limitExpr, inputRR, cluster.getRexBuilder()));
+        RexNode offsetRNFoldedExpr = new HiveFunctionHelper(
+                cluster.getRexBuilder()).foldExpression(genRexNode(offsetExpr, inputRR, cluster.getRexBuilder()));
+
+        BigDecimal limitValue = (BigDecimal) ((RexLiteral) limitRNFoldedExpr).getValue();
+        BigDecimal offsetValue = (BigDecimal) ((RexLiteral) offsetRNFoldedExpr).getValue();
+
+        RexNode limitRN = cluster.getRexBuilder().makeExactLiteral(limitValue);
+        RexNode offsetRN = cluster.getRexBuilder().makeExactLiteral(offsetValue);
+
+        qbp.setDestLimit(qbp.getClauseNames().iterator().next(), offsetValue.intValue(), limitValue.intValue());
+
+        RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
+        RelCollation canonizedCollation = traitSet.canonize(RelCollations.EMPTY);
+        sortRel = new HiveSortLimit(cluster, traitSet, srcRel, canonizedCollation, offsetRN, limitRN);
+
         ImmutableMap<String, Integer> hiveColNameCalcitePosMap = buildHiveToCalciteColumnMap(outputRR);
         relToHiveRR.put(sortRel, outputRR);
         relToHiveColNameCalcitePosMap.put(sortRel, hiveColNameCalcitePosMap);

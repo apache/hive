@@ -1880,10 +1880,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_LIMIT:
         queryProperties.setHasLimit(true);
         if (ast.getChildCount() == 2) {
-          qbp.setDestLimit(ctx_1.dest,
-              Integer.valueOf(ast.getChild(0).getText()), Integer.valueOf(ast.getChild(1).getText()));
+          if (ast.getChild(1).getChildCount() == 0 && ast.getChild(0).getChildCount() == 0) {
+            qbp.setDestLimit(ctx_1.dest,
+                    Integer.valueOf(ast.getChild(0).getText()), Integer.valueOf(ast.getChild(1).getText()));
+          } else {
+            qbp.setDestASTLimit(ctx_1.dest, (ASTNode) ast.getChild(1));
+            qbp.setDestASTOffset(ctx_1.dest, (ASTNode) ast.getChild(0));
+          }
         } else {
-          qbp.setDestLimit(ctx_1.dest, Integer.valueOf(0), Integer.valueOf(ast.getChild(0).getText()));
+          qbp.setDestASTLimit(ctx_1.dest,  (ASTNode) ast.getChild(0));
+          qbp.setDestASTOffset(ctx_1.dest,  new ASTNode(new CommonToken(HiveParser.Number, "0")));
         }
         break;
 

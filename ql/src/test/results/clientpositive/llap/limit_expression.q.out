@@ -1,0 +1,15 @@
+PREHOOK: query: select key from src limit 1+2*3 offset 3*4*5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key from src limit 1+2*3 offset 3*4*5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+396
+247
+417
+489
+162
+377
+397
