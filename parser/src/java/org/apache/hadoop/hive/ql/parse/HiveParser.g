@@ -2792,7 +2792,8 @@ destination
 limitClause
 @init { pushMsg("limit clause", state); }
 @after { popMsg(state); }
-   : KW_LIMIT num=expression KW_OFFSET offset=expression -> ^(TOK_LIMIT ($offset)? $num)
+   : KW_LIMIT ((offset=Number COMMA)? num=Number) -> ^(TOK_LIMIT ($offset)? $num)
+   | KW_LIMIT numExpr=expression KW_OFFSET offsetExpr=expression -> ^(TOK_LIMIT ($offsetExpr)? $numExpr)
    ;
 
 //DELETE FROM <tableName> WHERE ...;
