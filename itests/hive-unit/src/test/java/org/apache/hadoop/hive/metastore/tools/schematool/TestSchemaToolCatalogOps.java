@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.client.builder.FunctionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hive.com.google.common.io.Files;
 import org.apache.thrift.TException;
 import org.junit.AfterClass;
 import org.junit.Assert;
