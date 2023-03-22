@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.BatchUpdateException;
-import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.concurrent.TimeUnit;
 
@@ -140,5 +139,60 @@ public class TestRetriesInRetryingHMSHandler {
     } catch (MetaException e) {
       Assert.assertTrue(e.getMessage().contains("java.sql.SQLIntegrityConstraintViolationException"));
     }
+  }
+
+  @Test
+  public void testUnrecoverableException() throws MetaException {
+    IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
+    Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
+    SQLIntegrityConstraintViolationException sqlException =
+            new SQLIntegrityConstraintViolationException("Cannot delete or update a parent row");
+    BatchUpdateException updateException = new BatchUpdateException(sqlException);
+    NucleusDataStoreException nucleusException = new NucleusDataStoreException(
+            "Clear request failed: DELETE FROM `PARTITION_PARAMS` WHERE `PART_ID`=?", updateException);
+    JDOUserException jdoException = new JDOUserException(
+            "One or more instances could not be deleted", nucleusException);
+    // SQLIntegrityConstraintViolationException wrapped in BatchUpdateException wrapped in
+    // NucleusDataStoreException wrapped in JDOUserException wrapped in MetaException wrapped in InvocationException
+    MetaException me = new MetaException("Dummy exception");
+    me.initCause(jdoException);
+    InvocationTargetException ex = new InvocationTargetException(me);
+    Mockito.doThrow(me).when(mockBaseHandler).getMS();
+
+    IHMSHandler retryingHandler = RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
+    try {
+      retryingHandler.getMS();
+      Assert.fail("should throw the mocked MetaException");
+    } catch (MetaException e) {
+      // expected
+    }
+    Mockito.verify(mockBaseHandler, Mockito.times(1)).getMS();
+  }
+
+  @Test
+  public void testRecoverableException() throws MetaException {
+    IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
+    Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
+    BatchUpdateException updateException = new BatchUpdateException();
+    NucleusDataStoreException nucleusException = new NucleusDataStoreException(
+            "Clear request failed: DELETE FROM `PARTITION_PARAMS` WHERE `PART_ID`=?", updateException);
+    JDOUserException jdoException = new JDOUserException(
+            "One or more instances could not be deleted", nucleusException);
+    // BatchUpdateException wrapped in NucleusDataStoreException wrapped in
+    // JDOUserException wrapped in MetaException wrapped in InvocationException
+    MetaException me = new MetaException("Dummy exception");
+    me.initCause(jdoException);
+    InvocationTargetException ex = new InvocationTargetException(me);
+    Mockito.doThrow(me).when(mockBaseHandler).getMS();
+
+    IHMSHandler retryingHandler = RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
+    try {
+      retryingHandler.getMS();
+      Assert.fail("should throw the mocked MetaException");
+    } catch (MetaException e) {
+      // expected
+    }
+    int retryTimes = MetastoreConf.getIntVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS);
+    Mockito.verify(mockBaseHandler, Mockito.times(retryTimes + 1)).getMS();
   }
 }
