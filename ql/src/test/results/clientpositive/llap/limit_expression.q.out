@@ -13,3 +13,18 @@ POSTHOOK: Input: default@src
 162
 377
 397
+PREHOOK: query: select key from src order by key limit 1+2*3 offset 3*4*5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key from src order by key limit 1+2*3 offset 3*4*5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+158
+160
+162
+163
+164
+164
+165
