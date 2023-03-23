@@ -164,24 +164,6 @@ enum PrincipalType {
 const string HIVE_FILTER_FIELD_OWNER = "hive_filter_field_owner__"
 const string HIVE_FILTER_FIELD_PARAMS = "hive_filter_field_params__"
 const string HIVE_FILTER_FIELD_LAST_ACCESS = "hive_filter_field_last_access__"
-const string HIVE_FILTER_FIELD_TABLE_NAME = "hive_filter_field_tableName__"
-const string HIVE_FILTER_FIELD_TABLE_TYPE = "hive_filter_field_tableType__"
-
-struct PropertySetRequest {
-    1: required string nameSpace;
-    2: map<string, string> propertyMap;
-}
-
-struct PropertyGetRequest {
-    1: required string nameSpace;
-    2: string mapPrefix;
-    3: optional string mapPredicate;
-    4: optional list<string> mapSelection;
-}
-
-struct PropertyGetResponse {
-    1: map<string, map<string , string>> properties;
-}
 
 enum PartitionEventType {
   LOAD_DONE = 1,
