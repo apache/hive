@@ -52,6 +52,7 @@ import com.google.common.collect.Sets;
  */
 public class SetProcessor implements CommandProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(SetProcessor.class);
+  private static final SessionState.LogHelper console = SessionState.getConsole();
 
   private static final String prefix = "set: ";
   private static final Set<String> removedConfigs =
@@ -255,6 +256,10 @@ public class SetProcessor implements CommandProcessor {
       }
     }
     conf.verifyAndSet(key, value);
+    if (conf.isLockedConfig(key)) {
+      console.printWarn("Cannot modify " + key + " at runtime. "
+              + "It is in the list of locked configurations that can't be modified at runtime");
+    }
     if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)) {
       if ("mr".equals(value)) {
         result = HiveConf.generateMrDeprecationWarning();

@@ -100,6 +100,7 @@ public class HiveConf extends Configuration {
   private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
   private final Set<String> hiddenSet = new HashSet<String>();
+  private final Set<String> lockedSet = new HashSet<>();
   private final List<String> rscList = new ArrayList<>();
 
   private Pattern modWhiteListPattern = null;
@@ -849,6 +850,10 @@ public class HiveConf extends Configuration {
         "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a nonexistent table/view/function"),
 
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true, "Ignore the mapjoin hint"),
+
+    HIVE_CONF_LOCKED_LIST("hive.conf.locked.list", "", "Comma separated " +
+            "list of configuration options which are locked and can not be changed at runtime. Warning is logged and the " +
+            "change is ignored when user try to set these configs during runtime"),
 
     HIVE_FILE_MAX_FOOTER("hive.file.max.footer", 100,
         "maximum number of lines for footer user can define for a table file"),
@@ -6006,6 +6011,9 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + " of parameters that can't be modified at runtime or is prefixed by a restricted variable");
     }
+    if (isLockedConfig(name)) {
+      return;
+    }
     String oldValue = name != null ? get(name) : null;
     if (name == null || value == null || !value.equals(oldValue)) {
       // When either name or value is null, the set method below will fail,
@@ -6016,6 +6024,10 @@ public class HiveConf extends Configuration {
 
   public boolean isHiddenConfig(String name) {
     return Iterables.any(hiddenSet, hiddenVar -> name.startsWith(hiddenVar));
+  }
+
+  public boolean isLockedConfig(String name) {
+    return Iterables.any(lockedSet, lockedVar -> name != null && name.equalsIgnoreCase(lockedVar));
   }
 
   public static boolean isEncodedPar(String name) {
@@ -6423,6 +6435,7 @@ public class HiveConf extends Configuration {
     origProp = (Properties)other.origProp.clone();
     restrictList.addAll(other.restrictList);
     hiddenSet.addAll(other.hiddenSet);
+    lockedSet.addAll(other.lockedSet);
     modWhiteListPattern = other.modWhiteListPattern;
   }
 
@@ -6556,6 +6569,9 @@ public class HiveConf extends Configuration {
     setupRestrictList();
     hiddenSet.clear();
     hiddenSet.addAll(HiveConfUtil.getHiddenSet(this));
+
+    lockedSet.clear();
+    lockedSet.addAll(HiveConfUtil.getLockedSet(this));
   }
 
   /**
@@ -6934,6 +6950,22 @@ public class HiveConf extends Configuration {
     setupRestrictList();
   }
 
+  public void addToLockedSet(String lockedListStr) {
+    String oldList = this.getVar(ConfVars.HIVE_CONF_LOCKED_LIST);
+    if (oldList == null || oldList.isEmpty()) {
+      this.setVar(ConfVars.HIVE_CONF_LOCKED_LIST, lockedListStr);
+    } else {
+      this.setVar(ConfVars.HIVE_CONF_LOCKED_LIST, oldList + "," + lockedListStr);
+    }
+    String modifiedLockedSet = this.getVar(ConfVars.HIVE_CONF_LOCKED_LIST);
+    lockedSet.clear();
+    if (modifiedLockedSet != null) {
+      for (String entry : modifiedLockedSet.split(",")) {
+        lockedSet.add(entry.trim());
+      }
+    }
+  }
+
   /**
    * Set white list of parameters that are allowed to be modified
    *
@@ -6971,6 +7003,7 @@ public class HiveConf extends Configuration {
     restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST.varname);
+    restrictList.add(ConfVars.HIVE_CONF_LOCKED_LIST.varname);
   }
 
   /**

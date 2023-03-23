@@ -177,6 +177,21 @@ public class TestHiveConf {
   }
 
   @Test
+  public void testLockedConfig() throws Exception {
+    HiveConf conf = new HiveConf();
+    // Set the default value of the config
+    conf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    String defaultVal = conf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname);
+    // Update the lockedSet variable
+    conf.addToLockedSet(ConfVars.HIVE_EXECUTION_ENGINE.varname);
+    // Update the value of sample/test config
+    conf.verifyAndSet(ConfVars.HIVE_EXECUTION_ENGINE.varname, "tez");
+    String modifiedVal = conf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname);
+    // Check if the value is changed.
+    Assert.assertEquals(defaultVal, modifiedVal);
+  }
+
+  @Test
   public void testEncodingDecoding() throws UnsupportedEncodingException {
     HiveConf conf = new HiveConf();
     String query = "select blah, '\u0001' from random_table";
