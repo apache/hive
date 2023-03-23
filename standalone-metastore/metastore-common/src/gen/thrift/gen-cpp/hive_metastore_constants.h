@@ -23,6 +23,8 @@ class hive_metastoreConstants {
   std::string HIVE_FILTER_FIELD_OWNER;
   std::string HIVE_FILTER_FIELD_PARAMS;
   std::string HIVE_FILTER_FIELD_LAST_ACCESS;
+  std::string HIVE_FILTER_FIELD_TABLE_NAME;
+  std::string HIVE_FILTER_FIELD_TABLE_TYPE;
   std::string IS_ARCHIVED;
   std::string ORIGINAL_LOCATION;
   std::string IS_IMMUTABLE;
