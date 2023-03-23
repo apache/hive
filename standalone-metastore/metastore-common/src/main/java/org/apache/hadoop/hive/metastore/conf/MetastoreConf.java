@@ -559,7 +559,7 @@ public class MetastoreConf {
         "means that the current metastore will run the housekeeping tasks. If configuration" +
         "metastore.thrift.bind.host is set on the intended leader metastore, this value should " +
         "match that configuration. Otherwise it should be same as the hostname returned by " +
-        "InetAddress#getLocalHost#getHostName(). Given the uncertainty in the later " +
+        "InetAddress#getLocalHost#getCanonicalHostName(). Given the uncertainty in the later " +
         "it is desirable to configure metastore.thrift.bind.host on the intended leader HMS."),
     METASTORE_HOUSEKEEPING_LEADER_ELECTION("metastore.housekeeping.leader.election",
         "metastore.housekeeping.leader.election",
