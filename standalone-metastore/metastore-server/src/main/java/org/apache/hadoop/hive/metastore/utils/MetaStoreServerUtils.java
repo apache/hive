@@ -75,6 +75,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
@@ -1392,6 +1394,43 @@ public class MetaStoreServerUtils {
   public static List<Partition> getAllPartitionsOf(IMetaStoreClient msc, Table table) throws MetastoreException {
     try {
       return msc.listPartitions(table.getCatName(), table.getDbName(), table.getTableName(), (short)-1);
+    } catch (Exception e) {
+      throw new MetastoreException(e);
+    }
+  }
+
+  public static List<Partition> getPartitionsByProjectSpec(IMetaStoreClient msc, GetPartitionsRequest request)
+      throws MetastoreException {
+    try {
+      GetPartitionsResponse response = msc.getPartitionsWithSpecs(request);
+      List<PartitionSpec> partitionSpecList = response.getPartitionSpec();
+      List<Partition> result = new ArrayList<>();
+      for (PartitionSpec spec : partitionSpecList) {
+        if (spec.getPartitionList() != null && spec.getPartitionList().getPartitions() != null) {
+          spec.getPartitionList().getPartitions().forEach(partition -> {
+            partition.setCatName(spec.getCatName());
+            partition.setDbName(spec.getDbName());
+            partition.setTableName(spec.getTableName());
+            result.add(partition);
+          });
+        }
+        PartitionSpecWithSharedSD pSpecWithSharedSD = spec.getSharedSDPartitionSpec();
+        if (pSpecWithSharedSD == null) {
+          continue;
+        }
+        List<PartitionWithoutSD> withoutSDList = pSpecWithSharedSD.getPartitions();
+        StorageDescriptor descriptor = pSpecWithSharedSD.getSd();
+        if (withoutSDList != null) {
+          for (PartitionWithoutSD psd : withoutSDList) {
+            StorageDescriptor newSD = new StorageDescriptor(descriptor);
+            Partition partition = new Partition(psd.getValues(), spec.getDbName(), spec.getTableName(),
+                psd.getCreateTime(), psd.getLastAccessTime(), newSD, psd.getParameters());
+            partition.getSd().setLocation(newSD.getLocation() + psd.getRelativePath());
+            result.add(partition);
+          }
+        }
+      }
+      return result;
     } catch (Exception e) {
       throw new MetastoreException(e);
     }
