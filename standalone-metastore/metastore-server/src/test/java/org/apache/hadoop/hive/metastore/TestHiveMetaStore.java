@@ -2299,9 +2299,9 @@ public abstract class TestHiveMetaStore {
         .addCol("c1", ColumnType.STRING_TYPE_NAME)
         .addCol("c2", ColumnType.INT_TYPE_NAME)
         .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
-        .addPartCol("p2", ColumnType.VARCHAR_TYPE_NAME)
+        .addPartCol("p2", "varchar(20)")
         .addPartCol("p3", ColumnType.INT_TYPE_NAME)
-        .addPartCol("p4", ColumnType.CHAR_TYPE_NAME)
+        .addPartCol("p4", "char(20)")
         .create(client, conf);
 
     tbl = client.getTable(dbName, tblName);

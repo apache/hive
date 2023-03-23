@@ -455,7 +455,7 @@ public class ExpressionTree {
     private String getJdoFilterPushdownParam(int partColIndex,
                                              FilterBuilder filterBuilder, boolean canPushDownIntegral, List<FieldSchema> partitionKeys) throws MetaException {
       boolean isIntegralSupported = canPushDownIntegral && canJdoUseStringsWithIntegral();
-      String colType = partitionKeys.get(partColIndex).getType();
+      String colType = ColumnType.getTypeName(partitionKeys.get(partColIndex).getType());
       // Can only support partitions whose types are string, or maybe integers
       // Date/Timestamp data type value is considered as string hence pushing down to JDO.
       if (!ColumnType.StringTypes.contains(colType) && !ColumnType.DATE_TYPE_NAME.equalsIgnoreCase(colType)
