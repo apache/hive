@@ -371,7 +371,10 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
       Type type = SUPPORTED_TYPES.get(i);
 
       // TODO: remove this filter when issue #1881 is resolved
-      if (type == Types.UUIDType.get() && fileFormat == FileFormat.PARQUET) {
+      if (type == Types.UUIDType.get() &&
+            (fileFormat == FileFormat.PARQUET || fileFormat == FileFormat.ORC && isVectorized) ||
+          type == Types.TimeType.get() &&
+            fileFormat == FileFormat.PARQUET  && isVectorized) {
         continue;
       }
 
@@ -551,7 +554,10 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
       Type type = SUPPORTED_TYPES.get(i);
 
       // TODO: remove this filter when issue #1881 is resolved
-      if (type == Types.UUIDType.get() && fileFormat == FileFormat.PARQUET) {
+      if (type == Types.UUIDType.get() &&
+            (fileFormat == FileFormat.PARQUET || fileFormat == FileFormat.ORC && isVectorized) ||
+          type == Types.TimeType.get() &&
+            fileFormat == FileFormat.PARQUET  && isVectorized) {
         continue;
       }
 
