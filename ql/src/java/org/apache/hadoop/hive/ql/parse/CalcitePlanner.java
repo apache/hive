@@ -3928,6 +3928,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelCollation canonizedCollation = traitSet.canonize(
               RelCollationImpl.of(obLogicalPlanGenState.getFieldCollation()));
       RelNode sortRel = genLimitLogicalPlan(qb, selPair.getKey(), canonizedCollation);
+      if (sortRel == null) {
+        sortRel = new HiveSortLimit(cluster, traitSet, obLogicalPlanGenState.getObInputRel(), canonizedCollation, null, null);
+      }
       return endGenOBLogicalPlan(obLogicalPlanGenState, sortRel);
     }
 
