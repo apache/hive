@@ -1308,6 +1308,45 @@ public class SessionState implements ISessionAuthState{
     }
 
     /**
+     * Logs warn into the log file, and if the LogHelper is not silent then into the HiveServer2 or
+     * HiveCli info stream too.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param warn The log message
+     */
+    public void printWarn(String warn) {
+      printWarn(warn, null);
+    }
+
+    /**
+     * Logs warn into the log file, and if the LogHelper is not silent then into the HiveServer2 or
+     * HiveCli info stream too. Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param warn The log message
+     * @param detail Extra detail to log which will be not printed if null
+     */
+    public void printWarn(String warn, String detail) {
+      printWarn(warn, detail, getIsSilent());
+    }
+
+    /**
+     * Logs warn into the log file, and if not silent then into the HiveServer2 or HiveCli info
+     * stream too. Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param warn The log message
+     * @param detail Extra detail to log which will be not printed if null
+     * @param isSilent If true then the message will not be printed to the info stream
+     */
+    public void printWarn(String warn, String detail, boolean isSilent) {
+      if (!isSilent) {
+        getInfoStream().println(warn);
+      }
+      LOG.warn(warn + org.apache.commons.lang.StringUtils.defaultString(detail));
+    }
+
+    /**
      * Logs an error into the log file, and into the HiveServer2 or HiveCli error stream too.
      * BeeLine uses the operation log file to show the logs to the user, so depending on the
      * BeeLine settings it could be shown to the user.
