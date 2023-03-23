@@ -92,6 +92,7 @@ final class HMSClient implements AutoCloseable {
   private ThriftHiveMetastore.Iface client;
   private TTransport transport;
   private URI serverURI;
+  private Configuration hadoopConf;
 
   public URI getServerURI() {
     return serverURI;
@@ -155,7 +156,7 @@ final class HMSClient implements AutoCloseable {
     LOG.debug("Opening kerberos connection to HMS");
     addResource(conf, CORE_SITE);
 
-    Configuration hadoopConf = new Configuration();
+    this.hadoopConf = new Configuration();
     addResource(hadoopConf, HIVE_SITE);
     addResource(hadoopConf, CORE_SITE);
 
@@ -516,4 +517,7 @@ final class HMSClient implements AutoCloseable {
     }
   }
 
+  public Configuration getHadoopConf() {
+    return hadoopConf;
+  }
 }

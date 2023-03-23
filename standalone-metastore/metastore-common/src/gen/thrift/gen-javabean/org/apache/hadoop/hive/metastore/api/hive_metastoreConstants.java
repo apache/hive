@@ -25,6 +25,10 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String HIVE_FILTER_FIELD_LAST_ACCESS = "hive_filter_field_last_access__";
 
+  public static final java.lang.String HIVE_FILTER_FIELD_TABLE_NAME = "hive_filter_field_tableName__";
+
+  public static final java.lang.String HIVE_FILTER_FIELD_TABLE_TYPE = "hive_filter_field_tableType__";
+
   public static final java.lang.String IS_ARCHIVED = "is_archived";
 
   public static final java.lang.String ORIGINAL_LOCATION = "original_location";

@@ -19,6 +19,10 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.PartitionManagementTask;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.thrift.TException;
@@ -27,13 +31,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitions;
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitionsNoException;
+import static org.apache.hadoop.hive.metastore.tools.Util.createSchema;
 import static org.apache.hadoop.hive.metastore.tools.Util.throwingSupplierWrapper;
 
 /**
@@ -445,6 +456,87 @@ final class HMSBenchmarks {
     HMSClient client = data.getClient();
     return benchmark.measure(() ->
         throwingSupplierWrapper(client::getCurrentNotificationId));
+  }
+
+  static DescriptiveStatistics benchmarkPartitionManagement(@NotNull MicroBenchmark bench,
+                                                            @NotNull BenchData data,
+                                                            int tableCount) {
+
+    String dbName = data.dbName + "_" + tableCount, tableNamePrefix = data.tableName;
+    final HMSClient client = data.getClient();
+    final PartitionManagementTask partitionManagementTask = new PartitionManagementTask();
+    final List<Path> paths = new ArrayList<>();
+    final FileSystem fs;
+    try {
+      fs = FileSystem.get(client.getHadoopConf());
+      client.getHadoopConf().set("hive.metastore.uris", client.getServerURI().toString());
+      client.getHadoopConf().set("metastore.partition.management.database.pattern", dbName);
+      partitionManagementTask.setConf(client.getHadoopConf());
+
+      client.createDatabase(dbName);
+      for (int i = 0; i < tableCount; i++) {
+        String tableName = tableNamePrefix + "_" + i;
+        Util.TableBuilder tableBuilder = new Util.TableBuilder(dbName, tableName).withType(TableType.MANAGED_TABLE)
+            .withColumns(createSchema(Arrays.asList(new String[] {"astring:string", "aint:int", "adouble:double", "abigint:bigint"})))
+            .withPartitionKeys(createSchema(Collections.singletonList("d")));
+        boolean enableDynamicPart = i % 5 == 0;
+        if (enableDynamicPart) {
+          tableBuilder.withParameter("discover.partitions", "true");
+        }
+        client.createTable(tableBuilder.build());
+        addManyPartitionsNoException(client, dbName, tableName, null, Collections.singletonList("d"), 500);
+        if (enableDynamicPart) {
+          Table t = client.getTable(dbName, tableName);
+          Path tabLoc = new Path(t.getSd().getLocation());
+          for (int j = 501; j <= 1000; j++) {
+            Path path = new Path(tabLoc, "d=d" + j + "_1");
+            paths.add(path);
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    final AtomicLong id = new AtomicLong(0);
+    ExecutorService service = Executors.newFixedThreadPool(20);
+    Runnable preRun = () -> {
+      int len = paths.size() / 20;
+      id.getAndIncrement();
+      List<Future> futures = new ArrayList<>();
+      for (int i = 0; i <= 20; i++) {
+        int k = i;
+        futures.add(service.submit((Callable<Void>) () -> {
+          for (int j = k * len; j < (k + 1) * len && j < paths.size(); j++) {
+            Path path = paths.get(j);
+            if (id.get() == 1) {
+              fs.mkdirs(path);
+            } else {
+              String fileName = path.getName().split("_")[0];
+              long seq = id.get();
+              Path destPath = new Path(path.getParent(), fileName + "_" + seq);
+              Path sourcePath = new Path(path.getParent(), fileName + "_" + (seq-1));
+              fs.rename(sourcePath, destPath);
+            }
+          }
+          return null;
+        }));
+      }
+      for (Future future : futures) {
+        try {
+          future.get();
+        } catch (Exception e) {
+          service.shutdown();
+          throw new RuntimeException(e);
+        }
+      }
+    };
+
+    try {
+      return bench.measure(preRun, partitionManagementTask, null);
+    } finally {
+      service.shutdown();
+    }
   }
 
 }

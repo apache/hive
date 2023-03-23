@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.CheckResult.PartitionResult;
@@ -274,10 +275,12 @@ public class TestMsckDropPartitionsInBatches {
 
     assertEquals(expectedCallCount, droppedParts.size());
     for (int i = 0; i < expectedCallCount; i++) {
+      List<Pair<Integer, byte[]>> actualArgs = droppedParts.get(i);
+      int actualPartitionSize = actualArgs.get(0).getLeft();
       Assert.assertEquals(
         String.format("Unexpected batch size in attempt %d.  Expected: %d.  Found: %d", i + 1,
-          expectedBatchSizes[i], droppedParts.get(i).size()),
-        expectedBatchSizes[i], droppedParts.get(i).size());
+          expectedBatchSizes[i], actualPartitionSize),
+        expectedBatchSizes[i], actualPartitionSize);
     }
   }
 

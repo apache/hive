@@ -24,9 +24,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
@@ -103,11 +107,18 @@ public class PartitionIterable implements Iterable<Partition> {
           batch_counter++;
         }
         try {
-          String dbName = prependCatalogToDbName(table.getCatName(), table.getDbName(), null);
-          GetPartitionsByNamesRequest req =
-              convertToGetPartitionsByNamesRequest(dbName, table.getTableName(), nameBatch);
-          batchIter =
-            msc.getPartitionsByNames(req).getPartitionsIterator();
+          if (request != null) {
+            GetPartitionsFilterSpec getPartitionsFilterSpec = new GetPartitionsFilterSpec();
+            getPartitionsFilterSpec.setFilterMode(PartitionFilterMode.BY_NAMES);
+            getPartitionsFilterSpec.setFilters(nameBatch);
+            request.setFilterSpec(getPartitionsFilterSpec);
+            batchIter = MetaStoreServerUtils.getPartitionsByProjectSpec(msc, request).iterator();
+          } else {
+            String dbName = prependCatalogToDbName(table.getCatName(), table.getDbName(), null);
+            GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(dbName, table.getTableName(),
+                nameBatch);
+            batchIter = msc.getPartitionsByNames(req).getPartitionsIterator();
+          }
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -135,6 +146,7 @@ public class PartitionIterable implements Iterable<Partition> {
   private IMetaStoreClient msc = null; // Assumes one instance of this + single-threaded compilation for each query.
   private Table table = null;
   private List<String> partitionNames = null;
+  private GetPartitionsRequest request = null;
   private int batch_size;
 
   /**
@@ -166,5 +178,10 @@ public class PartitionIterable implements Iterable<Partition> {
     } catch (Exception e) {
       throw new MetastoreException(e);
     }
+  }
+
+  public PartitionIterable withProjectSpec(GetPartitionsRequest request) {
+    this.request = request;
+    return this;
   }
 }
