@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
@@ -31,6 +33,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
+import org.apache.hadoop.hive.metastore.txn.dbUtils.TxnDbUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,13 +43,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
@@ -86,6 +83,8 @@ class CompactionTxnHandler extends TxnHandler {
   private static final String DELETE_COMPACTION_METRICS_CACHE_QUERY =
       "DELETE FROM \"COMPACTION_METRICS_CACHE\" WHERE \"CMC_DATABASE\" = ? AND \"CMC_TABLE\" = ? " +
           "AND \"CMC_METRIC_TYPE\" = ?";
+
+  private TxnDbUtils txnDbUtils = new TxnDbUtils() ;
 
   public CompactionTxnHandler() {
   }
@@ -684,13 +683,12 @@ class CompactionTxnHandler extends TxnHandler {
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
    * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
    */
-  @Override
+ @Override
   @RetrySemantics.SafeToRetry
   public void cleanTxnToWriteIdTable() throws MetaException {
     try {
       Connection dbConn = null;
-      Statement stmt = null;
-      ResultSet rs = null;
+      QueryRunner qr = new QueryRunner();
 
       try {
         long minTxnIdSeenOpen = findMinTxnIdSeenOpen();
@@ -698,34 +696,33 @@ class CompactionTxnHandler extends TxnHandler {
         // We query for minimum values in all the queries and they can only increase by any concurrent
         // operations. So, READ COMMITTED is sufficient.
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
-        stmt = dbConn.createStatement();
-
         // First need to find the min_uncommitted_txnid which is currently seen by any open transactions.
         // If there are no txns which are currently open or aborted in the system, then current value of
         // max(TXNS.txn_id) could be min_uncommitted_txnid.
         String s = "SELECT MIN(\"RES\".\"ID\") AS \"ID\" FROM (" +
-          " SELECT MAX(\"TXN_ID\") + 1 AS \"ID\" FROM \"TXNS\"" +
-          (useMinHistoryLevel ? "" :
-          "   UNION" +
-          " SELECT MIN(\"WS_TXNID\") AS \"ID\" FROM \"WRITE_SET\"") +
-          "   UNION" +
-          " SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
-          (useMinHistoryLevel ? "" :
-          "   OR \"TXN_STATE\" = " + TxnStatus.OPEN) +
-          " ) \"RES\"";
+                " SELECT MAX(\"TXN_ID\") + 1 AS \"ID\" FROM \"TXNS\"" +
+                (useMinHistoryLevel ? "" :
+                        "   UNION" +
+                                " SELECT MIN(\"WS_TXNID\") AS \"ID\" FROM \"WRITE_SET\"") +
+                "   UNION" +
+                " SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
+                (useMinHistoryLevel ? "" :
+                        "   OR \"TXN_STATE\" = " + TxnStatus.OPEN) +
+                " ) \"RES\"";
 
         LOG.debug("Going to execute query <{}>", s);
-        rs = stmt.executeQuery(s);
-        if (!rs.next()) {
+        ScalarHandler<Long> scalarHandler = new ScalarHandler<>();
+        long result = qr.query(dbConn, s, scalarHandler);
+        if (result<0) {
           throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
         }
-        long minUncommitedTxnid = minTxnIdSeenOpen < 0 ? rs.getLong(1) : Math.min(rs.getLong(1), minTxnIdSeenOpen);
+        long minUncommitedTxnid = minTxnIdSeenOpen < 0 ? result : Math.min(result, minTxnIdSeenOpen);
 
         // As all txns below min_uncommitted_txnid are either committed or empty_aborted, we are allowed
         // to cleanup the entries less than min_uncommitted_txnid from the TXN_TO_WRITE_ID table.
         s = "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" < " + minUncommitedTxnid;
         LOG.debug("Going to execute delete <{}>", s);
-        int rc = stmt.executeUpdate(s);
+        int rc = qr.update(dbConn, s);
         LOG.info("Removed {} rows from TXN_TO_WRITE_ID with Txn Low-Water-Mark: {}", rc, minUncommitedTxnid);
 
         LOG.debug("Going to commit");
@@ -738,12 +735,15 @@ class CompactionTxnHandler extends TxnHandler {
         throw new MetaException("Unable to connect to transaction database " +
                 e.getMessage());
       } finally {
-        close(rs, stmt, dbConn);
+        closeDbConn(dbConn);
       }
     } catch (RetryException e) {
       cleanTxnToWriteIdTable();
     }
   }
+
+
+
 
   @Override
   @RetrySemantics.SafeToRetry
@@ -1233,7 +1233,7 @@ class CompactionTxnHandler extends TxnHandler {
           ci.start = rs.getLong(6);
           ci.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(7).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
-            lastCompactedEntity = ci.getFullPartitionName();
+           // lastCompactedEntity = ci.getFullPartitionName();
             rc = new RetentionCounters(didNotInitiateRetention, failedRetention, succeededRetention, refusedRetention);
           }
           checkForDeletion(deleteSet, ci, rc, timeoutThreshold);
@@ -1826,16 +1826,9 @@ class CompactionTxnHandler extends TxnHandler {
     } else {
       query += " AND \"CMC_PARTITION\" IS NULL";
     }
-    try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
-      pstmt.setString(1, dbName);
-      pstmt.setString(2, tblName);
-      pstmt.setString(3, type.toString());
-      if (partitionName != null) {
-        pstmt.setString(4, partitionName);
-      }
-      removeRes = pstmt.executeUpdate() > 0;
-      dbConn.commit();
-    }
+    Object[] params = {dbName,tblName,type.toString(),partitionName};
+    removeRes = (boolean) txnDbUtils.updateQuery(dbConn, query, params );
+    dbConn.commit();
     return removeRes;
   }
 
@@ -1848,34 +1841,20 @@ class CompactionTxnHandler extends TxnHandler {
     } else {
       query += " AND \"CMC_PARTITION\" IS NULL";
     }
-    try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
-      pstmt.setInt(1, data.getMetricValue());
-      pstmt.setInt(2, prevData.getVersion() + 1);
-      pstmt.setString(3, data.getDbName());
-      pstmt.setString(4, data.getTblName());
-      pstmt.setString(5, data.getMetricType().toString());
-      pstmt.setInt(6, prevData.getVersion());
-      if (data.getPartitionName() != null) {
-        pstmt.setString(7, data.getPartitionName());
-      }
-      updateRes = pstmt.executeUpdate() > 0;
+    Object[] params = {data.getMetricValue(),prevData.getVersion() + 1,data.getDbName(), data.getTblName(),
+            data.getMetricType().toString(), prevData.getVersion()};
+    updateRes = (boolean)txnDbUtils.updateQuery(dbConn, query, params) ;
       dbConn.commit();
-    }
+
     return updateRes;
   }
 
   private boolean createCompactionMetricsData(Connection dbConn, CompactionMetricsData data) throws SQLException {
     boolean createRes;
-    try (PreparedStatement pstmt = dbConn.prepareStatement(INSERT_COMPACTION_METRICS_CACHE_QUERY)) {
-      pstmt.setString(1, data.getDbName());
-      pstmt.setString(2, data.getTblName());
-      pstmt.setString(3, data.getPartitionName());
-      pstmt.setString(4, data.getMetricType().toString());
-      pstmt.setInt(5, data.getMetricValue());
-      pstmt.setInt(6, 1);
-      createRes = pstmt.executeUpdate() > 0;
-      dbConn.commit();
-    }
+    Object[] params = {data.getDbName(), data.getTblName(),data.getPartitionName(),data.getMetricType().toString(),
+            data.getMetricValue(),1};
+    createRes = (int)txnDbUtils.insertQuery(dbConn, INSERT_COMPACTION_METRICS_CACHE_QUERY, new ScalarHandler<>(), params) > 0;
+    dbConn.commit();
     return createRes;
   }
 

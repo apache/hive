@@ -25,15 +25,11 @@ import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.LockTypeUtil;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
@@ -42,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -60,6 +57,9 @@ import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.D
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
 
+  // Lock states
+  public static final  char LOCK_ACQUIRED = 'a';
+  public static final  char LOCK_WAITING = 'w';
   public static ValidTxnList createValidTxnListForCleaner(GetOpenTxnsResponse txns, long minOpenTxnGLB) {
     long highWaterMark = minOpenTxnGLB - 1;
     long[] abortedTxns = new long[txns.getOpen_txnsSize()];
@@ -590,6 +590,92 @@ public class TxnUtils {
         return TxnStore.REBALANCE_TYPE;
       default:
         throw new MetaException("Unexpected compaction type " + ct);
+    }
+  }
+
+  public static class LockInfo {
+    final long extLockId;
+    final long intLockId;
+    //0 means there is no transaction, i.e. it a select statement which is not part of
+    //explicit transaction or a IUD statement that is not writing to ACID table
+    final long txnId;
+    final String db;
+    final String table;
+    final String partition;
+    final LockState state;
+    final LockType type;
+
+    // Assumes the result set is set to a valid row
+    LockInfo(ResultSet rs) throws SQLException, MetaException {
+      extLockId = rs.getLong("HL_LOCK_EXT_ID"); // can't be null
+      intLockId = rs.getLong("HL_LOCK_INT_ID"); // can't be null
+      db = rs.getString("HL_DB"); // can't be null
+      String t = rs.getString("HL_TABLE");
+      table = (rs.wasNull() ? null : t);
+      String p = rs.getString("HL_PARTITION");
+      partition = (rs.wasNull() ? null : p);
+      switch (rs.getString("HL_LOCK_STATE").charAt(0)) {
+        case LOCK_WAITING:
+          state = LockState.WAITING;
+          break;
+        case LOCK_ACQUIRED:
+          state = LockState.ACQUIRED;
+          break;
+        default:
+          throw new MetaException("Unknown lock state " + rs.getString("HL_LOCK_STATE").charAt(0));
+      }
+      char lockChar = rs.getString("HL_LOCK_TYPE").charAt(0);
+      type = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+              .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+      txnId = rs.getLong("HL_TXNID"); //returns 0 if value is NULL
+    }
+
+    LockInfo(ShowLocksResponseElement e) {
+      extLockId = e.getLockid();
+      intLockId = e.getLockIdInternal();
+      txnId = e.getTxnid();
+      db = e.getDbname();
+      table = e.getTablename();
+      partition = e.getPartname();
+      state = e.getState();
+      type = e.getType();
+    }
+
+    public boolean equals(Object other) {
+      if (!(other instanceof LockInfo)) return false;
+      LockInfo o = (LockInfo) other;
+      // Lock ids are unique across the system.
+      return extLockId == o.extLockId && intLockId == o.intLockId;
+    }
+
+    @Override
+    public String toString() {
+      return JavaUtils.lockIdToString(extLockId) + " intLockId:" +
+              intLockId + " " + JavaUtils.txnIdToString(txnId)
+              + " db:" + db + " table:" + table + " partition:" +
+              partition + " state:" + (state == null ? "null" : state.toString())
+              + " type:" + (type == null ? "null" : type.toString());
+    }
+
+    private boolean isDbLock() {
+      return db != null && table == null && partition == null;
+    }
+
+    private boolean isTableLock() {
+      return db != null && table != null && partition == null;
+    }
+
+    private boolean isPartitionLock() {
+      return !(isDbLock() || isTableLock());
+    }
+  }
+
+  public static class LockInfoExt extends LockInfo {
+    final ShowLocksResponseElement e;
+
+    public LockInfoExt(ShowLocksResponseElement e) {
+      super(e);
+      this.e = e;
     }
   }
 }
