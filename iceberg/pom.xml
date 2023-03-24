@@ -36,6 +36,7 @@
     <google.errorprone.version>2.5.1</google.errorprone.version>
     <assertj.version>3.19.0</assertj.version>
     <junit.jupiter.version>5.7.2</junit.jupiter.version>
+    <immutables.value.version>2.9.2</immutables.value.version>
     <validate.skip>false</validate.skip>
   </properties>
   <modules>
@@ -208,6 +209,11 @@
         <artifactId>mockito-inline</artifactId>
         <version>${iceberg.mockito-core.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.immutables</groupId>
+        <artifactId>value</artifactId>
+        <version>${immutables.value.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>
@@ -301,6 +307,11 @@
                   <artifactId>error_prone_core</artifactId>
                   <version>${google.errorprone.version}</version>
                 </path>
+                <dependency>
+                  <groupId>org.immutables</groupId>
+                  <artifactId>value</artifactId>
+                  <version>${immutables.value.version}</version>
+                </dependency>
               </annotationProcessorPaths>
             </configuration>
           </plugin>
