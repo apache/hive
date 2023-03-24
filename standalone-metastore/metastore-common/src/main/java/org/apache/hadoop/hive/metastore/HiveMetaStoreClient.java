@@ -738,6 +738,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
           ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+      int connectionTimeout = (int) MetastoreConf.getTimeVar(conf,
+          ConfVars.CLIENT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
       if (useSSL) {
         String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
         if (trustStorePath.isEmpty()) {
@@ -751,10 +753,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         String trustStoreAlgorithm =
             MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
         binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-            trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
+            connectionTimeout, trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
       } else {
         binaryTransport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(),
-            clientSocketTimeout);
+            clientSocketTimeout, connectionTimeout);
       }
       binaryTransport = createAuthBinaryTransport(store, binaryTransport);
     } catch (Exception e) {

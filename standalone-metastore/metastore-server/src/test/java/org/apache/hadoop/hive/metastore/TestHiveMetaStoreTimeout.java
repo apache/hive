@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
@@ -28,9 +30,10 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.util.StringUtils;
-import org.junit.AfterClass;
+import org.apache.thrift.transport.TTransportException;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -43,9 +46,10 @@ public class TestHiveMetaStoreTimeout {
   protected static HiveMetaStoreClient client;
   protected static Configuration conf;
   protected static Warehouse warehouse;
+  protected static int port;
 
-  @BeforeClass
-  public static void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     HMSHandler.testTimeoutEnabled = true;
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
@@ -54,11 +58,14 @@ public class TestHiveMetaStoreTimeout {
         TimeUnit.MILLISECONDS);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     warehouse = new Warehouse(conf);
+    port = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
     client = new HiveMetaStoreClient(conf);
   }
 
-  @AfterClass
-  public static void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     HMSHandler.testTimeoutEnabled = false;
     try {
       client.close();
@@ -96,9 +103,8 @@ public class TestHiveMetaStoreTimeout {
     try {
       client.createDatabase(db);
       Assert.fail("should throw timeout exception.");
-    } catch (MetaException e) {
-      Assert.assertTrue("unexpected MetaException", e.getMessage().contains("Timeout when " +
-          "executing method: create_database"));
+    } catch (TTransportException e) {
+      Assert.assertTrue("unexpected Exception", e.getMessage().contains("Read timed out"));
     }
 
     // restore
@@ -117,7 +123,7 @@ public class TestHiveMetaStoreTimeout {
         .build(conf);
     try {
       client.createDatabase(db);
-    } catch (MetaException e) {
+    } catch (Exception e) {
       Assert.fail("should not throw timeout exception: " + e.getMessage());
     }
     client.dropDatabase(dbName, true, true);
@@ -130,13 +136,28 @@ public class TestHiveMetaStoreTimeout {
     try {
       client.createDatabase(db);
       Assert.fail("should throw timeout exception.");
-    } catch (MetaException e) {
-      Assert.assertTrue("unexpected MetaException", e.getMessage().contains("Timeout when " +
-          "executing method: create_database"));
+    } catch (TTransportException e) {
+      Assert.assertTrue("unexpected Exception", e.getMessage().contains("Read timed out"));
     }
+  }
 
-    // restore
-    client.dropDatabase(dbName, true, true);
-    client.setMetaConf(ConfVars.CLIENT_SOCKET_TIMEOUT.getVarname(), "10s");
+  @Test
+  public void testConnectionTimeout() throws Exception {
+    Configuration newConf = new Configuration(conf);
+    MetastoreConf.setTimeVar(newConf, ConfVars.CLIENT_CONNECTION_TIMEOUT, 1000,
+            TimeUnit.MILLISECONDS);
+    // fake host to mock connection time out
+    MetastoreConf.setVar(newConf, ConfVars.THRIFT_URIS, "thrift://1.1.1.1:" + port);
+    MetastoreConf.setLongVar(newConf, ConfVars.THRIFT_CONNECTION_RETRIES, 1);
+
+    Future<Void> future = Executors.newSingleThreadExecutor().submit(() -> {
+      try(HiveMetaStoreClient c = new HiveMetaStoreClient(newConf)) {
+        Assert.fail("should throw connection timeout exception.");
+      } catch (MetaException e) {
+        Assert.assertTrue("unexpected Exception", e.getMessage().contains("connect timed out"));
+      }
+      return null;
+    });
+    future.get(5, TimeUnit.SECONDS);
   }
 }
