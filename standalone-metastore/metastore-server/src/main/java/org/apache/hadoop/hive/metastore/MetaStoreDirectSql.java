@@ -1327,7 +1327,7 @@ class MetaStoreDirectSql {
         return;
       }
 
-      String colTypeStr = partitionKeys.get(partColIndex).getType();
+      String colTypeStr = ColumnType.getTypeName(partitionKeys.get(partColIndex).getType());
       FilterType colType = FilterType.fromType(colTypeStr);
       if (colType == FilterType.Invalid) {
         filterBuffer.setError("Filter pushdown not supported for type " + colTypeStr);
