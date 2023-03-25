@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Test swagger
+name: Test metastore
 
 on:
   push:
@@ -34,6 +34,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 8
-      - name: 'Test Swagger project'
+      - name: 'Test metastore project'
         run: |
-          mvn -pl swagger/swagger-generator -Dtest=org.apache.servicecomb.swagger.generator.core.TestSwaggerUtils#testChar
+          mvn -pl standalone-metastore/metastore-server -Dtest=org.apache.hadoop.hive.metastore.TestPartitionManagement#testPartitionDiscoveryEnabledBothTableTypes
