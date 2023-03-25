@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Run test metastore
+name: Test metastore
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 8
-      - name: 'Run test metastore project'
+      - name: 'Test metastore project'
         run: |
           mvn install -DskipTests -am -pl standalone-metastore/metastore-server 
           mvn test -pl standalone-metastore/metastore-server -Dtest=org.apache.hadoop.hive.metastore.TestPartitionManagement#testPartitionDiscoveryEnabledBothTableTypes
