@@ -37,4 +37,4 @@ jobs:
       - name: 'Test metastore nondex project'
         run: |
           mvn install -DskipTests -am -pl standalone-metastore/metastore-server 
-          mvn edu.illinois:nondex-maven-plugin:2.1.1:nondex -pl standalone-metastore/metastore-server -DnondexRuns=10 -Dtest=org.apache.hadoop.hive.metastore.TestPartitionManagement#testPartitionDiscoveryEnabledBothTableTypes
+          mvn -e edu.illinois:nondex-maven-plugin:2.1.1:nondex -pl standalone-metastore/metastore-server -DnondexRuns=10 -Dtest=org.apache.hadoop.hive.metastore.TestPartitionManagement#testPartitionDiscoveryEnabledBothTableTypes
