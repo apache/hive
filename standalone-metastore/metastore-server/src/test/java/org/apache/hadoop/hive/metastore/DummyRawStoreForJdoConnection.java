@@ -345,6 +345,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public boolean dropPartition(String catName, String dbName, String tableName, List<String> part_vals)
+      throws MetaException {
+
+    return false;
+  }
+
+  @Override
   public boolean dropPartition(String catName, String dbName, String tableName, String partName)
       throws MetaException {
 

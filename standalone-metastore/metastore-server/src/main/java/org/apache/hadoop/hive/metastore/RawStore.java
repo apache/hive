@@ -459,6 +459,23 @@ public interface RawStore extends Configurable {
    * @param catName catalog name.
    * @param dbName database name.
    * @param tableName table name.
+   * @param part_vals list of partition values.
+   * @return true if the partition was dropped.
+   * @throws MetaException Error accessing the RDBMS.
+   * @throws NoSuchObjectException no partition matching this description exists
+   * @throws InvalidObjectException error dropping the statistics for the partition
+   * @throws InvalidInputException error dropping the statistics for the partition
+   */
+  @Deprecated
+  boolean dropPartition(String catName, String dbName, String tableName,
+      List<String> part_vals) throws MetaException, NoSuchObjectException, InvalidObjectException,
+      InvalidInputException;
+
+  /**
+   * Drop a partition.
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tableName table name.
    * @param partName partition name.
    * @return true if the partition was dropped.
    * @throws MetaException Error accessing the RDBMS.

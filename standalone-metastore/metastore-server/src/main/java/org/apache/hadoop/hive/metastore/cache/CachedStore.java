@@ -1420,6 +1420,22 @@ public class CachedStore implements RawStore, Configurable {
     return sharedCache.existPartitionFromCache(catName, dbName, tblName, partVals);
   }
 
+  @Override public boolean dropPartition(String catName, String dbName, String tblName, List<String> partVals)
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean succ = rawStore.dropPartition(catName, dbName, tblName, partVals);
+    // in case of event based cache update, cache will be updated during commit.
+    if (succ && !canUseEvents) {
+      catName = normalizeIdentifier(catName);
+      dbName = normalizeIdentifier(dbName);
+      tblName = normalizeIdentifier(tblName);
+      if (!shouldCacheTable(catName, dbName, tblName)) {
+        return succ;
+      }
+      sharedCache.removePartitionFromCache(catName, dbName, tblName, partVals);
+    }
+    return succ;
+  }
+
   @Override public boolean dropPartition(String catName, String dbName, String tblName, String partName)
       throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean succ = rawStore.dropPartition(catName, dbName, tblName, partName);
