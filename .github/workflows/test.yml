@@ -36,4 +36,4 @@ jobs:
           java-version: 8
       - name: 'Test metastore project'
         run: |
-          mvn -e -pl standalone-metastore/metastore-server -Dtest=org.apache.hadoop.hive.metastore.TestPartitionManagement#testPartitionDiscoveryEnabledBothTableTypes
+          mvn -am -pl install -DskipTests standalone-metastore/metastore-server 
