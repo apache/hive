@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Test metastore
+name: Test metastore nondex
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 8
-      - name: 'Test metastore project'
+      - name: 'Test metastore nondex project'
         run: |
           mvn install -DskipTests -am -pl standalone-metastore/metastore-server 
           mvn edu.illinois:nondex-maven-plugin:2.1.1:nondex -pl standalone-metastore/metastore-server -DnondexRuns=10 -Dtest=org.apache.hadoop.hive.metastore.TestPartitionManagement#testPartitionDiscoveryEnabledBothTableTypes
