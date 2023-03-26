@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -83,7 +84,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
         "129 " +
         ")", identifier.name()));
 
-    validateMigration(identifier.name());
+    validateMigration(identifier.name(), null);
   }
 
   @Test
@@ -138,7 +139,27 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
         "named_struct('map1', map('a', 'b'), 'map2', map('c', 'd')) " +
         ")", identifier.name()));
 
-    validateMigration(identifier.name());
+    validateMigration(identifier.name(), null);
+  }
+
+  @Test
+  public void testMigrateHiveTableToIcebergWithTBLPROPERTIES() throws TException, InterruptedException {
+    String tableName = "tbl";
+    String createQuery = "CREATE EXTERNAL TABLE " + tableName + " (a int) STORED AS " + fileFormat.name() + " " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)) +
+        testTables.propertiesForCreateTableSQL(Collections.singletonMap("random.prop", "random"));
+    shell.executeStatement(createQuery);
+    shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
+    Table hmsTable = validateMigration(tableName, "TBLPROPERTIES('external.table.purge'='true')");
+
+    // Check the new property gets set.
+    Assert.assertEquals("true", hmsTable.getParameters().get("external.table.purge"));
+    // Check the exiting property stays as is.
+    Assert.assertEquals("random", hmsTable.getParameters().get("random.prop"));
+
+    // Check the new property gets translated to iceberg equivalent and gets set.
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(TableIdentifier.of("default", tableName));
+    Assert.assertEquals("true", icebergTable.properties().get(TableProperties.GC_ENABLED));
   }
 
   @Test
@@ -149,7 +170,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
         testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     shell.executeStatement(createQuery);
     shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
-    validateMigration(tableName);
+    validateMigration(tableName, null);
   }
 
   @Test
@@ -162,7 +183,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb') VALUES (4), (5)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc') VALUES (6)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ddd') VALUES (7), (8), (9), (10)");
-    validateMigration(tableName);
+    validateMigration(tableName, null);
   }
 
   @Test
@@ -176,7 +197,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb') VALUES (4), (5)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc') VALUES (6)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ddd') VALUES (7), (8), (9), (10)");
-    validateMigration(tableName);
+    validateMigration(tableName, null);
   }
 
   @Test
@@ -266,10 +287,14 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
             "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')"));
   }
 
-  private void validateMigration(String tableName) throws TException, InterruptedException {
+  private Table validateMigration(String tableName, String tblProperties)
+      throws TException, InterruptedException {
     List<Object[]> originalResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
-    shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
-        "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
+    String stmt = "ALTER TABLE " + tableName + " CONVERT TO ICEBERG";
+    if (tblProperties != null) {
+      stmt = stmt + " " + tblProperties;
+    }
+    shell.executeStatement(stmt);
     List<Object[]> alterResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
     Assert.assertEquals(originalResult.size(), alterResult.size());
     for (int i = 0; i < originalResult.size(); i++) {
@@ -282,6 +307,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     validateSd(hmsTable, "iceberg");
     validateTblProps(hmsTable, true);
     validatePartitions(tableName);
+    return hmsTable;
   }
 
   private void validatePartitions(String tableName) throws TException, InterruptedException {
@@ -298,8 +324,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
           ArgumentMatchers.any(Properties.class), ArgumentMatchers.any(Configuration.class)))
           .thenThrow(new MetaException());
       try {
-        shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
-            "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
+        shell.executeStatement("ALTER TABLE " + tableName + " CONVERT TO ICEBERG");
       } catch (IllegalArgumentException e) {
         Assert.assertTrue(e.getMessage().contains("Error occurred during hive table migration to iceberg."));
         Table hmsTable = shell.metastore().getTable("default", tableName);
