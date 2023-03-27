@@ -136,7 +136,7 @@ CREATE TABLE all100kjson_textfile_orc_n0 (
                              bo boolean,
                              ts timestamp)
                              PARTITIONED BY (t tinyint)
-                             ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+                             ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'
                              WITH SERDEPROPERTIES ('timestamp.formats'='yyyy-MM-dd\'T\'HH:mm:ss')
                              STORED AS TEXTFILE;
 

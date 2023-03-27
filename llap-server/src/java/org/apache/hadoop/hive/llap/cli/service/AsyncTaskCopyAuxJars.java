@@ -44,7 +44,7 @@ class AsyncTaskCopyAuxJars implements Callable<Void> {
   private static final Logger LOG = LoggerFactory.getLogger(AsyncTaskCopyAuxJars.class.getName());
 
   private static final String[] DEFAULT_AUX_CLASSES =
-      new String[] {"org.apache.hive.hcatalog.data.JsonSerDe", "org.apache.hadoop.hive.druid.DruidStorageHandler",
+      new String[] {"org.apache.hadoop.hive.druid.DruidStorageHandler",
           "org.apache.hive.storage.jdbc.JdbcStorageHandler", "org.apache.commons.dbcp.BasicDataSourceFactory",
           "org.apache.commons.pool.impl.GenericObjectPool", "org.apache.hadoop.hive.kafka.KafkaStorageHandler",
           "org.apache.hadoop.hive.kudu.KuduStorageHandler"};

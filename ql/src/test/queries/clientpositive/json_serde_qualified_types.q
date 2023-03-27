@@ -5,7 +5,7 @@ create table json_serde_qualified_types (
   c1 char(10),
   c2 varchar(20),
   c3 decimal(10, 5)
-) row format serde 'org.apache.hive.hcatalog.data.JsonSerDe';
+) row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe';
 
 describe json_serde_qualified_types;
 

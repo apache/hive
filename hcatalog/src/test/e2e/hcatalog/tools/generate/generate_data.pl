@@ -317,12 +317,6 @@ location '$location';\n";
         print $hivefp "
 stored as rcfile
 location '$location';\n";
-    } elsif ($format eq "json") {
-        print $hivefp "
-row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
-stored as textfile
-location '$location'
-;\n";
     } else {
         die "Unknown format $format\n";
     }
@@ -643,44 +637,6 @@ for (my $i = 0; $i < $numRows; $i++) {
             printf HDFS "%s\n", $name;
         }
         print MYSQL "commit;\n";
-    } elsif ($filetype eq "json") {
-        srand(6.0221415 + $numRows);
-        print MYSQL "drop table if exists $tableName;";
-        print MYSQL "create table $tableName(
-            s varchar(100),
-            i int,
-            d double);";
-        print MYSQL &getBulkCopyCmd($tableName, "\t", "$tableName.plain");
-        print $hivefp "drop table if exists $tableName;\ncreate external table $tableName(
-            s string,
-            i int,
-            d double,
-            m map<string, string>,
-            bb array<struct<a: int, b: string>>)
-            row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
-            STORED AS TEXTFILE 
-            location '$hdfsTargetDir/$tableName';\n";
-        open(PLAIN, ">$tableName.plain") or
-            die("Cannot open file $tableName.hive.sql, $!\n");
-        for (my $i = 0; $i < $numRows; $i++) {
-            my $s = randomJsonString();
-            my $i = int(rand(2**32) - 2**31),
-            my $d = rand(2**10) - 2**9,
-#            my $i = rand(1) < 0.05 ? 'null' : (int(rand(2**32) - 2**31)),
-#            my $d = rand(1) < 0.05 ? 'null' : (rand(2**10) - 2**9),
-            my $m = randomJsonMap();
-            my $bb = randomJsonBag();
-
-#           printf MYSQL "insert into $tableName (name) values('%s');\n", $name;
-            print HDFS qq@{"s":"$s", "i":$i, "d":$d, "m":$m, "bb":$bb}\n@;
-            if ($s eq 'null') {
-                $s="";
-            }
-            print PLAIN "$s\t$i\t$d\n";
-        }
-        close PLAIN;
-        print MYSQL "commit;\n";
-
     } else {
         warn "Unknown filetype $filetype\n";
         usage();

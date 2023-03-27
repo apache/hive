@@ -20,5 +20,8 @@ CREATE TABLE MIN_HISTORY_WRITE_ID (
   MH_WRITEID bigint NOT NULL
 );
 
+-- HIVE-27180
+UPDATE "APP".SERDES SET SLIB='org.apache.hadoop.hive.serde2.JsonSerDe' where SLIB='org.apache.hive.hcatalog.data.JsonSerDe';
+
 -- This needs to be the last thing done.  Insert any changes above this line.
 UPDATE "APP".VERSION SET SCHEMA_VERSION='4.0.0', VERSION_COMMENT='Hive release version 4.0.0' where VER_ID=1;

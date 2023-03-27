@@ -9,7 +9,7 @@ CREATE TEMPORARY TABLE parquet_table_json_partition_temp (
 PARTITIONED BY (
   ts string)
 ROW FORMAT SERDE
-'org.apache.hive.hcatalog.data.JsonSerDe'
+'org.apache.hadoop.hive.serde2.JsonSerDe'
 STORED AS INPUTFORMAT
 'org.apache.hadoop.mapred.TextInputFormat'
 OUTPUTFORMAT

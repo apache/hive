@@ -6,7 +6,7 @@ drop table if exists json_serde1_3;
 drop table if exists json_serde1_4;
 
 create table json_serde1_1 (a array<string>,b map<string,int>)
-  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe';
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe';
 
 insert into table json_serde1_1
   select array('aaa'),map('aaa',1) from src limit 2;
@@ -37,7 +37,7 @@ create table json_serde1_3 (c1 int, c2 string) stored as jsonfile;
 show create table json_serde1_3;
 
 create table json_serde1_4 (a array<string>,b map<string,int>)
-  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
   WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1');
 
 insert into table json_serde1_4

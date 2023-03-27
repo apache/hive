@@ -15,12 +15,12 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists json_serde1_4
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table json_serde1_1 (a array<string>,b map<string,int>)
-  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@json_serde1_1
 POSTHOOK: query: create table json_serde1_1 (a array<string>,b map<string,int>)
-  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@json_serde1_1
@@ -132,13 +132,13 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: create table json_serde1_4 (a array<string>,b map<string,int>)
-  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
   WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@json_serde1_4
 POSTHOOK: query: create table json_serde1_4 (a array<string>,b map<string,int>)
-  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
   WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
