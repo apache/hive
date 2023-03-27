@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.iceberg.MetadataColumns;
@@ -80,7 +81,8 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
         continue;
       }
 
-      GenericRecord deleteRecord = GenericRecord.create(IcebergAcidUtil.createSerdeSchemaForDelete(SCHEMA.columns()));
+      GenericRecord deleteRecord = GenericRecord.create(IcebergAcidUtil.createSerdeSchemaForDelete(SCHEMA.columns(),
+          new Properties()));
       int specId = (Integer) record.getField(MetadataColumns.SPEC_ID.name());
       deleteRecord.setField(MetadataColumns.SPEC_ID.name(), specId);
       PartitionKey partitionKey = new PartitionKey(table.specs().get(specId), table.schema());

@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -111,6 +111,7 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.writer.WriterBuilder;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
@@ -666,14 +667,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+    Map<String, String> properties = table.getParameters();
+    boolean skipRowData = Boolean.parseBoolean(properties.getOrDefault(WriterBuilder.ICEBERG_DELETE_SKIPROWDATA,
+        WriterBuilder.ICEBERG_DELETE_SKIPROWDATA_DEFAULT));
     switch (operation) {
       case DELETE:
       case UPDATE:
-        // TODO: make it configurable whether we want to include the table columns in the select query.
-        // It might make delete writes faster if we don't have to write out the row object
-        return Stream.of(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols())
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+        return skipRowData ?
+            ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA : ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
       default:
         return ImmutableList.of();
     }

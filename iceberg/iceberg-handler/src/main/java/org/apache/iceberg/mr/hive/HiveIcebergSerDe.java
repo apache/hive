@@ -141,7 +141,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
 
     this.projectedSchema =
-        projectedSchema(configuration, serDeProperties.getProperty(Catalogs.NAME), tableSchema, jobConf);
+        projectedSchema(configuration, serDeProperties, tableSchema, jobConf);
 
     // Currently ClusteredWriter is used which requires that records are ordered by partition keys.
     // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
@@ -155,13 +155,15 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
   }
 
-  private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema,
+  private static Schema projectedSchema(Configuration configuration, Properties serDeProperties, Schema tableSchema,
       Map<String, String> jobConfs) {
-    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration, tableName);
+    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration,
+        serDeProperties.getProperty(Catalogs.NAME));
+
     if (operation != null) {
       switch (operation) {
         case DELETE:
-          return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+          return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns(), serDeProperties);
         case UPDATE:
           return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
         case OTHER:
