@@ -159,7 +159,7 @@ public class TestReplicationScenarios {
       "org.apache.hive.hcatalog.listener.DbNotificationListener";
       // FIXME : replace with hive copy once that is copied
   private final static String tid =
-      TestReplicationScenarios.class.getCanonicalName().toLowerCase().replace('.','_') + "_" + System.currentTimeMillis();
+      TestReplicationScenarios.class.getCanonicalName().replace('.','_') + "_" + System.currentTimeMillis();
   private final static String TEST_PATH =
       System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
 
@@ -1722,27 +1722,27 @@ public class TestReplicationScenarios {
             + ".ptned PARTITION(b=2)", driver);
     Tuple dump = replDumpDb(dbName);
     Path path = new Path(System.getProperty("test.warehouse.dir", ""));
-    String tableRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "unptned";
+    String tableRelativeSrcPath = dbName+".db" + File.separator + "unptned";
     Path srcFileLocation = new Path(path, tableRelativeSrcPath + File.separator + unptnedFileName1);
     String tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + EximUtil.DATA_PATH_NAME
-            + File.separator + dbName.toLowerCase() + File.separator + "unptned" +File.separator + unptnedFileName1;
+            + File.separator + dbName + File.separator + "unptned" +File.separator + unptnedFileName1;
     Path tgtFileLocation = new Path(dump.dumpLocation, tgtFileRelativePath);
     //A file in table at src location should be copied to $dumplocation/hive/<db>/<table>/data/<unptned_fileName>
     verifyChecksum(srcFileLocation, tgtFileLocation, true);
     srcFileLocation = new Path(path, tableRelativeSrcPath + File.separator + unptnedFileName2);
     verifyChecksum(srcFileLocation, tgtFileLocation, false);
 
-    String partitionRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "ptned" + File.separator + "b=1";
+    String partitionRelativeSrcPath = dbName+".db" + File.separator + "ptned" + File.separator + "b=1";
     srcFileLocation = new Path(path, partitionRelativeSrcPath + File.separator + ptnedFileName1);
     tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + EximUtil.DATA_PATH_NAME
-            + File.separator + dbName.toLowerCase()
+            + File.separator + dbName
             + File.separator + "ptned" + File.separator + "b=1" + File.separator
             + ptnedFileName1;
     tgtFileLocation = new Path(dump.dumpLocation, tgtFileRelativePath);
     //A partitioned file in table at src location should be copied to
     // $dumplocation/hive/<db>/<table>/<partition>/data/<unptned_fileName>
     verifyChecksum(srcFileLocation, tgtFileLocation, true);
-    partitionRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "ptned" + File.separator + "b=2";
+    partitionRelativeSrcPath = dbName+".db" + File.separator + "ptned" + File.separator + "b=2";
     srcFileLocation = new Path(path, partitionRelativeSrcPath + File.separator + ptnedFileName2);
     loadAndVerify(replDbName, dbName, dump.lastReplId);
     verifyChecksum(srcFileLocation, tgtFileLocation, false);
@@ -4310,7 +4310,7 @@ public class TestReplicationScenarios {
       path = new Path(db.getManagedLocationUri());
     } catch (Exception e) {
       path = new Path(System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
-      path = new Path(path, dbName.toLowerCase()+".db");
+      path = new Path(path, dbName+".db");
     }
     path = new Path(path, "normal");
     FileSystem fs = path.getFileSystem(hconf);
@@ -4342,7 +4342,7 @@ public class TestReplicationScenarios {
       path = new Path(db.getManagedLocationUri());
     } catch (Exception e) {
       path = new Path(System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
-      path = new Path(path, dbName.toLowerCase()+".db");
+      path = new Path(path, dbName+".db");
     }
     path = new Path(path, "normal");
     path = new Path(path, "part=124");
@@ -4942,7 +4942,7 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + name);
     String mgdLocation = System.getProperty("test.warehouse.dir", "file:/tmp/warehouse/managed");
     String extLocation = System.getProperty("test.warehouse.external.dir", "/tmp/warehouse/external");
-    run("CREATE DATABASE " + name + " LOCATION '" + extLocation + "/" + name.toLowerCase() + ".db' MANAGEDLOCATION '" + mgdLocation + "/" + name.toLowerCase() + ".db' WITH DBPROPERTIES ( '" +
+    run("CREATE DATABASE " + name + " LOCATION '" + extLocation + "/" + name + ".db' MANAGEDLOCATION '" + mgdLocation + "/" + name + ".db' WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')", myDriver);
     return name;
   }
@@ -5028,7 +5028,7 @@ public class TestReplicationScenarios {
     LOG.info("Got {}", results);
     assertEquals(data.length, results.size());
     for (int i = 0; i < data.length; i++) {
-      assertEquals(data[i].toLowerCase().trim(), results.get(i).toLowerCase().trim());
+      assertEquals(data[i].trim(), results.get(i).trim());
     }
   }
 
@@ -5208,7 +5208,7 @@ public class TestReplicationScenarios {
 
   public static Path getNonRecoverablePath(Path dumpDir, String dbName, HiveConf conf) throws IOException {
     Path dumpPath = new Path(dumpDir,
-            Base64.getEncoder().encodeToString(dbName.toLowerCase()
+            Base64.getEncoder().encodeToString(dbName
                     .getBytes(StandardCharsets.UTF_8.name())));
     FileSystem fs = dumpPath.getFileSystem(conf);
     if (fs.exists(dumpPath)) {

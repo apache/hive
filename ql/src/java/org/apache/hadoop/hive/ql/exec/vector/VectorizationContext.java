@@ -4449,7 +4449,7 @@ import com.google.common.annotations.VisibleForTesting;
     }
 
     Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
-    return columnVectorType.name().toLowerCase();
+    return columnVectorType.name();
   }
 
   static String getUndecoratedName(String hiveTypeName) throws HiveException {
@@ -4488,7 +4488,7 @@ import com.google.common.annotations.VisibleForTesting;
   }
 
   public static String mapTypeNameSynonyms(String typeName) {
-    typeName = typeName.toLowerCase();
+    typeName = typeName;
     switch (typeName) {
     case "long":
       return "bigint";

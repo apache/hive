@@ -527,13 +527,13 @@ public class HCatClientHMSImpl extends HCatClient {
     public ExpressionBuilder(Table table, Map<String, String> partSpecs) {
       this.partSpecs = partSpecs;
       for (FieldSchema partField : table.getPartitionKeys()) {
-        partColumnTypesMap.put(partField.getName().toLowerCase(),
+        partColumnTypesMap.put(partField.getName(),
             TypeInfoFactory.getPrimitiveTypeInfo(partField.getType()));
       }
     }
 
     private PrimitiveTypeInfo getTypeFor(String partColumn) {
-      return partColumnTypesMap.get(partColumn.toLowerCase());
+      return partColumnTypesMap.get(partColumn);
     }
 
     private Object getTypeAppropriateValueFor(PrimitiveTypeInfo type, String value) {

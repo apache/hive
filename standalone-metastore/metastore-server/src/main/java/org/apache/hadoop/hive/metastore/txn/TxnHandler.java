@@ -1842,8 +1842,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent("No-op if already replicated the writeid state")
   public void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException {
-    String dbName = rqst.getDbName().toLowerCase();
-    String tblName = rqst.getTableName().toLowerCase();
+    String dbName = rqst.getDbName();
+    String tblName = rqst.getTableName();
     ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(rqst.getValidWriteIdlist());
 
     // Get the abortedWriteIds which are already sorted in ascending order.
@@ -2158,8 +2158,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public AllocateTableWriteIdsResponse allocateTableWriteIds(AllocateTableWriteIdsRequest rqst)
           throws MetaException {
     List<Long> txnIds;
-    String dbName = rqst.getDbName().toLowerCase();
-    String tblName = rqst.getTableName().toLowerCase();
+    String dbName = rqst.getDbName();
+    String tblName = rqst.getTableName();
     boolean shouldReallocate = rqst.isReallocate();
     try {
       Connection dbConn = null;
@@ -3228,7 +3228,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private static String normalizeCase(String s) {
-    return s == null ? null : s.toLowerCase();
+    return s == null ? null : s;
   }
 
   private static String normalizePartitionCase(String s) {
@@ -4352,13 +4352,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
             buff.setLength(0);
             buff.append("DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_DATABASE\"='");
-            buff.append(dbName.toLowerCase());
+            buff.append(dbName);
             buff.append("'");
             queries.add(buff.toString());
 
             buff.setLength(0);
             buff.append("DELETE FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\"='");
-            buff.append(dbName.toLowerCase());
+            buff.append(dbName);
             buff.append("'");
             queries.add(buff.toString());
 
@@ -4413,17 +4413,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             if (!keepTxnToWriteIdMetaData) {
               buff.setLength(0);
               buff.append("DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_DATABASE\"='");
-              buff.append(dbName.toLowerCase());
+              buff.append(dbName);
               buff.append("' AND \"T2W_TABLE\"='");
-              buff.append(tblName.toLowerCase());
+              buff.append(tblName);
               buff.append("'");
               queries.add(buff.toString());
 
               buff.setLength(0);
               buff.append("DELETE FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\"='");
-              buff.append(dbName.toLowerCase());
+              buff.append(dbName);
               buff.append("' AND \"NWI_TABLE\"='");
-              buff.append(tblName.toLowerCase());
+              buff.append(tblName);
               buff.append("'");
               queries.add(buff.toString());
             }
@@ -6021,7 +6021,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new RuntimeException(e);
       }
     } else {
-      String connectionPooler = MetastoreConf.getVar(conf, ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
+      String connectionPooler = MetastoreConf.getVar(conf, ConfVars.CONNECTION_POOLING_TYPE);
       if ("none".equals(connectionPooler)) {
         LOG.info("Choosing not to pool JDBC connections");
         return new NoPoolConnectionPool(conf);

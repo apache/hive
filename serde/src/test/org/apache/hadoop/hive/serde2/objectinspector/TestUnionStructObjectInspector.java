@@ -78,12 +78,12 @@ public class TestUnionStructObjectInspector {
       assertEquals(5, fields.size());
       for (int i = 0; i < 5; i++) {
         if (i <= 2) {
-          assertEquals(fieldNames1.get(i).toLowerCase(), fields.get(i)
+          assertEquals(fieldNames1.get(i), fields.get(i)
               .getFieldName());
           assertEquals(fieldObjectInspectors1.get(i), fields.get(i)
               .getFieldObjectInspector());
         } else {
-          assertEquals(fieldNames2.get(i - 3).toLowerCase(), fields.get(i)
+          assertEquals(fieldNames2.get(i - 3), fields.get(i)
               .getFieldName());
           assertEquals(fieldObjectInspectors2.get(i - 3), fields.get(i)
               .getFieldObjectInspector());

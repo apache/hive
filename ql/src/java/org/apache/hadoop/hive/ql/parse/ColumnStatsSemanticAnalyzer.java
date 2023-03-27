@@ -191,7 +191,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   private static String getColTypeOf(Table tbl, String partKey) throws SemanticException{
     for (FieldSchema fs : tbl.getPartitionKeys()) {
       if (partKey.equalsIgnoreCase(fs.getName())) {
-        return fs.getType().toLowerCase();
+        return fs.getType();
       }
     }
     throw new SemanticException("Unknown partition key : " + partKey);
@@ -468,7 +468,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
   private static void appendBitVector(StringBuilder rewrittenQueryBuilder, HiveConf conf,
       String columnName) throws SemanticException {
-    String func = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ALGO).toLowerCase();
+    String func = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ALGO);
     if ("hll".equals(func)) {
       rewrittenQueryBuilder
           .append("compute_bit_vector_hll(")
@@ -552,7 +552,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       throws SemanticException {
     List<String> tableCols = Utilities.getColumnNamesFromFieldSchema(tbl.getCols());
     for (String sc : specifiedCols) {
-      if (!tableCols.contains(sc.toLowerCase())) {
+      if (!tableCols.contains(sc)) {
         String msg = "'" + sc + "' (possible columns are " + tableCols.toString() + ")";
         throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(msg));
       }

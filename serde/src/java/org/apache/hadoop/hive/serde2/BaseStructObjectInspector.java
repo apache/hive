@@ -37,14 +37,14 @@ public abstract class BaseStructObjectInspector extends StructObjectInspector {
     public MyField(int fieldID, String fieldName,
                    ObjectInspector fieldObjectInspector, String fieldComment) {
       this.fieldID = fieldID;
-      this.fieldName = fieldName.toLowerCase();
+      this.fieldName = fieldName;
       this.fieldObjectInspector = fieldObjectInspector;
       this.fieldComment = fieldComment;
     }
 
     public MyField(int fieldID, StructField field) {
       this.fieldID = fieldID;
-      this.fieldName = field.getFieldName().toLowerCase();
+      this.fieldName = field.getFieldName();
       this.fieldObjectInspector = field.getFieldObjectInspector();
       this.fieldComment = field.getFieldComment();
     }

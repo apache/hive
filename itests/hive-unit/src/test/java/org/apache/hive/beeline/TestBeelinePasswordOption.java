@@ -114,7 +114,7 @@ public class TestBeelinePasswordOption {
     argList.add("show tables;");
     String output = connectBeelineWithUserPrompt(argList, "hivepassword");
     Assert.assertTrue("Table name " + tableName + " not found in the output",
-        output.contains(tableName.toLowerCase()));
+        output.contains(tableName));
   }
 
   /**
@@ -132,7 +132,7 @@ public class TestBeelinePasswordOption {
     argList.add("show tables;");
     String output = connectBeelineWithUserPrompt(argList, "hivepassword");
     Assert.assertTrue("Table name " + tableName + " not found in the output",
-        output.contains(tableName.toLowerCase()));
+        output.contains(tableName));
   }
 
   /**
@@ -151,7 +151,7 @@ public class TestBeelinePasswordOption {
     argList.add("show tables;");
     String output = connectWithPromptAndVerify(argList, "hivepassword", true, 57, null, null);
     Assert.assertTrue("Table name " + tableName + " not found in the output",
-        output.contains(tableName.toLowerCase()));
+        output.contains(tableName));
   }
 
   /**
@@ -172,7 +172,7 @@ public class TestBeelinePasswordOption {
     String output = connectWithPromptAndVerify(argList, "hivepassword", false, null,
         "hive.cli.print.header", "true");
     Assert.assertTrue("Table name " + tableName + " not found in the output",
-        output.contains(tableName.toLowerCase()));
+        output.contains(tableName));
   }
 
   /**
@@ -189,7 +189,7 @@ public class TestBeelinePasswordOption {
     argList.add("show tables;");
     String output = connectBeelineWithUserPrompt(argList);
     Assert.assertTrue("Table name " + tableName + " not found in the output",
-        output.contains(tableName.toLowerCase()));
+        output.contains(tableName));
   }
 
   /**
@@ -204,7 +204,7 @@ public class TestBeelinePasswordOption {
     argList.add("show tables;");
     String output = connectBeelineWithUserPrompt(argList);
     Assert.assertTrue("Table name " + tableName + " not found in the output",
-        output.contains(tableName.toLowerCase()));
+        output.contains(tableName));
   }
 
   /**
@@ -222,7 +222,7 @@ public class TestBeelinePasswordOption {
     argList.add("-p");
     String output = connectBeelineWithUserPrompt(argList, "hivepassword");
     Assert.assertTrue("Table name " + tableName + " not found in the output",
-        output.contains(tableName.toLowerCase()));
+        output.contains(tableName));
   }
 
   /**

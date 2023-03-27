@@ -1303,7 +1303,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     }
     //delete non recoverable marker
     Path dumpPath = new Path(primary.hiveConf.get(HiveConf.ConfVars.REPLDIR.varname),
-      Base64.getEncoder().encodeToString(primaryDbName.toLowerCase()
+      Base64.getEncoder().encodeToString(primaryDbName
         .getBytes(StandardCharsets.UTF_8.name())));
     FileSystem fs = dumpPath.getFileSystem(conf);
     Path nonRecoverableMarker = new Path(fs.listStatus(dumpPath)[0].getPath(), ReplAck.NON_RECOVERABLE_MARKER

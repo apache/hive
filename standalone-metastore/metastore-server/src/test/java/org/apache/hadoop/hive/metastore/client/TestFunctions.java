@@ -772,7 +772,7 @@ public class TestFunctions extends MetaStoreClientTest {
 
     String storedName = client.getFunction(function.getDbName(),
         function.getFunctionName()).getFunctionName();
-    Assert.assertEquals(function.getFunctionName().toLowerCase(), storedName);
+    Assert.assertEquals(function.getFunctionName(), storedName);
   }
 
 }

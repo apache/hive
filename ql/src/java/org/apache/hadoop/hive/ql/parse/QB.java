@@ -124,7 +124,7 @@ public class QB {
     aliasToProps = new LinkedHashMap<String, Map<String, String>>();
     aliases = new ArrayList<String>();
     if (alias != null) {
-      alias = alias.toLowerCase();
+      alias = alias;
     }
     qbp = new QBParseInfo(alias, isSubQ);
     qbm = new QBMetaData();
@@ -174,7 +174,7 @@ public class QB {
   }
 
   public boolean exists(String alias) {
-    alias = alias.toLowerCase();
+    alias = alias;
     if (aliasToTabs.get(alias) != null || aliasToSubq.get(alias) != null) {
       return true;
     }
@@ -183,24 +183,24 @@ public class QB {
   }
 
   public void setTabAlias(String alias, String tabName) {
-    aliasToTabs.put(alias.toLowerCase(), tabName);
+    aliasToTabs.put(alias, tabName);
   }
 
   public void setSubqAlias(String alias, QBExpr qbexpr) {
-    aliasToSubq.put(alias.toLowerCase(), qbexpr);
+    aliasToSubq.put(alias, qbexpr);
   }
 
   public void setTabProps(String alias, Map<String, String> props) {
-    aliasToProps.put(alias.toLowerCase(), props);
+    aliasToProps.put(alias, props);
   }
 
   public void setSystemVersion(String alias, QBSystemVersion asOf) {
-    aliasToSystemVersion.put(alias.toLowerCase(), asOf);
+    aliasToSystemVersion.put(alias, asOf);
   }
 
   public void addAlias(String alias) {
-    if (!aliases.contains(alias.toLowerCase())) {
-      aliases.add(alias.toLowerCase());
+    if (!aliases.contains(alias)) {
+      aliases.add(alias);
     }
   }
 
@@ -241,27 +241,27 @@ public class QB {
   }
 
   public QBExpr getSubqForAlias(String alias) {
-    return aliasToSubq.get(alias.toLowerCase());
+    return aliasToSubq.get(alias);
   }
 
   public QBExpr getSubqExprForAlias(String alias) {
-    return aliasToSubqExpr.get(alias.toLowerCase());
+    return aliasToSubqExpr.get(alias);
   }
 
   public String getTabNameForAlias(String alias) {
-    return aliasToTabs.get(alias.toLowerCase());
+    return aliasToTabs.get(alias);
   }
 
   public Map<String, String> getTabPropsForAlias(String alias) {
-    return aliasToProps.get(alias.toLowerCase());
+    return aliasToProps.get(alias);
   }
 
   public QBSystemVersion getSystemVersionForAlias(String alias) {
-    return aliasToSystemVersion.get(alias.toLowerCase());
+    return aliasToSystemVersion.get(alias);
   }
 
   public void rewriteViewToSubq(String alias, String viewName, QBExpr qbexpr, Table tab) {
-    alias = alias.toLowerCase();
+    alias = alias;
     String tableName = aliasToTabs.remove(alias);
     assert (viewName.equals(tableName));
     aliasToSubq.put(alias, qbexpr);

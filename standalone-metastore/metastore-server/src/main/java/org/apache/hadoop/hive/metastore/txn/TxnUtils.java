@@ -181,7 +181,7 @@ public class TxnUtils {
    * Should produce the result as &lt;dbName&gt;.&lt;tableName&gt;.
    */
   public static String getFullTableName(String dbName, String tableName) {
-    return dbName.toLowerCase() + "." + tableName.toLowerCase();
+    return dbName + "." + tableName;
   }
 
   public static String[] getDbTableName(String fullTableName) {

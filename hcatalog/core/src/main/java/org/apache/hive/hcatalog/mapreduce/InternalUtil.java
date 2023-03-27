@@ -215,7 +215,7 @@ class InternalUtil {
     for (FieldSchema schema : table.getPartitionKeys()) {
       // CONCERN : the way this mapping goes, the order *needs* to be
       // preserved for table.getPartitionKeys() and ptn.getValues()
-      ptnKeyValues.put(schema.getName().toLowerCase(), values.get(i));
+      ptnKeyValues.put(schema.getName(), values.get(i));
       i++;
     }
 

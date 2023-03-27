@@ -295,7 +295,7 @@ public class TestNewInputOutputFormat {
       Map<String, Integer> wordCounts = new HashMap<String, Integer>();
       int count = 0;
       for (Text val : values) {
-        String[] items = val.toString().toLowerCase().split("\\s+");
+        String[] items = val.toString().split("\\s+");
         lastwords.add(items[items.length-1]);
         for (String item : items) {
           if (wordCounts.containsKey(item)) {

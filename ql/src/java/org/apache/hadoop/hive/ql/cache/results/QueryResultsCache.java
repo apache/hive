@@ -637,7 +637,7 @@ public final class QueryResultsCache {
     List<CacheEntry> entriesToInvalidate = null;
     rwLock.writeLock().lock();
     try {
-      String key = (dbName.toLowerCase() + "." + tableName.toLowerCase());
+      String key = (dbName + "." + tableName);
       Set<CacheEntry> entriesForTable = tableToEntryMap.get(key);
       if (entriesForTable != null) {
         // Possible concurrent modification issues if we try to remove cache entries while

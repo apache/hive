@@ -70,7 +70,7 @@ public final class HCatTypeCheckHive extends GenericUDF {
     String typesStr = (String) getJavaObject(args[0].get(), argOIs[0], new ArrayList<Category>());
     String[] types = typesStr.split("\\+");
     for (int i = 0; i < types.length; i++) {
-      types[i] = types[i].toLowerCase();
+      types[i] = types[i];
     }
     for (int i = 1; i < args.length; i++) {
       ObjectInspector oi = argOIs[i];

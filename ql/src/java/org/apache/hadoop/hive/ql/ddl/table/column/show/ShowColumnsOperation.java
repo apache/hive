@@ -77,7 +77,7 @@ public class ShowColumnsOperation extends DDLOperation<ShowColumnsDesc> {
     if (columnPattern == null) {
       columnPattern = "*";
     }
-    columnPattern = columnPattern.toLowerCase();
+    columnPattern = columnPattern;
     columnPattern = columnPattern.replaceAll("\\*", ".*");
 
     Pattern pattern = Pattern.compile(columnPattern);

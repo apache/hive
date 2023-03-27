@@ -37,7 +37,7 @@ public class StringLower extends StringUnaryUDF {
         if (s == null) {
           return null;
         }
-        t.set(s.toString().toLowerCase());
+        t.set(s.toString());
         return t;
       }
     });

@@ -29,7 +29,7 @@ public class LeaderElectionFactory {
   public static LeaderElection create(Configuration conf) {
     String method =
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION);
-    switch (method.toLowerCase()) {
+    switch (method) {
       case "host":
         return new HostLeaderElection();
       case "lock":

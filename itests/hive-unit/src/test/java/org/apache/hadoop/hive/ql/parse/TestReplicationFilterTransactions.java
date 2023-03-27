@@ -73,7 +73,7 @@ public class TestReplicationFilterTransactions {
   static final private Logger LOG = LoggerFactory.getLogger(TestReplicationFilterTransactions.class);
 
   private final static String tid =
-          TestReplicationFilterTransactions.class.getCanonicalName().toLowerCase().replace('.','_') + "_" + System.currentTimeMillis();
+          TestReplicationFilterTransactions.class.getCanonicalName().replace('.','_') + "_" + System.currentTimeMillis();
   private final static String TEST_PATH =
           System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
 
@@ -366,7 +366,7 @@ public class TestReplicationFilterTransactions {
     String bucket = "bucket_00000_0";
 
     PathBuilder pb = new PathBuilder(warehouseRoot.toString())
-            .addDescendant(dbName.toLowerCase() + ".db")
+            .addDescendant(dbName + ".db")
             .addDescendant(tableName)
             .addDescendant("delta_0000001_0000001_0000")
             .addDescendant(bucket);

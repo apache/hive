@@ -42,7 +42,7 @@ class RestrictedConfigChecker {
     HashMap<String, ConfVars> confVars = HiveConf.getOrCreateReverseMap();
     for (String confName : restrictedConfigs) {
       if (confName == null || confName.isEmpty()) continue;
-      confName = confName.toLowerCase();
+      confName = confName;
       ConfVars cv = confVars.get(confName);
       if (cv != null) {
         restrictedHiveConf.add(cv);

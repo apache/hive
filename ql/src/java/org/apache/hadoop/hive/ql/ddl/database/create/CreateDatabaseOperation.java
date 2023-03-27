@@ -87,7 +87,7 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
             MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname(), MetastoreConf.ConfVars.WAREHOUSE.getVarname()));
         rootDir = MetastoreConf.getVar(context.getConf(), MetastoreConf.ConfVars.WAREHOUSE);
       }
-      Path path = new Path(rootDir, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
+      Path path = new Path(rootDir, database.getName() + DATABASE_PATH_SUFFIX);
       String qualifiedPath = Utilities.getQualifiedPath(context.getConf(), path);
       database.setLocationUri(qualifiedPath);
     }
@@ -98,7 +98,7 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
     } else {
       // ManagedLocation is not set we utilize WAREHOUSE together with database name 
       String rootDir = MetastoreConf.getVar(context.getConf(), MetastoreConf.ConfVars.WAREHOUSE);
-      Path path = new Path(rootDir, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
+      Path path = new Path(rootDir, database.getName() + DATABASE_PATH_SUFFIX);
       String qualifiedPath = Utilities.getQualifiedPath(context.getConf(), path);
       if (!qualifiedPath.equals(database.getLocationUri())) {
         database.setManagedLocationUri(qualifiedPath);

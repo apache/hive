@@ -204,11 +204,11 @@ public class TestHiveAuthorizerCheckInvocation {
     Collections.sort(inputs);
     assertEquals(inputs.size(), 2);
     HivePrivilegeObject tableObj = inputs.get(0);
-    assertEquals(tableObj.getObjectName().toLowerCase(), tableName.toLowerCase());
+    assertEquals(tableObj.getObjectName(), tableName);
     assertEquals("no of columns used", 2, tableObj.getColumns().size());
     assertEquals("Columns used", Arrays.asList("city", "k"), getSortedList(tableObj.getColumns()));
     tableObj = inputs.get(1);
-    assertEquals(tableObj.getObjectName().toLowerCase(), viewName.toLowerCase());
+    assertEquals(tableObj.getObjectName(), viewName);
     assertEquals("no of columns used", 2, tableObj.getColumns().size());
     assertEquals("Columns used", Arrays.asList("city", "i"), getSortedList(tableObj.getColumns()));
   }
@@ -288,7 +288,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   private void assertEqualsIgnoreCase(String msg, String expected, String actual) {
-    assertEquals(msg, expected.toLowerCase(), actual.toLowerCase());
+    assertEquals(msg, expected, actual);
   }
 
   @Test
@@ -353,11 +353,11 @@ public class TestHiveAuthorizerCheckInvocation {
     }
 
     assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
-    assertEquals("function name", funcName.toLowerCase(), funcObj.getObjectName().toLowerCase());
-    assertEquals("db name", dbName.toLowerCase(), funcObj.getDbname().toLowerCase());
+    assertEquals("function name", funcName, funcObj.getObjectName());
+    assertEquals("db name", dbName, funcObj.getDbname());
 
     assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
-    assertEquals("table name", tableName.toLowerCase(), tableObj.getObjectName().toLowerCase());
+    assertEquals("table name", tableName, tableObj.getObjectName());
 
     // create 2nd permanent function
     String funcName2 = "funcName2";
@@ -380,11 +380,11 @@ public class TestHiveAuthorizerCheckInvocation {
     }
 
     assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
-    assertEquals("function name", funcName2.toLowerCase(), funcObj.getObjectName().toLowerCase());
-    assertEquals("db name", dbName.toLowerCase(), funcObj.getDbname().toLowerCase());
+    assertEquals("function name", funcName2, funcObj.getObjectName());
+    assertEquals("db name", dbName, funcObj.getDbname());
 
     assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
-    assertEquals("table name", tableName.toLowerCase(), tableObj.getObjectName().toLowerCase());
+    assertEquals("table name", tableName, tableObj.getObjectName());
 
     // try using both permanent functions
     reset(mockedAuthorizer);
@@ -405,7 +405,7 @@ public class TestHiveAuthorizerCheckInvocation {
           foundF2 = true;
         }
       } else if (inp.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW
-          && tableName.equalsIgnoreCase(inp.getObjectName().toLowerCase())) {
+          && tableName.equalsIgnoreCase(inp.getObjectName())) {
         foundTable = true;
       }
     }
@@ -582,7 +582,7 @@ public class TestHiveAuthorizerCheckInvocation {
     List<HivePrivilegeObject> inputs = io.getLeft();
     assertEquals(1, inputs.size());
     HivePrivilegeObject dbObj = inputs.get(0);
-    assertEquals("default", dbObj.getDbname().toLowerCase());
+    assertEquals("default", dbObj.getDbname());
   }
 
   @Test
@@ -595,7 +595,7 @@ public class TestHiveAuthorizerCheckInvocation {
     List<HivePrivilegeObject> inputs = io.getLeft();
     assertEquals(1, inputs.size());
     HivePrivilegeObject dbObj = inputs.get(0);
-    assertEquals(dbName.toLowerCase(), dbObj.getDbname().toLowerCase());
+    assertEquals(dbName, dbObj.getDbname());
   }
 
   private void resetAuthorizer() throws HiveAuthzPluginException, HiveAccessControlException {
@@ -620,7 +620,7 @@ public class TestHiveAuthorizerCheckInvocation {
     List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
     HivePrivilegeObject dbObj = inputs.get(0);
     assertEquals("input type", HivePrivilegeObjectType.DATABASE, dbObj.getType());
-    assertEquals("db name", dbName.toLowerCase(), dbObj.getDbname());
+    assertEquals("db name", dbName, dbObj.getDbname());
 
     resetAuthorizer();
     status = driver.compile("repl dump " + dbName + ".'" + inDbTableName + "'", true);
@@ -628,8 +628,8 @@ public class TestHiveAuthorizerCheckInvocation {
     inputs = getHivePrivilegeObjectInputs().getLeft();
     dbObj = inputs.get(0);
     assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, dbObj.getType());
-    assertEquals("db name", dbName.toLowerCase(), dbObj.getDbname());
-    assertEquals("table name", inDbTableName.toLowerCase(), dbObj.getObjectName());
+    assertEquals("db name", dbName, dbObj.getDbname());
+    assertEquals("table name", inDbTableName, dbObj.getObjectName());
   }
 
   @Test

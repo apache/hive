@@ -3226,7 +3226,7 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+    templateString = templateString.replaceAll("<Operator>", operatorName);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
        className, templateString);
@@ -3240,7 +3240,7 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+    templateString = templateString.replaceAll("<Operator>", operatorName);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
        className, templateString);
@@ -3254,7 +3254,7 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replace("<ClassName>", className);
-    templateString = templateString.replace("<Operator>", operatorName.toLowerCase());
+    templateString = templateString.replace("<Operator>", operatorName);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
        className, templateString);
@@ -3268,7 +3268,7 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+    templateString = templateString.replaceAll("<Operator>", operatorName);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
        className, templateString);
@@ -3282,7 +3282,7 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+    templateString = templateString.replaceAll("<Operator>", operatorName);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
        className, templateString);
@@ -3296,7 +3296,7 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+    templateString = templateString.replaceAll("<Operator>", operatorName);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
        className, templateString);
@@ -3533,7 +3533,7 @@ public class GenVectorCode extends Task {
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
-    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
+    templateString = templateString.replaceAll("<OperatorMethod>", operatorName);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
@@ -3643,7 +3643,7 @@ public class GenVectorCode extends Task {
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
-    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
+    templateString = templateString.replaceAll("<OperatorMethod>", operatorName);
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<CamelOperandType1>", camelOperandType1);
@@ -3704,7 +3704,7 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
+    templateString = templateString.replaceAll("<OperatorMethod>", operatorName);
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<CamelOperandType1>", camelOperandType1);
@@ -3765,7 +3765,7 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
+    templateString = templateString.replaceAll("<OperatorMethod>", operatorName);
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<CamelOperandType1>", camelOperandType1);

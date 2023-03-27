@@ -346,7 +346,7 @@ public class StatObjectConverter {
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
     statsObj.setColType(mStatsObj.getColType());
     statsObj.setColName(mStatsObj.getColName());
-    String colType = mStatsObj.getColType().toLowerCase();
+    String colType = mStatsObj.getColType();
     ColumnStatisticsData colStatsData = new ColumnStatisticsData();
 
     if (colType.equals("boolean")) {
@@ -560,7 +560,7 @@ public class StatObjectConverter {
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
     statsObj.setColType(mStatsObj.getColType());
     statsObj.setColName(mStatsObj.getColName());
-    String colType = mStatsObj.getColType().toLowerCase();
+    String colType = mStatsObj.getColType();
     ColumnStatisticsData colStatsData = new ColumnStatisticsData();
 
     if (colType.equals("boolean")) {
@@ -696,7 +696,7 @@ public class StatObjectConverter {
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
       Object nulls, Object dist, Object bitVector, Object histogram,
       Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
-    colType = colType.toLowerCase();
+    colType = colType;
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
       boolStats.setNumFalses(MetastoreDirectSqlUtils.extractSqlLong(falses));
@@ -793,7 +793,7 @@ public class StatObjectConverter {
       Object nulls, Object dist, Object avglen, Object maxlen, Object trues, Object falses,
       Object avgLong, Object avgDouble, Object avgDecimal, Object sumDist,
       boolean useDensityFunctionForNDVEstimation, double ndvTuner) throws MetaException {
-    colType = colType.toLowerCase();
+    colType = colType;
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
       boolStats.setNumFalses(MetastoreDirectSqlUtils.extractSqlLong(falses));

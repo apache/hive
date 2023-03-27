@@ -362,7 +362,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
               setBooleanArray(check, true);
               return true;
             }
-            privSet.add(priv.toLowerCase());
+            privSet.add(priv);
         }
       }
     }
@@ -384,7 +384,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
             setBooleanArray(check, true);
             return true;
           }
-          privSet.add(priv.toLowerCase());
+          privSet.add(priv);
         }
       }
     }
@@ -407,7 +407,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
             setBooleanArray(check, true);
             return true;
           }
-          privSet.add(priv.toLowerCase());
+          privSet.add(priv);
         }
       }
     }
@@ -415,7 +415,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
     for (int i = 0; i < inputPriv.length; i++) {
       String toMatch = inputPriv[i].toString();
       if (!check[i]) {
-        check[i] = privSet.contains(toMatch.toLowerCase());
+        check[i] = privSet.contains(toMatch);
       }
     }
 

@@ -621,7 +621,7 @@ public class StatsUtils {
       String colType, String defaultPartName) {
     Range range = null;
     String partVal;
-    String colTypeLowerCase = colType.toLowerCase();
+    String colTypeLowerCase = colType;
     if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)
@@ -680,7 +680,7 @@ public class StatsUtils {
 
   private static long getAvgColSize(final ColumnInfo columnInfo, HiveConf conf) {
     ObjectInspector oi = columnInfo.getObjectInspector();
-    String colTypeLowerCase = columnInfo.getTypeName().toLowerCase();
+    String colTypeLowerCase = columnInfo.getTypeName();
     if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
@@ -853,7 +853,7 @@ public class StatsUtils {
    */
   public static ColStatistics getColStatistics(ColumnStatisticsObj cso, String tabName,
       String colName) {
-    String colTypeLowerCase = cso.getColType().toLowerCase();
+    String colTypeLowerCase = cso.getColType();
     ColStatistics cs = new ColStatistics(colName, colTypeLowerCase);
     ColumnStatisticsData csd = cso.getStatsData();
     if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
@@ -960,7 +960,7 @@ public class StatsUtils {
     ColStatistics cs = new ColStatistics(colName, cinfo.getTypeName());
     cs.setIsEstimated(true);
 
-    String colTypeLowerCase = cinfo.getTypeName().toLowerCase();
+    String colTypeLowerCase = cinfo.getTypeName();
 
     float ndvPercent = Math.min(100L, HiveConf.getFloatVar(conf, ConfVars.HIVE_STATS_NDV_ESTIMATE_PERC));
     float nullPercent = Math.min(100L, HiveConf.getFloatVar(conf, ConfVars.HIVE_STATS_NUM_NULLS_ESTIMATE_PERC));
@@ -1120,7 +1120,7 @@ public class StatsUtils {
       String colType) {
 
     long configVarLen = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_MAX_VARIABLE_LENGTH);
-    String colTypeLowCase = colType.toLowerCase();
+    String colTypeLowCase = colType;
     if (colTypeLowCase.equals(serdeConstants.STRING_TYPE_NAME)) {
 
       // constant string projection Ex: select "hello" from table
@@ -1198,7 +1198,7 @@ public class StatsUtils {
 
     switch (oi.getCategory()) {
     case PRIMITIVE:
-      String colTypeLowerCase = oi.getTypeName().toLowerCase();
+      String colTypeLowerCase = oi.getTypeName();
       if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
           || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
           || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
@@ -1299,7 +1299,7 @@ public class StatsUtils {
    * @throws NullPointerException if colType is {@code null}
    */
   public static long getAvgColLenOfFixedLengthTypes(final String colType) {
-    String colTypeLowerCase = Objects.requireNonNull(colType).toLowerCase();
+    String colTypeLowerCase = Objects.requireNonNull(colType);
     if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       return JavaDataModel.get().lengthOfDecimal();
     }
@@ -1340,7 +1340,7 @@ public class StatsUtils {
    * @throws NullPointerException if colType is {@code null}
    */
   public static long getSizeOfPrimitiveTypeArraysFromType(final String colType, final int length, final int maxLength) {
-    String colTypeLowerCase = Objects.requireNonNull(colType).toLowerCase();
+    String colTypeLowerCase = Objects.requireNonNull(colType);
     if (colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
       int charTypeLen = JavaDataModel.get().lengthForStringOfLength(maxLength);
@@ -1605,7 +1605,7 @@ public class StatsUtils {
           ColStatistics newStats;
           newStats = stats.clone();
           newStats.setColumnName(colName);
-          colType = colType.toLowerCase();
+          colType = colType;
           newStats.setColumnType(colType);
           newStats.setAvgColLen(getAvgColLenOf(conf, oi, colType));
           return newStats;
@@ -1628,7 +1628,7 @@ public class StatsUtils {
             Optional<ColStatistics> res = se.estimate(csList);
             if (res.isPresent()) {
               ColStatistics newStats = res.get();
-              colType = colType.toLowerCase();
+              colType = colType;
               newStats.setColumnType(colType);
               newStats.setColumnName(colName);
               return newStats;
@@ -1662,7 +1662,7 @@ public class StatsUtils {
       throw new IllegalArgumentException("not supported expr type " + end.getClass());
     }
 
-    colType = colType.toLowerCase();
+    colType = colType;
     avgColSize = getAvgColLenOf(conf, oi, colType);
     ColStatistics colStats = new ColStatistics(colName, colType);
     colStats.setAvgColLen(avgColSize);
@@ -1683,7 +1683,7 @@ public class StatsUtils {
       countDistincts = 1;
     }
     String colType = encd.getTypeString();
-    colType = colType.toLowerCase();
+    colType = colType;
     ObjectInspector oi = encd.getWritableObjectInspector();
     double avgColSize = getAvgColLenOf(conf, oi, colType);
     ColStatistics colStats = new ColStatistics(encd.getName(), colType);
@@ -1879,7 +1879,7 @@ public class StatsUtils {
 
     for (ColStatistics cs : colStats) {
       if (cs != null) {
-        String colTypeLowerCase = cs.getColumnType().toLowerCase();
+        String colTypeLowerCase = cs.getColumnType();
         long nonNullCount = cs.getNumNulls() > 0 ? numRows - cs.getNumNulls() + 1 : numRows;
         double sizeOf = 0;
         if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)

@@ -104,9 +104,9 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
       for (SnapshottableDirectoryStatus sn : snaps) {
         Path path = sn.getFullPath();
         SnapshotUtils.deleteSnapshotSafe(primary.miniDFSCluster.getFileSystem(), path,
-            firstSnapshot(primaryDbName.toLowerCase()));
+            firstSnapshot(primaryDbName));
         SnapshotUtils.deleteSnapshotSafe(primary.miniDFSCluster.getFileSystem(), path,
-            secondSnapshot(primaryDbName.toLowerCase()));
+            secondSnapshot(primaryDbName));
       }
     }
     primary.miniDFSCluster.getFileSystem().delete(new Path("/"), true);
@@ -396,14 +396,14 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
 
     // Check if the snapshot exists at source.
     assertNotNull(fs.getFileStatus(
-        new Path(externalDatabaseLocation, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
+        new Path(externalDatabaseLocation, ".snapshot/" + secondSnapshot(primaryDbName))));
 
     // Check if the destination is snapshottable.
     assertTrue(fs.getFileStatus(externalDatabaseLocationDest).isSnapshotEnabled());
 
     // Check if snapshot exist at destination.
     assertNotNull(fs.getFileStatus(
-        new Path(externalDatabaseLocationDest, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
+        new Path(externalDatabaseLocationDest, ".snapshot/" + firstSnapshot(primaryDbName))));
 
     // Alter database location and create another table inside it.
 
@@ -436,22 +436,22 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
 
     // Check if the snapshot exists at source.
     assertNotNull(fs.getFileStatus(
-        new Path(externalDatabaseLocationAlter, ".snapshot/" +  secondSnapshot(primaryDbName.toLowerCase()))));
+        new Path(externalDatabaseLocationAlter, ".snapshot/" +  secondSnapshot(primaryDbName))));
 
     // Check if the old snapshot got deleted at source.
     LambdaTestUtils.intercept(FileNotFoundException.class, () -> fs
-        .getFileStatus(new Path(externalDatabaseLocation, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
+        .getFileStatus(new Path(externalDatabaseLocation, ".snapshot/" + secondSnapshot(primaryDbName))));
 
     // Check if the new destination database location is snapshottable.
     assertTrue(fs.getFileStatus(externalDatabaseLocationAlterDest).isSnapshotEnabled());
 
     // Check if snapshot exist at destination.
     assertNotNull(fs.getFileStatus(
-        new Path(externalDatabaseLocationAlterDest, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
+        new Path(externalDatabaseLocationAlterDest, ".snapshot/" + firstSnapshot(primaryDbName))));
 
     //Check if the destination old snapshot is deleted.
     LambdaTestUtils.intercept(FileNotFoundException.class, () -> fs.getFileStatus(
-        new Path(externalDatabaseLocationDest, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
+        new Path(externalDatabaseLocationDest, ".snapshot/" + firstSnapshot(primaryDbName))));
   }
 
   @Test
@@ -743,13 +743,13 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     // Check if the t1 directory is snapshotoble and the snapshot is there.
     assertTrue(fs.getFileStatus(externalTableLocation1).isSnapshotEnabled());
     assertNotNull(
-        fs.getFileStatus(new Path(externalTableLocation1, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
+        fs.getFileStatus(new Path(externalTableLocation1, ".snapshot/" + secondSnapshot(primaryDbName))));
     assertTrue(fs.getFileStatus(externalTableLocation1Target).isSnapshotEnabled());
 
     // Check if the t2 directory is snapshotoble and the snapshot is there.
     assertTrue(fs.getFileStatus(externalTableLocation2).isSnapshotEnabled());
     assertNotNull(
-        fs.getFileStatus(new Path(externalTableLocation2, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
+        fs.getFileStatus(new Path(externalTableLocation2, ".snapshot/" + secondSnapshot(primaryDbName))));
     assertTrue(fs.getFileStatus(externalTableLocation2Target).isSnapshotEnabled());
 
     // Drop table t1 and alter the location of table t2
@@ -1254,9 +1254,9 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
   private void validateDiffSnapshotsCreated(String location) throws Exception {
     Path locationPath = new Path(location);
     DistributedFileSystem dfs = (DistributedFileSystem) locationPath.getFileSystem(conf);
-    assertNotNull(dfs.getFileStatus(new Path(locationPath, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
+    assertNotNull(dfs.getFileStatus(new Path(locationPath, ".snapshot/" + firstSnapshot(primaryDbName))));
     assertNotNull(
-        dfs.getFileStatus(new Path(locationPath, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
+        dfs.getFileStatus(new Path(locationPath, ".snapshot/" + secondSnapshot(primaryDbName))));
   }
 
   @Test
@@ -1396,7 +1396,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     assertTrue("Snapshot not enabled for the source  location", dfs.getFileStatus(locationPath).isSnapshotEnabled());
 
     // Check whether the initial snapshot got created in the source db location.
-    assertNotNull(dfs.getFileStatus(new Path(locationPath, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
+    assertNotNull(dfs.getFileStatus(new Path(locationPath, ".snapshot/" + secondSnapshot(primaryDbName))));
 
     // Verify Snapshots are created in target.
     Path locationPathTarget = new Path(REPLICA_EXTERNAL_BASE, locationPath.toUri().getPath().replaceFirst("/", ""));
@@ -1406,7 +1406,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
 
     // Check whether the snapshot got created in the target location.
     assertNotNull(dfsTarget
-        .getFileStatus(new Path(locationPathTarget, ".snapshot" + "/" + firstSnapshot(primaryDbName.toLowerCase()))));
+        .getFileStatus(new Path(locationPathTarget, ".snapshot" + "/" + firstSnapshot(primaryDbName))));
   }
 
   public static void deleteReplRelatedSnapshots(FileSystem fs, Path path, HiveConf conf) {

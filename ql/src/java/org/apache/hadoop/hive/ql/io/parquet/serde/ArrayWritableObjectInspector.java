@@ -87,7 +87,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       }
 
       fields.add(field);
-      fieldsByName.put(name.toLowerCase(), field);
+      fieldsByName.put(name, field);
     }
   }
 
@@ -133,9 +133,9 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
     }else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
       return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
-    } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+    } else if (typeInfo.getTypeName().startsWith(serdeConstants.CHAR_TYPE_NAME)) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((CharTypeInfo) typeInfo);
-    } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
+    } else if (typeInfo.getTypeName().startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((VarcharTypeInfo) typeInfo);
     } else {
       throw new UnsupportedOperationException("Unknown field type: " + typeInfo);
@@ -186,7 +186,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
 
   @Override
   public StructField getStructFieldRef(final String name) {
-    return fieldsByName.get(name.toLowerCase());
+    return fieldsByName.get(name);
   }
 
   @Override

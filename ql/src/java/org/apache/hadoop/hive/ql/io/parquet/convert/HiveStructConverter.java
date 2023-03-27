@@ -144,7 +144,7 @@ public class HiveStructConverter extends HiveGroupConverter {
   }
 
   private TypeInfo getStructFieldTypeInfo(String field, int fieldIndex) {
-    String fieldLowerCase = field.toLowerCase();
+    String fieldLowerCase = field;
     if (Boolean.parseBoolean(getMetadata().get(DataWritableReadSupport.PARQUET_COLUMN_INDEX_ACCESS))
         && fieldIndex < hiveFieldNames.size()) {
       return hiveFieldTypeInfos.get(fieldIndex);

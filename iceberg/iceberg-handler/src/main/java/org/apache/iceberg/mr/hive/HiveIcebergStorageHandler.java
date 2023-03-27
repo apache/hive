@@ -317,7 +317,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
-    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM).toLowerCase();
+    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM);
     Map<String, String> stats = Maps.newHashMap();
     switch (statsSource) {
       case ICEBERG:

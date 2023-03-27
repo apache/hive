@@ -47,7 +47,7 @@ public class ITestDbTxnManager extends TestDbTxnManager2 {
   public static void setupDb() throws Exception {
     String metastoreType =
         System.getProperty(SYS_PROP_METASTORE_DB) == null ? "derby" : System.getProperty(SYS_PROP_METASTORE_DB)
-            .toLowerCase();
+            ;
     rule = getDatabaseRule(metastoreType).setVerbose(false);
 
     conf.setVar(HiveConf.ConfVars.METASTOREDBTYPE, metastoreType.toUpperCase());

@@ -150,7 +150,7 @@ public class LeaderElectionContext {
   public static Object getLeaderMutex(Configuration conf, TTYPE ttype, String servHost) {
     String method =
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION);
-    switch (method.toLowerCase()) {
+    switch (method) {
     case "host":
       return servHost;
     case "lock":

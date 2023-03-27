@@ -141,7 +141,7 @@ public class HCatSchema implements Serializable {
   }
 
   private String normalizeName(String name) {
-    return name == null ? null : name.toLowerCase();
+    return name == null ? null : name;
   }
 
   @Override

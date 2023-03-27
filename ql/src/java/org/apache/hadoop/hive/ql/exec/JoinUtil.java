@@ -390,8 +390,8 @@ public class JoinUtil {
     return rc;
   }
 
-  private static String KEY_FIELD_PREFIX = (Utilities.ReduceField.KEY + ".").toLowerCase();
-  private static String VALUE_FIELD_PREFIX = (Utilities.ReduceField.VALUE + ".").toLowerCase();
+  private static String KEY_FIELD_PREFIX = (Utilities.ReduceField.KEY + ".");
+  private static String VALUE_FIELD_PREFIX = (Utilities.ReduceField.VALUE + ".");
 
   /**
    * Create a new struct object inspector for the list of struct fields, first removing the
@@ -433,7 +433,7 @@ public class JoinUtil {
       ArrayList<StructField> keyFields = new ArrayList<StructField>();
       ArrayList<StructField> valueFields = new ArrayList<StructField>();
       for (StructField field : ((StructObjectInspector) oi).getAllStructFieldRefs()) {
-        String fieldNameLower = field.getFieldName().toLowerCase();
+        String fieldNameLower = field.getFieldName();
         if (fieldNameLower.startsWith(KEY_FIELD_PREFIX)) {
           keyFields.add(field);
         } else if (fieldNameLower.startsWith(VALUE_FIELD_PREFIX)) {

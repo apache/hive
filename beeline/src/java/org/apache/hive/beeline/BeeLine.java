@@ -982,8 +982,8 @@ public class BeeLine implements Closeable {
   }
   
   private boolean isZkBasedUrl(String urlFromBeelineSite) {
-    String zkJdbcUriParam = ("serviceDiscoveryMode=zooKeeper").toLowerCase();
-    if (urlFromBeelineSite.toLowerCase().contains(zkJdbcUriParam)) {
+    String zkJdbcUriParam = ("serviceDiscoveryMode=zooKeeper");
+    if (urlFromBeelineSite.contains(zkJdbcUriParam)) {
       return true;
     }
     return false;
@@ -1063,7 +1063,7 @@ public class BeeLine implements Closeable {
    * Returns true if trailing slash is needed to be appended to the url
    */
   private boolean isTrailingSlashNeeded(String url) {
-    if (url.toLowerCase().startsWith("jdbc:hive2://")) {
+    if (url.startsWith("jdbc:hive2://")) {
       return url.indexOf('/', "jdbc:hive2://".length()) < 0;
     }
     return false;

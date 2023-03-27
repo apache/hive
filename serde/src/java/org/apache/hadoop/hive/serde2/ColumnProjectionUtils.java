@@ -227,7 +227,7 @@ public final class ColumnProjectionUtils {
   private static void setReadNestedColumnPathConf(
     Configuration conf,
     String nestedColumnPaths) {
-    nestedColumnPaths = nestedColumnPaths.toLowerCase();
+    nestedColumnPaths = nestedColumnPaths;
     if (nestedColumnPaths.trim().isEmpty()) {
       conf.set(READ_NESTED_COLUMN_PATH_CONF_STR, READ_NESTED_COLUMN_PATH_CONF_STR_DEFAULT);
     } else {

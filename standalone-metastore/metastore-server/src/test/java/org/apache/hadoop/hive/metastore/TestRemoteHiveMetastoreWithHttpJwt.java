@@ -173,7 +173,7 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     String validJwtToken = generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(),
         TimeUnit.MINUTES.toMillis(5));
     System.getenv().put("HMS_JWT", validJwtToken);
-    String dbName = ("valid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
+    String dbName = ("valid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID());
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
     try {
       Database createdDb = new Database();
@@ -204,7 +204,7 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     String validJwtToken = generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(),
         TimeUnit.MILLISECONDS.toMillis(2));
     System.getenv().put("HMS_JWT", validJwtToken);
-    String dbName = ("expired_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
+    String dbName = ("expired_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID());
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
     try {
       Thread.sleep(TimeUnit.MILLISECONDS.toMillis(2));
@@ -231,7 +231,7 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     String jwtToken = generateJWT(USER_1, jwtUnauthorizedKeyFile.toPath(),
         TimeUnit.MINUTES.toMillis(2));
     System.getenv().put("HMS_JWT", jwtToken);
-    String dbName = ("invalid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
+    String dbName = ("invalid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID());
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
     try {
       Thread.sleep(TimeUnit.MILLISECONDS.toMillis(2));

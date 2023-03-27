@@ -92,7 +92,7 @@ public class QTestSyntaxUtil {
     if (tokens[0].equalsIgnoreCase("source")) {
       return true;
     }
-    if (cmdTrimmed.toLowerCase().equals("quit") || cmdTrimmed.toLowerCase().equals("exit")) {
+    if (cmdTrimmed.equals("quit") || cmdTrimmed.equals("exit")) {
       return true;
     }
     if (cmdTrimmed.startsWith("!")) {

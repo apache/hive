@@ -527,10 +527,10 @@ public class MetaStoreServerUtils {
     }
     // We should ignore the case of field names, because some computing engines are case-sensitive, such as Spark.
     List<FieldSchema> transformedOldCols = oldCols.stream()
-        .map(col -> new FieldSchema(col.getName().toLowerCase(), col.getType(), col.getComment()))
+        .map(col -> new FieldSchema(col.getName(), col.getType(), col.getComment()))
         .collect(Collectors.toList());
     List<FieldSchema> transformedNewCols = newCols.stream()
-        .map(col -> new FieldSchema(col.getName().toLowerCase(), col.getType(), col.getComment()))
+        .map(col -> new FieldSchema(col.getName(), col.getType(), col.getComment()))
         .collect(Collectors.toList());
     return ListUtils.isEqualList(transformedOldCols, transformedNewCols);
   }
@@ -632,7 +632,7 @@ public class MetaStoreServerUtils {
 
     Map<String, String> columnNameTypePairMap = new HashMap<>(newCols.size());
     for (FieldSchema newCol : newCols) {
-      columnNameTypePairMap.put(newCol.getName().toLowerCase(), newCol.getType());
+      columnNameTypePairMap.put(newCol.getName(), newCol.getType());
     }
     for (final FieldSchema oldCol : oldCols) {
       if (!columnNameTypePairMap.containsKey(oldCol.getName())
@@ -1551,7 +1551,7 @@ public class MetaStoreServerUtils {
 
         // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
         // it should be converted to lower case
-        String partitionName = parts[0].toLowerCase();
+        String partitionName = parts[0];
         // Do not convert the partitionValue to lowercase
         String partitionValue = parts[1];
         if (partCols.contains(partitionName)) {

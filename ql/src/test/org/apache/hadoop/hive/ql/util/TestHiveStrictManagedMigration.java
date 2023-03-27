@@ -89,11 +89,11 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
     runMigrationTool(newConf, args);
 
     Assert.assertTrue(newWarehouseDir.exists());
-    Assert.assertTrue(new File(newWarehouseDir, ACIDTBL.toString().toLowerCase()).exists());
-    Assert.assertTrue(new File(newWarehouseDir, ACIDTBLPART.toString().toLowerCase()).exists());
-    Assert.assertTrue(new File(newWarehouseDir, NONACIDNONBUCKET.toString().toLowerCase()).exists());
-    Assert.assertTrue(new File(newWarehouseDir, NONACIDORCTBL.toString().toLowerCase()).exists());
-    Assert.assertTrue(new File(newWarehouseDir, NONACIDORCTBL2.toString().toLowerCase()).exists());
+    Assert.assertTrue(new File(newWarehouseDir, ACIDTBL.toString()).exists());
+    Assert.assertTrue(new File(newWarehouseDir, ACIDTBLPART.toString()).exists());
+    Assert.assertTrue(new File(newWarehouseDir, NONACIDNONBUCKET.toString()).exists());
+    Assert.assertTrue(new File(newWarehouseDir, NONACIDORCTBL.toString()).exists());
+    Assert.assertTrue(new File(newWarehouseDir, NONACIDORCTBL2.toString()).exists());
     Assert.assertTrue(new File(new File(newWarehouseDir, "test.db"), "tacid").exists());
     Assert.assertTrue(new File(oldWarehouse, "texternal").exists());
 

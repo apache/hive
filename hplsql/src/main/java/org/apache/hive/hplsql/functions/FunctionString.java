@@ -175,7 +175,7 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
       return;
     }
-    String str = evalPop(ctx.func_param(0).expr()).toString().toLowerCase(); 
+    String str = evalPop(ctx.func_param(0).expr()).toString(); 
     evalString(str);
   }
   

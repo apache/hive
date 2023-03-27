@@ -104,7 +104,7 @@ public final class SkewedTableUtils {
     int numCh = node.getChildCount();
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) node.getChild(i);
-      colList.add(BaseSemanticAnalyzer.stripQuotes(child.getText()).toLowerCase());
+      colList.add(BaseSemanticAnalyzer.stripQuotes(child.getText()));
     }
     return colList;
   }

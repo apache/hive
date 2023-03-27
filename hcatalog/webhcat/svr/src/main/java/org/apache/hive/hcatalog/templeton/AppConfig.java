@@ -313,7 +313,7 @@ public class AppConfig extends Configuration {
     String requestedOrder = get(TEMPLETON_JOBSLIST_ORDER);
     if (requestedOrder != null) {
       try {
-        return JobsListOrder.valueOf(requestedOrder.toLowerCase());
+        return JobsListOrder.valueOf(requestedOrder);
       }
       catch(IllegalArgumentException ex) {
         LOG.warn("Ignoring setting " + TEMPLETON_JOBSLIST_ORDER + " configured with in-correct value " + requestedOrder);

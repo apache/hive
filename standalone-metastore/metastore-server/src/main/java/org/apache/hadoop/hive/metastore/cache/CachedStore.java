@@ -300,9 +300,9 @@ public class CachedStore implements RawStore, Configurable {
       String message = event.getMessage();
       LOG.debug("Event to process " + event);
       MessageDeserializer deserializer = MessageFactory.getInstance(event.getMessageFormat()).getDeserializer();
-      String catalogName = event.getCatName() == null ? "" : event.getCatName().toLowerCase();
-      String dbName = event.getDbName() == null ? "" : event.getDbName().toLowerCase();
-      String tableName = event.getTableName() == null ? "" : event.getTableName().toLowerCase();
+      String catalogName = event.getCatName() == null ? "" : event.getCatName();
+      String dbName = event.getDbName() == null ? "" : event.getDbName();
+      String tableName = event.getTableName() == null ? "" : event.getTableName();
       if (!shouldCacheTable(catalogName, dbName, tableName)) {
         continue;
       }
@@ -1109,7 +1109,7 @@ public class CachedStore implements RawStore, Configurable {
 
     // in case of event based cache update, cache will not be updated for catalog.
     if (!canUseEvents) {
-      catalogName = catalogName.toLowerCase();
+      catalogName = catalogName;
       sharedCache.removeCatalogFromCache(catalogName);
     }
   }
@@ -1132,7 +1132,7 @@ public class CachedStore implements RawStore, Configurable {
     if (!sharedCache.isDatabaseCachePrewarmed() || (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getDatabase(catName, dbName);
     }
-    dbName = dbName.toLowerCase();
+    dbName = dbName;
     Database db = sharedCache
         .getDatabaseFromCache(StringUtils.normalizeIdentifier(catName), StringUtils.normalizeIdentifier(dbName));
     if (db == null) {

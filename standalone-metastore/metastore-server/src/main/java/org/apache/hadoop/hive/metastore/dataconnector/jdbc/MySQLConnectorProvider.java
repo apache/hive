@@ -88,7 +88,7 @@ public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
     }
 
     // map any db specific types here.
-    switch (dbDataType.toLowerCase())
+    switch (dbDataType)
     {
     default:
       mappedType = ColumnType.VOID_TYPE_NAME;

@@ -212,15 +212,15 @@ public class NotificationListener extends MetaStoreEventListener {
           .deepCopy();
         newTbl.getParameters().put(
           HCatConstants.HCAT_MSGBUS_TOPIC_NAME,
-          getTopicPrefix(conf) + "." + newTbl.getDbName().toLowerCase() + "."
-            + newTbl.getTableName().toLowerCase());
+          getTopicPrefix(conf) + "." + newTbl.getDbName() + "."
+            + newTbl.getTableName());
         handler.alter_table(newTbl.getDbName(), newTbl.getTableName(), newTbl);
       } catch (TException e) {
         MetaException me = new MetaException(e.toString());
         me.initCause(e);
         throw me;
       }
-      String topicName = getTopicPrefix(conf) + "." + newTbl.getDbName().toLowerCase();
+      String topicName = getTopicPrefix(conf) + "." + newTbl.getDbName();
       send(messageFactory.buildCreateTableMessage(newTbl), topicName);
     }
   }
@@ -254,7 +254,7 @@ public class NotificationListener extends MetaStoreEventListener {
       // I think this is wrong, the alter table statement should come on the table topic not the
       // DB topic - Alan.
       String topicName = getTopicPrefix(tableEvent.getIHMSHandler().getConf()) + "." +
-          after.getDbName().toLowerCase();
+          after.getDbName();
       send(messageFactory.buildAlterTableMessage(before, after, tableEvent.getWriteId()), topicName);
     }
   }
@@ -283,7 +283,7 @@ public class NotificationListener extends MetaStoreEventListener {
       Table table = tableEvent.getTable();
       // I think this is wrong, the drop table statement should come on the table topic not the
       // DB topic - Alan.
-      String topicName = getTopicPrefix(tableEvent.getIHMSHandler().getConf()) + "." + table.getDbName().toLowerCase();
+      String topicName = getTopicPrefix(tableEvent.getIHMSHandler().getConf()) + "." + table.getDbName();
       send(messageFactory.buildDropTableMessage(table), topicName);
     }
   }

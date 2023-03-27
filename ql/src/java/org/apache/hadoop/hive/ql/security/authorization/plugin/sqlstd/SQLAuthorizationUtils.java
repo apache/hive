@@ -519,7 +519,7 @@ public class SQLAuthorizationUtils {
       return hPrincipal;
     case ROLE:
       // lower case role names, for case insensitive behavior
-      return new HivePrincipal(hPrincipal.getName().toLowerCase(), hPrincipal.getType());
+      return new HivePrincipal(hPrincipal.getName(), hPrincipal.getType());
     default:
       throw new HiveAuthzPluginException("Invalid principal type in principal " + hPrincipal);
     }

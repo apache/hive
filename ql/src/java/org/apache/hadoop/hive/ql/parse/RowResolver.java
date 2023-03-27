@@ -108,7 +108,7 @@ public class RowResolver implements Serializable{
       return;
     }
     if (colAlias != null) {
-      colInfo.setAlias(colAlias.toLowerCase());
+      colInfo.setAlias(colAlias);
     }
   }
 
@@ -117,7 +117,7 @@ public class RowResolver implements Serializable{
       //Make sure that the table alias and column alias are stored
       //in the column info
       if (tabAlias != null) {
-        colInfo.setTabAlias(tabAlias.toLowerCase());
+        colInfo.setTabAlias(tabAlias);
       }
       rowSchema.getSignature().add(colInfo);
       return true;
@@ -137,7 +137,7 @@ public class RowResolver implements Serializable{
   }
   public boolean addMappingOnly(String tab_alias, String col_alias, ColumnInfo colInfo) {
     if (tab_alias != null) {
-      tab_alias = tab_alias.toLowerCase();
+      tab_alias = tab_alias;
     }
 
     /*
@@ -172,7 +172,7 @@ public class RowResolver implements Serializable{
   }
 
   public boolean hasTableAlias(String tab_alias) {
-    return rslvMap.get(tab_alias.toLowerCase()) != null;
+    return rslvMap.get(tab_alias) != null;
   }
 
   /**
@@ -205,7 +205,7 @@ public class RowResolver implements Serializable{
     }
 
     if (tab_alias != null) {
-      tab_alias = tab_alias.toLowerCase();
+      tab_alias = tab_alias;
       Map<String, ColumnInfo> f_map = rslvMap.get(tab_alias);
       if (f_map == null) {
         return null;
@@ -288,7 +288,7 @@ public class RowResolver implements Serializable{
     if (tabAlias == null) {
       return rslvMap.get(null);
     } else {
-      return rslvMap.get(tabAlias.toLowerCase());
+      return rslvMap.get(tabAlias);
     }
   }
 
@@ -529,8 +529,8 @@ public class RowResolver implements Serializable{
     }
 
     if(tableAlias != null) {
-      Map<String, String> colAliases = ambiguousColumns.get(tableAlias.toLowerCase());
-      if(colAliases != null && colAliases.containsKey(colAlias.toLowerCase())) {
+      Map<String, String> colAliases = ambiguousColumns.get(tableAlias);
+      if(colAliases != null && colAliases.containsKey(colAlias)) {
         return true;
       }
     } else {

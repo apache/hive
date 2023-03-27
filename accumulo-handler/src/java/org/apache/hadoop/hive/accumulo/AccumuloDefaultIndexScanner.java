@@ -163,7 +163,7 @@ public class AccumuloDefaultIndexScanner implements AccumuloIndexScanner {
   public boolean isIndexed(String column) {
     return indexTable != null
         && (indexColumns.isEmpty() || indexColumns.contains("*")
-        || this.indexColumns.contains(column.toLowerCase())
+        || this.indexColumns.contains(column)
         || this.indexColumns.contains(column.toUpperCase()));
 
   }

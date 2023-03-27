@@ -43,7 +43,7 @@ public class LockTableAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) root.getChild(0)).toLowerCase();
+    String tableName = getUnescapedName((ASTNode) root.getChild(0));
     String mode = unescapeIdentifier(root.getChild(1).getText().toUpperCase());
     List<Map<String, String>> partitionSpecs = getPartitionSpecs(getTable(tableName), root);
 

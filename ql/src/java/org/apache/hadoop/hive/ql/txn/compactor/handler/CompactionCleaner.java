@@ -118,7 +118,7 @@ class CompactionCleaner extends TaskHandler {
     LOG.info("Starting cleaning for {}", ci);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
-            (!isNull(ci.type) ? ci.type.toString().toLowerCase() : null);
+            (!isNull(ci.type) ? ci.type.toString() : null);
     try {
       if (metricsEnabled) {
         perfLogger.perfLogBegin(CompactionCleaner.class.getName(), cleanerMetric);

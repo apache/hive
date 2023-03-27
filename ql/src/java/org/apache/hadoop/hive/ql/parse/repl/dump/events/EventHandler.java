@@ -94,12 +94,12 @@ public interface EventHandler {
 
     void addToListOfTablesForBootstrap(String tableName) {
       assert tableName != null;
-      tablesForBootstrap.add(tableName.toLowerCase());
+      tablesForBootstrap.add(tableName);
     }
 
     boolean removeFromListOfTablesForBootstrap(String tableName) {
       assert tableName != null;
-      return tablesForBootstrap.remove(tableName.toLowerCase());
+      return tablesForBootstrap.remove(tableName);
     }
     public boolean isDmdCreated() {
       return dmdCreated;

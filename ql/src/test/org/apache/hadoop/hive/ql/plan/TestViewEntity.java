@@ -53,7 +53,7 @@ public class TestViewEntity {
   }
 
   private static Driver driver;
-  private final String NAME_PREFIX = "TestViewEntity5".toLowerCase();
+  private final String NAME_PREFIX = "TestViewEntity5";
 
   @BeforeClass
   public static void onetimeSetup() throws Exception {

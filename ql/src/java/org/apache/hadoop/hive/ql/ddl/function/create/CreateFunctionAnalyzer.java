@@ -52,7 +52,7 @@ public class CreateFunctionAnalyzer extends AbstractFunctionAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    String functionName = root.getChild(0).getText().toLowerCase();
+    String functionName = root.getChild(0).getText();
     boolean isTemporary = (root.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);
     if (isTemporary && FunctionUtils.isQualifiedFunctionName(functionName)) {
       throw new SemanticException("Temporary function cannot be created with a qualified name.");

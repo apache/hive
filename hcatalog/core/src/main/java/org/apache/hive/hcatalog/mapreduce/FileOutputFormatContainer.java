@@ -229,7 +229,7 @@ class FileOutputFormatContainer extends OutputFormatContainer {
     List<String> values = new ArrayList<String>();
 
     for (FieldSchema schema : table.getPartitionKeys()) {
-      String value = valueMap.get(schema.getName().toLowerCase());
+      String value = valueMap.get(schema.getName());
 
       if (value == null) {
         throw new HCatException(ErrorType.ERROR_MISSING_PARTITION_KEY,

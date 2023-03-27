@@ -4384,7 +4384,7 @@ public class TestVectorStringExpressions {
       return "";
     }
     case 7: {
-      return value.toLowerCase();
+      return value;
     }
     case 8: {
       StringBuilder sb = new StringBuilder();

@@ -205,7 +205,7 @@ public class WindowingSpec {
     OrderSpec orderSpec = wdwSpec.getOrder();
     if (wFrame == null) {
       if (!supportsWindowing) {
-        if (wFn.getName().toLowerCase().equals(FunctionRegistry.LAST_VALUE_FUNC_NAME)
+        if (wFn.getName().equals(FunctionRegistry.LAST_VALUE_FUNC_NAME)
             && orderSpec != null) {
           /*
            * last_value: when an Sort Key is specified, then last_value should return the

@@ -95,7 +95,7 @@ public class OperationLog {
   }
 
   public static LoggingLevel getLoggingLevel (String mode) {
-    String m = StringUtils.defaultString(mode).toLowerCase();
+    String m = StringUtils.defaultString(mode);
     switch (m) {
     case "none":
       return LoggingLevel.NONE;

@@ -33,7 +33,7 @@ public class StringSetValidator implements Validator {
   public StringSetValidator(boolean caseSensitive, String... values) {
     this.caseSensitive = caseSensitive;
     for (String value : values) {
-      expected.add(caseSensitive ? value : value.toLowerCase());
+      expected.add(caseSensitive ? value : value);
     }
   }
 
@@ -43,7 +43,7 @@ public class StringSetValidator implements Validator {
 
   @Override
   public void validate(String value) {
-    if (value == null || !expected.contains(caseSensitive ? value : value.toLowerCase())) {
+    if (value == null || !expected.contains(caseSensitive ? value : value)) {
       throw new IllegalArgumentException("Invalid value.. expects one of " + expected);
     }
   }

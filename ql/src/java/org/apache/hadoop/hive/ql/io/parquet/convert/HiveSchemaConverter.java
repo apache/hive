@@ -110,11 +110,11 @@ public class HiveSchemaConverter {
         }
       } else if (typeInfo.equals(TypeInfoFactory.voidTypeInfo)) {
         throw new UnsupportedOperationException("Void type not implemented");
-      } else if (typeInfo.getTypeName().toLowerCase().startsWith(
+      } else if (typeInfo.getTypeName().startsWith(
           serdeConstants.CHAR_TYPE_NAME)) {
         return Types.optional(PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType())
             .named(name);
-      } else if (typeInfo.getTypeName().toLowerCase().startsWith(
+      } else if (typeInfo.getTypeName().startsWith(
           serdeConstants.VARCHAR_TYPE_NAME)) {
         return Types.optional(PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType())
             .named(name);

@@ -124,7 +124,7 @@ public class TestSSL {
     // we need openssl
     Assume.assumeTrue(execCommand("which openssl") == 0);
     // we depend on linux openssl exit codes
-    Assume.assumeTrue(System.getProperty("os.name").toLowerCase().contains("linux"));
+    Assume.assumeTrue(System.getProperty("os.name").contains("linux"));
 
     SSLTestUtils.setSslConfOverlay(confOverlay);
     // Test in binary mode

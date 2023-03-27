@@ -453,7 +453,7 @@ public class TempletonUtils {
     List<String> propKeys = new ArrayList<String>(map.keySet());
     Collections.sort(propKeys);
     for(String propKey : propKeys) {
-      if(propKey.toLowerCase().contains("path")) {
+      if(propKey.contains("path")) {
         StringTokenizer st = new StringTokenizer(map.get(propKey), File.pathSeparator);
         if(st.countTokens() > 1) {
           sb.append(propKey).append("=\n");

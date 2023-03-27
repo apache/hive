@@ -91,7 +91,7 @@ public class StringUtils {
    * @return normalized version, with white space removed and all lower case.
    */
   public static String normalizeIdentifier(String identifier) {
-    return identifier.trim().toLowerCase();
+    return identifier.trim();
   }
 
   /**

@@ -358,7 +358,7 @@ similarly for mapKeyType/mapKeyTypeInfo */
       sb.append(subSchema.getSchemaAsTypeString());
       sb.append(">");
     }
-    return (typeString = sb.toString().toLowerCase());
+    return (typeString = sb.toString());
   }
 
   @Override

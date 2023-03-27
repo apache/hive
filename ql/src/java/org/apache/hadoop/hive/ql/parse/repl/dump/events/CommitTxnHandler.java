@@ -124,7 +124,7 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
                 // it should be skipped.
                 return (ReplUtils.tableIncludedInReplScope(withinContext.replScope, writeEventInfo.getTable())
                         && ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, writeEventInfo.getTable())
-                        && !withinContext.getTablesForBootstrap().contains(writeEventInfo.getTable().toLowerCase()));
+                        && !withinContext.getTablesForBootstrap().contains(writeEventInfo.getTable()));
               })));
   }
 

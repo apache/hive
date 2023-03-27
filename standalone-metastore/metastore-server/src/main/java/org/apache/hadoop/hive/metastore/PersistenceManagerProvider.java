@@ -328,7 +328,7 @@ public class PersistenceManagerProvider {
           "Setting MetaStore object pin classes with hive.metastore.cache.pinobjtypes=\"{}\"",
           objTypes);
       if (org.apache.commons.lang3.StringUtils.isNotEmpty(objTypes)) {
-        String[] typeTokens = objTypes.toLowerCase().split(",");
+        String[] typeTokens = objTypes.split(",");
         for (String type : typeTokens) {
           type = type.trim();
           if (PINCLASSMAP.containsKey(type)) {

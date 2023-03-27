@@ -101,13 +101,13 @@ public class TestClientSideAuthorizationProvider {
   }
 
   private void validateCreateDb(Database expectedDb, String dbName) {
-    assertEquals(expectedDb.getName().toLowerCase(), dbName.toLowerCase());
+    assertEquals(expectedDb.getName(), dbName);
   }
 
   private void validateCreateTable(Table expectedTable, String tblName, String dbName) {
     assertNotNull(expectedTable);
-    assertEquals(expectedTable.getTableName().toLowerCase(),tblName.toLowerCase());
-    assertEquals(expectedTable.getDbName().toLowerCase(),dbName.toLowerCase());
+    assertEquals(expectedTable.getTableName(),tblName);
+    assertEquals(expectedTable.getDbName(),dbName);
   }
 
   protected String getTestDbName(){

@@ -46,7 +46,7 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
   @Override
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
-    String type = unescapeSQLString(command.getChild(0).getText()).toLowerCase();
+    String type = unescapeSQLString(command.getChild(0).getText());
     int numberOfBuckets = 0;
     try {
       CompactionType.valueOf(type.toUpperCase());

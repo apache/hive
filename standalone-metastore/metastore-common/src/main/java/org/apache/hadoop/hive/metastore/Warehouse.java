@@ -247,7 +247,7 @@ public class Warehouse {
   }
 
   private String dbDirFromDbName(Database db) throws MetaException {
-    return db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX;
+    return db.getName() + DATABASE_WAREHOUSE_SUFFIX;
   }
 
   /**
@@ -306,7 +306,7 @@ public class Warehouse {
       return getWhRoot();
     }
 
-    return new Path(getWhRoot(), db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    return new Path(getWhRoot(), db.getName() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
   public Path getDefaultDatabasePath(String dbName) throws MetaException {
@@ -328,12 +328,12 @@ public class Warehouse {
       if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
         return getWhRootExternal();
       }
-      return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+      return new Path(getWhRootExternal(), dbName + DATABASE_WAREHOUSE_SUFFIX);
     } else {
       if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
         return getWhRoot();
       }
-      return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+      return new Path(getWhRoot(), dbName + DATABASE_WAREHOUSE_SUFFIX);
     }
   }
 
@@ -369,9 +369,9 @@ public class Warehouse {
     if (!isExternal && tableName.matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
       String[] groups = tableName.split("\\" + SOFT_DELETE_PATH_SUFFIX);
       tableName = String.join(SOFT_DELETE_PATH_SUFFIX, 
-          MetaStoreUtils.encodeTableName(groups[0].toLowerCase()), groups[1]);
+          MetaStoreUtils.encodeTableName(groups[0]), groups[1]);
     } else {
-      tableName = MetaStoreUtils.encodeTableName(tableName.toLowerCase());
+      tableName = MetaStoreUtils.encodeTableName(tableName);
     }
     return getDnsPath(new Path(dbPath, tableName));
   }
@@ -379,7 +379,7 @@ public class Warehouse {
   public Path getDefaultManagedTablePath(Database db, String tableName) throws MetaException {
     Path dbPath = getDatabaseManagedPath(db);
     return getDnsPath(
-        new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+        new Path(dbPath, MetaStoreUtils.encodeTableName(tableName)));
   }
 
   // A few situations where we need the default table path, without a DB object
@@ -391,7 +391,7 @@ public class Warehouse {
       dbPath = getDefaultDatabasePath(dbName);
     }
     return getDnsPath(
-        new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+        new Path(dbPath, MetaStoreUtils.encodeTableName(tableName)));
   }
 
   public Path getDefaultTablePath(Database db, Table table) throws MetaException {

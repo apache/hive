@@ -2349,7 +2349,7 @@ public class MetastoreConf {
       Matcher m = TIME_UNIT_SUFFIX.matcher(val);
       if (m.matches()) {
         long duration = Long.parseLong(m.group(1));
-        String unit = m.group(2).toLowerCase();
+        String unit = m.group(2);
 
         // If/else chain arranged in likely order of frequency for performance
         if (unit.equals("s") || unit.startsWith("sec")) {

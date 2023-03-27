@@ -191,13 +191,13 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     assertEquals(3, fields.size());
 
     assertEquals(DataType.FLOAT,fields.get(0).type);
-    assertEquals("key",fields.get(0).alias.toLowerCase());
+    assertEquals("key",fields.get(0).alias);
 
     assertEquals( DataType.CHARARRAY,fields.get(1).type);
-    assertEquals("testQualifier1".toLowerCase(), fields.get(1).alias.toLowerCase());
+    assertEquals("testQualifier1", fields.get(1).alias);
 
     assertEquals( DataType.INTEGER,fields.get(2).type);
-    assertEquals("testQualifier2".toLowerCase(), fields.get(2).alias.toLowerCase());
+    assertEquals("testQualifier2", fields.get(2).alias);
 
   }
 
@@ -208,7 +208,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     String tableName = newTableName("MyTable");
     String databaseName = newTableName("MyDatabase");
     //Table name will be lower case unless specified by hbase.table.name property
-    String hbaseTableName = (databaseName + "." + tableName).toLowerCase();
+    String hbaseTableName = (databaseName + "." + tableName);
     String db_dir = HCatUtil.makePathASafeFileName(getTestDir() + "/hbasedb");
 
     String dbQuery = "CREATE DATABASE IF NOT EXISTS " + databaseName + " LOCATION '"
@@ -286,7 +286,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     String tableName = newTableName("MyTable");
     String databaseName = newTableName("MyDatabase");
     //Table name will be lower case unless specified by hbase.table.name property
-    String hbaseTableName = (databaseName + "." + tableName).toLowerCase();
+    String hbaseTableName = (databaseName + "." + tableName);
     String db_dir = HCatUtil.makePathASafeFileName(getTestDir() + "/hbasedb");
     String POPTXT_FILE_NAME = db_dir+"testfile.txt";
     float f = -100.1f;
@@ -302,7 +302,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
         + " WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,testFamily:testQualifier1,testFamily:testQualifier2')"
         + " TBLPROPERTIES ('hbase.table.default.storage.type'='binary')";
 
-    String selectQuery = "SELECT * from "+databaseName.toLowerCase()+"."+tableName.toLowerCase();
+    String selectQuery = "SELECT * from "+databaseName+"."+tableName;
 
     driver.run(deleteQuery);
     driver.run(dbQuery);
@@ -326,8 +326,8 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
       PigServer server = HCatBaseTest.createPigServer(false, hcatConf.getAllProperties());
       server.registerQuery("A = load '"+POPTXT_FILE_NAME+"' using PigStorage() as (key:int, testqualifier1:float, testqualifier2:chararray);");
       server.registerQuery("B = filter A by (key > 2) AND (key < 8) ;");
-      server.registerQuery("store B into '"+databaseName.toLowerCase()+"."+tableName.toLowerCase()+"' using  org.apache.hive.hcatalog.pig.HCatStorer();");
-      server.registerQuery("C = load '"+databaseName.toLowerCase()+"."+tableName.toLowerCase()+"' using org.apache.hive.hcatalog.pig.HCatLoader();");
+      server.registerQuery("store B into '"+databaseName+"."+tableName+"' using  org.apache.hive.hcatalog.pig.HCatStorer();");
+      server.registerQuery("C = load '"+databaseName+"."+tableName+"' using org.apache.hive.hcatalog.pig.HCatLoader();");
       // Schema should be same
       Schema dumpedBSchema = server.dumpSchema("C");
 
@@ -335,13 +335,13 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
       assertEquals(3, fields.size());
 
       assertEquals(DataType.INTEGER,fields.get(0).type);
-      assertEquals("key",fields.get(0).alias.toLowerCase());
+      assertEquals("key",fields.get(0).alias);
 
       assertEquals( DataType.FLOAT,fields.get(1).type);
-      assertEquals("testQualifier1".toLowerCase(), fields.get(1).alias.toLowerCase());
+      assertEquals("testQualifier1", fields.get(1).alias);
 
       assertEquals( DataType.CHARARRAY,fields.get(2).type);
-      assertEquals("testQualifier2".toLowerCase(), fields.get(2).alias.toLowerCase());
+      assertEquals("testQualifier2", fields.get(2).alias);
 
       //Query the hbase table and check the key is valid and only 5  are present
       table = connection.getTable(TableName.valueOf(hbaseTableName));

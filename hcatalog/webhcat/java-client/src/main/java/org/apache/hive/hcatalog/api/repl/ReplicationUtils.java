@@ -151,7 +151,7 @@ public class ReplicationUtils {
    * Return alphanumeric(and '_') chars only of a string, lowercased
    */
   public static String toStringWordCharsOnly(String s){
-    return (s == null) ? "null" : s.replaceAll("[\\W]", "").toLowerCase();
+    return (s == null) ? "null" : s.replaceAll("[\\W]", "");
   }
 
   /**

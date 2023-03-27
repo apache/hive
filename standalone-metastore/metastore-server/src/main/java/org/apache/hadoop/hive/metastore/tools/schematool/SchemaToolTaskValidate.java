@@ -214,7 +214,7 @@ class SchemaToolTaskValidate extends SchemaToolTask {
 
       while (rs.next()) {
         String table = rs.getString("TABLE_NAME");
-        dbTables.add(table.toLowerCase());
+        dbTables.add(table);
         LOG.debug("Found table " + table + " in HMS dbstore");
       }
     } catch (SQLException e) {
@@ -301,7 +301,7 @@ class SchemaToolTaskValidate extends SchemaToolTask {
           if (schemaTool.getDbType().equals("derby")) {
             table = table.replaceAll("APP\\.", "");
           }
-          tableList.add(table.toLowerCase());
+          tableList.add(table);
           LOG.debug("Found table " + table + " in the schema");
         }
       }

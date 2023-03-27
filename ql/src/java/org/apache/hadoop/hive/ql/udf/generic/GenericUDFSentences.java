@@ -86,9 +86,9 @@ public class GenericUDFSentences extends GenericUDF {
         country = (Text) converters[2].convert(arguments[2].get());
       }
       if(country != null) {
-        locale = new Locale(language.toString().toLowerCase(), country.toString().toUpperCase());
+        locale = new Locale(language.toString(), country.toString().toUpperCase());
       } else {
-        locale = new Locale(language.toString().toLowerCase());
+        locale = new Locale(language.toString());
       }
     } else {
       locale = Locale.getDefault();

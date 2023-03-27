@@ -116,7 +116,7 @@ public class HiveTableUtil {
             Map<String, String> partitionSpec = Warehouse.makeSpecFromName(partitionName);
             RemoteIterator<LocatedFileStatus> iterator = getFilesIterator(partitionPath, conf);
             List<DataFile> dataFiles =
-                getDataFiles(iterator, partitionSpec, format.toLowerCase(), spec, metricsConfig, nameMapping, conf);
+                getDataFiles(iterator, partitionSpec, format, spec, metricsConfig, nameMapping, conf);
             synchronized (append) {
               dataFiles.forEach(append::appendFile);
             }

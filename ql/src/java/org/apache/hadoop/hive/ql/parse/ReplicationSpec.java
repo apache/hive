@@ -216,7 +216,7 @@ public class ReplicationSpec {
     setInReplicationScope(true);
     eventId = PlanUtils.stripQuotes(node.getChild(0).getText());
     if ((node.getChildCount() > 1)
-            && node.getChild(1).getText().toLowerCase().equals("metadata")) {
+            && node.getChild(1).getText().equals("metadata")) {
       isMetadataOnly= true;
       try {
         if (Long.parseLong(eventId) >= 0) {

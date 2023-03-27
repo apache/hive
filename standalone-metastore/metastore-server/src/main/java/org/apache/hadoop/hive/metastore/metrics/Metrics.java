@@ -255,7 +255,7 @@ public class Metrics {
     reporters = new ArrayList<>();
     scheduledReporters = new ArrayList<>();
     if (reportersToStart != null && reportersToStart.length() > 0) {
-      String[] reporterNames = reportersToStart.toLowerCase().split(",");
+      String[] reporterNames = reportersToStart.split(",");
       for (String reporterName : reporterNames) {
         if (reporterName.equals("console") || reporterName.endsWith("consolemetricsreporter")) {
           ConsoleReporter reporter = ConsoleReporter.forRegistry(registry)

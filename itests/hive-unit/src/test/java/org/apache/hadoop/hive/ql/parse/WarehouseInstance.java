@@ -382,8 +382,8 @@ public class WarehouseInstance implements Closeable {
     logger.info("Expecting {}", StringUtils.join(data, ","));
     logger.info("Got {}", results);
     List<String> filteredResults = results.stream().filter(
-        x -> !x.toLowerCase()
-            .contains(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase()))
+        x -> !x
+            .contains(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX))
         .map(String::toLowerCase)
         .collect(Collectors.toList());
     List<String> lowerCaseData =
@@ -401,7 +401,7 @@ public class WarehouseInstance implements Closeable {
     boolean dataMatched = (data.length == results.size());
     if (dataMatched) {
       for (int i = 0; i < data.length; i++) {
-        dataMatched &= data[i].toLowerCase().equals(results.get(i).toLowerCase());
+        dataMatched &= data[i].equals(results.get(i));
       }
     }
     assertFalse(dataMatched);

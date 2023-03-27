@@ -120,7 +120,7 @@ public class JdbcColumn {
   }
 
   static Type typeStringToHiveType(String type) throws SQLException {
-    final String t = type.toLowerCase();
+    final String t = type;
     switch (t) {
     case "string":
       return Type.STRING_TYPE;
@@ -184,7 +184,7 @@ public class JdbcColumn {
   static String getColumnTypeName(String type) throws SQLException {
     // we need to convert the Hive type to the SQL type name
     // TODO: this would be better handled in an enum
-    final String t = type.toLowerCase();
+    final String t = type;
     switch (t) {
     case "string":
       return serdeConstants.STRING_TYPE_NAME;
@@ -373,7 +373,7 @@ public class JdbcColumn {
   }
 
   public Integer getNumPrecRadix() {
-    final String t = type.toLowerCase();
+    final String t = type;
     switch (t) {
     case "tinyint":
     case "smallint":

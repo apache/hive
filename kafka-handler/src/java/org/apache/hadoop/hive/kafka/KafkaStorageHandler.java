@@ -187,7 +187,7 @@ import java.util.function.Predicate;
         .entrySet()
         .stream()
         .filter(objectObjectEntry -> objectObjectEntry.getKey()
-            .toLowerCase()
+            
             .startsWith(KafkaUtils.CONSUMER_CONFIGURATION_PREFIX))
         .forEach(entry -> {
           String key = entry.getKey().substring(KafkaUtils.CONSUMER_CONFIGURATION_PREFIX.length() + 1);
@@ -227,7 +227,7 @@ import java.util.function.Predicate;
         .entrySet()
         .stream()
         .filter(objectObjectEntry -> objectObjectEntry.getKey()
-            .toLowerCase()
+            
             .startsWith(KafkaUtils.PRODUCER_CONFIGURATION_PREFIX))
         .forEach(entry -> {
           String key = entry.getKey().substring(KafkaUtils.PRODUCER_CONFIGURATION_PREFIX.length() + 1);

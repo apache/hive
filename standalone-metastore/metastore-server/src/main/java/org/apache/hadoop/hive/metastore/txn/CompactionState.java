@@ -48,7 +48,7 @@ public enum CompactionState {
 
   @Override
   public String toString() {
-    return name().toLowerCase().replace("_", " ");
+    return name().replace("_", " ");
   }
 
   public String getSqlConst() {

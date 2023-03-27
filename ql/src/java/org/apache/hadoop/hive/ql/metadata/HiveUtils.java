@@ -428,7 +428,7 @@ public final class HiveUtils {
     if ((dbName == null) || (dbName.isEmpty())) {
       return "*.*";
     } else {
-      return dbName.toLowerCase() + ".*";
+      return dbName + ".*";
     }
   }
 

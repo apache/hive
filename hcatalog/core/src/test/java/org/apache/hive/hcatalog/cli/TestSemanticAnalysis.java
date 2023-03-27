@@ -134,11 +134,11 @@ public class TestSemanticAnalysis extends HCatBaseTest {
     String testDb1 = "testdatabaseoperatons1";
     String testDb2 = "testdatabaseoperatons2";
 
-    if (dbs.contains(testDb1.toLowerCase())) {
+    if (dbs.contains(testDb1)) {
       hcatDriver.run("drop database " + testDb1);
     }
 
-    if (dbs.contains(testDb2.toLowerCase())) {
+    if (dbs.contains(testDb2)) {
       hcatDriver.run("drop database " + testDb2);
     }
 

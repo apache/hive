@@ -75,7 +75,7 @@ public class TestReplicationMetricUpdateOnFailure {
     conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "1");
     
     final String tid = 
-            TestReplicationMetricUpdateOnFailure.class.getCanonicalName().toLowerCase().replace('.','_')  
+            TestReplicationMetricUpdateOnFailure.class.getCanonicalName().replace('.','_')  
             + "_" + System.currentTimeMillis();
     TEST_PATH = System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
     Path testPath = new Path(TEST_PATH);

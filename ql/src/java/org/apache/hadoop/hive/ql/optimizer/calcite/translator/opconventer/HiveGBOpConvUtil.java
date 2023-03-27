@@ -826,7 +826,7 @@ final class HiveGBOpConvUtil {
           udafAttr.isDistinctUDAF);
       GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo(udafAttr.udafEvaluator, udafMode,
           aggParameters);
-      aggregations.add(new AggregationDesc(udafAttr.udafName.toLowerCase(),
+      aggregations.add(new AggregationDesc(udafAttr.udafName,
           udaf.genericUDAFEvaluator, udaf.convertedParameters, false, udafMode));
       colInfoLst.add(new ColumnInfo(colOutputName, udaf.returnType, "", false));
     }
@@ -946,7 +946,7 @@ final class HiveGBOpConvUtil {
       Mode udafMode = SemanticAnalyzer.groupByDescModeToUDAFMode(gbMode, udafAttr.isDistinctUDAF);
       GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo(udafAttr.udafEvaluator, udafMode,
           aggParameters);
-      aggregations.add(new AggregationDesc(udafAttr.udafName.toLowerCase(),
+      aggregations.add(new AggregationDesc(udafAttr.udafName,
           udaf.genericUDAFEvaluator, udaf.convertedParameters,
           (gbMode != GroupByDesc.Mode.FINAL && udafAttr.isDistinctUDAF), udafMode));
 
@@ -1071,7 +1071,7 @@ final class HiveGBOpConvUtil {
       Mode udafMode = SemanticAnalyzer.groupByDescModeToUDAFMode(gbMode, udafAttr.isDistinctUDAF);
       GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo(udafAttr.udafEvaluator, udafMode,
           e.getValue());
-      aggregations.add(new AggregationDesc(udafAttr.udafName.toLowerCase(),
+      aggregations.add(new AggregationDesc(udafAttr.udafName,
           udaf.genericUDAFEvaluator, udaf.convertedParameters, udafAttr.isDistinctUDAF, udafMode));
       if (useOriginalGBNames) {
         colOutputName = gbInfo.outputColNames.get(udafColStartPosInOriginalGB + e.getKey());
@@ -1162,7 +1162,7 @@ final class HiveGBOpConvUtil {
     for (UDAFAttrs udafAttr : gbAttrs.udafAttrs) {
       Mode amode = SemanticAnalyzer.groupByDescModeToUDAFMode(GroupByDesc.Mode.HASH,
           udafAttr.isDistinctUDAF);
-      aggregations.add(new AggregationDesc(udafAttr.udafName.toLowerCase(), udafAttr.udafEvaluator,
+      aggregations.add(new AggregationDesc(udafAttr.udafName, udafAttr.udafEvaluator,
           udafAttr.udafParams, udafAttr.isDistinctUDAF, amode));
       GenericUDAFInfo udafInfo;
       try {

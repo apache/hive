@@ -533,10 +533,10 @@ public abstract class BaseSemanticAnalyzer {
     // partitionTableFunctionSource partitioningSpec? expression*)
     // guranteed to have an alias here: check done in processJoin
     if (node.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
-      return unescapeIdentifier(node.getChild(1).getText().toLowerCase());
+      return unescapeIdentifier(node.getChild(1).getText());
     }
     String alias = getSimpleTableNameBase(node);
-    return alias != null ? alias.toLowerCase() : null;
+    return alias != null ? alias : null;
   }
 
   protected static String getSimpleTableNameBase(ASTNode n) throws SemanticException {
@@ -877,7 +877,7 @@ public abstract class BaseSemanticAnalyzer {
         if (grandChild != null) {
           String name = grandChild.getText();
           if (lowerCase) {
-            name = name.toLowerCase();
+            name = name;
           }
           checkColumnName(name);
           // child 0 is the name of the column
@@ -949,7 +949,7 @@ public abstract class BaseSemanticAnalyzer {
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) ast.getChild(i);
-      colList.add(unescapeIdentifier(child.getText()).toLowerCase());
+      colList.add(unescapeIdentifier(child.getText()));
     }
     return colList;
   }
@@ -969,7 +969,7 @@ public abstract class BaseSemanticAnalyzer {
         throw new SemanticException(
                 "create/alter bucketed table: not supported NULLS FIRST for SORTED BY in DESC order");
       }
-      colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(), directionCode));
+      colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()), directionCode));
     }
     return colList;
   }
@@ -1227,7 +1227,7 @@ public abstract class BaseSemanticAnalyzer {
         for (int i = 0; i < partspec.getChildCount(); ++i) {
           ASTNode partspec_val = (ASTNode) partspec.getChild(i);
           String val = null;
-          String colName = unescapeIdentifier(partspec_val.getChild(0).getText().toLowerCase());
+          String colName = unescapeIdentifier(partspec_val.getChild(0).getText());
           if (partspec_val.getChildCount() < 2) { // DP in the form of T partition (ds, hr)
             if (allowDynamicPartitionsSpec) {
               ++numDynParts;
@@ -1265,14 +1265,14 @@ public abstract class BaseSemanticAnalyzer {
           }
           Iterator<String> itrPsKeys = partSpec.keySet().iterator();
           for (FieldSchema fs: parts) {
-            if (!itrPsKeys.next().toLowerCase().equals(fs.getName().toLowerCase())) {
+            if (!itrPsKeys.next().equals(fs.getName())) {
               ErrorPartSpec(partSpec, parts);
             }
           }
 
           // check if static partition appear after dynamic partitions
           for (FieldSchema fs: parts) {
-            if (partSpec.get(fs.getName().toLowerCase()) == null) {
+            if (partSpec.get(fs.getName()) == null) {
               if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
                 throw new SemanticException(ASTErrorUtils.getMsg(
                     ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(), ast.getChild(childIndex)));
@@ -1494,8 +1494,8 @@ public abstract class BaseSemanticAnalyzer {
       if(!itrPsKeys.hasNext()) {
         break;
       }
-      if (!itrPsKeys.next().toLowerCase().equals(
-              fs.getName().toLowerCase())) {
+      if (!itrPsKeys.next().equals(
+              fs.getName())) {
         ErrorPartSpec(spec, partCols);
       }
     }
@@ -1652,7 +1652,7 @@ public abstract class BaseSemanticAnalyzer {
       if (child.getChildCount() > 1) {
         val = stripQuotes(child.getChild(1).getText());
       }
-      partSpec.put(key.toLowerCase(), val);
+      partSpec.put(key, val);
     }
     return partSpec;
   }
@@ -1701,10 +1701,10 @@ public abstract class BaseSemanticAnalyzer {
     List<FieldSchema> parts = tbl.getPartitionKeys();
     Map<String, String> partCols = new HashMap<String, String>(parts.size());
     for (FieldSchema col : parts) {
-      partCols.put(col.getName(), col.getType().toLowerCase());
+      partCols.put(col.getName(), col.getType());
     }
     for (Entry<ASTNode, ExprNodeDesc> astExprNodePair : astExprNodeMap.entrySet()) {
-      String astKeyName = astExprNodePair.getKey().toString().toLowerCase();
+      String astKeyName = astExprNodePair.getKey().toString();
       if (astExprNodePair.getKey().getType() == HiveParser.Identifier) {
         astKeyName = ParseUtils.stripIdentifierQuotes(astKeyName);
       }

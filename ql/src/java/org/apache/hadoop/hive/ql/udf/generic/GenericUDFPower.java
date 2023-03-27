@@ -68,8 +68,8 @@ public class GenericUDFPower extends GenericUDF {
         throw new UDFArgumentTypeException(i, "The "
             + GenericUDFUtils.getOrdinal(i + 1)
             + " argument of " + opName + "  is expected to a "
-            + Category.PRIMITIVE.toString().toLowerCase() + " type, but "
-            + category.toString().toLowerCase() + " is found");
+            + Category.PRIMITIVE.toString() + " type, but "
+            + category.toString() + " is found");
       }
     }
 

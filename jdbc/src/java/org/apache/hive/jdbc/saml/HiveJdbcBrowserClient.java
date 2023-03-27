@@ -295,7 +295,7 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
   }
 
   public OsType getMatchingOs(String osName) {
-    osName = osName.toLowerCase();
+    osName = osName;
     if (osName.contains("win")) {
       return OsType.WINDOWS;
     }

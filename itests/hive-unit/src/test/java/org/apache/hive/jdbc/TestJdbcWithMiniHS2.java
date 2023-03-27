@@ -1444,7 +1444,7 @@ public class TestJdbcWithMiniHS2 {
     while (res.next()) {
       numRows++;
       String strVal = res.getString(1);
-      assertEquals("Should not find 'not exist'", -1, strVal.toLowerCase().indexOf("not exist"));
+      assertEquals("Should not find 'not exist'", -1, strVal.indexOf("not exist"));
     }
     assertTrue("Rows returned from describe function", numRows > 0);
   }
@@ -1452,11 +1452,11 @@ public class TestJdbcWithMiniHS2 {
   @Test
   public void testReplDumpResultSet() throws Exception {
     String tid =
-        TestJdbcWithMiniHS2.class.getCanonicalName().toLowerCase().replace('.', '_') + "_"
+        TestJdbcWithMiniHS2.class.getCanonicalName().replace('.', '_') + "_"
             + System.currentTimeMillis();
     String testPathName = System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
     Path testPath = new Path(testPathName + Path.SEPARATOR
-            + Base64.getEncoder().encodeToString(testDbName.toLowerCase().getBytes(StandardCharsets.UTF_8)));
+            + Base64.getEncoder().encodeToString(testDbName.getBytes(StandardCharsets.UTF_8)));
     FileSystem fs = testPath.getFileSystem(new HiveConf());
     Statement stmt = conDefault.createStatement();
     try {

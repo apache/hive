@@ -54,7 +54,7 @@ public  class AlterTableAlterPartitionAnalyzer extends AbstractAlterTableAnalyze
 
     // Alter table ... partition column ( column newtype) only takes one column at a time.
     ASTNode colAst = (ASTNode) command.getChild(0);
-    String name = colAst.getChild(0).getText().toLowerCase();
+    String name = colAst.getChild(0).getText();
     String type = getTypeStringFromAST((ASTNode) (colAst.getChild(1)));
     String comment = (colAst.getChildCount() == 3) ? unescapeSQLString(colAst.getChild(2).getText()) : null;
 

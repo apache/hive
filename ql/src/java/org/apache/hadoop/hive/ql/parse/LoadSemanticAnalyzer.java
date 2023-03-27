@@ -229,7 +229,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     if (tempTable != null) {
       // tempTable is only set when load is rewritten.
       super.init(clearPartsCache);
-      tabNameToTabObject.put(tempTable.getTableName().toLowerCase(), tempTable);
+      tabNameToTabObject.put(tempTable.getTableName(), tempTable);
     }
   }
 
@@ -270,7 +270,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
 
     if ((!inputInfo && ast.getChildCount() == 3) ||
         (inputInfo && ast.getChildCount() == 4)) {
-      if (ast.getChild(2).getText().toLowerCase().equals("local")) {
+      if (ast.getChild(2).getText().equals("local")) {
         isLocal = true;
       } else {
         isOverWrite = true;
@@ -483,7 +483,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
       for (int i = 0; i < partSpecNode.getChildCount(); ++i) {
         ASTNode partSpecValNode = (ASTNode) partSpecNode.getChild(i);
         String partVal = null;
-        String partColName = unescapeIdentifier(partSpecValNode.getChild(0).getText().toLowerCase());
+        String partColName = unescapeIdentifier(partSpecValNode.getChild(0).getText());
 
         if (partSpecValNode.getChildCount() >= 2) { // in the form of T partition (ds="2010-03-03")
           // Not stripping quotes here as we need to use it as it is while framing PARTITION clause

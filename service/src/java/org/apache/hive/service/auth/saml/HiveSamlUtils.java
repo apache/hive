@@ -36,7 +36,7 @@ public class HiveSamlUtils {
   public static final String MESSAGE_KEY = "message";
 
   public static boolean isSamlAuthMode(String authType) {
-    return authType.toLowerCase().contains(HiveAuthConstants.AuthTypes.SAML.toString().toLowerCase());
+    return authType.contains(HiveAuthConstants.AuthTypes.SAML.toString());
   }
 
   /**

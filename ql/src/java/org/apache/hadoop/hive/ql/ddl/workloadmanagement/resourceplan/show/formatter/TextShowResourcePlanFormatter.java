@@ -160,7 +160,7 @@ class TextShowResourcePlanFormatter extends ShowResourcePlanFormatter {
     @Override
     public void formatMappingType(String type, List<String> names) throws IOException {
       writeIndent(false);
-      out.write(("mapped for " + type.toLowerCase()).getBytes(StandardCharsets.UTF_8));
+      out.write(("mapped for " + type).getBytes(StandardCharsets.UTF_8));
       if (!names.isEmpty()) {
         out.write("s: ".getBytes(StandardCharsets.UTF_8));
         int count = Math.min(5, names.size());

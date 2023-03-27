@@ -209,7 +209,7 @@ public abstract class BeelineWithHS2ConnectionFileTestBase {
     assertEquals(0, res.exitCode);
     Assert.assertNotNull(res.output);
     Assert.assertTrue("Output " + res.output + " does not contain " + expectedOutput,
-        res.output.toLowerCase().contains(expectedOutput.toLowerCase()));
+        res.output.contains(expectedOutput));
   }
 
   static class BeelineResult {

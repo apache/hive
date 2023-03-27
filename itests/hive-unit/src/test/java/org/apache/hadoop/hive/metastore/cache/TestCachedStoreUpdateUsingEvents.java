@@ -148,7 +148,7 @@ public class TestCachedStoreUpdateUsingEvents {
     Assert.assertEquals(part1.getCatName(), part2.getCatName());
     Assert.assertEquals(part1.getCreateTime(), part2.getCreateTime());
     Assert.assertEquals(part1.getTableName(), part2.getTableName());
-    Assert.assertEquals(part1.getDbName().toLowerCase(), part2.getDbName().toLowerCase());
+    Assert.assertEquals(part1.getDbName(), part2.getDbName());
     Assert.assertEquals(part1.getLastAccessTime(), part2.getLastAccessTime());
   }
 
@@ -502,16 +502,16 @@ public class TestCachedStoreUpdateUsingEvents {
     ptn2 = rawStore.getPartition(DEFAULT_CATALOG_NAME, dbName, tblName, Arrays.asList(ptnColVal2));
 
     // Read database, table, partition via CachedStore
-    Database dbRead = sharedCache.getDatabaseFromCache(DEFAULT_CATALOG_NAME.toLowerCase(), dbName.toLowerCase());
+    Database dbRead = sharedCache.getDatabaseFromCache(DEFAULT_CATALOG_NAME, dbName);
     Assert.assertEquals(db, dbRead);
-    Table tblRead = sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME.toLowerCase(),
-            dbName.toLowerCase(), tblName.toLowerCase());
+    Table tblRead = sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME,
+            dbName, tblName);
     compareTables(tbl, tblRead);
-    Partition ptn1Read = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME.toLowerCase(),
-            dbName.toLowerCase(), tblName.toLowerCase(), Arrays.asList(ptnColVal1));
+    Partition ptn1Read = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME,
+            dbName, tblName, Arrays.asList(ptnColVal1));
     comparePartitions(ptn1, ptn1Read);
-    Partition ptn2Read = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME.toLowerCase(),
-            dbName.toLowerCase(), tblName.toLowerCase(), Arrays.asList(ptnColVal2));
+    Partition ptn2Read = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME,
+            dbName, tblName, Arrays.asList(ptnColVal2));
     comparePartitions(ptn2, ptn2Read);
 
     // Add a new partition via rawStore

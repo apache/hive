@@ -189,7 +189,7 @@ public final class ParseUtils {
 
   static int getIndex(String[] list, String elem) {
     for(int i=0; i < list.length; i++) {
-      if (list[i] != null && list[i].toLowerCase().equals(elem)) {
+      if (list[i] != null && list[i].equals(elem)) {
         return i;
       }
     }
@@ -205,7 +205,7 @@ public final class ParseUtils {
     switch(filterCondn.getType()) {
     case HiveParser.TOK_TABLE_OR_COL:
       String tableOrCol = SemanticAnalyzer.unescapeIdentifier(filterCondn.getChild(0).getText()
-          .toLowerCase());
+          );
       return getIndex(tabAliases, tableOrCol);
     case HiveParser.Identifier:
     case HiveParser.Number:
@@ -555,7 +555,7 @@ public final class ParseUtils {
     String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     Map<String, String> colTypes = new HashMap<>();
     for (FieldSchema fs : table.getPartitionKeys()) {
-      colTypes.put(fs.getName().toLowerCase(), fs.getType());
+      colTypes.put(fs.getName(), fs.getType());
     }
 
     Map<Integer, List<ExprNodeGenericFuncDesc>> result = new HashMap<>();
@@ -570,7 +570,7 @@ public final class ParseUtils {
       for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
         CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
         assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
-        String key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getText()).toLowerCase();
+        String key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getText());
         String operator = partSpecSingleKey.getChild(1).getText();
         ASTNode partValNode = (ASTNode)partSpecSingleKey.getChild(2);
         TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);

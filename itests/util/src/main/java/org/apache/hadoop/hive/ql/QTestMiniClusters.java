@@ -162,7 +162,7 @@ public class QTestMiniClusters {
     }
 
     public String getQOutFileExtensionPostfix() {
-      return toString().toLowerCase();
+      return toString();
     }
   }
 

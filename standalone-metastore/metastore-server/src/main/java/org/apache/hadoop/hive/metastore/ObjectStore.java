@@ -823,7 +823,7 @@ public class ObjectStore implements RawStore, Configurable {
     assert db.getCatalogName() != null;
     mdb.setCatalogName(normalizeIdentifier(db.getCatalogName()));
     assert mdb.getCatalogName() != null;
-    mdb.setName(db.getName().toLowerCase());
+    mdb.setName(db.getName());
     mdb.setLocationUri(db.getLocationUri());
     mdb.setManagedLocationUri(db.getManagedLocationUri());
     mdb.setDescription(db.getDescription());
@@ -1069,7 +1069,7 @@ public class ObjectStore implements RawStore, Configurable {
   public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
     boolean commited = false;
     MDataConnector mDataConnector = new MDataConnector();
-    mDataConnector.setName(connector.getName().toLowerCase());
+    mDataConnector.setName(connector.getName());
     mDataConnector.setType(connector.getType());
     mDataConnector.setUrl(connector.getUrl());
     mDataConnector.setDescription(connector.getDescription());
@@ -2328,7 +2328,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (keys != null) {
       mkeys = new ArrayList<>(keys.size());
       for (FieldSchema part : keys) {
-        mkeys.add(new MFieldSchema(part.getName().toLowerCase(),
+        mkeys.add(new MFieldSchema(part.getName(),
             part.getType(), part.getComment()));
       }
     }
@@ -3574,8 +3574,8 @@ public class ObjectStore implements RawStore, Configurable {
                                                      long maxParts) throws MetaException {
 
     catName = normalizeIdentifier(catName);
-    dbName = dbName.toLowerCase().trim();
-    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.trim();
+    tableName = tableName.trim();
     try {
       if (filter == null || filter.isEmpty()) {
         PartitionValuesResponse response = getDistinctValuesForPartitionsNoTxn(catName, dbName,
@@ -3664,8 +3664,8 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       LOG.debug("Executing getPartitionNamesByFilter");
       catName = normalizeIdentifier(catName);
-      dbName = dbName.toLowerCase();
-      tableName = tableName.toLowerCase();
+      dbName = dbName;
+      tableName = tableName;
 
       MTable mtable = getMTable(catName, dbName, tableName);
       if( mtable == null ) {
@@ -11928,7 +11928,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       // We store a catalog name in lower case in metastore and also use the same way everywhere in
       // hive.
-      assert catName.equals(catName.toLowerCase());
+      assert catName.equals(catName);
 
       // Build the query to count events, part by part
       String queryStr = "select count(eventId) from " + MNotificationLog.class.getName();
@@ -11947,7 +11947,7 @@ public class ObjectStore implements RawStore, Configurable {
         queryStr = queryStr + " && (dbName == inputDbName || dbName == null)";
         paramSpecs = paramSpecs + ", java.lang.String inputDbName";
         // We store a database name in lower case in metastore.
-        paramVals.add(inputDbName.toLowerCase());
+        paramVals.add(inputDbName);
       }
 
       // catName could be NULL in case of transaction related events, which also need to be

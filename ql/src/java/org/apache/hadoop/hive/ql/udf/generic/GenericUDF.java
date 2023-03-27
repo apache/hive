@@ -275,7 +275,7 @@ public abstract class GenericUDF implements Closeable {
   }
 
   protected String getFuncName() {
-    return getClass().getSimpleName().substring(10).toLowerCase();
+    return getClass().getSimpleName().substring(10);
   }
 
   protected void checkArgsSize(ObjectInspector[] arguments, int min, int max)

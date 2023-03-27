@@ -348,7 +348,7 @@ public class TestStandardObjectInspectors {
     List<? extends StructField> fields = soi1.getAllStructFieldRefs();
     assertEquals(3, fields.size());
     for (int i = 0; i < 3; i++) {
-      assertEquals(fieldNames.get(i).toLowerCase(), fields.get(i)
+      assertEquals(fieldNames.get(i), fields.get(i)
           .getFieldName());
       assertEquals(fieldObjectInspectors.get(i), fields.get(i)
           .getFieldObjectInspector());

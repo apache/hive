@@ -226,7 +226,7 @@ public class ASTConverter {
     ASTNode typeNode;
     if (ht == null) {
       typeNode = ASTBuilder.construct(
-              HiveParser.Identifier, fieldType.getSqlTypeName().getName().toLowerCase()).node();
+              HiveParser.Identifier, fieldType.getSqlTypeName().getName()).node();
     } else {
       ASTBuilder typeNodeBuilder = ASTBuilder.construct(ht.type, ht.text);
       if (ht.args != null) {

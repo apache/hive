@@ -920,7 +920,7 @@ public class Commands {
   public String cliToBeelineCmd(String cmd) {
     if (cmd == null)
       return null;
-    if (cmd.toLowerCase().equals("quit") || cmd.toLowerCase().equals("exit")) {
+    if (cmd.equals("quit") || cmd.equals("exit")) {
       return BeeLine.COMMAND_PREFIX + cmd;
     } else if (cmd.startsWith("!")) {
       String shell_cmd = cmd.substring(1);
@@ -1016,7 +1016,7 @@ public class Commands {
           OutputFile outputFile = beeLine.getRecordOutputFile();
           if (beeLine.isTestMode() && outputFile != null && outputFile.isActiveConverter()) {
             outputFile.fetchStarted();
-            if (!sql.trim().toLowerCase().startsWith("explain")) {
+            if (!sql.trim().startsWith("explain")) {
               outputFile.foundQuery(true);
             } else {
               outputFile.foundQuery(false);

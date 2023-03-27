@@ -415,7 +415,7 @@ public final class QFile {
       QFile result = new QFile();
       result.name = name;
       if (!useSharedDatabase) {
-        result.databaseName = "test_db_" + name.toLowerCase();
+        result.databaseName = "test_db_" + name;
         result.specificFilterSet = new RegexFilterSet()
             .addFilter("(PREHOOK|POSTHOOK): (Output|Input): database:" + result.databaseName + "\n",
                 "$1: $2: database:default\n")

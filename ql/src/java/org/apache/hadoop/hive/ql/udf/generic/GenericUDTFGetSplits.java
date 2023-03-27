@@ -799,7 +799,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   private String getTempTableStorageFormatString(HiveConf conf) {
     String formatString = "";
     String storageFormatOption =
-        conf.getVar(HiveConf.ConfVars.LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT).toLowerCase();
+        conf.getVar(HiveConf.ConfVars.LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT);
     if (storageFormatOption.equals("text")) {
       formatString = "stored as textfile";
     } else if (storageFormatOption.equals("orc")) {

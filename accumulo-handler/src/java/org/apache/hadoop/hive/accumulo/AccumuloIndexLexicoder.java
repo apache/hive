@@ -46,7 +46,7 @@ public final class AccumuloIndexLexicoder {
 
   public static String getRawType(String hiveType) {
     if (hiveType != null) {
-      return hiveType.toLowerCase().replaceFirst(DIM_PAT, "").trim();
+      return hiveType.replaceFirst(DIM_PAT, "").trim();
     }
     return hiveType;
   }

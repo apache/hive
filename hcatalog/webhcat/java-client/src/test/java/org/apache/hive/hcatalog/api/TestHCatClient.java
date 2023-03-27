@@ -236,7 +236,7 @@ public class TestHCatClient {
     assertEquals("checking " + serdeConstants.SERIALIZATION_NULL_FORMAT, Character.toString('\006'),
       table2.getSerdeParams().get(serdeConstants.SERIALIZATION_NULL_FORMAT));
     
-    assertTrue(table2.getLocation().toLowerCase().matches(".*" + ("/" + db + ".db/" + tableTwo).toLowerCase()));
+    assertTrue(table2.getLocation().matches(".*" + ("/" + db + ".db/" + tableTwo)));
 
     HCatCreateTableDesc tableDesc3 = HCatCreateTableDesc.create(db,
       tableThree, cols).fileFormat("orcfile").build();

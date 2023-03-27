@@ -48,7 +48,7 @@ public class GenericUDFMapKeys extends GenericUDF {
       throw new UDFArgumentLengthException("The function MAP_KEYS only accepts one argument.");
     } else if (!(arguments[0] instanceof MapObjectInspector)) {
       throw new UDFArgumentTypeException(0, "\""
-          + Category.MAP.toString().toLowerCase()
+          + Category.MAP.toString()
           + "\" is expected at function MAP_KEYS, " + "but \""
           + arguments[0].getTypeName() + "\" is found");
     }

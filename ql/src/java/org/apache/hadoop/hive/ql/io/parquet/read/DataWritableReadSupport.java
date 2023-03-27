@@ -104,12 +104,12 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
     ListIterator<String> columnIterator = colNames.listIterator();
     Map<String, Type> schemaTypeMap = new HashMap<>();
-    schema.getFields().forEach(t -> schemaTypeMap.put(t.getName().toLowerCase(), t));
+    schema.getFields().forEach(t -> schemaTypeMap.put(t.getName(), t));
     while (columnIterator.hasNext()) {
       TypeInfo colType = colTypes.get(columnIterator.nextIndex());
       String colName = columnIterator.next();
 
-      Type fieldType = schemaTypeMap.get(colName.toLowerCase());
+      Type fieldType = schemaTypeMap.get(colName);
       if (fieldType == null) {
         schemaTypes.add(Types.optional(PrimitiveTypeName.BINARY).named(colName));
       } else {
@@ -224,7 +224,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       if (i < colNames.size()) {
         if (i < schema.getFieldCount()) {
           Type t = schema.getType(i);
-          String tn = t.getName().toLowerCase();
+          String tn = t.getName();
           if (!prunedCols.containsKey(tn)) {
             schemaTypes.add(schema.getType(i));
           } else {
@@ -317,7 +317,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       return resMap;
     }
     for (String s : nestedColPaths) {
-      String c = StringUtils.split(s, '.')[0].toLowerCase();
+      String c = StringUtils.split(s, '.')[0];
       if (!resMap.containsKey(c)) {
         FieldNode f = NestedColumnFieldPruningUtils.addNodeByPath(null, s);
         resMap.put(c, f);
@@ -346,10 +346,10 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     }
     Map<String, FieldNode> fieldMap = new HashMap<>();
     for (FieldNode n : nodes) {
-      fieldMap.put(n.getFieldName().toLowerCase(), n);
+      fieldMap.put(n.getFieldName(), n);
     }
     for (Type type : types) {
-      String tn = type.getName().toLowerCase();
+      String tn = type.getName();
 
       if (fieldMap.containsKey(tn)) {
         FieldNode f = fieldMap.get(tn);

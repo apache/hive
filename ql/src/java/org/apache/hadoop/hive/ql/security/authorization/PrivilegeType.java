@@ -94,7 +94,7 @@ public enum PrivilegeType {
    */
   public static PrivilegeType getPrivTypeByName(String privilegeName) {
     populateName2Type();
-    String canonicalizedName = privilegeName.toLowerCase();
+    String canonicalizedName = privilegeName;
     PrivilegeType privType = name2Type.get(canonicalizedName);
     if(privType != null){
       return privType;
@@ -108,7 +108,7 @@ public enum PrivilegeType {
     }
     name2Type = new HashMap<String, PrivilegeType>();
     for(PrivilegeType privType : PrivilegeType.values()){
-      name2Type.put(privType.toString().toLowerCase(), privType);
+      name2Type.put(privType.toString(), privType);
     }
   }
 }

@@ -766,7 +766,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     String suffix = Integer.toString(conf.getDestTableId());
     String fullName = conf.getTableInfo().getTableName();
     if (fullName != null) {
-      suffix = suffix + "_" + fullName.toLowerCase();
+      suffix = suffix + "_" + fullName;
     }
     return counter + "_" + suffix;
   }
@@ -1714,7 +1714,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // key = "database.table/SP/DP/"LB/
       // Hive store lowercase table name in metastore, and Counters is character case sensitive, so we
       // use lowercase table name as prefix here, as StatsTask get table name from metastore to fetch counter.
-      String prefix = conf.getTableInfo().getTableName().toLowerCase();
+      String prefix = conf.getTableInfo().getTableName();
       prefix = Utilities.join(prefix, spSpec, dpSpec);
       prefix = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {

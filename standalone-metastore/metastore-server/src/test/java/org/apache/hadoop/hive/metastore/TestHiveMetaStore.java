@@ -3206,8 +3206,8 @@ public abstract class TestHiveMetaStore {
     // Verify
     assertEquals(tableNames.size(), tableObjs.size());
     for(Table table : tableObjs) {
-      assertTrue("tableNames doesn't contain " + table.getTableName().toLowerCase() + ", " + tableNames,
-          tableNames.contains(table.getTableName().toLowerCase()));
+      assertTrue("tableNames doesn't contain " + table.getTableName() + ", " + tableNames,
+          tableNames.contains(table.getTableName()));
     }
 
     // Cleanup
@@ -3480,7 +3480,7 @@ public abstract class TestHiveMetaStore {
         if (firstUUID == null) {
           firstUUID = uuid;
         } else {
-          assertEquals(firstUUID.toLowerCase(), uuid.toLowerCase());
+          assertEquals(firstUUID, uuid);
         }
         allUuids.add(uuid);
       }

@@ -415,7 +415,7 @@ public class TypeCheckProcFactory<T> {
         default:
           // HiveParser.identifier | HiveParse.KW_IF | HiveParse.KW_LEFT |
           // HiveParse.KW_RIGHT
-          str = BaseSemanticAnalyzer.unescapeIdentifier(expr.getText().toLowerCase());
+          str = BaseSemanticAnalyzer.unescapeIdentifier(expr.getText());
           break;
       }
       return exprFactory.createStringConstantExpr(str);
@@ -979,7 +979,7 @@ public class TypeCheckProcFactory<T> {
           T columnChild = children.get(1 - constIdx);
 
           final PrimitiveTypeInfo colTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(
-              exprFactory.getTypeInfo(columnChild).getTypeName().toLowerCase());
+              exprFactory.getTypeInfo(columnChild).getTypeName());
           T newChild = interpretNodeAsConstant(colTypeInfo, constChild);
           if (newChild != null) {
             children.set(constIdx, newChild);
@@ -1153,7 +1153,7 @@ public class TypeCheckProcFactory<T> {
         case STRUCT:
           return valueDesc;
         case PRIMITIVE:
-          PrimitiveTypeInfo primitiveInfo = TypeInfoFactory.getPrimitiveTypeInfo(info.getTypeName().toLowerCase());
+          PrimitiveTypeInfo primitiveInfo = TypeInfoFactory.getPrimitiveTypeInfo(info.getTypeName());
           return interpretNodeAsConstant(primitiveInfo, valueDesc);
         }
       }
@@ -1176,7 +1176,7 @@ public class TypeCheckProcFactory<T> {
             List<TypeInfo> newStructFieldInfos = new ArrayList<>();
             for (int i = 0; i < columnChilds.size(); i++) {
               final PrimitiveTypeInfo typeInfo = TypeInfoFactory.getPrimitiveTypeInfo(
-                  exprFactory.getTypeInfo(columnChilds.get(i)).getTypeName().toLowerCase());
+                  exprFactory.getTypeInfo(columnChilds.get(i)).getTypeName());
               T constantExpression = interpretNodeAsConstant(typeInfo,
                   exprFactory.createConstantExpr(structFieldInfos.get(i), literals.get(i)));
               if (constantExpression == null) {

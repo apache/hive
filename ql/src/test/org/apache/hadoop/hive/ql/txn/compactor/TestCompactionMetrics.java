@@ -283,9 +283,9 @@ public class TestCompactionMetrics  extends CompactorTest {
   @Test
   public void testCleanerPerfMetricsEnabled() throws Exception {
     long cleanerCyclesMinor = Objects.requireNonNull(
-        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MINOR.toString().toLowerCase())).getCount();
+        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MINOR.toString())).getCount();
     long cleanerCyclesMajor = Objects.requireNonNull(
-        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR.toString().toLowerCase())).getCount();
+        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR.toString())).getCount();
 
     Table t = newTable("default", "camipc", true);
     List<Partition> partitions = new ArrayList<>();
@@ -316,7 +316,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
 
     Assert.assertEquals(cleanerCyclesMinor + 10, Objects.requireNonNull(
-        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MINOR.toString().toLowerCase())).getCount());
+        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MINOR.toString())).getCount());
 
     for (int i = 0; i < 10; i++) {
       p = partitions.get(i);
@@ -336,7 +336,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
 
     Assert.assertEquals(cleanerCyclesMajor + 10, Objects.requireNonNull(
-        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR.toString().toLowerCase())).getCount());
+        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR.toString())).getCount());
   }
 
   @Test
@@ -345,7 +345,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     Metrics.initialize(conf);
 
     long cleanerCyclesMinor = Objects.requireNonNull(
-      Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR.toString().toLowerCase())).getCount();
+      Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR.toString())).getCount();
 
     Table t = newTable("default", "camipc", true);
     Partition p = newPartition(t, "today");
@@ -369,7 +369,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
 
     Assert.assertEquals(cleanerCyclesMinor, Objects.requireNonNull(
-        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR.toString().toLowerCase())).getCount());
+        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR.toString())).getCount());
   }
 
   @Test
@@ -401,7 +401,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
     String json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
-        WORKER_CYCLE_KEY + "_" + CompactionType.MINOR.toString().toLowerCase(), 1);
+        WORKER_CYCLE_KEY + "_" + CompactionType.MINOR.toString(), 1);
 
     startCleaner();
 
@@ -426,7 +426,7 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
-        WORKER_CYCLE_KEY + "_" + CompactionType.MAJOR.toString().toLowerCase(), 1);
+        WORKER_CYCLE_KEY + "_" + CompactionType.MAJOR.toString(), 1);
   }
 
   @Test

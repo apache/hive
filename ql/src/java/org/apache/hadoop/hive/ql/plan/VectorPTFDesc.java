@@ -120,7 +120,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       new HashMap<String, SupportedFunctionType>();
   static {
     for (SupportedFunctionType supportedFunctionType : SupportedFunctionType.values()) {
-      supportedFunctionsMap.put(supportedFunctionType.name().toLowerCase(), supportedFunctionType);
+      supportedFunctionsMap.put(supportedFunctionType.name(), supportedFunctionType);
     }
   }
   public static List<String> supportedFunctionNames = new ArrayList<String>();
@@ -431,7 +431,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
     VectorPTFEvaluatorBase[] evaluators = new VectorPTFEvaluatorBase[evaluatorCount];
     for (int i = 0; i < evaluatorCount; i++) {
-      String functionName = evaluatorFunctionNames[i].toLowerCase();
+      String functionName = evaluatorFunctionNames[i];
       boolean isDistinct = evaluatorsAreDistinct[i];
       WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
       SupportedFunctionType functionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);

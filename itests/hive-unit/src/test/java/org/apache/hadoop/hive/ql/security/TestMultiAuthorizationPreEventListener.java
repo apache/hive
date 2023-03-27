@@ -73,7 +73,7 @@ public class TestMultiAuthorizationPreEventListener {
 
   @Test
   public void testMultipleAuthorizationListners() throws Exception {
-    String dbName = "hive" + this.getClass().getSimpleName().toLowerCase();
+    String dbName = "hive" + this.getClass().getSimpleName();
     List<AuthCallContext> authCalls = DummyHiveMetastoreAuthorizationProvider.authCalls;
     int listSize = 0;
     assertEquals(listSize, authCalls.size());

@@ -220,14 +220,14 @@ public class ParquetHiveSerDe extends AbstractSerDe implements SchemaInference {
       for (int i = 0; i < typeInfo.getAllStructFieldTypeInfos().size(); ++i) {
         TypeInfo ti = typeInfo.getAllStructFieldTypeInfos().get(i);
         if (ti.getCategory() == Category.STRUCT) {
-          this.children.put(typeInfo.getAllStructFieldNames().get(i).toLowerCase(),
+          this.children.put(typeInfo.getAllStructFieldNames().get(i),
               new PrunedStructTypeInfo((StructTypeInfo) ti));
         }
       }
     }
 
     PrunedStructTypeInfo getChild(String fieldName) {
-      return children.get(fieldName.toLowerCase());
+      return children.get(fieldName);
     }
 
     void markSelected(String fieldName) {
@@ -248,8 +248,8 @@ public class ParquetHiveSerDe extends AbstractSerDe implements SchemaInference {
         String fn = oldNames.get(i);
         if (selected[i]) {
           newNames.add(fn);
-          if (children.containsKey(fn.toLowerCase())) {
-            newTypes.add(children.get(fn.toLowerCase()).prune());
+          if (children.containsKey(fn)) {
+            newTypes.add(children.get(fn).prune());
           } else {
             newTypes.add(oldTypes.get(i));
           }

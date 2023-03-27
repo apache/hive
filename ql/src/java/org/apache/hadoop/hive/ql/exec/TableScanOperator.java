@@ -265,7 +265,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[0];
       for (int i = 0; i < soi.getAllStructFieldRefs().size(); i++) {
         if (soi.getAllStructFieldRefs().get(i).getFieldName()
-            .equals(VirtualColumn.RAWDATASIZE.getName().toLowerCase())) {
+            .equals(VirtualColumn.RAWDATASIZE.getName())) {
           uSizeColumn = i;
           break;
         }

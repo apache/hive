@@ -76,7 +76,7 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
 
     @Override
     public String getDisplayString(String[] children) {
-        return getStandardDisplayString(functionName.toLowerCase(), children);
+        return getStandardDisplayString(functionName, children);
     }
 
     void checkArgCategory(ObjectInspector[] arguments, int idx, ObjectInspector.Category category,

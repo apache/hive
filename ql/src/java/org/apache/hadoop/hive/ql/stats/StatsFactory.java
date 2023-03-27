@@ -54,7 +54,7 @@ public final class StatsFactory {
    */
   public static StatsFactory newFactory(String configurationParam, Configuration conf) {
     StatsFactory factory = new StatsFactory(conf);
-    if (factory.initialize(configurationParam.toLowerCase())) {
+    if (factory.initialize(configurationParam)) {
       return factory;
     }
     return null;

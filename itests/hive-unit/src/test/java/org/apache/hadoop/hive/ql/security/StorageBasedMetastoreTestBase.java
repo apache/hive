@@ -125,7 +125,7 @@ public class StorageBasedMetastoreTestBase {
   }
 
   protected void validateCreateDb(Database expectedDb, String dbName) {
-    Assert.assertEquals(expectedDb.getName().toLowerCase(), dbName.toLowerCase());
+    Assert.assertEquals(expectedDb.getName(), dbName);
   }
 
 

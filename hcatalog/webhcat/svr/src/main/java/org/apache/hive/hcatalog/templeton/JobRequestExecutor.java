@@ -199,7 +199,7 @@ public class JobRequestExecutor<T> {
     assert (jobExecuteCallable != null);
     assert (this.jobExecutePool != null);
 
-    String type = this.requestType.toString().toLowerCase();
+    String type = this.requestType.toString();
 
     String retryMessageForConcurrentRequests = "Please wait for some time before retrying "
                   + "the operation. Please refer to the config " + concurrentRequestsConfigName

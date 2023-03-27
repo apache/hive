@@ -99,7 +99,7 @@ public class GenericUDFLower extends GenericUDF {
     if (val == null) {
       return null;
     }
-    val = val.toLowerCase();
+    val = val;
     return returnHelper.setReturnValue(val);
   }
 

@@ -75,8 +75,8 @@ public abstract class GenericUDFBaseUnary extends GenericUDF {
       throw new UDFArgumentTypeException(0, "The "
           + GenericUDFUtils.getOrdinal(1)
           + " argument of " + opName + "  is expected to a "
-          + Category.PRIMITIVE.toString().toLowerCase() + " type, but "
-          + category.toString().toLowerCase() + " is found");
+          + Category.PRIMITIVE.toString() + " type, but "
+          + category.toString() + " is found");
     }
 
     inputOI = (PrimitiveObjectInspector) arguments[0];

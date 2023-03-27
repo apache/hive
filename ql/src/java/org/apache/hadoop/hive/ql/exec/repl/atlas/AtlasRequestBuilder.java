@@ -122,7 +122,7 @@ public class AtlasRequestBuilder {
   }
 
   private String getQualifiedName(String clusterName, String srcDb) {
-    String qualifiedName = String.format(QUALIFIED_NAME_FORMAT, srcDb.toLowerCase(), clusterName);
+    String qualifiedName = String.format(QUALIFIED_NAME_FORMAT, srcDb, clusterName);
     LOG.debug("Atlas getQualifiedName: {}", qualifiedName);
     return qualifiedName;
   }

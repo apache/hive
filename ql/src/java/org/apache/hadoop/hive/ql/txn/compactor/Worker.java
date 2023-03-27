@@ -301,7 +301,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
       if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
         workerMetric = MetricsConstants.COMPACTION_WORKER_CYCLE + "_" +
-            (ci.type != null ? ci.type.toString().toLowerCase() : null);
+            (ci.type != null ? ci.type.toString() : null);
         perfLogger.perfLogBegin(CLASS_NAME, workerMetric);
       }
 

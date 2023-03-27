@@ -138,7 +138,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       replica.run("create scheduled query s2_t1 every 5 seconds as repl load " + primaryDbName + " INTO "
               + replicatedDbName);
       Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
-              Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
+              Base64.getEncoder().encodeToString(primaryDbName.getBytes(StandardCharsets.UTF_8.name())));
       FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
 
       next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
@@ -209,7 +209,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       replica.run("create scheduled query s2_t2 every 5 seconds as repl load " + primaryDbName + " INTO "
               + replicatedDbName + withClause);
       Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
-              Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
+              Base64.getEncoder().encodeToString(primaryDbName.getBytes(StandardCharsets.UTF_8.name())));
       FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
       next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       Path ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
@@ -276,7 +276,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       replica.run("create scheduled query repl_load_p1 every 5 seconds as repl load "
               + sourceDbName + " INTO " + replicaDbName +  " WITH(" + withClause + ')');
 
-      Path dumpRoot = ReplUtils.getEncodedDumpRootPath(primary.hiveConf, sourceDbName.toLowerCase());
+      Path dumpRoot = ReplUtils.getEncodedDumpRootPath(primary.hiveConf, sourceDbName);
       FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
       next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       Path ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
@@ -321,7 +321,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       primary.run("create scheduled query repl_load_p2 every 5 seconds as repl load "
               + replicaDbName + " INTO " + sourceDbName +  " WITH(" + withClause + ')');
 
-      dumpRoot = ReplUtils.getEncodedDumpRootPath(replica.hiveConf, replicaDbName.toLowerCase());
+      dumpRoot = ReplUtils.getEncodedDumpRootPath(replica.hiveConf, replicaDbName);
       next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       ackPath = new Path(dumpRoot,
               String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
@@ -372,7 +372,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
                       + replicaDbName + " INTO " + sourceDbName +  " WITH(" + withClause + ')')
               .run("alter scheduled query repl_dump_p1 enabled");
 
-      dumpRoot = ReplUtils.getEncodedDumpRootPath(primary.hiveConf, sourceDbName.toLowerCase());
+      dumpRoot = ReplUtils.getEncodedDumpRootPath(primary.hiveConf, sourceDbName);
       next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
@@ -426,7 +426,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       primary.run("create scheduled query s1_t2 every 5 seconds as repl dump " + primaryDbName + withClause);
       replica.run("create scheduled query s2_t2 every 5 seconds as repl load "
           + primaryDbName + " INTO " + replicatedDbName + withClause);
-      Path dumpRoot = ReplUtils.getEncodedDumpRootPath(primary.hiveConf, primaryDbName.toLowerCase());
+      Path dumpRoot = ReplUtils.getEncodedDumpRootPath(primary.hiveConf, primaryDbName);
       FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
       next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       Path ackPath = new Path(dumpRoot,

@@ -892,7 +892,7 @@ public class SharedCache {
         while (iterator.hasNext()) {
           Entry<String, ColumnStatisticsObj> entry = iterator.next();
           String key = entry.getKey();
-          if (key.toLowerCase().startsWith(partialKey.toLowerCase())) {
+          if (key.startsWith(partialKey)) {
             int statsSize = getObjectSize(ColumnStatisticsObj.class, entry.getValue());
             updateMemberSize(MemberName.PARTITION_COL_STATS_CACHE, -1 * statsSize, SizeMode.Delta);
             iterator.remove();
@@ -1424,7 +1424,7 @@ public class SharedCache {
         setLocation(null);
         setParameters(null);
       }
-      tblCopy.setTableName(tblCopy.getTableName().toLowerCase());
+      tblCopy.setTableName(tblCopy.getTableName());
       setTable(tblCopy);
     }
 
@@ -1514,7 +1514,7 @@ public class SharedCache {
     for (Catalog cat : catalogs) {
       Catalog catCopy = cat.deepCopy();
       // ObjectStore also stores db name in lowercase
-      catCopy.setName(catCopy.getName().toLowerCase());
+      catCopy.setName(catCopy.getName());
       try {
         cacheLock.writeLock().lock();
         // Since we allow write operations on cache while prewarm is happening:
@@ -1551,7 +1551,7 @@ public class SharedCache {
       cacheLock.writeLock().lock();
       Catalog catCopy = cat.deepCopy();
       // ObjectStore also stores db name in lowercase
-      catCopy.setName(catCopy.getName().toLowerCase());
+      catCopy.setName(catCopy.getName());
       catalogCache.put(cat.getName(), catCopy);
       isCatalogCacheDirty.set(true);
     } finally {
@@ -1617,14 +1617,14 @@ public class SharedCache {
     for (Database db : databases) {
       Database dbCopy = db.deepCopy();
       // ObjectStore also stores db name in lowercase
-      dbCopy.setName(dbCopy.getName().toLowerCase());
+      dbCopy.setName(dbCopy.getName());
       try {
         cacheLock.writeLock().lock();
         // Since we allow write operations on cache while prewarm is happening:
         // 1. Don't add databases that were deleted while we were preparing list for prewarm
         // 2. Skip overwriting exisiting db object
         // (which is present because it was added after prewarm started)
-        String key = CacheUtils.buildDbKey(dbCopy.getCatalogName().toLowerCase(), dbCopy.getName().toLowerCase());
+        String key = CacheUtils.buildDbKey(dbCopy.getCatalogName(), dbCopy.getName());
         if (databasesDeletedDuringPrewarm.contains(key)) {
           continue;
         }
@@ -1646,8 +1646,8 @@ public class SharedCache {
       cacheLock.writeLock().lock();
       Database dbCopy = db.deepCopy();
       // ObjectStore also stores db name in lowercase
-      dbCopy.setName(dbCopy.getName().toLowerCase());
-      dbCopy.setCatalogName(dbCopy.getCatalogName().toLowerCase());
+      dbCopy.setName(dbCopy.getName());
+      dbCopy.setCatalogName(dbCopy.getCatalogName());
       databaseCache.put(CacheUtils.buildDbKey(dbCopy.getCatalogName(), dbCopy.getName()), dbCopy);
       isDatabaseCacheDirty.set(true);
     } finally {

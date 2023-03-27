@@ -48,13 +48,13 @@ public class TestHiveAuthorizerShowFilters {
   protected static HiveConf conf;
   protected static IDriver driver;
   private static final String tableName1 = (TestHiveAuthorizerShowFilters.class.getSimpleName() + "table1")
-      .toLowerCase();
+      ;
   private static final String tableName2 = (TestHiveAuthorizerShowFilters.class.getSimpleName() + "table2")
-      .toLowerCase();
+      ;
   private static final String dbName1 = (TestHiveAuthorizerShowFilters.class.getSimpleName() + "db1")
-      .toLowerCase();
+      ;
   private static final String dbName2 = (TestHiveAuthorizerShowFilters.class.getSimpleName() + "db2")
-      .toLowerCase();
+      ;
 
   protected static HiveAuthorizer mockedAuthorizer;
 

@@ -63,9 +63,9 @@ public class NumDistinctValueEstimatorFactory {
 
   public static NumDistinctValueEstimator getEmptyNumDistinctValueEstimator(String func,
       int numBitVectors) {
-    if ("fm".equals(func.toLowerCase())) {
+    if ("fm".equals(func)) {
       return new FMSketch(numBitVectors);
-    } else if ("hll".equals(func.toLowerCase())) {
+    } else if ("hll".equals(func)) {
       return HyperLogLog.builder().setSizeOptimized().build();
     } else {
       throw new RuntimeException("Can not recognize " + func);

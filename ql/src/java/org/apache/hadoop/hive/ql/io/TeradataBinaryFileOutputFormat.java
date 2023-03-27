@@ -85,7 +85,7 @@ public class TeradataBinaryFileOutputFormat<K extends WritableComparable, V exte
         //Based on the row length to decide if the length is int or short
         String rowLength = tableProperties
             .getProperty(TeradataBinaryRecordReader.TD_ROW_LENGTH, TeradataBinaryRecordReader.DEFAULT_TD_ROW_LENGTH)
-            .toLowerCase();
+            ;
         LOG.debug(format("The table property %s is: %s", TeradataBinaryRecordReader.TD_ROW_LENGTH, rowLength));
 
         if (TeradataBinaryRecordReader.TD_ROW_LENGTH_TO_BYTE_NUM.containsKey(rowLength)) {

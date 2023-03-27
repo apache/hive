@@ -51,14 +51,14 @@ public interface Validator {
     public <T extends Enum<T>>StringSet(EnumSet<T> enumSet) {
       caseSensitive = false;
       for (T e : enumSet) {
-        expected.add(e.toString().toLowerCase());
+        expected.add(e.toString());
       }
     }
 
     public StringSet(boolean caseSensitive, String... values) {
       this.caseSensitive = caseSensitive;
       for (String value : values) {
-        expected.add(caseSensitive ? value : value.toLowerCase());
+        expected.add(caseSensitive ? value : value);
       }
     }
 
@@ -68,7 +68,7 @@ public interface Validator {
 
     @Override
     public String validate(String value) {
-      if (value == null || !expected.contains(caseSensitive ? value : value.toLowerCase())) {
+      if (value == null || !expected.contains(caseSensitive ? value : value)) {
         return "Invalid value.. expects one of " + expected;
       }
       return null;

@@ -2955,7 +2955,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           for (VirtualColumn vc : virtualCols) {
             colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true,
                 vc.getIsHidden());
-            rr.put(tableAlias, vc.getName().toLowerCase(), colInfo);
+            rr.put(tableAlias, vc.getName(), colInfo);
             cInfoLst.add(colInfo);
           }
         }
@@ -3026,7 +3026,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
                 getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
                     HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
-                    || qb.getAliasInsideView().contains(tableAlias.toLowerCase()), tableScanTrait);
+                    || qb.getAliasInsideView().contains(tableAlias), tableScanTrait);
             tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
                 optTable, druidTable, ImmutableList.of(scan), DruidSqlOperatorConverter.getDefaultMap());
           } else {
@@ -3038,7 +3038,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   null == tableAlias ? tabMetaData.getTableName() : tableAlias,
                   getAliasId(tableAlias, qb),
                   HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP),
-                  qb.isInsideView() || qb.getAliasInsideView().contains(tableAlias.toLowerCase()), tableScanTrait);
+                  qb.isInsideView() || qb.getAliasInsideView().contains(tableAlias), tableScanTrait);
 
             final String dataBaseType = tabMetaData.getProperty(Constants.JDBC_DATABASE_TYPE);
             final String url = tabMetaData.getProperty(Constants.JDBC_URL);
@@ -3103,7 +3103,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,
               getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
                   HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
-                  || qb.getAliasInsideView().contains(tableAlias.toLowerCase()), tableScanTrait);
+                  || qb.getAliasInsideView().contains(tableAlias), tableScanTrait);
         }
 
         if (optTable.hasReferentialConstraints()) {
@@ -3654,11 +3654,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (gByExpr.getType() == HiveParser.DOT
           && gByExpr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL) {
         String tab_alias = unescapeIdentifier(gByExpr.getChild(0).getChild(0)
-            .getText().toLowerCase());
-        String col_alias = unescapeIdentifier(gByExpr.getChild(1).getText().toLowerCase());
+            .getText());
+        String col_alias = unescapeIdentifier(gByExpr.getChild(1).getText());
         gByRR.put(tab_alias, col_alias, colInfo);
       } else if (gByExpr.getType() == HiveParser.TOK_TABLE_OR_COL) {
-        String col_alias = unescapeIdentifier(gByExpr.getChild(0).getText().toLowerCase());
+        String col_alias = unescapeIdentifier(gByExpr.getChild(0).getText());
         String tab_alias = null;
         /*
          * If the input to the GBy has a tab alias for the column, then add an
@@ -4427,7 +4427,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (windowExpressions != null ) {
         windowToAlias = new HashMap<>();
         for (WindowExpressionSpec wes : windowExpressions) {
-          windowToAlias.put(wes.getExpression().toStringTree().toLowerCase(), wes.getAlias());
+          windowToAlias.put(wes.getExpression().toStringTree(), wes.getAlias());
         }
       }
       String[] qualifiedColNames;
@@ -4612,7 +4612,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ASTNode selExprChild = (ASTNode) selExpr.getChild(i);
           switch (selExprChild.getType()) {
           case HiveParser.Identifier:
-            udtfColAliases.add(unescapeIdentifier(selExprChild.getText().toLowerCase()));
+            udtfColAliases.add(unescapeIdentifier(selExprChild.getText()));
             unparseTranslator.addIdentifierTranslation(selExprChild);
             break;
           case HiveParser.TOK_TABALIAS:
@@ -4698,7 +4698,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // 6.4 Build ExprNode corresponding to colums
           if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
             pos = genRexNodeRegex(".*",
-                expr.getChildCount() == 0 ? null : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
+                expr.getChildCount() == 0 ? null : getUnescapedName((ASTNode) expr.getChild(0)),
                 expr, columnList, excludedColumns, inputRR, starRR, pos, outputRR, qb.getAliases(), true);
           } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL
                   && !hasAsClause
@@ -4713,7 +4713,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else if (expr.getType() == HiveParser.DOT
                   && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
                   && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0)
-                  .getChild(0).getText().toLowerCase()))
+                  .getChild(0).getText()))
                   && !hasAsClause
                   && !inputRR.getIsExprResolver()
                   && isRegex(
@@ -4723,7 +4723,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // We don't allow this for ExprResolver - the Group By case
             pos = genRexNodeRegex(
                     unescapeIdentifier(expr.getChild(1).getText()),
-                    unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()),
+                    unescapeIdentifier(expr.getChild(0).getChild(0).getText()),
                     expr, columnList, excludedColumns, inputRR, starRR, pos,
                     outputRR, qb.getAliases(), true);
           } else if (ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI) &&
@@ -5293,7 +5293,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       for (Map.Entry<ASTNode, String> selExpr : exprToAlias.entrySet()) {
         ASTNode selAST = selExpr.getKey();
-        if (!aggExprs.contains(selAST.toStringTree().toLowerCase())) {
+        if (!aggExprs.contains(selAST.toStringTree())) {
           continue;
         }
         final String aliasToCheck = selExpr.getValue();
@@ -5578,7 +5578,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     for (ASTNode node : fieldDescList) {
       Map<ASTNode, String> map = translateFieldDesc(node);
       for (Entry<ASTNode, String> entry : map.entrySet()) {
-        unparseTranslator.addTranslation(entry.getKey(), entry.getValue().toLowerCase());
+        unparseTranslator.addTranslation(entry.getKey(), entry.getValue());
       }
     }
 

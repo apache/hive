@@ -380,7 +380,7 @@ public class BaseReplicationScenariosAcidTables {
                           entry.getValue().longValue(),
                           TestTxnDbUtil.countQueryAgent(conf,
           "select count(*) from TXN_TO_WRITE_ID where t2w_database = '"
-                    + dbName.toLowerCase()
+                    + dbName
                     + "' and t2w_table = '" + entry.getKey() + "'"));
     }
   }
@@ -413,7 +413,7 @@ public class BaseReplicationScenariosAcidTables {
       String[] nextWriteId =
               TestTxnDbUtil.queryToString(conf,
                       "select nwi_next from NEXT_WRITE_ID where  nwi_database = '"
-                              + dbName.toLowerCase() + "' and nwi_table = '"
+                              + dbName + "' and nwi_table = '"
                               + entry.getKey() + "'").split("\n");
       Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), entry.getValue() + 1);
     }

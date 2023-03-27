@@ -562,7 +562,7 @@ public final class Util {
     if (param.contains(TYPE_SEPARATOR)) {
       String[] parts = param.split(TYPE_SEPARATOR);
       name = parts[0];
-      colType = parts[1].toLowerCase();
+      colType = parts[1];
     }
     return new FieldSchema(name, colType, "");
   }

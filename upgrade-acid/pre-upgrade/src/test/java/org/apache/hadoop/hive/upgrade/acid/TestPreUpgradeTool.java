@@ -248,7 +248,7 @@ public class TestPreUpgradeTool {
       assertThat(scriptContent.size(), is(1));
       assertThat(scriptContent.get(0), allOf(
               containsString("ALTER TABLE"),
-              containsString(INCLUDE_TABLE_NAME.toLowerCase()),
+              containsString(INCLUDE_TABLE_NAME),
               containsString("COMPACT")));
 
     } finally {

@@ -231,7 +231,7 @@ public class ThriftHttpServlet extends TServlet {
             if ((authHeader == null || authHeader.isEmpty()) && needsRedirect(request, response)) {
               doSamlRedirect(request, response);
               return;
-            } else if(authHeader.toLowerCase().startsWith(HttpAuthUtils.BASIC.toLowerCase())) {
+            } else if(authHeader.startsWith(HttpAuthUtils.BASIC)) {
               // fall back to password based authentication if the header starts with Basic
               clientUserName = doPasswdAuth(request, authType.getPasswordBasedAuthStr());
             } else {
@@ -547,7 +547,7 @@ public class ThriftHttpServlet extends TServlet {
       throws HttpAuthenticationException {
     String userName = getUsername(request);
     // No-op when authType is NOSASL
-    if (!authType.toLowerCase().contains(HiveAuthConstants.AuthTypes.NOSASL.toString().toLowerCase())) {
+    if (!authType.contains(HiveAuthConstants.AuthTypes.NOSASL.toString())) {
       try {
         AuthMethods authMethod = AuthMethods.getValidAuthMethod(authType);
         PasswdAuthenticationProvider provider =

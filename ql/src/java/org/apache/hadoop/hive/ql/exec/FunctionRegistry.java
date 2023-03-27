@@ -779,10 +779,10 @@ public final class FunctionRegistry {
 
   public static String getNormalizedFunctionName(String fn) throws SemanticException {
     // Does the same thing as getFunctionInfo, except for getting the function info.
-    fn = fn.toLowerCase();
+    fn = fn;
     return (FunctionUtils.isQualifiedFunctionName(fn) || getFunctionInfo(fn) != null) ? fn
         : FunctionUtils.qualifyFunctionName(
-        fn, SessionState.get().getCurrentDatabase().toLowerCase());
+        fn, SessionState.get().getCurrentDatabase());
   }
 
   public static FunctionInfo getFunctionInfo(String functionName) throws SemanticException {
@@ -1743,7 +1743,7 @@ public final class FunctionRegistry {
   }
 
   public static boolean isNoopFunction(String fnName) {
-    fnName = fnName.toLowerCase();
+    fnName = fnName;
     return fnName.equals(NOOP_MAP_TABLE_FUNCTION) ||
         fnName.equals(NOOP_STREAMING_MAP_TABLE_FUNCTION) ||
         fnName.equals(NOOP_TABLE_FUNCTION) ||

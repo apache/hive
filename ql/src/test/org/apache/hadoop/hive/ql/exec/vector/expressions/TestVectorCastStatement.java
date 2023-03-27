@@ -253,7 +253,7 @@ public class TestVectorCastStatement {
     } else if (targetPrimitiveCategory == PrimitiveCategory.LONG) {
       targetTypeName = "bigint";
     } else {
-      targetTypeName = targetPrimitiveCategory.name().toLowerCase();
+      targetTypeName = targetPrimitiveCategory.name();
     }
     targetTypeName = VectorRandomRowSource.getDecoratedTypeName(random, targetTypeName);
     TypeInfo targetTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(targetTypeName);

@@ -193,7 +193,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       throws SemanticException, HiveException, MetaException {
     // when column name is specified in describe table DDL, colPath will be db_name.table_name.column_name
     String colName = desc.getColumnPath().split("\\.")[2];
-    List<String> colNames = Lists.newArrayList(colName.toLowerCase());
+    List<String> colNames = Lists.newArrayList(colName);
 
     TableName tableName = HiveTableName.of(desc.getDbTableName());
     if (null == part) {
@@ -209,8 +209,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       } else {
         cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
         colStats.addAll(
-            context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(),
-                tableName.getTable().toLowerCase(), colNames, false));
+            context.getDb().getTableColumnStatistics(tableName.getDb(),
+                tableName.getTable(), colNames, false));
       }
     } else {
       List<String> partitions = new ArrayList<String>();
@@ -220,7 +220,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       partitions.add(partName);
       cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
-          tableName.getDb().toLowerCase(), tableName.getTable().toLowerCase(), partitions, colNames, false);
+          tableName.getDb(), tableName.getTable(), partitions, colNames, false);
       List<ColumnStatisticsObj> partitionColStat = partitionColumnStatistics.get(partName);
       if (partitionColStat != null) {
         colStats.addAll(partitionColStat);
@@ -254,10 +254,10 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       Deserializer deserializer, List<String> colNames, TableName tableName, Map<String, String> tableProps)
       throws HiveException {
     cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
-    List<String> parts = context.getDb().getPartitionNames(tableName.getDb().toLowerCase(),
-        tableName.getTable().toLowerCase(), (short) -1);
+    List<String> parts = context.getDb().getPartitionNames(tableName.getDb(),
+        tableName.getTable(), (short) -1);
     AggrStats aggrStats = context.getDb().getAggrColStatsFor(
-        tableName.getDb().toLowerCase(), tableName.getTable().toLowerCase(), colNames, parts, false);
+        tableName.getDb(), tableName.getTable(), colNames, parts, false);
     colStats.addAll(aggrStats.getColStats());
     if (parts.size() == aggrStats.getPartsFound()) {
       StatsSetupConst.setColumnStatsState(tableProps, colNames);

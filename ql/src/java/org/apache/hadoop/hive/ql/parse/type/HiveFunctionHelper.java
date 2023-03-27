@@ -419,8 +419,8 @@ public class HiveFunctionHelper implements FunctionHelper {
         for (RexNode aggParameter : aggregateParameters) {
           aggParameterOIs.add(createObjectInspector(aggParameter));
         }
-        if (aggregateName.toLowerCase().equals(FunctionRegistry.LEAD_FUNC_NAME)
-            || aggregateName.toLowerCase().equals(FunctionRegistry.LAG_FUNC_NAME)) {
+        if (aggregateName.equals(FunctionRegistry.LEAD_FUNC_NAME)
+            || aggregateName.equals(FunctionRegistry.LAG_FUNC_NAME)) {
           GenericUDAFEvaluator genericUDAFEvaluator = FunctionRegistry.getGenericWindowingEvaluator(aggregateName,
               aggParameterOIs, isDistinct, isAllColumns, true);
           GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(

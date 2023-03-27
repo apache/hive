@@ -319,9 +319,9 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
 
   private void validateSd(Table hmsTable, String format) {
     StorageDescriptor sd = hmsTable.getSd();
-    Assert.assertTrue(sd.getSerdeInfo().getSerializationLib().toLowerCase().contains(format.toLowerCase()));
-    Assert.assertTrue(sd.getInputFormat().toLowerCase().contains(format.toLowerCase()));
-    Assert.assertTrue(sd.getOutputFormat().toLowerCase(Locale.ROOT).contains(format.toLowerCase()));
+    Assert.assertTrue(sd.getSerdeInfo().getSerializationLib().contains(format));
+    Assert.assertTrue(sd.getInputFormat().contains(format));
+    Assert.assertTrue(sd.getOutputFormat().toLowerCase(Locale.ROOT).contains(format));
   }
 
   private void validateTblProps(Table hmsTable, boolean migrationSucceeded) {

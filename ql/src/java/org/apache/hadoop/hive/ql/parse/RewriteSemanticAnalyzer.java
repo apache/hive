@@ -388,7 +388,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
    * @param colName not null
    */
   private static String normalizeColName(String colName) {
-    return colName.toLowerCase();
+    return colName;
   }
 
   /**

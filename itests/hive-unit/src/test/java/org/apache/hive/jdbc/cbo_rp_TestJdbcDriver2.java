@@ -1465,7 +1465,7 @@ public class cbo_rp_TestJdbcDriver2 {
     ResultSetMetaData meta = res.getMetaData();
 
     ResultSet colRS = con.getMetaData().getColumns(null, null,
-        dataTypeTableName.toLowerCase(), null);
+        dataTypeTableName, null);
 
     assertEquals(20, meta.getColumnCount());
 
@@ -1480,7 +1480,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c1", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.INTEGER, colRS.getInt("DATA_TYPE"));
-    assertEquals("int", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("int", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(1), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(1), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1495,7 +1495,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c2", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.BOOLEAN, colRS.getInt("DATA_TYPE"));
-    assertEquals("boolean", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("boolean", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getScale(2), colRS.getInt("DECIMAL_DIGITS"));
 
     assertTrue(colRS.next());
@@ -1509,7 +1509,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c3", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.DOUBLE, colRS.getInt("DATA_TYPE"));
-    assertEquals("double", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("double", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(3), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(3), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1524,7 +1524,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c4", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
-    assertEquals("string", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("string", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(4), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(4), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1539,7 +1539,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c5", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.ARRAY, colRS.getInt("DATA_TYPE"));
-    assertEquals("array<int>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("array<int>", colRS.getString("TYPE_NAME"));
 
     assertTrue(colRS.next());
 
@@ -1552,7 +1552,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c6", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.JAVA_OBJECT, colRS.getInt("DATA_TYPE"));
-    assertEquals("map<int,string>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("map<int,string>", colRS.getString("TYPE_NAME"));
 
     assertTrue(colRS.next());
 
@@ -1565,7 +1565,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c7", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.JAVA_OBJECT, colRS.getInt("DATA_TYPE"));
-    assertEquals("map<string,string>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("map<string,string>", colRS.getString("TYPE_NAME"));
 
     assertTrue(colRS.next());
 
@@ -1578,7 +1578,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c8", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.STRUCT, colRS.getInt("DATA_TYPE"));
-    assertEquals("struct<r:string,s:int,t:double>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("struct<r:string,s:int,t:double>", colRS.getString("TYPE_NAME"));
 
     assertTrue(colRS.next());
 
@@ -1591,7 +1591,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c9", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.TINYINT, colRS.getInt("DATA_TYPE"));
-    assertEquals("tinyint", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("tinyint", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(9), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(9), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1606,7 +1606,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c10", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.SMALLINT, colRS.getInt("DATA_TYPE"));
-    assertEquals("smallint", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("smallint", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(10), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(10), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1621,7 +1621,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c11", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.FLOAT, colRS.getInt("DATA_TYPE"));
-    assertEquals("float", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("float", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(11), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(11), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1636,7 +1636,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c12", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.BIGINT, colRS.getInt("DATA_TYPE"));
-    assertEquals("bigint", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("bigint", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(12), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(12), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1670,7 +1670,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c17", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.TIMESTAMP, colRS.getInt("DATA_TYPE"));
-    assertEquals("timestamp", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("timestamp", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(15), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(15), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1685,7 +1685,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c18", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.DECIMAL, colRS.getInt("DATA_TYPE"));
-    assertEquals("decimal", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("decimal", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(16), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(16), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1701,7 +1701,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c20", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.DATE, colRS.getInt("DATA_TYPE"));
-    assertEquals("date", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("date", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(17), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(17), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1717,7 +1717,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c21", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
-    assertEquals("varchar", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("varchar", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(18), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(18), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1740,7 +1740,7 @@ public class cbo_rp_TestJdbcDriver2 {
 
     assertEquals("c22", colRS.getString("COLUMN_NAME"));
     assertEquals(Types.CHAR, colRS.getInt("DATA_TYPE"));
-    assertEquals("char", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals("char", colRS.getString("TYPE_NAME"));
     assertEquals(meta.getPrecision(19), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(19), colRS.getInt("DECIMAL_DIGITS"));
 
@@ -1760,7 +1760,7 @@ public class cbo_rp_TestJdbcDriver2 {
     ResultSetMetaData meta = res.getMetaData();
 
     ResultSet colRS = con.getMetaData().getColumns(null, null,
-        dataTypeTableName.toLowerCase(), null);
+        dataTypeTableName, null);
 
     assertEquals(3, meta.getColumnCount());
 
@@ -2041,7 +2041,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
    */
   @Test
   public void testFetchFirstNonMR() throws Exception {
-    execFetchFirst("select * from " + dataTypeTableName, dataTypeTableName.toLowerCase() + "." + "c4", false);
+    execFetchFirst("select * from " + dataTypeTableName, dataTypeTableName + "." + "c4", false);
   }
 
   /**

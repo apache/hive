@@ -167,7 +167,7 @@ class ConstraintExprGenerator<T> {
     for (FieldSchema fs : tbl.getCols()) {
       // since SQL is case insenstive just to make sure that the comparison b/w column names
       // and check expression's column reference work convert the key to lower case
-      col2Cols.put(fs.getName().toLowerCase(), inputColInfos.get(colIdx).getInternalName());
+      col2Cols.put(fs.getName(), inputColInfos.get(colIdx).getInternalName());
       colIdx++;
     }
 
@@ -200,7 +200,7 @@ class ConstraintExprGenerator<T> {
                                       RowResolver inputRR) {
     if (checkExpr.getType() == HiveParser.TOK_TABLE_OR_COL) {
       ASTNode oldColChild = (ASTNode) (checkExpr.getChild(0));
-      String oldColRef = oldColChild.getText().toLowerCase();
+      String oldColRef = oldColChild.getText();
       assert (col2Col.containsKey(oldColRef));
       String internalColRef = col2Col.get(oldColRef);
       String[] fullQualColRef = inputRR.reverseLookup(internalColRef);

@@ -61,7 +61,7 @@ public class AcidMetaDataFile {
 
     @Override
     public String toString() {
-      return name().toLowerCase();
+      return name();
     }
   }
 

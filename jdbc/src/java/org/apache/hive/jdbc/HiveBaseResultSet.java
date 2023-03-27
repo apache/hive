@@ -100,7 +100,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
     if (columnName == null) {
       throw new SQLException("null column name not supported");
     }
-    final String lcColumnName = columnName.toLowerCase();
+    final String lcColumnName = columnName;
     final Integer result = this.columnNameIndexCache.computeIfAbsent(lcColumnName, cn -> {
       int columnIndex = 0;
       for (final String normalizedColumnName : normalizedColumnNames) {

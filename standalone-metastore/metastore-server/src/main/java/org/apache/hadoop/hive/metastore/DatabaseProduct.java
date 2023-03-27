@@ -136,7 +136,7 @@ public class DatabaseProduct implements Configurable {
 
   private static DbType getDbType(String productName) {
     DbType dbt;
-    productName = productName.replaceAll("\\s+", "").toLowerCase();
+    productName = productName.replaceAll("\\s+", "");
 
     if (productName.contains(DERBY_NAME)) {
       dbt = DbType.DERBY;
@@ -227,7 +227,7 @@ public class DatabaseProduct implements Configurable {
     case POSTGRES:
     case ORACLE:
     case CUSTOM:
-      return dbType.name().toLowerCase();
+      return dbType.name();
     case UNDEFINED:
     default:
       return null;

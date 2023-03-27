@@ -613,7 +613,7 @@ public class Table implements Serializable {
 
   public FieldSchema getPartColByName(String colName) {
     for (FieldSchema key : getPartCols()) {
-      if (key.getName().toLowerCase().equals(colName)) {
+      if (key.getName().equals(colName)) {
         return key;
       }
     }
@@ -1176,7 +1176,7 @@ public class Table implements Serializable {
       throw new HiveException("Invalid column name '" + colName
           + "' in the table definition");
     }
-    return colName.toLowerCase();
+    return colName;
   }
 
   public TableSpec getTableSpec() {

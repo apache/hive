@@ -1031,7 +1031,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   private static String normalizeCase(String s) {
-    return s == null ? null : s.toLowerCase();
+    return s == null ? null : s;
   }
 
   private List<ShowLocksResponseElement> getLocks() throws Exception {

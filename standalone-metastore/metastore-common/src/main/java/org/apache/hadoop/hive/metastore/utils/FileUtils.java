@@ -451,7 +451,7 @@ public class FileUtils {
       if (i > 0) {
         name.append(Path.SEPARATOR);
       }
-      name.append(escapePathName((partCols.get(i)).toLowerCase(), defaultStr));
+      name.append(escapePathName((partCols.get(i)), defaultStr));
       name.append('=');
       name.append(escapePathName(vals.get(i), defaultStr));
     }

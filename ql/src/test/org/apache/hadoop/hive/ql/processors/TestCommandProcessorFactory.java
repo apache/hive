@@ -59,7 +59,7 @@ public class TestCommandProcessorFactory {
     SessionState.start(conf);
 
     for (HiveCommand command : HiveCommand.values()) {
-      String cmd[] = command.name().toLowerCase().split("_");
+      String cmd[] = command.name().split("_");
       Assert.assertNotNull("Cmd " + cmd[0] + " not return null",
         CommandProcessorFactory
           .getForHiveCommandInternal(cmd, conf, command.isOnlyForTesting()));
@@ -69,7 +69,7 @@ public class TestCommandProcessorFactory {
     }
     conf.set(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST.toString(), "");
     for (HiveCommand command : HiveCommand.values()) {
-      String cmd[] = command.name().toLowerCase().split("_");
+      String cmd[] = command.name().split("_");
       try {
         CommandProcessorFactory
           .getForHiveCommandInternal(cmd, conf, command.isOnlyForTesting());

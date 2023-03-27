@@ -106,8 +106,8 @@ public class HiveAlterHandler implements AlterHandler {
       IHMSHandler handler, String writeIdList)
           throws InvalidOperationException, MetaException {
     catName = normalizeIdentifier(catName);
-    name = name.toLowerCase();
-    dbname = dbname.toLowerCase();
+    name = name;
+    dbname = dbname;
 
     final boolean cascade;
     final boolean replDataLocationChanged;
@@ -124,8 +124,8 @@ public class HiveAlterHandler implements AlterHandler {
       throw new InvalidOperationException("New table is null");
     }
 
-    String newTblName = newt.getTableName().toLowerCase();
-    String newDbName = newt.getDbName().toLowerCase();
+    String newTblName = newt.getTableName();
+    String newDbName = newt.getDbName();
 
     if (!MetaStoreUtils.validateName(newTblName, handler.getConf())) {
       throw new InvalidOperationException(newTblName + " is not a valid object name");
@@ -1043,7 +1043,7 @@ public class HiveAlterHandler implements AlterHandler {
     String catName = normalizeIdentifier(oldTable.isSetCatName()
         ? oldTable.getCatName()
         : getDefaultCatalog(msdb.getConf()));
-    String dbName = oldTable.getDbName().toLowerCase();
+    String dbName = oldTable.getDbName();
     String tableName = normalizeIdentifier(oldTable.getTableName());
     List<String> columnNames = oldTable.getSd().getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
     return msdb.getTableColumnStatistics(catName, dbName, tableName, columnNames);
@@ -1057,9 +1057,9 @@ public class HiveAlterHandler implements AlterHandler {
       String catName = normalizeIdentifier(oldTable.isSetCatName()
           ? oldTable.getCatName()
           : getDefaultCatalog(msdb.getConf()));
-      String dbName = oldTable.getDbName().toLowerCase();
+      String dbName = oldTable.getDbName();
       String tableName = normalizeIdentifier(oldTable.getTableName());
-      String newDbName = newTable.getDbName().toLowerCase();
+      String newDbName = newTable.getDbName();
       String newTableName = normalizeIdentifier(newTable.getTableName());
       List<FieldSchema> oldTableCols = oldTable.getSd().getCols();
       List<FieldSchema> newTableCols = newTable.getSd().getCols();
@@ -1078,7 +1078,7 @@ public class HiveAlterHandler implements AlterHandler {
               boolean found = newTableCols.stream().anyMatch(c -> statsObj.getColName().equalsIgnoreCase(c.getName()) &&
                   statsObj.getColType().equalsIgnoreCase(c.getType()));
               if (nameChanged || !found) {
-                msdb.deleteTableColumnStatistics(catName, oldTable.getDbName().toLowerCase(),
+                msdb.deleteTableColumnStatistics(catName, oldTable.getDbName(),
                     normalizeIdentifier(oldTable.getTableName()), statsObj.getColName(), colStats.getEngine());
               }
               if (found) {

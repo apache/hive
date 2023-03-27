@@ -855,7 +855,7 @@ public class StatsRulesProcFactory {
           ColStatistics cs = stats.getColumnStatisticsFromColName(columnDesc.getColumn());
           if (FilterSelectivityEstimator.isHistogramAvailable(cs)) {
             final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(cs.getHistogram()));
-            final String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
+            final String colTypeLowerCase = columnDesc.getTypeString();
             final float leftValue = extractFloatFromLiteralValue(colTypeLowerCase, leftValueString);
             final float rightValue = extractFloatFromLiteralValue(colTypeLowerCase, rightValueString);
             if (invert) {
@@ -1049,7 +1049,7 @@ public class StatsRulesProcFactory {
       }
 
       ColStatistics cs = stats.getColumnStatisticsFromColName(columnDesc.getColumn());
-      String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
+      String colTypeLowerCase = columnDesc.getTypeString();
 
       if (FilterSelectivityEstimator.isHistogramAvailable(cs)) {
         try {

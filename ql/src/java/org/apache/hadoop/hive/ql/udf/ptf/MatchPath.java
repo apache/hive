@@ -643,7 +643,7 @@ public class MatchPath extends TableFunctionEvaluator
         String symbolName = symbolNames.get(i);
         ExprNodeEvaluator symbolExprEval = symbolExprEvals.get(i);
         ObjectInspector symbolExprOI = symbolExprOIs.get(i);
-        symbolExprEvalMap.put(symbolName.toLowerCase(),
+        symbolExprEvalMap.put(symbolName,
             new Object[] {symbolExprEval, symbolExprOI});
       }
     }
@@ -664,7 +664,7 @@ public class MatchPath extends TableFunctionEvaluator
         boolean isPlus = symbol.endsWith("+");
 
         symbol = (isStar || isPlus) ? symbol.substring(0, symbol.length() - 1) : symbol;
-        Object[] symbolDetails = symbolExprEvalMap.get(symbol.toLowerCase());
+        Object[] symbolDetails = symbolExprEvalMap.get(symbol);
         if ( symbolDetails == null )
         {
           throw new SemanticException(String.format("Unknown Symbol %s", symbol));
@@ -776,7 +776,7 @@ public class MatchPath extends TableFunctionEvaluator
     private void fixResultExprString()
     {
       String r = resultExprString.trim();
-      if (r.length()<6 || !r.substring(0, 6).toLowerCase().equals("select"))
+      if (r.length()<6 || !r.substring(0, 6).equals("select"))
       {
         r = "select " + r;
       }
@@ -856,7 +856,7 @@ public class MatchPath extends TableFunctionEvaluator
       inExpr = PTFTranslator.getASTNode(inpCInfo, inputRR);
       if ( inExpr != null ) {
         rr.putExpression(inExpr, cInfo);
-        colAlias = inExpr.toStringTree().toLowerCase();
+        colAlias = inExpr.toStringTree();
       }
       else {
         colAlias = colAlias == null ? cInfo.getInternalName() : colAlias;

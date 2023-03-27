@@ -53,8 +53,8 @@ final class PartitionTree {
   }
 
   Partition addPartition(Partition partition, String partName, boolean ifNotExists) throws AlreadyExistsException {
-    partition.setDbName(partition.getDbName().toLowerCase());
-    partition.setTableName(partition.getTableName().toLowerCase());
+    partition.setDbName(partition.getDbName());
+    partition.setTableName(partition.getTableName());
     if (!ifNotExists && parts.containsKey(partName)) {
       throw new AlreadyExistsException("Partition " + partName + " already exists");
     }

@@ -195,7 +195,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (work.dataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
       } else {
-        Path dumpRoot = ReplUtils.getEncodedDumpRootPath(conf, work.dbNameOrPattern.toLowerCase());
+        Path dumpRoot = ReplUtils.getEncodedDumpRootPath(conf, work.dbNameOrPattern);
         Path latestDumpPath = ReplUtils.getLatestDumpPath(dumpRoot, conf);
         if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
           LOG.error("Previous dump failed with non recoverable error. Needs manual intervention. ");
@@ -490,7 +490,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Path tableListLoc = null;
     if (!work.replScope.includeAllTables()) {
       Path tableListDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + "/" + ReplUtils.REPL_TABLE_LIST_DIR_NAME);
-      tableListLoc = new Path(tableListDir, work.dbNameOrPattern.toLowerCase());
+      tableListLoc = new Path(tableListDir, work.dbNameOrPattern);
     }
     AtlasDumpWork atlasDumpWork = new AtlasDumpWork(work.dbNameOrPattern, atlasDumpDir, bootstrap, prevAtlasDumpDir,
            tableListLoc, work.getMetricCollector());
@@ -797,7 +797,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
     // If the table is renamed and the new name satisfies the filter but the old name does not then the table needs to
     // be bootstrapped.
-    if (tablesForBootstrap.contains(table.getTableName().toLowerCase())) {
+    if (tablesForBootstrap.contains(table.getTableName())) {
       return true;
     }
 
@@ -1054,7 +1054,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
     // Get snapshot related configurations for external data copy.
     boolean isSnapshotEnabled = conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY);
-    String snapshotPrefix = dbName.toLowerCase();
+    String snapshotPrefix = dbName;
     ArrayList<String> prevSnaps = new ArrayList<>();
     try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, conf);
         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, conf);
@@ -1149,7 +1149,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, lastReplId, snapshotCount, null);
       // Clean-up snapshots
       if (isSnapshotEnabled) {
-        cleanupSnapshots(SnapshotUtils.getSnapshotFileListPath(dumpRoot), work.dbNameOrPattern.toLowerCase(), conf,
+        cleanupSnapshots(SnapshotUtils.getSnapshotFileListPath(dumpRoot), work.dbNameOrPattern, conf,
             snapshotCount, false);
       }
       return lastReplId;
@@ -1301,10 +1301,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     try {
       retryable.executeCallable((Callable<Void>) () -> {
         Path tableListFile = new Path(dbRoot, ReplUtils.REPL_TABLE_LIST_DIR_NAME);
-        tableListFile = new Path(tableListFile, dbName.toLowerCase());
+        tableListFile = new Path(tableListFile, dbName);
         FSDataOutputStream writer = tableListFile.getFileSystem(hiveConf).create(tableListFile);
         for (String tableName : tableList) {
-          String line = tableName.toLowerCase().concat("\n");
+          String line = tableName.concat("\n");
           writer.write(line.getBytes(StandardCharsets.UTF_8));
         }
         // Close is called explicitly as close also calls the actual file system write,
@@ -1390,7 +1390,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           HashMap<String, Boolean> singleCopyPaths = getNonTableLevelCopyPaths(db, isSingleTaskForExternalDb);
           boolean isExternalTablePresent = false;
 
-          String snapshotPrefix = dbName.toLowerCase();
+          String snapshotPrefix = dbName;
           ArrayList<String> prevSnaps = new ArrayList<>(); // Will stay empty in case of bootstrap
           if (isSnapshotEnabled) {
             // Delete any old existing snapshot file, We always start fresh in case of bootstrap.

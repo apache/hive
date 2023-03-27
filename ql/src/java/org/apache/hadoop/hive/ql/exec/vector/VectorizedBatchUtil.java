@@ -110,7 +110,7 @@ public class VectorizedBatchUtil {
   public static ColumnVector createColumnVector(String typeName,
       DataTypePhysicalVariation dataTypePhysicalVariation) {
 
-    typeName = typeName.toLowerCase();
+    typeName = typeName;
 
     // Allow undecorated CHAR and VARCHAR to support scratch column type names.
     if (typeName.equals("char") || typeName.equals("varchar")) {

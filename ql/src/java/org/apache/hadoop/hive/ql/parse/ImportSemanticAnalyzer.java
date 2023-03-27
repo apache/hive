@@ -191,7 +191,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode partspec_val = (ASTNode) partspec.getChild(j);
         String val = null;
         String colName = unescapeIdentifier(partspec_val.getChild(0)
-                .getText().toLowerCase());
+                .getText());
         if (partspec_val.getChildCount() < 2) { // DP in the form of T
           // partition (ds, hr)
           throw new SemanticException(

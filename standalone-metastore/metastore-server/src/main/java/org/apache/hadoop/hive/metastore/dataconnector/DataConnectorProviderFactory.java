@@ -59,8 +59,8 @@ public class DataConnectorProviderFactory {
     }
 
     String scopedDb = (db.getRemote_dbname() != null) ? db.getRemote_dbname() : db.getName();
-    if (cache.containsKey(db.getConnector_name().toLowerCase())) {
-      provider = cache.get(db.getConnector_name().toLowerCase());
+    if (cache.containsKey(db.getConnector_name())) {
+      provider = cache.get(db.getConnector_name());
       if (provider != null) {
         provider.setScope(scopedDb);
       }
@@ -89,7 +89,7 @@ public class DataConnectorProviderFactory {
     default:
       throw new MetaException("Data connector of type " + connector.getType() + " not implemented yet");
     }
-    cache.put(connector.getName().toLowerCase(), provider);
+    cache.put(connector.getName(), provider);
     return provider;
   }
 

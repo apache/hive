@@ -149,7 +149,7 @@ public class TimestampTZUtil {
 
   public static ZoneId parseTimeZone(String timeZoneStr) {
     if (timeZoneStr == null || timeZoneStr.trim().isEmpty() ||
-        timeZoneStr.trim().toLowerCase().equals("local")) {
+        timeZoneStr.trim().equals("local")) {
       // default
       return ZoneId.systemDefault();
     }

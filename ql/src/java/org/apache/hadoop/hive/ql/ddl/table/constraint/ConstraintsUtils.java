@@ -180,7 +180,7 @@ public final class ConstraintsUtils {
     for (int j = 0; j < child.getChild(0).getChildCount(); j++) {
       Tree columnName = child.getChild(0).getChild(j);
       BaseSemanticAnalyzer.checkColumnName(columnName.getText());
-      columnNames.add(BaseSemanticAnalyzer.unescapeIdentifier(columnName.getText().toLowerCase()));
+      columnNames.add(BaseSemanticAnalyzer.unescapeIdentifier(columnName.getText()));
     }
     return generateConstraintInfos(child, columnNames.build(), null, null);
   }
@@ -217,7 +217,7 @@ public final class ConstraintsUtils {
       ASTNode grandChild = (ASTNode) child.getChild(i);
       int type = grandChild.getToken().getType();
       if (type == HiveParser.TOK_CONSTRAINT_NAME) {
-        constraintName = BaseSemanticAnalyzer.unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
+        constraintName = BaseSemanticAnalyzer.unescapeIdentifier(grandChild.getChild(0).getText());
       } else if (type == HiveParser.TOK_ENABLE) {
         enable = true;
         // validate is false by default if we enable the constraint
@@ -369,7 +369,7 @@ public final class ConstraintsUtils {
       ASTNode grandChild = (ASTNode) node.getChild(i);
       int type = grandChild.getToken().getType();
       if (type == HiveParser.TOK_CONSTRAINT_NAME) {
-        constraintName = BaseSemanticAnalyzer.unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
+        constraintName = BaseSemanticAnalyzer.unescapeIdentifier(grandChild.getChild(0).getText());
       } else if (type == HiveParser.TOK_ENABLE) {
         enable = true;
         // validate is true by default if we enable the constraint
@@ -411,11 +411,11 @@ public final class ConstraintsUtils {
       sqlForeignKey.setFktable_name(tableName.getTable());
       Tree fkgrandChild = node.getChild(fkIndex).getChild(j);
       BaseSemanticAnalyzer.checkColumnName(fkgrandChild.getText());
-      sqlForeignKey.setFkcolumn_name(BaseSemanticAnalyzer.unescapeIdentifier(fkgrandChild.getText().toLowerCase()));
+      sqlForeignKey.setFkcolumn_name(BaseSemanticAnalyzer.unescapeIdentifier(fkgrandChild.getText()));
       sqlForeignKey.setPktable_db(parentTblName.getDb());
       sqlForeignKey.setPktable_name(parentTblName.getTable());
       Tree pkgrandChild = node.getChild(pkIndex).getChild(j);
-      sqlForeignKey.setPkcolumn_name(BaseSemanticAnalyzer.unescapeIdentifier(pkgrandChild.getText().toLowerCase()));
+      sqlForeignKey.setPkcolumn_name(BaseSemanticAnalyzer.unescapeIdentifier(pkgrandChild.getText()));
       sqlForeignKey.setKey_seq(j+1);
       sqlForeignKey.setFk_name(constraintName);
       sqlForeignKey.setEnable_cstr(enable);

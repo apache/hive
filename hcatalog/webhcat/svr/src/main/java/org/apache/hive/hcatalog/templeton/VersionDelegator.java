@@ -37,13 +37,13 @@ public class VersionDelegator extends TempletonDelegator {
   }
 
   public Response getVersion(String module) throws IOException {
-    if (module.toLowerCase().equals("hadoop")) {
+    if (module.equals("hadoop")) {
       return getHadoopVersion();
-    } else if (module.toLowerCase().equals("hive")) {
+    } else if (module.equals("hive")) {
       return getHiveVersion();
-    } else if (module.toLowerCase().equals("sqoop")) {
+    } else if (module.equals("sqoop")) {
       return getSqoopVersion();
-    } else if (module.toLowerCase().equals("pig")) {
+    } else if (module.equals("pig")) {
       return getPigVersion();
     } else {
       return SimpleWebException.buildMessage(HttpStatus.NOT_FOUND_404, null,

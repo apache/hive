@@ -201,8 +201,8 @@ public class ProfileServlet extends HttpServlet {
         if (profilerLock.tryLock(lockTimeoutSecs, TimeUnit.SECONDS)) {
           try {
             File outputFile = new File(OUTPUT_DIR, "async-prof-pid-" + pid + "-" +
-              event.name().toLowerCase() + "-" + ID_GEN.incrementAndGet() + "." +
-              output.name().toLowerCase());
+              event.name() + "-" + ID_GEN.incrementAndGet() + "." +
+              output.name());
             List<String> cmd = new ArrayList<>();
             cmd.add(asyncProfilerHome + PROFILER_SCRIPT);
             cmd.add("-e");
@@ -210,7 +210,7 @@ public class ProfileServlet extends HttpServlet {
             cmd.add("-d");
             cmd.add("" + duration);
             cmd.add("-o");
-            cmd.add(output.name().toLowerCase());
+            cmd.add(output.name());
             cmd.add("-f");
             cmd.add(outputFile.getAbsolutePath());
             if (interval != null) {

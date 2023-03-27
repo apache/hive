@@ -44,7 +44,7 @@ public class JsonReadBench {
     public MyState() {
       try {
         json = getResource("val1.json");
-        type = getResource("val1.type").toLowerCase().trim();
+        type = getResource("val1.type").trim();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

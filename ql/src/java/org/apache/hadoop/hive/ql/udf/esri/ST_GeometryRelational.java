@@ -61,7 +61,7 @@ public abstract class ST_GeometryRelational extends GenericUDF {
     opSimpleRelation = getRelationOperator();
 
     if (OIs.length != NUM_ARGS) {
-      throw new UDFArgumentException("The " + opSimpleRelation.getType().toString().toLowerCase()
+      throw new UDFArgumentException("The " + opSimpleRelation.getType().toString()
           + " relationship operator takes exactly two arguments");
     }
 

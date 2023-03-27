@@ -532,7 +532,7 @@ public final class ObjectInspectorUtils {
 
   public static StructField getStandardStructFieldRef(String fieldName,
       List<? extends StructField> fields) {
-    fieldName = fieldName.toLowerCase();
+    fieldName = fieldName;
     for (int i = 0; i < fields.size(); i++) {
       if (fields.get(i).getFieldName().equals(fieldName)) {
         return fields.get(i);

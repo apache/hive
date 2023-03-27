@@ -597,7 +597,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   private void parsePatternToTokens(String pattern) {
     tokens.clear();
     String originalPattern = pattern;
-    pattern = pattern.toLowerCase();
+    pattern = pattern;
 
     // indexes of the substring we will check (includes begin, does not include end)
     int begin=0, end=0;
@@ -729,7 +729,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       candidate = originalPattern.substring(begin, subStringEnd);
     }
     Token lastAddedToken = new Token(TokenType.NUMERIC_TEMPORAL,
-        NUMERIC_TEMPORAL_TOKENS.get(candidate.toLowerCase()), candidate,
+        NUMERIC_TEMPORAL_TOKENS.get(candidate), candidate,
         getTokenStringLength(candidate), fillMode);
     tokens.add(lastAddedToken);
     return lastAddedToken;
@@ -741,7 +741,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     candidate = originalPattern.substring(begin, begin + candidate.length());
 
     Token lastAddedToken = new Token(TokenType.CHARACTER_TEMPORAL,
-        CHARACTER_TEMPORAL_TOKENS.get(candidate.toLowerCase()), candidate,
+        CHARACTER_TEMPORAL_TOKENS.get(candidate), candidate,
         getTokenStringLength(candidate), fillMode);
     tokens.add(lastAddedToken);
     return lastAddedToken;
@@ -780,7 +780,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   }
 
   private int getTokenStringLength(String candidate) {
-    Integer length = SPECIAL_LENGTHS.get(candidate.toLowerCase());
+    Integer length = SPECIAL_LENGTHS.get(candidate);
     if (length != null) {
       return length;
     }
@@ -1002,7 +1002,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     // If the first letter is uppercase and the second is lowercase then the output is capitalized:
     //     'Month' -> 'May'.
     if (Character.isLowerCase(token.string.charAt(0))) {
-      output = output.toLowerCase();
+      output = output;
     } else if (Character.isUpperCase(token.string.charAt(1))) {
       output = output.toUpperCase();
     } else {
@@ -1274,7 +1274,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
 
     // exceptions to the rule
     if (token.temporalField == ChronoField.AMPM_OF_DAY) {
-      return substring.toLowerCase().startsWith("a") ? AM : PM;
+      return substring.startsWith("a") ? AM : PM;
     }
     if (token.temporalField == ChronoField.HOUR_OF_AMPM) {
       if ("12".equals(substring)) {
@@ -1482,7 +1482,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       return false;
     }
     Token nextToken = tokens.get(idx + 1);
-    pattern = pattern.toLowerCase();
+    pattern = pattern;
     return (isTimeZoneToken(pattern) && TIME_ZONE_TOKENS.get(pattern) == nextToken.temporalUnit
         || isNumericTemporalToken(pattern) && NUMERIC_TEMPORAL_TOKENS.get(pattern) == nextToken.temporalField
         || isCharacterTemporalToken(pattern) && CHARACTER_TEMPORAL_TOKENS.get(pattern) == nextToken.temporalField);
@@ -1500,6 +1500,6 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   }
 
   private static String capitalize(String substring) {
-    return StringUtils.capitalize(substring.toLowerCase());
+    return StringUtils.capitalize(substring);
   }
 }

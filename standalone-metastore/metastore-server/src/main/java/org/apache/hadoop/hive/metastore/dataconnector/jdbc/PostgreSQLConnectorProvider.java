@@ -66,7 +66,7 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
 
     // map any db specific types here.
     //TODO: Geomentric, network, bit, array data types of postgresql needs to be supported.
-    switch (dbDataType.toLowerCase())
+    switch (dbDataType)
     {
     case "bpchar":
       mappedType = ColumnType.CHAR_TYPE_NAME + wrapSize(size);

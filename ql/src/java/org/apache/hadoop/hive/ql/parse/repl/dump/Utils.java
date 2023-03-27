@@ -261,8 +261,8 @@ public class Utils {
     return Collections2.filter(db.getAllTables(dbName),
             tableName -> {
               assert(tableName != null);
-              return !tableName.toLowerCase().startsWith(
-                      SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase())
+              return !tableName.startsWith(
+                      SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX)
                       && ((replScope == null) || replScope.tableIncludedInReplScope(tableName));
             });
   }
@@ -388,7 +388,7 @@ public class Utils {
         }
 
         // Tables in the list of tables to be bootstrapped should be skipped.
-        return (bootstrapTableList == null || !bootstrapTableList.contains(tableHandle.getTableName().toLowerCase()));
+        return (bootstrapTableList == null || !bootstrapTableList.contains(tableHandle.getTableName()));
       }
     }
     return true;

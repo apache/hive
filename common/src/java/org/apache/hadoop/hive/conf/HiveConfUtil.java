@@ -148,7 +148,7 @@ public class HiveConfUtil {
     });
     for(Map.Entry<String, String> entry : configVals) {
       //use get() to make sure variable substitution works
-      if(entry.getKey().toLowerCase().contains("path")) {
+      if(entry.getKey().contains("path")) {
         StringTokenizer st = new StringTokenizer(conf.get(entry.getKey()), File.pathSeparator);
         sb.append(entry.getKey()).append("=\n");
         while(st.hasMoreTokens()) {

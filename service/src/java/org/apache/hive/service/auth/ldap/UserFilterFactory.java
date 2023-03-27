@@ -57,14 +57,14 @@ public final class UserFilterFactory implements FilterFactory {
 
     UserFilter(Collection<String> userFilter) {
       for (String userFilterItem : userFilter) {
-        this.userFilter.add(userFilterItem.toLowerCase());
+        this.userFilter.add(userFilterItem);
       }
     }
 
     @Override
     public void apply(DirSearch ldap, String user) throws AuthenticationException {
       LOG.info("Authenticating user '{}' using user filter", user);
-      String userName = LdapUtils.extractUserName(user).toLowerCase();
+      String userName = LdapUtils.extractUserName(user);
       if (!userFilter.contains(userName)) {
         LOG.info("Authentication failed based on user membership");
         throw new AuthenticationException("Authentication failed: "

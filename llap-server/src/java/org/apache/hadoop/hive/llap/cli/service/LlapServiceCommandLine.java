@@ -137,8 +137,8 @@ class LlapServiceCommandLine {
       .hasArg()
       .create('q');
 
-  private static final Set<String> VALID_LOGGERS = ImmutableSet.of(LogHelpers.LLAP_LOGGER_NAME_RFA.toLowerCase(),
-      LogHelpers.LLAP_LOGGER_NAME_QUERY_ROUTING.toLowerCase(), LogHelpers.LLAP_LOGGER_NAME_CONSOLE.toLowerCase());
+  private static final Set<String> VALID_LOGGERS = ImmutableSet.of(LogHelpers.LLAP_LOGGER_NAME_RFA,
+      LogHelpers.LLAP_LOGGER_NAME_QUERY_ROUTING, LogHelpers.LLAP_LOGGER_NAME_CONSOLE);
 
   private static final Option LOGGER = OptionBuilder
       .withLongOpt("logger")
@@ -390,7 +390,7 @@ class LlapServiceCommandLine {
     llapQueueName = cl.getOptionValue(QUEUE.getOpt(), ConfVars.LLAP_DAEMON_QUEUE_NAME.getDefaultValue());
     if (cl.hasOption(LOGGER.getLongOpt())) {
       logger = cl.getOptionValue(LOGGER.getLongOpt());
-      Preconditions.checkArgument(VALID_LOGGERS.contains(logger.toLowerCase()));
+      Preconditions.checkArgument(VALID_LOGGERS.contains(logger));
     }
     isStarting = cl.hasOption(START.getOpt());
     output = cl.getOptionValue(OUTPUT.getLongOpt());

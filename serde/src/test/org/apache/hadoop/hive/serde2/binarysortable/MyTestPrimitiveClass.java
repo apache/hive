@@ -401,7 +401,7 @@ public class MyTestPrimitiveClass {
         break;
       default:
         // No type name difference or adornment.
-        typeName = primitiveCategory.name().toLowerCase();
+        typeName = primitiveCategory.name();
         break;
       }
       PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(typeName);

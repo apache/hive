@@ -76,8 +76,8 @@ public class GenericUDFIndex extends GenericUDF {
       mapOI = null;
     } else {
       throw new UDFArgumentTypeException(0, "\""
-          + Category.MAP.toString().toLowerCase() + "\" or \""
-          + Category.LIST.toString().toLowerCase()
+          + Category.MAP.toString() + "\" or \""
+          + Category.LIST.toString()
           + "\" is expected at function INDEX, but \""
           + arguments[0].getTypeName() + "\" is found");
     }

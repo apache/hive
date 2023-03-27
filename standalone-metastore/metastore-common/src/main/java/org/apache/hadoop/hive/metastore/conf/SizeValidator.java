@@ -91,7 +91,7 @@ public class SizeValidator implements Validator {
   }
 
   private static long multiplierFor(String unit) {
-    unit = unit.trim().toLowerCase();
+    unit = unit.trim();
     if (unit.isEmpty() || unit.equals("b") || unit.equals("bytes")) {
       return 1;
     } else if (unit.equals("kb")) {

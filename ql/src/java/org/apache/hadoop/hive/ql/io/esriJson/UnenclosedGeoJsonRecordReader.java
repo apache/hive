@@ -166,7 +166,7 @@ public class UnenclosedGeoJsonRecordReader extends UnenclosedBaseJsonRecordReade
                 break;
               fieldName += (char) next;
             }
-            if (!"feature".equals(fieldName.toLowerCase())) {
+            if (!"feature".equals(fieldName)) {
               state = START;
             } else {
               if ((next = getNonWhite()) < 0) {   // end of stream, no good

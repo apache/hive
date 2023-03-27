@@ -242,24 +242,24 @@ public class TestSchemaToolCatalogOps {
 
       Database fetchedDb = client.getDatabase(catName, dbName);
       Assert.assertNotNull(fetchedDb);
-      Assert.assertEquals(catName.toLowerCase(), fetchedDb.getCatalogName());
+      Assert.assertEquals(catName, fetchedDb.getCatalogName());
 
       Function fetchedFunction = client.getFunction(catName, dbName, funcName);
       Assert.assertNotNull(fetchedFunction);
-      Assert.assertEquals(catName.toLowerCase(), fetchedFunction.getCatName());
-      Assert.assertEquals(dbName.toLowerCase(), fetchedFunction.getDbName());
+      Assert.assertEquals(catName, fetchedFunction.getCatName());
+      Assert.assertEquals(dbName, fetchedFunction.getDbName());
 
       Table fetchedTable = client.getTable(catName, dbName, tableName);
       Assert.assertNotNull(fetchedTable);
-      Assert.assertEquals(catName.toLowerCase(), fetchedTable.getCatName());
-      Assert.assertEquals(dbName.toLowerCase(), fetchedTable.getDbName());
+      Assert.assertEquals(catName, fetchedTable.getCatName());
+      Assert.assertEquals(dbName, fetchedTable.getDbName());
 
       Partition fetchedPart =
           client.getPartition(catName, dbName, tableName, Collections.singletonList(partVal));
       Assert.assertNotNull(fetchedPart);
-      Assert.assertEquals(catName.toLowerCase(), fetchedPart.getCatName());
-      Assert.assertEquals(dbName.toLowerCase(), fetchedPart.getDbName());
-      Assert.assertEquals(tableName.toLowerCase(), fetchedPart.getTableName());
+      Assert.assertEquals(catName, fetchedPart.getCatName());
+      Assert.assertEquals(dbName, fetchedPart.getDbName());
+      Assert.assertEquals(tableName, fetchedPart.getTableName());
 
       // drop the function
       client.dropFunction(catName, dbName, funcName);
@@ -313,7 +313,7 @@ public class TestSchemaToolCatalogOps {
 
     // Make sure nothing really moved
     Set<String> dbNames = new HashSet<>(client.getAllDatabases(DEFAULT_CATALOG_NAME));
-    Assert.assertTrue(dbNames.contains(dbName.toLowerCase()));
+    Assert.assertTrue(dbNames.contains(dbName));
   }
 
   @Test
@@ -346,15 +346,15 @@ public class TestSchemaToolCatalogOps {
 
       Table fetchedTable = client.getTable(toCatName, toDbName, tableName);
       Assert.assertNotNull(fetchedTable);
-      Assert.assertEquals(toCatName.toLowerCase(), fetchedTable.getCatName());
-      Assert.assertEquals(toDbName.toLowerCase(), fetchedTable.getDbName());
+      Assert.assertEquals(toCatName, fetchedTable.getCatName());
+      Assert.assertEquals(toDbName, fetchedTable.getDbName());
 
       Partition fetchedPart =
           client.getPartition(toCatName, toDbName, tableName, Collections.singletonList(partVal));
       Assert.assertNotNull(fetchedPart);
-      Assert.assertEquals(toCatName.toLowerCase(), fetchedPart.getCatName());
-      Assert.assertEquals(toDbName.toLowerCase(), fetchedPart.getDbName());
-      Assert.assertEquals(tableName.toLowerCase(), fetchedPart.getTableName());
+      Assert.assertEquals(toCatName, fetchedPart.getCatName());
+      Assert.assertEquals(toDbName, fetchedPart.getDbName());
+      Assert.assertEquals(tableName, fetchedPart.getTableName());
     });
   }
 
@@ -386,14 +386,14 @@ public class TestSchemaToolCatalogOps {
     Table fetchedTable = client.getTable(DEFAULT_CATALOG_NAME, toDbName, tableName);
     Assert.assertNotNull(fetchedTable);
     Assert.assertEquals(DEFAULT_CATALOG_NAME, fetchedTable.getCatName());
-    Assert.assertEquals(toDbName.toLowerCase(), fetchedTable.getDbName());
+    Assert.assertEquals(toDbName, fetchedTable.getDbName());
 
     Partition fetchedPart =
         client.getPartition(DEFAULT_CATALOG_NAME, toDbName, tableName, Collections.singletonList(partVal));
     Assert.assertNotNull(fetchedPart);
     Assert.assertEquals(DEFAULT_CATALOG_NAME, fetchedPart.getCatName());
-    Assert.assertEquals(toDbName.toLowerCase(), fetchedPart.getDbName());
-    Assert.assertEquals(tableName.toLowerCase(), fetchedPart.getTableName());
+    Assert.assertEquals(toDbName, fetchedPart.getDbName());
+    Assert.assertEquals(tableName, fetchedPart.getTableName());
   }
 
   @Test
@@ -429,7 +429,7 @@ public class TestSchemaToolCatalogOps {
 
     // Make sure nothing really moved
     Set<String> tableNames = new HashSet<>(client.getAllTables(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME));
-    Assert.assertTrue(tableNames.contains(tableName.toLowerCase()));
+    Assert.assertTrue(tableNames.contains(tableName));
 
     // Make sure the table in the target database didn't get clobbered
     Table fetchedTable =  client.getTable(DEFAULT_CATALOG_NAME, toDbName, tableName);
@@ -468,7 +468,7 @@ public class TestSchemaToolCatalogOps {
 
     // Make sure nothing really moved
     Set<String> tableNames = new HashSet<>(client.getAllTables(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME));
-    Assert.assertTrue(tableNames.contains(tableName.toLowerCase()));
+    Assert.assertTrue(tableNames.contains(tableName));
   }
 
   private static void execute(SchemaToolTask task, String taskArgs) throws HiveMetaException {

@@ -278,7 +278,7 @@ public class TestAcidOnTez {
     //now make sure delete deltas are present
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-      (Table.NONACIDNONBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+      (Table.NONACIDNONBUCKET).toString()), FileUtils.STAGING_DIR_PATH_FILTER);
     String[] expectedDelDelta = {"delete_delta_0000001_0000001_0000", "delete_delta_0000002_0000002_0000"};
     for(FileStatus stat : status) {
       for(int i = 0; i < expectedDelDelta.length; i++) {
@@ -307,7 +307,7 @@ public class TestAcidOnTez {
     }
     //check we have right delete delta files after minor compaction
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-      (Table.NONACIDNONBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+      (Table.NONACIDNONBUCKET).toString()), FileUtils.STAGING_DIR_PATH_FILTER);
     String[] expectedDelDelta2 = {"delete_delta_0000001_0000001_0000", "delete_delta_0000002_0000002_0000", "delete_delta_0000001_0000002"};
     for(FileStatus stat : status) {
       for(int i = 0; i < expectedDelDelta2.length; i++) {
@@ -376,7 +376,7 @@ public class TestAcidOnTez {
     }
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-      (Table.NONACIDNONBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+      (Table.NONACIDNONBUCKET).toString()), FileUtils.STAGING_DIR_PATH_FILTER);
     //ensure there is partition dir
     runStatementOnDriver("insert into " + Table.NONACIDPART + " partition (p=1) values (100,110)", confForTez);
     //creates more files in that partition
@@ -516,7 +516,7 @@ public class TestAcidOnTez {
     //now make sure delete deltas are present
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-      (Table.ACIDNOBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+      (Table.ACIDNOBUCKET).toString()), FileUtils.STAGING_DIR_PATH_FILTER);
     String[] expectedDelDelta = {"delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000"};
     for(FileStatus stat : status) {
       for(int i = 0; i < expectedDelDelta.length; i++) {
@@ -545,7 +545,7 @@ public class TestAcidOnTez {
     }
     //check we have right delete delta files after minor compaction
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-      (Table.ACIDNOBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+      (Table.ACIDNOBUCKET).toString()), FileUtils.STAGING_DIR_PATH_FILTER);
     String[] expectedDelDelta2 = { "delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000", "delete_delta_0000001_0000003_v0000023"};
     for(FileStatus stat : status) {
       for(int i = 0; i < expectedDelDelta2.length; i++) {
@@ -899,8 +899,8 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
    */
   @Test
   public void testIsOriginal() throws IOException {
-    assertIsOriginal(new Path(TEST_WAREHOUSE_DIR, Table.ACIDTBL.toString().toLowerCase()), false);
-    assertIsOriginal(new Path(TEST_WAREHOUSE_DIR, Table.NONACIDORCTBL.toString().toLowerCase()), true);
+    assertIsOriginal(new Path(TEST_WAREHOUSE_DIR, Table.ACIDTBL.toString()), false);
+    assertIsOriginal(new Path(TEST_WAREHOUSE_DIR, Table.NONACIDORCTBL.toString()), true);
   }
 
   /**

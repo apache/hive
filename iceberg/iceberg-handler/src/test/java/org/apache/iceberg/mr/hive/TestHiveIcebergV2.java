@@ -383,8 +383,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         continue;
       }
 
-      String tableName = type.typeId().toString().toLowerCase() + "_table_" + i;
-      String columnName = type.typeId().toString().toLowerCase() + "_column";
+      String tableName = type.typeId().toString() + "_table_" + i;
+      String columnName = type.typeId().toString() + "_column";
 
       Schema schema = new Schema(required(1, columnName, type));
       List<Record> records = TestHelper.generateRandomRecords(schema, 1, 0L);
@@ -566,8 +566,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         continue;
       }
 
-      String tableName = type.typeId().toString().toLowerCase() + "_table_" + i;
-      String columnName = type.typeId().toString().toLowerCase() + "_column";
+      String tableName = type.typeId().toString() + "_table_" + i;
+      String columnName = type.typeId().toString() + "_column";
 
       Schema schema = new Schema(required(1, columnName, type));
       List<Record> originalRecords = TestHelper.generateRandomRecords(schema, 1, 0L);

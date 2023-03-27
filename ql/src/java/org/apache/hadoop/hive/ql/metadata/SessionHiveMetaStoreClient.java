@@ -311,8 +311,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     List<String> tableNames = super.getTables(dbName, tablePattern);
 
     // May need to merge with list of temp tables
-    dbName = dbName.toLowerCase();
-    tablePattern = tablePattern.toLowerCase();
+    dbName = dbName;
+    tablePattern = tablePattern;
     Map<String, Table> tables = getTempTablesForDatabase(dbName, tablePattern);
     if (tables == null || tables.size() == 0) {
       return tableNames;
@@ -341,8 +341,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
     if (tableType == TableType.MANAGED_TABLE || tableType == TableType.EXTERNAL_TABLE) {
       // May need to merge with list of temp tables
-      dbname = dbname.toLowerCase();
-      tablePattern = tablePattern.toLowerCase();
+      dbname = dbname;
+      tablePattern = tablePattern;
       Map<String, Table> tables = getTempTablesForDatabase(dbname, tablePattern);
       if (tables == null || tables.size() == 0) {
         return tableNames;
@@ -429,7 +429,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       List<String> tableNames)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
 
-    dbName = dbName.toLowerCase();
+    dbName = dbName;
     if (SessionState.get() == null || SessionState.get().getTempTables().size() == 0) {
       // No temp tables, just call underlying client
       return super.getTableObjectsByName(dbName, tableNames);
@@ -557,8 +557,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     if (request.getColStatsSize() == 1) {
       ColumnStatistics colStats = request.getColStatsIterator().next();
       ColumnStatisticsDesc desc = colStats.getStatsDesc();
-      String dbName = desc.getDbName().toLowerCase();
-      String tableName = desc.getTableName().toLowerCase();
+      String dbName = desc.getDbName();
+      String tableName = desc.getTableName();
       if (getTempTable(dbName, tableName) != null) {
         return updateTempTableColumnStats(dbName, tableName, colStats);
       }
@@ -655,10 +655,10 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     if (tableName == null) {
       throw new MetaException("Table name cannot be null");
     }
-    Map<String, Table> tables = getTempTablesForDatabase(parsedDbName.toLowerCase(),
-        tableName.toLowerCase());
+    Map<String, Table> tables = getTempTablesForDatabase(parsedDbName,
+        tableName);
     if (tables != null) {
-      Table table = tables.get(tableName.toLowerCase());
+      Table table = tables.get(tableName);
       if (table != null) {
         return table.getTTable();
       }
@@ -670,8 +670,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       org.apache.hadoop.hive.metastore.api.Table oldt,
       org.apache.hadoop.hive.metastore.api.Table newt,
       EnvironmentContext envContext) throws InvalidOperationException, MetaException, TException {
-    dbname = dbname.toLowerCase();
-    tbl_name = tbl_name.toLowerCase();
+    dbname = dbname;
+    tbl_name = tbl_name;
     boolean shouldDeleteColStats = false;
 
     // Disallow changing temp table location
@@ -814,8 +814,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       EnvironmentContext envContext) throws MetaException, TException,
       NoSuchObjectException, UnsupportedOperationException {
 
-    String dbName = table.getDbName().toLowerCase();
-    String tableName = table.getTableName().toLowerCase();
+    String dbName = table.getDbName();
+    String tableName = table.getTableName();
 
     // Determine the temp table path
     Path tablePath = null;
@@ -861,8 +861,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   private org.apache.hadoop.hive.metastore.api.Table deepCopyAndLowerCaseTable(
       org.apache.hadoop.hive.metastore.api.Table tbl) {
     org.apache.hadoop.hive.metastore.api.Table newCopy = deepCopy(tbl);
-    newCopy.setDbName(newCopy.getDbName().toLowerCase());
-    newCopy.setTableName(newCopy.getTableName().toLowerCase());
+    newCopy.setDbName(newCopy.getDbName());
+    newCopy.setTableName(newCopy.getTableName());
     return newCopy;
   }
 
@@ -893,8 +893,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
           Warehouse.getQualifiedName(dbName, tableName));
       return null;
     }
-    String lookupName = StatsUtils.getFullyQualifiedTableName(dbName.toLowerCase(),
-        tableName.toLowerCase());
+    String lookupName = StatsUtils.getFullyQualifiedTableName(dbName,
+        tableName);
     return ss.getTempTableColStats().get(lookupName);
   }
 
@@ -906,7 +906,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
     if (tableColStats != null) {
       for (String colName : colNames) {
-        colName = colName.toLowerCase();
+        colName = colName;
         if (tableColStats.containsKey(colName)) {
           retval.add(new ColumnStatisticsObj(tableColStats.get(colName)));
         }
@@ -949,7 +949,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       for (ColumnStatisticsObj colStat : newColList) {
         // This is admittedly a bit simple, StatsObjectConverter seems to allow
         // old stats attributes to be kept if the new values do not overwrite them.
-        oldStats.put(colStat.getColName().toLowerCase(), colStat);
+        oldStats.put(colStat.getColName(), colStat);
       }
     }
   }
@@ -974,7 +974,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<String, ColumnStatisticsObj> ssTableColStats =
         getTempTableColumnStatsForTable(dbName, tableName);
     if (ssTableColStats != null) {
-      deletedEntry = ssTableColStats.remove(columnName.toLowerCase());
+      deletedEntry = ssTableColStats.remove(columnName);
     }
     if (deletedEntry == null) {
       throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
@@ -1783,7 +1783,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   private TempTable getPartitionedTempTable(org.apache.hadoop.hive.metastore.api.Table t) throws MetaException {
     String qualifiedTableName = Warehouse.
-        getQualifiedName(t.getDbName().toLowerCase(), t.getTableName().toLowerCase());
+        getQualifiedName(t.getDbName(), t.getTableName());
     SessionState ss = SessionState.get();
     if (ss == null) {
       LOG.warn("No current SessionState, skipping temp partitions for " + qualifiedTableName);
@@ -1799,7 +1799,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
   private void removePartitionedTempTable(org.apache.hadoop.hive.metastore.api.Table t) {
     String qualifiedTableName = Warehouse.
-        getQualifiedName(t.getDbName().toLowerCase(), t.getTableName().toLowerCase());
+        getQualifiedName(t.getDbName(), t.getTableName());
     SessionState ss = SessionState.get();
     if (ss == null) {
       LOG.warn("No current SessionState, skipping temp partitions for " + qualifiedTableName);
@@ -1814,7 +1814,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       return;
     }
     String qualifiedTableName = Warehouse.
-        getQualifiedName(t.getDbName().toLowerCase(), t.getTableName().toLowerCase());
+        getQualifiedName(t.getDbName(), t.getTableName());
     SessionState ss = SessionState.get();
     if (ss == null) {
       LOG.warn("No current SessionState, skipping temp partitions for " + qualifiedTableName);

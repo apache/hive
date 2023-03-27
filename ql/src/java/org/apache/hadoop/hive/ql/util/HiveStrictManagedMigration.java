@@ -878,7 +878,7 @@ public class HiveStrictManagedMigration {
       if (shouldMoveTable && shouldModifyTableLocation(dbObj, tableObj)) {
         Path newTablePath = wh.get().getDnsPath(
           new Path(getDefaultDbPathManagedOrExternal(dbName),
-            MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+            MetaStoreUtils.encodeTableName(tableName)));
         moveTableData(dbObj, tableObj, newTablePath);
         if (!runOptions.dryRun) {
           // File ownership/permission checks should be done on the new table path.

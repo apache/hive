@@ -156,8 +156,8 @@ public class HiveStreamingConnection implements StreamingConnection {
   private Runnable onShutdownRunner;
 
   private HiveStreamingConnection(Builder builder) throws StreamingException {
-    this.database = builder.database.toLowerCase();
-    this.table = builder.table.toLowerCase();
+    this.database = builder.database;
+    this.table = builder.table;
     this.staticPartitionValues = builder.staticPartitionValues;
     this.conf = builder.hiveConf;
     this.agentInfo = builder.agentInfo;

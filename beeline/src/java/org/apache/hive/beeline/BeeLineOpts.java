@@ -183,7 +183,7 @@ public class BeeLineOpts implements Completer {
     }
 
     File f = new File(System.getProperty("user.home"),
-        (System.getProperty("os.name").toLowerCase()
+        (System.getProperty("os.name")
             .indexOf("windows") != -1 ? "" : ".") + "beeline")
         .getAbsoluteFile();
     try {
@@ -246,7 +246,7 @@ public class BeeLineOpts implements Completer {
         if (m[i].getParameterTypes().length != 0) {
           continue;
         }
-        String propName = m[i].getName().substring(3).toLowerCase();
+        String propName = m[i].getName().substring(3);
         names.add(propName);
       }
       cachedPropertyNameSet = names;

@@ -428,7 +428,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
         try {
           locks.add(new HiveLockObj(
                       new HiveLockObject(new DummyPartition(p.getTable(), p.getTable().getDbName()
-                          + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase()
+                          + "/" + FileUtils.escapePathName(p.getTable().getTableName())
                           + "/" + partialName,
                           partialSpec), lockData), mode));
           partialName += "/";

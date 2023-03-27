@@ -55,8 +55,8 @@ public class TestHCatSchemaUtils {
     LOG.info("HCatSchema : {}", hsch);
     assertEquals(hsch.size(), 1);
     // Looks like HCatFieldSchema.getTypeString() lower-cases its results
-    assertEquals(ti.getTypeName().toLowerCase(), hsch.get(0).getTypeString());
-    assertEquals(hsch.get(0).getTypeString(), typeString.toLowerCase());
+    assertEquals(ti.getTypeName(), hsch.get(0).getTypeString());
+    assertEquals(hsch.get(0).getTypeString(), typeString);
   }
   
   @Test

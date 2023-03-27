@@ -26,7 +26,7 @@ public enum IcebergMetadataTables {
 
   public static boolean isValidMetaTable(String metaTableName) {
     for (IcebergMetadataTables metaTable : IcebergMetadataTables.values()) {
-      if (metaTable.name().toLowerCase().equals(metaTableName.toLowerCase())) {
+      if (metaTable.name().equals(metaTableName)) {
         return true;
       }
     }

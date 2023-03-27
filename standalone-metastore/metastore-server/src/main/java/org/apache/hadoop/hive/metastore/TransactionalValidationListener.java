@@ -96,7 +96,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
   private String getTableCatalog(Table table) {
     String catName = table.isSetCatName() ? table.getCatName() :
       MetaStoreUtils.getDefaultCatalog(getConf());
-    return catName.toLowerCase();
+    return catName;
   }
 
   /**
@@ -409,7 +409,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       Set<String> keys = parameters.keySet();
       for (String key : keys) {
         if (hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES.equalsIgnoreCase(key)) {
-          tableTransactionalProperties = parameters.get(key).toLowerCase();
+          tableTransactionalProperties = parameters.get(key);
           parameters.remove(key);
           String validationError = validateTransactionalProperties(tableTransactionalProperties);
           if (validationError != null) {

@@ -210,7 +210,7 @@ public class ColumnType {
    */
   public static String getTypeName(String typeString) {
     if (typeString == null) return null;
-    String protoType = typeString.toLowerCase().split("\\W")[0];
+    String protoType = typeString.split("\\W")[0];
     if (decoratedTypeNames.contains(protoType)) {
       return protoType;
     }

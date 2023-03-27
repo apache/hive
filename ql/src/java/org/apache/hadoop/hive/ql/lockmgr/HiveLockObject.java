@@ -198,12 +198,12 @@ public class HiveLockObject {
   }
 
   public HiveLockObject(Table tbl, HiveLockObjectData lockData) {
-    this(new String[] {tbl.getDbName(), FileUtils.escapePathName(tbl.getTableName()).toLowerCase()}, lockData);
+    this(new String[] {tbl.getDbName(), FileUtils.escapePathName(tbl.getTableName())}, lockData);
   }
 
   public HiveLockObject(Partition par, HiveLockObjectData lockData) {
     this(new String[] {par.getTable().getDbName(),
-        FileUtils.escapePathName(par.getTable().getTableName()).toLowerCase(), par.getName()}, lockData);
+        FileUtils.escapePathName(par.getTable().getTableName()), par.getName()}, lockData);
   }
 
   public HiveLockObject(DummyPartition par, HiveLockObjectData lockData) {

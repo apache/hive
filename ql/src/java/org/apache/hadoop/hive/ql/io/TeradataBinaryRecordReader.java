@@ -98,7 +98,7 @@ public class TeradataBinaryRecordReader implements RecordReader<NullWritable, By
     if (rowLength == null) {
       rowLength = DEFAULT_TD_ROW_LENGTH;
     } else {
-      rowLength = rowLength.toLowerCase();
+      rowLength = rowLength;
     }
 
     if (TD_ROW_LENGTH_TO_BYTE_NUM.containsKey(rowLength)) {

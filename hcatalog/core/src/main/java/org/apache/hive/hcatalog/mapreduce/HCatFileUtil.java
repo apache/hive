@@ -59,7 +59,7 @@ public class HCatFileUtil {
       }
 
       // column name is the second group from current match
-      String columnName = matcher.group(2).toLowerCase();
+      String columnName = matcher.group(2);
       partColumns.add(columnName);
 
       // find the value of matched column

@@ -104,8 +104,8 @@ public class HMSClientTest {
   public void getAllDatabases() throws Exception {
     Set<String> databases = client.getAllDatabases(null);
     MatcherAssert.assertThat(databases, Matchers.hasItem("default"));
-    MatcherAssert.assertThat(databases, Matchers.hasItem(TEST_DATABASE.toLowerCase()));
-    assertThat(client.getAllDatabases(TEST_DATABASE.toLowerCase()), Matchers.contains(TEST_DATABASE.toLowerCase()));
+    MatcherAssert.assertThat(databases, Matchers.hasItem(TEST_DATABASE));
+    assertThat(client.getAllDatabases(TEST_DATABASE), Matchers.contains(TEST_DATABASE));
   }
 
   /**
@@ -154,7 +154,7 @@ public class HMSClientTest {
     MatcherAssert.assertThat(db.getName(), Matchers.equalToIgnoringCase(TEST_DATABASE));
     MatcherAssert.assertThat(db.getDescription(), Matchers.equalTo(TEST_DATABASE_DESCRIPTION));
     MatcherAssert.assertThat(db.getParameters(), Matchers.equalTo(TEST_DATABASE_PARAMS));
-    MatcherAssert.assertThat(db.getLocationUri(), Matchers.containsString(TEST_DATABASE.toLowerCase()));
+    MatcherAssert.assertThat(db.getLocationUri(), Matchers.containsString(TEST_DATABASE));
   }
 
   /**
@@ -166,7 +166,7 @@ public class HMSClientTest {
     MatcherAssert.assertThat(db.getName(), Matchers.equalToIgnoringCase(TEST_DATABASE));
     MatcherAssert.assertThat(db.getDescription(), Matchers.equalTo(TEST_DATABASE_DESCRIPTION));
     MatcherAssert.assertThat(db.getParameters(), Matchers.equalTo(TEST_DATABASE_PARAMS));
-    MatcherAssert.assertThat(db.getLocationUri(), Matchers.containsString(TEST_DATABASE.toLowerCase()));
+    MatcherAssert.assertThat(db.getLocationUri(), Matchers.containsString(TEST_DATABASE));
   }
 
   /**

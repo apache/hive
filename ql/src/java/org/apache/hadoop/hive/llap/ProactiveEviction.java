@@ -199,11 +199,11 @@ public final class ProactiveEviction {
             LlapDaemonProtocolProtos.EvictEntityRequestProto.newBuilder();
         LlapDaemonProtocolProtos.TableProto.Builder tableBuilder = null;
 
-        requestBuilder.setDbName(dbName.toLowerCase());
+        requestBuilder.setDbName(dbName);
         for (Map.Entry<String, Set<LinkedHashMap<String, String>>> tableEntry : tables.entrySet()) {
           String tableName = tableEntry.getKey();
           tableBuilder = LlapDaemonProtocolProtos.TableProto.newBuilder();
-          tableBuilder.setTableName(tableName.toLowerCase());
+          tableBuilder.setTableName(tableName);
 
           Set<LinkedHashMap<String, String>> partitions = tableEntry.getValue();
           Set<String> partitionKeys = null;
@@ -350,7 +350,7 @@ public final class ProactiveEviction {
        */
       public Builder fromProtoRequest(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest) {
         entities.clear();
-        String dbName = protoRequest.getDbName().toLowerCase();
+        String dbName = protoRequest.getDbName();
 
         Map<String, Set<LinkedHashMap<String, String>>> entitiesInDb = new HashMap<>();
         List<LlapDaemonProtocolProtos.TableProto> tables = protoRequest.getTableList();
@@ -358,7 +358,7 @@ public final class ProactiveEviction {
         if (tables != null && !tables.isEmpty()) {
           for (LlapDaemonProtocolProtos.TableProto table : tables) {
             String dbAndTableName =
-                (new StringBuilder().append(dbName).append('.').append(table.getTableName())).toString().toLowerCase();
+                (new StringBuilder().append(dbName).append('.').append(table.getTableName())).toString();
 
             if (table.getPartValCount() == 0) {
               entitiesInDb.put(dbAndTableName, null);
@@ -370,7 +370,7 @@ public final class ProactiveEviction {
             for (int valIx = 0; valIx < table.getPartValCount(); ++valIx) {
               int keyIx = valIx % table.getPartKeyCount();
 
-              partDesc.put(table.getPartKey(keyIx).toLowerCase(), table.getPartVal(valIx));
+              partDesc.put(table.getPartKey(keyIx), table.getPartVal(valIx));
 
               if (keyIx == table.getPartKeyCount() - 1) {
                 partitions.add(partDesc);

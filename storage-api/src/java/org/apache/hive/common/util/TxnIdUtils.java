@@ -37,7 +37,7 @@ public class TxnIdUtils {
    ***/
   public static int compare(ValidWriteIdList a, ValidWriteIdList b) {
     if (!a.getTableName().equalsIgnoreCase(b.getTableName())) {
-      return a.getTableName().toLowerCase().compareTo(b.getTableName().toLowerCase());
+      return a.getTableName().compareTo(b.getTableName());
     }
     // The algorithm assumes invalidWriteIds are sorted and values are less or equal than hwm, here is how
     // the algorithm works:

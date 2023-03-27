@@ -204,7 +204,7 @@ public class LogUtils {
    */
   public static String maskIfPassword(String key, String value) {
     if (key!=null && value!=null) {
-      if (key.toLowerCase().indexOf(KEY_TO_MASK_WITH) != -1) {
+      if (key.indexOf(KEY_TO_MASK_WITH) != -1) {
         return MASKED_VALUE;
       }
     }

@@ -80,7 +80,7 @@ public class TypeDataCheck implements Tool {
       }
       types = typesStr.split("\\+");
       for (int i = 0; i < types.length; i++) {
-        types[i] = types[i].toLowerCase();
+        types[i] = types[i];
       }
 
 

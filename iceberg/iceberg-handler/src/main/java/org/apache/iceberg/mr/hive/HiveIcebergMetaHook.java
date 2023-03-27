@@ -122,9 +122,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
       AlterTableType.UPDATE_COLUMNS, AlterTableType.SETPARTITIONSPEC, AlterTableType.EXECUTE);
   private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = ImmutableList.of(
-      FileFormat.PARQUET.name().toLowerCase(),
-      FileFormat.ORC.name().toLowerCase(),
-      FileFormat.AVRO.name().toLowerCase());
+      FileFormat.PARQUET.name(),
+      FileFormat.ORC.name(),
+      FileFormat.AVRO.name());
   private static final PartitionDropOptions DROP_OPTIONS = new PartitionDropOptions().deleteData(false).ifExists(true);
   private static final List<org.apache.commons.lang3.tuple.Pair<Integer, byte[]>> EMPTY_FILTER =
       Lists.newArrayList(org.apache.commons.lang3.tuple.Pair.of(1, new byte[0]));
@@ -473,7 +473,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           "table is not allowed.");
     }
     boolean hasCorrectFileFormat = MIGRATION_ALLOWED_SOURCE_FORMATS.stream()
-        .anyMatch(f -> sd.getInputFormat().toLowerCase().contains(f));
+        .anyMatch(f -> sd.getInputFormat().contains(f));
     if (!hasCorrectFileFormat) {
       throw new MetaException("Cannot convert hive table to iceberg with input format: " + sd.getInputFormat());
     }
@@ -640,7 +640,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       return;
     }
 
-    String lowerCaseFormat = format.toLowerCase();
+    String lowerCaseFormat = format;
     for (FileFormat fileFormat : FileFormat.values()) {
       if (lowerCaseFormat.contains(fileFormat.label)) {
         catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.label);
@@ -652,7 +652,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     if (format == null) {
       return;
     }
-    String lowerCaseFormat = format.toLowerCase();
+    String lowerCaseFormat = format;
     Preconditions.checkArgument(Arrays.stream(FileFormat.values()).anyMatch(v -> lowerCaseFormat.contains(v.label)),
         String.format("Unsupported fileformat %s", format));
   }

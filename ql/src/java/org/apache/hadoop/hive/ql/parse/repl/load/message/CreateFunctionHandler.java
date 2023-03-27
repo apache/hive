@@ -165,7 +165,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
     @Override
     public ResourceUri apply(ResourceUri resourceUri) {
       try {
-        return resourceUri.getUri().toLowerCase().startsWith("hdfs:")
+        return resourceUri.getUri().startsWith("hdfs:")
             ? destinationResourceUri(resourceUri)
             : resourceUri;
       } catch (IOException | SemanticException e) {
@@ -185,8 +185,8 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       PathBuilder pathBuilder = new PathBuilder(functionsRootDir);
       Path qualifiedDestinationPath = PathBuilder.fullyQualifiedHDFSUri(
           pathBuilder
-              .addDescendant(destinationDbName.toLowerCase())
-              .addDescendant(metadata.function.getFunctionName().toLowerCase())
+              .addDescendant(destinationDbName)
+              .addDescendant(metadata.function.getFunctionName())
               .addDescendant(String.valueOf(System.nanoTime()))
               .addDescendant(split[split.length - 1])
               .build(),

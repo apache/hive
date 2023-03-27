@@ -189,7 +189,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     if(true) {
       return;
     }
-    Path bucket = AcidUtils.createBucketFile(new Path(new Path(getWarehouseDir(), table.toString().toLowerCase()), AcidUtils.deltaSubdir(writeId, writeId, stmtId)), bucketNum);
+    Path bucket = AcidUtils.createBucketFile(new Path(new Path(getWarehouseDir(), table.toString()), AcidUtils.deltaSubdir(writeId, writeId, stmtId)), bucketNum);
     FileOutputStream delta = new FileOutputStream(testName.getMethodName() + "_" + bucket.getParent().getName() + "_" +  bucket.getName());
 //    try {
 //      FileDump.printJsonData(conf, bucket.toString(), delta);
@@ -1577,7 +1577,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("truncate table " + Table.ACIDTBL);
 
     FileSystem fs = FileSystem.get(hiveConf);
-    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBL.toString().toLowerCase()),
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBL.toString()),
         AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
@@ -1598,7 +1598,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("truncate table " + Table.ACIDTBLPART);
 
     FileSystem fs = FileSystem.get(hiveConf);
-    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString() + "/p=a"),
         AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
@@ -1619,14 +1619,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("truncate table " + Table.ACIDTBLPART + " partition(p='b')");
 
     FileSystem fs = FileSystem.get(hiveConf);
-    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString() + "/p=b"),
         AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
     Assert.assertEquals("base_0000003", name);
-    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString() + "/p=a"),
         AcidUtils.deltaFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 delta and found " + stat.length + " files " + Arrays.toString(stat));
@@ -1653,7 +1653,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table " + Table.ACIDTBLPART + " drop partition (p='b')");
 
     FileSystem fs = FileSystem.get(hiveConf);
-    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString() + "/p=b"),
         AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + Arrays.toString(stat));
@@ -1676,7 +1676,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     }
     runCleaner(hiveConf);
     
-    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase()),
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString()),
         path -> path.getName().equals("p=b"));
     if ((reCreate ? 1 : 0) != stat.length) {
       Assert.fail("Partition data was " + (reCreate ? "" : "not") + " removed from FS");
@@ -1709,7 +1709,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       Assert.assertTrue(resp.getCompacts().stream().anyMatch(
           ci -> TxnStore.CLEANING_RESPONSE.equals(ci.getState()) && partName.equals(ci.getPartitionname())));
       
-      stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/" + partName),
+      stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString() + "/" + partName),
           AcidUtils.baseFileFilter);
       if (1 != stat.length) {
         Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
@@ -1717,7 +1717,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       String name = stat[0].getPath().getName();
       Assert.assertEquals("base_0000004", name);
     }
-    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=b/p3=c"),
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString() + "/p1=a/p2=b/p3=c"),
         AcidUtils.baseFileFilter);
     if (0 != stat.length) {
       Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
@@ -1729,7 +1729,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runCleaner(hiveConf);
 
     for (char p : asList('a', 'b')) {
-      stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=a"),
+      stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString() + "/p1=a/p2=a"),
           path -> path.getName().equals("p3=" + p));
       if (0 != stat.length) {
         Assert.fail("Partition data was not removed from FS");
@@ -2021,14 +2021,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table " + Table.ACIDTBLPART + " partition (p='b') rename to partition (p='c')");
 
     FileSystem fs = FileSystem.get(hiveConf);
-    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString() + "/p=b"),
       AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
     Assert.assertEquals("base_0000003", name);
-    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString() + "/p=a"),
       AcidUtils.baseFileFilter);
     if (0 != stat.length) {
       Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
@@ -2049,7 +2049,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     runCleaner(hiveConf);
 
-    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase()),
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString()),
       path -> path.getName().equals("p=b"));
     if (0 != stat.length) {
       Assert.fail("Expecting partition data to be removed from FS");
@@ -2076,7 +2076,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertTrue(resp.getCompacts().stream().anyMatch(
       ci -> TxnStore.CLEANING_RESPONSE.equals(ci.getState()) && partName.equals(ci.getPartitionname())));
 
-    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/" + partName),
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString() + "/" + partName),
       AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
@@ -2084,7 +2084,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     String name = stat[0].getPath().getName();
     Assert.assertEquals("base_0000003", name);
     
-    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=c/p3=d"),
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString() + "/p1=a/p2=c/p3=d"),
       AcidUtils.baseFileFilter);
     if (0 != stat.length) {
       Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
@@ -2095,7 +2095,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     runCleaner(hiveConf);
     
-    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=b"),
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString() + "/p1=a/p2=b"),
       path -> path.getName().equals("p3=d"));
     if (0 != stat.length) {
       Assert.fail("Expecting partition data to be removed from FS");

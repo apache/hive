@@ -80,7 +80,7 @@ public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
     }
 
     // map any db specific types here.
-    switch (dbDataType.toLowerCase())
+    switch (dbDataType)
     {
     case "integer":
       mappedType = ColumnType.INT_TYPE_NAME;

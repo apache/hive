@@ -103,7 +103,7 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
   }
 
   public TypeInfo getStructFieldTypeInfo(String field) {
-    String fieldLowerCase = field.toLowerCase();
+    String fieldLowerCase = field;
     for (int i = 0; i < allStructFieldNames.size(); i++) {
       if (fieldLowerCase.equalsIgnoreCase(allStructFieldNames.get(i))) {
         return allStructFieldTypeInfos.get(i);

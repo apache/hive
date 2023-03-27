@@ -233,7 +233,7 @@ public abstract class ExprFactory<T> {
     T result2 = null;
     try {
       result = createDoubleConstantExpr(value);
-      if (value != null && !value.toLowerCase().contains("e")) {
+      if (value != null && !value.contains("e")) {
         result2 = createDecimalConstantExpr(value, false);
         if (result2 != null) {
           result = null; // We will use decimal if all else fails.

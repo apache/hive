@@ -537,7 +537,7 @@ public class HBaseSerDeHelper {
    * Filters the given name by removing any special character and convert to lowercase
    * */
   private static String filter(String name) {
-    return name.replaceAll("[^a-zA-Z0-9]+", "").toLowerCase();
+    return name.replaceAll("[^a-zA-Z0-9]+", "");
   }
 
   /**

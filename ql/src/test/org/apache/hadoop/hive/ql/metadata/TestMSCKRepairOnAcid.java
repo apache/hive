@@ -73,7 +73,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
 
     FileStatus[] fileStatuses = fs.listStatus(new Path(getWarehouseDir(), acidTblPartMsck + "/p=p1"));
@@ -111,9 +111,9 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p2"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p2"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
 
     // call msk repair
@@ -152,7 +152,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p2"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p2"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, false, hiveConf);
 
     // One partition written, one copied
@@ -194,7 +194,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, false, hiveConf);
 
     // One partition written, one copied
@@ -239,9 +239,9 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p2"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p2"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
 
     FileStatus[] fileStatuses = fs.listStatus(new Path(getWarehouseDir(), acidTblPartMsck + "/p=p1"));
@@ -284,9 +284,9 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p2"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p2"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
 
     FileStatus[] fileStatuses = fs.listStatus(new Path(getWarehouseDir(), acidTblPartMsck + "/p=p1"));
@@ -322,7 +322,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
     fs.mkdirs(new Path(getWarehouseDir(), "mybackup"));
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
         new Path(getWarehouseDir(), "mybackup"), true, hiveConf);
 
     // call msk repair to remove partition p1
@@ -334,7 +334,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy the data back
     FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + "mybackup" + "/p=p1"), fs,
-        new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase()), true, hiveConf);
+        new Path(getWarehouseDir(), Table.ACIDTBLPART.toString()), true, hiveConf);
 
     // call msk repair to add the partition back
     runStatementOnDriver("msck repair table " + Table.ACIDTBLPART);
@@ -374,9 +374,9 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p2"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p2"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
 
     FileStatus[] fileStatuses = fs.listStatus(new Path(getWarehouseDir(), acidTblPartMsck + "/p=p1"));
@@ -490,7 +490,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    for (FileStatus status : fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBL.toString().toLowerCase()))) {
+    for (FileStatus status : fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBL.toString()))) {
       FileUtil.copy(fs, status.getPath(), fs,
           new Path(getWarehouseDir(), acidTblMsck), false, hiveConf);
     }

@@ -378,7 +378,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
     for (ColStatistics cs : colStats) {
       if (cs != null) {
-        String colTypeLowerCase = cs.getColumnType().toLowerCase();
+        String colTypeLowerCase = cs.getColumnType();
         long nonNullCount = cs.getNumNulls() > 0 ? numRows - cs.getNumNulls() + 1 : numRows;
         double overhead = 0;
         if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)

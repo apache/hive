@@ -1134,7 +1134,7 @@ public final class PlanUtils {
    * @return
    */
   public static boolean isValuesTempTable(String tableName) {
-    return tableName.toLowerCase().startsWith(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase());
+    return tableName.startsWith(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX);
   }
 
   public static void addPartitionInputs(Collection<Partition> parts, Collection<ReadEntity> inputs,

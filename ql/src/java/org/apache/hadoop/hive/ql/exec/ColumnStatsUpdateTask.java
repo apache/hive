@@ -151,8 +151,8 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setDoubleStats(doubleStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("string") || columnType.toLowerCase().startsWith("char")
-              || columnType.toLowerCase().startsWith("varchar")) { //char(x),varchar(x) types
+    } else if (columnType.equalsIgnoreCase("string") || columnType.startsWith("char")
+              || columnType.startsWith("varchar")) { //char(x),varchar(x) types
       StringColumnStatsDataInspector stringStats = new StringColumnStatsDataInspector();
       stringStats.setMaxColLenIsSet(false);
       stringStats.setAvgColLenIsSet(false);
@@ -218,7 +218,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setBinaryStats(binaryStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.toLowerCase().startsWith("decimal")) { //decimal(a,b) type
+    } else if (columnType.startsWith("decimal")) { //decimal(a,b) type
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
       decimalStats.setNumNullsIsSet(false);
       decimalStats.setNumDVsIsSet(false);

@@ -50,7 +50,7 @@ public abstract class MessageFactory {
   static {
     register(GzipJSONMessageEncoder.FORMAT, GzipJSONMessageEncoder.class);
     register(JSONMessageEncoder.FORMAT, JSONMessageEncoder.class);
-    register(supportedCompressionFormats.GZIP.toString().toLowerCase(), GzipJSONMessageEncoder.class);
+    register(supportedCompressionFormats.GZIP.toString(), GzipJSONMessageEncoder.class);
   }
 
   private static Method requiredMethod(Class clazz) {
@@ -83,7 +83,7 @@ public abstract class MessageFactory {
 
   public static MessageEncoder getInstance(String compressionFormat)
       throws InvocationTargetException, IllegalAccessException {
-    Method methodInstance = registry.get(compressionFormat.toLowerCase());
+    Method methodInstance = registry.get(compressionFormat);
     if (methodInstance == null) {
       LOG.error("received incorrect CompressionFormat " + compressionFormat);
       throw new RuntimeException("compressionFormat: " + compressionFormat + " is not supported.");

@@ -27,7 +27,7 @@ public class VectorizedSupport {
 
     final String lowerCaseName;
     Support() {
-      this.lowerCaseName = name().toLowerCase();
+      this.lowerCaseName = name();
     }
 
     public static final Map<String,Support> nameToSupportMap = new HashMap<String,Support>();

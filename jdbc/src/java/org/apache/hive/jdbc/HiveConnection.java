@@ -1134,7 +1134,7 @@ public class HiveConnection implements java.sql.Connection {
     // set create external purge table by default
     if (sessConfMap.containsKey(JdbcConnectionParams.CREATE_TABLE_AS_EXTERNAL)) {
       openConf.put("set:hiveconf:hive.create.as.external.legacy",
-          sessConfMap.get(JdbcConnectionParams.CREATE_TABLE_AS_EXTERNAL).toLowerCase());
+          sessConfMap.get(JdbcConnectionParams.CREATE_TABLE_AS_EXTERNAL));
     }
     if (isHplSqlMode()) {
       openConf.put("set:hivevar:mode", HPLSQL);

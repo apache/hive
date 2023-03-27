@@ -65,7 +65,7 @@ public class ColumnMapper {
     if (null == defaultStorageType || "".equals(defaultStorageType)) {
       defaultEncoding = ColumnEncoding.getDefault();
     } else {
-      defaultEncoding = ColumnEncoding.get(defaultStorageType.toLowerCase());
+      defaultEncoding = ColumnEncoding.get(defaultStorageType);
     }
 
     if (parsedColumnMappingValue.length > columnNames.size()) {

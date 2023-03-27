@@ -52,8 +52,8 @@ public class GenericUDFSize extends GenericUDF {
     if (category != Category.MAP && category != Category.LIST
         && !typeName.equals(serdeConstants.VOID_TYPE_NAME)) {
       throw new UDFArgumentTypeException(0, "\""
-          + Category.MAP.toString().toLowerCase() + "\" or \""
-          + Category.LIST.toString().toLowerCase()
+          + Category.MAP.toString() + "\" or \""
+          + Category.LIST.toString()
           + "\" is expected at function SIZE, " + "but \""
           + arguments[0].getTypeName() + "\" is found");
     }

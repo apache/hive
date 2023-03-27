@@ -49,7 +49,7 @@ public final class IcebergRecordObjectInspector extends StructObjectInspector {
     for (Types.NestedField field : structType.fields()) {
       ObjectInspector oi = objectInspectors.get(position);
       Types.NestedField fieldInLowercase = Types.NestedField.of(field.fieldId(), field.isOptional(),
-              field.name().toLowerCase(), field.type(), field.doc());
+              field.name(), field.type(), field.doc());
       IcebergRecordStructField structField = new IcebergRecordStructField(fieldInLowercase, oi, position);
       structFields.add(structField);
       position++;

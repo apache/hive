@@ -57,12 +57,12 @@ public class ReplMetaStoreEventListenerTestImpl extends MetaStoreEventListener {
       eventNames = new HashSet<>();
       eventMap.put(eventType, eventNames);
     }
-    eventNames.add(name.toLowerCase());
+    eventNames.add(name);
   }
 
   @Override
   public void onCreateDatabase(CreateDatabaseEvent createDatabaseEvent) {
-    String dbName = createDatabaseEvent.getDatabase().getName().toLowerCase();
+    String dbName = createDatabaseEvent.getDatabase().getName();
     if (createDatabaseEvent.isReplicated()) {
       addNameToEventMap(replicatedDbsForEvents, dbName, createDatabaseEvent);
     } else {
@@ -74,7 +74,7 @@ public class ReplMetaStoreEventListenerTestImpl extends MetaStoreEventListener {
   public void onAlterDatabase(AlterDatabaseEvent alterDatabaseEvent) {
     // The test doesn't create any database rename events, so it's fine to just check the new
     // database name.
-    String dbName = alterDatabaseEvent.getNewDatabase().getName().toLowerCase();
+    String dbName = alterDatabaseEvent.getNewDatabase().getName();
     if (alterDatabaseEvent.isReplicated()) {
       addNameToEventMap(replicatedDbsForEvents, dbName, alterDatabaseEvent);
     } else {
@@ -122,7 +122,7 @@ public class ReplMetaStoreEventListenerTestImpl extends MetaStoreEventListener {
   }
 
   static void checkEventSanity(Map<String, Set<String>> eventsMap, String replicaDbName) {
-    replicaDbName = replicaDbName.toLowerCase();
+    replicaDbName = replicaDbName;
     for (String event : eventsMap.keySet()) {
       Set<String> dbsForEvent = replicatedDbsForEvents.get(event);
       LOG.info("Examining dbs and tables for event " + event);

@@ -670,7 +670,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
           if (c.equalsIgnoreCase(fs.getName())) {
             //c belongs to target table; strictly speaking there maybe an ambiguous ref but
             //this will be caught later when multi-insert is parsed
-            addColumn2Table(targetTableNameInSourceQuery.toLowerCase(), c);
+            addColumn2Table(targetTableNameInSourceQuery, c);
             break;
           }
         }
@@ -678,7 +678,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
 
     private void addColumn2Table(String tableName, String columnName) {
-      tableName = tableName.toLowerCase(); //normalize name for mapping
+      tableName = tableName; //normalize name for mapping
       tableNamesFound.add(tableName);
       List<String> cols = table2column.get(tableName);
       if (cols == null) {
@@ -695,7 +695,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
      */
     private String getPredicate() {
       //normilize table name for mapping
-      List<String> targetCols = table2column.get(targetTableNameInSourceQuery.toLowerCase());
+      List<String> targetCols = table2column.get(targetTableNameInSourceQuery);
       if (targetCols == null) {
         /*e.g. ON source.t=1
         * this is not strictly speaking invalid but it does ensure that all columns from target

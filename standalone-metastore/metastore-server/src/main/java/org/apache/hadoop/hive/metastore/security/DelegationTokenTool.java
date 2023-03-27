@@ -173,7 +173,7 @@ public class DelegationTokenTool extends Configured implements Tool {
     }
 
     if (commandLine.hasOption("serverMode")) {
-      String serverModeString = commandLine.getOptionValue("serverMode").toLowerCase();
+      String serverModeString = commandLine.getOptionValue("serverMode");
       switch(serverModeString) {
         case "metastore":
           serverMode = HadoopThriftAuthBridge.Server.ServerMode.METASTORE; break;

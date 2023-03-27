@@ -95,7 +95,7 @@ abstract public class BaseJsonSerDe extends AbstractSerDe {
     ArrayList<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
     columnNames = new ArrayList<String>();
-    columnNames.addAll(Arrays.asList(columnNameProperty.toLowerCase().split(",")));
+    columnNames.addAll(Arrays.asList(columnNameProperty.split(",")));
 
     numColumns = columnNames.size();
 
@@ -183,7 +183,7 @@ abstract public class BaseJsonSerDe extends AbstractSerDe {
             while (token != JsonToken.END_OBJECT && token != null) {
 
               // hive makes all column names in the queries column list lower case
-              String name = parser.getText().toLowerCase();
+              String name = parser.getText();
 
               parser.nextToken();
 

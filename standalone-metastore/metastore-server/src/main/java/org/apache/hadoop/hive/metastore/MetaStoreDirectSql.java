@@ -396,8 +396,8 @@ class MetaStoreDirectSql {
 
     try (QueryWrapper queryDbSelector = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryTextDbSelector));
          QueryWrapper queryDbParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryTextDbParams))) {
-      dbName = dbName.toLowerCase();
-      catName = catName.toLowerCase();
+      dbName = dbName;
+      catName = catName;
       Object[] params = new Object[] { dbName, catName };
 
       if (LOG.isTraceEnabled()) {
@@ -545,8 +545,8 @@ class MetaStoreDirectSql {
       String defaultPartName, String order, Integer max) throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
     List<Object[]> orderSpecs = MetaStoreUtils.makeOrderSpecs(order);
-    String catName = filter.catName.toLowerCase(), dbName = filter.dbName.toLowerCase(),
-        tblName = filter.tableName.toLowerCase(), sqlFilter = filter.filter;
+    String catName = filter.catName, dbName = filter.dbName,
+        tblName = filter.tableName, sqlFilter = filter.filter;
     List<Object> paramsForFilter = filter.params;
     List<String> joins =  filter.joins;
     if (joins.isEmpty()) {
@@ -896,9 +896,9 @@ class MetaStoreDirectSql {
       List<? extends Object> paramsForFilter, List<String> joinsForFilter, Integer max)
       throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
-    final String dbNameLcase = dbName.toLowerCase();
-    final String tblNameLcase = tblName.toLowerCase();
-    final String catNameLcase = normalizeSpace(catName).toLowerCase();
+    final String dbNameLcase = dbName;
+    final String tblNameLcase = tblName;
+    final String catNameLcase = normalizeSpace(catName);
 
     // We have to be mindful of order during filtering if we are not returning all partitions.
     String orderForFilter = (max != null) ? " order by \"PART_NAME\" asc" : "";
@@ -980,9 +980,9 @@ class MetaStoreDirectSql {
     // Prepare StringBuilder-s for "in (...)" lists to use in one-to-many queries.
     StringBuilder sdSb = new StringBuilder(sbCapacity), serdeSb = new StringBuilder(sbCapacity);
     StringBuilder colsSb = new StringBuilder(7); // We expect that there's only one field schema.
-    tblName = tblName.toLowerCase();
-    dbName = dbName.toLowerCase();
-    catName = normalizeSpace(catName).toLowerCase();
+    tblName = tblName;
+    dbName = dbName;
+    catName = normalizeSpace(catName);
     partitions.navigableKeySet();
 
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
@@ -1142,9 +1142,9 @@ class MetaStoreDirectSql {
 
   public int getNumPartitionsViaSqlFilter(SqlFilterForPushdown filter) throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
-    String catName = filter.catName.toLowerCase();
-    String dbName = filter.dbName.toLowerCase();
-    String tblName = filter.tableName.toLowerCase();
+    String catName = filter.catName;
+    String dbName = filter.dbName;
+    String tblName = filter.tableName;
 
     // Get number of partitions by doing count on PART_ID.
     String queryText = "select count(" + PARTITIONS + ".\"PART_ID\") from " + PARTITIONS + ""
@@ -1419,9 +1419,9 @@ class MetaStoreDirectSql {
               + DBS + ".\"CTLG_NAME\" = ? and "
               + "\"FILTER" + partColIndex + "\".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\" and "
                 + "\"FILTER" + partColIndex + "\".\"INTEGER_IDX\" = " + partColIndex);
-          params.add(tableName.toLowerCase());
-          params.add(dbName.toLowerCase());
-          params.add(catName.toLowerCase());
+          params.add(tableName);
+          params.add(dbName);
+          params.add(catName);
         }
         tableValue += " then " + tableValue0 + " else null end)";
 
@@ -1964,11 +1964,11 @@ class MetaStoreDirectSql {
           // fill in colstatus
           Integer[] index = null;
           boolean decimal = false;
-          if (colType.toLowerCase().startsWith("decimal")) {
+          if (colType.startsWith("decimal")) {
             index = IExtrapolatePartStatus.indexMaps.get("decimal");
             decimal = true;
           } else {
-            index = IExtrapolatePartStatus.indexMaps.get(colType.toLowerCase());
+            index = IExtrapolatePartStatus.indexMaps.get(colType);
           }
           // if the colType is not the known type, long, double, etc, then get
           // all index.

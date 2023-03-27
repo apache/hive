@@ -120,8 +120,8 @@ public class TestMetastoreTransformer {
     // expected to execute the operation without any exceptions
     client.alter_table(tbl.getDbName(), tbl.getTableName().toUpperCase(), tbl);
 
-    Table tbl2 = client.getTable(tbl.getDbName(), tbl.getTableName().toLowerCase());
-    assertEquals(tbl.getTableName().toLowerCase(), tbl2.getTableName());
+    Table tbl2 = client.getTable(tbl.getDbName(), tbl.getTableName());
+    assertEquals(tbl.getTableName(), tbl2.getTableName());
 
   }
 
@@ -134,7 +134,7 @@ public class TestMetastoreTransformer {
     // expected to execute the operation without any exceptions
     client.createTable(tbl);
 
-    Table tbl2 = client.getTable(tbl.getDbName(), tbl.getTableName().toLowerCase());
+    Table tbl2 = client.getTable(tbl.getDbName(), tbl.getTableName());
     assertEquals("locationblank", new File(tbl2.getSd().getLocation()).getName());
   }
 

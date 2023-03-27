@@ -80,8 +80,8 @@ public final class ArchiveUtils {
         if (!itrPsKeys.hasNext()) {
           break;
         }
-        if (!itrPsKeys.next().toLowerCase().equals(
-            fs.getName().toLowerCase())) {
+        if (!itrPsKeys.next().equals(
+            fs.getName())) {
           throw new HiveException("Invalid partition specification: "
               + partSpec);
         }

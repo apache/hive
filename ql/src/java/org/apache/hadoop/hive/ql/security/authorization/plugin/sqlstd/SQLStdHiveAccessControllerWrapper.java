@@ -89,7 +89,7 @@ public class SQLStdHiveAccessControllerWrapper implements HiveAccessController {
   public void createRole(String roleName, HivePrincipal adminGrantor)
       throws HiveAuthzPluginException, HiveAccessControlException {
     // validate principals
-    roleName = roleName.toLowerCase();
+    roleName = roleName;
     adminGrantor = SQLAuthorizationUtils.getValidatedPrincipal(adminGrantor);
 
     hiveAccessController.createRole(roleName, adminGrantor);
@@ -98,7 +98,7 @@ public class SQLStdHiveAccessControllerWrapper implements HiveAccessController {
   @Override
   public void dropRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException {
     // lower case roleName
-    roleName = roleName.toLowerCase();
+    roleName = roleName;
 
     hiveAccessController.dropRole(roleName);
   }
@@ -145,7 +145,7 @@ public class SQLStdHiveAccessControllerWrapper implements HiveAccessController {
   public void setCurrentRole(String roleName) throws HiveAuthzPluginException,
       HiveAccessControlException {
     // validate
-    roleName = roleName.toLowerCase();
+    roleName = roleName;
 
     hiveAccessController.setCurrentRole(roleName);
   }
@@ -159,7 +159,7 @@ public class SQLStdHiveAccessControllerWrapper implements HiveAccessController {
   public List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName)
       throws HiveAuthzPluginException, HiveAccessControlException {
     // validate
-    roleName = roleName.toLowerCase();
+    roleName = roleName;
 
     return hiveAccessController.getPrincipalGrantInfoForRole(roleName);
   }
@@ -185,7 +185,7 @@ public class SQLStdHiveAccessControllerWrapper implements HiveAccessController {
   private List<String> getLowerCaseRoleNames(List<String> roles) {
     ListIterator<String> roleIter = roles.listIterator();
     while (roleIter.hasNext()) {
-      roleIter.set(roleIter.next().toLowerCase());
+      roleIter.set(roleIter.next());
     }
     return roles;
   }

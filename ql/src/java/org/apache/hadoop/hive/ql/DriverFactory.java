@@ -53,7 +53,7 @@ public final class DriverFactory {
     }
 
     String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
-    strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
+    strategies = Strings.nullToEmpty(strategies).trim();
     List<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : strategies.split(",")) {
       if (string.trim().isEmpty()) {

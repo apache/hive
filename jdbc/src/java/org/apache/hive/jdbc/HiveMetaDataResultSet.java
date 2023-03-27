@@ -52,7 +52,7 @@ public abstract class HiveMetaDataResultSet<M> extends HiveBaseResultSet {
   private List<String> normalizeColumnNames(final List<String> columnNames) {
     List<String> result = new ArrayList<String>(columnNames.size());
     for (String colName : columnNames) {
-      result.add(colName.toLowerCase());
+      result.add(colName);
     }
     return result;
   }

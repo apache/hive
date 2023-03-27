@@ -252,12 +252,12 @@ public class SecurityUtils {
     if (thriftServerSocket.getServerSocket() instanceof SSLServerSocket) {
       List<String> sslVersionBlacklistLocal = new ArrayList<>();
       for (String sslVersion : sslVersionBlacklist) {
-        sslVersionBlacklistLocal.add(sslVersion.trim().toLowerCase());
+        sslVersionBlacklistLocal.add(sslVersion.trim());
       }
       SSLServerSocket sslServerSocket = (SSLServerSocket) thriftServerSocket.getServerSocket();
       List<String> enabledProtocols = new ArrayList<>();
       for (String protocol : sslServerSocket.getEnabledProtocols()) {
-        if (sslVersionBlacklistLocal.contains(protocol.toLowerCase())) {
+        if (sslVersionBlacklistLocal.contains(protocol)) {
           LOG.debug("Disabling SSL Protocol: " + protocol);
         } else {
           enabledProtocols.add(protocol);

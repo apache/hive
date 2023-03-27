@@ -105,7 +105,7 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
         for (FieldSchema fs : table.getPartCols()) {
           rwsch.put(table.getTableName(), fs.getName(), new ColumnInfo(fs.getName(),
               TypeInfoFactory.stringTypeInfo, null, true));
-          colTypes.put(fs.getName().toLowerCase(), fs.getType());
+          colTypes.put(fs.getName(), fs.getType());
         }
         TypeCheckCtx tcCtx = new TypeCheckCtx(rwsch);
         ASTNode conds = (ASTNode) astChild.getChild(0);
@@ -145,7 +145,7 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < children.size(); i++) {
       ExprNodeDesc child = children.get(i);
       if (child instanceof ExprNodeColumnDesc) {
-        String col = ((ExprNodeColumnDesc)child).getColumn().toLowerCase();
+        String col = ((ExprNodeColumnDesc)child).getColumn();
         String type = colTypes.get(col);
         if (!type.equals(child.getTypeString())) {
           child.setTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo(type));
@@ -162,7 +162,7 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
       ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc)children.get(colIdx);
       Object val = constantDesc.getValue();
       boolean isDefaultPartitionName = defaultPartName.equals(val);
-      String type = colTypes.get(columnDesc.getColumn().toLowerCase());
+      String type = colTypes.get(columnDesc.getColumn());
       PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
       if (!isDefaultPartitionName) {
         if (!constantDesc.getTypeString().equals(type)) {
@@ -206,7 +206,7 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
           FieldSchema fs = table.getPartCols().get(i);
           rwsch.put(table.getTableName(), fs.getName(), new ColumnInfo(fs.getName(),
               TypeInfoFactory.getPrimitiveTypeInfo(fs.getType()), null, true));
-          poses.put(fs.getName().toLowerCase(), i);
+          poses.put(fs.getName(), i);
         }
         TypeCheckCtx tcCtx = new TypeCheckCtx(rwsch);
 
@@ -231,7 +231,7 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException("Only partition keys are allowed for " +
                 "sorting partition names, input: " + cl.toStringTree());
           }
-          String col = ((ExprNodeColumnDesc) desc).getColumn().toLowerCase();
+          String col = ((ExprNodeColumnDesc) desc).getColumn();
           colIndices.append(poses.get(col)).append(",");
         }
         colIndices.setLength(colIndices.length() - 1);

@@ -65,7 +65,7 @@ public class QBMetaData {
     aliasToDPCtx  = new LinkedHashMap<String, DynamicPartitionCtx>();
   }
 
-  // All getXXX needs toLowerCase() because they are directly called from
+  // All getXXX needs because they are directly called from
   // SemanticAnalyzer
   // All setXXX does not need it because they are called from QB which already
   // lowercases
@@ -76,7 +76,7 @@ public class QBMetaData {
   }
 
   public Table getTableForAlias(String alias) {
-    return aliasToTable.get(alias.toLowerCase());
+    return aliasToTable.get(alias);
   }
 
   public void setSrcForAlias(String alias, Table tab) {
@@ -100,14 +100,14 @@ public class QBMetaData {
   }
 
   public Integer getDestTypeForAlias(String alias) {
-    return nameToDestType.get(alias.toLowerCase());
+    return nameToDestType.get(alias);
   }
 
   /**
    * @param alias this is actually dest name, like insclause-0
    */
   public Table getDestTableForAlias(String alias) {
-    return nameToDestTable.get(alias.toLowerCase());
+    return nameToDestTable.get(alias);
   }
 
   public Map<String, Table> getNameToDestTable() {
@@ -115,7 +115,7 @@ public class QBMetaData {
   }
 
   public Partition getDestPartitionForAlias(String alias) {
-    return nameToDestPartition.get(alias.toLowerCase());
+    return nameToDestPartition.get(alias);
   }
 
   public Map<String, Partition> getNameToDestPartition() {
@@ -123,11 +123,11 @@ public class QBMetaData {
   }
 
   public String getDestFileForAlias(String alias) {
-    return nameToDestFile.get(alias.toLowerCase());
+    return nameToDestFile.get(alias);
   }
 
   public Table getSrcForAlias(String alias) {
-    return aliasToTable.get(alias.toLowerCase());
+    return aliasToTable.get(alias);
   }
 
   public Map<String, String> getPartSpecForAlias(String alias) {

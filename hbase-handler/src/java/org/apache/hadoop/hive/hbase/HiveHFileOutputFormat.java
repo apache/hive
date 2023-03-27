@@ -101,7 +101,7 @@ public class HiveHFileOutputFormat extends
     String hbaseTableName = jc.get(HBaseSerDe.HBASE_TABLE_NAME);
     if (hbaseTableName == null) {
       hbaseTableName = tableProperties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
-      hbaseTableName = hbaseTableName.toLowerCase();
+      hbaseTableName = hbaseTableName;
       if (hbaseTableName.startsWith(HBaseStorageHandler.DEFAULT_PREFIX)) {
         hbaseTableName = hbaseTableName.substring(HBaseStorageHandler.DEFAULT_PREFIX.length());
       }

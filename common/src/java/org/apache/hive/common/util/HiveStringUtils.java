@@ -1048,7 +1048,7 @@ public class HiveStringUtils {
   }
 
   public static String normalizeIdentifier(String identifier) {
-	  return identifier.trim().toLowerCase();
+	  return identifier.trim();
 	}
 
   public static String quoteComments(String value) {

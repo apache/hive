@@ -62,7 +62,7 @@ public class ExpressionFactory {
 
     final String counterName = node.getChild(0).getText();
     final String counterValueStr = PlanUtils.stripQuotes(
-        node.getChild(2).getText().toLowerCase());
+        node.getChild(2).getText());
     if (counterName.isEmpty()) {
       throw new IllegalArgumentException("Counter name cannot be empty!");
     }

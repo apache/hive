@@ -1049,14 +1049,14 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
       Assert.assertNotEquals(managedCustLocOnTgt,  replica.warehouseRoot.toUri().getPath());
       Assert.assertEquals(externalCustLocOnSrc,  externalCustLocOnTgt);
       Assert.assertNotEquals(externalCustLocOnTgt,  new Path(replica.externalTableWarehouseRoot,
-              replicatedDbName.toLowerCase()  + ".db").toUri().getPath());
+              replicatedDbName  + ".db").toUri().getPath());
     } else {
       Assert.assertNotEquals(managedCustLocOnSrc,  null);
       Assert.assertEquals(managedCustLocOnTgt, new Path(replica.warehouseRoot,
-              replicatedDbName.toLowerCase() + ".db").toUri().getPath());
+              replicatedDbName + ".db").toUri().getPath());
       Assert.assertNotEquals(externalCustLocOnSrc,  externalCustLocOnTgt);
       Assert.assertEquals(externalCustLocOnTgt,  new Path(replica.externalTableWarehouseRoot,
-              replicatedDbName.toLowerCase()  + ".db").toUri().getPath());
+              replicatedDbName  + ".db").toUri().getPath());
     }
     verifyTableLocations(srcDb, replDatabase, listOfTables, replaceCustPath);
   }
@@ -1073,7 +1073,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
         //Managed Table case
         Path tblPathOnTgt  = customLocOntgt
                 ? new Path(replDb.getManagedLocationUri(), tname)
-                : new Path(replica.warehouseRoot, replicatedDbName.toLowerCase()  + ".db" + "/" + tname );
+                : new Path(replica.warehouseRoot, replicatedDbName  + ".db" + "/" + tname );
         Assert.assertEquals(new Path(table.getSd().getLocation()), tblPathOnTgt);
       }
     }
@@ -1107,7 +1107,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   private void verifyTableListForPolicy(FileSystem fileSystem, String dumpLocation, String[] tableList) throws Throwable {
     String hiveDumpLocation = dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
     Path tableListFile = new Path(hiveDumpLocation, ReplUtils.REPL_TABLE_LIST_DIR_NAME);
-    tableListFile = new Path(tableListFile, primaryDbName.toLowerCase());
+    tableListFile = new Path(tableListFile, primaryDbName);
 
     if (tableList == null) {
       Assert.assertFalse(fileSystem.exists(tableListFile));

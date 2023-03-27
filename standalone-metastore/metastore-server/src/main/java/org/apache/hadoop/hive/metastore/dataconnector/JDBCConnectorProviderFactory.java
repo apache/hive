@@ -31,7 +31,7 @@ public class JDBCConnectorProviderFactory {
 
   public static IDataConnectorProvider get(String dbName, DataConnector connector) {
     IDataConnectorProvider provider = null;
-    switch(connector.getType().toLowerCase()) {
+    switch(connector.getType()) {
     case MYSQL_TYPE:
       provider = new MySQLConnectorProvider(dbName, connector);
       break;

@@ -137,7 +137,7 @@ public class CliDriver {
     String[] tokens = tokenizeCmd(cmd_trimmed);
     CommandProcessorResponse response = new CommandProcessorResponse();
 
-    if (cmd_trimmed.toLowerCase().equals("quit") || cmd_trimmed.toLowerCase().equals("exit")) {
+    if (cmd_trimmed.equals("quit") || cmd_trimmed.equals("exit")) {
 
       // if we have come this far - either the previous commands
       // are all successful or this is command line. in either case
@@ -605,7 +605,7 @@ public class CliDriver {
     // We add Hive keywords, including lower-cased versions
     for (String s : HiveParser.getKeywords()) {
       candidateStrings.add(s);
-      candidateStrings.add(s.toLowerCase());
+      candidateStrings.add(s);
     }
 
     StringsCompleter strCompleter = new StringsCompleter(candidateStrings);

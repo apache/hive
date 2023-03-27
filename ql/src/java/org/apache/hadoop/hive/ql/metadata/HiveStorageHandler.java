@@ -506,7 +506,7 @@ public interface HiveStorageHandler extends Configurable {
    */
   default URI getURIForAuth(Table table) throws URISyntaxException {
     Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
-    return new URI(this.getClass().getSimpleName().toLowerCase() + "://" +
+    return new URI(this.getClass().getSimpleName() + "://" +
         HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties));
   }
 

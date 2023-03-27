@@ -382,7 +382,7 @@ public class TestAvroObjectInspectorGenerator {
 
     for(int i = 0; i < expectedColumnNames.length;i++) {
       assertEquals("Column names don't match",
-              expectedColumnNames[i].toLowerCase(), structFields.get(i).getFieldName());
+              expectedColumnNames[i], structFields.get(i).getFieldName());
       assertEquals("Column types don't match",
               expectedColumnTypes[i].getTypeName(),
               structFields.get(i).getFieldObjectInspector().getTypeName());

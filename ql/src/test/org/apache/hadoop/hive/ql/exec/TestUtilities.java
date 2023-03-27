@@ -270,7 +270,7 @@ public class TestUtilities {
 
   private void assertPathsMatchSchemeAndAuthority(String expectedScheme, String expectedAuthority, List<Path> paths) {
     for (Path path : paths) {
-      assertEquals(path.toUri().getScheme().toLowerCase(), expectedScheme.toLowerCase());
+      assertEquals(path.toUri().getScheme(), expectedScheme);
       assertEquals(path.toUri().getAuthority(), expectedAuthority);
     }
   }

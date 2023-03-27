@@ -84,7 +84,7 @@ class SQLCompleter extends StringsCompleter {
     }
 
     // also allow lower-case versions of all the keywords
-    keywords += "," + keywords.toLowerCase();
+    keywords += "," + keywords;
 
     for (StringTokenizer tok = new StringTokenizer(keywords, ", "); tok.hasMoreTokens(); completions
         .add(tok.nextToken())) {

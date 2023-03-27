@@ -3241,7 +3241,7 @@ public final class Utilities {
     try {
       stmt.setQueryTimeout(timeout);
     } catch (SQLException e) {
-      String message = e.getMessage() == null ? null : e.getMessage().toLowerCase();
+      String message = e.getMessage() == null ? null : e.getMessage();
       if (e instanceof SQLFeatureNotSupportedException ||
          (message != null && (message.contains("implemented") || message.contains("supported")))) {
         LOG.info("setQueryTimeout is not supported");
@@ -5037,8 +5037,8 @@ public final class Utilities {
   }
 
   public static boolean arePathsEqualOrWithin(Path p1, Path p2) {
-    return ((p1.toString().toLowerCase().indexOf(p2.toString().toLowerCase()) > -1) ||
-        (p2.toString().toLowerCase().indexOf(p1.toString().toLowerCase()) > -1)) ? true : false;
+    return ((p1.toString().indexOf(p2.toString()) > -1) ||
+        (p2.toString().indexOf(p1.toString()) > -1)) ? true : false;
   }
 
   public static String getTableOrMVSuffix(Context context, boolean createTableOrMVUseSuffix) {

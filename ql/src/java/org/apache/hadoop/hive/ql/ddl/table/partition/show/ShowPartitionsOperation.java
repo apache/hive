@@ -87,10 +87,10 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
       List<FieldSchema> fieldSchemas = tbl.getPartitionKeys();
       Map<String, String> colTypes = new HashMap<String, String>();
       for (FieldSchema fs : fieldSchemas) {
-        colTypes.put(fs.getName().toLowerCase(), fs.getType());
+        colTypes.put(fs.getName(), fs.getType());
       }
       for (Map.Entry<String, String> entry : desc.getPartSpec().entrySet()) {
-        String type = colTypes.get(entry.getKey().toLowerCase());
+        String type = colTypes.get(entry.getKey());
         PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
         Object val = entry.getValue();
         if (!pti.equals(TypeInfoFactory.stringTypeInfo)) {
@@ -104,7 +104,7 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
           val = converted;
         }
         List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
-        children.add(new ExprNodeColumnDesc(pti, entry.getKey().toLowerCase(), null, true));
+        children.add(new ExprNodeColumnDesc(pti, entry.getKey(), null, true));
         children.add(new ExprNodeConstantDesc(pti, val));
         ExprNodeDesc exprNodeDesc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(), children);
         predicate = (predicate == null) ? exprNodeDesc :

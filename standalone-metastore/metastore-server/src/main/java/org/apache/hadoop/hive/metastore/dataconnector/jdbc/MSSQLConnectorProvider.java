@@ -76,7 +76,7 @@ public class MSSQLConnectorProvider extends AbstractJDBCConnectorProvider {
         }
 
         // map any db specific types here.
-        switch (dbDataType.toLowerCase())
+        switch (dbDataType)
         {
             case "nvarchar":
             case "nchar":

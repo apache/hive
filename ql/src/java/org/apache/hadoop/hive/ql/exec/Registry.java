@@ -123,7 +123,7 @@ public class Registry {
     switch (udfClassType) {
       case UDF:
         return registerUDF(
-            functionName, functionType, (Class<? extends UDF>) udfClass, false, functionName.toLowerCase(), resources);
+            functionName, functionType, (Class<? extends UDF>) udfClass, false, functionName, resources);
       case GENERIC_UDF:
         return registerGenericUDF(
             functionName, functionType, (Class<? extends GenericUDF>) udfClass, resources);
@@ -148,7 +148,7 @@ public class Registry {
 
   public FunctionInfo registerUDF(String functionName,
       Class<? extends UDF> UDFClass, boolean isOperator, FunctionResource... resources) {
-    return registerUDF(functionName, UDFClass, isOperator, functionName.toLowerCase(), resources);
+    return registerUDF(functionName, UDFClass, isOperator, functionName, resources);
   }
 
   public FunctionInfo registerUDF(String functionName,
@@ -292,7 +292,7 @@ public class Registry {
     // register to session first for backward compatibility
     if (registerToSession) {
       String qualifiedName = FunctionUtils.qualifyFunctionName(
-          functionName, SessionState.get().getCurrentDatabase().toLowerCase());
+          functionName, SessionState.get().getCurrentDatabase());
       FunctionInfo newFunction = registerToSessionRegistry(qualifiedName, function);
       if (newFunction != null) {
         addFunction(functionName, function);
@@ -333,7 +333,7 @@ public class Registry {
    * @return
    */
   public FunctionInfo getFunctionInfo(String functionName) throws SemanticException {
-      functionName = functionName.toLowerCase();
+      functionName = functionName;
       if (FunctionUtils.isQualifiedFunctionName(functionName)) {
         FunctionInfo functionInfo = getQualifiedFunctionInfo(functionName);
         addToCurrentFunctions(functionName, functionInfo);
@@ -347,7 +347,7 @@ public class Registry {
       }
       if (functionInfo == null) {
         functionName = FunctionUtils.qualifyFunctionName(
-            functionName, SessionState.get().getCurrentDatabase().toLowerCase());
+            functionName, SessionState.get().getCurrentDatabase());
         functionInfo = getQualifiedFunctionInfo(functionName);
       }
       addToCurrentFunctions(functionName, functionInfo);
@@ -366,7 +366,7 @@ public class Registry {
     // Try qualifying with current db name for permanent functions
     if (info == null) {
       String qualifiedName = FunctionUtils.qualifyFunctionName(
-              functionName, SessionState.get().getCurrentDatabase().toLowerCase());
+              functionName, SessionState.get().getCurrentDatabase());
       info = getFunctionInfo(WINDOW_FUNC_PREFIX + qualifiedName);
     }
     if (info instanceof WindowFunctionInfo) {
@@ -507,7 +507,7 @@ public class Registry {
   public GenericUDAFEvaluator getGenericWindowingEvaluator(String functionName,
       List<ObjectInspector> argumentOIs, boolean isDistinct, boolean isAllColumns, boolean respectNulls)
       throws SemanticException {
-    functionName = functionName.toLowerCase();
+    functionName = functionName;
     WindowFunctionInfo info = getWindowFunctionInfo(functionName);
     if (info == null) {
       return null;
@@ -534,7 +534,7 @@ public class Registry {
       if ((!isNative && function.isBuiltIn()) || (isNative && !function.isNative())) {
         throw new RuntimeException("Function " + functionName + " is not for this registry");
       }
-      functionName = functionName.toLowerCase();
+      functionName = functionName;
       FunctionInfo prev = mFunctions.get(functionName);
       if (prev != null) {
         if (isBuiltInFunc(prev.getFunctionClass())) {
@@ -573,7 +573,7 @@ public class Registry {
   public void unregisterFunction(String functionName) throws HiveException {
     lock.lock();
     try {
-      functionName = functionName.toLowerCase();
+      functionName = functionName;
       FunctionInfo fi = mFunctions.get(functionName);
       if (fi != null) {
         if (fi.isBuiltIn()) {
@@ -615,7 +615,7 @@ public class Registry {
   public void unregisterFunctions(String dbName) throws HiveException {
     lock.lock();
     try {
-      Set<String> funcNames = getFunctionNames(dbName.toLowerCase() + "\\..*");
+      Set<String> funcNames = getFunctionNames(dbName + "\\..*");
       for (String funcName : funcNames) {
         unregisterFunction(funcName);
       }
@@ -757,9 +757,9 @@ public class Registry {
    */
   public void setupPermissionsForUDFs(String whiteListStr, String blackListStr) {
     Set<String> whiteList = Sets.newHashSet(
-        Splitter.on(",").trimResults().omitEmptyStrings().split(whiteListStr.toLowerCase()));
+        Splitter.on(",").trimResults().omitEmptyStrings().split(whiteListStr));
     Set<String> blackList = Sets.newHashSet(
-        Splitter.on(",").trimResults().omitEmptyStrings().split(blackListStr.toLowerCase()));
+        Splitter.on(",").trimResults().omitEmptyStrings().split(blackListStr));
     blackList.removeAll(FunctionRegistry.HIVE_OPERATORS);
 
     for (Map.Entry<String, FunctionInfo> funcEntry : mFunctions.entrySet()) {
@@ -776,7 +776,7 @@ public class Registry {
    * @return true if the given udf is to be blocked
    */
   boolean isUdfBlocked(String functionName, Set<String> whiteList, Set<String> blackList) {
-    functionName = functionName.toLowerCase();
+    functionName = functionName;
     return blackList.contains(functionName) ||
         (!whiteList.isEmpty() && !whiteList.contains(functionName));
   }
@@ -788,7 +788,7 @@ public class Registry {
   private FunctionInfo getFunctionInfoFromMetastoreNoLock(String functionName, HiveConf conf) {
     try {
       String[] parts = FunctionUtils.getQualifiedFunctionNameParts(functionName);
-      Function func = Hive.get(conf).getFunction(parts[0].toLowerCase(), parts[1]);
+      Function func = Hive.get(conf).getFunction(parts[0], parts[1]);
       if (func == null) {
         return null;
       }

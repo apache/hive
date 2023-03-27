@@ -2112,7 +2112,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   private Path getNonRecoverablePath(Path dumpDir, String dbName) throws IOException {
     Path dumpPath = new Path(dumpDir,
-      Base64.getEncoder().encodeToString(dbName.toLowerCase()
+      Base64.getEncoder().encodeToString(dbName
         .getBytes(StandardCharsets.UTF_8.name())));
     FileSystem fs = dumpPath.getFileSystem(conf);
     if (fs.exists(dumpPath)) {
@@ -2302,7 +2302,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   private void verifyAtlasMetadataPresent() throws IOException {
     Path dbReplDir = new Path(primary.repldDir,
-            Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
+            Base64.getEncoder().encodeToString(primaryDbName.getBytes(StandardCharsets.UTF_8.name())));
     FileSystem fs = FileSystem.get(dbReplDir.toUri(), primary.getConf());
     assertTrue(fs.exists(dbReplDir));
     FileStatus[] dumpRoots = fs.listStatus(dbReplDir);
@@ -2383,7 +2383,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     //correct location of jars on target is functionRoot/dbName/funcName/nanoTs/jarFile
     FileStatus[] fileStatuses = replica.miniDFSCluster.getFileSystem()
             .globStatus(new Path(replica.functionsRoot + "/" +
-                    replicatedDbName.toLowerCase() + "/" + functionName.toLowerCase() + "/*/*")
+                    replicatedDbName + "/" + functionName + "/*/*")
             );
     assertEquals(fileStatuses.length, expectedJars.size());
     List<String> jars = new ArrayList<>();

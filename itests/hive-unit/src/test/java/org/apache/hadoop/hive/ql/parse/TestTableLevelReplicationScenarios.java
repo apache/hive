@@ -284,7 +284,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     FileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
     String hiveDumpLocation = dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
     Path tableListFile = new Path(hiveDumpLocation, ReplUtils.REPL_TABLE_LIST_DIR_NAME);
-    tableListFile = new Path(tableListFile, primaryDbName.toLowerCase());
+    tableListFile = new Path(tableListFile, primaryDbName);
 
     if (tableList == null) {
       Assert.assertFalse(fileSystem.exists(tableListFile));
@@ -1105,7 +1105,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     Path metadataPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME);
     long modifiedTimeMetadata = fs.getFileStatus(metadataPath).getModificationTime();
     Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
-    Path dbDataPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path dbDataPath = new Path(dataPath, primaryDbName);
     Path tablet1Path = new Path(dbDataPath, "t1");
     Path tablet2Path = new Path(dbDataPath, "t2");
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
@@ -1155,7 +1155,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     Path metadataPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME);
     Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
-    Path dbDataPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path dbDataPath = new Path(dataPath, primaryDbName);
     Path tablet2Path = new Path(dbDataPath, "t2");
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     //Delete dump ack and t2 data, metadata should be rewritten, data should be same for t1 but rewritten for t2

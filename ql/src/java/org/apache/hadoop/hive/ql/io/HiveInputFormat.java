@@ -386,7 +386,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         instance = (InputFormat<WritableComparable, Writable>) ReflectionUtil
             .newInstance(inputFormatClass, job);
         // HBase input formats are not thread safe today. See HIVE-8808.
-        String inputFormatName = inputFormatClass.getName().toLowerCase();
+        String inputFormatName = inputFormatClass.getName();
         if (!inputFormatName.contains("hbase")) {
           inputFormats.put(inputFormatClass, instance);
         }

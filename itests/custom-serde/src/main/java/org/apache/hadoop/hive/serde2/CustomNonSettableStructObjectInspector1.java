@@ -46,7 +46,7 @@ StructObjectInspector {
     public MyField(int fieldID, String fieldName,
         ObjectInspector fieldObjectInspector) {
       this.fieldID = fieldID;
-      this.fieldName = fieldName.toLowerCase();
+      this.fieldName = fieldName;
       this.fieldObjectInspector = fieldObjectInspector;
     }
 

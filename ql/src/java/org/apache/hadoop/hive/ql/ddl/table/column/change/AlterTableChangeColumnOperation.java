@@ -66,7 +66,7 @@ public class AlterTableChangeColumnOperation extends AbstractAlterTableOperation
     for (FieldSchema oldColumn : oldColumns) {
       String oldColumnName = oldColumn.getName();
       if (oldColumnName.equalsIgnoreCase(desc.getOldColumnName())) {
-        oldColumn.setName(desc.getNewColumnName().toLowerCase());
+        oldColumn.setName(desc.getNewColumnName());
         if (StringUtils.isNotBlank(desc.getNewColumnType())) {
           oldColumn.setType(desc.getNewColumnType());
         }
@@ -75,7 +75,7 @@ public class AlterTableChangeColumnOperation extends AbstractAlterTableOperation
         }
         if (CollectionUtils.isNotEmpty(sd.getBucketCols()) && sd.getBucketCols().contains(oldColumnName)) {
           sd.getBucketCols().remove(oldColumnName);
-          sd.getBucketCols().add(desc.getNewColumnName().toLowerCase());
+          sd.getBucketCols().add(desc.getNewColumnName());
         }
         found = true;
         if (desc.isFirst() || StringUtils.isNotBlank(desc.getAfterColumn())) {

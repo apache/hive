@@ -238,7 +238,7 @@ public class HCatUtil {
     Map<String, FieldSchema> partitionKeyMap = new HashMap<String, FieldSchema>();
 
     for (FieldSchema field : table.getPartitionKeys()) {
-      partitionKeyMap.put(field.getName().toLowerCase(), field);
+      partitionKeyMap.put(field.getName(), field);
     }
 
     List<FieldSchema> tableCols = table.getCols();
@@ -262,7 +262,7 @@ public class HCatUtil {
               + ">");
         }
       } else {
-        tableField = partitionKeyMap.get(field.getName().toLowerCase());
+        tableField = partitionKeyMap.get(field.getName());
 
         if (tableField != null) {
           throw new HCatException(

@@ -142,7 +142,7 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
             dcv.vector[row] = Double.valueOf(value.toString());
           }
         };
-      } else if (types[i].toLowerCase().startsWith("decimal")) {
+      } else if (types[i].startsWith("decimal")) {
             Pattern decimalPattern = Pattern.compile(
                 "decimal(?:\\((\\d+)(?:\\,(\\d+))?\\))?", Pattern.CASE_INSENSITIVE);
             Matcher mr = decimalPattern.matcher(types[i]);

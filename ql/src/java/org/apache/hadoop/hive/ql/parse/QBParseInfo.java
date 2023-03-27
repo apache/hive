@@ -193,7 +193,7 @@ public class QBParseInfo {
   }
 
   public void addInsertIntoTable(String fullName, ASTNode ast) {
-    insertIntoTables.put(fullName.toLowerCase(), ast);
+    insertIntoTables.put(fullName, ast);
   }
   
   public void setDestToOpType(String clause, boolean value) {
@@ -213,7 +213,7 @@ public class QBParseInfo {
    */
   public boolean isInsertIntoTable(String dbName, String table) {
     String fullName = dbName + "." + table;
-    return insertIntoTables.containsKey(fullName.toLowerCase());
+    return insertIntoTables.containsKey(fullName);
   }
 
   /**
@@ -223,7 +223,7 @@ public class QBParseInfo {
    * @return
    */
   public boolean isInsertIntoTable(String fullTableName) {
-    return insertIntoTables.containsKey(fullTableName.toLowerCase());
+    return insertIntoTables.containsKey(fullTableName);
   }
 
   public void setInsertOverwriteDirectory(boolean isInsertOverwriteDir) {
@@ -334,7 +334,7 @@ public class QBParseInfo {
   }
 
   public void setSrcForAlias(String alias, ASTNode ast) {
-    aliasToSrc.put(alias.toLowerCase(), ast);
+    aliasToSrc.put(alias, ast);
   }
 
   public Set<String> getClauseNames() {
@@ -447,7 +447,7 @@ public class QBParseInfo {
   }
 
   public ASTNode getSrcForAlias(String alias) {
-    return aliasToSrc.get(alias.toLowerCase());
+    return aliasToSrc.get(alias);
   }
 
   public String getAlias() {
@@ -475,11 +475,11 @@ public class QBParseInfo {
   }
 
   public TableSample getTabSample(String alias) {
-    return nameToSample.get(alias.toLowerCase());
+    return nameToSample.get(alias);
   }
 
   public void setTabSample(String alias, TableSample tableSample) {
-    nameToSample.put(alias.toLowerCase(), tableSample);
+    nameToSample.put(alias, tableSample);
   }
 
   public String getExprToColumnAlias(ASTNode expr) {
@@ -599,7 +599,7 @@ public class QBParseInfo {
   }
 
   public List<ASTNode> getLateralViewsForAlias(String alias) {
-    return aliasToLateralViews.get(alias.toLowerCase());
+    return aliasToLateralViews.get(alias);
   }
 
   public void addLateralViewForAlias(String alias, ASTNode lateralView) {

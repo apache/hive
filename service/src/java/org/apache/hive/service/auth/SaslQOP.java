@@ -50,7 +50,7 @@ public enum SaslQOP {
 
   public static SaslQOP fromString(String str) {
     if (str != null) {
-      str = str.toLowerCase();
+      str = str;
     }
     SaslQOP saslQOP = STR_TO_ENUM.get(str);
     if (saslQOP == null) {

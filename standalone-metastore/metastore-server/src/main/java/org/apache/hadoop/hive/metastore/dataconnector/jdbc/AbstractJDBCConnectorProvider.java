@@ -325,7 +325,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   // subclasses call this first, anything that is not mappable by this code is mapped in the subclass
   protected String getDataType(String mySqlType, int size) {
-    switch(mySqlType.toLowerCase())
+    switch(mySqlType)
     {
       case "char":
         return ColumnType.CHAR_TYPE_NAME + wrapSize(size);

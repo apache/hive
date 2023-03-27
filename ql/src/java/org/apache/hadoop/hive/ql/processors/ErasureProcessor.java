@@ -103,7 +103,7 @@ public class ErasureProcessor implements CommandProcessor {
       throw new CommandProcessorException("Erasure Processor Helper Failed: Hadoop erasure shim is not initialized.");
     }
 
-    String action = args[0].toLowerCase();
+    String action = args[0];
     String[] params = Arrays.copyOfRange(args, 1, args.length);
 
     try {

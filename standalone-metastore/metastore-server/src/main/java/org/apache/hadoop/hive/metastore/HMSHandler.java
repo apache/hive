@@ -5659,7 +5659,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws NoSuchObjectException, MetaException  {
 
     String[] parsedDbName = parseDbName(db_name, conf);
-    String tableName = tbl_name.toLowerCase();
+    String tableName = tbl_name;
 
     startTableFunction("get_partitions_pspec", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
 
@@ -6799,7 +6799,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } else {
         isFirst = false;
       }
-      convertedPartName += partColName.toLowerCase() + "=" + partColVal;
+      convertedPartName += partColName + "=" + partColVal;
     }
     return convertedPartName;
   }
@@ -6809,10 +6809,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public ColumnStatistics get_table_column_statistics(String dbName, String tableName,
                                                       String colName) throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
-    parsedDbName[CAT_NAME] = parsedDbName[CAT_NAME].toLowerCase();
-    parsedDbName[DB_NAME] = parsedDbName[DB_NAME].toLowerCase();
-    tableName = tableName.toLowerCase();
-    colName = colName.toLowerCase();
+    parsedDbName[CAT_NAME] = parsedDbName[CAT_NAME];
+    parsedDbName[DB_NAME] = parsedDbName[DB_NAME];
+    tableName = tableName;
+    colName = colName;
     startFunction("get_column_statistics_by_table", ": table=" +
         TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
             tableName) + " column=" + colName);
@@ -6832,16 +6832,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public TableStatsResult get_table_statistics_req(TableStatsRequest request) throws TException {
-    String catName = request.isSetCatName() ? request.getCatName().toLowerCase() :
+    String catName = request.isSetCatName() ? request.getCatName() :
         getDefaultCatalog(conf);
-    String dbName = request.getDbName().toLowerCase();
-    String tblName = request.getTblName().toLowerCase();
+    String dbName = request.getDbName();
+    String tblName = request.getTblName();
     startFunction("get_table_statistics_req", ": table=" +
         TableName.getQualified(catName, dbName, tblName));
     TableStatsResult result = null;
     List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
     for (String colName : request.getColNames()) {
-      lowerCaseColNames.add(colName.toLowerCase());
+      lowerCaseColNames.add(colName);
     }
     try {
       ColumnStatistics cs = getMS().getTableColumnStatistics(
@@ -6867,10 +6867,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                           String partName, String colName) throws TException {
     // Note: this method appears to be unused within Hive.
     //       It doesn't take txn stats into account.
-    dbName = dbName.toLowerCase();
+    dbName = dbName;
     String[] parsedDbName = parseDbName(dbName, conf);
-    tableName = tableName.toLowerCase();
-    colName = colName.toLowerCase();
+    tableName = tableName;
+    colName = colName;
     String convertedPartName = lowerCaseConvertPartName(partName);
     startFunction("get_column_statistics_by_partition", ": table=" +
         TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
@@ -6898,16 +6898,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)
       throws TException {
-    String catName = request.isSetCatName() ? request.getCatName().toLowerCase() : getDefaultCatalog(conf);
-    String dbName = request.getDbName().toLowerCase();
-    String tblName = request.getTblName().toLowerCase();
+    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
+    String dbName = request.getDbName();
+    String tblName = request.getTblName();
     startFunction("get_partitions_statistics_req", ": table=" +
         TableName.getQualified(catName, dbName, tblName));
 
     PartitionsStatsResult result = null;
     List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
     for (String colName : request.getColNames()) {
-      lowerCaseColNames.add(colName.toLowerCase());
+      lowerCaseColNames.add(colName);
     }
     List<String> lowerCasePartNames = new ArrayList<>(request.getPartNames().size());
     for (String partName : request.getPartNames()) {
@@ -7007,16 +7007,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private void normalizeColStatsInput(ColumnStatistics colStats) throws MetaException {
     // TODO: is this really needed? this code is propagated from HIVE-1362 but most of it is useless.
     ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-    statsDesc.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName().toLowerCase() : getDefaultCatalog(conf));
-    statsDesc.setDbName(statsDesc.getDbName().toLowerCase());
-    statsDesc.setTableName(statsDesc.getTableName().toLowerCase());
+    statsDesc.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf));
+    statsDesc.setDbName(statsDesc.getDbName());
+    statsDesc.setTableName(statsDesc.getTableName());
     statsDesc.setPartName(lowerCaseConvertPartName(statsDesc.getPartName()));
     long time = System.currentTimeMillis() / 1000;
     statsDesc.setLastAnalyzed(time);
 
     for (ColumnStatisticsObj statsObj : colStats.getStatsObj()) {
-      statsObj.setColName(statsObj.getColName().toLowerCase());
-      statsObj.setColType(statsObj.getColType().toLowerCase());
+      statsObj.setColName(statsObj.getColName());
+      statsObj.setColType(statsObj.getColType());
     }
     colStats.setStatsDesc(statsDesc);
     colStats.setStatsObj(colStats.getStatsObj());
@@ -7164,11 +7164,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public boolean delete_partition_column_statistics(String dbName, String tableName,
                                                     String partName, String colName, String engine) throws TException {
-    dbName = dbName.toLowerCase();
+    dbName = dbName;
     String[] parsedDbName = parseDbName(dbName, conf);
-    tableName = tableName.toLowerCase();
+    tableName = tableName;
     if (colName != null) {
-      colName = colName.toLowerCase();
+      colName = colName;
     }
     String convertedPartName = lowerCaseConvertPartName(partName);
     startFunction("delete_column_statistics_by_partition",": table=" +
@@ -7215,13 +7215,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public boolean delete_table_column_statistics(String dbName, String tableName, String colName, String engine)
       throws TException {
-    dbName = dbName.toLowerCase();
-    tableName = tableName.toLowerCase();
+    dbName = dbName;
+    tableName = tableName;
 
     String[] parsedDbName = parseDbName(dbName, conf);
 
     if (colName != null) {
-      colName = colName.toLowerCase();
+      colName = colName;
     }
     startFunction("delete_column_statistics_by_table", ": table=" +
         TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) + " column=" +
@@ -8505,7 +8505,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // a copy is required to allow incremental replication to work correctly.
       if (func.getResourceUris() != null && !func.getResourceUris().isEmpty()) {
         for (ResourceUri uri : func.getResourceUris()) {
-          if (uri.getUri().toLowerCase().startsWith("hdfs:") && needsCm) {
+          if (uri.getUri().startsWith("hdfs:") && needsCm) {
             wh.addToChangeManagement(new Path(uri.getUri()));
           }
         }
@@ -9092,16 +9092,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public AggrStats get_aggr_stats_for(PartitionsStatsRequest request) throws TException {
-    String catName = request.isSetCatName() ? request.getCatName().toLowerCase() :
+    String catName = request.isSetCatName() ? request.getCatName() :
         getDefaultCatalog(conf);
-    String dbName = request.getDbName().toLowerCase();
-    String tblName = request.getTblName().toLowerCase();
+    String dbName = request.getDbName();
+    String tblName = request.getTblName();
     startFunction("get_aggr_stats_for", ": table=" +
         TableName.getQualified(catName, dbName, tblName));
 
     List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
     for (String colName : request.getColNames()) {
-      lowerCaseColNames.add(colName.toLowerCase());
+      lowerCaseColNames.add(colName);
     }
     List<String> lowerCasePartNames = new ArrayList<>(request.getPartNames().size());
     for (String partName : request.getPartNames()) {

@@ -6061,7 +6061,7 @@ public class HiveConf extends Configuration {
   private static Set<String> nanosSet = ImmutableSet.of("ns", "NS", "nsec", "NSEC", "nsecs", "NSECS",
     "nanosecond", "NANOSECOND", "nanoseconds", "NANOSECONDS");
   public static TimeUnit unitFor(String unit, TimeUnit defaultUnit) {
-    unit = unit.trim().toLowerCase();
+    unit = unit.trim();
     if (unit.isEmpty() || unit.equals("l")) {
       if (defaultUnit == null) {
         throw new IllegalArgumentException("Time unit is not specified");
@@ -6087,7 +6087,7 @@ public class HiveConf extends Configuration {
 
 
   public static long multiplierFor(String unit) {
-    unit = unit.trim().toLowerCase();
+    unit = unit.trim();
     if (unit.isEmpty() || unit.equals("b") || unit.equals("bytes")) {
       return 1;
     } else if (unit.equals("kb")) {
@@ -7031,9 +7031,9 @@ public class HiveConf extends Configuration {
     }
     HashMap<String, ConfVars> vars = new HashMap<>();
     for (ConfVars val : ConfVars.values()) {
-      vars.put(val.varname.toLowerCase(), val);
+      vars.put(val.varname, val);
       if (val.altName != null && !val.altName.isEmpty()) {
-        vars.put(val.altName.toLowerCase(), val);
+        vars.put(val.altName, val);
       }
     }
     synchronized (reverseMapLock) {

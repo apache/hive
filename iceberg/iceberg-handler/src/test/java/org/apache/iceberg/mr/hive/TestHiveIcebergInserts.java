@@ -196,12 +196,12 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         continue;
       }
 
-      String columnName = type.typeId().toString().toLowerCase() + "_column";
+      String columnName = type.typeId().toString() + "_column";
 
       Schema schema = new Schema(required(1, "id", Types.LongType.get()), required(2, columnName, type));
       List<Record> expected = TestHelper.generateRandomRecords(schema, 5, 0L);
 
-      Table table = testTables.createTable(shell, type.typeId().toString().toLowerCase() + "_table_" + i,
+      Table table = testTables.createTable(shell, type.typeId().toString() + "_table_" + i,
           schema, PartitionSpec.unpartitioned(), fileFormat, expected);
 
       HiveIcebergTestUtils.validateData(table, expected, 0);

@@ -575,8 +575,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Iterable<String> tableNames = Collections2.filter(db.getAllTables(dbName),
         tableName -> {
           assert (tableName != null);
-          return !tableName.toLowerCase().startsWith(
-              SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase())
+          return !tableName.startsWith(
+              SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX)
               && !replScope.tableIncludedInReplScope(tableName);
         });
     for (String table : tableNames) {
@@ -951,7 +951,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     // Clean-up snapshots
     if (conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY)) {
       cleanupSnapshots(new Path(work.getDumpDirectory()).getParent().getParent().getParent(),
-          work.getSourceDbName().toLowerCase(), conf, null, true);
+          work.getSourceDbName(), conf, null, true);
     }
 
     //pass the current time at the end of repl-load stage as the starting time of the first event.

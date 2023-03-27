@@ -132,7 +132,7 @@ public class SetProcessor implements CommandProcessor {
    */
   private boolean isHidden(String key) {
     for(String p : PASSWORD_STRINGS) {
-      if(key.toLowerCase().contains(p)) {
+      if(key.contains(p)) {
         return true;
       }
     }

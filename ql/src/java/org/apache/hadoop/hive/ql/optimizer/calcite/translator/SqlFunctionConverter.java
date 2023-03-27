@@ -603,7 +603,7 @@ public class SqlFunctionConverter {
     if (calciteAggFn == null) {
       CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
 
-      switch (hiveUdfName.toLowerCase()) {
+      switch (hiveUdfName) {
       case "sum":
         calciteAggFn = new HiveSqlSumAggFunction(
             isDistinct,

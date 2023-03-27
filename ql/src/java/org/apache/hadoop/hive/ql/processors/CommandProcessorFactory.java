@@ -62,9 +62,9 @@ public final class CommandProcessorFactory {
     Set<String> availableCommands = new HashSet<String>();
     for (String availableCommand : conf.getVar(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST)
       .split(",")) {
-      availableCommands.add(availableCommand.toLowerCase().trim());
+      availableCommands.add(availableCommand.trim());
     }
-    if (!availableCommands.contains(cmd[0].trim().toLowerCase())) {
+    if (!availableCommands.contains(cmd[0].trim())) {
       throw new SQLException("Insufficient privileges to execute " + cmd[0], "42000");
     }
     if (cmd.length > 1 && "reload".equalsIgnoreCase(cmd[0])

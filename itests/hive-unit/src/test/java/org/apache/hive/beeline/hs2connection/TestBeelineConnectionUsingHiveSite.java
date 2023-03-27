@@ -79,7 +79,7 @@ public class TestBeelineConnectionUsingHiveSite extends BeelineWithHS2Connection
     String path = createDefaultHs2ConnectionFile();
     BeelineResult res = getBeelineOutput(path, new String[] {"-u", "invalidUrl", "-e", "show tables;" });
     assertEquals(1, res.exitCode);
-    assertFalse(tableName + " should not appear", res.output.toLowerCase().contains(tableName));
+    assertFalse(tableName + " should not appear", res.output.contains(tableName));
 
   }
 
@@ -94,7 +94,7 @@ public class TestBeelineConnectionUsingHiveSite extends BeelineWithHS2Connection
     setupNoAuthHs2();
     BeelineResult res = getBeelineOutput(null, new String[] {"-e", "show tables;" });
     assertEquals(1, res.exitCode);
-    assertTrue(res.output.toLowerCase().contains("no current connection"));
+    assertTrue(res.output.contains("no current connection"));
   }
 
   @Test

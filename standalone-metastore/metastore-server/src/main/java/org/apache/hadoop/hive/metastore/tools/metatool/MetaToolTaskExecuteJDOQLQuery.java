@@ -25,13 +25,13 @@ class MetaToolTaskExecuteJDOQLQuery extends MetaToolTask {
   @Override
   void execute() {
     String query = getCl().getJDOQLQuery();
-      if (query.toLowerCase().trim().startsWith("select")) {
+      if (query.trim().startsWith("select")) {
         try {
         executeJDOQLSelect(query);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
-      } else if (query.toLowerCase().trim().startsWith("update")) {
+      } else if (query.trim().startsWith("update")) {
         try {
           executeJDOQLUpdate(query);
         } catch (Exception e) {

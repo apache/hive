@@ -243,7 +243,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       for (final TColumnDesc column : schema.getColumns()) {
         String columnName = column.getColumnName();
         columnNames.add(columnName);
-        normalizedColumnNames.add(columnName.toLowerCase());
+        normalizedColumnNames.add(columnName);
         TPrimitiveTypeEntry primitiveTypeEntry =
             column.getTypeDesc().getTypes().get(0).getPrimitiveEntry();
         String columnTypeName = TYPE_NAMES.get(primitiveTypeEntry.getType());
@@ -268,7 +268,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     columnTypes.addAll(colTypes);
     columnAttributes.addAll(colAttributes);
 
-    colNames.forEach(i -> normalizedColumnNames.add(i.toLowerCase()));
+    colNames.forEach(i -> normalizedColumnNames.add(i));
   }
 
   @Override

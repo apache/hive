@@ -293,7 +293,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   private final Set<Class<?>> supportedGenericUDFs = new HashSet<>();
 
   private final Set<String> supportedAggregationUdfs = Arrays.stream(VECTORIZABLE_UDAF.values())
-      .map(e -> e.name().toLowerCase())
+      .map(e -> e.name())
       .collect(Collectors.toSet());
 
   // The set of virtual columns that vectorized readers *MAY* support.
@@ -328,7 +328,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     @Override
     public String toString() {
-      return name().toLowerCase();
+      return name();
     }
   }
 
@@ -347,7 +347,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     @Override
     public String toString() {
-      return name().toLowerCase();
+      return name();
     }
   }
 
@@ -2505,7 +2505,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorizedInputFormatSupportEnabled =
         HiveConf.getVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED);
-    String[] supportEnabledStrings = vectorizedInputFormatSupportEnabled.toLowerCase().split(",");
+    String[] supportEnabledStrings = vectorizedInputFormatSupportEnabled.split(",");
     vectorizedInputFormatSupportEnabledSet = new TreeSet<Support>();
     for (String supportEnabledString : supportEnabledStrings) {
       Support support = Support.nameToSupportMap.get(supportEnabledString);
@@ -2909,7 +2909,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = vectorPTFDesc.getEvaluatorInputExprNodeDescLists();
 
     for (int i = 0; i < count; i++) {
-      String functionName = evaluatorFunctionNames[i].toLowerCase();
+      String functionName = evaluatorFunctionNames[i];
       SupportedFunctionType supportedFunctionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);
       if (supportedFunctionType == null) {
         setOperatorIssue(functionName + " not in supported functions " + VectorPTFDesc.supportedFunctionNames);
@@ -3217,7 +3217,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean validateAggregationDesc(AggregationDesc aggDesc, GroupByDesc.Mode groupByMode,
       boolean isGroupingSetsPresent, boolean hasKeys) {
 
-    String udfName = aggDesc.getGenericUDAFName().toLowerCase();
+    String udfName = aggDesc.getGenericUDAFName();
     if (!supportedAggregationUdfs.contains(udfName)) {
       setExpressionIssue("Aggregation Function", "UDF " + udfName + " not supported");
       return false;
@@ -3252,7 +3252,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   public static boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode,
       boolean allowComplex, boolean allowVoidProjection) {
 
-    type = type.toLowerCase();
+    type = type;
     boolean result = supportedDataTypesPattern.matcher(type).matches();
     if (result && !allowVoidProjection &&
         mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
@@ -3280,7 +3280,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       boolean allowComplex, boolean isVectorizationComplexTypesEnabled,
       boolean allowVoidProjection) {
 
-    type = type.toLowerCase();
+    type = type;
     boolean result = supportedDataTypesPattern.matcher(type).matches();
     if (result && !allowVoidProjection &&
         mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {

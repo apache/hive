@@ -374,7 +374,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           HdfsUtils.setFullFileStatus(conf, status, status.getFileStatus().getGroup(), fs,
               partPath, false);
         }
-        partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs);
+        partPath = constructPartialPartPath(partPath, partKey.getName(), partKVs);
       }
     }
 
@@ -405,7 +405,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       // file:///tmp/hcat_junit_warehouse/employee/_DYN0.7770480401313761/emp_country=IN/emp_state=KA  ->
       // file:///tmp/hcat_junit_warehouse/employee/emp_country=IN/emp_state=KA
       for (FieldSchema partKey : table.getPartitionKeys()) {
-        partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs);
+        partPath = constructPartialPartPath(partPath, partKey.getName(), partKVs);
       }
 
       return partPath.toString();

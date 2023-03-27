@@ -211,7 +211,7 @@ public class LlapProtocolServerImpl extends AbstractService
 
   private static TokenRequiresSigning getSigningConfig(final Configuration conf) {
     String signSetting = HiveConf.getVar(
-        conf, ConfVars.LLAP_REMOTE_TOKEN_REQUIRES_SIGNING).toLowerCase();
+        conf, ConfVars.LLAP_REMOTE_TOKEN_REQUIRES_SIGNING);
     switch (signSetting) {
     case "true": return TokenRequiresSigning.TRUE;
     case "except_llap_owner": return TokenRequiresSigning.EXCEPT_OWNER;

@@ -60,8 +60,8 @@ public class AlterTableChangeColumnAnalyzer extends AbstractAlterTableAnalyzer {
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
     //col_old_name col_new_name column_type [COMMENT col_comment] [FIRST|AFTER column_name] [CASCADE|RESTRICT]
-    String oldColumnName = command.getChild(0).getText().toLowerCase();
-    String newColumnName = command.getChild(1).getText().toLowerCase();
+    String oldColumnName = command.getChild(0).getText();
+    String newColumnName = command.getChild(1).getText();
     String newType = getTypeStringFromAST((ASTNode) command.getChild(2));
 
     Table table = getTable(tableName);

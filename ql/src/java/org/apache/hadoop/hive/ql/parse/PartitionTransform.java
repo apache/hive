@@ -68,14 +68,14 @@ public class PartitionTransform {
           case HiveParser.TOK_MONTH:
           case HiveParser.TOK_DAY:
           case HiveParser.TOK_HOUR:
-            spec.setColumnName(grandChild.getChild(0).getText().toLowerCase());
+            spec.setColumnName(grandChild.getChild(0).getText());
             spec.setTransformType(TRANSFORMS.get(grandChild.getToken().getType()));
             break;
           case HiveParser.TOK_TRUNCATE:
           case HiveParser.TOK_BUCKET:
             spec.setTransformType(TRANSFORMS.get(grandChild.getToken().getType()));
             spec.setTransformParam(Optional.ofNullable(Integer.valueOf(grandChild.getChild(0).getText())));
-            spec.setColumnName(grandChild.getChild(1).getText().toLowerCase());
+            spec.setColumnName(grandChild.getChild(1).getText());
             break;
         }
       }

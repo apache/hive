@@ -49,11 +49,11 @@ public class CacheUtils {
   }
 
   public static String buildDbKey(String catName, String dbName) {
-    return buildKey(catName.toLowerCase(), dbName.toLowerCase());
+    return buildKey(catName, dbName);
   }
 
   public static String buildDbKeyWithDelimiterSuffix(String catName, String dbName) {
-    return buildKey(catName.toLowerCase(), dbName.toLowerCase()) + delimit;
+    return buildKey(catName, dbName) + delimit;
   }
 
   /**

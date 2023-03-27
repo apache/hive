@@ -134,7 +134,7 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
         Map<String, String> valueMap = new HashMap<String, String>();
         if (outputJobInfo.getPartitionValues() != null) {
           for (Map.Entry<String, String> entry : outputJobInfo.getPartitionValues().entrySet()) {
-            valueMap.put(entry.getKey().toLowerCase(), entry.getValue());
+            valueMap.put(entry.getKey(), entry.getValue());
           }
         }
 
@@ -145,8 +145,8 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
           List<String> dynamicPartitioningKeys = new ArrayList<String>();
           boolean firstItem = true;
           for (FieldSchema fs : table.getPartitionKeys()) {
-            if (!valueMap.containsKey(fs.getName().toLowerCase())) {
-              dynamicPartitioningKeys.add(fs.getName().toLowerCase());
+            if (!valueMap.containsKey(fs.getName())) {
+              dynamicPartitioningKeys.add(fs.getName());
             }
           }
 

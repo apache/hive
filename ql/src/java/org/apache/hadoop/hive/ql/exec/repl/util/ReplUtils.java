@@ -397,7 +397,7 @@ public class ReplUtils {
     Set<Long> dbTxns = new HashSet<>();
     if (lockManager instanceof DbLockManager) {
       ShowLocksRequest request = new ShowLocksRequest();
-      request.setDbname(dbName.toLowerCase());
+      request.setDbname(dbName);
       ShowLocksResponse showLocksResponse = ((DbLockManager)lockManager).getLocks(request);
       for (ShowLocksResponseElement showLocksResponseElement : showLocksResponse.getLocks()) {
         dbTxns.add(showLocksResponseElement.getTxnid());

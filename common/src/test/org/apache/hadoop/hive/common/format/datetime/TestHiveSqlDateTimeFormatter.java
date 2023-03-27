@@ -507,7 +507,7 @@ public class TestHiveSqlDateTimeFormatter {
    * -concatenation of token.strings
    */
   private void verifyPatternParsing(String pattern, List<TemporalField> temporalFields) {
-    verifyPatternParsing(pattern, pattern.length(), pattern.toLowerCase(), temporalFields);
+    verifyPatternParsing(pattern, pattern.length(), pattern, temporalFields);
   }
 
   private void verifyPatternParsing(String pattern, int expectedPatternLength,

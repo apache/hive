@@ -96,7 +96,7 @@ public abstract class SingleFileSystem extends FileSystem {
   private Path workDir;
 
   public String getScheme() {
-    return "sfs+" + getClass().getSimpleName().toLowerCase();
+    return "sfs+" + getClass().getSimpleName();
   }
 
   @Override

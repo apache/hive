@@ -1829,7 +1829,7 @@ public class TestHiveMetastoreTransformer {
         try {
           if (cat == null) {
             cat = new Catalog();
-            cat.setName(catalog.toLowerCase());
+            cat.setName(catalog);
             Warehouse wh = new Warehouse(conf);
             cat.setLocationUri(wh.getWhRootExternal().toString() + File.separator + catalog);
             cat.setDescription("Non-hive catalog");

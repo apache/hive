@@ -334,7 +334,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
         // Leaf
         if (next.children == null || next.children.size() == 0) {
           String str = next.toString();
-          rootNode.addtoMemoizedString(next.getType() != HiveParser.StringLiteral ? str.toLowerCase() : str);
+          rootNode.addtoMemoizedString(next.getType() != HiveParser.StringLiteral ? str : str);
           next.endIndx =  rootNode.getMemoizedStringLen();
           stack.pop();
           continue;
@@ -343,7 +343,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
         if ( !next.isNil() ) {
           rootNode.addtoMemoizedString("(");
           String str = next.toString();
-          rootNode.addtoMemoizedString((next.getType() == HiveParser.StringLiteral || null == str) ? str :  str.toLowerCase());
+          rootNode.addtoMemoizedString((next.getType() == HiveParser.StringLiteral || null == str) ? str :  str);
           rootNode.addtoMemoizedString(" ");
         }
 

@@ -80,11 +80,11 @@ public class HBaseMetaHook implements HiveMetaHook, Closeable {
       tableName = tbl.getSd().getSerdeInfo().getParameters().get(HBaseSerDe.HBASE_TABLE_NAME);
       //standardize to lower case
       if (tableName != null) {
-        tableName = tableName.toLowerCase();
+        tableName = tableName;
       }
     }
     if (tableName == null) {
-      tableName = (tbl.getDbName() + "." + tbl.getTableName()).toLowerCase();
+      tableName = (tbl.getDbName() + "." + tbl.getTableName());
       if (tableName.startsWith(HBaseStorageHandler.DEFAULT_PREFIX)) {
         tableName = tableName.substring(HBaseStorageHandler.DEFAULT_PREFIX.length());
       }

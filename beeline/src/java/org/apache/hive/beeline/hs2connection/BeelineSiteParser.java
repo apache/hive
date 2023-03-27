@@ -48,7 +48,7 @@ public class BeelineSiteParser implements HS2ConnectionFileParser {
   public static final String DEFAULT_BEELINE_SITE_FILE_NAME = "beeline-site.xml";
   public static final String DEFAULT_BEELINE_SITE_LOCATION =
       System.getProperty("user.home") + File.separator
-          + (System.getProperty("os.name").toLowerCase().indexOf("windows") != -1 ? "" : ".")
+          + (System.getProperty("os.name").indexOf("windows") != -1 ? "" : ".")
           + "beeline" + File.separator;
   public static final String ETC_HIVE_CONF_LOCATION =
       File.separator + "etc" + File.separator + "hive" + File.separator + "conf";

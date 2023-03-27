@@ -104,7 +104,7 @@ public class VectorExpressionDescriptor {
     }
 
     public static ArgumentType fromHiveTypeName(String hiveTypeName) {
-      String lower = hiveTypeName.toLowerCase();
+      String lower = hiveTypeName;
       if (lower.equals("tinyint") ||
           lower.equals("smallint") ||
           lower.equals("int") ||

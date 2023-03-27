@@ -213,7 +213,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     String tableName = tableProperties.getProperty(HBaseSerDe.HBASE_TABLE_NAME);
     if (tableName == null) {
       tableName = tableProperties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
-      tableName = tableName.toLowerCase();
+      tableName = tableName;
       if (tableName.startsWith(DEFAULT_PREFIX)) {
         tableName = tableName.substring(DEFAULT_PREFIX.length());
       }

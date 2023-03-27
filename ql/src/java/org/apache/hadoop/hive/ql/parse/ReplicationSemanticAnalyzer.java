@@ -342,7 +342,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
       Path latestDumpPath = ReplUtils.getLatestDumpPath(ReplUtils
-              .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf);
+              .getEncodedDumpRootPath(conf, sourceDbNameOrPattern), conf);
       if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
         Path nonRecoverableFile = new Path(latestDumpPath, ReplAck.NON_RECOVERABLE_MARKER.toString());
         ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED,
@@ -419,7 +419,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Path getCurrentLoadPath() throws IOException, SemanticException {
-    Path loadPathBase = ReplUtils.getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase());
+    Path loadPathBase = ReplUtils.getEncodedDumpRootPath(conf, sourceDbNameOrPattern);
     final FileSystem fs = loadPathBase.getFileSystem(conf);
     // Make fully qualified path for further use.
     loadPathBase = fs.makeQualified(loadPathBase);

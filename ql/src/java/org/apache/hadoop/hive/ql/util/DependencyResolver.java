@@ -119,7 +119,7 @@ public class DependencyResolver {
       if (mapPair[0].equals("exclude")) {
         excludeList.addAll(computeExcludeList(mapPair[1]));
       } else if (mapPair[0].equals("transitive")) {
-        if (mapPair[1].toLowerCase().equals("true")) {
+        if (mapPair[1].equals("true")) {
           queryMap.put(mapPair[0], true);
         } else {
           queryMap.put(mapPair[0], false);

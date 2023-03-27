@@ -118,14 +118,14 @@ public class ClientCommandHookFactory {
   public ClientHook getHook(BeeLine beeLine, String cmdLine) {
     if (!beeLine.isBeeLine()) {
       // In compatibility mode we need to hook to set, and use
-      if (cmdLine.toLowerCase().startsWith("set")) {
+      if (cmdLine.startsWith("set")) {
         // Only set A = B command needs updating the configuration stored in client side.
         if (cmdLine.contains("=")) {
           return new SetCommandHook(cmdLine);
         } else {
           return null;
         }
-      } else if (cmdLine.toLowerCase().startsWith("use")) {
+      } else if (cmdLine.startsWith("use")) {
         return new UseCommandHook(cmdLine);
       } else {
         return null;
@@ -134,11 +134,11 @@ public class ClientCommandHookFactory {
       // In beeline mode we need to hook to use, connect, go, in case
       // the ShowDbInPrompt is set, so the database name is needed
       if (beeLine.getOpts().getShowDbInPrompt()) {
-        if (cmdLine.toLowerCase().startsWith("use")) {
+        if (cmdLine.startsWith("use")) {
           return new UseCommandHook(cmdLine);
-        } else if (cmdLine.toLowerCase().startsWith("connect")) {
+        } else if (cmdLine.startsWith("connect")) {
           return new ConnectCommandHook(cmdLine);
-        } else if (cmdLine.toLowerCase().startsWith("go")) {
+        } else if (cmdLine.startsWith("go")) {
           return new GoCommandHook(cmdLine);
         } else {
           return null;

@@ -196,7 +196,7 @@ import java.util.stream.Collectors;
     JsonNode document = mapper.readValue(value, JsonNode.class);
     //Hive Column names are case insensitive.
     Map<String, JsonNode> documentMap = Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
-    document.fields().forEachRemaining(field -> documentMap.put(field.getKey().toLowerCase(), field.getValue()));
+    document.fields().forEachRemaining(field -> documentMap.put(field.getKey(), field.getValue()));
     return documentMap;
   }
 

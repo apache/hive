@@ -77,7 +77,7 @@ public class OracleConnectorProvider extends AbstractJDBCConnectorProvider {
 
         // map any db specific types here.
         //TODO: Large Objects (LOB), Interval data types of oracle needs to be supported.
-        switch (dbDataType.toLowerCase())
+        switch (dbDataType)
         {
             case "varchar2":
             case "nchar":
