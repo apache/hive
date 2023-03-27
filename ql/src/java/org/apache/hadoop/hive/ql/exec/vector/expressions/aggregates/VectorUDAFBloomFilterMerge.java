@@ -223,9 +223,9 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
           merge(currentBf);
         } catch (InterruptedException e) {// Executor.shutdownNow() is called
           if (!queue.isEmpty()){
-            LOG.debug(
-                "bloom filter merge was interrupted while processing and queue is still not empty"
-                    + ", this is fine in case of shutdownNow");
+            LOG.info(
+                "bloom filter merge was interrupted while processing and queue is still not empty (size: {})"
+                    + ", this is fine in case of shutdownNow", queue.size());
           }
           if (aborted.get()) {
             LOG.info("bloom filter merge was aborted, won't finish merging...");
@@ -601,5 +601,12 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
 
     Aggregation bfAgg = (Aggregation) agg;
     outputColVector.setVal(batchIndex, bfAgg.bfBytes, 0, bfAgg.bfBytes.length);
+  }
+
+  /**
+   * Let's clone the batch when we're working in parallel, see HIVE-26655.
+   */
+  public boolean batchNeedsClone() {
+    return numThreads > 0;
   }
 }
