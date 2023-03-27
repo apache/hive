@@ -18,8 +18,8 @@
 package org.apache.hadoop.hive.ql.io;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import java.io.FileNotFoundException;
@@ -725,8 +725,8 @@ public class TestAcidUtils {
     Path path = new MockPath(fs, "/tbl");
 
     Map<Path, AcidUtils.HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, path);
-    Assert.assertEquals(1, hdfsDirSnapshots.size());
-    Assert.assertEquals("mock:/tbl/part1/delta_1_1", hdfsDirSnapshots.keySet().toArray()[0].toString());
+    assertEquals(1, hdfsDirSnapshots.size());
+    assertEquals("mock:/tbl/part1/delta_1_1", hdfsDirSnapshots.keySet().stream().findFirst().get().toString());
   }
 
   @Test
@@ -739,13 +739,14 @@ public class TestAcidUtils {
     Path path = new MockPath(fs, "/tbl");
     Path stageDir = new MockPath(fs, "mock:/tbl/part1/.hive-staging_dir");
     FileSystem mockFs = spy(fs);
-    Mockito.doThrow(new FileNotFoundException("")).when(mockFs).listLocatedStatus(eq(stageDir));
+    Mockito.doThrow(new FileNotFoundException("")).when(mockFs).listLocatedStatus(stageDir);
     try {
       Map<Path, AcidUtils.HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(mockFs, path);
-      Assert.assertEquals(1, hdfsDirSnapshots.size());
+      assertEquals(1, hdfsDirSnapshots.size());
+      assertEquals("mock:/tbl/part1/delta_1_1", hdfsDirSnapshots.keySet().stream().findFirst().get().toString());
     }
     catch (FileNotFoundException fnf) {
-      fail("Should not throw FileNotFoundException when a directory is removed while fetching HDFSSnapshots");
+      Assert.fail("Should not throw FileNotFoundException when a directory is removed while fetching HDFSSnapshots");
     }
   }
 }
