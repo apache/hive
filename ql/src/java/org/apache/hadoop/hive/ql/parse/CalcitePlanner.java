@@ -4176,9 +4176,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
      * @throws SemanticException
      */
     private Object genValueFromConstantExpr(RowResolver inputRR, ASTNode expr) throws SemanticException {
-      ExprNodeDesc ExprNode = genExprNodeDesc(expr, inputRR, true, true);
-      if (ExprNode instanceof ExprNodeConstantDesc) {
-        ExprNodeConstantDesc offsetConstantExprNode = (ExprNodeConstantDesc) ExprNode;
+      ExprNodeDesc exprNode = genExprNodeDesc(expr, inputRR, true, true);
+      if (exprNode instanceof ExprNodeConstantDesc) {
+        ExprNodeConstantDesc offsetConstantExprNode = (ExprNodeConstantDesc) exprNode;
         return offsetConstantExprNode.getValue();
       } else {
         throw new SemanticException("Only constant expressions are supported");

@@ -154,8 +154,8 @@ public class QBParseInfo {
     destToDistributeby = new HashMap<String, ASTNode>();
     destToSortby = new HashMap<String, ASTNode>();
     destToOrderby = new HashMap<String, ASTNode>();
-    destToASTLimit = new HashMap<String, ASTNode>();
-    destToASTOffset = new HashMap<String, ASTNode>();
+    destToASTLimit = new HashMap<>();
+    destToASTOffset = new HashMap<>();
     destToLimit = new HashMap<String, SimpleEntry<Integer, Integer>>();
     destToOpType = new HashMap<>();
     insertIntoTables = new HashMap<String, ASTNode>();
