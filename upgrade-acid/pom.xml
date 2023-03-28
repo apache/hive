@@ -80,6 +80,12 @@
             <artifactId>hive-exec</artifactId>
             <version>2.3.3</version>
             <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.pentaho</groupId>
+                <artifactId>pentaho-aggdesigner-algorithm</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
