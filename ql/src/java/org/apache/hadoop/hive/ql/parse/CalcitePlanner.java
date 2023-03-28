@@ -4168,35 +4168,48 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
     }
 
+    /**
+     * Generates values from constant expression node.
+     * @param inputRR Row resolver
+     * @param expr AST Node which is a constant expression
+     * @return Object value of the expression
+     * @throws SemanticException
+     */
+    private Object genValueFromConstantExpr(RowResolver inputRR, ASTNode expr) throws SemanticException {
+      ExprNodeDesc ExprNode = genExprNodeDesc(expr, inputRR, true, true);
+      if (ExprNode instanceof ExprNodeConstantDesc) {
+        ExprNodeConstantDesc offsetConstantExprNode = (ExprNodeConstantDesc) ExprNode;
+        return offsetConstantExprNode.getValue();
+      } else {
+        throw new SemanticException("Only constant expressions are supported");
+      }
+    }
+
     private RelNode genLimitLogicalPlan(QB qb, RelNode srcRel,  RelCollation canonizedCollation) throws SemanticException {
       QBParseInfo qbp = getQBParseInfo(qb);
+      RowResolver inputRR = relToHiveRR.get(srcRel);
+      // Fetch the limit value from the query, or generate it from the limit expression if it exists
+      Integer limitValue = qbp.getDestLimit(qbp.getClauseNames().iterator().next());
       ASTNode limitExpr = qbp.getDestASTLimit(qbp.getClauseNames().iterator().next());
+      if (limitValue == null && limitExpr != null) {
+        limitValue = (Integer) genValueFromConstantExpr(inputRR, limitExpr);
+      }
+      // Fetch the offset value from the query, or generate it from the offset expression if it exists
+      Integer offsetValue = qbp.getDestLimitOffset(qbp.getClauseNames().iterator().next());
       ASTNode offsetExpr = qbp.getDestASTOffset(qbp.getClauseNames().iterator().next());
-      if (limitExpr == null) {
+      if (offsetValue == null && offsetExpr != null) {
+        offsetValue = (Integer) genValueFromConstantExpr(inputRR, offsetExpr);
+      }
+      if (limitValue == null) {
         return null;
       }
-      RowResolver inputRR = relToHiveRR.get(srcRel);
-      ExprNodeDesc limitExprNode =  genExprNodeDesc(limitExpr, inputRR, true, true);
-      ExprNodeDesc offsetExprNode =  genExprNodeDesc(offsetExpr, inputRR, true, true);
-      RexNode limitRN;
-      RexNode offsetRN;
-      Integer limitValue;
-      Integer offsetValue;
-      if (limitExprNode instanceof ExprNodeConstantDesc) {
-        ExprNodeConstantDesc limitConstantExprNode = (ExprNodeConstantDesc) limitExprNode;
-        limitValue = (Integer) limitConstantExprNode.getValue();
-        limitRN = cluster.getRexBuilder().makeExactLiteral(new BigDecimal(limitValue));
-      } else {
-        throw new SemanticException("Only constant expressions are supported for limit clause");
+      // If either limit is expression or offset is expression, set the values in the qb
+      if (limitExpr != null || offsetExpr != null) {
+        qbp.setDestLimit(qbp.getClauseNames().iterator().next(), offsetValue, limitValue);
       }
-      if (offsetExprNode instanceof ExprNodeConstantDesc) {
-        ExprNodeConstantDesc offsetConstantExprNode = (ExprNodeConstantDesc) offsetExprNode;
-        offsetValue = (Integer) offsetConstantExprNode.getValue();
-        offsetRN = cluster.getRexBuilder().makeExactLiteral(new BigDecimal(offsetValue));
-      } else {
-        throw new SemanticException("Only constant expressions are supported for offset clause");
-      }
-      qbp.setDestLimit(qbp.getClauseNames().iterator().next(), offsetValue, limitValue);
+      RexNode offsetRN = (offsetValue == null || offsetValue == 0) ?
+              null : cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(offsetValue));
+      RexNode limitRN = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(limitValue));
       RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
       if (canonizedCollation == null) {
         canonizedCollation = traitSet.canonize(RelCollations.EMPTY);

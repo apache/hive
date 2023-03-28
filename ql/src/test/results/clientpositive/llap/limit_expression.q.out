@@ -1,3 +1,21 @@
+PREHOOK: query: select key from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238
+PREHOOK: query: select key from src limit 1 offset 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key from src limit 1 offset 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+86
 PREHOOK: query: select key from src limit (1+2*3)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -21,13 +39,13 @@ POSTHOOK: query: select key from src limit (1+2*3) offset (3*4*5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-396
-247
-417
-489
-162
-377
-397
+238
+86
+311
+27
+165
+409
+255
 PREHOOK: query: select key from src order by key limit (1+2*3) offset (3*4*5)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -36,13 +54,13 @@ POSTHOOK: query: select key from src order by key limit (1+2*3) offset (3*4*5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-158
-160
-162
-163
-164
-164
-165
+0
+0
+0
+10
+100
+100
+103
 PREHOOK: query: select key from (select * from src limit (1+2*3)) q1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -66,10 +84,10 @@ POSTHOOK: query: select key from (select * from src limit (1+2*3) offset (3*4*5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-396
-247
-417
-489
-162
-377
-397
+238
+86
+311
+27
+165
+409
+255
