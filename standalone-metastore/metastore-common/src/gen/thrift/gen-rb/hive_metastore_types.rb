@@ -27,6 +27,30 @@ module PrincipalType
   VALID_VALUES = Set.new([USER, ROLE, GROUP]).freeze
 end
 
+module MaintenanceOpType
+  COMPACTION = 1
+  SNAPSHOT_EXPIRY = 2
+  STATS_REBUILD = 3
+  MV_BUILD = 4
+  MV_REFRESH = 5
+  SHUFFLE_TO_NEW_PART = 6
+  RECOMPRESS = 7
+  REORG = 8
+  VALUE_MAP = {1 => "COMPACTION", 2 => "SNAPSHOT_EXPIRY", 3 => "STATS_REBUILD", 4 => "MV_BUILD", 5 => "MV_REFRESH", 6 => "SHUFFLE_TO_NEW_PART", 7 => "RECOMPRESS", 8 => "REORG"}
+  VALID_VALUES = Set.new([COMPACTION, SNAPSHOT_EXPIRY, STATS_REBUILD, MV_BUILD, MV_REFRESH, SHUFFLE_TO_NEW_PART, RECOMPRESS, REORG]).freeze
+end
+
+module MaintenanceOpStatus
+  MAINTENANCE_NEEDED = 1
+  SCHEDULED = 2
+  IN_PROGRESS = 3
+  DONE = 4
+  CLEANUP_NEEDED = 5
+  FAILED = 6
+  VALUE_MAP = {1 => "MAINTENANCE_NEEDED", 2 => "SCHEDULED", 3 => "IN_PROGRESS", 4 => "DONE", 5 => "CLEANUP_NEEDED", 6 => "FAILED"}
+  VALID_VALUES = Set.new([MAINTENANCE_NEEDED, SCHEDULED, IN_PROGRESS, DONE, CLEANUP_NEEDED, FAILED]).freeze
+end
+
 module PartitionEventType
   LOAD_DONE = 1
   VALUE_MAP = {1 => "LOAD_DONE"}
@@ -269,6 +293,12 @@ class SQLCheckConstraint; end
 class SQLAllTableConstraints; end
 
 class Type; end
+
+class PropertySetRequest; end
+
+class PropertyGetRequest; end
+
+class PropertyGetResponse; end
 
 class HiveObjectRef; end
 
@@ -1178,6 +1208,64 @@ class Type
     TYPE1 => {:type => ::Thrift::Types::STRING, :name => 'type1', :optional => true},
     TYPE2 => {:type => ::Thrift::Types::STRING, :name => 'type2', :optional => true},
     FIELDS => {:type => ::Thrift::Types::LIST, :name => 'fields', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PropertySetRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAMESPACE = 1
+  PROPERTYMAP = 2
+
+  FIELDS = {
+    NAMESPACE => {:type => ::Thrift::Types::STRING, :name => 'nameSpace'},
+    PROPERTYMAP => {:type => ::Thrift::Types::MAP, :name => 'propertyMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field nameSpace is unset!') unless @nameSpace
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PropertyGetRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAMESPACE = 1
+  MAPPREFIX = 2
+  MAPPREDICATE = 3
+  MAPSELECTION = 4
+
+  FIELDS = {
+    NAMESPACE => {:type => ::Thrift::Types::STRING, :name => 'nameSpace'},
+    MAPPREFIX => {:type => ::Thrift::Types::STRING, :name => 'mapPrefix'},
+    MAPPREDICATE => {:type => ::Thrift::Types::STRING, :name => 'mapPredicate', :optional => true},
+    MAPSELECTION => {:type => ::Thrift::Types::LIST, :name => 'mapSelection', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field nameSpace is unset!') unless @nameSpace
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PropertyGetResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PROPERTIES = 1
+
+  FIELDS = {
+    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::MAP, :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}}
   }
 
   def struct_fields; FIELDS; end

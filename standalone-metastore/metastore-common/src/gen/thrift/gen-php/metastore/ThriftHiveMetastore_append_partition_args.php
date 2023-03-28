@@ -106,13 +106,13 @@ class ThriftHiveMetastore_append_partition_args
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->part_vals = array();
-                        $_size1466 = 0;
-                        $_etype1469 = 0;
-                        $xfer += $input->readListBegin($_etype1469, $_size1466);
-                        for ($_i1470 = 0; $_i1470 < $_size1466; ++$_i1470) {
-                            $elem1471 = null;
-                            $xfer += $input->readString($elem1471);
-                            $this->part_vals []= $elem1471;
+                        $_size1500 = 0;
+                        $_etype1503 = 0;
+                        $xfer += $input->readListBegin($_etype1503, $_size1500);
+                        for ($_i1504 = 0; $_i1504 < $_size1500; ++$_i1504) {
+                            $elem1505 = null;
+                            $xfer += $input->readString($elem1505);
+                            $this->part_vals []= $elem1505;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -149,8 +149,8 @@ class ThriftHiveMetastore_append_partition_args
             }
             $xfer += $output->writeFieldBegin('part_vals', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->part_vals));
-            foreach ($this->part_vals as $iter1472) {
-                $xfer += $output->writeString($iter1472);
+            foreach ($this->part_vals as $iter1506) {
+                $xfer += $output->writeString($iter1506);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

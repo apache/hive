@@ -1773,6 +1773,36 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_by_names_req failed: unknown result')
     end
 
+    def get_properties(req)
+      send_get_properties(req)
+      return recv_get_properties()
+    end
+
+    def send_get_properties(req)
+      send_message('get_properties', Get_properties_args, :req => req)
+    end
+
+    def recv_get_properties()
+      result = receive_message(Get_properties_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_properties failed: unknown result')
+    end
+
+    def set_properties(req)
+      send_set_properties(req)
+      return recv_set_properties()
+    end
+
+    def send_set_properties(req)
+      send_message('set_properties', Set_properties_args, :req => req)
+    end
+
+    def recv_set_properties()
+      result = receive_message(Set_properties_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'set_properties failed: unknown result')
+    end
+
     def alter_partition(db_name, tbl_name, new_part)
       send_alter_partition(db_name, tbl_name, new_part)
       recv_alter_partition()
@@ -5920,6 +5950,20 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_partitions_by_names_req', seqid)
+    end
+
+    def process_get_properties(seqid, iprot, oprot)
+      args = read_args(iprot, Get_properties_args)
+      result = Get_properties_result.new()
+      result.success = @handler.get_properties(args.req)
+      write_result(result, oprot, 'get_properties', seqid)
+    end
+
+    def process_set_properties(seqid, iprot, oprot)
+      args = read_args(iprot, Set_properties_args)
+      result = Set_properties_result.new()
+      result.success = @handler.set_properties(args.req)
+      write_result(result, oprot, 'set_properties', seqid)
     end
 
     def process_alter_partition(seqid, iprot, oprot)
@@ -11863,6 +11907,70 @@ module ThriftHiveMetastore
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetPartitionsByNamesResult},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_properties_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::PropertyGetRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_properties_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::PropertyGetResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Set_properties_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::PropertySetRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Set_properties_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'}
     }
 
     def struct_fields; FIELDS; end

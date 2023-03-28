@@ -113,7 +113,9 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
 
@@ -2185,4 +2187,32 @@ public interface RawStore extends Configurable {
   Package findPackage(GetPackageRequest request);
   List<String> listPackages(ListPackageRequest request);
   void dropPackage(DropPackageRequest request);
+
+  /** Persistent Property Management. */
+  default MMetastoreDBProperties putProperties(String key, String value, String description, byte[] content) throws MetaException {
+    return null;
+  }
+
+  default <T> T getProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
+    return null;
+  }
+  default <T> Map<String, T> selectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
+    return null;
+  }
+
+  default boolean renameProperties(String mapKey, String newKey) throws MetaException {
+    return false;
+  }
+
+  default boolean dropProperties(String key) throws MetaException {
+    return false;
+  }
+
+  default PropertyStore getPropertyStore() {
+    return new JdoPropertyStore(this);
+  }
+
+  default boolean runInTransaction(Runnable exec) throws MetaException {
+    return false;
+  }
 }
