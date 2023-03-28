@@ -35,6 +35,7 @@ create table store_sales (
     ss_net_paid_inc_tax       decimal(7,2),
     ss_net_profit             decimal(7,2)
 )
+partitioned by spec (ss_customer_sk, bucket(3, ss_item_sk))
 stored by ICEBERG stored as PARQUET
  TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='true');
  
@@ -44,8 +45,8 @@ delete from store_sales where ss_customer_sk > 2;
 create table ssv (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
-    ss_item_sk                int,
-    ss_customer_sk            int,
+    ss_item_sk2               int,
+    ss_customer_sk2           int,
     ss_cdemo_sk               int,
     ss_hdemo_sk               int,
     ss_addr_sk                int,
@@ -66,18 +67,19 @@ create table ssv (
     ss_net_paid_inc_tax       decimal(7,2),
     ss_net_profit             decimal(7,2)
 )
+partitioned by spec (ss_customer_sk2, bucket(3, ss_item_sk2))
 stored by ICEBERG stored as ORC
  TBLPROPERTIES('format-version'='2'); 
  
-insert into ssv (ss_customer_sk, ss_item_sk, ss_ext_discount_amt) values (1,1501,-0.1), (2,1502,-0.1), (3,1503,-0.1), (4,1504,-0.1), (5,1505,-0.1); 
+insert into ssv (ss_customer_sk2, ss_item_sk2, ss_ext_discount_amt) values (1,1501,-0.1), (2,1502,-0.1), (3,1503,-0.1), (4,1504,-0.1), (5,1505,-0.1); 
 
 explain vectorization detail 
 MERGE INTO store_sales t 
     USING ssv s 
-ON (t.ss_item_sk = s.ss_item_sk
-    AND t.ss_customer_sk=s.ss_customer_sk
+ON (t.ss_item_sk = s.ss_item_sk2
+    AND t.ss_customer_sk=s.ss_customer_sk2
     AND t.ss_sold_date_sk = "2451181"
-    AND ((Floor((s.ss_item_sk) / 1000) * 1000) BETWEEN 1000 AND 2000)
+    AND ((Floor((s.ss_item_sk2) / 1000) * 1000) BETWEEN 1000 AND 2000)
     AND s.ss_ext_discount_amt < 0.0) WHEN matched
     AND t.ss_ext_discount_amt IS NULL 
 THEN UPDATE
@@ -108,8 +110,8 @@ WHEN NOT matched THEN
         ss_sold_date_sk)
     VALUES (
         s.ss_sold_time_sk,
-        s.ss_item_sk,
-        s.ss_customer_sk,
+        s.ss_item_sk2,
+        s.ss_customer_sk2,
         s.ss_cdemo_sk,
         s.ss_hdemo_sk,
         s.ss_addr_sk,
@@ -136,10 +138,10 @@ select * from store_sales;
     
 MERGE INTO store_sales t 
     USING ssv s 
-ON (t.ss_item_sk = s.ss_item_sk
-    AND t.ss_customer_sk=s.ss_customer_sk
+ON (t.ss_item_sk = s.ss_item_sk2
+    AND t.ss_customer_sk=s.ss_customer_sk2
     AND t.ss_sold_date_sk = "2451181"
-    AND ((Floor((s.ss_item_sk) / 1000) * 1000) BETWEEN 1000 AND 2000)
+    AND ((Floor((s.ss_item_sk2) / 1000) * 1000) BETWEEN 1000 AND 2000)
     AND s.ss_ext_discount_amt < 0.0) WHEN matched
     AND t.ss_ext_discount_amt IS NULL 
 THEN UPDATE
@@ -170,8 +172,8 @@ WHEN NOT matched THEN
         ss_sold_date_sk)
     VALUES (
         s.ss_sold_time_sk,
-        s.ss_item_sk,
-        s.ss_customer_sk,
+        s.ss_item_sk2,
+        s.ss_customer_sk2,
         s.ss_cdemo_sk,
         s.ss_hdemo_sk,
         s.ss_addr_sk,

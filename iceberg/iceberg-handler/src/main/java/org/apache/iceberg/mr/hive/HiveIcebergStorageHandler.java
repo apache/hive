@@ -111,7 +111,6 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.mr.hive.writer.WriterBuilder;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
@@ -667,14 +666,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
-    Map<String, String> properties = table.getParameters();
-    boolean skipRowData = Boolean.parseBoolean(properties.getOrDefault(WriterBuilder.ICEBERG_DELETE_SKIPROWDATA,
-        WriterBuilder.ICEBERG_DELETE_SKIPROWDATA_DEFAULT));
     switch (operation) {
       case DELETE:
       case UPDATE:
-        return skipRowData ?
-            ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA : ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+        // TODO: make it configurable whether we want to include the table columns in the select query.
+        // It might make delete writes faster if we don't have to write out the row object
+        return ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+      case MERGE:
+        return ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default:
         return ImmutableList.of();
     }

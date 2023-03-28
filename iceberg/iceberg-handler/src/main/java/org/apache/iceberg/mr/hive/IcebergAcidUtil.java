@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
@@ -35,7 +34,6 @@ import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.io.CloseableIterator;
-import org.apache.iceberg.mr.hive.writer.WriterBuilder;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
@@ -95,15 +93,10 @@ public class IcebergAcidUtil {
    * @param dataCols The columns of the serde projection schema
    * @return The schema for SerDe operations, extended with metadata columns needed for deletes
    */
-  public static Schema createSerdeSchemaForDelete(List<Types.NestedField> dataCols, Properties properties) {
-    boolean skipRowData = Boolean.parseBoolean(properties.getProperty(WriterBuilder.ICEBERG_DELETE_SKIPROWDATA,
-        WriterBuilder.ICEBERG_DELETE_SKIPROWDATA_DEFAULT));
-    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(
-        dataCols.size() + (skipRowData ? 0 : SERDE_META_COLS.size()));
+  public static Schema createSerdeSchemaForDelete(List<Types.NestedField> dataCols) {
+    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + SERDE_META_COLS.size());
     SERDE_META_COLS.forEach((metaCol, index) -> cols.add(metaCol));
-    if (!skipRowData) {
-      cols.addAll(dataCols);
-    }
+    cols.addAll(dataCols);
     return new Schema(cols);
   }
 
