@@ -272,7 +272,7 @@ public class BenchmarkTool implements Runnable {
         .add("dropTableWithPartitions",
             () -> benchmarkDeleteWithPartitions(bench, bData, 1, nParameters[0]))
         .add("addPartition", () -> benchmarkCreatePartition(bench, bData))
-        .add("dropPartition", () -> benchmarkDropPartition(bench, bData))
+        .add("dropPartition", () -> benchmarkDropPartition(bench, bData, 1))
         .add("listPartition", () -> benchmarkListPartition(bench, bData))
         .add("getPartition",
             () -> benchmarkGetPartitions(bench, bData, 1))
@@ -310,6 +310,8 @@ public class BenchmarkTool implements Runnable {
               () -> benchmarkRenameTable(bench, bData, howMany))
           .add("dropDatabase" + '.' + howMany,
               () -> benchmarkDropDatabase(bench, bData, howMany))
+          .add("dropPartition" + '.' + howMany,
+              () -> benchmarkDropPartition(bench, bData, howMany))
           .add("openTxns" + '.' + howMany,
               () -> benchmarkOpenTxns(bench, bData, howMany))
           .add("PartitionManagementTask" + "." + howMany,
