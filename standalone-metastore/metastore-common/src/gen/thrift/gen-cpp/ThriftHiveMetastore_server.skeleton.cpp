@@ -540,6 +540,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partitions_by_names_req\n");
   }
 
+  void get_properties(PropertyGetResponse& _return, const PropertyGetRequest& req) {
+    // Your implementation goes here
+    printf("get_properties\n");
+  }
+
+  bool set_properties(const PropertySetRequest& req) {
+    // Your implementation goes here
+    printf("set_properties\n");
+  }
+
   void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) {
     // Your implementation goes here
     printf("alter_partition\n");

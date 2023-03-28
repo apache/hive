@@ -6885,6 +6885,124 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_partitions_by_names_req failed: unknown result");
     }
 
+    public function get_properties(\metastore\PropertyGetRequest $req)
+    {
+        $this->send_get_properties($req);
+        return $this->recv_get_properties();
+    }
+
+    public function send_get_properties(\metastore\PropertyGetRequest $req)
+    {
+        $args = new \metastore\ThriftHiveMetastore_get_properties_args();
+        $args->req = $req;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'get_properties',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('get_properties', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_get_properties()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_get_properties_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_get_properties_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        throw new \Exception("get_properties failed: unknown result");
+    }
+
+    public function set_properties(\metastore\PropertySetRequest $req)
+    {
+        $this->send_set_properties($req);
+        return $this->recv_set_properties();
+    }
+
+    public function send_set_properties(\metastore\PropertySetRequest $req)
+    {
+        $args = new \metastore\ThriftHiveMetastore_set_properties_args();
+        $args->req = $req;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'set_properties',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('set_properties', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_set_properties()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_set_properties_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_set_properties_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        throw new \Exception("set_properties failed: unknown result");
+    }
+
     public function alter_partition($db_name, $tbl_name, \metastore\Partition $new_part)
     {
         $this->send_alter_partition($db_name, $tbl_name, $new_part);

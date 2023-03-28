@@ -167,6 +167,39 @@ const string HIVE_FILTER_FIELD_LAST_ACCESS = "hive_filter_field_last_access__"
 const string HIVE_FILTER_FIELD_TABLE_NAME = "hive_filter_field_tableName__"
 const string HIVE_FILTER_FIELD_TABLE_TYPE = "hive_filter_field_tableType__"
 
+/** Table maintenance operation type. */
+enum MaintenanceOpType {
+    COMPACTION = 1,
+    SNAPSHOT_EXPIRY = 2,
+    STATS_REBUILD= 3,
+    MV_BUILD= 4,
+    MV_REFRESH = 5,
+    SHUFFLE_TO_NEW_PART = 6,
+    RECOMPRESS = 7,
+    REORG = 8
+}
+
+/** Table maintenance operation status. */
+enum MaintenanceOpStatus {
+    MAINTENANCE_NEEDED = 1, SCHEDULED = 2, IN_PROGRESS = 3, DONE = 4, CLEANUP_NEEDED = 5, FAILED = 6;
+}
+
+struct PropertySetRequest {
+    1: required string nameSpace;
+    2: map<string, string> propertyMap;
+}
+
+struct PropertyGetRequest {
+    1: required string nameSpace;
+    2: string mapPrefix;
+    3: optional string mapPredicate;
+    4: optional list<string> mapSelection;
+}
+
+struct PropertyGetResponse {
+    1: map<string, map<string , string>> properties;
+}
+
 enum PartitionEventType {
   LOAD_DONE = 1,
 }
@@ -2773,6 +2806,11 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
       throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3)
   GetPartitionsByNamesResult get_partitions_by_names_req(1:GetPartitionsByNamesRequest req)
       throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3)
+
+    // retrieve properties
+    PropertyGetResponse get_properties(1:PropertyGetRequest req);
+    // set properties
+    bool set_properties(1:PropertySetRequest req);
 
   // changes the partition to the new partition object. partition is identified from the part values
   // in the new_part
