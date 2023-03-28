@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -56,7 +57,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFromUnixTimeSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTruncSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnixTimestampSqlOperator;
@@ -120,10 +120,10 @@ public class SqlFunctionConverter {
     }
 
     // For calcite, isDeterministic just matters for within the query.
-    // runtimeConstant used to indicate the function is not deterministic between queries.
+    // isDynamicFunction used to indicate the function is not deterministic between queries.
     boolean isDeterministic = FunctionRegistry.isConsistentWithinQuery(hiveUDF);
-    boolean runtimeConstant = FunctionRegistry.isRuntimeConstant(hiveUDF);
-    return getCalciteFn(name, calciteArgTypes, retType, isDeterministic, runtimeConstant);
+    boolean isDynamicFunction = FunctionRegistry.isRuntimeConstant(hiveUDF);
+    return getCalciteFn(name, calciteArgTypes, retType, isDeterministic, isDynamicFunction);
   }
 
   public static SqlOperator getCalciteOperator(String funcTextName, GenericUDTF hiveUDTF,
@@ -504,6 +504,29 @@ public class SqlFunctionConverter {
     }
   }
 
+  private static class CalciteSqlFn extends SqlFunction {
+    private final boolean deterministic;
+    private final boolean dynamicFunction;
+
+    public CalciteSqlFn(String name, SqlKind kind, SqlReturnTypeInference returnTypeInference,
+        SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker,
+        SqlFunctionCategory category, boolean deterministic, boolean dynamicFunction) {
+      super(name, kind, returnTypeInference, operandTypeInference, operandTypeChecker, category);
+      this.deterministic = deterministic;
+      this.dynamicFunction = dynamicFunction;
+    }
+
+    @Override
+    public boolean isDeterministic() {
+      return deterministic;
+    }
+
+    @Override
+    public boolean isDynamicFunction() {
+      return dynamicFunction;
+    }
+  }
+
   private static class CalciteUDFInfo {
     private String                     udfName;
     private SqlReturnTypeInference     returnTypeInference;
@@ -527,7 +550,7 @@ public class SqlFunctionConverter {
 
   public static SqlOperator getCalciteFn(String hiveUdfName,
       ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType,
-      boolean deterministic, boolean runtimeConstant)
+      boolean deterministic, boolean dynamicFunction)
       throws CalciteSemanticException {
 
     if (hiveUdfName != null && hiveUdfName.trim().equals("<=>")) {
@@ -553,9 +576,9 @@ public class SqlFunctionConverter {
       default:
         calciteOp = hiveToCalcite.get(hiveUdfName);
         if (null == calciteOp) {
-          calciteOp = new HiveSqlFunction(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
+          calciteOp = new CalciteSqlFn(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
               uInf.operandTypeInference, uInf.operandTypeChecker,
-              SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic, runtimeConstant);
+              SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic, dynamicFunction);
         }
         break;
     }
