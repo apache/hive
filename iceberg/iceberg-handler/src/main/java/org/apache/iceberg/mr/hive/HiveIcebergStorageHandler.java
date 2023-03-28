@@ -315,8 +315,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public Map<String, String> getBasicStatistics(Partish partish) {
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
-    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
-    Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM).toLowerCase();
     Map<String, String> stats = Maps.newHashMap();
     switch (statsSource) {
