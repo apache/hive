@@ -1888,8 +1888,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             qbp.setDestASTOffset(ctx_1.dest, (ASTNode) ast.getChild(0));
           }
         } else {
-          qbp.setDestASTLimit(ctx_1.dest,  (ASTNode) ast.getChild(0));
-          qbp.setDestASTOffset(ctx_1.dest,  new ASTNode(new CommonToken(HiveParser.Number, "0")));
+          if (ast.getChild(0).getChildCount() == 0) {
+            qbp.setDestLimit(ctx_1.dest, 0, Integer.valueOf(ast.getChild(0).getText()));
+          } else {
+            qbp.setDestASTLimit(ctx_1.dest,  (ASTNode) ast.getChild(0));
+            qbp.setDestASTOffset(ctx_1.dest,  new ASTNode(new CommonToken(HiveParser.Number, "0")));
+          }
         }
         break;
 

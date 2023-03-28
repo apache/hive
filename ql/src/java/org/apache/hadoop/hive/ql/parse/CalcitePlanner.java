@@ -329,7 +329,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -4170,42 +4169,39 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode genLimitLogicalPlan(QB qb, RelNode srcRel,  RelCollation canonizedCollation) throws SemanticException {
-      HiveRelNode sortRel = null;
       QBParseInfo qbp = getQBParseInfo(qb);
       ASTNode limitExpr = qbp.getDestASTLimit(qbp.getClauseNames().iterator().next());
       ASTNode offsetExpr = qbp.getDestASTOffset(qbp.getClauseNames().iterator().next());
-      if (limitExpr != null) {
-        RowResolver inputRR = relToHiveRR.get(srcRel);
-
-        ExprNodeDesc limitExprNode =  genExprNodeDesc(limitExpr, inputRR, true, true);
-        ExprNodeDesc offsetExprNode =  genExprNodeDesc(offsetExpr, inputRR, true, true);
-
-        RexNode limitRN, offsetRN;
-        Integer limitValue, offsetValue;
-        if (limitExprNode instanceof ExprNodeConstantDesc) {
-          ExprNodeConstantDesc limitConstantExprNode = (ExprNodeConstantDesc) limitExprNode;
-          limitValue = (Integer) limitConstantExprNode.getValue();
-          limitRN = cluster.getRexBuilder().makeExactLiteral(new BigDecimal(limitValue));
-        } else {
-          throw new SemanticException("Only constant expressions are supported for limit clause");
-        }
-        if (offsetExprNode instanceof ExprNodeConstantDesc) {
-          ExprNodeConstantDesc offsetConstantExprNode = (ExprNodeConstantDesc) offsetExprNode;
-          offsetValue = (Integer) offsetConstantExprNode.getValue();
-          offsetRN = cluster.getRexBuilder().makeExactLiteral(new BigDecimal(offsetValue));
-        } else {
-          throw new SemanticException("Only constant expressions are supported for offset clause");
-        }
-
-        qbp.setDestLimit(qbp.getClauseNames().iterator().next(), offsetValue, limitValue);
-        RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
-        if (canonizedCollation == null) {
-          canonizedCollation = traitSet.canonize(RelCollations.EMPTY);
-        }
-        sortRel = new HiveSortLimit(cluster, traitSet, srcRel, canonizedCollation, offsetRN, limitRN);
+      if (limitExpr == null) {
+        return null;
       }
-
-      return sortRel;
+      RowResolver inputRR = relToHiveRR.get(srcRel);
+      ExprNodeDesc limitExprNode =  genExprNodeDesc(limitExpr, inputRR, true, true);
+      ExprNodeDesc offsetExprNode =  genExprNodeDesc(offsetExpr, inputRR, true, true);
+      RexNode limitRN;
+      RexNode offsetRN;
+      Integer limitValue;
+      Integer offsetValue;
+      if (limitExprNode instanceof ExprNodeConstantDesc) {
+        ExprNodeConstantDesc limitConstantExprNode = (ExprNodeConstantDesc) limitExprNode;
+        limitValue = (Integer) limitConstantExprNode.getValue();
+        limitRN = cluster.getRexBuilder().makeExactLiteral(new BigDecimal(limitValue));
+      } else {
+        throw new SemanticException("Only constant expressions are supported for limit clause");
+      }
+      if (offsetExprNode instanceof ExprNodeConstantDesc) {
+        ExprNodeConstantDesc offsetConstantExprNode = (ExprNodeConstantDesc) offsetExprNode;
+        offsetValue = (Integer) offsetConstantExprNode.getValue();
+        offsetRN = cluster.getRexBuilder().makeExactLiteral(new BigDecimal(offsetValue));
+      } else {
+        throw new SemanticException("Only constant expressions are supported for offset clause");
+      }
+      qbp.setDestLimit(qbp.getClauseNames().iterator().next(), offsetValue, limitValue);
+      RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
+      if (canonizedCollation == null) {
+        canonizedCollation = traitSet.canonize(RelCollations.EMPTY);
+      }
+      return new HiveSortLimit(cluster, traitSet, srcRel, canonizedCollation, offsetRN, limitRN);
     }
 
     private List<RexNode> getPartitionKeys(PartitionSpec ps,
@@ -5197,7 +5193,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         limitRel = genLimitLogicalPlan(qb, srcRel, null);
 
         if (limitRel != null) {
-          RowResolver outputRR = relToHiveRR.get(srcRel);;
+          RowResolver outputRR = relToHiveRR.get(srcRel);
           ImmutableMap<String, Integer> hiveColNameCalcitePosMap = buildHiveToCalciteColumnMap(outputRR);
           relToHiveRR.put(limitRel, outputRR);
           relToHiveColNameCalcitePosMap.put(limitRel, hiveColNameCalcitePosMap);

@@ -2789,11 +2789,14 @@ destination
    | KW_TABLE tableOrPartition -> tableOrPartition
    ;
 
+
 limitClause
 @init { pushMsg("limit clause", state); }
 @after { popMsg(state); }
-   : KW_LIMIT ((offset=Number COMMA)? num=Number) -> ^(TOK_LIMIT ($offset)? $num)
-   | KW_LIMIT numExpr=expression KW_OFFSET offsetExpr=expression -> ^(TOK_LIMIT ($offsetExpr)? $numExpr)
+   :
+   KW_LIMIT ((offset=Number COMMA)? num=Number) -> ^(TOK_LIMIT ($offset)? $num)
+   | KW_LIMIT num=Number KW_OFFSET offset=Number -> ^(TOK_LIMIT ($offset)? $num)
+   | KW_LIMIT LPAREN numExpr=expression RPAREN (KW_OFFSET LPAREN offsetExpr=expression RPAREN)? -> ^(TOK_LIMIT ($offsetExpr)? $numExpr)
    ;
 
 //DELETE FROM <tableName> WHERE ...;
