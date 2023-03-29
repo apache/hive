@@ -1,0 +1,46 @@
+PREHOOK: query: CREATE TABLE timestamptz_formats (
+  c1 timestamp with local time zone
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamptz_formats
+POSTHOOK: query: CREATE TABLE timestamptz_formats (
+  c1 timestamp with local time zone
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamptz_formats
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tzl_formats.txt' overwrite into table timestamptz_formats
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@timestamptz_formats
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tzl_formats.txt' overwrite into table timestamptz_formats
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@timestamptz_formats
+PREHOOK: query: SELECT * FROM timestamptz_formats
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_formats
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM timestamptz_formats
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_formats
+#### A masked pattern was here ####
+2016-05-03 04:26:34.0 US/Pacific
+2016-05-03 04:26:34.123 US/Pacific
+2016-05-03 04:26:34.12345 US/Pacific
+2016-05-03 04:26:34.123 US/Pacific
+2016-05-03 04:26:34.12345 US/Pacific
+2016-05-03 04:26:34.12 US/Pacific
+2016-05-03 05:26:34.1 US/Pacific
+2016-05-03 12:26:34.0 US/Pacific
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
