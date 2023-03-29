@@ -4,6 +4,7 @@ SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.LineageLogger;
 set hive.metastore.disallow.incompatible.col.type.changes=false;
+set hive.auto.convert.anti.join=true;
 drop table if exists d1;
 create table d1(a int);
 

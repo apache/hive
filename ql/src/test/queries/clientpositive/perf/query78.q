@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.auto.convert.anti.join=true;
 -- start query 1 in stream 0 using template query78.tpl and seed 1819994127
 explain
 with ws as

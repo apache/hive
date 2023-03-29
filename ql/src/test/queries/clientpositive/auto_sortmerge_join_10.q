@@ -4,6 +4,7 @@ set hive.explain.user=false;
 ;
 
 set hive.exec.reducers.max = 1;
+set hive.auto.convert.anti.join=true;
 
 CREATE TABLE tbl1_n5(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 CREATE TABLE tbl2_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;

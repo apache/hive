@@ -1112,6 +1112,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int ssampleIndex = indexes[3];
     int asOfTimeIndex = indexes[4];
     int asOfVersionIndex = indexes[5];
+    int asOfVersionFromIndex = indexes[6];
 
     ASTNode tableTree = (ASTNode) (tabref.getChild(0));
 
@@ -1129,8 +1130,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qb.setTabProps(alias, props);
     }
 
-    if (asOfTimeIndex != -1 || asOfVersionIndex != -1) {
+    if (asOfTimeIndex != -1 || asOfVersionIndex != -1 || asOfVersionFromIndex != -1) {
       String asOfVersion = asOfVersionIndex == -1 ? null : tabref.getChild(asOfVersionIndex).getChild(0).getText();
+      String asOfVersionFrom =
+          asOfVersionFromIndex == -1 ? null : tabref.getChild(asOfVersionFromIndex).getChild(0).getText();
       String asOfTime = null;
       
       if (asOfTimeIndex != -1) {
@@ -1143,8 +1146,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           asOfTime = stripQuotes(expr.getText());
         }
       }
-      Pair<String, String> asOf = Pair.of(asOfVersion, asOfTime);
-      qb.setAsOf(alias, asOf);
+      qb.setSystemVersion(alias, new QBSystemVersion(asOfVersion, asOfVersionFrom, asOfTime));
     }
 
     // If the alias is already there then we have a conflict
@@ -2268,13 +2270,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      Pair<String, String> asOf = qb.getAsOfForAlias(alias);
+      QBSystemVersion asOf = qb.getSystemVersionForAlias(alias);
       if (asOf != null) {
         if (!Optional.ofNullable(tab.getStorageHandler()).map(HiveStorageHandler::isTimeTravelAllowed).orElse(false)) {
           throw new SemanticException(ErrorMsg.TIME_TRAVEL_NOT_ALLOWED, alias);
         }
-        tab.setAsOfVersion(asOf.getLeft());
-        tab.setAsOfTimestamp(asOf.getRight());
+        tab.setAsOfVersion(asOf.getAsOfVersion());
+        tab.setVersionIntervalFrom(asOf.getFromVersion());
+        tab.setAsOfTimestamp(asOf.getAsOfTime());
       }
 
       if (tab.isView()) {
@@ -2589,15 +2592,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws HiveException If an error occurs while comparing key strengths.
    */
   private int comparePathKeyStrength(Path p1, Path p2) throws HiveException {
-    HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
+    try {
+      HadoopShims.HdfsEncryptionShim hdfsEncryptionShim1 = SessionState.get().getHdfsEncryptionShim(p1.getFileSystem(conf), conf);
+      HadoopShims.HdfsEncryptionShim hdfsEncryptionShim2 = SessionState.get().getHdfsEncryptionShim(p2.getFileSystem(conf), conf);
 
-    hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim();
-    if (hdfsEncryptionShim != null) {
-      try {
-        return hdfsEncryptionShim.comparePathKeyStrength(p1, p2);
-      } catch (Exception e) {
-        throw new HiveException("Unable to compare key strength for " + p1 + " and " + p2 + " : " + e, e);
+      if (hdfsEncryptionShim1 != null && hdfsEncryptionShim2 != null) {
+        return hdfsEncryptionShim1.comparePathKeyStrength(p1, p2, hdfsEncryptionShim2);
       }
+    } catch (Exception e) {
+      throw new HiveException("Unable to compare key strength for " + p1 + " and " + p2 + " : " + e, e);
     }
 
     return 0; // Non-encrypted path (or equals strength)

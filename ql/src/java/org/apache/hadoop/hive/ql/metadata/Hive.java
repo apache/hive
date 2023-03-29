@@ -94,11 +94,13 @@ import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
@@ -106,6 +108,24 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.ql.io.HdfsUtils;
+import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
+import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -114,7 +134,6 @@ import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -128,7 +147,6 @@ import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
@@ -137,7 +155,6 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
-import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -147,7 +164,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
@@ -170,7 +186,6 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMNullablePool;
@@ -183,18 +198,6 @@ import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchRequest;
 import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
 import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
-import org.apache.hadoop.hive.ql.io.HdfsUtils;
-import org.apache.hadoop.hive.metastore.HiveMetaException;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.PartitionDropOptions;
-import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
-import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
-import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -2080,8 +2083,7 @@ public class Hive {
             } else {
               // Obtain additional information if we should try incremental rewriting / rebuild
               // We will not try partial rewriting if there were update/delete/compaction operations on source tables
-              Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
-                  materializedViewTable.getMVMetadata().creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
+              Materialization invalidationInfo = getMaterializationInvalidationInfo(materializedViewTable.getMVMetadata());
               if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified() ||
                   invalidationInfo.isSourceTablesCompacted()) {
                 // We ignore (as it did not meet the requirements), but we do not need to update it in the
@@ -2099,6 +2101,55 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  private Materialization getMaterializationInvalidationInfo(MaterializedViewMetadata metadata)
+      throws TException, HiveException {
+    Optional<SourceTable> first = metadata.getSourceTables().stream().findFirst();
+    if (!first.isPresent()) {
+      // This is unexpected: all MV must have at least one source
+      Materialization materialization = new Materialization();
+      materialization.setSourceTablesCompacted(true);
+      materialization.setSourceTablesUpdateDeleteModified(true);
+      return new Materialization();
+    } else {
+      Table table = getTable(first.get().getTable().getDbName(), first.get().getTable().getTableName());
+      if (!(table.isNonNative() && table.getStorageHandler().areSnapshotsSupported())) {
+        // Mixing native and non-native acid source tables are not supported. If the first source is native acid
+        // the rest is expected to be native acid
+        return getMSC().getMaterializationInvalidationInfo(
+                metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
+      }
+    }
+
+    MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
+
+    boolean hasAppendsOnly = true;
+    for (SourceTable sourceTable : metadata.getSourceTables()) {
+      Table table = getTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
+      HiveStorageHandler storageHandler = table.getStorageHandler();
+      if (storageHandler == null) {
+        Materialization materialization = new Materialization();
+        materialization.setSourceTablesCompacted(true);
+        return materialization;
+      }
+      Boolean b = storageHandler.hasAppendsOnly(
+          table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()));
+      if (b == null) {
+        Materialization materialization = new Materialization();
+        materialization.setSourceTablesCompacted(true);
+        return materialization;
+      } else if (!b) {
+        hasAppendsOnly = false;
+        break;
+      }
+    }
+    Materialization materialization = new Materialization();
+    // TODO: delete operations are not supported yet.
+    // Set setSourceTablesCompacted to false when delete is supported
+    materialization.setSourceTablesCompacted(!hasAppendsOnly);
+    materialization.setSourceTablesUpdateDeleteModified(!hasAppendsOnly);
+    return materialization;
   }
 
   /**
@@ -2178,8 +2229,7 @@ public class Hive {
           } else {
             // Obtain additional information if we should try incremental rewriting / rebuild
             // We will not try partial rewriting if there were update/delete/compaction operations on source tables
-            invalidationInfo = getMSC().getMaterializationInvalidationInfo(
-                    metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
+            invalidationInfo = getMaterializationInvalidationInfo(metadata);
             ignore = invalidationInfo == null || invalidationInfo.isSourceTablesCompacted();
           }
           if (ignore) {
@@ -4738,7 +4788,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (!FileUtils.copy(sourceFs, sourcePath, destFs, destFilePath,
           false,   // delete source
           false,  // overwrite destination
-          conf)) {
+          conf,
+          new DataCopyStatistics())) {
         LOG.error("Copy failed for source: " + sourcePath + " to destination: " + destFilePath);
         throw new IOException("File copy failed.");
       }
@@ -4870,7 +4921,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
           return FileUtils.copy(srcf.getFileSystem(conf), srcf, destf.getFileSystem(conf), destf,
               true,    // delete source
               replace, // overwrite destination
-              conf);
+              conf,
+              new DataCopyStatistics());
         } else {
           if (srcIsSubDirOfDest || destIsSubDirOfSrc) {
             FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
