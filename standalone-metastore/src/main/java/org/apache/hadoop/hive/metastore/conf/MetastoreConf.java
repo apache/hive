@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,6 +110,8 @@ public class MetastoreConf {
       throw new RuntimeException("Unknown time unit " + unit);
     }
   }
+
+  public static final String USER_NAME_HTTP_HEADER = "x-actor-username";
 
   /**
    * Metastore related options that the db is initialized against. When a conf
@@ -708,12 +711,20 @@ public class MetastoreConf {
         "Metastore SSL certificate keystore password."),
     SSL_KEYSTORE_PATH("metastore.keystore.path", "hive.metastore.keystore.path", "",
         "Metastore SSL certificate keystore location."),
+    SSL_KEYSTORE_TYPE("metastore.keystore.type", "hive.metastore.keystore.type", "",
+            "Metastore SSL certificate keystore type."),
+    SSL_KEYMANAGERFACTORY_ALGORITHM("metastore.keymanagerfactory.algorithm", "hive.metastore.keymanagerfactory.algorithm", "",
+            "Metastore SSL certificate keystore algorithm."),
     SSL_PROTOCOL_BLACKLIST("metastore.ssl.protocol.blacklist", "hive.ssl.protocol.blacklist",
         "SSLv2,SSLv3", "SSL Versions to disable for all Hive Servers"),
     SSL_TRUSTSTORE_PATH("metastore.truststore.path", "hive.metastore.truststore.path", "",
         "Metastore SSL certificate truststore location."),
     SSL_TRUSTSTORE_PASSWORD("metastore.truststore.password", "hive.metastore.truststore.password", "",
         "Metastore SSL certificate truststore password."),
+    SSL_TRUSTSTORE_TYPE("metastore.truststore.type", "hive.metastore.truststore.type", "",
+            "Metastore SSL certificate truststore type."),
+    SSL_TRUSTMANAGERFACTORY_ALGORITHM("metastore.trustmanagerfactory.algorithm", "hive.metastore.trustmanagerfactory.algorithm", "",
+            "Metastore SSL certificate truststore algorithm."),
     STATS_AUTO_GATHER("metastore.stats.autogather", "hive.stats.autogather", true,
         "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
     STATS_FETCH_BITVECTOR("metastore.stats.fetch.bitvector", "hive.stats.fetch.bitvector", false,
@@ -772,6 +783,13 @@ public class MetastoreConf {
         "Command separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + MetastoreTaskThread.class.getName()),
+    THRIFT_TRANSPORT_MODE("metastore.server.thrift.transport.mode",
+            "hive.metastore.server.thrift.transport.mode", "binary",
+            "Transport mode for thrift server in Metastore. Can be binary or http"),
+    THRIFT_HTTP_PATH("metastore.server.thrift.http.path",
+            "hive.metastore.server.thrift.http.path",
+            "metastore",
+            "Path component of URL endpoint when in HTTP mode"),
     TCP_KEEP_ALIVE("metastore.server.tcp.keepalive",
         "hive.metastore.server.tcp.keepalive", true,
         "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
@@ -843,10 +861,44 @@ public class MetastoreConf {
     USERS_IN_ADMIN_ROLE("metastore.users.in.admin.role", "hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
             "More users can be added in ADMIN role later."),
+    // TODO: Should we have a separate config for the metastoreclient or THRIFT_TRANSPORT_MODE
+    // would suffice ?
+    METASTORE_CLIENT_THRIFT_TRANSPORT_MODE("metastore.client.thrift.transport.mode",
+        "hive.metastore.client.thrift.transport.mode", "binary",
+        "Transport mode to be used by the metastore client. It should be the same as " + THRIFT_TRANSPORT_MODE),
+    METASTORE_CLIENT_THRIFT_HTTP_PATH("metastore.client.thrift.http.path",
+        "hive.metastore.client.thrift.http.path",
+        "metastore",
+        "Path component of URL endpoint when in HTTP mode"),
+    METASTORE_THRIFT_HTTP_REQUEST_HEADER_SIZE("metastore.server.thrift.http.request.header.size",
+        "hive.metastore.server.thrift.http.request.header.size", 6*1024,
+        "Request header size in bytes when using HTTP transport mode for metastore thrift server."
+            + " Defaults to jetty's defaults"),
+    METASTORE_THRIFT_HTTP_RESPONSE_HEADER_SIZE("metastore.server.thrift.http.response.header.size",
+        "metastore.server.thrift.http.response.header.size", 6*1024,
+        "Response header size in bytes when using HTTP transport mode for metastore thrift server."
+            + " Defaults to jetty's defaults"),
+    METASTORE_THRIFT_HTTP_MAX_IDLE_TIME("metastore.thrift.http.max.idle.time", "hive.metastore.thrift.http.max.idle.time", 
+        1800, TimeUnit.SECONDS,
+        "Maximum idle time for a connection on the server when in HTTP mode."),
     USE_SSL("metastore.use.SSL", "hive.metastore.use.SSL", false,
         "Set this to true for using SSL encryption in HMS server."),
     USE_THRIFT_SASL("metastore.sasl.enabled", "hive.metastore.sasl.enabled", false,
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
+    //TODO (Vihang) check if this configs are needed
+    METASTORE_CLIENT_AUTH_MODE("metastore.client.auth.mode",
+            "hive.metastore.client.auth.mode", "NOSASL",
+            new StringSetValidator("NOSASL", "JWT"),
+            "If PLAIN, clients will authenticate using plain authentication, by providing username" +
+                    " and password. Any other value is ignored right now but may be used later."
+                    + "If JWT- Supported only in HTTP transport mode. If set, HMS Client will pick the value of JWT from "
+                    + "environment variable HMS_JWT and set it in Authorization header in http request"),
+    METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
+            "hive.metastore.client.plain.username",  "",
+            "The username used by the metastore client when " +
+                    METASTORE_CLIENT_AUTH_MODE + " is true. The password is obtained from " +
+                    CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH + " using username as the " +
+                    "alias."),
     USE_THRIFT_FRAMED_TRANSPORT("metastore.thrift.framed.transport.enabled",
         "hive.metastore.thrift.framed.transport.enabled", false,
         "If true, the metastore Thrift interface will use TFramedTransport. When false (default) a standard TTransport is used."),
@@ -1675,5 +1727,28 @@ public class MetastoreConf {
     }
     buf.append("Finished MetastoreConf object.\n");
     return buf.toString();
+  }
+
+  /**
+   * The config parameter can be like "path", "/path", "/path/", "path/*", "/path1/path2/*" and so on.
+   * httpPath should end up as "/*", "/path/*" or "/path1/../pathN/*"
+   * @param httpPath
+   * @return
+   */
+  public static String getHttpPath(String httpPath) {
+    if (httpPath == null || httpPath.equals("")) {
+      httpPath = "/*";
+    } else {
+      if (!httpPath.startsWith("/")) {
+        httpPath = "/" + httpPath;
+      }
+      if (httpPath.endsWith("/")) {
+        httpPath = httpPath + "*";
+      }
+      if (!httpPath.endsWith("/*")) {
+        httpPath = httpPath + "/*";
+      }
+    }
+    return httpPath;
   }
 }

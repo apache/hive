@@ -58,6 +58,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -74,6 +77,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 
+import com.sun.istack.NotNull;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -180,11 +184,23 @@ import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.ServerContext;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServerEventHandler;
+import org.apache.thrift.server.TServlet;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -224,6 +240,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static HadoopThriftAuthBridge.Server saslServer;
   private static MetastoreDelegationTokenManager delegationTokenManager;
   private static boolean useSasl;
+  private static ThriftServer thriftServer;
 
   static final String NO_FILTER_STRING = "";
   static final int UNLIMITED_MAX_PARTITIONS = -1;
@@ -8918,6 +8935,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
+  /*
+  Interface to encapsulate Http and binary thrift server for
+  HiveMetastore
+   */
+  private interface ThriftServer {
+    public void start() throws Throwable;
+    public boolean isRunning();
+  }
+
   /**
    * @param args
    */
@@ -9031,6 +9057,194 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     startMetaStore(port, bridge, conf, null, null, null);
   }
 
+  public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
+                                    Configuration conf, Lock startLock, Condition startCondition,
+                                    AtomicBoolean startedServing) throws Throwable {
+    isMetaStoreRemote = true;
+    String transportMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "binary");
+    boolean isHttpTransport = transportMode.equalsIgnoreCase("http");
+    if (isHttpTransport) {
+      thriftServer = startHttpMetastore(port, conf);
+    } else {
+      thriftServer = startBinaryMetaStore(port, bridge, conf);
+    }
+
+    if (startLock != null) {
+      signalOtherThreadsToStart(thriftServer, startLock, startCondition, startedServing);
+    }
+    thriftServer.start();
+  }
+
+
+  // TODO: Is it worth trying to use a server that supports HTTP/2?
+  //  Does the Thrift http client support this?
+
+  private static ThriftServer startHttpMetastore(int port, Configuration conf)
+          throws Exception {
+    LOG.info("Attempting to start http metastore server on port: {}", port);
+    // This check is likely pointless, especially with the current state of the http
+    // servlet which respects whatever comes in. Putting this in place for the moment
+    // only to enable testing on an otherwise secure cluster.
+    LOG.info(" Checking if security is enabled");
+    if (UserGroupInformation.isSecurityEnabled()) {
+      LOG.info("Logging in via keytab while starting HTTP metastore");
+      // Handle renewal
+      String kerberosName = SecurityUtil.getServerPrincipal(MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL), "0.0.0.0");
+      String keyTabFile = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
+      UserGroupInformation.loginUserFromKeytab(kerberosName, keyTabFile);
+    } else {
+      LOG.info("Security is not enabled. Not logging in via keytab");
+    }
+
+    long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
+    int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
+    int maxWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MAX_THREADS);
+    // Server thread pool
+    // Start with minWorkerThreads, expand till maxWorkerThreads and reject
+    // subsequent requests
+    final String threadPoolNamePrefix = "HiveMetastore-HttpHandler-Pool";
+    ExecutorService executorService = new ThreadPoolExecutor(
+            minWorkerThreads, maxWorkerThreads, 60, TimeUnit.SECONDS,
+            new SynchronousQueue<>(), new ThreadFactory() {
+      @Override
+      public Thread newThread(@NotNull Runnable r) {
+        Thread newThread = new Thread(r);
+        newThread.setName(threadPoolNamePrefix + ": Thread-" + newThread.getId());
+        return newThread;
+      }
+    });
+    ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);
+    // HTTP Server
+    org.eclipse.jetty.server.Server server = new Server(threadPool);
+    server.setStopAtShutdown(true);
+
+    ServerConnector connector;
+    final HttpConfiguration httpServerConf = new HttpConfiguration();
+    httpServerConf.setRequestHeaderSize(
+            MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_REQUEST_HEADER_SIZE));
+    httpServerConf.setResponseHeaderSize(
+            MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_RESPONSE_HEADER_SIZE));
+
+    final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
+
+    final boolean useSsl  = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
+    String schemeName = useSsl ? "https" : "http";
+    if (useSsl) {
+      String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
+      if (keyStorePath.isEmpty()) {
+        throw new IllegalArgumentException(ConfVars.SSL_KEYSTORE_PATH.toString()
+                + " Not configured for SSL connection");
+      }
+      String keyStorePassword =
+              MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
+      String keyStoreType =
+              MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_TYPE).trim();
+      String keyStoreAlgorithm =
+              MetastoreConf.getVar(conf, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
+
+      SslContextFactory sslContextFactory = new SslContextFactory();
+      String[] excludedProtocols = MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
+      LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
+      sslContextFactory.addExcludeProtocols(excludedProtocols);
+      LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = "
+              + Arrays.toString(sslContextFactory.getExcludeProtocols()));
+      sslContextFactory.setKeyStorePath(keyStorePath);
+      sslContextFactory.setKeyStorePassword(keyStorePassword);
+      sslContextFactory.setKeyStoreType(keyStoreType);
+      sslContextFactory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm);
+      connector = new ServerConnector(server, sslContextFactory, http);
+    } else {
+      connector = new ServerConnector(server, http);
+    }
+    connector.setPort(port);
+    connector.setReuseAddress(true);
+    // TODO: What should the idle timeout be for the metastore? Currently it is 30 minutes
+    long maxIdleTimeout = MetastoreConf.getTimeVar(conf, ConfVars.METASTORE_THRIFT_HTTP_MAX_IDLE_TIME,
+            TimeUnit.MILLISECONDS);
+    connector.setIdleTimeout(maxIdleTimeout);
+    // TODO: AcceptQueueSize needs to be higher for HMS
+    connector.setAcceptQueueSize(maxWorkerThreads);
+    // TODO: Connection keepalive configuration?
+
+    server.addConnector(connector);
+    TProcessor processor;
+    boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
+    final TProtocolFactory protocolFactory;
+    if (useCompactProtocol) {
+      protocolFactory = new TCompactProtocol.Factory();
+    } else {
+      protocolFactory = new TBinaryProtocol.Factory();
+    }
+
+    HMSHandler baseHandler = new HMSHandler("new db based metaserver",
+            conf);
+    IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+    processor = new ThriftHiveMetastore.Processor<>(handler);
+    LOG.info("Starting DB backed MetaStore Server with generic processor");
+    TServlet thriftHttpServlet = new HmsThriftHttpServlet(processor, protocolFactory);
+
+    boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
+    HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
+
+    String httpPath =
+            MetaStoreUtils.getHttpPath(
+                    MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_HTTP_PATH));
+
+    ServletContextHandler context = new ServletContextHandler(
+            ServletContextHandler.NO_SECURITY | ServletContextHandler.NO_SESSIONS);
+
+    // Tons of stuff skipped as compared the HS2.
+    // Sesions, XSRF, Compression, path configuration, etc.
+    constraintHttpMethods(context, false);
+    server.setHandler(context);
+
+    context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
+
+
+    return new ThriftServer() {
+      @Override
+      public void start() throws Throwable {
+        HMSHandler.LOG.debug("Starting HTTPServer for HMS");
+        server.setStopAtShutdown(true);
+        server.start();
+        HMSHandler.LOG.info("Started the new HTTPServer for metastore on port [" + port
+                + "]...");
+        HMSHandler.LOG.info("Options.minWorkerThreads = "
+                + minWorkerThreads);
+        HMSHandler.LOG.info("Options.maxWorkerThreads = "
+                + maxWorkerThreads);
+        HMSHandler.LOG.info("Enable SSL = " + useSsl);
+      }
+
+      @Override
+      public boolean isRunning() {
+        return server != null && server.isRunning();
+      }
+    };
+  }
+
+  private static void constraintHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {
+    Constraint c = new Constraint();
+    c.setAuthenticate(true);
+
+    ConstraintMapping cmt = new ConstraintMapping();
+    cmt.setConstraint(c);
+    cmt.setMethod("TRACE");
+    cmt.setPathSpec("/*");
+
+    ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+    if (!allowOptionsMethod) {
+      ConstraintMapping cmo = new ConstraintMapping();
+      cmo.setConstraint(c);
+      cmo.setMethod("OPTIONS");
+      cmo.setPathSpec("/*");
+      securityHandler.setConstraintMappings(new ConstraintMapping[] {cmt, cmo});
+    } else {
+      securityHandler.setConstraintMappings(new ConstraintMapping[] {cmt});
+    }
+    ctxHandler.setSecurityHandler(securityHandler);
+  }
+
   /**
    * Start Metastore based on a passed {@link HadoopThriftAuthBridge}
    *
@@ -9040,9 +9254,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    *          configuration overrides
    * @throws Throwable
    */
-  public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
-      Configuration conf, Lock startLock, Condition startCondition,
-      AtomicBoolean startedServing) throws Throwable {
+  public static ThriftServer startBinaryMetaStore(int port, HadoopThriftAuthBridge bridge,
+                                                  Configuration conf) throws Throwable {
     try {
       isMetaStoreRemote = true;
       // Server will create new threads up to max as necessary. After an idle
@@ -9182,19 +9395,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       };
 
       tServer.setServerEventHandler(tServerEventHandler);
-      HMSHandler.LOG.info("Started the new metaserver on port [" + port
-          + "]...");
-      HMSHandler.LOG.info("Options.minWorkerThreads = "
-          + minWorkerThreads);
-      HMSHandler.LOG.info("Options.maxWorkerThreads = "
-          + maxWorkerThreads);
-      HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
-      HMSHandler.LOG.info("Enable SSL = " + useSSL);
+      return new ThriftServer() {
+        @Override
+        public void start() throws Throwable {
+          tServer.serve();
+          HMSHandler.LOG.info("Started the new metaserver on port [" + port
+                  + "]...");
+          HMSHandler.LOG.info("Options.minWorkerThreads = "
+                  + minWorkerThreads);
+          HMSHandler.LOG.info("Options.maxWorkerThreads = "
+                  + maxWorkerThreads);
+          HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
+          HMSHandler.LOG.info("Enable SSL = " + useSSL);
+        }
 
-      if (startLock != null) {
-        signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
-      }
-      tServer.serve();
+        @Override
+        public boolean isRunning() {
+          return tServer != null && tServer.isServing();
+        }
+      };
     } catch (Throwable x) {
       x.printStackTrace();
       HMSHandler.LOG.error(StringUtils.stringifyException(x));
@@ -9222,7 +9441,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  private static void signalOtherThreadsToStart(final TServer server, final Lock startLock,
+  private static void signalOtherThreadsToStart(final ThriftServer thriftServer, final Lock startLock,
                                                 final Condition startCondition,
                                                 final AtomicBoolean startedServing) {
     // A simple thread to wait until the server has started and then signal the other threads to
@@ -9236,7 +9455,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           } catch (InterruptedException e) {
             LOG.warn("Signalling thread was interrupted: " + e.getMessage());
           }
-        } while (!server.isServing());
+        } while (!thriftServer.isRunning());
         startLock.lock();
         try {
           startedServing.set(true);
