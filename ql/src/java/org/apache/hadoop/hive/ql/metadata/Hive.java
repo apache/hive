@@ -4705,7 +4705,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
 
-    LOG.debug("The source path is " + fullF1 + " and the destination path is " + fullF2);
     return fullF1.startsWith(fullF2);
   }
 
