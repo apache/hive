@@ -1359,22 +1359,52 @@ public class BeeLine implements Closeable {
     }
   }
 
+  public String executeReader(ConsoleReader reader, Character mask) {
+    String line = null;
+    StringBuilder qsb = new StringBuilder();
+    try {
+      while ((line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
+              .readLine(null, mask) : reader.readLine(getPrompt())) != null) {
+        // Skipping through comments
+        if (!line.startsWith("--")) {
+          qsb.append(line + "\n");
+        }
+      }
+      if (qsb.length() > 0) {
+        qsb.delete(qsb.length() - 2, qsb.length());
+      }
+      line = qsb.toString();
+    }
+    catch (Throwable t) {
+      handleException(t);
+    }
+    return line;
+  }
+
   private int execute(ConsoleReader reader, boolean exitOnError) {
     int lastExecutionResult = ERRNO_OK;
     Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
                        : ConsoleReader.NULL_MASK;
+    String line = null;
 
     while (!exit) {
       try {
-        // Execute one instruction; terminate on executing a script if there is an error
-        // in silent mode, prevent the query and prompt being echoed back to terminal
-        String line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
-            .readLine(null, mask) : reader.readLine(getPrompt());
-
-        // trim line
-        if (line != null) {
-          line = line.trim();
+        if (getOpts().getScriptFile() != null)
+        {
+          line = executeReader(reader, mask);
+          exit = true;
         }
+        else if (getOpts().getScriptFile() == null) {
+            // Execute one instruction; terminate on executing a script if there is an error
+            // in silent mode, prevent the query and prompt being echoed back to terminal
+            line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
+                    .readLine(null, mask) : reader.readLine(getPrompt());
+
+            // trim line
+            if (line != null) {
+              line = line.trim();
+            }
+          }
 
         if (!dispatch(line)) {
           lastExecutionResult = ERRNO_OTHER;
@@ -1500,7 +1530,9 @@ public class BeeLine implements Closeable {
       return true;
     }
 
-    line = line.trim();
+    if (getOpts().getScriptFile() == null) {
+      line = line.trim();
+    }
 
     // save it to the current script, if any
     if (scriptOutputFile != null) {
