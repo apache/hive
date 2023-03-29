@@ -467,6 +467,12 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
   protected ASTNode fixUpAfterCbo(ASTNode originalAst, ASTNode newAst, CalcitePlanner.PreCboCtx cboCtx)
           throws SemanticException {
     ASTNode fixedAST = super.fixUpAfterCbo(originalAst, newAst, cboCtx);
+    if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
+      return fixedAST;
+    } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_REBUILD) {
+      fixUpASTJoinInsertIncrementalRebuild(fixedAST);
+      return fixedAST;
+    }
 
     MaterializedViewASTBuilder astBuilder;
     if (AcidUtils.isFullAcidTable(mvTable.getTTable())) {
@@ -483,8 +489,6 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       fixUpASTAggregateInsertIncrementalRebuild(fixedAST, astBuilder);
     } else if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_INSERT_DELETE_REBUILD) {
       fixUpASTAggregateInsertDeleteIncrementalRebuild(fixedAST, astBuilder);
-    } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_REBUILD) {
-      fixUpASTJoinInsertIncrementalRebuild(fixedAST);
     } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD) {
       fixUpASTJoinInsertDeleteIncrementalRebuild(fixedAST, astBuilder);
     }
