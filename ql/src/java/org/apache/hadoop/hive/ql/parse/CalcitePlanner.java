@@ -3915,7 +3915,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // in strict mode, in the presence of order by, limit must be
       // specified
       ASTNode limitExpr = qb.getParseInfo().getDestASTLimit(dest);
-      if (limitExpr == null) {
+      Integer limitValue = qb.getParseInfo().getDestLimit(dest);
+      if (limitExpr == null && limitValue == null) {
         String error = StrictChecks.checkNoLimit(conf);
         if (error != null) {
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(obAST, error));
@@ -3926,7 +3927,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
       RelCollation canonizedCollation = traitSet.canonize(
               RelCollationImpl.of(obLogicalPlanGenState.getFieldCollation()));
-      RelNode sortRel = genLimitLogicalPlan(qb, selPair.getKey(), canonizedCollation);
+
+      RelNode sortRel = genLimitLogicalPlan(qb, obLogicalPlanGenState.getObInputRel(), canonizedCollation);
       if (sortRel == null) {
         sortRel = new HiveSortLimit(cluster, traitSet, obLogicalPlanGenState.getObInputRel(), canonizedCollation, null, null);
       }
