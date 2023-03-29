@@ -1615,6 +1615,8 @@
                     <bannedImport>**.shaded.**</bannedImport>
                     <bannedImport>jersey.repackaged.com.google.**</bannedImport>
                     <bannedImport>org.codehaus.jackson.**</bannedImport>
+                    <bannedImport>org.apache.hive.com.**</bannedImport>
+                    <bannedImport>org.apache.hive.org.**</bannedImport>
                   </bannedImports>
                   <allowedImports>
                     <allowedImport>org.apache.hadoop.hbase.shaded.protobuf.**</allowedImport>
