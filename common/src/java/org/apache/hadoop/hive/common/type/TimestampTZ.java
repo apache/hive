@@ -67,7 +67,7 @@ public class TimestampTZ implements Comparable<TimestampTZ> {
 
   @Override
   public String toString() {
-    return zonedDateTime.format(TimestampTZUtil.FORMATTER);
+    return zonedDateTime.format(TimestampTZUtil.PRINT_FORMATTER);
   }
 
   @Override

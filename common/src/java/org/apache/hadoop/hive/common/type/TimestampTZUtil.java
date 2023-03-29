@@ -32,7 +32,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.SignStyle;
-import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQueries;
@@ -68,7 +67,8 @@ public class TimestampTZUtil {
       // Fractional Part (Optional)
       .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true).optionalEnd().toFormatter();
 
-  static final DateTimeFormatter FORMATTER;
+  static final DateTimeFormatter PRINT_FORMATTER;
+  private static final DateTimeFormatter PARSE_FORMATTER;
   static {
     DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
     // Date part
@@ -81,7 +81,8 @@ public class TimestampTZUtil {
     builder.optionalStart().appendLiteral(" ").optionalEnd();
     builder.optionalStart().appendZoneOrOffsetId().optionalEnd();
 
-    FORMATTER = builder.toFormatter();
+    PRINT_FORMATTER = builder.toFormatter();
+    PARSE_FORMATTER = builder.toFormatter();
   }
 
   public static TimestampTZ parse(String s) {
@@ -91,7 +92,7 @@ public class TimestampTZUtil {
   public static TimestampTZ parse(String s, ZoneId defaultTimeZone) {
     // need to handle offset with single digital hour, see JDK-8066806
     s = handleSingleDigitHourOffset(s);
-    TemporalAccessor accessor = FORMATTER.parse(s);
+    TemporalAccessor accessor = PARSE_FORMATTER.parse(s);
 
     LocalDate localDate = accessor.query(TemporalQueries.localDate());
 
