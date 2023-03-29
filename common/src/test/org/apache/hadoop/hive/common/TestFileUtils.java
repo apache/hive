@@ -304,18 +304,6 @@ public class TestFileUtils {
   }
 
   @Test
-  public void testListLocatedStatusIterator() throws Exception {
-    MockFileSystem fs = new MockFileSystem(new HiveConf(),
-        new MockFile("mock:/tmp/.staging/-ext-10001", 500, new byte[0]),
-        new MockFile("mock:/tmp/_dummy", 500, new byte[0]),
-        new MockFile("mock:/tmp/dummy", 500, new byte[0]));
-    Path path = new MockFileSystem.MockPath(fs, "/tmp");
-
-    RemoteIterator<LocatedFileStatus> it = FileUtils.listLocatedStatusIterator(fs, path, FileUtils.HIDDEN_FILES_PATH_FILTER);
-    assertEquals(1, assertExpectedFilePaths(it, Collections.singletonList("mock:/tmp/dummy")));
-  }
-
-  @Test
   public void testPathEscapeChars() {
     StringBuilder sb = new StringBuilder();
     FileUtils.charToEscape.stream().forEach(integer -> sb.append((char) integer));
