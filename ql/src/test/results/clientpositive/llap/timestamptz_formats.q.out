@@ -1,11 +1,15 @@
 PREHOOK: query: CREATE TABLE timestamptz_formats (
-  c1 timestamp with local time zone
+  c1 string,
+  c2 timestamp with local time zone,
+  c3 timestamp
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamptz_formats
 POSTHOOK: query: CREATE TABLE timestamptz_formats (
-  c1 timestamp with local time zone
+  c1 string,
+  c2 timestamp with local time zone,
+  c3 timestamp
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -18,29 +22,41 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tzl_formats.txt' overw
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@timestamptz_formats
-PREHOOK: query: SELECT * FROM timestamptz_formats
+PREHOOK: query: SELECT c1, '|', c2, '|', c3
+FROM timestamptz_formats
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamptz_formats
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM timestamptz_formats
+POSTHOOK: query: SELECT c1, '|', c2, '|', c3
+FROM timestamptz_formats
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamptz_formats
 #### A masked pattern was here ####
-2016-05-03 04:26:34.0 US/Pacific
-2016-05-03 04:26:34.123 US/Pacific
-2016-05-03 04:26:34.12345 US/Pacific
-2016-05-03 04:26:34.123 US/Pacific
-2016-05-03 04:26:34.12345 US/Pacific
-2016-05-03 04:26:34.12 US/Pacific
-2016-05-03 05:26:34.1 US/Pacific
-2016-05-03 12:26:34.0 US/Pacific
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
+2016-05-03 12:26:34 Europe/London	|	2016-05-03 04:26:34.0 US/Pacific	|	NULL
+2016-05-03 12:26:34.123 Europe/London	|	2016-05-03 04:26:34.123 US/Pacific	|	NULL
+2016-05-03 12:26:34.12345+01:00	|	2016-05-03 04:26:34.12345 US/Pacific	|	NULL
+2016-05-03 12:26:34.12300 GMT+01:00	|	2016-05-03 04:26:34.123 US/Pacific	|	NULL
+2016-05-03 12:26:34.12345 GMT+01:00	|	2016-05-03 04:26:34.12345 US/Pacific	|	NULL
+2016-05-03 12:26:34.12 +1:00	|	2016-05-03 04:26:34.12 US/Pacific	|	NULL
+2016-05-03 12:26:34.1 GMT	|	2016-05-03 05:26:34.1 US/Pacific	|	NULL
+2016-05-03 12:26:34	|	2016-05-03 12:26:34.0 US/Pacific	|	2016-05-03 12:26:34
+2016-05-03T12:26:34Z	|	2016-05-03 05:26:34.0 US/Pacific	|	NULL
+2016-05-03T12:26:34	|	2016-05-03 12:26:34.0 US/Pacific	|	2016-05-03 12:26:34
+2016-05-03T12:26:34+01:00	|	2016-05-03 04:26:34.0 US/Pacific	|	NULL
+2016-05-03'T'12:26:34+01:00	|	NULL	|	NULL
+2016-05-03T12:26:34+01:00 Europe/London	|	NULL	|	NULL
+2016-05-03T12:26:34+01:00Europe/London	|	NULL	|	NULL
+2016-05-03T12:26:34Europe/London	|	2016-05-03 04:26:34.0 US/Pacific	|	NULL
+2016-05-03 12:26:34T12:26:34	|	NULL	|	NULL
+2016-05-03 T12:26:34	|	NULL	|	NULL
+2016-05-03T 12:26:34	|	2016-05-03 12:26:34.0 US/Pacific	|	NULL
+2016-05-0312:26:34	|	2016-05-03 12:26:34.0 US/Pacific	|	NULL
+2016-05-03 T 12:26:34	|	NULL	|	NULL
+2016-05-03  12:26:34	|	NULL	|	NULL
+2016-05-03	|	2016-05-03 00:00:00.0 US/Pacific	|	NULL
+2016-05-03T	|	NULL	|	NULL
+2016-05-03	|	2016-05-03 00:00:00.0 US/Pacific	|	NULL
+2016-05-03T	|	NULL	|	NULL
+2016-05-03 T	|	NULL	|	NULL
+2016	|	NULL	|	NULL
+Whatever	|	NULL	|	NULL

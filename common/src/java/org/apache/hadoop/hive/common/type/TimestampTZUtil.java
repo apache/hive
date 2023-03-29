@@ -70,19 +70,26 @@ public class TimestampTZUtil {
   static final DateTimeFormatter PRINT_FORMATTER;
   private static final DateTimeFormatter PARSE_FORMATTER;
   static {
+    DateTimeFormatter timeFormatter = new DateTimeFormatterBuilder()
+            .append(DateTimeFormatter.ofPattern("HH:mm:ss"))
+            .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).optionalEnd()
+            .toFormatter();
     DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
     // Date part
     builder.append(DateTimeFormatter.ofPattern("uuuu-MM-dd"));
     // Time part
-    builder.optionalStart().appendLiteral(" ").append(DateTimeFormatter.ofPattern("HH:mm:ss")).
-        optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).
-        optionalEnd().optionalEnd();
+    builder.optionalStart().appendLiteral(" ").append(timeFormatter).optionalEnd();
     // Zone part
     builder.optionalStart().appendLiteral(" ").optionalEnd();
     builder.optionalStart().appendZoneOrOffsetId().optionalEnd();
 
     PRINT_FORMATTER = builder.toFormatter();
-    PARSE_FORMATTER = builder.toFormatter();
+    PARSE_FORMATTER = new DateTimeFormatterBuilder()
+        .append(DateTimeFormatter.ofPattern("uuuu-MM-dd"))
+        .optionalStart().appendPattern("['T'][' ']").append(timeFormatter).optionalEnd()
+        .optionalStart().appendLiteral(" ").optionalEnd()
+        .optionalStart().appendZoneOrOffsetId().optionalEnd()
+        .toFormatter();
   }
 
   public static TimestampTZ parse(String s) {
