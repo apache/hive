@@ -32,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.SignStyle;
+import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQueries;
@@ -67,25 +68,20 @@ public class TimestampTZUtil {
       // Fractional Part (Optional)
       .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true).optionalEnd().toFormatter();
 
-  static final DateTimeFormatter PRINT_FORMATTER;
-  private static final DateTimeFormatter[] PARSERS = new DateTimeFormatter[2];
+  static final DateTimeFormatter FORMATTER;
   static {
-    DateTimeFormatter timeFormatter = new DateTimeFormatterBuilder()
-            .append(DateTimeFormatter.ofPattern("HH:mm:ss"))
-            .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).optionalEnd()
-            .toFormatter();
     DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
     // Date part
     builder.append(DateTimeFormatter.ofPattern("uuuu-MM-dd"));
     // Time part
-    builder.optionalStart().appendLiteral(" ").append(timeFormatter).optionalEnd();
+    builder.optionalStart().appendLiteral(" ").append(DateTimeFormatter.ofPattern("HH:mm:ss")).
+        optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).
+        optionalEnd().optionalEnd();
     // Zone part
     builder.optionalStart().appendLiteral(" ").optionalEnd();
     builder.optionalStart().appendZoneOrOffsetId().optionalEnd();
 
-    PRINT_FORMATTER = builder.toFormatter();
-    PARSERS[0] = PRINT_FORMATTER;
-    PARSERS[1] = DateTimeFormatter.ISO_ZONED_DATE_TIME;
+    FORMATTER = builder.toFormatter();
   }
 
   public static TimestampTZ parse(String s) {
@@ -93,19 +89,13 @@ public class TimestampTZUtil {
   }
 
   public static TimestampTZ parse(String s, ZoneId defaultTimeZone) {
+    return parse(s, defaultTimeZone, FORMATTER);
+  }
+
+  public static TimestampTZ parse(String s, ZoneId defaultTimeZone, DateTimeFormatter formatter) {
     // need to handle offset with single digital hour, see JDK-8066806
     s = handleSingleDigitHourOffset(s);
-    TemporalAccessor accessor = null;
-    for (DateTimeFormatter p : PARSERS) {
-      try {
-        accessor = p.parse(s);
-      } catch (DateTimeParseException e) {
-        // Ignore and try next
-      }
-    }
-    if (accessor == null) {
-      throw new DateTimeParseException("Failed to parse timestamp", s, 0);
-    }
+    TemporalAccessor accessor = formatter.parse(s);
 
     LocalDate localDate = accessor.query(TemporalQueries.localDate());
 
