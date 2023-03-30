@@ -55,6 +55,10 @@ public interface HiveMetaHook {
   // if this flag is set to true, the HMS call from HiveMetaStoreClient#alter_table() will be skipped
   String SKIP_METASTORE_ALTER = "skip_metastore_alter";
 
+  String PRE_RENAME_TABLE_NAME = "pre_rename_table_name";
+
+  String PRE_RENAME_DB_NAME = "pre_rename_db_name";
+
   /**
    * Called before a new table definition is added to the metastore
    * during CREATE TABLE.

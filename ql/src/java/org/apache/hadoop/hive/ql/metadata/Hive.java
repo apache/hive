@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -875,9 +876,16 @@ public class Hive {
       if (newTbl.getParameters() != null) {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
-      newTbl.checkValidity(conf);
       if (environmentContext == null) {
         environmentContext = new EnvironmentContext();
+      }
+      if (environmentContext.isSetProperties() && AlterTableType.RENAME.toString()
+          .equalsIgnoreCase(environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE))) {
+        newTbl.validateName(conf);
+        environmentContext.putToProperties(HiveMetaHook.PRE_RENAME_TABLE_NAME, tblName);
+        environmentContext.putToProperties(HiveMetaHook.PRE_RENAME_DB_NAME, dbName);
+      } else {
+        newTbl.checkValidity(conf);
       }
       if (cascade) {
         environmentContext.putToProperties(StatsSetupConst.CASCADE, StatsSetupConst.TRUE);
