@@ -896,7 +896,6 @@ public class MetastoreConf {
         "Set this to true for using SSL encryption in HMS server."),
     USE_THRIFT_SASL("metastore.sasl.enabled", "hive.metastore.sasl.enabled", false,
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
-    //TODO (Vihang) check if this configs are needed
     METASTORE_CLIENT_AUTH_MODE("metastore.client.auth.mode",
             "hive.metastore.client.auth.mode", "NOSASL",
             new StringSetValidator("NOSASL", "JWT"),
