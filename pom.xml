@@ -152,7 +152,6 @@
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
     <javax-servlet.version>3.1.0</javax-servlet.version>
-    <javax-servlet-jsp.version>2.3.1</javax-servlet-jsp.version>
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.3</jettison.version>
     <jetty.version>9.4.40.v20210413</jetty.version>
@@ -988,6 +987,10 @@
           <exclusion>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-recipes</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>jsp-api</artifactId>
           </exclusion>
         </exclusions>
       </dependency>

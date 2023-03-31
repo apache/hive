@@ -72,11 +72,6 @@
       <artifactId>hive-hplsql</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>javax.servlet.jsp</groupId>
-      <artifactId>javax.servlet.jsp-api</artifactId>
-      <version>${javax-servlet-jsp.version}</version>
-    </dependency>
     <!-- inter-project -->
     <dependency>
       <groupId>com.nimbusds</groupId>
