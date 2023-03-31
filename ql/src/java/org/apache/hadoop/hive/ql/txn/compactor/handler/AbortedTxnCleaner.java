@@ -47,7 +47,7 @@ import static java.util.Objects.isNull;
  * Abort-cleanup based implementation of TaskHandler.
  * Provides implementation of creation of abort clean tasks.
  */
-class AbortedTxnCleaner extends AcidTxnCleaner {
+class AbortedTxnCleaner extends TaskHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbortedTxnCleaner.class.getName());
 
@@ -142,7 +142,7 @@ class AbortedTxnCleaner extends AcidTxnCleaner {
 
   private void abortCleanUsingAcidDir(AcidTxnInfo info, String location, long minOpenTxn) throws Exception {
     ValidTxnList validTxnList =
-            TxnUtils.createValidTxnListForTxnAbortedCleaner(txnHandler.getOpenTxns(), minOpenTxn);
+            TxnUtils.createValidTxnListForAbortedTxnCleaner(txnHandler.getOpenTxns(), minOpenTxn);
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 

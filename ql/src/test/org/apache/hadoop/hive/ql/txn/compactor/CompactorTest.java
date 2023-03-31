@@ -32,15 +32,20 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
+import org.apache.hadoop.hive.metastore.LockComponentBuilder;
+import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
@@ -260,6 +265,36 @@ public abstract class CompactorTest {
     awiRqst.setTxnIds(Collections.singletonList(txnid));
     AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
     return awiResp.getTxnToWriteIds().get(0).getWriteId();
+  }
+
+  protected void addDeltaFileWithTxnComponents(Table t, Partition p, int numRecords, boolean abort)
+      throws Exception {
+    long txnId = openTxn();
+    long writeId = ms.allocateTableWriteId(txnId, t.getDbName(), t.getTableName());
+    acquireLock(t, p, txnId);
+    addDeltaFile(t, p, writeId, writeId, numRecords);
+    if (abort) {
+      txnHandler.abortTxns(new AbortTxnsRequest(Collections.singletonList(txnId)));
+    } else {
+      txnHandler.commitTxn(new CommitTxnRequest(txnId));
+    }
+  }
+
+  protected void acquireLock(Table t, Partition p, long txnId) throws Exception {
+    LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
+            .setLock(LockType.EXCL_WRITE)
+            .setOperationType(DataOperationType.INSERT)
+            .setDbName(t.getDbName())
+            .setTableName(t.getTableName())
+            .setIsTransactional(true);
+    if (p != null) {
+      lockCompBuilder.setPartitionName(t.getPartitionKeys().get(0).getName() + "=" + p.getValues().get(0));
+    }
+    LockRequestBuilder requestBuilder = new LockRequestBuilder().setUser(null)
+            .setTransactionId(txnId).addLockComponent(lockCompBuilder.build());
+    requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
+            !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
+    ms.lock(requestBuilder.build());
   }
 
   protected void addDeltaFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords)

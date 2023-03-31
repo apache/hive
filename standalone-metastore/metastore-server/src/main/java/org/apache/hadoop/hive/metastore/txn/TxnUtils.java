@@ -61,19 +61,19 @@ public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
 
   public static ValidTxnList createValidTxnListForCompactionCleaner(GetOpenTxnsResponse txns, long minOpenTxn) {
-    long highWaterMark = minOpenTxn - 1;
+    long highWatermark = minOpenTxn - 1;
     long[] abortedTxns = new long[txns.getOpen_txnsSize()];
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
     int i = 0;
     for(long txnId : txns.getOpen_txns()) {
-      if(txnId > highWaterMark) {
+      if(txnId > highWatermark) {
         break;
       }
       if(abortedBits.get(i)) {
         abortedTxns[i] = txnId;
       }
       else {
-        assert false : JavaUtils.txnIdToString(txnId) + " is open and <= hwm:" + highWaterMark;
+        assert false : JavaUtils.txnIdToString(txnId) + " is open and <= hwm:" + highWatermark;
       }
       ++i;
     }
@@ -82,11 +82,11 @@ public class TxnUtils {
     bitSet.set(0, abortedTxns.length);
     //add ValidCleanerTxnList? - could be problematic for all the places that read it from
     // string as they'd have to know which object to instantiate
-    return new ValidReadTxnList(abortedTxns, bitSet, highWaterMark, Long.MAX_VALUE);
+    return new ValidReadTxnList(abortedTxns, bitSet, highWatermark, Long.MAX_VALUE);
   }
 
-  public static ValidTxnList createValidTxnListForTxnAbortedCleaner(GetOpenTxnsResponse txns, long minOpenTxn) {
-    long highWaterMark = minOpenTxn - 1;
+  public static ValidTxnList createValidTxnListForAbortedTxnCleaner(GetOpenTxnsResponse txns, long minOpenTxn) {
+    long highWatermark = minOpenTxn - 1;
     long[] exceptions = new long[txns.getOpen_txnsSize()];
     int i = 0;
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
@@ -95,7 +95,7 @@ public class TxnUtils {
     // If a txn is not in exception list, it is considered as a valid one and thought of as an uncompacted write.
     // See TxnHandler#getValidWriteIdsForTable() for more details.
     for(long txnId : txns.getOpen_txns()) {
-      if(txnId > highWaterMark) {
+      if(txnId > highWatermark) {
         break;
       }
       exceptions[i] = txnId;
@@ -104,7 +104,7 @@ public class TxnUtils {
     exceptions = Arrays.copyOf(exceptions, i);
     //add ValidCleanerTxnList? - could be problematic for all the places that read it from
     // string as they'd have to know which object to instantiate
-    return new ValidReadTxnList(exceptions, abortedBits, highWaterMark, Long.MAX_VALUE);
+    return new ValidReadTxnList(exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
   }
   /**
    * Transform a {@link org.apache.hadoop.hive.metastore.api.TableValidWriteIds} to a

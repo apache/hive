@@ -68,7 +68,7 @@ import static java.util.Objects.isNull;
  * A compaction based implementation of TaskHandler.
  * Provides implementation of creation of compaction clean tasks.
  */
-class CompactionCleaner extends AcidTxnCleaner {
+class CompactionCleaner extends TaskHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(CompactionCleaner.class.getName());
 
