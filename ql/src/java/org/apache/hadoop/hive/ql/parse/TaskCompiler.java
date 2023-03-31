@@ -409,7 +409,7 @@ public abstract class TaskCompiler {
     TableSpec tableSpec = new TableSpec(table, partitions);
     tableScan.getConf().getTableMetadata().setTableSpec(tableSpec);
 
-    if (BasicStatsNoJobTask.canUseFooterScan(table, inputFormat)) {
+    if (inputFormat.equals(OrcInputFormat.class)) {
       // For ORC, there is no Tez Job for table stats.
       StatsWork columnStatsWork = new StatsWork(table, parseContext.getConf());
       columnStatsWork.setFooterScan();
