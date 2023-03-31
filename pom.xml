@@ -99,6 +99,7 @@
     <maven.versions.plugin.version>2.13.0</maven.versions.plugin.version>
     <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
+    <maven.cyclonedx.plugin.version>2.7.3</maven.cyclonedx.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.1</accumulo.version>
     <ant.version>1.10.12</ant.version>
@@ -1788,19 +1789,6 @@
         <artifactId>jamon-maven-plugin</artifactId>
         <version>${jamon.plugin.version}</version>
       </plugin>
-      <plugin>
-        <groupId>org.cyclonedx</groupId>
-        <artifactId>cyclonedx-maven-plugin</artifactId>
-        <version>2.7.3</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>makeBom</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
   <profiles>
@@ -2040,6 +2028,26 @@
           <name>hbase.version</name>
         </property>
       </activation>
+    </profile>
+    <profile>
+      <id>dist</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.cyclonedx</groupId>
+            <artifactId>cyclonedx-maven-plugin</artifactId>
+            <version>${maven.cyclonedx.plugin.version}</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>makeBom</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
