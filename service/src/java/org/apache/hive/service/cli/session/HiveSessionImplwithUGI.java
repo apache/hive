@@ -25,7 +25,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -125,10 +124,10 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   private void cancelDelegationToken() throws HiveSQLException {
     if (hmsDelegationTokenStr != null) {
       try {
-        Hive.get(getHiveConf()).cancelDelegationToken(hmsDelegationTokenStr);
+        getMetaStoreClient().cancelDelegationToken(hmsDelegationTokenStr);
         hmsDelegationTokenStr = null;
         getHiveConf().setVar(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE, "");
-      } catch (HiveException e) {
+      } catch (Exception e) {
         throw new HiveSQLException("Couldn't cancel delegation token", e);
       }
     }
@@ -141,16 +140,14 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
 
   private IMetaStoreClient getMetaStoreClient(boolean retryInCaseOfTokenExpiration) throws HiveSQLException {
     try {
-      return Hive.get(getHiveConf()).getMSC();
-    } catch (HiveException e) {
-      throw new HiveSQLException("Failed to get metastore connection: " + e, e);
+      return getSessionHive().getMSC();
     } catch(MetaException e1) {
       if (hmsDelegationTokenStr != null && retryInCaseOfTokenExpiration) {
         LOG.info("Retrying failed metastore connection: " + e1, e1);
-        Hive.closeCurrent();
+        getSessionHive().close(true);
         try {
-          setDelegationToken(Hive.get(getHiveConf()).getDelegationToken(sessionUgi.getUserName(), getUserName()));
-        } catch (HiveException e2) {
+          setDelegationToken(getSessionHive().getMSC().getDelegationToken(sessionUgi.getUserName(), getUserName()));
+        } catch (Exception e2) {
           throw new HiveSQLException("Error connect metastore to setup impersonation: " + e2, e2);
         }
         return getMetaStoreClient(false);

@@ -17,12 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
+
 /**
  * Private implementaiton that returns instance of IMetaStoreClient
  */
@@ -33,7 +34,16 @@ public class HiveMetastoreClientFactoryImpl implements HiveMetastoreClientFactor
   public IMetaStoreClient getHiveMetastoreClient() throws HiveAuthzPluginException {
     String errMsg = "Error getting metastore client";
     try {
-      return Hive.get().getMSC();
+      // If Hive.get() is being shared across different sessions,
+      // SessionState#getHiveDb() and Hive.get() may be different,
+      // in such case, the risk of deadlock on HiveMetaStoreClient#SynchronizedHandler can happen.
+      SessionState sessionState = SessionState.get();
+      if (sessionState != null) {
+        return sessionState.getHiveDb().getMSC();
+      } else {
+        // For HMS
+        return Hive.get(false).getMSC();
+      }
     } catch (MetaException e) {
       throw new HiveAuthzPluginException(errMsg, e);
     } catch (HiveException e) {
