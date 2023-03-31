@@ -552,6 +552,17 @@ public class MetastoreConf {
         "hive-metastore/_HOST@EXAMPLE.COM",
         "The service principal for the metastore Thrift server. \n" +
             "The special string _HOST will be replaced automatically with the correct host name."),
+    THRIFT_METASTORE_AUTHENTICATION("metastore.authentication", "hive.metastore.authentication",
+            "NONE",
+            new StringSetValidator("NONE", "JWT"),
+            "Client authentication types. Currently, only used in HTTP mode. For using kerberos use \n" +
+                    "metastore.sasl.enabled \n" +
+                    "  NONE: no authentication check\n" +
+                    "  JWT:  JSON Web Token authentication via JWT token. Only supported in Http/Https mode"),
+    THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL("metastore.authentication.jwt.jwks.url",
+            "hive.metastore.authentication.jwt.jwks.url", "", "File URL from where URLBasedJWKSProvider "
+            + "in metastore server will try to load JWKS to match a JWT sent in HTTP request header. Used only when "
+            + "Hive metastore server is running in JWT auth mode"),
     LIMIT_PARTITION_REQUEST("metastore.limit.partition.request",
         "hive.metastore.limit.partition.request", -1,
         "This limits the number of partitions (whole partition objects) that can be requested " +
@@ -885,7 +896,6 @@ public class MetastoreConf {
         "Set this to true for using SSL encryption in HMS server."),
     USE_THRIFT_SASL("metastore.sasl.enabled", "hive.metastore.sasl.enabled", false,
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
-    //TODO (Vihang) check if this configs are needed
     METASTORE_CLIENT_AUTH_MODE("metastore.client.auth.mode",
             "hive.metastore.client.auth.mode", "NOSASL",
             new StringSetValidator("NOSASL", "JWT"),
