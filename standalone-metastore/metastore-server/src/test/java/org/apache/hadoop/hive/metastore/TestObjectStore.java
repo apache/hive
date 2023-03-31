@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -439,14 +438,14 @@ public class TestObjectStore {
     Assert.assertEquals(2, numPartitions);
 
     try (AutoCloseable c = deadline()) {
-      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=CA");
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value1);
       partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
     }
     Assert.assertEquals(1, partitions.size());
     Assert.assertEquals(222, partitions.get(0).getCreateTime());
 
     try (AutoCloseable c = deadline()) {
-      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=MA");
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value2);
       objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
       objectStore.dropDatabase(db1.getCatalogName(), DB1);
     }
@@ -498,6 +497,68 @@ public class TestObjectStore {
     }
   }
 
+  @Test
+  public void testDropPartitionByName() throws Exception {
+    Database db1 = new DatabaseBuilder()
+        .setName(DB1)
+        .setDescription("description")
+        .setLocation("locationurl")
+        .build(conf);
+    try (AutoCloseable c = deadline()) {
+      objectStore.createDatabase(db1);
+    }
+    StorageDescriptor sd = createFakeSd("location");
+    HashMap<String, String> tableParams = new HashMap<>();
+    tableParams.put("EXTERNAL", "false");
+    FieldSchema partitionKey1 = new FieldSchema("Country", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema partitionKey2 = new FieldSchema("State", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl1 =
+        new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2),
+            tableParams, null, null, "MANAGED_TABLE");
+    try (AutoCloseable c = deadline()) {
+      objectStore.createTable(tbl1);
+    }
+    HashMap<String, String> partitionParams = new HashMap<>();
+    partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
+    List<String> value1 = Arrays.asList("US", "CA");
+    Partition part1 = new Partition(value1, DB1, TABLE1, 111, 111, sd, partitionParams);
+    part1.setCatName(DEFAULT_CATALOG_NAME);
+    try (AutoCloseable c = deadline()) {
+      objectStore.addPartition(part1);
+    }
+    List<String> value2 = Arrays.asList("US", "MA");
+    Partition part2 = new Partition(value2, DB1, TABLE1, 222, 222, sd, partitionParams);
+    part2.setCatName(DEFAULT_CATALOG_NAME);
+    try (AutoCloseable c = deadline()) {
+      objectStore.addPartition(part2);
+    }
+
+    List<Partition> partitions;
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=CA");
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    }
+    Assert.assertEquals(1, partitions.size());
+    Assert.assertEquals(222, partitions.get(0).getCreateTime());
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=MA");
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    }
+    Assert.assertEquals(0, partitions.size());
+
+    try (AutoCloseable c = deadline()) {
+      // Illegal partName will do nothing, it doesn't matter
+      // because the real HMSHandler will guarantee the partName is legal and exists.
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=NON_EXIST");
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/st=CA");
+    }
+
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+      objectStore.dropDatabase(db1.getCatalogName(), DB1);
+    }
+  }
+
   /**
    * Test the concurrent drop of same partition would leak transaction.
    * https://issues.apache.org/jira/browse/HIVE-16839
@@ -519,9 +580,8 @@ public class TestObjectStore {
     tableParams.put("EXTERNAL", "false");
     FieldSchema partitionKey1 = new FieldSchema("Country", ColumnType.STRING_TYPE_NAME, "");
     FieldSchema partitionKey2 = new FieldSchema("State", ColumnType.STRING_TYPE_NAME, "");
-    List<FieldSchema> partCols = Arrays.asList(partitionKey1, partitionKey2);
     Table tbl1 =
-      new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, partCols,
+      new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2),
         tableParams, null, null, "MANAGED_TABLE");
     objectStore.createTable(tbl1);
     HashMap<String, String> partitionParams = new HashMap<>();
@@ -546,11 +606,10 @@ public class TestObjectStore {
         () -> {
           ObjectStore threadObjectStore = new ObjectStore();
           threadObjectStore.setConf(conf);
-          for (List<String> partVals : partNames) {
+          for (List<String> p : partNames) {
             try {
-              String partName = Warehouse.makePartName(partCols, partVals);
-              threadObjectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, partName);
-              System.out.println("Dropping partition: " + partName);
+              threadObjectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, p);
+              System.out.println("Dropping partition: " + p.get(0));
             } catch (Exception e) {
               throw new RuntimeException(e);
             }
@@ -951,8 +1010,10 @@ public class TestObjectStore {
         for (String db : dbs) {
           List<String> tbls = store.getAllTables(DEFAULT_CATALOG_NAME, db);
           for (String tbl : tbls) {
-            List<String> partNames = store.listPartitionNames(DEFAULT_CATALOG_NAME, db, tbl, (short) -1);
-            store.dropPartitions(DEFAULT_CATALOG_NAME, db, tbl, partNames);
+            List<Partition> parts = store.getPartitions(DEFAULT_CATALOG_NAME, db, tbl, 100);
+            for (Partition part : parts) {
+              store.dropPartition(DEFAULT_CATALOG_NAME, db, tbl, part.getValues());
+            }
             // Find any constraints and drop them
             Set<String> constraints = new HashSet<>();
             List<SQLPrimaryKey> pk = store.getPrimaryKeys(DEFAULT_CATALOG_NAME, db, tbl);

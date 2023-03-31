@@ -5027,20 +5027,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part_vals);
-      if (!ms.dropPartition(catName, db_name, tbl_name, partName)) {
-        throw new MetaException("Unable to drop partition");
-      } else {
-        if (!transactionalListeners.isEmpty()) {
+      ms.dropPartition(catName, db_name, tbl_name, partName);
 
-          transactionalListenerResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.DROP_PARTITION,
-                  new DropPartitionEvent(tbl, part, true, deleteData, this),
-                  envContext);
-        }
-        needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, db_name), tbl);
-        success = ms.commitTransaction();
+      if (!transactionalListeners.isEmpty()) {
+        transactionalListenerResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventType.DROP_PARTITION,
+                new DropPartitionEvent(tbl, part, true, deleteData, this),
+                envContext);
       }
+      needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, db_name), tbl);
+      success = ms.commitTransaction();
     } finally {
       if (!success) {
         ms.rollbackTransaction();
