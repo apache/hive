@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.ddl.table.convert;
 
 
-import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -34,6 +33,20 @@ import java.util.Map;
  */
 public class AlterTableConvertOperation extends AbstractAlterTableOperation<AlterTableConvertDesc> {
 
+  private enum ConversionFormats {
+    ICEBERG("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler");
+
+    private final String className;
+
+    ConversionFormats(String className) {
+      this.className = className;
+    }
+
+    public String className() {
+      return className;
+    }
+  }
+
   public AlterTableConvertOperation(DDLOperationContext context, AlterTableConvertDesc desc) {
     super(context, desc);
   }
@@ -42,12 +55,12 @@ public class AlterTableConvertOperation extends AbstractAlterTableOperation<Alte
   protected void doAlteration(Table table, Partition partition) throws HiveException {
     // Add the covert type
     String convertType = desc.getConvertSpec().getTargetType();
-    if (convertType.equalsIgnoreCase("ICEBERG")) {
-      table.getParameters().put("storage_handler", "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler");
-    } else {
-      throw new SemanticException(
-          "Conversion to type " + convertType + " is not supported via Alter table convert " + "command");
+    ConversionFormats format = ConversionFormats.valueOf(convertType);
+    if (format.className().equalsIgnoreCase(table.getParameters().get("storage_handler"))) {
+      throw new SemanticException("Can not convert table to " + format + " ,Table is already of that format");
     }
+    table.getParameters().put("storage_handler", format.className());
+
     Map<String, String> params = table.getParameters();
     if (desc.getConvertSpec().getTblProperties() != null) {
       params.putAll(desc.getConvertSpec().getTblProperties());

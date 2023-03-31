@@ -160,8 +160,13 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     // Check the new property gets translated to iceberg equivalent and gets set.
     org.apache.iceberg.Table icebergTable = testTables.loadTable(TableIdentifier.of("default", tableName));
     Assert.assertEquals("true", icebergTable.properties().get(TableProperties.GC_ENABLED));
-  }
 
+    // Retry migration after table is already of iceberg type.
+    AssertHelpers.assertThrows("Should throw exception", IllegalArgumentException.class,
+        "Can not convert table to ICEBERG ,Table is already of that format", () -> {
+          shell.executeStatement("ALTER TABLE " + tableName + " CONVERT TO ICEBERG");
+        });
+  }
   @Test
   public void testMigrateHiveTableToIceberg() throws TException, InterruptedException {
     String tableName = "tbl";
