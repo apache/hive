@@ -401,11 +401,11 @@ public class HiveSessionImpl implements HiveSession {
     // set the thread name with the logging prefix.
     sessionState.updateThreadName();
 
-    try {
-      setSessionHive();
-    } catch (HiveSQLException e) {
-      throw new RuntimeException(e);
-    }
+    // If Hive.get() is being shared across different sessions,
+    // SessionState#getHiveDb() and Hive.get() may be different, in such case,
+    // the risk of deadlock on HiveMetaStoreClient#SynchronizedHandler can happen.
+    // Refresh the thread-local Hive to avoid the problem.
+    Hive.set(sessionHive);
   }
 
   /**
@@ -432,6 +432,14 @@ public class HiveSessionImpl implements HiveSession {
       sessionState.resetThreadName();
     }
 
+    // We have already set the thread-local Hive belonging to the current session,
+    // if the thread-local Hive has been changed after running the operation,
+    // the Hive after should belong to the same session, and we should update the sessionHive.
+    // The thread-local hive would be closed and recreated only when the underlying
+    // HiveMetaStoreClient is incompatible with the newest session conf.
+    if (Hive.getThreadLocal() != null && Hive.getThreadLocal() != sessionHive) {
+      sessionHive = Hive.getThreadLocal();
+    }
     SessionState.detachSession();
     if (ThreadWithGarbageCleanup.currentThread() instanceof ThreadWithGarbageCleanup) {
       ThreadWithGarbageCleanup currentThread =
