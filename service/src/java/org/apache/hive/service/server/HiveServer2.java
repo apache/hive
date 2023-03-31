@@ -133,6 +133,8 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import javax.servlet.jsp.JspFactory;
+
 /**
  * HiveServer2.
  *
@@ -340,6 +342,10 @@ public class HiveServer2 extends CompositeService {
           LOG.info("Web UI is disabled since port is set to " + webUIPort);
         } else {
           LOG.info("Starting Web UI on port "+ webUIPort);
+          if (JspFactory.getDefaultFactory() == null) {
+            // Set the default JspFactory to avoid NPE while opening the home page
+            JspFactory.setDefaultFactory(new org.apache.jasper.runtime.JspFactoryImpl());
+          }
           HttpServer.Builder builder = new HttpServer.Builder("hiveserver2");
           builder.setPort(webUIPort).setConf(hiveConf);
           builder.setHost(webHost);
