@@ -96,8 +96,9 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   }
 
   public static boolean canUseFooterScan(Table table, Class<? extends InputFormat> inputFormat) {
-    return (OrcInputFormat.class.isAssignableFrom(inputFormat) && !AcidUtils.isFullAcidTable(table))
+    return OrcInputFormat.class.isAssignableFrom(inputFormat)
         || MapredParquetInputFormat.class.isAssignableFrom(inputFormat);
+        // && !AcidUtils.isFullAcidTable(table))
   }
 
   private static boolean useBasicStatsFromStorageHandler(Table table) {
