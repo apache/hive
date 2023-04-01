@@ -510,40 +510,51 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     final FileSystem destFs = destDir.getFileSystem(conf);
     final boolean canRename = srcFs.getUri().equals(destFs.getUri());
 
-    if (!destFs.getFileStatus(destDir).isDirectory()) {
+    if (destFs.exists(destDir) && !destFs.getFileStatus(destDir).isDirectory()) {
       throw new HCatException(ErrorType.ERROR_MOVE_FAILED, "Destination is not directory " + destDir);
     }
 
     LinkedList<Pair<Path, Path>> moves = new LinkedList<>();
-    Queue<FileStatus> srcQ = new LinkedList<>();
-    FileStatus[] contents = srcFs.listStatus(srcf, HIDDEN_FILES_PATH_FILTER);
-    if (contents.length==0) {
-      // nothing to move
-      return;
-    }
-    Collections.addAll(srcQ, contents);
-
-    while (!srcQ.isEmpty()) {
-      FileStatus srcStatus = srcQ.remove();
-      Path srcF = srcStatus.getPath();
-      final Path finalOutputPath = getFinalPath(destFs, srcF, srcDir, destDir, immutable);
-      if(immutable && destFs.exists(finalOutputPath) &&
-          !org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(destFs, finalOutputPath)) {
-        throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION, "Data already exists in " + finalOutputPath
-            + ", duplicate publish not possible.");
+    if (customDynamicLocationUsed) {
+      if (immutable && destFs.exists(destDir) &&
+          !org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(destFs, destDir)) {
+        throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION,
+            "Data already exists in " + destDir
+                + ", duplicate publish not possible.");
       }
-      if (srcStatus.isDirectory()) {
-        if (canRename && dynamicPartitioningUsed) {
-          // If it is partition, move the partition directory instead of each file.
-          // If custom dynamic location provided, need to rename to final output path
-          final Path parentDir = finalOutputPath.getParent();
-          Path dstPath = !customDynamicLocationUsed ? parentDir : finalOutputPath;
-          moves.add(Pair.of(srcF, dstPath));
-        } else {
-          Collections.addAll(srcQ, srcFs.listStatus(srcF, HIDDEN_FILES_PATH_FILTER));
+      moves.add(Pair.of(srcf, destDir));
+    } else {
+      Queue<FileStatus> srcQ = new LinkedList<>();
+      FileStatus[] contents = srcFs.listStatus(srcf, HIDDEN_FILES_PATH_FILTER);
+      if (contents.length == 0) {
+        // nothing to move
+        return;
+      }
+      Collections.addAll(srcQ, contents);
+
+      while (!srcQ.isEmpty()) {
+        FileStatus srcStatus = srcQ.remove();
+        Path srcF = srcStatus.getPath();
+        final Path finalOutputPath = getFinalPath(destFs, srcF, srcDir, destDir, immutable);
+        if (immutable && destFs.exists(finalOutputPath) &&
+            !org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(destFs, finalOutputPath)) {
+          throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION,
+              "Data already exists in " + finalOutputPath
+                  + ", duplicate publish not possible.");
         }
-      } else {
-        moves.add(Pair.of(srcF, finalOutputPath));
+        if (srcStatus.isDirectory()) {
+          if (canRename && dynamicPartitioningUsed) {
+            // If it is partition, move the partition directory instead of each file.
+            // If custom dynamic location provided, need to rename to final output path
+            final Path parentDir = finalOutputPath.getParent();
+            Path dstPath = !customDynamicLocationUsed ? parentDir : finalOutputPath;
+            moves.add(Pair.of(srcF, dstPath));
+          } else {
+            Collections.addAll(srcQ, srcFs.listStatus(srcF, HIDDEN_FILES_PATH_FILTER));
+          }
+        } else {
+          moves.add(Pair.of(srcF, finalOutputPath));
+        }
       }
     }
 
