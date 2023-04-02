@@ -1202,16 +1202,24 @@ public class Commands {
     // bug 879518.
 
     // use multiple lines for statements not terminated by the delimiter
-    try {
-      line = handleMultiLineCmd(line);
-    } catch (Exception e) {
-      beeLine.handleException(e);
+    if ((beeLine.getOpts().getScriptFile() == null) || (beeLine.getOpts().getScriptFile().endsWith("temp"))){
+      try {
+        line = handleMultiLineCmd(line);
+      } catch (Exception e) {
+        beeLine.handleException(e);
+      }
+      line = line.trim();
     }
 
-    line = line.trim();
     List<String> cmdList = getCmdList(line, entireLineAsCommand);
+    String sql = null;
     for (int i = 0; i < cmdList.size(); i++) {
-      String sql = cmdList.get(i).trim();
+      if ((beeLine.getOpts().getScriptFile() == null) || (beeLine.getOpts().getScriptFile().endsWith("temp"))){
+        sql = cmdList.get(i).trim();
+      }
+      else {
+        sql = cmdList.get(i);
+      }
       if (sql.length() != 0) {
         if (!executeInternal(sql, call)) {
           return false;
