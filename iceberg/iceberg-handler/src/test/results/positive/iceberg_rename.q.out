@@ -1,3 +1,51 @@
+PREHOOK: query: create table icev1 (id int, name string) Stored by Iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@icev1
+POSTHOOK: query: create table icev1 (id int, name string) Stored by Iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@icev1
+PREHOOK: query: insert into icev1 values (1, 'SSD'),(2, 'RAM')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@icev1
+POSTHOOK: query: insert into icev1 values (1, 'SSD'),(2, 'RAM')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@icev1
+PREHOOK: query: select * from icev1 order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@icev1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from icev1 order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@icev1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	SSD
+2	RAM
+PREHOOK: query: alter table icev1 rename to icev1renamed
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@icev1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@icev1
+PREHOOK: Output: default@icev1renamed
+POSTHOOK: query: alter table icev1 rename to icev1renamed
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@icev1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@icev1
+POSTHOOK: Output: default@icev1renamed
+PREHOOK: query: select * from icev1renamed order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@icev1renamed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from icev1renamed order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@icev1renamed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	SSD
+2	RAM
 PREHOOK: query: create table iceorgin (id int, name string) Stored by Iceberg TBLPROPERTIES ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

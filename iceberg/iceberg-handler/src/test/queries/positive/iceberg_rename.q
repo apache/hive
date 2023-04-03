@@ -1,5 +1,19 @@
 
--- create an unpartitioned table
+-- create a v1 table
+create table icev1 (id int, name string) Stored by Iceberg;
+
+-- insert some values
+insert into icev1 values (1, 'SSD'),(2, 'RAM');
+
+select * from icev1 order by id;
+
+-- do the rename
+
+alter table icev1 rename to icev1renamed;
+
+select * from icev1renamed order by id;
+
+-- create an unpartitioned v2 table
 create table iceorgin (id int, name string) Stored by Iceberg TBLPROPERTIES ('format-version'='2');
 
 -- insert some values
@@ -17,7 +31,7 @@ alter table iceorgin rename to icerenamed;
 
 select * from icerenamed order by id;
 
--- create a partitioned table
+-- create a partitioned v2 table
 create table iceorginpart (id int) partitioned by (part string) Stored by Iceberg TBLPROPERTIES ('format-version'='2');
 
 insert into iceorginpart values (1, 'ABC'),(2, 'CBS'),(3,'CBS'),(4, 'ABC'),(5, 'AQWR'),(6, 'ABC'),
