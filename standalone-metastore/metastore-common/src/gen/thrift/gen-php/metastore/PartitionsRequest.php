@@ -28,12 +28,12 @@ class PartitionsRequest
         ),
         2 => array(
             'var' => 'dbName',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::STRING,
         ),
         3 => array(
             'var' => 'tblName',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::STRING,
         ),
         4 => array(

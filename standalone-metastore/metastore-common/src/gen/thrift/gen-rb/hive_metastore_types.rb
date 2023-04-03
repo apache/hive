@@ -3493,22 +3493,22 @@ end
 
 class DropPartitionRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  DBNAME = 1
-  TBLNAME = 2
-  PARTNAME = 3
-  PARTVALS = 4
-  DELETEDATA = 5
-  ENVIRONMENTCONTEXT = 6
-  CATNAME = 7
+  CATNAME = 1
+  DBNAME = 2
+  TBLNAME = 3
+  PARTNAME = 4
+  PARTVALS = 5
+  DELETEDATA = 6
+  ENVIRONMENTCONTEXT = 7
 
   FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName', :optional => true},
     PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true},
     PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData', :optional => true},
-    ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext, :optional => true},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
+    ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5882,18 +5882,18 @@ end
 
 class DropTableRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  DBNAME = 1
-  TABLENAME = 2
-  CATALOGNAME = 3
+  CATALOGNAME = 1
+  DBNAME = 2
+  TABLENAME = 3
   DELETEDATA = 4
   ENVCONTEXT = 5
   DROPPARTITIONS = 6
   INDEXNAME = 7
 
   FIELDS = {
+    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
-    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
     DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData', :optional => true},
     ENVCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'envContext', :class => ::EnvironmentContext, :optional => true},
     DROPPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'dropPartitions', :optional => true},
@@ -7191,7 +7191,7 @@ class CreateDatabaseRequest
   REMOTE_DBNAME = 13
 
   FIELDS = {
-    DATABASENAME => {:type => ::Thrift::Types::STRING, :name => 'databaseName', :optional => true},
+    DATABASENAME => {:type => ::Thrift::Types::STRING, :name => 'databaseName'},
     DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
     LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri', :optional => true},
     PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true},
@@ -7209,6 +7209,7 @@ class CreateDatabaseRequest
   def struct_fields; FIELDS; end
 
   def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field databaseName is unset!') unless @databaseName
     unless @ownerType.nil? || ::PrincipalType::VALID_VALUES.include?(@ownerType)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field ownerType!')
     end
@@ -7783,9 +7784,9 @@ class GetPartitionRequest
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName', :optional => true},
-    PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true}
   }
@@ -7793,6 +7794,9 @@ class GetPartitionRequest
   def struct_fields; FIELDS; end
 
   def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partVals is unset!') unless @partVals
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -7829,8 +7833,8 @@ class PartitionsRequest
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName', :optional => true},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     MAXPARTS => {:type => ::Thrift::Types::I16, :name => 'maxParts', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true},
@@ -7842,6 +7846,8 @@ class PartitionsRequest
   def struct_fields; FIELDS; end
 
   def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
   end
 
   ::Thrift::Struct.generate_accessors self

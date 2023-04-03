@@ -8092,14 +8092,14 @@ void swap(DropPartitionsRequest &a, DropPartitionsRequest &b);
 std::ostream& operator<<(std::ostream& out, const DropPartitionsRequest& obj);
 
 typedef struct _DropPartitionRequest__isset {
-  _DropPartitionRequest__isset() : dbName(false), tblName(false), partName(false), partVals(false), deleteData(false), environmentContext(false), catName(false) {}
+  _DropPartitionRequest__isset() : catName(false), dbName(false), tblName(false), partName(false), partVals(false), deleteData(false), environmentContext(false) {}
+  bool catName :1;
   bool dbName :1;
   bool tblName :1;
   bool partName :1;
   bool partVals :1;
   bool deleteData :1;
   bool environmentContext :1;
-  bool catName :1;
 } _DropPartitionRequest__isset;
 
 class DropPartitionRequest : public virtual ::apache::thrift::TBase {
@@ -8108,23 +8108,25 @@ class DropPartitionRequest : public virtual ::apache::thrift::TBase {
   DropPartitionRequest(const DropPartitionRequest&);
   DropPartitionRequest& operator=(const DropPartitionRequest&);
   DropPartitionRequest() noexcept
-                       : dbName(),
+                       : catName(),
+                         dbName(),
                          tblName(),
                          partName(),
-                         deleteData(0),
-                         catName() {
+                         deleteData(0) {
   }
 
   virtual ~DropPartitionRequest() noexcept;
+  std::string catName;
   std::string dbName;
   std::string tblName;
   std::string partName;
   std::vector<std::string>  partVals;
   bool deleteData;
   EnvironmentContext environmentContext;
-  std::string catName;
 
   _DropPartitionRequest__isset __isset;
+
+  void __set_catName(const std::string& val);
 
   void __set_dbName(const std::string& val);
 
@@ -8138,10 +8140,12 @@ class DropPartitionRequest : public virtual ::apache::thrift::TBase {
 
   void __set_environmentContext(const EnvironmentContext& val);
 
-  void __set_catName(const std::string& val);
-
   bool operator == (const DropPartitionRequest & rhs) const
   {
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
     if (__isset.dbName != rhs.__isset.dbName)
       return false;
     else if (__isset.dbName && !(dbName == rhs.dbName))
@@ -8165,10 +8169,6 @@ class DropPartitionRequest : public virtual ::apache::thrift::TBase {
     if (__isset.environmentContext != rhs.__isset.environmentContext)
       return false;
     else if (__isset.environmentContext && !(environmentContext == rhs.environmentContext))
-      return false;
-    if (__isset.catName != rhs.__isset.catName)
-      return false;
-    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -14480,18 +14480,18 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
   DropTableRequest(const DropTableRequest&);
   DropTableRequest& operator=(const DropTableRequest&);
   DropTableRequest() noexcept
-                   : dbName(),
+                   : catalogName(),
+                     dbName(),
                      tableName(),
-                     catalogName(),
                      deleteData(0),
                      dropPartitions(0),
                      indexName() {
   }
 
   virtual ~DropTableRequest() noexcept;
+  std::string catalogName;
   std::string dbName;
   std::string tableName;
-  std::string catalogName;
   bool deleteData;
   EnvironmentContext envContext;
   bool dropPartitions;
@@ -14499,11 +14499,11 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
 
   _DropTableRequest__isset __isset;
 
+  void __set_catalogName(const std::string& val);
+
   void __set_dbName(const std::string& val);
 
   void __set_tableName(const std::string& val);
-
-  void __set_catalogName(const std::string& val);
 
   void __set_deleteData(const bool val);
 
@@ -14515,13 +14515,13 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
 
   bool operator == (const DropTableRequest & rhs) const
   {
-    if (!(dbName == rhs.dbName))
-      return false;
-    if (!(tableName == rhs.tableName))
-      return false;
     if (__isset.catalogName != rhs.__isset.catalogName)
       return false;
     else if (__isset.catalogName && !(catalogName == rhs.catalogName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
       return false;
     if (__isset.deleteData != rhs.__isset.deleteData)
       return false;
@@ -18034,8 +18034,7 @@ void swap(CreateTableRequest &a, CreateTableRequest &b);
 std::ostream& operator<<(std::ostream& out, const CreateTableRequest& obj);
 
 typedef struct _CreateDatabaseRequest__isset {
-  _CreateDatabaseRequest__isset() : databaseName(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), type(false), dataConnectorName(false), remote_dbname(false) {}
-  bool databaseName :1;
+  _CreateDatabaseRequest__isset() : description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), type(false), dataConnectorName(false), remote_dbname(false) {}
   bool description :1;
   bool locationUri :1;
   bool parameters :1;
@@ -18122,9 +18121,7 @@ class CreateDatabaseRequest : public virtual ::apache::thrift::TBase {
 
   bool operator == (const CreateDatabaseRequest & rhs) const
   {
-    if (__isset.databaseName != rhs.__isset.databaseName)
-      return false;
-    else if (__isset.databaseName && !(databaseName == rhs.databaseName))
+    if (!(databaseName == rhs.databaseName))
       return false;
     if (__isset.description != rhs.__isset.description)
       return false;
@@ -19672,11 +19669,8 @@ void swap(GetSchemaResponse &a, GetSchemaResponse &b);
 std::ostream& operator<<(std::ostream& out, const GetSchemaResponse& obj);
 
 typedef struct _GetPartitionRequest__isset {
-  _GetPartitionRequest__isset() : catName(false), dbName(false), tblName(false), partVals(false), validWriteIdList(false), id(true) {}
+  _GetPartitionRequest__isset() : catName(false), validWriteIdList(false), id(true) {}
   bool catName :1;
-  bool dbName :1;
-  bool tblName :1;
-  bool partVals :1;
   bool validWriteIdList :1;
   bool id :1;
 } _GetPartitionRequest__isset;
@@ -19722,17 +19716,11 @@ class GetPartitionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
       return false;
-    if (__isset.dbName != rhs.__isset.dbName)
+    if (!(dbName == rhs.dbName))
       return false;
-    else if (__isset.dbName && !(dbName == rhs.dbName))
+    if (!(tblName == rhs.tblName))
       return false;
-    if (__isset.tblName != rhs.__isset.tblName)
-      return false;
-    else if (__isset.tblName && !(tblName == rhs.tblName))
-      return false;
-    if (__isset.partVals != rhs.__isset.partVals)
-      return false;
-    else if (__isset.partVals && !(partVals == rhs.partVals))
+    if (!(partVals == rhs.partVals))
       return false;
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
@@ -19797,10 +19785,8 @@ void swap(GetPartitionResponse &a, GetPartitionResponse &b);
 std::ostream& operator<<(std::ostream& out, const GetPartitionResponse& obj);
 
 typedef struct _PartitionsRequest__isset {
-  _PartitionsRequest__isset() : catName(false), dbName(false), tblName(false), maxParts(true), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
+  _PartitionsRequest__isset() : catName(false), maxParts(true), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
   bool catName :1;
-  bool dbName :1;
-  bool tblName :1;
   bool maxParts :1;
   bool validWriteIdList :1;
   bool id :1;
@@ -19863,13 +19849,9 @@ class PartitionsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
       return false;
-    if (__isset.dbName != rhs.__isset.dbName)
+    if (!(dbName == rhs.dbName))
       return false;
-    else if (__isset.dbName && !(dbName == rhs.dbName))
-      return false;
-    if (__isset.tblName != rhs.__isset.tblName)
-      return false;
-    else if (__isset.tblName && !(tblName == rhs.tblName))
+    if (!(tblName == rhs.tblName))
       return false;
     if (__isset.maxParts != rhs.__isset.maxParts)
       return false;

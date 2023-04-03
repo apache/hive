@@ -1381,8 +1381,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (!db.isSetCatalogName()) {
       db.setCatalogName(getDefaultCatalog(conf));
     }
-    CreateDatabaseRequest req = new CreateDatabaseRequest();
-    req.setDatabaseName(db.getName());
+    CreateDatabaseRequest req = new CreateDatabaseRequest(db.getName());
     if (db.isSetDescription()) {
       req.setDescription(db.getDescription());
     }
@@ -2674,10 +2673,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public Partition getPartition(String catName, String dbName, String tblName,
                                 List<String> partVals) throws TException {
 
-    GetPartitionRequest getPartitionRequest = new GetPartitionRequest();
-    getPartitionRequest.setDbName(dbName);
-    getPartitionRequest.setTblName(tblName);
-    getPartitionRequest.setPartVals(partVals);
+    GetPartitionRequest getPartitionRequest = new GetPartitionRequest(dbName, tblName, partVals);
     getPartitionRequest.setCatName(catName);
     GetPartitionResponse res = client.get_partition_req(getPartitionRequest);
     return deepCopy(FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, res.getPartition()));
@@ -3191,9 +3187,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected List<String> listPartitionNamesInternal(String catName, String dbName, String tableName,
       int maxParts) throws TException {
-    PartitionsRequest partitionReq = new PartitionsRequest();
-    partitionReq.setDbName(dbName);
-    partitionReq.setTblName(tableName);
+    PartitionsRequest partitionReq = new PartitionsRequest(dbName, tableName);
     partitionReq.setCatName(catName);
     partitionReq.setMaxParts(shrinkMaxtoShort(maxParts));
     return client.get_partition_by_names_req(partitionReq);
@@ -3216,18 +3210,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected List<String> listPartitionNamesInternal(String catName, String db_name, String tbl_name,
       List<String> part_vals, int max_parts) throws MetaException, TException, NoSuchObjectException {
-    GetPartitionNamesPsRequest getPartitionNamesPsRequest = new GetPartitionNamesPsRequest();
-    getPartitionNamesPsRequest.setDbName(db_name);
-    getPartitionNamesPsRequest.setTblName(tbl_name);
+    GetPartitionNamesPsRequest getPartitionNamesPsRequest = new GetPartitionNamesPsRequest(db_name, tbl_name);
     getPartitionNamesPsRequest.setCatName(catName);
     getPartitionNamesPsRequest.setPartValues(part_vals);
     getPartitionNamesPsRequest.setMaxParts(shrinkMaxtoShort(max_parts));
     GetPartitionNamesPsResponse resp = client.get_partition_names_ps_req(getPartitionNamesPsRequest);
-//    try {
-//      resp = client.get_partition_names_ps_req(getPartitionNamesPsRequest);
-//    } catch (MetaException e) {
-//      MetaStoreUtils.throwMetaException(e);
-//    }
     return resp.getNames();
   }
 

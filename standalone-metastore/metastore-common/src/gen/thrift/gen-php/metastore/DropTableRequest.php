@@ -22,18 +22,18 @@ class DropTableRequest
 
     static public $_TSPEC = array(
         1 => array(
+            'var' => 'catalogName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        2 => array(
             'var' => 'dbName',
             'isRequired' => true,
             'type' => TType::STRING,
         ),
-        2 => array(
+        3 => array(
             'var' => 'tableName',
             'isRequired' => true,
-            'type' => TType::STRING,
-        ),
-        3 => array(
-            'var' => 'catalogName',
-            'isRequired' => false,
             'type' => TType::STRING,
         ),
         4 => array(
@@ -62,15 +62,15 @@ class DropTableRequest
     /**
      * @var string
      */
+    public $catalogName = null;
+    /**
+     * @var string
+     */
     public $dbName = null;
     /**
      * @var string
      */
     public $tableName = null;
-    /**
-     * @var string
-     */
-    public $catalogName = null;
     /**
      * @var bool
      */
@@ -91,14 +91,14 @@ class DropTableRequest
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
+            if (isset($vals['catalogName'])) {
+                $this->catalogName = $vals['catalogName'];
+            }
             if (isset($vals['dbName'])) {
                 $this->dbName = $vals['dbName'];
             }
             if (isset($vals['tableName'])) {
                 $this->tableName = $vals['tableName'];
-            }
-            if (isset($vals['catalogName'])) {
-                $this->catalogName = $vals['catalogName'];
             }
             if (isset($vals['deleteData'])) {
                 $this->deleteData = $vals['deleteData'];
@@ -136,21 +136,21 @@ class DropTableRequest
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->dbName);
+                        $xfer += $input->readString($this->catalogName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 2:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->tableName);
+                        $xfer += $input->readString($this->dbName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 3:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->catalogName);
+                        $xfer += $input->readString($this->tableName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -198,19 +198,19 @@ class DropTableRequest
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('DropTableRequest');
+        if ($this->catalogName !== null) {
+            $xfer += $output->writeFieldBegin('catalogName', TType::STRING, 1);
+            $xfer += $output->writeString($this->catalogName);
+            $xfer += $output->writeFieldEnd();
+        }
         if ($this->dbName !== null) {
-            $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
+            $xfer += $output->writeFieldBegin('dbName', TType::STRING, 2);
             $xfer += $output->writeString($this->dbName);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->tableName !== null) {
-            $xfer += $output->writeFieldBegin('tableName', TType::STRING, 2);
+            $xfer += $output->writeFieldBegin('tableName', TType::STRING, 3);
             $xfer += $output->writeString($this->tableName);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->catalogName !== null) {
-            $xfer += $output->writeFieldBegin('catalogName', TType::STRING, 3);
-            $xfer += $output->writeString($this->catalogName);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->deleteData !== null) {

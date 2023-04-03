@@ -967,13 +967,13 @@ struct DropPartitionsRequest {
 }
 
 struct DropPartitionRequest {
-  1: optional string dbName,
-  2: optional string tblName,
-  3: optional string partName,
-  4: optional list<string> partVals,
-  5: optional bool deleteData,
-  6: optional EnvironmentContext environmentContext,
-  7: optional string catName
+  1: optional string catName,
+  2: optional string dbName,
+  3: optional string tblName,
+  4: optional string partName,
+  5: optional list<string> partVals,
+  6: optional bool deleteData,
+  7: optional EnvironmentContext environmentContext
 }
 
 struct PartitionValuesRequest {
@@ -1764,9 +1764,9 @@ struct ExtendedTableInfo {
 }
 
 struct DropTableRequest {
- 1: required string dbName,
- 2: required string tableName,
- 3: optional string catalogName,
+ 1: optional string catalogName,
+ 2: required string dbName,
+ 3: required string tableName,
  4: optional bool deleteData,
  5: optional EnvironmentContext envContext,
  6: optional bool dropPartitions,
@@ -2144,7 +2144,7 @@ struct CreateTableRequest {
 }
 
 struct CreateDatabaseRequest {
-  1: optional string databaseName,
+  1: required string databaseName,
   2: optional string description,
   3: optional string locationUri,
   4: optional map<string, string> parameters,
@@ -2342,9 +2342,9 @@ struct GetSchemaResponse {
 
 struct GetPartitionRequest {
    1: optional string catName,
-   2: optional string dbName,
-   3: optional string tblName,
-   4: optional list<string> partVals,
+   2: required string dbName,
+   3: required string tblName,
+   4: required list<string> partVals,
    5: optional string validWriteIdList,
    6: optional i64 id=-1 // table id
 }
@@ -2355,8 +2355,8 @@ struct GetPartitionResponse {
 
 struct PartitionsRequest { // Not using Get prefix as that name is already used for a different method
    1: optional string catName,
-   2: optional string dbName,
-   3: optional string tblName,
+   2: required string dbName,
+   3: required string tblName,
    4: optional i16 maxParts=-1,
    5: optional string validWriteIdList,
    6: optional i64 id=-1, // table id

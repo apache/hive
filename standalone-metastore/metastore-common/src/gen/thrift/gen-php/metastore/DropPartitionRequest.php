@@ -22,21 +22,26 @@ class DropPartitionRequest
 
     static public $_TSPEC = array(
         1 => array(
-            'var' => 'dbName',
+            'var' => 'catName',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
         2 => array(
-            'var' => 'tblName',
+            'var' => 'dbName',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
         3 => array(
-            'var' => 'partName',
+            'var' => 'tblName',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
         4 => array(
+            'var' => 'partName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        5 => array(
             'var' => 'partVals',
             'isRequired' => false,
             'type' => TType::LST,
@@ -45,24 +50,23 @@ class DropPartitionRequest
                 'type' => TType::STRING,
                 ),
         ),
-        5 => array(
+        6 => array(
             'var' => 'deleteData',
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
-        6 => array(
+        7 => array(
             'var' => 'environmentContext',
             'isRequired' => false,
             'type' => TType::STRUCT,
             'class' => '\metastore\EnvironmentContext',
         ),
-        7 => array(
-            'var' => 'catName',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
     );
 
+    /**
+     * @var string
+     */
+    public $catName = null;
     /**
      * @var string
      */
@@ -87,14 +91,13 @@ class DropPartitionRequest
      * @var \metastore\EnvironmentContext
      */
     public $environmentContext = null;
-    /**
-     * @var string
-     */
-    public $catName = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
+            }
             if (isset($vals['dbName'])) {
                 $this->dbName = $vals['dbName'];
             }
@@ -112,9 +115,6 @@ class DropPartitionRequest
             }
             if (isset($vals['environmentContext'])) {
                 $this->environmentContext = $vals['environmentContext'];
-            }
-            if (isset($vals['catName'])) {
-                $this->catName = $vals['catName'];
             }
         }
     }
@@ -140,26 +140,33 @@ class DropPartitionRequest
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->dbName);
+                        $xfer += $input->readString($this->catName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 2:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->tblName);
+                        $xfer += $input->readString($this->dbName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 3:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->partName);
+                        $xfer += $input->readString($this->tblName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 4:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->partName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 5:
                     if ($ftype == TType::LST) {
                         $this->partVals = array();
                         $_size609 = 0;
@@ -175,24 +182,17 @@ class DropPartitionRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case 5:
+                case 6:
                     if ($ftype == TType::BOOL) {
                         $xfer += $input->readBool($this->deleteData);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case 6:
+                case 7:
                     if ($ftype == TType::STRUCT) {
                         $this->environmentContext = new \metastore\EnvironmentContext();
                         $xfer += $this->environmentContext->read($input);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 7:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->catName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -211,18 +211,23 @@ class DropPartitionRequest
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('DropPartitionRequest');
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 1);
+            $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
         if ($this->dbName !== null) {
-            $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
+            $xfer += $output->writeFieldBegin('dbName', TType::STRING, 2);
             $xfer += $output->writeString($this->dbName);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->tblName !== null) {
-            $xfer += $output->writeFieldBegin('tblName', TType::STRING, 2);
+            $xfer += $output->writeFieldBegin('tblName', TType::STRING, 3);
             $xfer += $output->writeString($this->tblName);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->partName !== null) {
-            $xfer += $output->writeFieldBegin('partName', TType::STRING, 3);
+            $xfer += $output->writeFieldBegin('partName', TType::STRING, 4);
             $xfer += $output->writeString($this->partName);
             $xfer += $output->writeFieldEnd();
         }
@@ -230,7 +235,7 @@ class DropPartitionRequest
             if (!is_array($this->partVals)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('partVals', TType::LST, 4);
+            $xfer += $output->writeFieldBegin('partVals', TType::LST, 5);
             $output->writeListBegin(TType::STRING, count($this->partVals));
             foreach ($this->partVals as $iter615) {
                 $xfer += $output->writeString($iter615);
@@ -239,7 +244,7 @@ class DropPartitionRequest
             $xfer += $output->writeFieldEnd();
         }
         if ($this->deleteData !== null) {
-            $xfer += $output->writeFieldBegin('deleteData', TType::BOOL, 5);
+            $xfer += $output->writeFieldBegin('deleteData', TType::BOOL, 6);
             $xfer += $output->writeBool($this->deleteData);
             $xfer += $output->writeFieldEnd();
         }
@@ -247,13 +252,8 @@ class DropPartitionRequest
             if (!is_object($this->environmentContext)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('environmentContext', TType::STRUCT, 6);
+            $xfer += $output->writeFieldBegin('environmentContext', TType::STRUCT, 7);
             $xfer += $this->environmentContext->write($output);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->catName !== null) {
-            $xfer += $output->writeFieldBegin('catName', TType::STRING, 7);
-            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

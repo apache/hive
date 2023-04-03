@@ -23,7 +23,7 @@ class CreateDatabaseRequest
     static public $_TSPEC = array(
         1 => array(
             'var' => 'databaseName',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::STRING,
         ),
         2 => array(

@@ -1342,8 +1342,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Deprecated
   public void create_database(final Database db)
       throws AlreadyExistsException, InvalidObjectException, MetaException {
-    CreateDatabaseRequest req = new CreateDatabaseRequest();
-    req.setDatabaseName(db.getName());
+    CreateDatabaseRequest req = new CreateDatabaseRequest(db.getName());
     req.setDescription(db.getDescription());
     req.setLocationUri(db.getLocationUri());
     req.setParameters(db.getParameters());
@@ -5591,10 +5590,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Partition ret = null;
     Exception ex = null;
     try {
-      GetPartitionRequest getPartitionRequest = new GetPartitionRequest();
-      getPartitionRequest.setDbName(parsedDbName[DB_NAME]);
-      getPartitionRequest.setTblName(tbl_name);
-      getPartitionRequest.setPartVals(part_vals);
+      GetPartitionRequest getPartitionRequest = new GetPartitionRequest(parsedDbName[DB_NAME], tbl_name, part_vals);
       getPartitionRequest.setCatName(parsedDbName[CAT_NAME]);
       ret = get_partition_req(getPartitionRequest).getPartition();
     } catch (Exception e) {
@@ -5762,9 +5758,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<Partition> ret = null;
     Exception ex = null;
     try {
-      PartitionsRequest req = new PartitionsRequest();
-      req.setDbName(parsedDbName[DB_NAME]);
-      req.setTblName(tbl_name);
+      PartitionsRequest req = new PartitionsRequest(parsedDbName[DB_NAME], tbl_name);
       req.setCatName(parsedDbName[CAT_NAME]);
       req.setMaxParts((short)args.getMax());
       req.setSkipColumnSchemaForPartition(false);
@@ -5993,9 +5987,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<String> ret = null;
     Exception ex = null;
     try {
-      PartitionsRequest partitionReq = new PartitionsRequest();
-      partitionReq.setDbName(parsedDbName[DB_NAME]);
-      partitionReq.setTblName(tbl_name);
+      PartitionsRequest partitionReq = new PartitionsRequest(parsedDbName[DB_NAME], tbl_name);
       partitionReq.setCatName(parsedDbName[CAT_NAME]);
       partitionReq.setMaxParts(max_parts);
       ret = get_partition_by_names_req(partitionReq);
