@@ -49,7 +49,7 @@ public class AlterTableConvertAnalyzer extends AbstractAlterTableAnalyzer {
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
     Table table = getTable(tableName);
-    // the first child must be the execute operation type
+    // the first child must be the addprops operation type
     validateAlterTableType(table, AlterTableType.ADDPROPS, false);
     inputs.add(new ReadEntity(table));
     ASTNode targetType = (ASTNode) command.getChild(0);
