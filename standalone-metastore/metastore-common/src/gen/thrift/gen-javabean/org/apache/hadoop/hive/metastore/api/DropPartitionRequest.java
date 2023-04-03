@@ -11,34 +11,34 @@ package org.apache.hadoop.hive.metastore.api;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class DropPartitionRequest implements org.apache.thrift.TBase<DropPartitionRequest, DropPartitionRequest._Fields>, java.io.Serializable, Cloneable, Comparable<DropPartitionRequest> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("DropPartitionRequest");
 
-  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tblName", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField PART_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partName", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField PART_VALS_FIELD_DESC = new org.apache.thrift.protocol.TField("partVals", org.apache.thrift.protocol.TType.LIST, (short)4);
-  private static final org.apache.thrift.protocol.TField DELETE_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("deleteData", org.apache.thrift.protocol.TType.BOOL, (short)5);
-  private static final org.apache.thrift.protocol.TField ENVIRONMENT_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("environmentContext", org.apache.thrift.protocol.TType.STRUCT, (short)6);
-  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tblName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField PART_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partName", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField PART_VALS_FIELD_DESC = new org.apache.thrift.protocol.TField("partVals", org.apache.thrift.protocol.TType.LIST, (short)5);
+  private static final org.apache.thrift.protocol.TField DELETE_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("deleteData", org.apache.thrift.protocol.TType.BOOL, (short)6);
+  private static final org.apache.thrift.protocol.TField ENVIRONMENT_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("environmentContext", org.apache.thrift.protocol.TType.STRUCT, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new DropPartitionRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new DropPartitionRequestTupleSchemeFactory();
 
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String tblName; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String partName; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> partVals; // optional
   private boolean deleteData; // optional
   private @org.apache.thrift.annotation.Nullable EnvironmentContext environmentContext; // optional
-  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    DB_NAME((short)1, "dbName"),
-    TBL_NAME((short)2, "tblName"),
-    PART_NAME((short)3, "partName"),
-    PART_VALS((short)4, "partVals"),
-    DELETE_DATA((short)5, "deleteData"),
-    ENVIRONMENT_CONTEXT((short)6, "environmentContext"),
-    CAT_NAME((short)7, "catName");
+    CAT_NAME((short)1, "catName"),
+    DB_NAME((short)2, "dbName"),
+    TBL_NAME((short)3, "tblName"),
+    PART_NAME((short)4, "partName"),
+    PART_VALS((short)5, "partVals"),
+    DELETE_DATA((short)6, "deleteData"),
+    ENVIRONMENT_CONTEXT((short)7, "environmentContext");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -54,20 +54,20 @@ package org.apache.hadoop.hive.metastore.api;
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // DB_NAME
-          return DB_NAME;
-        case 2: // TBL_NAME
-          return TBL_NAME;
-        case 3: // PART_NAME
-          return PART_NAME;
-        case 4: // PART_VALS
-          return PART_VALS;
-        case 5: // DELETE_DATA
-          return DELETE_DATA;
-        case 6: // ENVIRONMENT_CONTEXT
-          return ENVIRONMENT_CONTEXT;
-        case 7: // CAT_NAME
+        case 1: // CAT_NAME
           return CAT_NAME;
+        case 2: // DB_NAME
+          return DB_NAME;
+        case 3: // TBL_NAME
+          return TBL_NAME;
+        case 4: // PART_NAME
+          return PART_NAME;
+        case 5: // PART_VALS
+          return PART_VALS;
+        case 6: // DELETE_DATA
+          return DELETE_DATA;
+        case 7: // ENVIRONMENT_CONTEXT
+          return ENVIRONMENT_CONTEXT;
         default:
           return null;
       }
@@ -111,10 +111,12 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __DELETEDATA_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DB_NAME,_Fields.TBL_NAME,_Fields.PART_NAME,_Fields.PART_VALS,_Fields.DELETE_DATA,_Fields.ENVIRONMENT_CONTEXT,_Fields.CAT_NAME};
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.DB_NAME,_Fields.TBL_NAME,_Fields.PART_NAME,_Fields.PART_VALS,_Fields.DELETE_DATA,_Fields.ENVIRONMENT_CONTEXT};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tblName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -128,8 +130,6 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.ENVIRONMENT_CONTEXT, new org.apache.thrift.meta_data.FieldMetaData("environmentContext", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, EnvironmentContext.class)));
-    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(DropPartitionRequest.class, metaDataMap);
   }
@@ -142,6 +142,9 @@ package org.apache.hadoop.hive.metastore.api;
    */
   public DropPartitionRequest(DropPartitionRequest other) {
     __isset_bitfield = other.__isset_bitfield;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
     }
@@ -159,9 +162,6 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetEnvironmentContext()) {
       this.environmentContext = new EnvironmentContext(other.environmentContext);
     }
-    if (other.isSetCatName()) {
-      this.catName = other.catName;
-    }
   }
 
   public DropPartitionRequest deepCopy() {
@@ -170,6 +170,7 @@ package org.apache.hadoop.hive.metastore.api;
 
   @Override
   public void clear() {
+    this.catName = null;
     this.dbName = null;
     this.tblName = null;
     this.partName = null;
@@ -177,7 +178,30 @@ package org.apache.hadoop.hive.metastore.api;
     setDeleteDataIsSet(false);
     this.deleteData = false;
     this.environmentContext = null;
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
     this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -338,32 +362,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getCatName() {
-    return this.catName;
-  }
-
-  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
-    this.catName = catName;
-  }
-
-  public void unsetCatName() {
-    this.catName = null;
-  }
-
-  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
-  public boolean isSetCatName() {
-    return this.catName != null;
-  }
-
-  public void setCatNameIsSet(boolean value) {
-    if (!value) {
-      this.catName = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     case DB_NAME:
       if (value == null) {
         unsetDbName();
@@ -412,20 +420,15 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
-    case CAT_NAME:
-      if (value == null) {
-        unsetCatName();
-      } else {
-        setCatName((java.lang.String)value);
-      }
-      break;
-
     }
   }
 
   @org.apache.thrift.annotation.Nullable
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
+    case CAT_NAME:
+      return getCatName();
+
     case DB_NAME:
       return getDbName();
 
@@ -444,9 +447,6 @@ package org.apache.hadoop.hive.metastore.api;
     case ENVIRONMENT_CONTEXT:
       return getEnvironmentContext();
 
-    case CAT_NAME:
-      return getCatName();
-
     }
     throw new java.lang.IllegalStateException();
   }
@@ -458,6 +458,8 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     switch (field) {
+    case CAT_NAME:
+      return isSetCatName();
     case DB_NAME:
       return isSetDbName();
     case TBL_NAME:
@@ -470,8 +472,6 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetDeleteData();
     case ENVIRONMENT_CONTEXT:
       return isSetEnvironmentContext();
-    case CAT_NAME:
-      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -488,6 +488,15 @@ package org.apache.hadoop.hive.metastore.api;
       return false;
     if (this == that)
       return true;
+
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
 
     boolean this_present_dbName = true && this.isSetDbName();
     boolean that_present_dbName = true && that.isSetDbName();
@@ -543,21 +552,16 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
-    boolean this_present_catName = true && this.isSetCatName();
-    boolean that_present_catName = true && that.isSetCatName();
-    if (this_present_catName || that_present_catName) {
-      if (!(this_present_catName && that_present_catName))
-        return false;
-      if (!this.catName.equals(that.catName))
-        return false;
-    }
-
     return true;
   }
 
   @Override
   public int hashCode() {
     int hashCode = 1;
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     hashCode = hashCode * 8191 + ((isSetDbName()) ? 131071 : 524287);
     if (isSetDbName())
@@ -583,10 +587,6 @@ package org.apache.hadoop.hive.metastore.api;
     if (isSetEnvironmentContext())
       hashCode = hashCode * 8191 + environmentContext.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
-    if (isSetCatName())
-      hashCode = hashCode * 8191 + catName.hashCode();
-
     return hashCode;
   }
 
@@ -598,6 +598,16 @@ package org.apache.hadoop.hive.metastore.api;
 
     int lastComparison = 0;
 
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = java.lang.Boolean.compare(isSetDbName(), other.isSetDbName());
     if (lastComparison != 0) {
       return lastComparison;
@@ -658,16 +668,6 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetCatName()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -689,7 +689,17 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("DropPartitionRequest(");
     boolean first = true;
 
+    if (isSetCatName()) {
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
+      first = false;
+    }
     if (isSetDbName()) {
+      if (!first) sb.append(", ");
       sb.append("dbName:");
       if (this.dbName == null) {
         sb.append("null");
@@ -744,16 +754,6 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
-    if (isSetCatName()) {
-      if (!first) sb.append(", ");
-      sb.append("catName:");
-      if (this.catName == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.catName);
-      }
-      first = false;
-    }
     sb.append(")");
     return sb.toString();
   }
@@ -802,7 +802,15 @@ package org.apache.hadoop.hive.metastore.api;
           break;
         }
         switch (schemeField.id) {
-          case 1: // DB_NAME
+          case 1: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dbName = iprot.readString();
               struct.setDbNameIsSet(true);
@@ -810,7 +818,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // TBL_NAME
+          case 3: // TBL_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.tblName = iprot.readString();
               struct.setTblNameIsSet(true);
@@ -818,7 +826,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // PART_NAME
+          case 4: // PART_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.partName = iprot.readString();
               struct.setPartNameIsSet(true);
@@ -826,7 +834,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // PART_VALS
+          case 5: // PART_VALS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list690 = iprot.readListBegin();
@@ -844,7 +852,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // DELETE_DATA
+          case 6: // DELETE_DATA
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.deleteData = iprot.readBool();
               struct.setDeleteDataIsSet(true);
@@ -852,19 +860,11 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // ENVIRONMENT_CONTEXT
+          case 7: // ENVIRONMENT_CONTEXT
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
               struct.environmentContext = new EnvironmentContext();
               struct.environmentContext.read(iprot);
               struct.setEnvironmentContextIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 7: // CAT_NAME
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.catName = iprot.readString();
-              struct.setCatNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -882,6 +882,13 @@ package org.apache.hadoop.hive.metastore.api;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       if (struct.dbName != null) {
         if (struct.isSetDbName()) {
           oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
@@ -929,13 +936,6 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
-      if (struct.catName != null) {
-        if (struct.isSetCatName()) {
-          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
-          oprot.writeString(struct.catName);
-          oprot.writeFieldEnd();
-        }
-      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -954,28 +954,31 @@ package org.apache.hadoop.hive.metastore.api;
     public void write(org.apache.thrift.protocol.TProtocol prot, DropPartitionRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetDbName()) {
+      if (struct.isSetCatName()) {
         optionals.set(0);
       }
-      if (struct.isSetTblName()) {
+      if (struct.isSetDbName()) {
         optionals.set(1);
       }
-      if (struct.isSetPartName()) {
+      if (struct.isSetTblName()) {
         optionals.set(2);
       }
-      if (struct.isSetPartVals()) {
+      if (struct.isSetPartName()) {
         optionals.set(3);
       }
-      if (struct.isSetDeleteData()) {
+      if (struct.isSetPartVals()) {
         optionals.set(4);
       }
-      if (struct.isSetEnvironmentContext()) {
+      if (struct.isSetDeleteData()) {
         optionals.set(5);
       }
-      if (struct.isSetCatName()) {
+      if (struct.isSetEnvironmentContext()) {
         optionals.set(6);
       }
       oprot.writeBitSet(optionals, 7);
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
       if (struct.isSetDbName()) {
         oprot.writeString(struct.dbName);
       }
@@ -1000,9 +1003,6 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetEnvironmentContext()) {
         struct.environmentContext.write(oprot);
       }
-      if (struct.isSetCatName()) {
-        oprot.writeString(struct.catName);
-      }
     }
 
     @Override
@@ -1010,18 +1010,22 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(7);
       if (incoming.get(0)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.dbName = iprot.readString();
         struct.setDbNameIsSet(true);
       }
-      if (incoming.get(1)) {
+      if (incoming.get(2)) {
         struct.tblName = iprot.readString();
         struct.setTblNameIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(3)) {
         struct.partName = iprot.readString();
         struct.setPartNameIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(4)) {
         {
           org.apache.thrift.protocol.TList _list695 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
           struct.partVals = new java.util.ArrayList<java.lang.String>(_list695.size);
@@ -1034,18 +1038,14 @@ package org.apache.hadoop.hive.metastore.api;
         }
         struct.setPartValsIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(5)) {
         struct.deleteData = iprot.readBool();
         struct.setDeleteDataIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(6)) {
         struct.environmentContext = new EnvironmentContext();
         struct.environmentContext.read(iprot);
         struct.setEnvironmentContextIsSet(true);
-      }
-      if (incoming.get(6)) {
-        struct.catName = iprot.readString();
-        struct.setCatNameIsSet(true);
       }
     }
   }
