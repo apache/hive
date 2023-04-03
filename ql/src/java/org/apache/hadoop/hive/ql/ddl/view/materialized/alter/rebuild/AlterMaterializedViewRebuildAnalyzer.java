@@ -839,6 +839,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     ctx.addDestNamePrefix(2, Context.DestClausePrefix.DELETE);
   }
 
+  @Override
   protected boolean allowOutputMultipleTimes() {
     return true;
   }
