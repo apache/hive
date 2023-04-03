@@ -588,8 +588,6 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     ASTNode selectNodeInputROJ = new ASTSearcher().simpleBreadthFirstSearch(
             subqueryNodeInputROJ, HiveParser.TOK_SUBQUERY, HiveParser.TOK_QUERY,
             HiveParser.TOK_INSERT, HiveParser.TOK_SELECT);
-    ASTNode selectExprNodeInputROJ = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
     astBuilder.createAcidSortNodes(TableName.getDbTable(
             materializationNode.getChild(0).getText(),
             materializationNode.getChild(1).getText()))
