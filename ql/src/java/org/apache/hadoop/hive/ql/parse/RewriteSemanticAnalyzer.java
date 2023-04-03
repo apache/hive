@@ -670,7 +670,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   }
 
   protected static class NonNativeAcidColumnAppender extends ColumnAppender {
-    private String deletePrefix;
+    private final String deletePrefix;
 
     public NonNativeAcidColumnAppender(Table table, HiveConf conf, String subQueryAlias, String deletePrefix) {
       super(table, conf, subQueryAlias);
