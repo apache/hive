@@ -556,6 +556,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
               }
             } else {
               storage[pos] = emptyList;
+              if (pos != 0 && condn[pos - 1].getType() == JoinDesc.ANTI_JOIN) {
+                joinNeeded = true;
+              }
             }
           } else {
             joinNeeded = true;

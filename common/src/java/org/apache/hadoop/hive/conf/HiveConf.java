@@ -2364,11 +2364,8 @@ public class HiveConf extends Configuration {
         "Whether Hive enables the optimization about converting common join into mapjoin based on the input file size. \n" +
         "If this parameter is on, and the sum of size for n-1 of the tables/partitions for a n-way join is smaller than the\n" +
         "specified size, the join is directly converted to a mapjoin (there is no conditional task)."),
-    HIVE_CONVERT_ANTI_JOIN("hive.auto.convert.anti.join", false,
-        "Whether Hive enables the optimization about converting join with null filter to anti join. The " +
-        "default is currently false because of HIVE-26659. There is the possibility of incorrect results. " +
-        "The incorrect results shown on testing were zeros and nulls on aggregate tpcds queries so it was " +
-        "fairly obvious they were incorrect. But be wary when turning on this flag."),
+    HIVE_CONVERT_ANTI_JOIN("hive.auto.convert.anti.join", true,
+        "Whether Hive enables the optimization about converting join with null filter to anti join."),
     HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD("hive.auto.convert.join.noconditionaltask.size",
         10000000L,
         "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +

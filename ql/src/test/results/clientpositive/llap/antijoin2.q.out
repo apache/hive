@@ -1,0 +1,139 @@
+PREHOOK: query: drop table if exists tt1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tt1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists tt2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tt2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists tt3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tt3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tt1 (ws_order_number bigint, ws_ext_ship_cost decimal(7, 2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tt1
+POSTHOOK: query: create table tt1 (ws_order_number bigint, ws_ext_ship_cost decimal(7, 2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tt1
+PREHOOK: query: create table tt2 (ws_order_number bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tt2
+POSTHOOK: query: create table tt2 (ws_order_number bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tt2
+PREHOOK: query: create table tt3 (wr_order_number bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tt3
+POSTHOOK: query: create table tt3 (wr_order_number bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tt3
+PREHOOK: query: insert into tt1 values (42, 3093.96), (1041, 299.28), (1378, 85.56), (1378, 719.44), (1395, 145.68)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tt1
+POSTHOOK: query: insert into tt1 values (42, 3093.96), (1041, 299.28), (1378, 85.56), (1378, 719.44), (1395, 145.68)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tt1
+POSTHOOK: Lineage: tt1.ws_ext_ship_cost SCRIPT []
+POSTHOOK: Lineage: tt1.ws_order_number SCRIPT []
+PREHOOK: query: insert into tt2 values (1378), (1395)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tt2
+POSTHOOK: query: insert into tt2 values (1378), (1395)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tt2
+POSTHOOK: Lineage: tt2.ws_order_number SCRIPT []
+PREHOOK: query: insert into tt3 values (42), (1041)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tt3
+POSTHOOK: query: insert into tt3 values (42), (1041)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tt3
+POSTHOOK: Lineage: tt3.wr_order_number SCRIPT []
+PREHOOK: query: select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tt1
+PREHOOK: Input: default@tt2
+PREHOOK: Input: default@tt3
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tt1
+POSTHOOK: Input: default@tt2
+POSTHOOK: Input: default@tt3
+#### A masked pattern was here ####
+950.68
+PREHOOK: query: select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tt1
+PREHOOK: Input: default@tt2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tt1
+POSTHOOK: Input: default@tt2
+#### A masked pattern was here ####
+42	3093.96
+1041	299.28
+PREHOOK: query: select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tt1
+PREHOOK: Input: default@tt2
+PREHOOK: Input: default@tt3
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tt1
+POSTHOOK: Input: default@tt2
+POSTHOOK: Input: default@tt3
+#### A masked pattern was here ####
+950.68
+PREHOOK: query: select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tt1
+PREHOOK: Input: default@tt2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tt1
+POSTHOOK: Input: default@tt2
+#### A masked pattern was here ####
+42	3093.96
+1041	299.28
+PREHOOK: query: select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tt1
+PREHOOK: Input: default@tt2
+PREHOOK: Input: default@tt3
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tt1
+POSTHOOK: Input: default@tt2
+POSTHOOK: Input: default@tt3
+#### A masked pattern was here ####
+950.68
