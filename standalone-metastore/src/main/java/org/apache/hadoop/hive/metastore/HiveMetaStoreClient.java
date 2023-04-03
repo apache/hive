@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -87,6 +88,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 /**
@@ -528,6 +530,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     LOG.info("Connected to metastore.");
   }
 
+  private Map<String, String> getAdditionalHeaders() {
+    Map<String, String> headers = new HashMap<>();
+    String keyValuePairs = MetastoreConf.getVar(conf,
+        ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS);
+    try {
+      List<String> headerKeyValues =
+          Splitter.on(',').trimResults().splitToList(keyValuePairs);
+      for (String header : headerKeyValues) {
+        String[] parts = header.split("=");
+        headers.put(parts[0].trim(), parts[1].trim());
+      }
+    } catch (Exception ex) {
+      LOG.warn("Could not parse the headers provided in "
+          + ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS, ex);
+    }
+    return headers;
+  }
+
   /*
   Creates a THttpClient if HTTP mode is enabled. If Client auth mode is set to JWT,
   then the method fetches JWT from environment variable: HMS_JWT and sets in auth
@@ -536,46 +556,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private THttpClient createHttpClient(URI store, boolean useSSL) throws MetaException,
           TTransportException {
     String path = MetaStoreUtils.getHttpPath(MetastoreConf.getVar(conf, ConfVars.THRIFT_HTTP_PATH));
-    String httpUrl = (useSSL ? "https://" : "http://") + store.getHost() + ":" + store.getPort() + path;
-
-    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-    String authType = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
-    if (authType.equalsIgnoreCase("jwt")) {
-      // fetch JWT token from environment and set it in Auth Header in HTTP request
-      String jwtToken = System.getenv("HMS_JWT");
-      if (jwtToken == null || jwtToken.isEmpty()) {
-        LOG.debug("No jwt token set in environment variable: HMS_JWT");
-        throw new MetaException("For auth mode JWT, valid signed jwt token must be provided in the "
-                + "environment variable HMS_JWT");
-      }
-      httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
-        @Override
-        public void process(HttpRequest httpRequest, HttpContext httpContext)
-                throws HttpException, IOException {
-          httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
-        }
-      });
+    String urlScheme;
+    if (useSSL || Objects.equals(store.getScheme(), "https")) {
+      urlScheme = "https://";
     } else {
-      String user = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
-      if (user == null || user.equals("")) {
-        try {
-          LOG.debug("No username passed in config " + ConfVars.METASTORE_CLIENT_PLAIN_USERNAME.getHiveName() +
-                  ". Trying to get the current user from UGI" );
-          user = UserGroupInformation.getCurrentUser().getShortUserName();
-        } catch (IOException e) {
-          throw new MetaException("Failed to get client username from UGI");
-        }
-      }
-      final String httpUser = user;
-      httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
-        @Override
-        public void process(HttpRequest httpRequest, HttpContext httpContext)
-                throws HttpException, IOException {
-          httpRequest.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
-        }
-      });
+      urlScheme = "http://";
     }
+    String httpUrl = urlScheme + store.getHost() + ":" + store.getPort() + path;
 
+    HttpClientBuilder httpClientBuilder = createHttpClientBuilder();
     THttpClient tHttpClient;
     try {
       if (useSSL) {
@@ -606,6 +595,53 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     LOG.debug("Created thrift http client for URL: " + httpUrl);
     return tHttpClient;
   }
+
+  @VisibleForTesting
+  protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
+    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+    String authType = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
+    Map<String, String> additionalHeaders = getAdditionalHeaders();
+    if (authType.equalsIgnoreCase("jwt")) {
+      // fetch JWT token from environment and set it in Auth Header in HTTP request
+      String jwtToken = System.getenv("HMS_JWT");
+      if (jwtToken == null || jwtToken.isEmpty()) {
+        LOG.debug("No jwt token set in environment variable: HMS_JWT");
+        throw new MetaException("For auth mode JWT, valid signed jwt token must be provided in the " + "environment variable HMS_JWT");
+      }
+      httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
+        @Override
+        public void process(HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
+          httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
+          for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+            httpRequest.addHeader(entry.getKey(), entry.getValue());
+          }
+        }
+      });
+    } else {
+      String user = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
+      if (user == null || user.equals("")) {
+        try {
+          LOG.debug("No username passed in config " + ConfVars.METASTORE_CLIENT_PLAIN_USERNAME.getHiveName()
+              + ". Trying to get the current user from UGI");
+          user = UserGroupInformation.getCurrentUser().getShortUserName();
+        } catch (IOException e) {
+          throw new MetaException("Failed to get client username from UGI");
+        }
+      }
+      final String httpUser = user;
+      httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
+        @Override
+        public void process(HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
+          httpRequest.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
+          for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+            httpRequest.addHeader(entry.getKey(), entry.getValue());
+          }
+        }
+      });
+    }
+    return httpClientBuilder;
+  }
+
 
   private TTransport createBinaryTransport(URI store, boolean useSSL) throws MetaException, TTransportException {
     int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
