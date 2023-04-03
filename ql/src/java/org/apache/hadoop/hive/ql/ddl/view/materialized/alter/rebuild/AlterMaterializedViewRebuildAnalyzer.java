@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +81,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 
@@ -300,9 +300,9 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       // First we need to check if it is valid to convert to MERGE/INSERT INTO.
       // If we succeed, we modify the plan and afterwards the AST.
       // MV should be an acid table.
-      boolean fullAcidView = AcidUtils.isFullAcidTable(mvTable.getTTable())
+      boolean acidView = AcidUtils.isFullAcidTable(mvTable.getTTable())
               || AcidUtils.isNonNativeAcidTable(mvTable, true);
-      MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor(fullAcidView);
+      MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor(acidView);
       visitor.go(basePlan);
       if (visitor.isRewritingAllowed()) {
         if (!materialization.isSourceTablesUpdateDeleteModified()) {
@@ -313,7 +313,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
             return applyJoinInsertIncremental(basePlan, mdProvider, executorProvider);
           }
         } else {
-          if (fullAcidView) {
+          if (acidView) {
             if (visitor.isContainsAggregate()) {
               if (visitor.getCountIndex() < 0) {
                 // count(*) is necessary for determine which rows should be deleted from the view
@@ -467,33 +467,41 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
   protected ASTNode fixUpAfterCbo(ASTNode originalAst, ASTNode newAst, CalcitePlanner.PreCboCtx cboCtx)
           throws SemanticException {
     ASTNode fixedAST = super.fixUpAfterCbo(originalAst, newAst, cboCtx);
-    if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
-      return fixedAST;
-    } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_REBUILD) {
-      fixUpASTJoinInsertIncrementalRebuild(fixedAST);
-      return fixedAST;
+    switch (mvRebuildMode) {
+      case INSERT_OVERWRITE_REBUILD:
+        return fixedAST;
+      case JOIN_INSERT_REBUILD:
+        fixUpASTJoinInsertIncrementalRebuild(fixedAST);
+        return fixedAST;
     }
 
-    MaterializedViewASTBuilder astBuilder;
+    MaterializedViewASTBuilder astBuilder = getMaterializedViewASTBuilder();
+
+    // 1.2. Fix up the query for materialization rebuild
+    switch (mvRebuildMode) {
+      case AGGREGATE_INSERT_REBUILD:
+        fixUpASTAggregateInsertIncrementalRebuild(fixedAST, astBuilder);
+        break;
+      case AGGREGATE_INSERT_DELETE_REBUILD:
+        fixUpASTAggregateInsertDeleteIncrementalRebuild(fixedAST, astBuilder);
+        break;
+      case JOIN_INSERT_DELETE_REBUILD:
+        fixUpASTJoinInsertDeleteIncrementalRebuild(fixedAST, astBuilder);
+        break;
+    }
+    return fixedAST;
+  }
+
+  @NotNull
+  private MaterializedViewASTBuilder getMaterializedViewASTBuilder() {
     if (AcidUtils.isFullAcidTable(mvTable.getTTable())) {
-      astBuilder = new FullAcidMaterializedViewASTBuilder();
+      return new FullAcidMaterializedViewASTBuilder();
     } else if (AcidUtils.isNonNativeAcidTable(mvTable, true)) {
-      astBuilder = new NonNativeMaterializedViewASTBuilder(mvTable);
+      return new NonNativeAcidMaterializedViewASTBuilder(mvTable);
     } else {
       throw new UnsupportedOperationException("Incremental rebuild is supported only for fully ACID materialized " +
               "views or if the Storage handler supports snapshots (Iceberg).");
     }
-
-    // 1.2. Fix up the query for materialization rebuild
-    if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_INSERT_REBUILD) {
-      fixUpASTAggregateInsertIncrementalRebuild(fixedAST, astBuilder);
-    } else if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_INSERT_DELETE_REBUILD) {
-      fixUpASTAggregateInsertDeleteIncrementalRebuild(fixedAST, astBuilder);
-    } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD) {
-      fixUpASTJoinInsertDeleteIncrementalRebuild(fixedAST, astBuilder);
-    }
-
-    return fixedAST;
   }
 
   private void fixUpASTAggregateInsertIncrementalRebuild(ASTNode newAST, MaterializedViewASTBuilder astBuilder)
@@ -598,7 +606,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     // 4.2) Adding ROW__ID field
     ASTNode selectNodeInUpdateDelete = (ASTNode) updateDeleteNode.getChild(1);
     if (selectNodeInUpdateDelete.getType() != HiveParser.TOK_SELECT) {
-      throw new SemanticException("TOK_SELECT expected in incremental rewriting");
+      throw new SemanticException("TOK_SELECT expected in incremental rewriting got "
+              + selectNodeInUpdateDelete.getType());
     }
     // Remove children
     while (selectNodeInUpdateDelete.getChildCount() > 0) {

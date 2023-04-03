@@ -28,10 +28,10 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 
-public class NonNativeMaterializedViewASTBuilder extends MaterializedViewASTBuilder {
+public class NonNativeAcidMaterializedViewASTBuilder extends MaterializedViewASTBuilder {
   private final Table mvTable;
 
-  public NonNativeMaterializedViewASTBuilder(Table mvTable) {
+  public NonNativeAcidMaterializedViewASTBuilder(Table mvTable) {
     this.mvTable = mvTable;
   }
 
