@@ -39,7 +39,7 @@ public class HMSPropertyManager extends PropertyManager {
   private static final  String CLUSTER_PREFIX = "cluster";
   private static final String DATABASE_PREFIX = "database";
   private static final String TABLE_PREFIX = "table";
-  /** Declare HMS. */
+  /* Declare HMS. */
   static {
     PropertyManager.declare("hms", HMSPropertyManager.class);
   }
@@ -47,7 +47,7 @@ public class HMSPropertyManager extends PropertyManager {
   /**
    * Maintenance Operation Type.
    */
-  public static final PropertyType MAINTENANCE_OPERATION = new PropertyType("MaintenanceOperation"){
+  public static final PropertyType<MaintenanceOpType> MAINTENANCE_OPERATION = new PropertyType<MaintenanceOpType>("MaintenanceOperation"){
     @Override public MaintenanceOpType cast(Object value) {
       if (value instanceof MaintenanceOpType) {
         return (MaintenanceOpType) value;
@@ -78,7 +78,7 @@ public class HMSPropertyManager extends PropertyManager {
   /**
    * Maintenance Operation Status.
    */
-  public static final PropertyType MAINTENANCE_STATUS = new PropertyType("MaintenanceStatus"){
+  public static final PropertyType<MaintenanceOpStatus> MAINTENANCE_STATUS = new PropertyType<MaintenanceOpStatus>("MaintenanceStatus"){
     @Override public MaintenanceOpStatus cast(Object value) {
       if (value instanceof MaintenanceOpStatus) {
         return (MaintenanceOpStatus) value;
@@ -128,7 +128,7 @@ public class HMSPropertyManager extends PropertyManager {
    */
   public static final PropertySchema CLUSTER_SCHEMA;
   static {
-    Map<String, PropertyType> clusterp = new TreeMap<>();
+    Map<String, PropertyType<?>> clusterp = new TreeMap<>();
     CLUSTER_SCHEMA = new PropertySchema(CLUSTER_PREFIX, 1, clusterp);
   }
 
@@ -137,7 +137,7 @@ public class HMSPropertyManager extends PropertyManager {
    */
   public static final PropertySchema DATABASE_SCHEMA;
   static {
-    Map<String,PropertyType> databasep = new TreeMap<>();
+    Map<String,PropertyType<?>> databasep = new TreeMap<>();
     DATABASE_SCHEMA = new PropertySchema(DATABASE_PREFIX, 1, databasep);
   }
 
@@ -146,7 +146,7 @@ public class HMSPropertyManager extends PropertyManager {
    */
   public static final PropertySchema TABLE_SCHEMA;
   static {
-    Map<String,PropertyType> tablep = new TreeMap<>();
+    Map<String,PropertyType<?>> tablep = new TreeMap<>();
     TABLE_SCHEMA = new PropertySchema(TABLE_PREFIX, 1, tablep);
   }
 
@@ -161,7 +161,7 @@ public class HMSPropertyManager extends PropertyManager {
    * @param type the property type
    * @param defaultValue the property default value or null if none
    */
-  public static void declareClusterProperty(String name, PropertyType type, Object defaultValue) {
+  public static void declareClusterProperty(String name, PropertyType<?> type, Object defaultValue) {
     CLUSTER_SCHEMA.declareProperty(name, type, defaultValue);
   }
 
@@ -171,7 +171,7 @@ public class HMSPropertyManager extends PropertyManager {
    * @param type the property type
    * @param defaultValue the property default value or null if none
    */
-  public static void declareDatabaseProperty(String name, PropertyType type, Object defaultValue) {
+  public static void declareDatabaseProperty(String name, PropertyType<?> type, Object defaultValue) {
     DATABASE_SCHEMA.declareProperty(name, type, defaultValue);
   }
 
@@ -181,7 +181,7 @@ public class HMSPropertyManager extends PropertyManager {
    * @param type the property type
    * @param defaultValue the property default value or null if none
    */
-  public static void declareTableProperty(String name, PropertyType type, Object defaultValue) {
+  public static void declareTableProperty(String name, PropertyType<?> type, Object defaultValue) {
     TABLE_SCHEMA.declareProperty(name, type, defaultValue);
   }
 
