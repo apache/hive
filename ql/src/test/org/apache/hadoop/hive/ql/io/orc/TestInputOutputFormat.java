@@ -4285,7 +4285,7 @@ public class TestInputOutputFormat {
     result = splitsForStreamingAcidTable(files);
     files.clear();
     assertEquals(1000, result.get(0).getLength());
-    assertEquals(95, result.get(1).getLength());
+    assertEquals(15, result.get(1).getLength());
 
     // 1 incomplete delta with 2 complete and 1 incomplete blocks: (1000 + 1000 + 500/800)
     files.addAll(mockDeltaWithSideFileForStreaming("delta_0000021_0000030_0000", 2500, 2800));
@@ -4293,7 +4293,7 @@ public class TestInputOutputFormat {
     files.clear();
     assertEquals(1000, result.get(0).getLength());
     assertEquals(1000, result.get(1).getLength());
-    assertEquals(800, result.get(2).getLength());
+    assertEquals(500, result.get(2).getLength());
 
     // 1 complete delta but shorter flush_length - though I think this is almost impossible
     files.addAll(mockDeltaWithSideFileForStreaming("delta_0000021_0000030_0000", 1000, 450));
