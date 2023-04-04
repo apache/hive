@@ -134,7 +134,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
     addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
-    ColumnAppender columnAppender = getColumnAppender(null);
+    ColumnAppender columnAppender = getColumnAppender(null, DELETE_PREFIX);
     int columnOffset = columnAppender.getDeleteValues(operation).size();
     if (!shouldOverwrite) {
       rewrittenQueryStr.append(" select ");
