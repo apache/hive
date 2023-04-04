@@ -17,13 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
-import org.apache.hive.common.util.SuppressFBWarnings;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InvalidObjectException;
-import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Collections;
@@ -46,23 +43,23 @@ public class PropertySchema implements Serializable {
   /**
    * The schema name.
    */
-  private transient final String name;
+  private final String name;
   /**
    * The schema version number.
    */
-  private transient final AtomicInteger versionNumber;
+  private final AtomicInteger versionNumber;
   /**
    * The uuid.
    */
-  protected transient volatile UUID digest;
+  protected volatile UUID digest;
   /**
    * The properties and their types, may be empty, never null.
    */
-  protected transient final Map<String, PropertyType<?>> properties;
+  protected final Map<String, PropertyType<?>> properties;
   /**
    * The properties default value.
    */
-  protected transient Map<String, Object> values;
+  protected Map<String, Object> values;
 
   /**
    * A default schema that treats all properties as string.
@@ -170,14 +167,9 @@ public class PropertySchema implements Serializable {
       output.writeInt(0);
     }
   }
-  private Object writeReplace() throws ObjectStreamException {
-    // writeReplace() should hint spotbugs that we are taking over serialization;
-    // having to annotate all fields as transient is just to please it
-    return new SerializationProxy<>(this);
-  }
 
-  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-    throw new InvalidObjectException("proxy required");
+  private Object writeReplace() throws ObjectStreamException {
+    return new SerializationProxy<>(this);
   }
 
   /**
