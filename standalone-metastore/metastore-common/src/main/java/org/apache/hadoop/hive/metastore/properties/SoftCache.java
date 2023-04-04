@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.properties;
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -116,7 +117,7 @@ public class SoftCache<K, V> {
 
     public boolean containsKey(K key) {
         final Map<K, V> map = ref != null ? ref.get() : null;
-        return map != null ? map.containsKey(key) : false;
+        return map != null && map.containsKey(key);
     }
 
     /**
@@ -195,19 +196,33 @@ public class SoftCache<K, V> {
      * @return a Map usable as a cache bounded to the given size
      */
     protected Map<K, V> createCache(final int capacity, boolean synchro) {
-        Map<K, V> cache = new java.util.LinkedHashMap<K, V>(capacity, LOAD_FACTOR, true) {
-            /** Serial version UID. */
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected boolean removeEldestEntry(Entry<K, V> eldest) {
-                return size() > capacity;
-            }
-        };
+        Map<K, V> cache = new CacheMap<>(capacity);
         if (synchro) {
             return Collections.synchronizedMap(cache);
         } else {
             return cache;
+        }
+    }
+
+    /**
+     * Typical LRU map.
+     * @param <K> the key type
+     * @param <V> the value type
+     */
+    private static class CacheMap<K, V> extends LinkedHashMap<K, V> {
+        /** Serial version UID. */
+        private static final long serialVersionUID = 202304041726L;
+        /** The cache capacity, ie max number of elements. */
+        private final int capacity;
+
+        public CacheMap(int capacity) {
+            super(capacity, SoftCache.LOAD_FACTOR, true);
+            this.capacity = capacity;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Entry<K, V> eldest) {
+            return size() > capacity;
         }
     }
 }
