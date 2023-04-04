@@ -55,23 +55,23 @@ public class PropertyMap implements Serializable {
   /**
    * The owning store.
    */
-  protected final PropertyStore store;
+  protected transient final PropertyStore store;
   /**
    * The schema for this map, describes allowed properties and their types.
    */
-  protected final PropertySchema schema;
+  protected transient final PropertySchema schema;
   /**
    * The uuid.
    */
-  protected volatile UUID digest;
+  protected transient volatile UUID digest;
   /**
    * The properties and their values; the map is cow-once.
    */
-  protected Map<String, Object> properties;
+  protected transient Map<String, Object> properties;
   /**
    * Whether this map is dirty which also reflects its copy-on-write state.
    */
-  protected boolean dirty;
+  protected transient boolean dirty;
 
   /**
    * A digest for dropped maps.
@@ -161,7 +161,7 @@ public class PropertyMap implements Serializable {
     for (int p = 0; p < size; ++p) {
       // key as string
       String name = input.readUTF();
-      PropertyType type = schema.getPropertyType(name);
+      PropertyType<?> type = schema.getPropertyType(name);
       if (type == null) {
         LOGGER.warn(schema.getName() + ": unsolvable property type for " + name);
         type = PropertyType.STRING;
@@ -213,15 +213,17 @@ public class PropertyMap implements Serializable {
     out.writeInt(size);
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String name = entry.getKey();
-      PropertyType type = schema.getPropertyType(name);
       // key as string
       out.writeUTF(name);
+      @SuppressWarnings("unchecked") PropertyType type = schema.getPropertyType(name);
       // value
       type.write(out, entry.getValue());
     }
   }
 
   private Object writeReplace() throws ObjectStreamException {
+    // writeReplace() should hint spotbugs that we are taking over serialization;
+    // having to annotate all fields as transient is just to please it
     return new SerializationProxy<>(this);
   }
 
@@ -291,7 +293,7 @@ public class PropertyMap implements Serializable {
     return result;
   }
 
-  protected PropertyType getTypeOf(String name) {
+  protected PropertyType<?> getTypeOf(String name) {
     return schema.getPropertyType(name);
   }
 
@@ -346,7 +348,7 @@ public class PropertyMap implements Serializable {
    * @throws IllegalArgumentException if the property is not declared or the value is of an incorrect type
    */
   public Object putProperty(String name, Object value) {
-    PropertyType type = getTypeOf(name);
+    PropertyType<?> type = getTypeOf(name);
     if (type == null) {
       throw new IllegalArgumentException("property " + name + " is not declared");
     }
@@ -442,10 +444,10 @@ public class PropertyMap implements Serializable {
    */
   public Map<String,String> export() {
     Map<String, String> map = new TreeMap<>();
-    final Map<String, PropertyType> schemaMap = schema.properties;
+    final Map<String, PropertyType<?>> schemaMap = schema.properties;
     final Map<String, Object> valueMap = this.properties;
     synchronized (valueMap) {
-      for (Map.Entry<String, PropertyType> entry : schemaMap.entrySet()) {
+      for (Map.Entry<String, PropertyType<?>> entry : schemaMap.entrySet()) {
         String pname = entry.getKey();
         Object value = valueMap.getOrDefault(pname, schema.getDefaultValue(pname));
         if (value != null) {

@@ -55,7 +55,7 @@ public class PropertySchema implements Serializable {
   /**
    * The properties and their types, may be empty, never null.
    */
-  protected final Map<String, PropertyType> properties;
+  protected final Map<String, PropertyType<?>> properties;
   /**
    * The properties default value.
    */
@@ -67,12 +67,12 @@ public class PropertySchema implements Serializable {
   public static final PropertySchema NONE = new PropertySchema("", 1, Collections.emptyMap()) {
 
     @Override
-    public PropertyType getPropertyType(String name) {
+    public PropertyType<?> getPropertyType(String name) {
       return PropertyType.STRING;
     }
 
     @Override
-    public boolean declareProperty(String name, PropertyType type) {
+    public boolean declareProperty(String name, PropertyType<?> type) {
       throw new UnsupportedOperationException("schema is readonly");
     }
 
@@ -93,7 +93,7 @@ public class PropertySchema implements Serializable {
 
   /**
    * The deserializing constructor.
-   *
+   * <p>Called by reflection through SerializationProxy</p>
    * @param input the input stream
    * @throws IOException if IO fail
    */
@@ -114,7 +114,7 @@ public class PropertySchema implements Serializable {
     for (int p = 0; p < size; ++p) {
       String name = input.readUTF();
       String typeName = input.readUTF();
-      PropertyType type = PropertyType.get(typeName);
+      PropertyType<?> type = PropertyType.get(typeName);
       properties.put(name, Objects.requireNonNull(type));
     }
     // number of default values
@@ -123,7 +123,7 @@ public class PropertySchema implements Serializable {
     // the values
     for (int v = 0; v < size; ++v) {
       String name = input.readUTF();
-      PropertyType type = properties.get(name);
+      PropertyType<?> type = properties.get(name);
       String strValue = input.readUTF();
       Object value = type.parse(strValue);
       values.put(name, value);
@@ -147,7 +147,7 @@ public class PropertySchema implements Serializable {
       // number of properties
       output.writeInt(properties.size());
       // the properties
-      for (Map.Entry<String, PropertyType> entry : properties.entrySet()) {
+      for (Map.Entry<String, PropertyType<?>> entry : properties.entrySet()) {
         output.writeUTF(entry.getKey());
         output.writeUTF(entry.getValue().getName());
       }
@@ -159,7 +159,7 @@ public class PropertySchema implements Serializable {
       output.writeInt(values.size());    // the properties
       for (Map.Entry<String, Object> entry : values.entrySet()) {
         String name = entry.getKey();
-        PropertyType type = properties.get(name);
+        PropertyType<?> type = properties.get(name);
         output.writeUTF(name);
         output.writeUTF(type.format(entry.getValue()));
       }
@@ -180,7 +180,7 @@ public class PropertySchema implements Serializable {
    * @param version the schema version number
    * @param map        the map of properties and their types
    */
-  PropertySchema(String schemaName, int version, Map<String, PropertyType> map) {
+  PropertySchema(String schemaName, int version, Map<String, PropertyType<?>> map) {
     this.name = schemaName;
     this.versionNumber = new AtomicInteger(version);
     this.properties = map == null ? new TreeMap<>() : map;
@@ -258,7 +258,7 @@ public class PropertySchema implements Serializable {
    *
    * @param action the action
    */
-  public void forEach(BiConsumer<String, PropertyType> action) {
+  public void forEach(BiConsumer<String, PropertyType<?>> action) {
     properties.forEach(action);
   }
 
@@ -268,7 +268,7 @@ public class PropertySchema implements Serializable {
    * @param name the property name
    * @return the property type or null of not set
    */
-  public PropertyType getPropertyType(String name) {
+  public PropertyType<?> getPropertyType(String name) {
     return properties.get(name);
   }
 
@@ -289,7 +289,7 @@ public class PropertySchema implements Serializable {
    * @param value the default value to set
    */
   public void setDefaultValue(String name, Object value) {
-    PropertyType type = getPropertyType(name);
+    PropertyType<?> type = getPropertyType(name);
     if (type != null) {
       Object tvalue = type.cast(value);
       if (tvalue != null) {
@@ -306,7 +306,7 @@ public class PropertySchema implements Serializable {
    * @return true if property is successfully declared, false if it was already declared
    * @throws IllegalArgumentException if a property with the same name but a different type has already been declared
    */
-  public boolean declareProperty(String name, PropertyType type) {
+  public boolean declareProperty(String name, PropertyType<?> type) {
     return declareProperty(name, type, null);
   }
 
@@ -319,14 +319,14 @@ public class PropertySchema implements Serializable {
    * @return true if property is successfully declared, false if it was already declared
    * @throws IllegalArgumentException if a property with the same name but a different type has already been declared
    */
-  public boolean declareProperty(String name, PropertyType type, Object defaultValue) {
+  public boolean declareProperty(String name, PropertyType<?> type, Object defaultValue) {
     if (name == null) {
       throw new IllegalArgumentException("null name");
     }
     if (type == null) {
       throw new IllegalArgumentException("null type");
     }
-    PropertyType ptype = properties.putIfAbsent(name, type);
+    PropertyType<?> ptype = properties.putIfAbsent(name, type);
     if (ptype != null) {
       if (ptype.equals(type)) {
         return false;

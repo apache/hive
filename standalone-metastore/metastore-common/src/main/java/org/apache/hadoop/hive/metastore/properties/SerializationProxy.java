@@ -47,6 +47,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.hadoop.hive.metastore.properties.Serializer.SERIALIZER;
+
 /**
  * The serialization proxy template.
  * <p>
@@ -77,9 +79,6 @@ public class SerializationProxy<T extends Serializable> implements Externalizabl
   private static final long serialVersionUID = 202212281757L;
   /** The logger. */
   public static final Logger LOGGER = LoggerFactory.getLogger(SerializationProxy.class);
-
-  /** The default instance of serializer. */
-  private static final Serializer<Serializable> SERIALIZER = new Serializer<>();
   /** The map of class names to types. */
   private static final ConcurrentMap<String, Type<?>> TYPES = new ConcurrentHashMap<>();
   /** The list of registered pre-defined classes. */
