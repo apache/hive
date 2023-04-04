@@ -495,7 +495,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
   @NotNull
   private MaterializedViewASTBuilder getMaterializedViewASTBuilder() {
     if (AcidUtils.isFullAcidTable(mvTable.getTTable())) {
-      return new FullAcidMaterializedViewASTBuilder();
+      return new NativeAcidMaterializedViewASTBuilder();
     } else if (AcidUtils.isNonNativeAcidTable(mvTable, true)) {
       return new NonNativeAcidMaterializedViewASTBuilder(mvTable);
     } else {

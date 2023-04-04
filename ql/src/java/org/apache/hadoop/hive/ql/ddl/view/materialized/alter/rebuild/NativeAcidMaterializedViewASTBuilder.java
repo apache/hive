@@ -25,7 +25,7 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 
-public class FullAcidMaterializedViewASTBuilder extends MaterializedViewASTBuilder {
+public class NativeAcidMaterializedViewASTBuilder extends MaterializedViewASTBuilder {
   @Override
   public List<ASTNode> createDeleteSelectNodes(String tableName) {
     return wrapIntoSelExpr(singletonList(createQualifiedColumnNode(tableName, VirtualColumn.ROWID.getName())));
