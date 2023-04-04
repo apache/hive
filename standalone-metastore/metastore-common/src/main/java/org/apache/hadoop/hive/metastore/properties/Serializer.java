@@ -37,6 +37,9 @@ import java.nio.file.Files;
  */
 public class Serializer<T extends Serializable> {
   private static final Logger LOGGER = SerializationProxy.LOGGER;
+
+  /** The default instance of serializer. */
+  static final Serializer<Serializable> SERIALIZER = new Serializer<>();
   /**
    * Default constructor.
    */
