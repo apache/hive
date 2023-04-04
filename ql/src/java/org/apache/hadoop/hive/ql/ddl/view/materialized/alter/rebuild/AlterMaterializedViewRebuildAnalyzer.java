@@ -473,23 +473,18 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       case JOIN_INSERT_REBUILD:
         fixUpASTJoinInsertIncrementalRebuild(fixedAST);
         return fixedAST;
-    }
-
-    MaterializedViewASTBuilder astBuilder = getMaterializedViewASTBuilder();
-
-    // 1.2. Fix up the query for materialization rebuild
-    switch (mvRebuildMode) {
       case AGGREGATE_INSERT_REBUILD:
-        fixUpASTAggregateInsertIncrementalRebuild(fixedAST, astBuilder);
-        break;
+        fixUpASTAggregateInsertIncrementalRebuild(fixedAST, getMaterializedViewASTBuilder());
+        return fixedAST;
       case AGGREGATE_INSERT_DELETE_REBUILD:
-        fixUpASTAggregateInsertDeleteIncrementalRebuild(fixedAST, astBuilder);
-        break;
+        fixUpASTAggregateInsertDeleteIncrementalRebuild(fixedAST, getMaterializedViewASTBuilder());
+        return fixedAST;
       case JOIN_INSERT_DELETE_REBUILD:
-        fixUpASTJoinInsertDeleteIncrementalRebuild(fixedAST, astBuilder);
-        break;
+        fixUpASTJoinInsertDeleteIncrementalRebuild(fixedAST, getMaterializedViewASTBuilder());
+        return fixedAST;
+      default:
+        throw new UnsupportedOperationException("No materialized view rebuild exists for mode " + mvRebuildMode);
     }
-    return fixedAST;
   }
 
   @NotNull
