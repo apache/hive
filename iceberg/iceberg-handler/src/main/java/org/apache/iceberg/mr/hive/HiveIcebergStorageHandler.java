@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -671,9 +671,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       case UPDATE:
         // TODO: make it configurable whether we want to include the table columns in the select query.
         // It might make delete writes faster if we don't have to write out the row object
-        return Stream.of(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols())
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+        return ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+      case MERGE:
+        return ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default:
         return ImmutableList.of();
     }

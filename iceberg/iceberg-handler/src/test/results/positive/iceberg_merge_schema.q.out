@@ -217,14 +217,14 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [6, 7, 8, 9, 10, 1, 2, 3, 5, 11, 1, 2, 3, 4, 5]
-                          selectExpressions: ConstantVectorExpression(val 1090969) -> 10:bigint, ConstantVectorExpression(val 1090969) -> 11:bigint
+                          projectedOutputColumnNums: [6, 7, 8, 9, 10, 1, 2, 3, 4, 5]
+                          selectExpressions: ConstantVectorExpression(val 1090969) -> 10:bigint
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             keyColumns: 4:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 6:int, 7:bigint, 8:string, 9:bigint, 10:bigint, 1:string, 2:string, 3:int, 5:string, 11:bigint, 1:string, 2:string, 3:int, 5:string
+                            valueColumns: 6:int, 7:bigint, 8:string, 9:bigint, 10:bigint, 1:string, 2:string, 3:int, 5:string
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -259,7 +259,7 @@ STAGE PLANS:
                     dataColumns: skey:bigint, hierarchy_number:string, hierarchy_name:string, language_id:int, hierarchy_display:string, orderby:string
                     neededVirtualColumns: #Masked#
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint]
+                    scratchColumnTypeNames: [bigint]
         Reducer 2 
             MergeJoin Vectorization:
                 enabled: false
@@ -312,15 +312,16 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 10
-                    dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:bigint, KEY.reducesinkkey2:string, KEY.reducesinkkey3:bigint, VALUE._col0:bigint, VALUE._col1:string, VALUE._col2:string, VALUE._col3:int, VALUE._col4:string, VALUE._col5:string
+                    dataColumnCount: 9
+                    dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:bigint, KEY.reducesinkkey2:string, KEY.reducesinkkey3:bigint, VALUE._col1:string, VALUE._col2:string, VALUE._col3:int, VALUE._col4:string, VALUE._col5:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 9, 4, 5, 6, 7, 8]
+                    selectExpressions: ConstantVectorExpression(val 1090969) -> 9:bigint
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false

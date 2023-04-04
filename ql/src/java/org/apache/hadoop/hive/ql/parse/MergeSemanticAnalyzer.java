@@ -144,8 +144,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     StringBuilder rewrittenQueryStr = createRewrittenQueryStrBuilder();
     rewrittenQueryStr.append("(SELECT ");
     String subQueryAlias = isAliased(targetNameNode) ? targetName : targetTable.getTTable().getTableName();
-    ColumnAppender columnAppender = getColumnAppender(subQueryAlias);
-    columnAppender.appendAcidSelectColumns(rewrittenQueryStr, Context.Operation.UPDATE);
+    ColumnAppender columnAppender = getColumnAppender(subQueryAlias, StringUtils.EMPTY);
+    columnAppender.appendAcidSelectColumns(rewrittenQueryStr, Context.Operation.MERGE);
 
     rewrittenQueryStr.deleteCharAt(rewrittenQueryStr.length() - 1); // remove last ','
     addColsToSelect(targetTable.getCols(), rewrittenQueryStr);
