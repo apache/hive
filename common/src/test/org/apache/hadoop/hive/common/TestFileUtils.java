@@ -233,7 +233,8 @@ public class TestFileUtils {
     HadoopShims shims = mock(HadoopShims.class);
     when(shims.runDistCp(Collections.singletonList(copySrc), copyDst, conf)).thenReturn(true);
 
-    Assert.assertTrue(FileUtils.copy(mockFs, copySrc, mockFs, copyDst, false, false, conf, shims));
+    DataCopyStatistics copyStatistics = new DataCopyStatistics();
+    Assert.assertTrue(FileUtils.copy(mockFs, copySrc, mockFs, copyDst, false, false, conf, shims, copyStatistics));
     verify(shims).runDistCp(Collections.singletonList(copySrc), copyDst, conf);
   }
 

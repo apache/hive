@@ -186,7 +186,6 @@ public class MetastoreConf {
       ConfVars.USE_THRIFT_SASL,
       ConfVars.METASTORE_CLIENT_AUTH_MODE,
       ConfVars.METASTORE_CLIENT_PLAIN_USERNAME,
-      ConfVars.TOKEN_SIGNATURE,
       ConfVars.CACHE_PINOBJTYPES,
       ConfVars.CONNECTION_POOLING_TYPE,
       ConfVars.VALIDATE_TABLES,
@@ -560,7 +559,7 @@ public class MetastoreConf {
         "means that the current metastore will run the housekeeping tasks. If configuration" +
         "metastore.thrift.bind.host is set on the intended leader metastore, this value should " +
         "match that configuration. Otherwise it should be same as the hostname returned by " +
-        "InetAddress#getLocalHost#getHostName(). Given the uncertainty in the later " +
+        "InetAddress#getLocalHost#getCanonicalHostName(). Given the uncertainty in the later " +
         "it is desirable to configure metastore.thrift.bind.host on the intended leader HMS."),
     METASTORE_HOUSEKEEPING_LEADER_ELECTION("metastore.housekeeping.leader.election",
         "metastore.housekeeping.leader.election",
@@ -1653,8 +1652,6 @@ public class MetastoreConf {
     HIVE_IN_TEST("hive.in.test", "hive.in.test", false, "internal usage only, true in test mode"),
     HIVE_IN_TEZ_TEST("hive.in.tez.test", "hive.in.tez.test", false,
         "internal use only, true when in testing tez"),
-    HIVE_IN_TEST_ICEBERG("hive.in.iceberg.test", "hive.in.iceberg.test", false,
-        "internal usage only, true when testing iceberg"),
     // We need to track this as some listeners pass it through our config and we need to honor
     // the system properties.
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",

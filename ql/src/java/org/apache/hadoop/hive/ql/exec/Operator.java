@@ -1555,4 +1555,14 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       c.replaceTabAlias(oldAlias, newAlias);
     }
   }
+
+  /**
+   * There are aggregate implementations where the contents of the batch are processed in an async way,
+   * (e.g. in executors/thread pool), in which cases we have to create a new batch every time. This leads to
+   * minor GC pressure, so this feature should be only used when you have the evidence that there is an expression
+   * which relies on this, and its implementation has benefits over the default, non-cloned approach.
+   */
+  public boolean batchNeedsClone() {
+    return false;
+  }
 }

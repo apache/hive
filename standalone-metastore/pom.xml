@@ -70,13 +70,13 @@
     <derby.version>10.14.2.0</derby.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
-    <mysql.version>8.0.27</mysql.version>
+    <mysql.version>8.0.31</mysql.version>
     <postgres.version>42.5.1</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
-    <guava.version>19.0</guava.version>
+    <guava.version>22.0</guava.version>
     <hadoop.version>3.3.1</hadoop.version>
     <hikaricp.version>4.0.3</hikaricp.version>
     <jackson.version>2.12.7</jackson.version>
@@ -365,8 +365,8 @@
         <optional>true</optional>
       </dependency>
       <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
         <version>${mysql.version}</version>
         <scope>runtime</scope>
         <optional>true</optional>

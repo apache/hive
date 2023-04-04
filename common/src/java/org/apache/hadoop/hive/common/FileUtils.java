@@ -729,8 +729,9 @@ public final class FileUtils {
       FileSystem dstFS, Path dst,
       boolean deleteSource,
       boolean overwrite,
-      HiveConf conf) throws IOException {
-    return copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf, ShimLoader.getHadoopShims());
+      HiveConf conf, DataCopyStatistics copyStatistics
+  ) throws IOException {
+    return copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf, ShimLoader.getHadoopShims(), copyStatistics);
   }
 
   @VisibleForTesting
@@ -738,7 +739,7 @@ public final class FileUtils {
     FileSystem dstFS, Path dst,
     boolean deleteSource,
     boolean overwrite,
-    HiveConf conf, HadoopShims shims) throws IOException {
+    HiveConf conf, HadoopShims shims, DataCopyStatistics copyStatistics) throws IOException {
 
     boolean copied = false;
     boolean triedDistcp = false;
@@ -756,6 +757,8 @@ public final class FileUtils {
         LOG.info("Launch distributed copy (distcp) job.");
         triedDistcp = true;
         copied = distCp(srcFS, Collections.singletonList(src), dst, deleteSource, null, conf, shims);
+        // increment bytes copied counter
+        copyStatistics.incrementBytesCopiedCounter(srcContentSummary.getLength());
       }
     }
     if (!triedDistcp) {
@@ -763,13 +766,13 @@ public final class FileUtils {
       // is tried and it fails. We depend upon that behaviour in cases like replication,
       // wherein if distcp fails, there is good reason to not plod along with a trivial
       // implementation, and fail instead.
-      copied = copy(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, shouldPreserveXAttrs(conf, srcFS, dstFS), conf);
+      copied = doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, shouldPreserveXAttrs(conf, srcFS, dstFS), conf, copyStatistics);
     }
     return copied;
   }
 
-  public static boolean copy(FileSystem srcFS, FileStatus srcStatus, FileSystem dstFS, Path dst, boolean deleteSource,
-                             boolean overwrite, boolean preserveXAttrs, Configuration conf) throws IOException {
+  public static boolean doIOUtilsCopyBytes(FileSystem srcFS, FileStatus srcStatus, FileSystem dstFS, Path dst, boolean deleteSource,
+                             boolean overwrite, boolean preserveXAttrs, Configuration conf, DataCopyStatistics copyStatistics) throws IOException {
     Path src = srcStatus.getPath();
     dst = checkDest(src.getName(), dstFS, dst, overwrite);
     if (srcStatus.isDirectory()) {
@@ -780,8 +783,7 @@ public final class FileUtils {
 
       FileStatus[] fileStatus = srcFS.listStatus(src);
       for (FileStatus file : fileStatus) {
-        copy(srcFS, file, dstFS, new Path(dst, file.getPath().getName()), deleteSource, overwrite, preserveXAttrs,
-            conf);
+        doIOUtilsCopyBytes(srcFS, file, dstFS, new Path(dst, file.getPath().getName()), deleteSource, overwrite, preserveXAttrs, conf, copyStatistics);
       }
       if (preserveXAttrs) {
         preserveXAttr(srcFS, src, dstFS, dst);
@@ -797,6 +799,8 @@ public final class FileUtils {
         if (preserveXAttrs) {
           preserveXAttr(srcFS, src, dstFS, dst);
         }
+        final long bytesCopied = srcFS.getFileStatus(src).getLen();
+        copyStatistics.incrementBytesCopiedCounter(bytesCopied);
       } catch (IOException var11) {
         IOUtils.closeStream(in);
         IOUtils.closeStream(out);
@@ -807,12 +811,13 @@ public final class FileUtils {
     return deleteSource ? srcFS.delete(src, true) : true;
   }
 
-  public static boolean copy(FileSystem srcFS, Path[] srcs, FileSystem dstFS, Path dst, boolean deleteSource, boolean overwrite, boolean preserveXAttr, Configuration conf) throws IOException {
+  public static boolean copy(FileSystem srcFS, Path[] srcs, FileSystem dstFS, Path dst, boolean deleteSource, boolean overwrite, boolean preserveXAttr, Configuration conf,
+                             DataCopyStatistics copyStatistics) throws IOException {
     boolean gotException = false;
     boolean returnVal = true;
     StringBuilder exceptions = new StringBuilder();
     if (srcs.length == 1) {
-      return copy(srcFS, srcFS.getFileStatus(srcs[0]), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf);
+      return doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(srcs[0]), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf, copyStatistics);
     } else {
       try {
         FileStatus sdst = dstFS.getFileStatus(dst);
@@ -830,7 +835,7 @@ public final class FileUtils {
         Path src = var17[var12];
 
         try {
-          if (!copy(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf)) {
+          if (!doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf, copyStatistics)) {
             returnVal = false;
           }
         } catch (IOException var15) {

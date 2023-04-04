@@ -284,7 +284,11 @@ public class ExpressionTree {
 
     private void generateJDOFilterOverTables(Map<String, Object> params,
         FilterBuilder filterBuilder) throws MetaException {
-      if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER)) {
+      if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME)) {
+        keyName = "this.tableName";
+      } else if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_TYPE)) {
+        keyName = "this.tableType";
+      } else if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER)) {
         keyName = "this.owner";
       } else if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_LAST_ACCESS)) {
         //lastAccessTime expects an integer, so we cannot use the "like operator"
@@ -304,6 +308,12 @@ public class ExpressionTree {
         //value is persisted as a string in the db, so make sure it's a string here
         // in case we get a long.
         value = value.toString();
+        // dot in parameter is not supported when parsing the tree.
+        if ("discover__partitions".equals(paramKeyName)) {
+          paramKeyName = "discover.partitions";
+          keyName = "this.parameters.get(\"" + paramKeyName + "\").toUpperCase()";
+          value = value.toString().toUpperCase();
+        }
       } else {
         filterBuilder.setError("Invalid key name in filter.  " +
           "Use constants from org.apache.hadoop.hive.metastore.api");
@@ -455,7 +465,7 @@ public class ExpressionTree {
     private String getJdoFilterPushdownParam(int partColIndex,
                                              FilterBuilder filterBuilder, boolean canPushDownIntegral, List<FieldSchema> partitionKeys) throws MetaException {
       boolean isIntegralSupported = canPushDownIntegral && canJdoUseStringsWithIntegral();
-      String colType = partitionKeys.get(partColIndex).getType();
+      String colType = ColumnType.getTypeName(partitionKeys.get(partColIndex).getType());
       // Can only support partitions whose types are string, or maybe integers
       // Date/Timestamp data type value is considered as string hence pushing down to JDO.
       if (!ColumnType.StringTypes.contains(colType) && !ColumnType.DATE_TYPE_NAME.equalsIgnoreCase(colType)

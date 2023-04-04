@@ -154,5 +154,13 @@ public abstract class VectorAggregateExpression  implements Serializable {
    */
   public void finish(AggregationBuffer aggregationBuffer, boolean aborted) {
   }
+
+  /**
+   * This method should return true, when the particular VectorAggregateExpression must use a cloned batch
+   * while processing one, see Operator.batchNeedsClone() for further details.
+   */
+  public boolean batchNeedsClone() {
+    return false;
+  }
 }
 
