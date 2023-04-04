@@ -1667,7 +1667,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       calcitePlan.getCluster().getPlanner().setExecutor(executorProvider);
 
       // Create and set MD provider
-      HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, HIVE_REL_NODE_CLASSES);
+      HiveDefaultRelMetadataProvider mdProvider =
+          HiveDefaultRelMetadataProvider.get(conf, HIVE_REL_NODE_CLASSES);
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
       optCluster.invalidateMetadataQuery();
 
@@ -2438,9 +2439,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(mdProvider);
       planner.registerMetadataProviders(list);
-      RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
-      cluster.setMetadataProvider(
-          new CachingRelMetadataProvider(chainedProvider, planner));
+      cluster.setMetadataProvider(mdProvider);
 
       if (executorProvider != null) {
         // basePlan.getCluster.getPlanner is the VolcanoPlanner from apply()
