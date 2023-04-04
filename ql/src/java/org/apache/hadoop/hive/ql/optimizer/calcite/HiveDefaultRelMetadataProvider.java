@@ -17,12 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
@@ -43,8 +46,17 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdUniqueKeys;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 public class HiveDefaultRelMetadataProvider {
+
+  // Set the number of providers allowed to be cached. A RelMetadataProvider provides Calcite
+  // generated code. Each instance generates new code so we want to limit the amount stored.
+  // The key to the provider contains various configuration variables since they are used in
+  // the calculations. These will most likely rarely be changed.
+  private static final int MAX_PROVIDERS = 20;
+  private static Map<Map<HiveConf.ConfVars, Object>, HiveDefaultRelMetadataProvider> ALL_PROVIDERS =
+      new LRUMap(MAX_PROVIDERS);
 
   /**
    * The default metadata provider can be instantiated statically since
@@ -127,5 +139,29 @@ public class HiveDefaultRelMetadataProvider {
   public static void initializeMetadataProviderClass(List<Class<? extends RelNode>> nodeClasses) {
     // This will register the classes in the default Hive implementation
     DEFAULT.register(nodeClasses);
+  }
+
+  public static synchronized HiveDefaultRelMetadataProvider get(HiveConf hiveConf,
+      List<Class<? extends RelNode>> nodeClasses) {
+    Map<HiveConf.ConfVars, Object> confKey = getConfKey(hiveConf);
+    if (ALL_PROVIDERS.containsKey(confKey)) {
+      return ALL_PROVIDERS.get(confKey);
+    }
+
+    HiveDefaultRelMetadataProvider newProvider =
+        new HiveDefaultRelMetadataProvider(hiveConf, nodeClasses);
+    ALL_PROVIDERS.put(confKey, newProvider);
+    return newProvider;
+  }
+
+  private static Map<HiveConf.ConfVars, Object> getConfKey(HiveConf conf) {
+    ImmutableMap.Builder<HiveConf.ConfVars, Object> bldr = new ImmutableMap.Builder<>();
+    bldr.put(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE,
+        conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE));
+    bldr.put(HiveConf.ConfVars.HIVE_CBO_EXTENDED_COST_MODEL,
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_EXTENDED_COST_MODEL));
+    bldr.put(HiveConf.ConfVars.MAPREDMAXSPLITSIZE,
+        conf.getLongVar(HiveConf.ConfVars.MAPREDMAXSPLITSIZE));
+    return bldr.build();
   }
 }
