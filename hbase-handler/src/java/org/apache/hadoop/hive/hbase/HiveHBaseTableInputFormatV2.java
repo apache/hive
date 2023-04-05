@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.hbase;
 
-import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
@@ -34,7 +27,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableSplit;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
@@ -50,8 +42,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -61,25 +53,26 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * HiveHBaseTableInputFormat implements InputFormat for HBase storage handler
- * tables, decorating an underlying HBase TableInputFormat with extra Hive logic
- * such as column pruning and filter pushdown.
- * Update: For this inputformat,it both implements the new and old InputFormat version which will
- * cause the issue for the spark which will create the RDD depends on the version.Instead of extends
- * {@link org.apache.hadoop.hbase.mapreduce.TableInputFormatBase},
- * it`s better to use delegate and make the class path clean {@link HiveHBaseTableInputFormatV2}
- *
- */
-@Deprecated
-public class HiveHBaseTableInputFormat extends TableInputFormatBase
-    implements InputFormat<ImmutableBytesWritable, ResultWritable> {
+import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-  static final Logger LOG = LoggerFactory.getLogger(HiveHBaseTableInputFormat.class);
+/**
+ * It`s the pair with {@link HiveHBaseTableInputFormat}, instead of directly extending TableInputFormatBase, using delegate
+ * to make the class ONLY inherit from mapred.*, which makes the hierarchy more clear and avoid downstream application
+ * like spark issue, ex https://github.com/apache/spark/pull/31302
+ */
+public class HiveHBaseTableInputFormatV2 implements InputFormat<ImmutableBytesWritable, ResultWritable> {
+
+  static final Logger LOG = LoggerFactory.getLogger(HiveHBaseTableInputFormatV2.class);
   private static final Object HBASE_TABLE_MONITOR = new Object();
 
+  private HiveHBaseTableInputFormatDelegate delegate = new HiveHBaseTableInputFormatDelegate();
+
   @Override public RecordReader<ImmutableBytesWritable, ResultWritable> getRecordReader(InputSplit split,
-      JobConf jobConf, final Reporter reporter) throws IOException {
+                                                                                        JobConf jobConf, final Reporter reporter) throws IOException {
 
     HBaseSplit hbaseSplit = (HBaseSplit) split;
     TableSplit tableSplit = hbaseSplit.getTableSplit();
@@ -89,23 +82,17 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     Job job = new Job(jobConf);
     TaskAttemptContext tac = ShimLoader.getHadoopShims().newTaskAttemptContext(job.getConfiguration(), reporter);
 
-    final Configuration hbaseConf = HBaseConfiguration.create(jobConf);
-    final Scan scan = HiveHBaseInputFormatUtil.getScan(jobConf);
-
-    LOG.debug("HBase configurations: {}", hbaseConf);
-    LOG.info("Using global scan configuration (ignore per-split scan configs): {}", scan);
-
     final Connection conn;
 
     synchronized (HBASE_TABLE_MONITOR) {
-      conn = ConnectionFactory.createConnection(hbaseConf);
-      initializeTable(conn, tableSplit.getTable());
-      setScan(scan);
-      recordReader = createRecordReader(tableSplit, tac);
+      conn = ConnectionFactory.createConnection(HBaseConfiguration.create(jobConf));
+      delegate.initializeTableDelegate(conn, tableSplit.getTable());
+      delegate.setScan(HiveHBaseInputFormatUtil.getScan(jobConf));
+      recordReader = delegate.createRecordReader(tableSplit, tac);
       try {
         recordReader.initialize(tableSplit, tac);
       } catch (InterruptedException e) {
-        closeTable(); // Free up the HTable connections
+        delegate.closeTableDelegate(); // Free up the HTable connections
         conn.close();
         throw new IOException("Failed to initialize RecordReader", e);
       }
@@ -116,7 +103,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       @Override public void close() throws IOException {
         synchronized (HBASE_TABLE_MONITOR) {
           recordReader.close();
-          closeTable();
+          delegate.closeTableDelegate();
           conn.close();
         }
       }
@@ -302,7 +289,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     Connection conn = ConnectionFactory.createConnection(HBaseConfiguration.create(jobConf));
 
     TableName tableName = TableName.valueOf(hbaseTableName);
-    initializeTable(conn, tableName);
+    delegate.initializeTableDelegate(conn, tableName);
 
     String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
     boolean doColumnRegexMatching = jobConf.getBoolean(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, true);
@@ -353,13 +340,13 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
           }
         }
       }
-      setScan(scan);
+      delegate.setScan(scan);
 
       Job job = new Job(jobConf);
       JobContext jobContext = ShimLoader.getHadoopShims().newJobContext(job);
       Path[] tablePaths = FileInputFormat.getInputPaths(jobContext);
 
-      List<org.apache.hadoop.mapreduce.InputSplit> splits = super.getSplits(jobContext);
+      List<org.apache.hadoop.mapreduce.InputSplit> splits = delegate.getSplits(jobContext);
       InputSplit[] results = new InputSplit[splits.size()];
 
       for (int i = 0; i < splits.size(); i++) {
@@ -368,14 +355,14 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
       return results;
     } finally {
-      closeTable();
+      delegate.closeTableDelegate();
       conn.close();
     }
   }
 
   @Override protected void finalize() throws Throwable {
     try {
-      closeTable();
+      delegate.closeTableDelegate();
     } finally {
       super.finalize();
     }

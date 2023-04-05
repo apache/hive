@@ -3504,6 +3504,11 @@ public class HiveConf extends Configuration {
     HIVE_HBASE_GENERATE_HFILES("hive.hbase.generatehfiles", false,
         "True when HBaseStorageHandler should generate hfiles instead of operate against the online table."),
     HIVE_HBASE_SNAPSHOT_NAME("hive.hbase.snapshot.name", null, "The HBase table snapshot name to use."),
+
+    HIVE_HBASE_INPUTFORMAT_V2("hive.hbase.inputformat.v2", false, "If enabled, the new " +
+            "version (V2) of input format that inherits only mapred version of InputFormat will be used as input format " +
+            "for reading the Hbase table. By default, the old version (HiveHBaseTableInputFormat) is used that " +
+            "inherits both mapred and mapreduce version of InputFormat."),
     HIVE_HBASE_SNAPSHOT_RESTORE_DIR("hive.hbase.snapshot.restoredir", "/tmp", "The directory in which to " +
         "restore the HBase table snapshot."),
     HIVE_SECURITY_HBASE_URLENCODE_AUTHORIZATION_URI("hive.security.hbase.urlencode.authorization.uri", false,
