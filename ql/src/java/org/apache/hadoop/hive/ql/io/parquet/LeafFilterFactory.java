@@ -37,9 +37,9 @@ import static org.apache.parquet.filter2.predicate.FilterApi.intColumn;
 
 public class LeafFilterFactory {
   private static final Logger LOG = LoggerFactory.getLogger(LeafFilterFactory.class);
-  public static final String MESSAGE = "Conversion to Parquet FilterPredicate not supported for %s "
-      + ".Try setting the below configs at session level\n set hive.optimize.index.filter=false;\n"
-      + "set hive.optimize.ppd=false;\n";
+  public static final String MESSAGE =
+      "The conversion to Parquet FilterPredicate is not supported for %s. Please try to set the following configurations at the session level\n set hive.optimize.index.filter=false;\n"
+          + " set hive.optimize.ppd=false;\n";
 
   class IntFilterPredicateLeafBuilder extends FilterPredicateLeafBuilder {
     /**
