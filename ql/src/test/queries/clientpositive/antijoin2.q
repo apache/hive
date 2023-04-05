@@ -17,25 +17,59 @@ insert into tt3 values (42), (1041);
 
 -- The result should be the same regardless of vectorization.
 
+explain
+select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
+explain cbo
+select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
 
+explain
+select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number);
+explain cbo
+select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number);
 select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number);
 
 
 set hive.vectorized.execution.enabled=true;
 
+explain
+select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
+explain cbo
+select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
 
+explain
+select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number);
+explain cbo
+select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number);
 select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number);
 
+
+-- Test n-way join which contains AntiJoin
 
 set hive.vectorized.execution.enabled=false;
 set hive.merge.nway.joins=true;
 
+explain
+select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
+explain cbo
+select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
