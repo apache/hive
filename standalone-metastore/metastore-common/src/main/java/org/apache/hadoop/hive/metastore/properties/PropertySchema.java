@@ -43,23 +43,23 @@ public class PropertySchema implements Serializable {
   /**
    * The schema name.
    */
-  private final String name;
+  private transient final String name;
   /**
    * The schema version number.
    */
-  private final AtomicInteger versionNumber;
+  private transient final AtomicInteger versionNumber;
   /**
    * The uuid.
    */
-  protected volatile UUID digest;
+  protected transient volatile UUID digest;
   /**
    * The properties and their types, may be empty, never null.
    */
-  protected final Map<String, PropertyType<?>> properties;
+  protected transient final Map<String, PropertyType<?>> properties;
   /**
    * The properties default value.
    */
-  protected Map<String, Object> values;
+  protected transient Map<String, Object> values;
 
   /**
    * A default schema that treats all properties as string.

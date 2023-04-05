@@ -177,7 +177,7 @@ public abstract class PropertyType<T> {
         return (Boolean) value;
       }
       if (value == null) {
-        return null;
+        return false; // because Spotbugs does not tolerate returning null booleans
       }
       return parse(value.toString());
     }
