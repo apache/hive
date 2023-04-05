@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.convert;
 
-
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -28,22 +28,30 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import java.util.Map;
 
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
+
 /**
  * Operation process of ALTER TABLE ... CONVERT command
  */
 public class AlterTableConvertOperation extends AbstractAlterTableOperation<AlterTableConvertDesc> {
 
   private enum ConversionFormats {
-    ICEBERG("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler");
+    ICEBERG(ImmutableMap.of(META_TABLE_STORAGE, "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler")),
+    ACID(ImmutableMap.of(TABLE_IS_TRANSACTIONAL, "true", TABLE_TRANSACTIONAL_PROPERTIES,
+        DEFAULT_TRANSACTIONAL_PROPERTY));
 
-    private final String className;
+    private final Map<String, String> properties;
 
-    ConversionFormats(String className) {
-      this.className = className;
+    ConversionFormats(Map<String, String> properties) {
+      this.properties = properties;
     }
 
-    public String className() {
-      return className;
+
+    public Map<String, String> properties() {
+      return properties;
     }
   }
 
@@ -55,15 +63,33 @@ public class AlterTableConvertOperation extends AbstractAlterTableOperation<Alte
   protected void doAlteration(Table table, Partition partition) throws HiveException {
     // Add the covert type
     String convertType = desc.getConvertSpec().getTargetType();
-    ConversionFormats format = ConversionFormats.valueOf(convertType);
-    if (format.className().equalsIgnoreCase(table.getParameters().get("storage_handler"))) {
-      throw new SemanticException("Can not convert table to " + format + " ,Table is already of that format");
-    }
-    table.getParameters().put("storage_handler", format.className());
+    ConversionFormats format = ConversionFormats.valueOf(convertType.toUpperCase());
 
-    Map<String, String> params = table.getParameters();
+    // Check the properties don't already exist, in that case we need not do any conversion
+    validatePropertiesAlreadyExist(format, table.getParameters());
+
+    // Add the conversion related table properties.
+    table.getParameters().putAll(format.properties());
+
+    // Add any additional table properties, if specified with the convert command.
     if (desc.getConvertSpec().getTblProperties() != null) {
-      params.putAll(desc.getConvertSpec().getTblProperties());
+      table.getParameters().putAll(desc.getConvertSpec().getTblProperties());
+    }
+  }
+
+  private void validatePropertiesAlreadyExist(ConversionFormats targetFormat, Map<String, String> originalParameters)
+      throws SemanticException {
+    boolean needsMigration = false;
+    for (Map.Entry<String, String> entry : targetFormat.properties().entrySet()) {
+      String originalParam = originalParameters.get(entry.getKey());
+      if (originalParam == null || !originalParam.equalsIgnoreCase(entry.getValue())) {
+        needsMigration = true;
+        break;
+      }
+    }
+
+    if (!needsMigration) {
+      throw new SemanticException("Can not convert table to " + targetFormat + " ,Table is already of that format");
     }
   }
 }

@@ -420,12 +420,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
-PREHOOK: query: alter table over10k_orc_bucketed_n0 set TBLPROPERTIES ('transactional'='true')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: alter table over10k_orc_bucketed_n0 convert to acid
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@over10k_orc_bucketed_n0
-PREHOOK: Output: default@over10k_orc_bucketed_n0
-POSTHOOK: query: alter table over10k_orc_bucketed_n0 set TBLPROPERTIES ('transactional'='true')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: alter table over10k_orc_bucketed_n0 convert to acid
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: default@over10k_orc_bucketed_n0
 PREHOOK: query: explain select t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by t, si, i
