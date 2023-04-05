@@ -1383,6 +1383,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (!db.isSetCatalogName()) {
       db.setCatalogName(getDefaultCatalog(conf));
     }
+    if (db.getName() == null) {
+      throw new MetaException("DbName cannot be null");
+    }
     CreateDatabaseRequest req = new CreateDatabaseRequest(db.getName());
     if (db.isSetDescription()) {
       req.setDescription(db.getDescription());
@@ -2677,7 +2680,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Partition getPartition(String catName, String dbName, String tblName,
                                 List<String> partVals) throws TException {
-
+    if (dbName == null || tblName == null || partVals == null) {
+      throw new MetaException("DbName/TableName/PartitionValues cannot be null");
+    }
     GetPartitionRequest getPartitionRequest = new GetPartitionRequest(dbName, tblName, partVals);
     getPartitionRequest.setCatName(catName);
     GetPartitionResponse res = client.get_partition_req(getPartitionRequest);
@@ -3194,6 +3199,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected List<String> listPartitionNamesInternal(String catName, String dbName, String tableName,
       int maxParts) throws TException {
+    if (dbName == null || tableName == null) {
+      throw new MetaException("DbName/TableName cannot be null");
+    }
     PartitionsRequest partitionReq = new PartitionsRequest(dbName, tableName);
     partitionReq.setCatName(catName);
     partitionReq.setMaxParts(shrinkMaxtoShort(maxParts));
@@ -3217,6 +3225,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected List<String> listPartitionNamesInternal(String catName, String db_name, String tbl_name,
       List<String> part_vals, int max_parts) throws MetaException, TException, NoSuchObjectException {
+    if (db_name == null || tbl_name == null) {
+      throw new MetaException("DbName/TableName cannot be null");
+    }
     GetPartitionNamesPsRequest getPartitionNamesPsRequest = new GetPartitionNamesPsRequest(db_name, tbl_name);
     getPartitionNamesPsRequest.setCatName(catName);
     getPartitionNamesPsRequest.setPartValues(part_vals);
