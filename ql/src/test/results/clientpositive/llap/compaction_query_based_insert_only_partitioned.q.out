@@ -1,6 +1,6 @@
-PREHOOK: query: DROP TABLE orc_partition
+PREHOOK: query: DROP TABLE IF EXISTS orc_partition
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orc_partition
+POSTHOOK: query: DROP TABLE IF EXISTS orc_partition
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE orc_partition
 (a STRING, b STRING)

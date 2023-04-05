@@ -11,7 +11,7 @@
 --! qt:replace:/bucketing_version=(\d+)/#Masked#/
 --! qt:replace:/id:(\d+)/#Masked#/
 
-DROP TABLE orc_partition;
+DROP TABLE IF EXISTS orc_partition;
 
 CREATE TABLE orc_partition
 (a STRING, b STRING)

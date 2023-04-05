@@ -1,6 +1,6 @@
-PREHOOK: query: DROP TABLE orc_partition_clustered
+PREHOOK: query: DROP TABLE IF EXISTS orc_partition_clustered
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orc_partition_clustered
+POSTHOOK: query: DROP TABLE IF EXISTS orc_partition_clustered
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE orc_partition_clustered
 (a STRING, b STRING)

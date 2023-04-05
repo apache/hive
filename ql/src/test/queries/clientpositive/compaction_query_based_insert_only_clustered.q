@@ -11,7 +11,7 @@
 --! qt:replace:/bucketing_version=(\d+)/#Masked#/
 --! qt:replace:/id:(\d+)/#Masked#/
 
-drop table orc_bucketed;
+DROP TABLE IF EXISTS orc_bucketed;
 
 create table orc_bucketed (a int, b string) clustered by (a) into 3 buckets stored as orc TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only');
 
