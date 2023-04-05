@@ -879,11 +879,10 @@ public class Hive {
       if (environmentContext == null) {
         environmentContext = new EnvironmentContext();
       }
-      if (environmentContext.isSetProperties() && AlterTableType.RENAME.toString()
-          .equalsIgnoreCase(environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE))) {
+      if (isRenameOperation(environmentContext)) {
         newTbl.validateName(conf);
-        environmentContext.putToProperties(HiveMetaHook.PRE_RENAME_TABLE_NAME, tblName);
-        environmentContext.putToProperties(HiveMetaHook.PRE_RENAME_DB_NAME, dbName);
+        environmentContext.putToProperties(HiveMetaHook.OLD_TABLE_NAME, tblName);
+        environmentContext.putToProperties(HiveMetaHook.OLD_DB_NAME, dbName);
       } else {
         newTbl.checkValidity(conf);
       }
@@ -924,6 +923,16 @@ public class Hive {
     } catch (TException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     }
+  }
+
+  private static boolean isRenameOperation(EnvironmentContext environmentContext) {
+    if (environmentContext.isSetProperties()) {
+      String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
+      if (operation != null) {
+        return AlterTableType.RENAME.equals(AlterTableType.valueOf(operation));
+      }
+    }
+    return false;
   }
 
   /**

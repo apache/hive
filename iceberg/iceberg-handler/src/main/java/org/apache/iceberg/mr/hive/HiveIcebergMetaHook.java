@@ -320,8 +320,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     catalogProperties = getCatalogProperties(hmsTable);
     setupAlterOperationType(hmsTable, context);
     if (AlterTableType.RENAME.equals(currentAlterTableOp)) {
-      catalogProperties.put(Catalogs.NAME, TableIdentifier.of(context.getProperties().get(PRE_RENAME_DB_NAME),
-          context.getProperties().get(PRE_RENAME_TABLE_NAME)).toString());
+      catalogProperties.put(Catalogs.NAME, TableIdentifier.of(context.getProperties().get(OLD_DB_NAME),
+          context.getProperties().get(OLD_TABLE_NAME)).toString());
     }
     if (commitLock == null) {
       commitLock = new HiveCommitLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),

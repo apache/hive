@@ -284,8 +284,7 @@ public class Table implements Serializable {
 
   public void validateName(Configuration conf) throws HiveException {
     String name = tTable.getTableName();
-    if (null == name || name.length() == 0
-        || !MetaStoreUtils.validateName(name, conf)) {
+    if (StringUtils.isBlank(name) || !MetaStoreUtils.validateName(name, conf)) {
       throw new HiveException("[" + name + "]: is not a valid table name");
     }
   }
