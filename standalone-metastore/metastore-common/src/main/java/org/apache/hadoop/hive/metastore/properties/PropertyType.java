@@ -22,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 
+import javax.annotation.Nullable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -153,15 +154,17 @@ public abstract class PropertyType<T> {
   };
 
   public static final PropertyType<Boolean> BOOLEAN = new PropertyType<Boolean>("boolean") {
+    @Nullable
     @Override public Boolean cast(Object value) {
       if (value instanceof Boolean) {
         return (Boolean) value;
       }
       if (value == null) {
-        return null;
+        return false; // because Spotbugs does not tolerate returning null booleans
       }
       return parse(value.toString());
     }
+    @Nullable
     @Override public Boolean parse(String str) {
       if ("true".equalsIgnoreCase(str)) {
         return true;
@@ -172,6 +175,7 @@ public abstract class PropertyType<T> {
       return null;
     }
 
+    @Nullable
     @Override public String format(Object value) {
       if (value instanceof Boolean) {
         return ((Boolean) value) ? "true" : "false";
