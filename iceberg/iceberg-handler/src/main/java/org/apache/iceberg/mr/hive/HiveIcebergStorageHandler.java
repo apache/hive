@@ -335,7 +335,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Table table = getTable(hmsTable);
-    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM).toLowerCase();
+    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE).toLowerCase();
     Map<String, String> stats = Maps.newHashMap();
     switch (statsSource) {
       case ICEBERG:
@@ -381,22 +381,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean canSetColStatistics() {
-    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM).toLowerCase();
-    return statsSource.equals(PUFFIN);
+    return getStatsSource().equals(ICEBERG);
   }
 
   @Override
-  public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
-
-    org.apache.hadoop.hive.ql.metadata.Table hmsTable = tbl;
-    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
-    Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
+  public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = Catalogs.loadTable(conf, Utilities.getTableDesc(hmsTable).getProperties());
     if (table.currentSnapshot() != null) {
-      String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_COL_STATS_SOURCE).toLowerCase();
-      String statsPath = table.location() + STATS + table.name() + table.currentSnapshot().snapshotId();
-      if (statsSource.equals(PUFFIN)) {
-        try (FileSystem fs = new Path(table.location()).getFileSystem(conf)) {
-          if (fs.exists(new Path(statsPath))) {
+      Path statsPath = getStatsPath(table);
+      if (getStatsSource().equals(ICEBERG)) {
+        try (FileSystem fs = statsPath.getFileSystem(conf)) {
+          if (fs.exists(statsPath)) {
             return true;
           }
         } catch (IOException e) {
@@ -408,34 +403,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
-
-    org.apache.hadoop.hive.ql.metadata.Table hmsTable = tbl;
-    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
-    Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
-    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_COL_STATS_SOURCE).toLowerCase();
-    switch (statsSource) {
-      case ICEBERG:
-        // Place holder for iceberg stats
-        break;
-      case PUFFIN:
-        String snapshotId = table.name() + table.currentSnapshot().snapshotId();
-        String statsPath = table.location() + STATS + snapshotId;
-        LOG.info("Using stats from puffin file at:" + statsPath);
-        try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
-          BlobMetadata blobMetadata = reader.fileMetadata().blobs().get(0);
-          Map<BlobMetadata, List<ColumnStatistics>> collect =
-              Streams.stream(reader.readAll(ImmutableList.of(blobMetadata))).collect(Collectors.toMap(Pair::first,
-                  blobMetadataByteBufferPair -> SerializationUtils.deserialize(
-                      ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
-
-          return collect.entrySet().stream().iterator().next().getValue().get(0).getStatsObj();
-        } catch (IOException e) {
-          LOG.info(String.valueOf(e));
-        }
-        break;
-      default:
-        // fall back to metastore
+  public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = Catalogs.loadTable(conf, Utilities.getTableDesc(hmsTable).getProperties());
+    String statsPath = getStatsPath(table).toString();
+    LOG.info("Using stats from puffin file at:" + statsPath);
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
+      List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
+      Map<BlobMetadata, List<ColumnStatistics>> collect =
+          Streams.stream(reader.readAll(blobMetadata)).collect(Collectors.toMap(Pair::first,
+              blobMetadataByteBufferPair -> SerializationUtils.deserialize(
+                  ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
+      return collect.get(blobMetadata.get(0)).get(0).getStatsObj();
+    } catch (IOException e) {
+      LOG.error(String.valueOf(e));
     }
     return null;
   }
@@ -449,7 +429,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     String snapshotId = tbl.name() + tbl.currentSnapshot().snapshotId();
     byte[] serializeColStats = SerializationUtils.serialize((Serializable) colStats);
 
-    try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(tbl.location() + STATS + snapshotId))
+    try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(getStatsPath(tbl).toString()))
         .createdBy("Hive").build()) {
       writer.add(
           new Blob(
@@ -462,11 +442,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
               ImmutableMap.of()));
       writer.finish();
     } catch (IOException e) {
-      LOG.info(String.valueOf(e));
+      LOG.error(String.valueOf(e));
     }
     return false;
   }
 
+  private String getStatsSource() {
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, "metastore").toLowerCase();
+  }
+
+  private Path getStatsPath(Table table) {
+    return new Path(table.location() + STATS + table.name() + table.currentSnapshot().snapshotId());
+  }
 
   /**
    * No need for exclusive locks when writing, since Iceberg tables use optimistic concurrency when writing
