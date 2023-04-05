@@ -6292,6 +6292,10 @@ public class HiveConf extends Configuration {
     return getVar(conf, ConfVars.HIVEQUERYSTRING, EncoderDecoderFactory.URL_ENCODER_DECODER);
   }
 
+  public static String getQueryId(Configuration conf) {
+    return getVar(conf, HiveConf.ConfVars.HIVEQUERYID, "");
+  }
+
   public void setQueryString(String query) {
     setQueryString(this, query);
   }

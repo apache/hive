@@ -115,9 +115,8 @@ public class SessionStateUtil {
     return addResource(conf, COMMIT_INFO_PREFIX + tableName, newCommitInfoMap);
   }
 
-  private static Optional<QueryState> getQueryState(Configuration conf) {
-    return Optional.ofNullable(SessionState.get())
-        .map(session -> session.getQueryState(conf.get(HiveConf.ConfVars.HIVEQUERYID.varname, "")));
+  public static Optional<QueryState> getQueryState(Configuration conf) {
+    return Optional.ofNullable(SessionState.get()).map(ss -> ss.getQueryState(HiveConf.getQueryId(conf)));
   }
 
   /**
