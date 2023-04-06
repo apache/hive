@@ -42,6 +42,7 @@ import com.google.common.base.Joiner;
  * //  -i interval       sampling interval in nanoseconds (long)
  * //  -j jstackdepth    maximum Java stack depth (integer)
  * //  -b bufsize        frame buffer size (long)
+ * //  -m method         fully qualified method name: 'ClassName.methodName'
  * //  -t                profile different threads separately
  * //  -s                simple class names instead of FQN
  * //  -o fmt[,fmt...]   output format: summary|traces|flat|collapsed|svg|tree|jfr
@@ -194,6 +195,14 @@ public class ProfileServlet extends HttpServlet {
     final Integer height = getInteger(req, "height", null);
     final Double minwidth = getMinWidth(req);
     final boolean reverse = req.getParameterMap().containsKey("reverse");
+    final String method = req.getParameter("method");
+
+    if (req.getParameter("event") != null && method != null) {
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      setResponseHeader(resp);
+      resp.getWriter().write("Event and method aren't allowed to be both used in the same request.");
+      return;
+    }
 
     if (process == null || !process.isAlive()) {
       try {
@@ -201,12 +210,12 @@ public class ProfileServlet extends HttpServlet {
         if (profilerLock.tryLock(lockTimeoutSecs, TimeUnit.SECONDS)) {
           try {
             File outputFile = new File(OUTPUT_DIR, "async-prof-pid-" + pid + "-" +
-              event.name().toLowerCase() + "-" + ID_GEN.incrementAndGet() + "." +
+              (method == null ? event.name().toLowerCase() : method) + "-" + ID_GEN.incrementAndGet() + "." +
               output.name().toLowerCase());
             List<String> cmd = new ArrayList<>();
             cmd.add(asyncProfilerHome + PROFILER_SCRIPT);
             cmd.add("-e");
-            cmd.add(event.getInternalName());
+            cmd.add(method == null ? event.getInternalName() : method);
             cmd.add("-d");
             cmd.add("" + duration);
             cmd.add("-o");
