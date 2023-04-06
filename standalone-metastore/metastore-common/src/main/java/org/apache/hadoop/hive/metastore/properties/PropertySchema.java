@@ -17,10 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Collections;
@@ -167,9 +170,14 @@ public class PropertySchema implements Serializable {
       output.writeInt(0);
     }
   }
-
   private Object writeReplace() throws ObjectStreamException {
+    // writeReplace() should hint spotbugs that we are taking over serialization;
+    // having to annotate all fields as transient is just to please it
     return new SerializationProxy<>(this);
+  }
+
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    throw new InvalidObjectException("proxy required");
   }
 
   /**
