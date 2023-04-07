@@ -47,6 +47,14 @@ public abstract class PropertyType<T> {
   static {
     SDTF.setTimeZone(UTC);
   }
+
+  /**
+   * @return a clone of the ISO8601, TZ=UTC
+   */
+  private static SimpleDateFormat getDateFormat() {
+    return (SimpleDateFormat) SDTF.clone();
+  }
+
   /** The type name. */
   private final String name;
 
@@ -292,9 +300,8 @@ public abstract class PropertyType<T> {
       if (str == null) {
         return null;
       }
-      SimpleDateFormat df = (SimpleDateFormat) SDTF.clone();
       try {
-        return df.parse(str);
+        return getDateFormat().parse(str);
       } catch (java.text.ParseException xparse) {
         return null;
       }
@@ -302,7 +309,7 @@ public abstract class PropertyType<T> {
 
     @Override public String format(Object value) {
       if (value instanceof Date) {
-        return SDTF.format((Date) value);
+        return getDateFormat().format((Date) value);
       }
       return null;
     }

@@ -62,11 +62,10 @@ import static org.apache.hadoop.hive.metastore.properties.Serializer.SERIALIZER;
  *   One should consider the constructor as being potentially fed with an invalid stream so
  *   all usual checks of a public constructor should apply.
  * </p>
- * </p>
  * Standard usage is to add the Serializable interface implementation through the following 2 methods:
  * <code>
  * private Object writeReplace() throws ObjectStreamException {
- *     return new SerializationProxy<TheClass>(this);
+ *     return new SerializationProxy&lt;TheClass&gt;(this);
  * }
  * private void readObject(ObjectInputStream in)throws IOException,ClassNotFoundException{
  *     throw new InvalidObjectException("proxy required");

@@ -154,6 +154,17 @@ public class SoftCache<K, V> {
         return map().put(key, value);
     }
 
+
+    /**
+     * Calls putIfAbsent on underlying map, useful when cache is meant to behave as a pull-thru.
+     * @param key tke key
+     * @param value the value
+     * @return the value associated to the key
+     */
+    public V putIfAbsent(K key, V value) {
+        return map().putIfAbsent(key, value);
+    }
+
     /**
      * Calls computeIfAbsent on underlying map, useful when cache is meant to behave as a pull-thru.
      * @param key tke key
@@ -191,7 +202,7 @@ public class SoftCache<K, V> {
 
     /**
      * Creates the underlying cache map.
-     * @param capacity the cache size, must be > 0
+     * @param capacity the cache size, must be &gt; 0
      * @param synchro whether the cache is synchronized or not
      * @return a Map usable as a cache bounded to the given size
      */
