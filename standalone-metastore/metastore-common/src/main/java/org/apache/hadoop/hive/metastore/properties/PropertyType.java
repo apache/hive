@@ -49,21 +49,6 @@ public abstract class PropertyType<T> {
   static {
     SDTF.setTimeZone(UTC);
   }
-
-  /**
-   * This should be coded simply but Sonar insists...
-   * <code>
-   *     return (SimpleDateFormat) SDTF.clone();
-   * </code>
-   * @return a clone of the ISO8601, TZ=UTC
-   */
-  private static SimpleDateFormat getDateFormat() {
-    Format fool = SDTF;
-    @SuppressFBWarnings("STCAL_INVOKE_ON_STATIC_CALENDAR_INSTANCE")
-    SimpleDateFormat sdtf =  (SimpleDateFormat) fool.clone();
-    return sdtf;
-  }
-
   /** The type name. */
   private final String name;
 
