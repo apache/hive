@@ -107,7 +107,7 @@ public abstract class PropertyManager {
 
   /**
    * Creates an instance of manager using its declared namespace.
-   * @param namespace the manager&quote;s namespace
+   * @param namespace the manager&quot;s namespace
    * @param store the property store
    * @return a property manager instance
    */
@@ -185,7 +185,7 @@ public abstract class PropertyManager {
   }
 
   /**
-   * Imports a set of default values into this store&quote;s schema.
+   * Imports a set of default values into this store&quot;s schema.
    * The properties should be of the form schema_name.property_name=value.
    * Note that this implies the manager has at least one known property map schema.
    * @param importsp the properties
@@ -219,7 +219,7 @@ public abstract class PropertyManager {
    * @param map the map of properties to inject.
    */
   public void setProperties(Map<String, Object> map) {
-    map.forEach((k, v)-> setProperty(k, v));
+    map.forEach(this::setProperty);
   }
 
   /**
@@ -428,7 +428,7 @@ public abstract class PropertyManager {
     PropertyMap dirtyMap;
     final Map<String, PropertyMap> dirtyMaps = this.dirtyMaps;
     synchronized (dirtyMaps) {
-      dirtyMap = dirtyMaps.get(mapKey.toString());
+      dirtyMap = dirtyMaps.get(mapKey);
     }
     PropertyMap map;
     if (dirtyMap != null && Objects.equals(PropertyMap.DROPPED, dirtyMap.getDigest())) {
@@ -532,7 +532,7 @@ public abstract class PropertyManager {
     }
     final Function<PropertyMap, PropertyMap> transform = (map)->{
       MapWrapper wrapped = new MapWrapper(map);
-      Object result = null;
+      Object result;
       try {
         result = predicate.evaluate(wrapped);
       } catch(JexlException xany) {
