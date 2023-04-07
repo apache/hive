@@ -5722,9 +5722,10 @@ public class ObjectStore implements RawStore, Configurable {
   public boolean dropProperties(String key) throws MetaException {
     boolean success = false;
     Transaction tx = null;
+    Query query = null;
     try {
       if (openTransaction()) {
-        Query query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
+        query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
         query.declareParameters("java.lang.String key");
         Collection<MMetastoreDBProperties> properties = (Collection<MMetastoreDBProperties>) query.execute(key);
         if (!properties.isEmpty()) {
@@ -5735,7 +5736,7 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (Exception e) {
       LOG.warn("Metastore property drop failed", e);
     } finally {
-      rollbackAndCleanup(success, null);
+      rollbackAndCleanup(success, query);
     }
     return success;
   }
@@ -5784,11 +5785,12 @@ public class ObjectStore implements RawStore, Configurable {
   public boolean renameProperties(String mapKey, String newKey) throws MetaException {
     boolean success = false;
     Transaction tx = null;
+    Query query = null;
     try {
       LOG.debug("Attempting to rename property {} to {} for the metastore db", mapKey, newKey);
       if (openTransaction()) {
         // ensure the target is clear
-        Query query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
+        query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
         query.declareParameters("java.lang.String key");
         query.setUnique(true);
         MMetastoreDBProperties properties = (MMetastoreDBProperties) query.execute(newKey);
@@ -5822,7 +5824,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
     } finally {
-      rollbackAndCleanup(success, null);
+      rollbackAndCleanup(success, query);
     }
     return false;
   }

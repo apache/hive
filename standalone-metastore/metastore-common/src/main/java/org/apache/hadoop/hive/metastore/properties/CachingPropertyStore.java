@@ -99,9 +99,9 @@ public class CachingPropertyStore extends PropertyStore {
       }
     }
     // digests now contains the names of maps required that are not results
-    Map<String, PropertyMap> maps = store.selectProperties(keyPrefix, (k) -> digests.containsKey(k), getSchema);
+    Map<String, PropertyMap> selectedMaps = store.selectProperties(keyPrefix, digests::containsKey, getSchema);
     // we cache those new maps and for each add the copy to the result if we have not loaded and cached it concurrently
-    maps.forEach((k, v) -> {
+    selectedMaps.forEach((k, v) -> {
       PropertyMap m = maps.putIfAbsent(k, v);
       results.put(k, m != null && m.isDirty()? m : v.copy());
     });
