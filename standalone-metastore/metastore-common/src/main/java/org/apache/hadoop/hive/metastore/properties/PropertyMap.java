@@ -55,11 +55,11 @@ public class PropertyMap implements Serializable {
   /**
    * The owning store.
    */
-  protected transient final PropertyStore store;
+  protected final transient PropertyStore store;
   /**
    * The schema for this map, describes allowed properties and their types.
    */
-  protected transient final PropertySchema schema;
+  protected final transient PropertySchema schema;
   /**
    * The uuid.
    */

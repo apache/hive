@@ -25,8 +25,6 @@ import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.JexlFeatures;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,31 +110,26 @@ public abstract class PropertyManager {
    * @param namespace the manager&quot;s namespace
    * @param store the property store
    * @return a property manager instance
-   * @throws MetaException if the manager creation fails
-   * @throws NoSuchObjectException if the store is null or no constructor was declared
    */
-  public static PropertyManager create(String namespace, PropertyStore store) throws MetaException, NoSuchObjectException {
+  public static PropertyManager create(String namespace, PropertyStore store) {
     final Constructor<? extends PropertyManager> ctor;
-    synchronized (NSMANAGERS) {
+    synchronized(NSMANAGERS) {
       ctor = NSMANAGERS.get(namespace);
     }
-    if (ctor == null) {
-      throw new NoSuchObjectException("no PropertyManager namespace is declared, namespace " + namespace);
+    if (ctor != null) {
+      try {
+        return ctor.newInstance(namespace, store);
+      } catch(Exception xany) {
+        LOGGER.error("property manager creation failed "+ namespace, xany);
+      }
+    } else {
+      LOGGER.error("no such property manager namespace is declared " + namespace);
     }
-    if (store == null) {
-      throw new NoSuchObjectException("no PropertyStore exists " + namespace);
-    }
-    try {
-      return ctor.newInstance(namespace, store);
-    } catch (Exception xany) {
-      LOGGER.error("PropertyManager creation failed " + namespace, xany);
-      throw new MetaException("PropertyManager creation failed, namespace " + namespace);
-    }
+    return null;
   }
 
   /**
    * JEXL adapter.
-   * <p>public for introspection.</p>
    */
   public static class MapWrapper implements JexlContext {
     PropertyMap map;
@@ -225,7 +218,7 @@ public abstract class PropertyManager {
    * If the value is null, the property is removed.
    * @param map the map of properties to inject.
    */
-  public void setProperties(Map<String, ?> map) {
+  public void setProperties(Map<String, Object> map) {
     map.forEach(this::setProperty);
   }
 
@@ -441,7 +434,7 @@ public abstract class PropertyManager {
     if (dirtyMap != null && Objects.equals(PropertyMap.DROPPED, dirtyMap.getDigest())) {
       map = dirtyMap;
     } else {
-      // is it stored ?
+      // is is stored ?
       UUID digest = store.fetchDigest(mapKey);
       // not stored nor cached, nothing to do
       if (digest == null) {
