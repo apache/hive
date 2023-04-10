@@ -231,7 +231,7 @@ public final class Catalogs {
       Preconditions.checkNotNull(name, "Table identifier not set");
       catalog.get().renameTable(TableIdentifier.parse(name), to);
     } else {
-      throw new RuntimeException("Rename from " + props.getProperty(NAME) + " to " + to + "failed");
+      throw new RuntimeException("Rename from " + props.getProperty(NAME) + " to " + to + " failed");
     }
   }
 
