@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +55,7 @@ public class HiveDefaultRelMetadataProvider {
   // the calculations. These will most likely rarely be changed.
   private static final int MAX_PROVIDERS = 20;
   private static Map<Map<HiveConf.ConfVars, Object>, HiveDefaultRelMetadataProvider> ALL_PROVIDERS =
-      new LRUMap(MAX_PROVIDERS);
+      new LRUMap<>(MAX_PROVIDERS);
 
   /**
    * The default metadata provider can be instantiated statically since
