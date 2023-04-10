@@ -35,9 +35,8 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -46,6 +45,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -378,59 +378,21 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return table;
   }
 
-
   @Override
-  public boolean canSetColStatistics() {
-    return getStatsSource().equals(ICEBERG);
+  public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    return table.currentSnapshot() != null ? getStatsSource().equals(ICEBERG) : false;
   }
 
   @Override
-  public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    Table table = Catalogs.loadTable(conf, Utilities.getTableDesc(hmsTable).getProperties());
-    if (table.currentSnapshot() != null) {
-      Path statsPath = getStatsPath(table);
-      if (getStatsSource().equals(ICEBERG)) {
-        try (FileSystem fs = statsPath.getFileSystem(conf)) {
-          if (fs.exists(statsPath)) {
-            return true;
-          }
-        } catch (IOException e) {
-          LOG.warn(e.getMessage());
-        }
-      }
-    }
-    return false;
-  }
-
-  @Override
-  public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    Table table = Catalogs.loadTable(conf, Utilities.getTableDesc(hmsTable).getProperties());
-    String statsPath = getStatsPath(table).toString();
-    LOG.info("Using stats from puffin file at:" + statsPath);
-    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
-      List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
-      Map<BlobMetadata, List<ColumnStatistics>> collect =
-          Streams.stream(reader.readAll(blobMetadata)).collect(Collectors.toMap(Pair::first,
-              blobMetadataByteBufferPair -> SerializationUtils.deserialize(
-                  ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
-      return collect.get(blobMetadata.get(0)).get(0).getStatsObj();
-    } catch (IOException e) {
-      LOG.error(String.valueOf(e));
-    }
-    return null;
-  }
-
-
-  @Override
-  public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table table,
+  public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       List<ColumnStatistics> colStats) {
-    TableDesc tableDesc = Utilities.getTableDesc(table);
-    Table tbl = Catalogs.loadTable(conf, tableDesc.getProperties());
-    String snapshotId = tbl.name() + tbl.currentSnapshot().snapshotId();
+    Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    String snapshotId = String.format("%s-STATS-%d", tbl.name(), tbl.currentSnapshot().snapshotId());
+    invalidateStats(getStatsPath(tbl));
     byte[] serializeColStats = SerializationUtils.serialize((Serializable) colStats);
-
     try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(getStatsPath(tbl).toString()))
-        .createdBy("Hive").build()) {
+        .createdBy(Constants.HIVE_ENGINE).build()) {
       writer.add(
           new Blob(
               tbl.name() + "-" + snapshotId,
@@ -447,12 +409,57 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return false;
   }
 
+  @Override
+  public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    if (canSetColStatistics(hmsTable)) {
+      Path statsPath = getStatsPath(table);
+      try (FileSystem fs = statsPath.getFileSystem(conf)) {
+        if (fs.exists(statsPath)) {
+          return true;
+        }
+      } catch (IOException e) {
+        LOG.warn("Exception when trying to find Iceberg column stats for table:{} , snapshot:{} , " +
+            "statsPath: {} , stack trace: {}", table.name(), table.currentSnapshot(), statsPath, e);
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    String statsPath = getStatsPath(table).toString();
+    LOG.info("Using stats from puffin file at: {}", statsPath);
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
+      List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
+      Map<BlobMetadata, List<ColumnStatistics>> collect =
+          Streams.stream(reader.readAll(blobMetadata)).collect(Collectors.toMap(Pair::first,
+              blobMetadataByteBufferPair -> SerializationUtils.deserialize(
+                  ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
+      return collect.get(blobMetadata.get(0)).get(0).getStatsObj();
+    } catch (IOException e) {
+      LOG.error("Error when trying to read iceberg col stats from puffin files: {}", e);
+    }
+    return null;
+  }
+
   private String getStatsSource() {
-    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, "metastore").toLowerCase();
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, ICEBERG).toLowerCase();
   }
 
   private Path getStatsPath(Table table) {
     return new Path(table.location() + STATS + table.name() + table.currentSnapshot().snapshotId());
+  }
+
+  private void invalidateStats(Path statsPath) {
+    try (FileSystem fs = statsPath.getFileSystem(conf)) {
+      if (fs.exists(statsPath)) {
+        fs.delete(statsPath, true);
+      }
+    } catch (IOException e) {
+      LOG.error("Failed to invalidate stale column stats: {}", e);
+    }
   }
 
   /**

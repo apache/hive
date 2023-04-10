@@ -218,7 +218,7 @@ public class ColStatsProcessor implements IStatsProcessor {
       }
 
       start = System. currentTimeMillis();
-      if (tbl != null && tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics()) {
+      if (tbl != null && tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
         tbl.getStorageHandler().setColStatistics(tbl, colStats);
       }
       db.setPartitionColumnStatistics(request);

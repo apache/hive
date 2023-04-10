@@ -282,7 +282,7 @@ public interface HiveStorageHandler extends Configurable {
    * Check if the storage handler can set col statistics.
    * @return true if the storage handler can set the col statistics
    */
-  default boolean canSetColStatistics() {
+  default boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
     return false;
   }
 

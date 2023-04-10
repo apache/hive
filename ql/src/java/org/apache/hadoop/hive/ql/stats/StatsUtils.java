@@ -1070,7 +1070,7 @@ public class StatsUtils {
     if (fetchColStats && !colStatsToRetrieve.isEmpty()) {
       try {
         List<ColumnStatisticsObj> colStat;
-        if (table != null && table.isNonNative() && table.getStorageHandler().canProvideColStatistics(table)) {
+        if (table.isNonNative() && table.getStorageHandler().canProvideColStatistics(table)) {
           colStat = table.getStorageHandler().getColStatistics(table);
         } else {
           colStat = Hive.get().getTableColumnStatistics(dbName, tabName, colStatsToRetrieve, false);
