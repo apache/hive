@@ -49,6 +49,14 @@ public abstract class PropertyType<T> {
   static {
     SDTF.setTimeZone(UTC);
   }
+
+  /**
+   * @return a clone of the ISO8601, TZ=UTC
+   */
+  private static SimpleDateFormat getDateFormat() {
+    return (SimpleDateFormat) SDTF.clone();
+  }
+
   /** The type name. */
   private final String name;
 
