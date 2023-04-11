@@ -41,6 +41,7 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
@@ -623,7 +624,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
             if (!shareSameType(knownConstants, expressions)) {
               return call;
             }
-            knownConstants.retainAll(expressions);
+            retainAll(expressions, knownConstants);
           } else {
             for (int j = 1; j < inCall.getOperands().size(); j++) {
               RexNode constNode = inCall.getOperands().get(j);
@@ -653,7 +654,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
             if (!shareSameType(knownConstants, nextConstant)) {
               return call;
             }
-            knownConstants.retainAll(nextConstant);
+            retainAll(nextConstant, knownConstants);
           } else {
             inLHSExprToRHSExprs.put(c.exprNode, c.constNode);
           }
@@ -667,6 +668,22 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       newOperands.addAll(operands);
       // Return node
       return RexUtil.composeConjunction(rexBuilder, newOperands, false);
+    }
+
+    private static void retainAll(Collection<RexNode> elementsToRetain, Collection<RexNode> collection) {
+      collection.removeIf(rexNode -> elementsToRetain.stream().noneMatch(
+              rexNodeToRetain -> equalsWithSimilarType(rexNode, rexNodeToRetain)));
+    }
+
+    private static boolean equalsWithSimilarType(RexNode rexNode1, RexNode rexNode2) {
+      if (!(rexNode1 instanceof RexLiteral) || !(rexNode2 instanceof RexLiteral)) {
+        return rexNode1.equals(rexNode2);
+      }
+
+      RexLiteral rexLiteral1 = (RexLiteral) rexNode1;
+      RexLiteral rexLiteral2 = (RexLiteral) rexNode2;
+      return rexLiteral1.getValue().compareTo(rexLiteral2.getValue()) == 0 &&
+              rexLiteral1.getType().getSqlTypeName().equals(rexLiteral2.getType().getSqlTypeName());
     }
 
     /**
