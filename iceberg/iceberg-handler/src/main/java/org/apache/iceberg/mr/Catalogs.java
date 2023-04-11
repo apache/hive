@@ -222,6 +222,19 @@ public final class Catalogs {
     return new HadoopTables(conf).create(schema, spec, map, location);
   }
 
+  public static void renameTable(Configuration conf, Properties props, TableIdentifier to) {
+    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+
+    Optional<Catalog> catalog = loadCatalog(conf, catalogName);
+    if (catalog.isPresent()) {
+      String name = props.getProperty(NAME);
+      Preconditions.checkNotNull(name, "Table identifier not set");
+      catalog.get().renameTable(TableIdentifier.parse(name), to);
+    } else {
+      throw new RuntimeException("Rename from " + props.getProperty(NAME) + " to " + to + " failed");
+    }
+  }
+
   static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
     String catalogType = getCatalogType(conf, catalogName);
     if (NO_CATALOG_TYPE.equalsIgnoreCase(catalogType)) {

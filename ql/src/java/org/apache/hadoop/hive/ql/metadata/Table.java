@@ -254,11 +254,7 @@ public class Table implements Serializable {
 
   public void checkValidity(Configuration conf) throws HiveException {
     // check for validity
-    String name = tTable.getTableName();
-    if (null == name || name.length() == 0
-        || !MetaStoreUtils.validateName(name, conf)) {
-      throw new HiveException("[" + name + "]: is not a valid table name");
-    }
+    validateName(conf);
     if (0 == getCols().size()) {
       throw new HiveException(
           "at least one column must be specified for the table");
@@ -284,6 +280,13 @@ public class Table implements Serializable {
     }
 
     validateColumns(getCols(), getPartCols());
+  }
+
+  public void validateName(Configuration conf) throws HiveException {
+    String name = tTable.getTableName();
+    if (StringUtils.isBlank(name) || !MetaStoreUtils.validateName(name, conf)) {
+      throw new HiveException("[" + name + "]: is not a valid table name");
+    }
   }
 
   public StorageDescriptor getSd() {
