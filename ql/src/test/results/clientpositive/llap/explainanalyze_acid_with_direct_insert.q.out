@@ -679,24 +679,24 @@ STAGE PLANS:
                 TableScan
                   alias: analyze_part_table
                   filterExpr: (b = 3) (type: boolean)
-                  Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: 11 (type: int), 3 (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -711,10 +711,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 3 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -818,17 +818,17 @@ STAGE PLANS:
                 TableScan
                   alias: analyze_part_table
                   filterExpr: (b = 1) (type: boolean)
-                  Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2/2 Data size: 6386 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2/2 Data size: 6386 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2/2 Data size: 6386 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -837,10 +837,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 1 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2/2 Data size: 6386 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2/2 Data size: 6386 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1639,24 +1639,24 @@ STAGE PLANS:
                 TableScan
                   alias: analyze_part_table
                   filterExpr: (b = 3) (type: boolean)
-                  Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: 11 (type: int), 3 (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1671,10 +1671,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 3 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3/3 Data size: 6434 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1778,17 +1778,17 @@ STAGE PLANS:
                 TableScan
                   alias: analyze_part_table
                   filterExpr: (b = 1) (type: boolean)
-                  Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2/2 Data size: 6386 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2/2 Data size: 6386 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2/2 Data size: 6386 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -1797,10 +1797,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 1 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2/2 Data size: 6386 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2/2 Data size: 6386 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat

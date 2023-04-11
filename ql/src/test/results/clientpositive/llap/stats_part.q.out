@@ -227,7 +227,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	6                   
 	rawDataSize         	0                   
-	totalSize           	2274                
+	totalSize           	2292                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -288,7 +288,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	3042                
+	totalSize           	3066                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -445,7 +445,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	3042                
+	totalSize           	3066                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -530,7 +530,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	3042                
+	totalSize           	3066                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
