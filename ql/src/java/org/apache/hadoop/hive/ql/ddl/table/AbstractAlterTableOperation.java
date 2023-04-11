@@ -132,7 +132,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
       throws HiveException {
     if (partitions == null) {
       updateModifiedParameters(table.getTTable().getParameters(), context.getConf());
-      table.checkValidity(context.getConf());
+      checkValidity(table, context);
     } else {
       for (Partition partition : partitions) {
         updateModifiedParameters(partition.getParameters(), context.getConf());
@@ -226,6 +226,10 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
       context.getWork().getInputs().add(new ReadEntity(oldTable));
       DDLUtils.addIfAbsentByName(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK), context);
     }
+  }
+
+  protected void checkValidity(Table table, DDLOperationContext context) throws HiveException {
+    table.checkValidity(context.getConf());
   }
 
   private static void updateModifiedParameters(Map<String, String> params, HiveConf conf) throws HiveException {
