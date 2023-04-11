@@ -57,6 +57,7 @@ public abstract class PropertyType<T> {
    * </code>
    * @return a clone of the ISO8601, TZ=UTC
    */
+  @SuppressFBWarnings("STCAL_INVOKE_ON_STATIC_CALENDAR_INSTANCE")
   private static SimpleDateFormat getDateFormat() {
     Format fool = SDTF;
     @SuppressFBWarnings("STCAL_INVOKE_ON_STATIC_CALENDAR_INSTANCE")
