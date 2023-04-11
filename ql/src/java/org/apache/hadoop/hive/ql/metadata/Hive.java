@@ -3799,6 +3799,47 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  /**
+   * This method helps callers trigger an INSERT event for DML queries without having to deal with
+   * HMS objects. This takes java object types as arguments.
+   * @param dbName Name of the hive database this table belongs to.
+   * @param tblName Name of the hive table this event is for.
+   * @param partitionSpec Map containing key/values for each partition column. Can be null if the event is for a table
+   * @param replace boolean to indicate whether the filelist is replacement of existing files. Treated as additions otherwise
+   * @param newFiles List of file paths affected (added/replaced) by this DML query. Can be null
+   * @throws HiveException if the table or partition does not exist or other internal errors in fetching them
+   */
+  public void fireInsertEvent(String dbName, String tblName,
+      Map<String, String> partitionSpec, boolean replace, List<String> newFiles)
+      throws HiveException {
+    if (!conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
+      LOG.info("DML Events not enabled. Set " + ConfVars.FIRE_EVENTS_FOR_DML.varname);
+      return;
+    }
+    Table table = getTable(dbName, tblName);
+    if (table != null && !table.isTemporary()) {
+      List<FileStatus> newFileStatusObject = null;
+      String parentDir = null;
+      if (newFiles != null && newFiles.size() > 0) {
+        newFileStatusObject = new ArrayList<>(newFiles.size());
+        if (partitionSpec != null && partitionSpec.size() > 0) {
+          // fetch the partition object to determine its location
+          Partition part = getPartition(table, partitionSpec, false);
+          parentDir = part.getLocation();
+        } else {
+          // fetch the table location
+          parentDir = table.getSd().getLocation();
+        }
+        for (String fileName: newFiles) {
+          FileStatus fStatus = new FileStatus();
+          fStatus.setPath(new Path(parentDir, fileName));
+          newFileStatusObject.add(fStatus);
+        }
+      }
+      fireInsertEvent(table, partitionSpec, replace, newFileStatusObject);
+    }
+  }
+
   private void fireInsertEvent(Table tbl, Map<String, String> partitionSpec, boolean replace, List<FileStatus> newFiles)
       throws HiveException {
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
@@ -4705,7 +4746,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
 
-    LOG.debug("The source path is " + fullF1 + " and the destination path is " + fullF2);
     return fullF1.startsWith(fullF2);
   }
 
