@@ -187,7 +187,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes(getThreadIdFromId(e.getInitiatorId()));
     os.write(Utilities.tabCode);
-    os.writeBytes(e.getPoolName());
+    os.writeBytes(e.isSetPoolName() ? e.getPoolName() : NO_VAL);
     os.write(Utilities.tabCode);
     os.writeBytes(e.isSetTxnId() ? Long.toString(e.getTxnId()) : NO_VAL);
     os.write(Utilities.tabCode);
