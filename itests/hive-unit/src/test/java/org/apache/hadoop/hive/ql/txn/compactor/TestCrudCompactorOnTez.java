@@ -177,18 +177,18 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":4}\t13\t13",
         },
         {
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t3\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":7}\t4\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t2\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t2\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":7}\t3\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t4\t4",
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":9}\t5\t4",
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":10}\t6\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":11}\t4\t3",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":11}\t5\t3",
         },
         {
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":12}\t2\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t3\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":14}\t6\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":15}\t5\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":12}\t6\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t4\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":14}\t2\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":15}\t3\t3",
             "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":16}\t6\t2",
             "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":17}\t5\t2",
         },
@@ -231,18 +231,18 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":5}\t12\t12",
         },
         {
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t3\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":7}\t4\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t2\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t2\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":7}\t3\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t4\t4",
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":9}\t5\t4",
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":10}\t6\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":11}\t4\t3",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":11}\t5\t3",
         },
         {
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":12}\t2\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t3\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":14}\t6\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":15}\t5\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":12}\t6\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t4\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":14}\t2\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":15}\t3\t3",
             "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":16}\t6\t2",
             "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":17}\t5\t2",
         },
@@ -519,6 +519,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t6\t4",
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":4}\t5\t2",
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":5}\t5\t3",
+            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":6}\t2\t4",
             "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t12\t12",
             "{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t13\t13",
             "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t14\t14",
@@ -527,14 +528,13 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":0}\t17\t17",
         },
         {
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t2\t4",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t3\t3",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":2}\t4\t4",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":3}\t4\t3",
+            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t3\t3",
+            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t4\t4",
+            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":2}\t4\t3",
+            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":3}\t2\t3",
         },
         {
-            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":0}\t2\t3",
-            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":1}\t3\t4",
+             "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":0}\t3\t4",
         },
     };
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
@@ -810,7 +810,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "1434", parameters.get("totalSize"));
+    Assert.assertEquals("The total table size is differing from the expected", "1446", parameters.get("totalSize"));
 
     //Do a major compaction
     CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
@@ -826,7 +826,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     parameters = Hive.get().getTable(tblName).getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "727", parameters.get("totalSize"));
+    Assert.assertEquals("The total table size is differing from the expected", "735", parameters.get("totalSize"));
   }
 
   @Test
