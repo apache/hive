@@ -8,6 +8,7 @@ insert into icev1 values (1, 'SSD'),(2, 'RAM');
 select * from icev1 order by id;
 
 -- do the rename
+explain alter table icev1 rename to icev1renamed;
 
 alter table icev1 rename to icev1renamed;
 
@@ -41,6 +42,8 @@ insert into iceorginpart values (1, 'ABC'),(2, 'CBS'),(3,'CBS'),(4, 'ABC'),(5, '
 delete from iceorginpart where id<3 OR id=7;
 
 select * from iceorginpart order by id;
+
+explain alter table iceorginpart rename to icerenamedpart;
 
 alter table iceorginpart rename to icerenamedpart;
 

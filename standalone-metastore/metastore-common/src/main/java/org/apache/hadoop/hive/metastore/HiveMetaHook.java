@@ -50,9 +50,9 @@ public interface HiveMetaHook {
   String SET_PROPERTIES = "set_properties";
   String UNSET_PROPERTIES = "unset_properties";
 
-  public static final String TABLE_TYPE = "table_type";
+  String TABLE_TYPE = "table_type";
 
-  public static final String ICEBERG = "ICEBERG";
+  String ICEBERG = "ICEBERG";
   String PROPERTIES_SEPARATOR = "'";
   String MIGRATE_HIVE_TO_ICEBERG = "migrate_hive_to_iceberg";
   String INITIALIZE_ROLLBACK_MIGRATION = "initialize_rollback_migration";

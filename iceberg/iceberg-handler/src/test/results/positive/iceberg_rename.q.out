@@ -24,6 +24,21 @@ POSTHOOK: Input: default@icev1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	SSD
 2	RAM
+PREHOOK: query: explain alter table icev1 rename to icev1renamed
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@icev1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@icev1
+PREHOOK: Output: default@icev1renamed
+POSTHOOK: query: explain alter table icev1 rename to icev1renamed
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@icev1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@icev1
+POSTHOOK: Output: default@icev1renamed
+Stage-0
+  Rename Table{"table name:":"default.icev1","new table name:":"default.icev1renamed"}
+
 PREHOOK: query: alter table icev1 rename to icev1renamed
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@icev1
@@ -155,6 +170,21 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 8	ABC
 9	AQWR
 10	YUIO
+PREHOOK: query: explain alter table iceorginpart rename to icerenamedpart
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@iceorginpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceorginpart
+PREHOOK: Output: default@icerenamedpart
+POSTHOOK: query: explain alter table iceorginpart rename to icerenamedpart
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@iceorginpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceorginpart
+POSTHOOK: Output: default@icerenamedpart
+Stage-0
+  Rename Table{"table name:":"default.iceorginpart","new table name:":"default.icerenamedpart"}
+
 PREHOOK: query: alter table iceorginpart rename to icerenamedpart
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@iceorginpart

@@ -879,7 +879,7 @@ public class Hive {
       if (environmentContext == null) {
         environmentContext = new EnvironmentContext();
       }
-      if (isRenameOperation(environmentContext)) {
+      if (isRename(environmentContext)) {
         newTbl.validateName(conf);
         environmentContext.putToProperties(HiveMetaHook.OLD_TABLE_NAME, tblName);
         environmentContext.putToProperties(HiveMetaHook.OLD_DB_NAME, dbName);
@@ -925,12 +925,10 @@ public class Hive {
     }
   }
 
-  private static boolean isRenameOperation(EnvironmentContext environmentContext) {
+  private static boolean isRename(EnvironmentContext environmentContext) {
     if (environmentContext.isSetProperties()) {
       String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
-      if (operation != null) {
-        return AlterTableType.RENAME.equals(AlterTableType.valueOf(operation));
-      }
+      return operation != null && AlterTableType.RENAME == AlterTableType.valueOf(operation);
     }
     return false;
   }
