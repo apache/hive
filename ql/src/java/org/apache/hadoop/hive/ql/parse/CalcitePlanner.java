@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -297,6 +298,8 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
+import org.apache.hadoop.hive.ql.parse.relnodegen.LateralViewPlan;
+import org.apache.hadoop.hive.ql.parse.relnodegen.RexNodeGenerator;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
@@ -397,10 +400,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private static final CommonToken SUBQUERY_TOKEN =
       new ImmutableCommonToken(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY");
 
+  public static final ImmutableSet<Integer> TABLE_ALIAS_TOKEN_TYPES =
+      ImmutableSet.of(HiveParser.TOK_SUBQUERY, HiveParser.TOK_TABREF, HiveParser.TOK_PTBLFUNCTION);
+
   private static final Pattern PATTERN_VARCHAR =
       Pattern.compile("VARCHAR\\(2147483647\\)");
   private static final Pattern PATTERN_TIMESTAMP =
       Pattern.compile("TIMESTAMP\\(9\\)");
+
+  private RexNodeGenerator rexNodeGenerator;
 
   /**
    * This is the list of operators that are specifically used in Hive.
@@ -456,6 +464,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       runCBO = true;
       disableSemJoinReordering = true;
     }
+  }
+
+  @Override
+  protected void reset(boolean clearCache) {
+    super.reset(true);
+    rexNodeGenerator = new RexNodeGenerator(unparseTranslator, conf);
   }
 
   @Override
@@ -3158,7 +3172,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode genFilterRelNode(ASTNode filterNode, RelNode srcRel,
             ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR,
             boolean useCaching) throws SemanticException {
-      RexNode filterExpression = genRexNode(filterNode, relToHiveRR.get(srcRel),
+      RexNode filterExpression = rexNodeGenerator.genRexNode(filterNode, relToHiveRR.get(srcRel),
           outerRR, null, useCaching, cluster.getRexBuilder());
 
       return genFilterRelNode(filterExpression, srcRel, outerNameToPosMap, outerRR);
@@ -3251,143 +3265,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private RelNode genLateralViewPlans(ASTNode lateralView, Map<String, RelNode> aliasToRel)
             throws SemanticException {
-      final RexBuilder rexBuilder = this.cluster.getRexBuilder();
-      final RelDataTypeFactory dtFactory = this.cluster.getTypeFactory();
-      final String inlineFunctionName =
-          GenericUDTFInline.class.getAnnotation(Description.class).name();
-      int numChildren = lateralView.getChildCount();
-      assert (numChildren == 2);
+      LateralViewPlan.validateLateralView(lateralView);
 
-      // 1) Obtain input and all related data structures
       ASTNode next = (ASTNode) lateralView.getChild(1);
-      RelNode inputRel = null;
-      switch (next.getToken().getType()) {
-        case HiveParser.TOK_TABREF:
-        case HiveParser.TOK_SUBQUERY:
-        case HiveParser.TOK_PTBLFUNCTION:
-          String inputTableAlias = getTableAlias(next);
-          inputRel = aliasToRel.get(inputTableAlias);
-          break;
-        case HiveParser.TOK_LATERAL_VIEW:
-          inputRel = genLateralViewPlans(next, aliasToRel);
-          break;
-        default:
-          throw new SemanticException(ASTErrorUtils.getMsg(
-              ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), lateralView));
-      }
-      // Input row resolver
-      RowResolver inputRR = this.relToHiveRR.get(inputRel);
-      // Extract input refs. They will serve as input for the function invocation
-      List<RexNode> inputRefs = Lists.transform(inputRel.getRowType().getFieldList(),
-          input -> new RexInputRef(input.getIndex(), input.getType()));
-      // Extract type for the arguments
-      List<RelDataType> inputRefsTypes = new ArrayList<>();
-      for (int i = 0; i < inputRefs.size(); i++) {
-        inputRefsTypes.add(inputRefs.get(i).getType());
-      }
-      // Input name to position map
-      ImmutableMap<String, Integer> inputPosMap = this.relToHiveColNameCalcitePosMap.get(inputRel);
+      RelNode inputRel = next.getToken().getType() == HiveParser.TOK_LATERAL_VIEW
+          ? genLateralViewPlans(next, aliasToRel)
+          : aliasToRel.get(getTableAlias(next));
 
-      // 2) Generate HiveTableFunctionScan RelNode for lateral view
-      // TODO: Support different functions (not only INLINE) with LATERAL VIEW JOIN
-      // ^(TOK_LATERAL_VIEW ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier["inline"] valuesClause) identifier* tableAlias)))
-      final ASTNode selExprClause =
-          (ASTNode) lateralView.getChild(0).getChild(0);
-      final ASTNode functionCall =
-          (ASTNode) selExprClause.getChild(0);
-      if (functionCall.getChild(0).getText().compareToIgnoreCase(inlineFunctionName) != 0) {
-        throw new SemanticException("CBO only supports inline LVJ");
-      }
-      final ASTNode valuesClause =
-          (ASTNode) functionCall.getChild(1);
-      // Output types. They will be the concatenation of the input refs types and
-      // the types of the expressions for the lateral view generated rows
-      // Generate all expressions from lateral view
-      RexCall valuesExpr = (RexCall) genRexNode(
-          valuesClause, inputRR, false, false, cluster.getRexBuilder());
-      RelDataType valuesRowType = valuesExpr.getType().getComponentType();
-      List<RexNode> newStructExprs = new ArrayList<>();
-      for (RexNode structExpr : valuesExpr.getOperands()) {
-        RexCall structCall = (RexCall) structExpr;
-        List<RexNode> exprs = new ArrayList<>(inputRefs);
-        exprs.addAll(structCall.getOperands());
-        newStructExprs.add(rexBuilder.makeCall(structCall.op, exprs));
-      }
-      RexNode convertedFinalValuesExpr =
-          rexBuilder.makeCall(valuesExpr.op, newStructExprs);
-      // The return type will be the concatenation of input type and original values type
-      RelDataType retType = SqlValidatorUtil.deriveJoinRowType(inputRel.getRowType(),
-          valuesRowType, JoinRelType.INNER, dtFactory, null, ImmutableList.of());
+      LateralViewPlan lateralViewPlan = new LateralViewPlan(lateralView, this.cluster,
+          inputRel, this.relToHiveRR.get(inputRel),
+          this.relToHiveColNameCalcitePosMap.get(inputRel), rexNodeGenerator);
 
-      // Create inline SQL operator
-      FunctionInfo inlineFunctionInfo = FunctionRegistry.getFunctionInfo(inlineFunctionName);
-      SqlOperator calciteOp = SqlFunctionConverter.getCalciteOperator(
-          inlineFunctionName, inlineFunctionInfo.getGenericUDTF(),
-          ImmutableList.copyOf(inputRefsTypes), retType);
-
-      RelNode htfsRel = HiveTableFunctionScan.create(cluster, TraitsUtil.getDefaultTraitSet(cluster),
-          ImmutableList.of(inputRel), rexBuilder.makeCall(calciteOp, convertedFinalValuesExpr),
-          null, retType, null);
-
-      // 3) Keep track of colname-to-posmap && RR for new op
-      RowResolver outputRR = new RowResolver();
-      // Add all input columns
-      if (!RowResolver.add(outputRR, inputRR)) {
-        LOG.warn("Duplicates detected when adding columns to RR: see previous message");
-      }
-      // Add all columns from lateral view
-      // First we extract the information that the query provides
-      String tableAlias = null;
-      List<String> columnAliases = new ArrayList<>();
-      Set<String> uniqueNames = new HashSet<>();
-      for (int i = 1; i < selExprClause.getChildren().size(); i++) {
-        ASTNode child = (ASTNode) selExprClause.getChild(i);
-        switch (child.getToken().getType()) {
-          case HiveParser.TOK_TABALIAS:
-            tableAlias = unescapeIdentifier(child.getChild(0).getText());
-            break;
-          default:
-            String colAlias = unescapeIdentifier(child.getText());
-            if (uniqueNames.contains(colAlias)) {
-              // Column aliases defined by query for lateral view output are duplicated
-              throw new SemanticException(ErrorMsg.COLUMN_ALIAS_ALREADY_EXISTS.getMsg(colAlias));
-            }
-            columnAliases.add(colAlias);
-            uniqueNames.add(colAlias);
-        }
-      }
-      if (tableAlias == null) {
-        // Parser enforces that table alias is added, but check again
-        throw new SemanticException("Alias should be specified LVJ");
-      }
-      if (!columnAliases.isEmpty() &&
-              columnAliases.size() != valuesRowType.getFieldCount()) {
-        // Number of columns in the aliases does not match with number of columns
-        // generated by the lateral view
-        throw new SemanticException(ErrorMsg.UDTF_ALIAS_MISMATCH.getMsg());
-      }
-      if (columnAliases.isEmpty()) {
-        // Auto-generate column aliases
-        for (int i = 0; i < valuesRowType.getFieldCount(); i++) {
-          columnAliases.add(SemanticAnalyzer.getColumnInternalName(i));
-        }
-      }
-      ListTypeInfo listTypeInfo = (ListTypeInfo) TypeConverter.convert(valuesExpr.getType()); // Array should have ListTypeInfo
-      StructTypeInfo typeInfos = (StructTypeInfo) listTypeInfo.getListElementTypeInfo(); // Within the list, we extract types
-      for (int i = 0, j = 0; i < columnAliases.size(); i++) {
-        String internalColName;
-        do {
-          internalColName = SemanticAnalyzer.getColumnInternalName(j++);
-        } while (inputRR.getPosition(internalColName) != -1);
-        outputRR.put(tableAlias, columnAliases.get(i),
-            new ColumnInfo(internalColName,  typeInfos.getAllStructFieldTypeInfos().get(i),
-                tableAlias, false));
-      }
-      this.relToHiveColNameCalcitePosMap.put(htfsRel, buildHiveToCalciteColumnMap(outputRR));
-      this.relToHiveRR.put(htfsRel, outputRR);
-
-      // 4) Return new operator
-      return htfsRel;
+      RelNode lateralRelNode = lateralViewPlan.getRelNode();
+      RowResolver outputRR = lateralViewPlan.getRowResolver();
+      this.relToHiveColNameCalcitePosMap.put(lateralRelNode, buildHiveToCalciteColumnMap(outputRR));
+      this.relToHiveRR.put(lateralRelNode, outputRR);
+      return lateralRelNode;
     }
 
     private boolean genSubQueryRelNode(QB qb, ASTNode node, RelNode srcRel, boolean forHavingClause,
@@ -3461,7 +3354,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final Map<ASTNode, QBSubQueryParseInfo> subQueryToRelNode = new HashMap<>();
       boolean isSubQuery = genSubQueryRelNode(qb, searchCond, srcRel, forHavingClause, subQueryToRelNode);
       if(isSubQuery) {
-        RexNode filterExpression = genRexNode(searchCond, relToHiveRR.get(srcRel),
+        RexNode filterExpression = rexNodeGenerator.genRexNode(searchCond, relToHiveRR.get(srcRel),
                 outerRR, subQueryToRelNode, forHavingClause, cluster.getRexBuilder());
 
         ImmutableMap<String, Integer> hiveColNameCalcitePosMap = this.relToHiveColNameCalcitePosMap
@@ -3695,7 +3588,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throws SemanticException {
       List<RexNode> aggParameters = new ArrayList<>();
       for (int i = 1; i <= aggFnLstArgIndx; i++) {
-        RexNode parameterExpr = genRexNode(
+        RexNode parameterExpr = rexNodeGenerator.genRexNode(
             (ASTNode) aggAst.getChild(i), inputRR, cluster.getRexBuilder());
         aggParameters.add(parameterExpr);
       }
@@ -3712,7 +3605,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // We allow stateful functions in the SELECT list (but nowhere else)
         tcCtx.setAllowStatefulFunctions(true);
         tcCtx.setAllowDistinctFunctions(false);
-        RexNode exp = genRexNode((ASTNode) aggAst.getChild(0), inputRR, tcCtx);
+        RexNode exp = rexNodeGenerator.genRexNode((ASTNode) aggAst.getChild(0), inputRR, tcCtx);
         aInfo = new AggregateInfo(
             aggParameters, TypeConverter.convert(exp.getType()), aggName, isDistinct);
       }
@@ -3799,7 +3692,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // 4. Construct GB Keys (ExprNode)
           for (int i = 0; i < groupByNodes.size(); ++i) {
             ASTNode groupByNode = groupByNodes.get(i);
-            Map<ASTNode, RexNode> astToRexNodeMap = genAllRexNode(
+            Map<ASTNode, RexNode> astToRexNodeMap = rexNodeGenerator.genAllRexNode(
                 groupByNode, groupByInputRowResolver, cluster.getRexBuilder());
             RexNode groupByExpression = astToRexNodeMap.get(groupByNode);
             if (groupByExpression == null) {
@@ -3845,7 +3738,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   Tree tabSortColNameNode = orderByNode.getChild(j);
                   Tree nullsNode = tabSortColNameNode.getChild(0);
                   ASTNode sortKey = (ASTNode) tabSortColNameNode.getChild(0).getChild(0);
-                  RexNode sortExpr = genRexNode(sortKey, groupByInputRowResolver, cluster.getRexBuilder());
+                  RexNode sortExpr =
+                      rexNodeGenerator.genRexNode(sortKey, groupByInputRowResolver, cluster.getRexBuilder());
                   fieldCollations.add(new FunctionHelper.FieldCollation(
                           sortExpr,
                           DirectionUtils.tokenToCode(tabSortColNameNode.getType()),
@@ -3854,7 +3748,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
                 continue;
               }
-              RexNode parameterExpr = genRexNode(
+              RexNode parameterExpr = rexNodeGenerator.genRexNode(
                   (ASTNode) value.getChild(i), groupByInputRowResolver, cluster.getRexBuilder());
               aggParameters.add(parameterExpr);
             }
@@ -4112,7 +4006,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RexNode orderByExpression = null;
       if (selectOutputRR != null) {
         try {
-          Map<ASTNode, RexNode> astToExprNDescMap = genAllRexNode(ref, selectOutputRR, cluster.getRexBuilder());
+          Map<ASTNode, RexNode> astToExprNDescMap =
+              rexNodeGenerator.genAllRexNode(ref, selectOutputRR, cluster.getRexBuilder());
           orderByExpression = astToExprNDescMap.get(ref);
         } catch (SemanticException ex) {
           // we can tolerate this as this is the previous behavior
@@ -4122,7 +4017,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       // then try to get it from all
       if (orderByExpression == null) {
-        Map<ASTNode, RexNode> astToExprNDescMap = genAllRexNode(ref, inputRR, cluster.getRexBuilder());
+        Map<ASTNode, RexNode> astToExprNDescMap =
+            rexNodeGenerator.genAllRexNode(ref, inputRR, cluster.getRexBuilder());
         orderByExpression = astToExprNDescMap.get(ref);
       }
       if (orderByExpression == null) {
@@ -4213,7 +4109,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         for (PartitionExpression pExpr : pExprs) {
           TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR, cluster.getRexBuilder());
           tcCtx.setAllowStatefulFunctions(true);
-          RexNode exp = genRexNode(pExpr.getExpression(), inputRR, tcCtx);
+          RexNode exp = rexNodeGenerator.genRexNode(pExpr.getExpression(), inputRR, tcCtx);
           pKeys.add(exp);
         }
       }
@@ -4229,7 +4125,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         for (OrderExpression oExpr : oExprs) {
           TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR, cluster.getRexBuilder());
           tcCtx.setAllowStatefulFunctions(true);
-          RexNode ordExp = genRexNode(oExpr.getExpression(), inputRR, tcCtx);
+          RexNode ordExp = rexNodeGenerator.genRexNode(oExpr.getExpression(), inputRR, tcCtx);
           Set<SqlKind> flags = new HashSet<SqlKind>();
           if (oExpr.getOrder() == org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC) {
             flags.add(SqlKind.DESCENDING);
@@ -4680,7 +4576,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         boolean isSubQuery = genSubQueryRelNode(qb, expr, srcRel, false,
                 subQueryToRelNode);
         if(isSubQuery) {
-          RexNode subQueryExpr = genRexNode(expr, relToHiveRR.get(srcRel),
+          RexNode subQueryExpr = rexNodeGenerator.genRexNode(expr, relToHiveRR.get(srcRel),
                   outerRR, subQueryToRelNode, true, cluster.getRexBuilder());
           columnList.add(subQueryExpr);
           ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
@@ -4743,7 +4639,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               expr = rewriteGroupingFunctionAST(getGroupByForClause(qbp, selClauseName), expr,
                       !cubeRollupGrpSetPresent);
             }
-            RexNode expression = genRexNode(expr, inputRR, tcCtx);
+            RexNode expression = rexNodeGenerator.genRexNode(expr, inputRR, tcCtx);
 
             String recommended = recommendName(expression, colAlias, inputRR);
             if (recommended != null && outputRR.get(null, recommended) == null) {
@@ -4823,7 +4719,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
             RexNode obRex;
             try {
-              Map<ASTNode, RexNode> astToExprNDescMap = genAllRexNode(ref, inputRR, cluster.getRexBuilder());
+              Map<ASTNode, RexNode> astToExprNDescMap =
+                  rexNodeGenerator.genAllRexNode(ref, inputRR, cluster.getRexBuilder());
               obRex = astToExprNDescMap.get(ref);
             } catch (SemanticException ex) {
               continue;
@@ -5420,169 +5317,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return table;
     }
     return tabNameToTabObject.get(fullyQualName);
-  }
-
-  RexNode genRexNode(ASTNode expr, RowResolver input,
-      RowResolver outerRR, Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode,
-      boolean useCaching, RexBuilder rexBuilder) throws SemanticException {
-    TypeCheckCtx tcCtx = new TypeCheckCtx(input, rexBuilder, useCaching, false);
-    tcCtx.setOuterRR(outerRR);
-    tcCtx.setSubqueryToRelNode(subqueryToRelNode);
-    return genRexNode(expr, input, tcCtx);
-  }
-
-  /**
-   * Generates a Calcite {@link RexNode} for the expression with TypeCheckCtx.
-   */
-  RexNode genRexNode(ASTNode expr, RowResolver input, RexBuilder rexBuilder)
-      throws SemanticException {
-    // Since the user didn't supply a customized type-checking context,
-    // use default settings.
-    return genRexNode(expr, input, true, false, rexBuilder);
-  }
-
-  RexNode genRexNode(ASTNode expr, RowResolver input, boolean useCaching,
-      boolean foldExpr, RexBuilder rexBuilder) throws SemanticException {
-    TypeCheckCtx tcCtx = new TypeCheckCtx(input, rexBuilder, useCaching, foldExpr);
-    return genRexNode(expr, input, tcCtx);
-  }
-
-  /**
-   * Generates a Calcite {@link RexNode} for the expression and children of it
-   * with default TypeCheckCtx.
-   */
-  Map<ASTNode, RexNode> genAllRexNode(ASTNode expr, RowResolver input, RexBuilder rexBuilder)
-      throws SemanticException {
-    TypeCheckCtx tcCtx = new TypeCheckCtx(input, rexBuilder);
-    return genAllRexNode(expr, input, tcCtx);
-  }
-
-  /**
-   * Returns a Calcite {@link RexNode} for the expression.
-   * If it is evaluated already in previous operator, it can be retrieved from cache.
-   */
-  RexNode genRexNode(ASTNode expr, RowResolver input,
-      TypeCheckCtx tcCtx) throws SemanticException {
-    RexNode cached = null;
-    if (tcCtx.isUseCaching()) {
-      cached = getRexNodeCached(expr, input, tcCtx);
-    }
-    if (cached == null) {
-      Map<ASTNode, RexNode> allExprs = genAllRexNode(expr, input, tcCtx);
-      return allExprs.get(expr);
-    }
-    return cached;
-  }
-
-  /**
-   * Find RexNode for the expression cached in the RowResolver. Returns null if not exists.
-   */
-  private RexNode getRexNodeCached(ASTNode node, RowResolver input,
-      TypeCheckCtx tcCtx) throws SemanticException {
-    ColumnInfo colInfo = input.getExpression(node);
-    if (colInfo != null) {
-      ASTNode source = input.getExpressionSource(node);
-      if (source != null) {
-        unparseTranslator.addCopyTranslation(node, source);
-      }
-      return RexNodeTypeCheck.toExprNode(colInfo, input, 0, tcCtx.getRexBuilder());
-    }
-    return null;
-  }
-
-  /**
-   * Generates all of the Calcite {@link RexNode}s for the expression and children of it
-   * passed in the arguments. This function uses the row resolver and the metadata information
-   * that are passed as arguments to resolve the column names to internal names.
-   *
-   * @param expr
-   *          The expression
-   * @param input
-   *          The row resolver
-   * @param tcCtx
-   *          Customized type-checking context
-   * @return expression to exprNodeDesc mapping
-   * @throws SemanticException Failed to evaluate expression
-   */
-  Map<ASTNode, RexNode> genAllRexNode(ASTNode expr, RowResolver input,
-      TypeCheckCtx tcCtx) throws SemanticException {
-    // Create the walker and  the rules dispatcher.
-    tcCtx.setUnparseTranslator(unparseTranslator);
-
-    Map<ASTNode, RexNode> nodeOutputs =
-        RexNodeTypeCheck.genExprNode(expr, tcCtx);
-    RexNode desc = nodeOutputs.get(expr);
-    if (desc == null) {
-      String tableOrCol = BaseSemanticAnalyzer.unescapeIdentifier(expr
-          .getChild(0).getText());
-      ColumnInfo colInfo = input.get(null, tableOrCol);
-      String errMsg;
-      if (colInfo == null && input.getIsExprResolver()){
-        errMsg = ASTErrorUtils.getMsg(
-            ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(), expr);
-      } else {
-        errMsg = tcCtx.getError();
-      }
-      throw new SemanticException(Optional.ofNullable(errMsg).orElse("Error in parsing "));
-    }
-    if (desc instanceof HiveRexExprList) {
-      throw new SemanticException("TOK_ALLCOLREF is not supported in current context");
-    }
-
-    if (!unparseTranslator.isEnabled()) {
-      // Not creating a view, so no need to track view expansions.
-      return nodeOutputs;
-    }
-
-    List<ASTNode> fieldDescList = new ArrayList<>();
-
-    for (Map.Entry<ASTNode, RexNode> entry : nodeOutputs.entrySet()) {
-      if (!(entry.getValue() instanceof RexInputRef)) {
-        // we need to translate the RexFieldAccess too, e.g., identifiers in
-        // struct<>.
-        if (entry.getValue() instanceof RexFieldAccess) {
-          fieldDescList.add(entry.getKey());
-        }
-        continue;
-      }
-      ASTNode node = entry.getKey();
-      RexInputRef columnDesc = (RexInputRef) entry.getValue();
-      int index = columnDesc.getIndex();
-      String[] tmp;
-      if (index < input.getColumnInfos().size()) {
-        ColumnInfo columnInfo = input.getColumnInfos().get(index);
-        if (columnInfo.getTabAlias() == null
-            || columnInfo.getTabAlias().length() == 0) {
-          // These aren't real column refs; instead, they are special
-          // internal expressions used in the representation of aggregation.
-          continue;
-        }
-        tmp = input.reverseLookup(columnInfo.getInternalName());
-      } else {
-        // in subquery case, tmp may be from outside.
-        ColumnInfo columnInfo = tcCtx.getOuterRR().getColumnInfos().get(
-            index - input.getColumnInfos().size());
-        if (columnInfo.getTabAlias() == null
-            || columnInfo.getTabAlias().length() == 0) {
-          continue;
-        }
-        tmp = tcCtx.getOuterRR().reverseLookup(columnInfo.getInternalName());
-      }
-      StringBuilder replacementText = new StringBuilder();
-      replacementText.append(HiveUtils.unparseIdentifier(tmp[0], conf));
-      replacementText.append(".");
-      replacementText.append(HiveUtils.unparseIdentifier(tmp[1], conf));
-      unparseTranslator.addTranslation(node, replacementText.toString());
-    }
-
-    for (ASTNode node : fieldDescList) {
-      Map<ASTNode, String> map = translateFieldDesc(node);
-      for (Entry<ASTNode, String> entry : map.entrySet()) {
-        unparseTranslator.addTranslation(entry.getKey(), entry.getValue().toLowerCase());
-      }
-    }
-
-    return nodeOutputs;
   }
 
   private String recommendName(RexNode exp, String colAlias, RowResolver rowResolver) {

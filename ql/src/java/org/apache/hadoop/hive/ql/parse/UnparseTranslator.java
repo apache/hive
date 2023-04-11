@@ -61,7 +61,7 @@ public class UnparseTranslator {
   /**
    * @return whether this translator has been enabled
    */
-  boolean isEnabled() {
+  public boolean isEnabled() {
     return enabled;
   }
 
@@ -83,7 +83,7 @@ public class UnparseTranslator {
    * @param replacementText
    *          text to use as replacement
    */
-  void addTranslation(ASTNode node, String replacementText) {
+  public void addTranslation(ASTNode node, String replacementText) {
     if (!enabled) {
       return;
     }
