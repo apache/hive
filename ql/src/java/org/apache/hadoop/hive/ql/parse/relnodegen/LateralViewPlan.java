@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
@@ -69,8 +68,7 @@ public class LateralViewPlan {
   private final RowResolver outputRR = new RowResolver();
 
   public LateralViewPlan(ASTNode lateralView, RelOptCluster cluster, RelNode inputRel,
-      RowResolver inputRR, Map<String, Integer> inputPosMap,
-      RexNodeGenerator rexNodeGenerator) throws SemanticException {
+      RowResolver inputRR, RexNodeGenerator rexNodeGenerator) throws SemanticException {
 
     final RelDataTypeFactory dtFactory = cluster.getTypeFactory();
     final RexBuilder rexBuilder = cluster.getRexBuilder();

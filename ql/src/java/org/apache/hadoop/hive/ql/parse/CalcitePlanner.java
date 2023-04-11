@@ -27,8 +27,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.regex.Pattern;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
@@ -102,7 +100,6 @@ import org.apache.calcite.rel.type.RelDataTypeImpl;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexExecutor;
-import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -155,7 +152,6 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -196,7 +192,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRexExprList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -321,7 +316,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -468,7 +462,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   @Override
   protected void reset(boolean clearCache) {
-    super.reset(true);
+    super.reset(clearCache);
     rexNodeGenerator = new RexNodeGenerator(unparseTranslator, conf);
   }
 
@@ -3273,8 +3267,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           : aliasToRel.get(getTableAlias(next));
 
       LateralViewPlan lateralViewPlan = new LateralViewPlan(lateralView, this.cluster,
-          inputRel, this.relToHiveRR.get(inputRel),
-          this.relToHiveColNameCalcitePosMap.get(inputRel), rexNodeGenerator);
+          inputRel, this.relToHiveRR.get(inputRel), rexNodeGenerator);
 
       RelNode lateralRelNode = lateralViewPlan.getRelNode();
       RowResolver outputRR = lateralViewPlan.getRowResolver();
