@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 import javax.annotation.Nullable;
 import java.io.DataInput;
@@ -51,6 +52,7 @@ public abstract class PropertyType<T> {
   /**
    * @return a clone of the ISO8601, TZ=UTC
    */
+  @SuppressFBWarnings("STCAL_INVOKE_ON_STATIC_CALENDAR_INSTANCE")
   private static SimpleDateFormat getDateFormat() {
     return (SimpleDateFormat) SDTF.clone();
   }
