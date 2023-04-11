@@ -22,10 +22,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.FUNCTIONS_ROOT_DIR_NAME;
 
@@ -55,7 +58,51 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
     if (!fileSystem.exists(new Path(dbLevelPath + Path.SEPARATOR + EximUtil.METADATA_NAME))) {
       databaseEventProcessed = true;
     }
-    remoteIterator = fileSystem.listFiles(dbLevelPath, true);
+
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_REPL_TEST_FILES_SORTED)) {
+      LOG.info(" file sorting is enabled in DatabaseEventsIterator");
+      List<LocatedFileStatus> fileStatuses = new ArrayList<>();
+
+      // Sort the directories in tha path and then add the files recursively .
+      getSortedFileList(dbLevelPath, fileStatuses, fileSystem);
+      remoteIterator =  new RemoteIterator<LocatedFileStatus>() {
+        private int idx = 0;
+        private final int numEntry = fileStatuses.size();
+        private final List<LocatedFileStatus> fileStatusesLocal = fileStatuses;
+        public boolean hasNext() throws IOException {
+          return idx < numEntry;
+        }
+        public LocatedFileStatus next() throws IOException {
+          LOG.info(" file in next is " + fileStatusesLocal.get(idx));
+          return fileStatusesLocal.get(idx++);
+        }
+      };
+    } else {
+      remoteIterator = fileSystem.listFiles(dbLevelPath, true);
+    }
+  }
+
+  private void getSortedFileList(Path eventPath, List<LocatedFileStatus> fileStatuses,
+                                 FileSystem fileSystem) throws IOException {
+    //Add all the files in this directory. No need to sort.
+    RemoteIterator<LocatedFileStatus> iteratorNext = fileSystem.listFiles(eventPath, false);
+    while (iteratorNext.hasNext()) {
+      LocatedFileStatus status = iteratorNext.next();
+      LOG.info(" files added at getSortedFileList" + status.getPath());
+      fileStatuses.add(status);
+    }
+
+    // get all the directories in this path and sort them
+    FileStatus[] eventDirs = fileSystem.listStatus(eventPath, EximUtil.getDirectoryFilter(fileSystem));
+    if (eventDirs.length == 0) {
+      return;
+    }
+    Arrays.sort(eventDirs, new EventDumpDirComparator());
+
+    // add files recursively for each directory
+    for (FileStatus fs : eventDirs) {
+      getSortedFileList(fs.getPath(), fileStatuses, fileSystem);
+    }
   }
 
   public Path dbLevelPath() {

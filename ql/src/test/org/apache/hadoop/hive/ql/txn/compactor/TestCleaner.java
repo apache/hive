@@ -246,7 +246,7 @@ public class TestCleaner extends CompactorTest {
     burnThroughTransactions("default", "bblp", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "bblp", CompactionType.MINOR);
-    rqst.setPartitionname("ds=today");
+    rqst.setPartitionname("ds=Today");
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     txnHandler.markCompacted(ci);
@@ -254,7 +254,7 @@ public class TestCleaner extends CompactorTest {
 
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
     comp.setTablename("bblp");
-    comp.setPartitionname("ds=today");
+    comp.setPartitionname("ds=Today");
     comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -271,7 +271,7 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(1, compacts.size());
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
     Assert.assertEquals("bblp", compacts.get(0).getTablename());
-    Assert.assertEquals("ds=today", compacts.get(0).getPartitionname());
+    Assert.assertEquals("ds=Today", compacts.get(0).getPartitionname());
     Assert.assertEquals(CompactionType.MINOR, compacts.get(0).getType());
   }
 

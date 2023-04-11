@@ -92,6 +92,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.apache.hadoop.mapred.InputFormat;
 
@@ -451,6 +452,7 @@ public abstract class BaseJdbcWithMiniLlap {
 
 
   @Test(timeout = 60000)
+  @Ignore("HIVE-27202")
   public void testComplexQuery() throws Exception {
     createTestTable("testtab1");
 

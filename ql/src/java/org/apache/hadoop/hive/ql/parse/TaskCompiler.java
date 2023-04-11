@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
@@ -65,6 +66,7 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.NoOpFetchFormatter;
@@ -142,6 +144,29 @@ public abstract class TaskCompiler {
       }
 
       return;
+    }
+
+    boolean directInsert = false;
+    if (pCtx.getCreateTable() != null && pCtx.getCreateTable().getStorageHandler() != null) {
+      try {
+        directInsert =
+            HiveUtils.getStorageHandler(conf, pCtx.getCreateTable().getStorageHandler()).directInsert();
+      } catch (HiveException e) {
+        throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
+      }
+    }
+
+    if (directInsert) {
+      if (pCtx.getCreateTable() != null) {
+        CreateTableDesc crtTblDesc = pCtx.getCreateTable();
+        crtTblDesc.validate(conf);
+        Task<?> crtTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
+        for (Task<?> rootTask : rootTasks) {
+          crtTask.addDependentTask(rootTask);
+          rootTasks.clear();
+          rootTasks.add(crtTask);
+        }
+      }
     }
 
     optimizeOperatorPlan(pCtx, inputs, outputs);
@@ -322,14 +347,14 @@ public abstract class TaskCompiler {
 
     decideExecMode(rootTasks, ctx, globalLimitCtx);
 
-    if (pCtx.getQueryProperties().isCTAS() && !pCtx.getCreateTable().isMaterialization()) {
+    if (pCtx.getQueryProperties().isCTAS() && !pCtx.getCreateTable().isMaterialization() && !directInsert) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = pCtx.getCreateTable();
       crtTblDesc.validate(conf);
       Task<? extends Serializable> crtTblTask = TaskFactory.get(new DDLWork(
           inputs, outputs, crtTblDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtTblTask, CollectionUtils.isEmpty(crtTblDesc.getPartColNames()));
-    } else if (pCtx.getQueryProperties().isMaterializedView()) {
+    } else if (pCtx.getQueryProperties().isMaterializedView() && !directInsert) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateViewDesc viewDesc = pCtx.getCreateViewDesc();
       Task<? extends Serializable> crtViewTask = TaskFactory.get(new DDLWork(
