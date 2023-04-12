@@ -51,10 +51,17 @@ public abstract class PropertyType<T> {
   }
 
   /**
+   * This should be coded simply but Sonar insists...
+   * <code>
+   *     return (SimpleDateFormat) SDTF.clone();
+   * </code>
    * @return a clone of the ISO8601, TZ=UTC
    */
   private static SimpleDateFormat getDateFormat() {
-    return (SimpleDateFormat) SDTF.clone();
+    Format fool = SDTF;
+    @SuppressFBWarnings("STCAL_INVOKE_ON_STATIC_CALENDAR_INSTANCE")
+    SimpleDateFormat sdtf =  (SimpleDateFormat) fool.clone();
+    return sdtf;
   }
 
   /** The type name. */
