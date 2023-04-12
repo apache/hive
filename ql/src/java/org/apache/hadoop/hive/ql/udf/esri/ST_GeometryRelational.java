@@ -26,14 +26,15 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract class that all simple relational tests (contains, touches, ...) extend from
  *
  */
 public abstract class ST_GeometryRelational extends GenericUDF {
-  private static final Logger LOG = Logger.getLogger(ST_GeometryRelational.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ST_GeometryRelational.class);
 
   private static final int NUM_ARGS = 2;
   private static final int GEOM_1 = 0;

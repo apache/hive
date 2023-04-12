@@ -27,11 +27,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveGeometryOIHelper {
 
-  static Logger LOG = Logger.getLogger(HiveGeometryOIHelper.class);
+  static Logger LOG = LoggerFactory.getLogger(HiveGeometryOIHelper.class);
 
   private final PrimitiveObjectInspector oi;
   private final int argIndex;
