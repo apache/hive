@@ -29,6 +29,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,11 +51,17 @@ public abstract class PropertyType<T> {
   }
 
   /**
+   * This should be coded simply but Sonar insists...
+   * <code>
+   *     return (SimpleDateFormat) SDTF.clone();
+   * </code>
    * @return a clone of the ISO8601, TZ=UTC
    */
-  @SuppressFBWarnings("STCAL_INVOKE_ON_STATIC_CALENDAR_INSTANCE")
   private static SimpleDateFormat getDateFormat() {
-    return (SimpleDateFormat) SDTF.clone();
+    Format fool = SDTF;
+    @SuppressFBWarnings("STCAL_INVOKE_ON_STATIC_CALENDAR_INSTANCE")
+    SimpleDateFormat sdtf =  (SimpleDateFormat) fool.clone();
+    return sdtf;
   }
 
   /** The type name. */
