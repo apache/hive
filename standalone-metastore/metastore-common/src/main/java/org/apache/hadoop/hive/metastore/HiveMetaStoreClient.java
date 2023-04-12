@@ -628,8 +628,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     String keyValuePairs = MetastoreConf.getVar(conf,
         ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS);
     try {
-      List<String> headerKeyValues =
-          Splitter.on(',').trimResults().splitToList(keyValuePairs);
+      String[] headerKeyValues = keyValuePairs.split(",");
       for (String header : headerKeyValues) {
         String[] parts = header.split("=");
         headers.put(parts[0].trim(), parts[1].trim());
