@@ -19,6 +19,8 @@
 package org.apache.hive.service.server;
 
 import com.google.common.base.Joiner;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +42,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
@@ -922,6 +925,13 @@ public class HiveServer2 extends CompositeService {
       } catch (Exception e) {
         LOG.error("Error removing znode for this HiveServer2 instance from ZooKeeper.", e);
       }
+    }
+    String pidDir = StringUtils.defaultIfEmpty(System.getenv("HIVESERVER2_PID_DIR"),
+        System.getenv("HIVE_CONF_DIR"));
+    if (StringUtils.isNotEmpty(pidDir)) {
+      File pidFile = new File(pidDir, "hiveserver2.pid");
+      LOG.info("Deleting the tmp HiveServer2 pid file: {}", pidFile);
+      FileUtils.deleteQuietly(pidFile);
     }
     super.decommission();
   }
