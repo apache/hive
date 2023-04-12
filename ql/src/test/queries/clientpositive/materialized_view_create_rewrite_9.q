@@ -1,6 +1,7 @@
 -- Test Incremental rebuild of materialized view with aggregate and count(*) when
 -- 1) source tables have delete operations since last rebuild.
 -- 2) a source table is insert only.
+-- SORT_QUERY_RESULTS
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
