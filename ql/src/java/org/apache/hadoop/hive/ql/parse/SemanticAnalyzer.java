@@ -7794,7 +7794,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       try {
         if (tblDesc != null) {
-          destinationTable = db.getTranslateTableDryrun(tblDesc.toTable(conf).getTTable());
+          Table t = tblDesc.toTable(conf);
+          destinationTable = tblDesc.isMaterialization() ? t : db.getTranslateTableDryrun(t.getTTable());
         } else {
           destinationTable = viewDesc != null ? viewDesc.toTable(conf) : null;
         }
