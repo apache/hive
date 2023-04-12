@@ -516,7 +516,9 @@ public abstract class TaskCompiler {
       }
       try {
         Table table = ctd.toTable(conf);
-        table = db.getTranslateTableDryrun(table.getTTable());
+        if (!ctd.isMaterialization()) {
+          table = db.getTranslateTableDryrun(table.getTTable());
+        }
         org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
         if (tTable.getSd() != null && tTable.getSd().getLocation() != null) {
           location = new Path(tTable.getSd().getLocation());
