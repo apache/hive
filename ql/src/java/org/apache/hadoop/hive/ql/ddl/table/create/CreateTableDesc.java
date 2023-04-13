@@ -942,6 +942,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
         buffers.add(java.nio.ByteBuffer.wrap(StatsSetupConst.TRUE.getBytes(StandardCharsets.UTF_8)));
         buffers.add(java.nio.ByteBuffer.wrap(cols.getBytes(StandardCharsets.UTF_8)));
         dictionary.putToValues(StatsSetupConst.STATS_FOR_CREATE_TABLE, buffers);
+        tbl.getTTable().setDictionary(dictionary);
       }
     }
 
