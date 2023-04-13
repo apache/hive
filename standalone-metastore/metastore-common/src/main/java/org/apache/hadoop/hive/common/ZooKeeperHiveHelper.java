@@ -416,4 +416,22 @@ public class ZooKeeperHiveHelper {
       throw e;
     }
   }
+
+  /**
+   * Returns an instance of {@link SelectionCoordinator} that enables a process/thread to participate in a Leader
+   * Election in a distributed setup.
+   *
+   * @param zooKeeperAclProvider {@link ACLProvider instance}, needed to interact with the Zookeeper
+   * @return an instance of {@link SelectionCoordinator}
+   * @throws Exception that may arise while instantiating the Zookeeper Client
+   *
+   * @see CuratorFramework
+   * @see SelectionCoordinator
+   * @see Participant
+   *
+   */
+  public SelectionCoordinator getSelectionCoordinator(ACLProvider zooKeeperAclProvider) throws Exception {
+    zooKeeperClient = startZookeeperClient(zooKeeperAclProvider, true);
+    return new SelectionCoordinator(zooKeeperClient);
+  }
 }
