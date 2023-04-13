@@ -40,7 +40,7 @@ public class FuncLogWithBaseDoubleToDouble extends MathFuncDoubleToDouble {
 
   @Override
   protected double func(double d) {
-    return Math.log(d) / Math.log(base);
+    return StrictMath.log(d) / StrictMath.log(base);
   }
 
   public double getBase() {

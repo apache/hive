@@ -43,7 +43,7 @@ public class FuncPowerLongToDouble extends MathFuncLongToDouble {
 
   @Override
   public double func(long l) {
-    return Math.pow((double) l, power);
+    return StrictMath.pow((double) l, power);
   }
 
   public double getPower() {
