@@ -167,6 +167,8 @@ public class StatsSetupConst {
 
   public static final String CASCADE = "CASCADE";
 
+  public static final String  STATS_FOR_CREATE_TABLE = "setStatsStateForCreateTable";
+
   public static final String TRUE = "true";
 
   public static final String FALSE = "false";

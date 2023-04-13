@@ -921,14 +921,15 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     // When replicating the statistics for a table will be obtained from the source. Do not
     // reset it on replica.
     if (replicationSpec == null || !replicationSpec.isInReplicationScope()) {
-      if (!this.isCTAS && (tbl.getPath() == null || (!isExternal() && tbl.isEmpty()))) {
-        if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
-                  MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
-        }
-      } else {
-        StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
-                StatsSetupConst.FALSE);
+      // Remove COLUMN_STATS_ACCURATE=true from table's parameter, let the HMS determine if
+      // there is need to add column stats dependent on the table's location in case the metastore transformer
+      // sets or alters the table's location.
+      StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
+          StatsSetupConst.FALSE);
+      if (!this.isCTAS && !tbl.isPartitioned() && !tbl.isTemporary() &&
+          conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        tbl.getTTable().getParameters().put(StatsSetupConst.STATS_FOR_CREATE_TABLE,
+            StatsSetupConst.TRUE);
       }
     }
 

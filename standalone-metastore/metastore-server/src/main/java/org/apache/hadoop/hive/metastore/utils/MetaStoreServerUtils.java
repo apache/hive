@@ -66,6 +66,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.ExceptionHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -506,6 +507,34 @@ public class MetaStoreServerUtils {
     params.remove(StatsSetupConst.NUM_FILES);
     params.remove(StatsSetupConst.TOTAL_SIZE);
     params.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
+  }
+
+  public static void updateTableStatsForCreateTable(Warehouse wh, Database db, Table tbl,
+      EnvironmentContext envContext, Configuration conf, Path tblPath, boolean newDir)
+      throws MetaException {
+    String val = tbl.getParameters() != null ?
+        tbl.getParameters().remove(StatsSetupConst.STATS_FOR_CREATE_TABLE) : null;
+    // If the created table is a view, skip generating the stats
+    if (MetaStoreUtils.isView(tbl)) {
+      return;
+    }
+    if (StatsSetupConst.TRUE.equals(val)) {
+      try {
+        assert tblPath != null;
+        // Set the column stats true in order to make it merge-able
+        if (newDir || wh.isEmptyDir(tblPath, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
+          StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(),
+              getColumnNames(tbl.getSd().getCols()), StatsSetupConst.TRUE);
+        }
+      } catch (IOException e) {
+        LOG.error("Error while checking the table directory: " + tblPath + " is empty or not", e);
+        throw ExceptionHandler.newMetaException(e);
+      }
+    }
+
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_AUTO_GATHER)) {
+      updateTableStatsSlow(db, tbl, wh, newDir, false, envContext);
+    }
   }
 
   /**

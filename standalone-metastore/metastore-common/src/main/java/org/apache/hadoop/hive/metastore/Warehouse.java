@@ -32,6 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
@@ -500,8 +501,16 @@ public class Warehouse {
   }
 
   public boolean isEmptyDir(Path path) throws IOException, MetaException {
+    return isEmptyDir(path, null);
+  }
+
+  public boolean isEmptyDir(Path path, PathFilter pathFilter)
+      throws IOException, MetaException {
+    if (pathFilter == null) {
+      pathFilter = p -> true;
+    }
     try {
-      int listCount = getFs(path).listStatus(path).length;
+      int listCount = getFs(path).listStatus(path, pathFilter).length;
       if (listCount == 0) {
         return true;
       }
