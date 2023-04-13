@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.ddl.table.create;
 
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.ObjectDictionary;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
@@ -928,8 +931,17 @@ public class CreateTableDesc implements DDLDesc, Serializable {
           StatsSetupConst.FALSE);
       if (!this.isCTAS && !tbl.isPartitioned() && !tbl.isTemporary() &&
           conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-        tbl.getTTable().getParameters().put(StatsSetupConst.STATS_FOR_CREATE_TABLE,
-            StatsSetupConst.TRUE);
+        // Put the flag into the dictionary in order not to pollute the table,
+        // ObjectDictionary is meant to convey repeatitive messages.
+        ObjectDictionary dictionary = tbl.getTTable().isSetDictionary() ?
+            tbl.getTTable().getDictionary() : new ObjectDictionary();
+        // In case we get the columns from SerDe
+        String cols = MetaStoreUtils.getColumnNames(tbl.getCols()).stream()
+            .collect(Collectors.joining(","));
+        List<java.nio.ByteBuffer> buffers = new ArrayList<>();
+        buffers.add(java.nio.ByteBuffer.wrap(StatsSetupConst.TRUE.getBytes(StandardCharsets.UTF_8)));
+        buffers.add(java.nio.ByteBuffer.wrap(cols.getBytes(StandardCharsets.UTF_8)));
+        dictionary.putToValues(StatsSetupConst.STATS_FOR_CREATE_TABLE, buffers);
       }
     }
 

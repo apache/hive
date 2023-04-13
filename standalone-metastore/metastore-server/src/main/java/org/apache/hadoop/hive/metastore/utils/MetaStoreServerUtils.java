@@ -29,10 +29,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -512,23 +512,33 @@ public class MetaStoreServerUtils {
   public static void updateTableStatsForCreateTable(Warehouse wh, Database db, Table tbl,
       EnvironmentContext envContext, Configuration conf, Path tblPath, boolean newDir)
       throws MetaException {
-    String val = tbl.getParameters() != null ?
-        tbl.getParameters().remove(StatsSetupConst.STATS_FOR_CREATE_TABLE) : null;
     // If the created table is a view, skip generating the stats
     if (MetaStoreUtils.isView(tbl)) {
       return;
     }
-    if (StatsSetupConst.TRUE.equals(val)) {
-      try {
-        assert tblPath != null;
-        // Set the column stats true in order to make it merge-able
-        if (newDir || wh.isEmptyDir(tblPath, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
-          StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(),
-              getColumnNames(tbl.getSd().getCols()), StatsSetupConst.TRUE);
+    assert tblPath != null;
+    if (tbl.isSetDictionary() && tbl.getDictionary().getValues() != null) {
+      List<java.nio.ByteBuffer> values = tbl.getDictionary().getValues().
+          remove(StatsSetupConst.STATS_FOR_CREATE_TABLE);
+      java.nio.ByteBuffer buffer;
+      if (values != null && values.size() > 0 && (buffer = values.get(0)).hasArray()) {
+        String val = new String(buffer.array(), StandardCharsets.UTF_8);
+        if (StatsSetupConst.TRUE.equals(val)) {
+          try {
+            // Set the column stats true in order to make it merge-able
+            if (newDir || wh.isEmptyDir(tblPath, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
+              List<String> columns = getColumnNames(tbl.getSd().getCols());
+              if (values.size() > 1 && (buffer = values.get(1)).hasArray()) {
+                columns = Arrays.stream(new String(buffer.array(), StandardCharsets.UTF_8).split(",")).
+                    collect(Collectors.toList());
+              }
+              StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(), columns, StatsSetupConst.TRUE);
+            }
+          } catch (IOException e) {
+            LOG.error("Error while checking the table directory: " + tblPath + " is empty or not", e);
+            throw ExceptionHandler.newMetaException(e);
+          }
         }
-      } catch (IOException e) {
-        LOG.error("Error while checking the table directory: " + tblPath + " is empty or not", e);
-        throw ExceptionHandler.newMetaException(e);
       }
     }
 
