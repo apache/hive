@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.thrift.TException;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONArray;
@@ -114,7 +115,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
             }
             else {
               partLocation = partLocation + Path.SEPARATOR +
-                      Warehouse.makePartName(Warehouse.makeSpecFromName(partitionName), false);
+                      WarehouseUtils.makePartName(Warehouse.makeSpecFromName(partitionName), false);
               Path partPath = new Path(partLocation);
               long partDataSize = getDataSize(partPath, conf);
               if (isPathWithinSubtree(partPath, defaultDbExtPath)) {

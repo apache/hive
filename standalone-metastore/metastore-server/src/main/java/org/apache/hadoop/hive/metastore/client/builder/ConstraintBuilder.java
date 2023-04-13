@@ -17,12 +17,11 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +42,7 @@ abstract class ConstraintBuilder<T> {
     nextSeq = 1;
     enable = true;
     validate = rely = false;
-    dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
     columns = new ArrayList<>();
   }
 

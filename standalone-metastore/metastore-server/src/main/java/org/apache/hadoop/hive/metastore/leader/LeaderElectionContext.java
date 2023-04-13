@@ -23,10 +23,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection.LeadershipStateListener;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,11 +42,11 @@ public class LeaderElectionContext {
    * For those tasks which belong to the same type, they will be running in the same leader.
    */
   public enum TTYPE {
-    HOUSEKEEPING(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "sys",
+    HOUSEKEEPING(new TableName(WarehouseUtils.DEFAULT_CATALOG_NAME, "sys",
         "metastore_housekeeping_leader"), "housekeeping"),
-    WORKER(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "sys",
+    WORKER(new TableName(WarehouseUtils.DEFAULT_CATALOG_NAME, "sys",
         "metastore_worker_leader"), "compactor_worker"),
-    ALWAYS_TASKS(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "sys",
+    ALWAYS_TASKS(new TableName(WarehouseUtils.DEFAULT_CATALOG_NAME, "sys",
         "metastore_always_tasks_leader"), "always_tasks");
     // Mutex of TTYPE, which can be a nonexistent table
     private final TableName mutex;
@@ -90,7 +90,7 @@ public class LeaderElectionContext {
         MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_AUDITTABLE);
     if (StringUtils.isNotEmpty(tableName)) {
       TableName table = TableName.fromString(tableName, MetaStoreUtils.getDefaultCatalog(conf),
-          Warehouse.DEFAULT_DATABASE_NAME);
+          WarehouseUtils.DEFAULT_DATABASE_NAME);
       auditLeaderListener = new AuditLeaderListener(table, handler);
     }
     this.listeners = listeners;

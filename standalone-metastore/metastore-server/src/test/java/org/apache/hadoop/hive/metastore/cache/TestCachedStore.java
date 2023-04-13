@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,7 +50,7 @@ import org.junit.experimental.categories.Category;
 
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertEqualStatistics;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createColumnStatistics;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
 
 /**
  * Unit tests for CachedStore
@@ -1027,9 +1028,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(100, aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls());
 
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
-        Warehouse.makePartName(tbl.getPartitionKeys(), partVals1), partVals1, colName, CacheUtils.HIVE_ENGINE);
+        WarehouseUtils.makePartName(tbl.getPartitionKeys(), partVals1), partVals1, colName, CacheUtils.HIVE_ENGINE);
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
-        Warehouse.makePartName(tbl.getPartitionKeys(), partVals2), partVals2, colName, CacheUtils.HIVE_ENGINE);
+        WarehouseUtils.makePartName(tbl.getPartitionKeys(), partVals2), partVals2, colName, CacheUtils.HIVE_ENGINE);
     objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals1);
     objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals2);
     objectStore.dropTable(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName());

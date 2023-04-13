@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -117,7 +118,7 @@ public class TestPermsGrp {
   @Test
   public void testCustomPerms() throws Exception {
 
-    String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    String dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
     String tblName = "simptbl";
     String typeName = "Person";
 
@@ -156,7 +157,7 @@ public class TestPermsGrp {
 
       // And no metadata gets created.
       try {
-        msc.getTable(Warehouse.DEFAULT_DATABASE_NAME, tblName);
+        msc.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME, tblName);
         fail();
       } catch (Exception e) {
         assertTrue(e instanceof NoSuchObjectException);

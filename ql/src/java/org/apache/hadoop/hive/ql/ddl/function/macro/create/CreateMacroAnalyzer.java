@@ -27,9 +27,9 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
@@ -80,7 +80,7 @@ public class CreateMacroAnalyzer extends BaseSemanticAnalyzer {
     CreateMacroDesc desc = new CreateMacroDesc(macroName, macroColumnNames, macroColumnTypes, body);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
-    Database database = getDatabase(Warehouse.DEFAULT_DATABASE_NAME);
+    Database database = getDatabase(WarehouseUtils.DEFAULT_DATABASE_NAME);
     // This restricts macro creation to privileged users.
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }

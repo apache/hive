@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.makePartName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeSpecFromName;
 
 /**

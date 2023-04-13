@@ -25,6 +25,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.junit.Ignore;
 import java.util.Iterator;
 
@@ -32,7 +34,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -178,7 +179,7 @@ public class TestSequenceFileReadWrite {
     TextInputFormat.setInputPaths(job, inputFileName);
 
     HCatOutputFormat.setOutput(job, OutputJobInfo.create(
-        Warehouse.DEFAULT_DATABASE_NAME, "demo_table_2", null));
+        WarehouseUtils.DEFAULT_DATABASE_NAME, "demo_table_2", null));
     job.setOutputFormatClass(HCatOutputFormat.class);
     HCatOutputFormat.setSchema(job, getSchema());
     job.setNumReduceTasks(0);
@@ -225,7 +226,7 @@ public class TestSequenceFileReadWrite {
     TextInputFormat.setInputPaths(job, inputFileName);
 
     HCatOutputFormat.setOutput(job, OutputJobInfo.create(
-        Warehouse.DEFAULT_DATABASE_NAME, "demo_table_3", null));
+        WarehouseUtils.DEFAULT_DATABASE_NAME, "demo_table_3", null));
     job.setOutputFormatClass(HCatOutputFormat.class);
     HCatOutputFormat.setSchema(job, getSchema());
     assertTrue(job.waitForCompletion(true));

@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -536,7 +537,7 @@ public class CachedStore implements RawStore, Configurable {
                 cacheObjects.setPartitions(partitions);
                 List<String> partNames = new ArrayList<>(partitions.size());
                 for (Partition p : partitions) {
-                  partNames.add(Warehouse.makePartName(table.getPartitionKeys(), p.getValues()));
+                  partNames.add(WarehouseUtils.makePartName(table.getPartitionKeys(), p.getValues()));
                 }
                 if (!partNames.isEmpty()) {
                   // Get partition column stats for this table
@@ -1611,7 +1612,7 @@ public class CachedStore implements RawStore, Configurable {
     int count = 0;
     for (Partition part : sharedCache.listCachedPartitions(catName, dbName, tblName, maxParts)) {
       if (maxParts == -1 || count < maxParts) {
-        partitionNames.add(Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues()));
+        partitionNames.add(WarehouseUtils.makePartName(tbl.getPartitionKeys(), part.getValues()));
       }
     }
     return partitionNames;
@@ -1670,7 +1671,7 @@ public class CachedStore implements RawStore, Configurable {
         StringUtils.normalizeIdentifier(table.getDbName()), StringUtils.normalizeIdentifier(table.getTableName()),
         maxParts);
     for (Partition part : parts) {
-      result.add(Warehouse.makePartName(table.getPartitionKeys(), part.getValues()));
+      result.add(WarehouseUtils.makePartName(table.getPartitionKeys(), part.getValues()));
     }
     if (defaultPartName == null || defaultPartName.isEmpty()) {
       defaultPartName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
@@ -1931,7 +1932,7 @@ public class CachedStore implements RawStore, Configurable {
     }
     Partition p = sharedCache.getPartitionFromCache(catName, dbName, tblName, partVals);
     if (p != null) {
-      String partName = Warehouse.makePartName(table.getPartitionKeys(), partVals);
+      String partName = WarehouseUtils.makePartName(table.getPartitionKeys(), partVals);
       PrincipalPrivilegeSet privs = getPartitionPrivilegeSet(catName, dbName, tblName, partName, userName, groupNames);
       p.setPrivileges(privs);
     } else {
@@ -1957,7 +1958,7 @@ public class CachedStore implements RawStore, Configurable {
     int count = 0;
     for (Partition part : sharedCache.listCachedPartitions(catName, dbName, tblName, maxParts)) {
       if (maxParts == -1 || count < maxParts) {
-        String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+        String partName = WarehouseUtils.makePartName(table.getPartitionKeys(), part.getValues());
         PrincipalPrivilegeSet privs =
             getPartitionPrivilegeSet(catName, dbName, tblName, partName, userName, groupNames);
         part.setPrivileges(privs);
@@ -1986,7 +1987,7 @@ public class CachedStore implements RawStore, Configurable {
     List<Partition> allPartitions = sharedCache.listCachedPartitions(catName, dbName, tblName, maxParts);
     int count = 0;
     for (Partition part : allPartitions) {
-      String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+      String partName = WarehouseUtils.makePartName(table.getPartitionKeys(), part.getValues());
       if (partName.matches(partNameMatcher) && (maxParts == -1 || count < maxParts)) {
         partitionNames.add(partName);
         count++;
@@ -2020,7 +2021,7 @@ public class CachedStore implements RawStore, Configurable {
     List<Partition> allPartitions = sharedCache.listCachedPartitions(catName, dbName, tblName, maxParts);
     int count = 0;
     for (Partition part : allPartitions) {
-      String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+      String partName = WarehouseUtils.makePartName(table.getPartitionKeys(), part.getValues());
       if (partName.matches(partNameMatcher) && (maxParts == -1 || count < maxParts)) {
         PrincipalPrivilegeSet privs =
             getPartitionPrivilegeSet(catName, dbName, tblName, partName, userName, groupNames);
@@ -2045,7 +2046,7 @@ public class CachedStore implements RawStore, Configurable {
     // or a regex of the form ".*"
     // This works because the "=" and "/" separating key names and partition key/values
     // are not escaped.
-    String partNameMatcher = Warehouse.makePartName(partCols, partSpecs, ".*");
+    String partNameMatcher = WarehouseUtils.makePartName(partCols, partSpecs, ".*");
     // add ".*" to the regex to match anything else afterwards the partial spec.
     if (partSpecs.size() < numPartKeys) {
       partNameMatcher += ".*";

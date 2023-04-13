@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
@@ -141,11 +142,11 @@ public class TestHmsServerAuthorization {
     client.dropDatabase(dbName2, true, true, true);
     Database db1 = new DatabaseBuilder()
         .setName(dbName1)
-        .setCatalogName(Warehouse.DEFAULT_CATALOG_NAME)
+        .setCatalogName(WarehouseUtils.DEFAULT_CATALOG_NAME)
         .create(client, conf);
     Database db2 = new DatabaseBuilder()
         .setName(dbName2)
-        .setCatalogName(Warehouse.DEFAULT_CATALOG_NAME)
+        .setCatalogName(WarehouseUtils.DEFAULT_CATALOG_NAME)
         .create(client, conf);
     new TableBuilder()
         .setDbName(dbName1)

@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -36,7 +35,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.ParentNotDirectoryException;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -124,7 +123,7 @@ public class TestSessionState {
   @Test
   public void testgetDbName() throws Exception {
     //check that we start with default db
-    assertEquals(Warehouse.DEFAULT_DATABASE_NAME,
+    assertEquals(WarehouseUtils.DEFAULT_DATABASE_NAME,
         SessionState.get().getCurrentDatabase());
     final String newdb = "DB_2";
 
@@ -135,7 +134,7 @@ public class TestSessionState {
 
     //verify that a new sessionstate has default db
     SessionState.start(new HiveConf());
-    assertEquals(Warehouse.DEFAULT_DATABASE_NAME,
+    assertEquals(WarehouseUtils.DEFAULT_DATABASE_NAME,
         SessionState.get().getCurrentDatabase());
 
   }

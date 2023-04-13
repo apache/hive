@@ -29,8 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -287,7 +286,7 @@ public class SQLAuthorizationUtils {
       return userName.equals(thriftTableObj.getOwner());
     }
     case DATABASE: {
-      if (Warehouse.DEFAULT_DATABASE_NAME.equalsIgnoreCase(hivePrivObject.getDbname())) {
+      if (WarehouseUtils.DEFAULT_DATABASE_NAME.equalsIgnoreCase(hivePrivObject.getDbname())) {
         return true;
       }
       Database db = null;

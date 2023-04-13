@@ -45,7 +45,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
@@ -331,7 +331,7 @@ public class TestHCatLoaderEncryption {
     job.setInputFormatClass(HCatInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);
 
-    HCatInputFormat.setInput(job, Warehouse.DEFAULT_DATABASE_NAME, ENCRYPTED_TABLE, null);
+    HCatInputFormat.setInput(job, WarehouseUtils.DEFAULT_DATABASE_NAME, ENCRYPTED_TABLE, null);
 
     job.setMapOutputKeyClass(BytesWritable.class);
     job.setMapOutputValueClass(Text.class);

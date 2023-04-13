@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -118,7 +119,7 @@ public class HCatDriver {
       }
     } else {
       // looks like a db operation
-      if (dbName.isEmpty() || dbName.equals(Warehouse.DEFAULT_DATABASE_NAME)) {
+      if (dbName.isEmpty() || dbName.equals(WarehouseUtils.DEFAULT_DATABASE_NAME)) {
         // We dont set perms or groups for default dir.
         return 0;
       } else {

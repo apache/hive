@@ -20,7 +20,7 @@ package org.apache.hive.hcatalog.mapreduce;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -86,7 +86,7 @@ public class InputJobInfo implements Serializable {
              String filter,
              Properties properties) {
     this.databaseName = (databaseName == null) ?
-      Warehouse.DEFAULT_DATABASE_NAME : databaseName;
+      WarehouseUtils.DEFAULT_DATABASE_NAME : databaseName;
     this.tableName = tableName;
     this.filter = filter;
     this.properties = properties == null ? new Properties() : properties;

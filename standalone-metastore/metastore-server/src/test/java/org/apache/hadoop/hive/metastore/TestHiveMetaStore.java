@@ -55,12 +55,11 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.jdbc.AbstractJDBCConnectorProvider;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
-import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.junit.Assert;
@@ -1157,7 +1156,7 @@ public abstract class TestHiveMetaStore {
           warehouse.getDatabasePath(db).toString(), db.getLocationUri());
       assertEquals(db.getOwnerName(), SecurityUtils.getUser());
       assertEquals(db.getOwnerType(), PrincipalType.USER);
-      assertEquals(Warehouse.DEFAULT_CATALOG_NAME, db.getCatalogName());
+      assertEquals(WarehouseUtils.DEFAULT_CATALOG_NAME, db.getCatalogName());
       Database db2 = new DatabaseBuilder()
           .setName(TEST_DB2_NAME)
           .create(client, conf);
@@ -3145,7 +3144,7 @@ public abstract class TestHiveMetaStore {
 
   @Test
   public void testDBOwner() throws TException {
-    Database db = client.getDatabase(Warehouse.DEFAULT_DATABASE_NAME);
+    Database db = client.getDatabase(WarehouseUtils.DEFAULT_DATABASE_NAME);
     assertEquals(db.getOwnerName(), HMSHandler.PUBLIC);
     assertEquals(db.getOwnerType(), PrincipalType.ROLE);
   }

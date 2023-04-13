@@ -109,6 +109,7 @@ import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -8342,7 +8343,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (dest_part != null) {
       try {
-        String staticSpec = Warehouse.makePartPath(dest_part.getSpec());
+        String staticSpec = WarehouseUtils.makePartPath(dest_part.getSpec());
         fileSinkDesc.setStaticSpec(staticSpec);
       } catch (MetaException e) {
         throw new SemanticException(e);

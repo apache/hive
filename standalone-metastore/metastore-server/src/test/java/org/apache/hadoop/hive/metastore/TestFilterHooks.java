@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -229,11 +230,11 @@ public class TestFilterHooks {
     client.dropDataConnector(DCNAME2, true, true);
     Database db1 = new DatabaseBuilder()
         .setName(DBNAME1)
-        .setCatalogName(Warehouse.DEFAULT_CATALOG_NAME)
+        .setCatalogName(WarehouseUtils.DEFAULT_CATALOG_NAME)
         .create(client, conf);
     Database db2 = new DatabaseBuilder()
         .setName(DBNAME2)
-        .setCatalogName(Warehouse.DEFAULT_CATALOG_NAME)
+        .setCatalogName(WarehouseUtils.DEFAULT_CATALOG_NAME)
         .create(client, conf);
     new TableBuilder()
         .setDbName(DBNAME1)

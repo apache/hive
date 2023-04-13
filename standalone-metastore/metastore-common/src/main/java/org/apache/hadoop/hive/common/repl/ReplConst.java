@@ -102,4 +102,10 @@ public class ReplConst {
   public static final String REPL_METRICS_FAILBACK_COUNT = "repl.metrics.failback.count";
   public static final String REPL_METRICS_LAST_FAILBACK_STARTTIME = "repl.metrics.last.failback.starttime";
   public static final String REPL_METRICS_LAST_FAILBACK_ENDTIME = "repl.metrics.last.failback.endtime";
+
+  /**
+   * A database level property to signify that the database is in failover state and the
+   * reverse sync, i.e. the optimised boostrap, is not yet performed.
+   */
+  public static final String REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING = "repl.db.under.failover.reverse.sync.pending";
 }

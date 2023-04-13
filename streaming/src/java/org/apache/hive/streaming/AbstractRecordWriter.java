@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -549,7 +550,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       Map<String, String> partSpec = Warehouse.makeSpecFromValues(
           table.getPartitionKeys(), partitionValues);
       try {
-        destLocation = new Path(table.getDataLocation(), Warehouse.makePartPath(partSpec));
+        destLocation = new Path(table.getDataLocation(), WarehouseUtils.makePartPath(partSpec));
       } catch (MetaException e) {
         throw new StreamingException("Unable to retrieve the delta file location"
             + " for values: " + partitionValues

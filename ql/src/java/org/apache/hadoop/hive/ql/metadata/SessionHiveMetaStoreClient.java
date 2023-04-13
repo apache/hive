@@ -111,6 +111,7 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -124,7 +125,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
-import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.makePartName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeSpecFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeValsFromName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.compareFieldColumns;
@@ -1248,7 +1249,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Collections.sort(partitionList, new PartitionNamesComparator(table, req));
     short maxParts = req.getMaxParts();
     for(int i = 0; i < ((maxParts < 0 || maxParts > partitionList.size()) ? partitionList.size() : maxParts); i++) {
-      results.add(Warehouse.makePartName(table.getPartitionKeys(), partitionList.get(i).getValues()));
+      results.add(WarehouseUtils.makePartName(table.getPartitionKeys(), partitionList.get(i).getValues()));
     }
     return results;
   }
@@ -1284,8 +1285,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       }
 
       try {
-        return Warehouse.makePartName(table.getPartitionKeys(), o1.getValues()).compareTo(
-            Warehouse.makePartName(table.getPartitionKeys(), o2.getValues()));
+        return WarehouseUtils.makePartName(table.getPartitionKeys(), o1.getValues()).compareTo(
+            WarehouseUtils.makePartName(table.getPartitionKeys(), o2.getValues()));
       } catch (MetaException e) {
         throw new RuntimeException(e);
       }

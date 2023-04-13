@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -540,7 +541,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     // FIXME: this is a secret contract; reusein getAggrKey() creates a more closer relation to the StatsGatherer
     // prefix = work.getAggKey();
     if (partition != null) {
-      return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
+      return Utilities.join(prefix, WarehouseUtils.makePartPath(partition.getSpec()));
     }
     return prefix;
   }

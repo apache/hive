@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -101,7 +101,7 @@ public class TestPassProperties {
       TextInputFormat.setInputPaths(job, INPUT_FILE_NAME);
 
       HCatOutputFormat.setOutput(job, OutputJobInfo.create(
-          Warehouse.DEFAULT_DATABASE_NAME, "bad_props_table", null));
+          WarehouseUtils.DEFAULT_DATABASE_NAME, "bad_props_table", null));
       job.setOutputFormatClass(HCatOutputFormat.class);
       HCatOutputFormat.setSchema(job, getSchema());
       job.setNumReduceTasks(0);

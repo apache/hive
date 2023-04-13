@@ -22,7 +22,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -40,6 +39,7 @@ import org.apache.hadoop.hive.metastore.client.builder.FunctionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
@@ -57,7 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
 
 /**
  * Test class for IMetaStoreClient API. Testing the Database related functions.
@@ -587,12 +587,12 @@ public class TestDatabases extends MetaStoreClientTest {
 
     fetchedDbs = new HashSet<>(client.getAllDatabases());
     Assert.assertEquals(5, fetchedDbs.size());
-    Assert.assertTrue(fetchedDbs.contains(Warehouse.DEFAULT_DATABASE_NAME));
+    Assert.assertTrue(fetchedDbs.contains(WarehouseUtils.DEFAULT_DATABASE_NAME));
 
     // Intentionally using the deprecated method to make sure it returns correct results.
     fetchedDbs = new HashSet<>(client.getAllDatabases());
     Assert.assertEquals(5, fetchedDbs.size());
-    Assert.assertTrue(fetchedDbs.contains(Warehouse.DEFAULT_DATABASE_NAME));
+    Assert.assertTrue(fetchedDbs.contains(WarehouseUtils.DEFAULT_DATABASE_NAME));
 
     fetchedDbs = new HashSet<>(client.getDatabases(catName, "d*"));
     Assert.assertEquals(3, fetchedDbs.size());
@@ -600,12 +600,12 @@ public class TestDatabases extends MetaStoreClientTest {
 
     fetchedDbs = new HashSet<>(client.getDatabases("d*"));
     Assert.assertEquals(1, fetchedDbs.size());
-    Assert.assertTrue(fetchedDbs.contains(Warehouse.DEFAULT_DATABASE_NAME));
+    Assert.assertTrue(fetchedDbs.contains(WarehouseUtils.DEFAULT_DATABASE_NAME));
 
     // Intentionally using the deprecated method to make sure it returns correct results.
     fetchedDbs = new HashSet<>(client.getDatabases("d*"));
     Assert.assertEquals(1, fetchedDbs.size());
-    Assert.assertTrue(fetchedDbs.contains(Warehouse.DEFAULT_DATABASE_NAME));
+    Assert.assertTrue(fetchedDbs.contains(WarehouseUtils.DEFAULT_DATABASE_NAME));
 
     fetchedDbs = new HashSet<>(client.getDatabases(catName, "*1"));
     Assert.assertEquals(1, fetchedDbs.size());
@@ -661,12 +661,12 @@ public class TestDatabases extends MetaStoreClientTest {
 
   @Test(expected = NoSuchObjectException.class)
   public void fetchDatabaseInNonExistentCatalog() throws TException {
-    client.getDatabase("nosuch", Warehouse.DEFAULT_DATABASE_NAME);
+    client.getDatabase("nosuch", WarehouseUtils.DEFAULT_DATABASE_NAME);
   }
 
   @Test(expected = NoSuchObjectException.class)
   public void dropDatabaseInNonExistentCatalog() throws TException {
-    client.dropDatabase("nosuch", Warehouse.DEFAULT_DATABASE_NAME, true, false, false);
+    client.dropDatabase("nosuch", WarehouseUtils.DEFAULT_DATABASE_NAME, true, false, false);
   }
 
   private Database getDatabaseWithAllParametersSet() throws Exception {

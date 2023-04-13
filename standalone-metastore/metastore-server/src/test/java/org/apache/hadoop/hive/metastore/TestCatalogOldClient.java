@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 

@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 
 import java.util.Arrays;
 import java.util.List;

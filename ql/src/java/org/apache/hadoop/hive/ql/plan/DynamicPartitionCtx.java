@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -118,7 +118,7 @@ public class DynamicPartitionCtx implements Serializable {
     this.numDPCols = dpNames.size();
     this.numSPCols = spNames.size();
     if (this.numSPCols > 0) {
-      this.spPath = Warehouse.makeDynamicPartName(partSpec);
+      this.spPath = WarehouseUtils.makeDynamicPartName(partSpec);
     } else {
       this.spPath = null;
     }

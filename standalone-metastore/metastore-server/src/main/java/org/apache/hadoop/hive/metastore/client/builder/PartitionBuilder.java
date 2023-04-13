@@ -19,11 +19,11 @@ package org.apache.hadoop.hive.metastore.client.builder;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.thrift.TException;
 
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class PartitionBuilder extends StorageDescriptorBuilder<PartitionBuilder>
     // Set some reasonable defaults
     partParams = new HashMap<>();
     createTime = lastAccessTime = (int)(System.currentTimeMillis() / 1000);
-    dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
     super.setChild(this);
   }
 

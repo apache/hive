@@ -18,17 +18,12 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
-
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -37,18 +32,17 @@ import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
-import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
-import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
-import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -115,7 +109,25 @@ import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING;
+import static org.apache.hadoop.hive.metastore.utils.ThrowingFunction.unchecked;
 
 public interface RawStore extends Configurable {
   /***
@@ -264,6 +276,39 @@ public interface RawStore extends Configurable {
    * @throws MetaException something went wrong, usually with the database.
    */
   List<String> getAllDatabases(String catalogName) throws MetaException;
+
+  /**
+   * Default implementation of the method to retrieve the list of databases currently in failover state.
+   *
+   * @return a {@link Set} databases that are in failover state in present. The individual entry of the Set contains
+   * enough information to uniquely identify a database in the given cluster, i.e. {@code catalog_name{@link MetaStoreUtils#CATALOG_DB_SEPARATOR}db_name},
+   * where catalog_name is the name of the catalog and db_name is the name of the database. In case there is no database in failover state an empty set
+   * {@link Collections#emptySet} would be returned. The returned set would always be immutable.
+   * @throws MetaException could be thrown if something wrong while querying the metastore database
+   */
+  default Set<String> databasesInFailover() throws MetaException {
+    Set<String> databasesInFailover = new HashSet<>();
+    this.getCatalogs().forEach(catalogName -> databasesInFailover.addAll(
+        Optional.ofNullable(catalogName).map(unchecked(
+                catalog -> this.getAllDatabases(catalog).stream().filter(Objects::nonNull)
+                    .map(unchecked(databaseName -> this.getDatabase(catalogName, databaseName)))
+                    .filter(RawStore::isDatabaseInFailover)
+                    .map(databaseInFailoverState -> new StringBuilder().append(catalogName)
+                        .append(MetaStoreUtils.CATALOG_DB_SEPARATOR).append(databaseInFailoverState.getName()).toString())
+                    .collect(Collectors.toSet())))
+            .orElse(Collections.emptySet())));
+
+    return (CollectionUtils.isNotEmpty(databasesInFailover)) ? Collections.unmodifiableSet(
+        databasesInFailover) : Collections.emptySet();
+  }
+
+  static boolean isDatabaseInFailover(Database database) {
+    final Map<String, String> dbParameters = database.getParameters();
+    if (MapUtils.isNotEmpty(dbParameters) && dbParameters.containsKey(REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING)
+        && Boolean.valueOf(dbParameters.get(REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING)))
+      return true;
+    return false;
+  }
 
   /**
    * Create a dataconnector.

@@ -24,9 +24,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-
-
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +140,7 @@ public class TestExecDriver {
       cols.add("key");
       cols.add("value");
       for (String src : srctables) {
-        db.dropTable(Warehouse.DEFAULT_DATABASE_NAME, src, true, true);
+        db.dropTable(WarehouseUtils.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
             HiveIgnoreKeyTextOutputFormat.class);
         db.loadTable(hadoopDataFile[i], src, LoadFileType.KEEP_EXISTING,
@@ -501,7 +499,7 @@ public class TestExecDriver {
   public void testMapPlan1() throws Exception {
 
     LOG.info("Beginning testMapPlan1");
-    populateMapPlan1(db.getTable(Warehouse.DEFAULT_DATABASE_NAME, "src"));
+    populateMapPlan1(db.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME, "src"));
     executePlan();
     fileDiff("lt100.txt.deflate", "mapplan1.out");
   }
@@ -510,7 +508,7 @@ public class TestExecDriver {
   public void testMapPlan2() throws Exception {
 
     LOG.info("Beginning testMapPlan2");
-    populateMapPlan2(db.getTable(Warehouse.DEFAULT_DATABASE_NAME, "src"));
+    populateMapPlan2(db.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME, "src"));
     executePlan();
     fileDiff("lt100.txt", "mapplan2.out");
   }
@@ -519,7 +517,7 @@ public class TestExecDriver {
   public void testMapRedPlan1() throws Exception {
 
     LOG.info("Beginning testMapRedPlan1");
-    populateMapRedPlan1(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
+    populateMapRedPlan1(db.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME,
         "src"));
     executePlan();
     fileDiff("kv1.val.sorted.txt", "mapredplan1.out");
@@ -529,7 +527,7 @@ public class TestExecDriver {
   public void testMapRedPlan2() throws Exception {
 
     LOG.info("Beginning testMapPlan2");
-    populateMapRedPlan2(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
+    populateMapRedPlan2(db.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME,
         "src"));
     executePlan();
     fileDiff("lt100.sorted.txt", "mapredplan2.out");
@@ -539,8 +537,8 @@ public class TestExecDriver {
   public void testMapRedPlan3() throws Exception {
 
     LOG.info("Beginning testMapPlan3");
-    populateMapRedPlan3(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
-        "src"), db.getTable(Warehouse.DEFAULT_DATABASE_NAME, "src2"));
+    populateMapRedPlan3(db.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME,
+        "src"), db.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME, "src2"));
     executePlan();
     fileDiff("kv1kv2.cogroup.txt", "mapredplan3.out");
   }
@@ -549,7 +547,7 @@ public class TestExecDriver {
   public void testMapRedPlan4() throws Exception {
 
     LOG.info("Beginning testMapPlan4");
-    populateMapRedPlan4(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
+    populateMapRedPlan4(db.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME,
         "src"));
     executePlan();
     fileDiff("kv1.string-sorted.txt", "mapredplan4.out");
@@ -559,7 +557,7 @@ public class TestExecDriver {
   public void testMapRedPlan5() throws Exception {
 
     LOG.info("Beginning testMapPlan5");
-    populateMapRedPlan5(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
+    populateMapRedPlan5(db.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME,
         "src"));
     executePlan();
     fileDiff("kv1.string-sorted.txt", "mapredplan5.out");
@@ -569,7 +567,7 @@ public class TestExecDriver {
   public void testMapRedPlan6() throws Exception {
 
     LOG.info("Beginning testMapPlan6");
-    populateMapRedPlan6(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
+    populateMapRedPlan6(db.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME,
         "src"));
     executePlan();
     fileDiff("lt100.sorted.txt", "mapredplan6.out");

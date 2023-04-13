@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -32,6 +31,7 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.fs.FileSystem;
@@ -199,7 +199,7 @@ public class TestStatsReplicationScenarios {
 
       Map<String, String> rParams = collectStatsParams(rPart.getParameters());
       Map<String, String> pParams = collectStatsParams(pPart.getParameters());
-      String partName = Warehouse.makePartName(partKeys, pPart.getValues());
+      String partName = WarehouseUtils.makePartName(partKeys, pPart.getValues());
       Assert.assertEquals("Mismatch in stats parameters for partition " + partName + " of table " + tableName,
                           pParams, rParams);
 

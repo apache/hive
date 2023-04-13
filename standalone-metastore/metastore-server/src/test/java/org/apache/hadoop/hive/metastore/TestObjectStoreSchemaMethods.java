@@ -50,8 +50,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 
 @Category(MetastoreCheckinTest.class)
 public class TestObjectStoreSchemaMethods {

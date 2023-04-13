@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
@@ -572,12 +572,12 @@ public class WarehouseInstance implements Closeable {
   }
 
   public List<SQLUniqueConstraint> getUniqueConstraintList(String dbName, String tblName) throws Exception {
-    return client.getUniqueConstraints(new UniqueConstraintsRequest(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
+    return client.getUniqueConstraints(new UniqueConstraintsRequest(WarehouseUtils.DEFAULT_CATALOG_NAME, dbName, tblName));
   }
 
   public List<SQLNotNullConstraint> getNotNullConstraintList(String dbName, String tblName) throws Exception {
     return client.getNotNullConstraints(
-            new NotNullConstraintsRequest(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
+            new NotNullConstraintsRequest(WarehouseUtils.DEFAULT_CATALOG_NAME, dbName, tblName));
   }
 
   ReplicationV1CompatRule getReplivationV1CompatRule(List<String> testsToSkip) {

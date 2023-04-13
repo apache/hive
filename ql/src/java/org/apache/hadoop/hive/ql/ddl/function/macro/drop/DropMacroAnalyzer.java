@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.ddl.function.macro.drop;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -60,7 +60,7 @@ public class DropMacroAnalyzer extends BaseSemanticAnalyzer {
     DropMacroDesc desc = new DropMacroDesc(macroName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
-    Database database = getDatabase(Warehouse.DEFAULT_DATABASE_NAME);
+    Database database = getDatabase(WarehouseUtils.DEFAULT_DATABASE_NAME);
     // This restricts macro dropping to privileged users.
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }

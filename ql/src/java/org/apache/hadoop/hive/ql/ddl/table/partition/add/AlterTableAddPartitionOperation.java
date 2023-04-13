@@ -27,12 +27,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
 /**
  * Operation process of adding a partition to a table.
@@ -224,7 +223,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
 
   private String getPartitionName(Table table, Partition partition) throws HiveException {
     try {
-      return Warehouse.makePartName(table.getPartitionKeys(), partition.getValues());
+      return WarehouseUtils.makePartName(table.getPartitionKeys(), partition.getValues());
     } catch (MetaException e) {
       throw new HiveException(e);
     }

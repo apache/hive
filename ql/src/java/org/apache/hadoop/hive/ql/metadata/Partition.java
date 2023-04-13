@@ -32,13 +32,13 @@ import java.util.Properties;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -172,7 +172,7 @@ public class Partition implements Serializable {
           // set default if location is not set and this is a physical
           // table partition (not a view partition)
           if (table.getDataLocation() != null) {
-            Path partPath = new Path(table.getDataLocation(), Warehouse.makePartName(table.getPartCols(), tPartition.getValues()));
+            Path partPath = new Path(table.getDataLocation(), WarehouseUtils.makePartName(table.getPartCols(), tPartition.getValues()));
             tPartition.getSd().setLocation(partPath.toString());
           }
         }
@@ -199,7 +199,7 @@ public class Partition implements Serializable {
 
   public String getName() {
     try {
-      return Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
+      return WarehouseUtils.makePartName(table.getPartCols(), tPartition.getValues());
     } catch (MetaException e) {
       throw new RuntimeException(e);
     }
@@ -451,7 +451,7 @@ public class Partition implements Serializable {
   public String toString() {
     String pn = "Invalid Partition";
     try {
-      pn = Warehouse.makePartName(getSpec(), false);
+      pn = WarehouseUtils.makePartName(getSpec(), false);
     } catch (MetaException e) {
       // ignore as we most probably in an exception path already otherwise this
       // error wouldn't occur

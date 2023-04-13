@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -758,7 +759,7 @@ public class HiveAlterHandler implements AlterHandler {
             new_part, tbl, wh, false, true, environmentContext, false);
       }
 
-      String newPartName = Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues());
+      String newPartName = WarehouseUtils.makePartName(tbl.getPartitionKeys(), new_part.getValues());
       List<ColumnStatistics> multiColumnStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name, oldPart.getValues(),
           oldPart.getSd().getCols(), tbl, new_part, null, null);
       msdb.alterPartition(catName, dbname, name, part_vals, new_part, validWriteIds);
@@ -826,7 +827,7 @@ public class HiveAlterHandler implements AlterHandler {
     // Get list of partition values
     List<String> partValues = new LinkedList<>();
     for (Partition tmpPart : new_parts) {
-      partValues.add(Warehouse.makePartName(tbl.getPartitionKeys(), tmpPart.getValues()));
+      partValues.add(WarehouseUtils.makePartName(tbl.getPartitionKeys(), tmpPart.getValues()));
     }
 
     // Get existing partitions from store
@@ -1144,8 +1145,8 @@ public class HiveAlterHandler implements AlterHandler {
       if (newCols == null) {
         newCols = part.getSd() == null ? new ArrayList<>() : part.getSd().getCols();
       }
-      String oldPartName = Warehouse.makePartName(table.getPartitionKeys(), partVals);
-      String newPartName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+      String oldPartName = WarehouseUtils.makePartName(table.getPartitionKeys(), partVals);
+      String newPartName = WarehouseUtils.makePartName(table.getPartitionKeys(), part.getValues());
       boolean rename = !part.getDbName().equals(dbname) || !part.getTableName().equals(tblname)
           || !oldPartName.equals(newPartName);
 

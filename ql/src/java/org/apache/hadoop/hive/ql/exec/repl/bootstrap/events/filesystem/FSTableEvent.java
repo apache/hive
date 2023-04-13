@@ -22,12 +22,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -137,7 +137,7 @@ public class FSTableEvent implements TableEvent {
     List<String> partitions = new ArrayList<>();
     try {
       for (Partition partition : metadata.getPartitions()) {
-        String partName = Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues());
+        String partName = WarehouseUtils.makePartName(tblDesc.getPartCols(), partition.getValues());
         partitions.add(partName);
       }
     } catch (MetaException e) {
@@ -158,7 +158,7 @@ public class FSTableEvent implements TableEvent {
          * this is required for file listing of all files in a partition for managed table as described in
          * {@link org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator}
          */
-        location = new Path(fromPath, Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString();
+        location = new Path(fromPath, WarehouseUtils.makePartName(tblDesc.getPartCols(), partition.getValues())).toString();
       }
 
       ColumnStatistics columnStatistics = null;
