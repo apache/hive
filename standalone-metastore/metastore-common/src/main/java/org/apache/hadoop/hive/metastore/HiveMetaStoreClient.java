@@ -55,7 +55,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.security.auth.login.LoginException;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
