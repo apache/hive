@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.tools.schematool;
 
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,7 +71,7 @@ public class TestSchemaToolTaskDrop {
     // Return two databases: `mydb` and `default`
     ResultSet databasesResult = mock(ResultSet.class);
     when(databasesResult.next()).thenReturn(true, true, false);
-    when(databasesResult.getString(anyInt())).thenReturn("mydb", Warehouse.DEFAULT_DATABASE_NAME);
+    when(databasesResult.getString(anyInt())).thenReturn("mydb", WarehouseUtils.DEFAULT_DATABASE_NAME);
 
     // Return two tables: `table1` and `table2`
     ResultSet tablesResult = mock(ResultSet.class);
@@ -92,8 +92,8 @@ public class TestSchemaToolTaskDrop {
     uut.execute();
 
     Mockito.verify(stmtMock).execute("DROP DATABASE `mydb` CASCADE");
-    Mockito.verify(stmtMock).execute(String.format("DROP TABLE `%s`.`table1`", Warehouse.DEFAULT_DATABASE_NAME));
-    Mockito.verify(stmtMock).execute(String.format("DROP TABLE `%s`.`table2`", Warehouse.DEFAULT_DATABASE_NAME));
+    Mockito.verify(stmtMock).execute(String.format("DROP TABLE `%s`.`table1`", WarehouseUtils.DEFAULT_DATABASE_NAME));
+    Mockito.verify(stmtMock).execute(String.format("DROP TABLE `%s`.`table2`", WarehouseUtils.DEFAULT_DATABASE_NAME));
     Mockito.verify(stmtMock, times(3)).execute(anyString());
   }
 

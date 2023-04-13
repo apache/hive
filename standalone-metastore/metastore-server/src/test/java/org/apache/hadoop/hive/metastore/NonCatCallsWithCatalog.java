@@ -78,7 +78,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 
 public abstract class NonCatCallsWithCatalog {
 

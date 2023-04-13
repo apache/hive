@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.junit.Assert;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,13 +39,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -234,7 +233,7 @@ public class TestHCatPartitionPublish {
   }
 
   private void createTable(String dbName, String tableName) throws Exception {
-    String databaseName = (dbName == null) ? Warehouse.DEFAULT_DATABASE_NAME
+    String databaseName = (dbName == null) ? WarehouseUtils.DEFAULT_DATABASE_NAME
         : dbName;
     try {
       msc.dropTable(databaseName, tableName);

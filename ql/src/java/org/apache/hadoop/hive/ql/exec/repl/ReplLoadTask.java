@@ -99,6 +99,7 @@ import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.Set;
 
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING;
 import static org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook.READONLY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.READ_ONLY_HOOK;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
@@ -651,12 +652,14 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
               LOG.debug("Database {} properties before removal {}", work.getTargetDatabase(), params);
               params.remove(REPL_RESUME_STARTED_AFTER_FAILOVER);
               params.remove(SOURCE_OF_REPLICATION);
+              params.remove(REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING); // This database property needs to be unset once optimized
+                                                                      // bootstrap is completed
               if (!work.shouldFailover()) {
                 params.remove(REPL_FAILOVER_ENDPOINT);
               }
 
-              LOG.info("Removed {} property from database {} after successful optimised bootstrap load.",
-                  SOURCE_OF_REPLICATION, work.getTargetDatabase());
+              LOG.info("Removed properties [{}, {}] from database {} after successful optimised bootstrap load.",
+                  SOURCE_OF_REPLICATION, REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING, work.getTargetDatabase());
 
               int failbackCount = 1 + NumberUtils.toInt(params.getOrDefault(ReplConst.REPL_METRICS_FAILBACK_COUNT, "0"), 0);
               LOG.info("Replication Metrics: Setting replication metrics failback count for database: {} to: {} ", db.getName(), failbackCount);

@@ -2,7 +2,6 @@ package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -13,6 +12,7 @@ import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -73,7 +73,7 @@ public class TestCatalogs extends MetaStoreClientTest {
     // Drop any left over catalogs
     List<String> catalogs = client.getCatalogs();
     for (String catName : catalogs) {
-      if (!catName.equalsIgnoreCase(Warehouse.DEFAULT_CATALOG_NAME)) {
+      if (!catName.equalsIgnoreCase(WarehouseUtils.DEFAULT_CATALOG_NAME)) {
         // First drop any databases in catalog
         List<String> databases = client.getAllDatabases(catName);
         for (String db : databases) {
@@ -141,7 +141,7 @@ public class TestCatalogs extends MetaStoreClientTest {
     Assert.assertEquals(4, catalogs.size());
     catalogs.sort(Comparator.naturalOrder());
     List<String> expected = new ArrayList<>(catNames.length + 1);
-    expected.add(Warehouse.DEFAULT_CATALOG_NAME);
+    expected.add(WarehouseUtils.DEFAULT_CATALOG_NAME);
     expected.addAll(Arrays.asList(catNames));
     expected.sort(Comparator.naturalOrder());
     for (int i = 0; i < catalogs.size(); i++) {
@@ -177,7 +177,7 @@ public class TestCatalogs extends MetaStoreClientTest {
 
     catalogs = client.getCatalogs();
     Assert.assertEquals(1, catalogs.size());
-    Assert.assertTrue(catalogs.get(0).equalsIgnoreCase(Warehouse.DEFAULT_CATALOG_NAME));
+    Assert.assertTrue(catalogs.get(0).equalsIgnoreCase(WarehouseUtils.DEFAULT_CATALOG_NAME));
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -202,7 +202,7 @@ public class TestCatalogs extends MetaStoreClientTest {
 
   @Test(expected = MetaException.class)
   public void dropHiveCatalog() throws TException {
-    client.dropCatalog(Warehouse.DEFAULT_CATALOG_NAME);
+    client.dropCatalog(WarehouseUtils.DEFAULT_CATALOG_NAME);
   }
 
   @Test(expected = InvalidOperationException.class)

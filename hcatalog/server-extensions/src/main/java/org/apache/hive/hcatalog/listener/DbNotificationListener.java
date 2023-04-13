@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,7 +46,6 @@ import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RawStoreProxy;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -136,6 +134,7 @@ import org.apache.hadoop.hive.metastore.messaging.DeletePartitionColumnStatMessa
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.hcatalog.data.Pair;
 import org.slf4j.Logger;
@@ -407,7 +406,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           fileIterator = Collections.emptyIterator();
         }
         PartitionFiles partitionFiles =
-            new PartitionFiles(Warehouse.makePartName(t.getPartitionKeys(), p.getValues()), fileIterator);
+            new PartitionFiles(WarehouseUtils.makePartName(t.getPartitionKeys(), p.getValues()), fileIterator);
         return partitionFiles;
       } catch (MetaException e) {
         throw new RuntimeException(e);

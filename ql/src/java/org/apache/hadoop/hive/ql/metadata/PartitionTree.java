@@ -35,8 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.LOG;
-import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.makePartName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.makePartNameMatcher;
 
 /**

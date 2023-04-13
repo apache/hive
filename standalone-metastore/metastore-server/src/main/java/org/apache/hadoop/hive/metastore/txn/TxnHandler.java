@@ -59,7 +59,6 @@ import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.ArrayUtils;
@@ -80,7 +79,6 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.LockTypeComparator;
@@ -166,6 +164,7 @@ import org.apache.hadoop.hive.metastore.utils.LockTypeUtil;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -4453,7 +4452,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             while (partitionIterator.hasNext()) {
               Partition p = partitionIterator.next();
               partVals = p.getValues();
-              partName = Warehouse.makePartName(partCols, partVals);
+              partName = WarehouseUtils.makePartName(partCols, partVals);
 
               buff.setLength(0);
               buff.append("DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_DATABASE\"='");

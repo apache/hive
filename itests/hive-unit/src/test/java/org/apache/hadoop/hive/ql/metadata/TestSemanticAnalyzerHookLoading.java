@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -53,7 +53,7 @@ public class TestSemanticAnalyzerHookLoading {
 
     run("create table testDL (a int)", conf);
 
-    Map<String,String> params = Hive.get(conf).getTable(Warehouse.DEFAULT_DATABASE_NAME, "testDL").getParameters();
+    Map<String,String> params = Hive.get(conf).getTable(WarehouseUtils.DEFAULT_DATABASE_NAME, "testDL").getParameters();
 
     assertEquals(DummyCreateTableHook.class.getName(),params.get("createdBy"));
     assertEquals("Open Source rocks!!", params.get("Message"));

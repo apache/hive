@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -515,9 +516,9 @@ public class Msck {
       if (i > 0) {
         suffixBuf.append(" AND ");
       }
-      suffixBuf.append(Warehouse.escapePathName(e.getKey()));
+      suffixBuf.append(WarehouseUtils.escapePathName(e.getKey()));
       suffixBuf.append('=');
-      suffixBuf.append("'").append(Warehouse.escapePathName(e.getValue())).append("'");
+      suffixBuf.append("'").append(WarehouseUtils.escapePathName(e.getValue())).append("'");
       i++;
     }
     suffixBuf.append(")");

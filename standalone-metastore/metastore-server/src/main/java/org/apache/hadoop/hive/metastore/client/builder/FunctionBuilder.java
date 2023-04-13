@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.client.builder;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
@@ -29,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class FunctionBuilder {
     createTime = (int) (System.currentTimeMillis() / 1000);
     funcType = FunctionType.JAVA;
     resourceUris = new ArrayList<>();
-    dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
   }
 
   public FunctionBuilder setCatName(String catName) {

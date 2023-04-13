@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 
 import java.util.Map;
 import java.util.Set;
@@ -178,7 +179,7 @@ public class CheckResult {
 
     public Path getLocation(Path tablePath, Map<String, String> partSpec) throws MetaException {
       if (this.path == null) {
-        return new Path(tablePath, Warehouse.makePartPath(partSpec));
+        return new Path(tablePath, WarehouseUtils.makePartPath(partSpec));
       }
 
       return this.path;

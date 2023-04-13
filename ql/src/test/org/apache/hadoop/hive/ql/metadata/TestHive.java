@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -148,13 +149,13 @@ public class TestHive {
       // create a simple table and test create, drop, get
       String tableName = "table_for_testtable";
       try {
-        hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+        hm.dropTable(WarehouseUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e1) {
         e1.printStackTrace();
         assertTrue("Unable to drop table", false);
       }
 
-      Table tbl = new Table(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+      Table tbl = new Table(WarehouseUtils.DEFAULT_DATABASE_NAME, tableName);
       List<FieldSchema> fields = tbl.getCols();
 
       fields.add(new FieldSchema("col1", serdeConstants.INT_TYPE_NAME, "int -- first column"));
@@ -214,9 +215,9 @@ public class TestHive {
       validateTable(tbl, tableName);
 
       try {
-        hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName, true,
+        hm.dropTable(WarehouseUtils.DEFAULT_DATABASE_NAME, tableName, true,
             false);
-        Table ft2 = hm.getTable(Warehouse.DEFAULT_DATABASE_NAME,
+        Table ft2 = hm.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME,
             tableName, false);
         assertNull("Unable to drop table ", ft2);
       } catch (HiveException e) {
@@ -247,12 +248,12 @@ public class TestHive {
     String tableName = "table_for_test_thrifttable";
     try {
       try {
-        hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+        hm.dropTable(WarehouseUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e1) {
         System.err.println(StringUtils.stringifyException(e1));
         assertTrue("Unable to drop table", false);
       }
-      Table tbl = new Table(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+      Table tbl = new Table(WarehouseUtils.DEFAULT_DATABASE_NAME, tableName);
       tbl.setInputFormatClass(SequenceFileInputFormat.class.getName());
       tbl.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
       tbl.setSerializationLib(ThriftDeserializer.class.getName());
@@ -340,7 +341,7 @@ public class TestHive {
       // (create table sets it to empty (non null) structures)
       tbl.getTTable().setPrivilegesIsSet(false);
 
-      ft = hm.getTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+      ft = hm.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME, tableName);
       Assert.assertTrue(ft.getTTable().isSetId());
       ft.getTTable().unsetId();
 
@@ -625,7 +626,7 @@ public class TestHive {
    */
   @Test
   public void testDropPartitionsWithPurge() throws Exception {
-    String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    String dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
     String tableName = "table_for_testDropPartitionsWithPurge";
 
     try {
@@ -689,7 +690,7 @@ public class TestHive {
   @Test
   public void testAutoPurgeTablesAndPartitions() throws Throwable {
 
-    String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    String dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
     String tableName = "table_for_testAutoPurgeTablesAndPartitions";
     try {
 
@@ -744,7 +745,7 @@ public class TestHive {
     try {
       String tableName = "table_for_testpartition";
       try {
-        hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+        hm.dropTable(WarehouseUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e) {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to drop table: " + tableName, false);
@@ -765,7 +766,7 @@ public class TestHive {
       }
       Table tbl = null;
       try {
-        tbl = hm.getTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+        tbl = hm.getTable(WarehouseUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e) {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to fetch table: " + tableName, false);
@@ -838,7 +839,7 @@ public class TestHive {
       partialSpec.put("hr", "14");
       assertEquals(1, hm.getPartitions(tbl, partialSpec).size());
 
-      hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+      hm.dropTable(WarehouseUtils.DEFAULT_DATABASE_NAME, tableName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testPartition() failed");

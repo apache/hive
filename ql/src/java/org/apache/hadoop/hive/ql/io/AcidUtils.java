@@ -90,10 +90,10 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionState;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
@@ -3426,7 +3426,7 @@ public class AcidUtils {
     String partitionName = null;
     if (partitionSpec != null) {
       try {
-        partitionName = Warehouse.makePartName(partitionSpec, false);
+        partitionName = WarehouseUtils.makePartName(partitionSpec, false);
       } catch (MetaException e) {
         throw new SemanticException("partition " + partitionSpec.toString() + " not found");
       }

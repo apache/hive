@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
@@ -108,7 +108,7 @@ public class TestHiveHistory {
       cols.add("key");
       cols.add("value");
       for (String src : srctables) {
-        db.dropTable(Warehouse.DEFAULT_DATABASE_NAME, src, true, true);
+        db.dropTable(WarehouseUtils.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class);
         db.loadTable(hadoopDataFile[i], src,

@@ -46,7 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
 import static org.junit.Assert.assertEquals;
 
 /**

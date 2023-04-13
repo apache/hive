@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
@@ -61,8 +62,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
@@ -98,7 +99,7 @@ public class TestStats {
       } else {
         List<String> databases = client.getAllDatabases(catName);
         for (String db : databases) {
-          if (!db.equalsIgnoreCase(Warehouse.DEFAULT_DATABASE_NAME)) {
+          if (!db.equalsIgnoreCase(WarehouseUtils.DEFAULT_DATABASE_NAME)) {
             client.dropDatabase(catName, db, true, false, true);
           }
         }

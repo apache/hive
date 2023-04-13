@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.security.UserGroupInformation;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +69,7 @@ public class ReplChangeManager {
 
   private static boolean inited = false;
   private static boolean enabled = false;
-  private static Map<String, String> encryptionZoneToCmrootMapping = new HashMap<>();
+  private static Map<String, String> encryptionZoneToCMRootMapping = new HashMap<>();
   private static Configuration conf;
   private String msUser;
   private String msGroup;
@@ -161,6 +163,20 @@ public class ReplChangeManager {
     return instance;
   }
 
+  /**
+   * This method returns a mapping of encryption zones to corresponding CM Roots. This is supposed to be invoked after
+   * the Replication Change Manager is initialized.
+   * <br> This method is thread safe, the invoker will not observe any inconsistent value of the mapping.
+   *
+   * @return a dictionary containing the mapping of Encryption Zone to CM Root
+   * @throws IllegalStateException could be encountered if ths method is invoked before the instance is initialized
+   */
+  public static synchronized Map<String, String> getEncryptionZoneToCMRootMapping() {
+    if (!inited)
+      throw new IllegalStateException("Replication Change Manager is not initialized yet");
+    return encryptionZoneToCMRootMapping;
+  }
+
   private ReplChangeManager(Configuration conf) throws MetaException {
     try {
       if (!inited) {
@@ -183,9 +199,9 @@ public class ReplChangeManager {
             //If cm root is encrypted we keep using it for the encryption zone
             String encryptionZonePath = cmRootFs.getUri()
                     + EncryptionZoneUtils.getEncryptionZoneForPath(cmroot, conf).getPath();
-            encryptionZoneToCmrootMapping.put(encryptionZonePath, cmRootDir);
+            encryptionZoneToCMRootMapping.put(encryptionZonePath, cmRootDir);
           } else {
-            encryptionZoneToCmrootMapping.put(NO_ENCRYPTION, cmRootDir);
+            encryptionZoneToCMRootMapping.put(NO_ENCRYPTION, cmRootDir);
           }
           if (!StringUtils.isEmpty(fallbackNonEncryptedCmRootDir)) {
             Path cmRootFallback = new Path(fallbackNonEncryptedCmRootDir);
@@ -475,20 +491,42 @@ public class ReplChangeManager {
     private long secRetain;
     private Configuration conf;
 
+    private final RawStore rawStore;
+
     public CMClearer(long secRetain, Configuration conf) {
-      this.encryptionZones = encryptionZoneToCmrootMapping;
+      this.encryptionZones = encryptionZoneToCMRootMapping;
       this.secRetain = secRetain;
       this.conf = conf;
+      rawStore = initRawStore(conf);
     }
 
     CMClearer(Map<String, String> encryptionZones, long secRetain, Configuration conf) {
       this.encryptionZones = encryptionZones;
       this.secRetain = secRetain;
       this.conf = conf;
+      rawStore = initRawStore(conf);
+    }
+
+    @NotNull private RawStore initRawStore(Configuration conf) {
+      final RawStore rawStore;
+      try {
+        // we needed a RawStore instance here so that we can query the hive metastore and check if there
+        // is any database currently in failover state
+        rawStore = RawStoreProxy.getProxy(conf, conf, MetastoreConf.getVar(conf, ConfVars.RAW_STORE_IMPL));
+      } catch (MetaException e) {
+        throw new RuntimeException(
+            "Probably the RawStore Implementation class was not found on classpath, this is something unrecoverable, "
+                + "hence raising RuntimeException", e);
+      }
+      return rawStore;
     }
 
     @Override
     public void run() {
+      // if there exist a database in failover state we will not purge the Change Manager entries
+      if (!isCMCleanUpSafe())
+        return;
+
       try {
         LOG.info("CMClearer started");
         for (String cmrootString : encryptionZones.values()) {
@@ -525,6 +563,28 @@ public class ReplChangeManager {
       } catch (IOException e) {
         LOG.error("Exception when clearing cmroot", e);
       }
+    }
+
+    /**
+     * Currently, we don't allow the CM clearer thread to purge CM entries if there is even a single database
+     * in failover state and the reverse sync (the optimized bootstrap) is due.
+     * <br>This method checks whether there is any database in failover and the reverse sync is pending.
+     *
+     * @return a boolean flag signifying if there is a failover database in the cluster
+     */
+    private boolean isCMCleanUpSafe() {
+      try {
+        Set<String> databasesInFailover = this.rawStore.databasesInFailover();
+        if (databasesInFailover.size() > 0) {
+          LOG.info("There are database(s) in failover, metastore CMClearer thread "
+                  + "should not be in action with such databases. Databases in failover state: [{}]",
+              databasesInFailover);
+          return false;
+        }
+      } catch (MetaException e) {
+        throw new RuntimeException("Error encountered, it may not be safe to spawn CM Clearer thread, aborting", e);
+      }
+      return true;
     }
   }
 
@@ -587,14 +647,14 @@ public class ReplChangeManager {
         //at the root of the encryption zone
         cmrootDir = encryptionZonePath + Path.SEPARATOR + encryptedCmRootDir;
       }
-      if (encryptionZoneToCmrootMapping.containsKey(encryptionZonePath)) {
-        cmroot = new Path(encryptionZoneToCmrootMapping.get(encryptionZonePath));
+      if (encryptionZoneToCMRootMapping.containsKey(encryptionZonePath)) {
+        cmroot = new Path(encryptionZoneToCMRootMapping.get(encryptionZonePath));
       } else {
         cmroot = new Path(cmrootDir);
         synchronized (instance) {
-          if (!encryptionZoneToCmrootMapping.containsKey(encryptionZonePath)) {
+          if (!encryptionZoneToCMRootMapping.containsKey(encryptionZonePath)) {
             createCmRoot(cmroot);
-            encryptionZoneToCmrootMapping.put(encryptionZonePath, cmrootDir);
+            encryptionZoneToCMRootMapping.put(encryptionZonePath, cmrootDir);
           }
         }
       }
@@ -666,7 +726,7 @@ public class ReplChangeManager {
     inited = false;
     enabled = false;
     instance = null;
-    encryptionZoneToCmrootMapping.clear();
+    encryptionZoneToCMRootMapping.clear();
   }
 
   public static final PathFilter CMROOT_PATH_FILTER = new PathFilter() {

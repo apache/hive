@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.matchesAnyStringInCollection;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.io.IOException;
@@ -47,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -55,6 +58,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -65,7 +69,6 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -192,6 +195,7 @@ import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.FetchGroups;
@@ -251,9 +255,9 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.thrift.TException;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
@@ -2935,7 +2939,7 @@ public class ObjectStore implements RawStore, Configurable {
       // Change the query to use part_vals instead of the name which is
       // redundant TODO: callers of this often get part_vals out of name for no reason...
       String name =
-          Warehouse.makePartName(convertToFieldSchemas(mtbl.getPartitionKeys()), part_vals);
+          WarehouseUtils.makePartName(convertToFieldSchemas(mtbl.getPartitionKeys()), part_vals);
       result = getMPartition(catName, dbName, tableName, name);
       committed = commitTransaction();
     } finally {
@@ -3034,7 +3038,7 @@ public class ObjectStore implements RawStore, Configurable {
       msd = convertToMStorageDescriptor(part.getSd());
     }
 
-    return new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
+    return new MPartition(WarehouseUtils.makePartName(convertToFieldSchemas(mt
         .getPartitionKeys()), part.getValues()), mt, part.getValues(), part
         .getCreateTime(), part.getLastAccessTime(),
         msd, part.getParameters());
@@ -3321,7 +3325,7 @@ public class ObjectStore implements RawStore, Configurable {
           parts.add(part);
 
           if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
-            String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
+            String partName = WarehouseUtils.makePartName(this.convertToFieldSchemas(mtbl
                 .getPartitionKeys()), part.getValues());
             PrincipalPrivilegeSet partAuth = this.getPartitionPrivilegeSet(catName, dbName,
                 tblName, partName, userName, groupNames);
@@ -3354,7 +3358,7 @@ public class ObjectStore implements RawStore, Configurable {
       MTable mtbl = mpart.getTable();
       Partition part = convertToPart(mpart, false);
       if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
-        String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
+        String partName = WarehouseUtils.makePartName(this.convertToFieldSchemas(mtbl
             .getPartitionKeys()), partVals);
         PrincipalPrivilegeSet partAuth = this.getPartitionPrivilegeSet(catName, dbName,
             tblName, partName, user_name, group_names);
@@ -3623,7 +3627,7 @@ public class ObjectStore implements RawStore, Configurable {
       for (Partition partition : partitions) {
         // Check for NULL's just to be safe
         if (tbl.getPartitionKeys() != null && partition.getValues() != null) {
-          partitionNames.add(Warehouse.makePartName(tbl.getPartitionKeys(), partition.getValues()));
+          partitionNames.add(WarehouseUtils.makePartName(tbl.getPartitionKeys(), partition.getValues()));
         }
       }
     }
@@ -3927,7 +3931,7 @@ public class ObjectStore implements RawStore, Configurable {
         Partition part = convertToPart((MPartition) o, false);
         //set auth privileges
         if (getauth) {
-          String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
+          String partName = WarehouseUtils.makePartName(this.convertToFieldSchemas(mtbl
               .getPartitionKeys()), part.getValues());
           PrincipalPrivilegeSet partAuth = getPartitionPrivilegeSet(catName, db_name,
               tbl_name, partName, userName, groupNames);
@@ -5280,7 +5284,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
         partNames.add(
-            Warehouse.makePartName(convertToFieldSchemas(table.getPartitionKeys()), partVal)
+            WarehouseUtils.makePartName(convertToFieldSchemas(table.getPartitionKeys()), partVal)
         );
       }
 
@@ -7449,7 +7453,7 @@ public class ObjectStore implements RawStore, Configurable {
                      hiveObject.getObjectName(), null);
             String partName = null;
             if (hiveObject.getPartValues() != null) {
-              partName = Warehouse.makePartName(tabObj.getPartitionKeys(), hiveObject.getPartValues());
+              partName = WarehouseUtils.makePartName(tabObj.getPartitionKeys(), hiveObject.getPartValues());
             }
             List<MPartitionPrivilege> partitionGrants = this
                 .listPrincipalMPartitionGrants(userName, principalType,
@@ -7483,7 +7487,7 @@ public class ObjectStore implements RawStore, Configurable {
                 .getObjectName(), null);
             String partName = null;
             if (hiveObject.getPartValues() != null) {
-              partName = Warehouse.makePartName(tabObj.getPartitionKeys(),
+              partName = WarehouseUtils.makePartName(tabObj.getPartitionKeys(),
                   hiveObject.getPartValues());
             }
 
@@ -10344,7 +10348,7 @@ public class ObjectStore implements RawStore, Configurable {
       for (Partition part : parts) {
 
         if (!isCurrentStatsValidForTheQuery(part, part.getWriteId(), writeIdList, false)) {
-          String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+          String partName = WarehouseUtils.makePartName(table.getPartitionKeys(), part.getValues());
           LOG.debug("The current metastore transactional partition column "
               + "statistics for {}.{}.{} is not valid for the current query",
               dbName, tblName, partName);
@@ -10496,7 +10500,7 @@ public class ObjectStore implements RawStore, Configurable {
     String tableName = tn.getTable();
 
     Query query = null;
-    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
+    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, WarehouseUtils.DEFAULT_DATABASE_NAME);
     catName = normalizeIdentifier(catName);
     if (tableName == null) {
       throw new RuntimeException("Table name is null.");
@@ -10568,7 +10572,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean ret = false;
     Query query = null;
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
-      Warehouse.DEFAULT_DATABASE_NAME);
+      WarehouseUtils.DEFAULT_DATABASE_NAME);
     catName = normalizeIdentifier(catName);
     if (tableName == null) {
       throw new InvalidInputException("Table name is null.");
@@ -10668,7 +10672,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean ret = false;
     Query query = null;
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
-      Warehouse.DEFAULT_DATABASE_NAME);
+      WarehouseUtils.DEFAULT_DATABASE_NAME);
     if (tableName == null) {
       throw new InvalidInputException("Table name is null.");
     }
@@ -11115,7 +11119,7 @@ public class ObjectStore implements RawStore, Configurable {
   public boolean doesPartitionExist(String catName, String dbName, String tableName,
                                     List<FieldSchema> partKeys, List<String> partVals)
       throws MetaException {
-    String name = Warehouse.makePartName(partKeys, partVals);
+    String name = WarehouseUtils.makePartName(partKeys, partVals);
     return this.getMPartition(catName, dbName, tableName, name) != null;
   }
 
@@ -11800,27 +11804,20 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void cleanOlderEvents(int olderThan, Class table, String tableName) {
-    final int eventBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
+    final long eventBatchSize = MetastoreConf.getLongVar(conf, EVENT_CLEAN_MAX_EVENTS);
 
     final long ageSec = olderThan;
     final Instant now = Instant.now();
 
     final int tooOld = Math.toIntExact(now.getEpochSecond() - ageSec);
 
-    final Optional<Integer> batchSize = (eventBatchSize > 0) ? Optional.of(eventBatchSize) : Optional.empty();
+    final Optional<Long> batchSize = (eventBatchSize > 0) ? Optional.of(eventBatchSize) : Optional.empty();
 
     final long start = System.nanoTime();
     int deleteCount = doCleanNotificationEvents(tooOld, batchSize, table, tableName);
 
-    if (deleteCount == 0) {
+    if (deleteCount == 0)
       LOG.info("No {} events found to be cleaned with eventTime < {}", tableName, tooOld);
-    } else {
-      int batchCount = 0;
-      do {
-        batchCount = doCleanNotificationEvents(tooOld, batchSize, table, tableName);
-        deleteCount += batchCount;
-      } while (batchCount > 0);
-    }
 
     final long finish = System.nanoTime();
 
@@ -11828,13 +11825,28 @@ public class ObjectStore implements RawStore, Configurable {
             TimeUnit.NANOSECONDS.toMillis(finish - start));
   }
 
-  private <T> int doCleanNotificationEvents(final int ageSec, final Optional<Integer> batchSize, Class<T> tableClass, String tableName) {
-    final Transaction tx = pm.currentTransaction();
-    int eventsCount = 0;
+  /**
+   * This method purges old metastore notification logs, i.e. Notification Log and Transaction Write Notification Log.
+   * Usually these tables tend to grow faster and can contain enormous amount of notification logs based on the incoming traffic to the Hive Cluster,
+   * the execution frequency of the Notification Cleanup maintenance thread, notification retention period.
+   * <br> In order to avoid any Out-of-Memory error we prefer to delete the entries in batches, the batch size is configurable, {@link EVENT_CLEAN_MAX_EVENTS}.
+   * <br> This method is unified, i.e. it helps us to get rid of the old events from both type of notification logs, {@code tableClass} is the discriminator of an event entry.
+   *
+   * @param ageLimitInSeconds the minimum age limit of a notification entry to survive a cleanup cycle
+   * @param batchSize notification entries are cleaned up in batched, this is the batch size
+   * @param tableClass the differentiator of the notification type
+   * @param tableName the table name from which events are being purged, used for more expressive logging
+   * @return the number of events deleted during the current execution
+   * @param <T> parameterized type of events
+   */
+  private <T> int doCleanNotificationEvents(final int ageLimitInSeconds, final Optional<Long> batchSize,
+      Class<T> tableClass, String tableName) {
+    int deletedEventsCount = 0;
+    boolean commited = false;
 
     try {
       String key = null;
-      tx.begin();
+      openTransaction();
 
       try (Query query = pm.newQuery(tableClass, "eventTime <= tooOld")) {
         query.declareParameters("java.lang.Integer tooOld");
@@ -11844,53 +11856,147 @@ public class ObjectStore implements RawStore, Configurable {
           key = "txnId";
         }
         query.setOrdering(key + " ascending");
-        if (batchSize.isPresent()) {
-          query.setRange(0, batchSize.get());
-        }
 
-        List<T> events = (List) query.execute(ageSec);
-        if (CollectionUtils.isNotEmpty(events)) {
-          eventsCount = events.size();
-          if (LOG.isDebugEnabled()) {
-            int minEventTime, maxEventTime;
-            long minId, maxId;
-            T firstNotification = events.get(0);
-            T lastNotification = events.get(eventsCount - 1);
-            if (MNotificationLog.class.equals(tableClass)) {
-              minEventTime = ((MNotificationLog)firstNotification).getEventTime();
-              minId = ((MNotificationLog)firstNotification).getEventId();
-              maxEventTime = ((MNotificationLog)lastNotification).getEventTime();
-              maxId = ((MNotificationLog)lastNotification).getEventId();
-            } else if (MTxnWriteNotificationLog.class.equals(tableClass)) {
-              minEventTime = ((MTxnWriteNotificationLog)firstNotification).getEventTime();
-              minId = ((MTxnWriteNotificationLog)firstNotification).getTxnId();
-              maxEventTime = ((MTxnWriteNotificationLog)lastNotification).getEventTime();
-              maxId = ((MTxnWriteNotificationLog)lastNotification).getTxnId();
-            } else {
-              throw new RuntimeException("Cleaning of older " + tableName + " events failed. " +
-                      "Reason: Unknown table encountered " + tableClass.getName());
+        long purgeNotificationEventsBatchSize = batchSize.orElse(Long.MAX_VALUE);
+        long fromIncl = 0, toExcl = purgeNotificationEventsBatchSize;
+        boolean isEventFetchingComplete = false;
+        Set<String> databasesInFailover = databasesInFailover();
+
+        while (!isEventFetchingComplete) {
+          query.setRange(fromIncl, toExcl);
+
+          List<T> events = (List) query.execute(ageLimitInSeconds);
+
+          if (!batchSize.isPresent() || CollectionUtils.isEmpty(events) || events.size() < toExcl - fromIncl)
+            isEventFetchingComplete = true;
+
+          if (CollectionUtils.isNotEmpty(events)) {
+            logCleanUpSummary(ageLimitInSeconds, tableClass, tableName, key, events);
+
+            if (CollectionUtils.isNotEmpty(databasesInFailover) && MNotificationLog.class.equals(tableClass)) {
+              LOG.info(
+                  "Databases in failover state was found, old notification events would be selectively cleaned up");
+              events = events.stream().filter(e -> {
+                MNotificationLog notificationLogEvent = (MNotificationLog) e;
+                return !eventToBeSkippedOverDuringDeletion(notificationLogEvent, databasesInFailover);
+              }).collect(Collectors.toList());
             }
 
-            LOG.debug(
-                    "Remove {} batch of {} events with eventTime < {}, min {}: {}, max {}: {}, min eventTime {}, max eventTime {}",
-                    tableName, eventsCount, ageSec, key, minId, key, maxId, minEventTime, maxEventTime);
-          }
+            if (CollectionUtils.isNotEmpty(events))
+              pm.deletePersistentAll(events);
 
-          pm.deletePersistentAll(events);
+            int deletedEventCountInCurrentBatch = events.size();
+            deletedEventsCount += deletedEventCountInCurrentBatch;
+
+            if (!isEventFetchingComplete) {
+              fromIncl = toExcl - deletedEventCountInCurrentBatch;
+              toExcl = toExcl + purgeNotificationEventsBatchSize - deletedEventCountInCurrentBatch;
+            }
+
+          }
         }
+
       }
 
-      tx.commit();
+      commited = commitTransaction();
     } catch (Exception e) {
       LOG.error("Unable to delete batch of " + tableName + " events", e);
-      eventsCount = 0;
     } finally {
-      if (tx.isActive()) {
-        tx.rollback();
-      }
+      if (!commited)
+        rollbackTransaction();
     }
 
-    return eventsCount;
+    return deletedEventsCount;
+  }
+
+  private static <T> void logCleanUpSummary(int ageLimitInSeconds, Class<T> tableClass, String tableName, String key,
+      List<T> events) {
+    if (LOG.isDebugEnabled()) {
+      int minEventTime, maxEventTime, eventsCount = events.size();
+      long minId, maxId;
+      T firstNotification = events.get(0);
+      T lastNotification = events.get(eventsCount - 1);
+      if (MNotificationLog.class.equals(tableClass)) {
+        minEventTime = ((MNotificationLog) firstNotification).getEventTime();
+        minId = ((MNotificationLog) firstNotification).getEventId();
+        maxEventTime = ((MNotificationLog) lastNotification).getEventTime();
+        maxId = ((MNotificationLog) lastNotification).getEventId();
+      } else if (MTxnWriteNotificationLog.class.equals(tableClass)) {
+        minEventTime = ((MTxnWriteNotificationLog) firstNotification).getEventTime();
+        minId = ((MTxnWriteNotificationLog) firstNotification).getTxnId();
+        maxEventTime = ((MTxnWriteNotificationLog) lastNotification).getEventTime();
+        maxId = ((MTxnWriteNotificationLog) lastNotification).getTxnId();
+      } else {
+        throw new RuntimeException(
+            "Cleaning of older " + tableName + " events failed. " + "Reason: Unknown table encountered "
+                + tableClass.getName());
+      }
+
+      LOG.debug(
+          "Remove {} batch of {} events with eventTime < {}, min {}: {}, max {}: {}, min eventTime {}, max eventTime {}",
+          tableName, eventsCount, ageLimitInSeconds, key, minId, key, maxId, minEventTime, maxEventTime);
+    }
+  }
+
+  /**
+   * The events need not be blindly deleted in each execution of the Notification Cleanup Job. This method decides whether a particular event
+   * need to be skipped during a given cleanup execution.
+   * <br> Generally following events are spared,
+   * <ol>
+   *   <li>All transactional events</li>
+   *   <li>If the given event belongs to a database currently in failover</li>
+   *   <li>The event ids of the events attempted being purged are in range, i.e. event id is less than the latest event id in notification log</li>
+   * </ol>
+   *
+   * @param notificationLogEvent individual notification event instance
+   * @param allDatabasesInFailover the set contains the databases in the hive cluster that currently in failover state
+   * @return boolean flag to denote whether the event should be spared
+   */
+  protected boolean eventToBeSkippedOverDuringDeletion(MNotificationLog notificationLogEvent,
+      Set<String> allDatabasesInFailover) {
+    Objects.requireNonNull(notificationLogEvent, "Encountered a null notification event from metastore");
+    return (isTransactionEvent(notificationLogEvent) || doesEventBelongToDBInFailover(notificationLogEvent,
+        allDatabasesInFailover)) && isEventInRange(notificationLogEvent, getCurrentNotificationEventId().getEventId());
+  }
+
+  /**
+   * Utility method to check whether a given event belong to a database that is currently in failover state.
+   *
+   * @param notificationLogEvent individual notification event instance
+   * @param allDatabasesInFailover the set contains the databases in the hive cluster that currently in failover state
+   * @return boolean flag to signify whether the database containing the event is in failover state
+   */
+  protected static boolean doesEventBelongToDBInFailover(MNotificationLog notificationLogEvent,
+      Set<String> allDatabasesInFailover) {
+    return allDatabasesInFailover.stream().anyMatch(database -> {
+      String[] tokens = database.split(MetaStoreUtils.CATALOG_DB_SEPARATOR);
+      return tokens[1].equals(notificationLogEvent.getDbName()) && (
+          StringUtils.isBlank(notificationLogEvent.getCatalogName()) || tokens[0].equalsIgnoreCase(
+              notificationLogEvent.getCatalogName()));
+    });
+  }
+
+  /**
+   * Utility method to check if the given event is a transactional event, i.e. signifies open, close or abort transaction.
+   *
+   * @param notificationLogEvent individual notification event instance
+   * @return boolean flag to signify whether this given event is transactional
+   */
+  protected boolean isTransactionEvent(MNotificationLog notificationLogEvent) {
+    return matchesAnyStringInCollection(notificationLogEvent.getEventType(), MessageBuilder.OPEN_TXN_EVENT,
+        MessageBuilder.COMMIT_TXN_EVENT, MessageBuilder.ABORT_TXN_EVENT);
+  }
+
+  /**
+   * Whether the given event is in range, i.e. the event id of the event is less than the most recent event id
+   * currently in the notification log.
+   *
+   * @param notificationLogEvent individual notification event instance
+   * @param mostRecentEventId the most recent event id currently in the notification database
+   * @return if the notification event was out of range
+   */
+  protected boolean isEventInRange(MNotificationLog notificationLogEvent, long mostRecentEventId) {
+    return notificationLogEvent.getEventId() <= mostRecentEventId;
   }
 
   @Override

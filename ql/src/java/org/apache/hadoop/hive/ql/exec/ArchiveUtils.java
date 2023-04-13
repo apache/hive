@@ -31,10 +31,10 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -100,7 +100,7 @@ public final class ArchiveUtils {
     public Path createPath(Table tbl) throws HiveException {
       String prefixSubdir;
       try {
-        prefixSubdir = Warehouse.makePartName(fields, values);
+        prefixSubdir = WarehouseUtils.makePartName(fields, values);
       } catch (MetaException e) {
         throw new HiveException("Unable to get partitions directories prefix", e);
       }
@@ -115,7 +115,7 @@ public final class ArchiveUtils {
      */
     public String getName() throws HiveException {
       try {
-        return Warehouse.makePartName(fields, values);
+        return WarehouseUtils.makePartName(fields, values);
       } catch (MetaException e) {
         throw new HiveException("Unable to create partial name", e);
       }
@@ -225,7 +225,7 @@ public final class ArchiveUtils {
     List<FieldSchema> fields = p.getTable().getPartCols().subList(0, level);
     List<String> values = p.getValues().subList(0, level);
     try {
-      return Warehouse.makePartName(fields, values);
+      return WarehouseUtils.makePartName(fields, values);
     } catch (MetaException e) {
       throw new HiveException("Wasn't able to generate name" +
                                 " for partial specification");

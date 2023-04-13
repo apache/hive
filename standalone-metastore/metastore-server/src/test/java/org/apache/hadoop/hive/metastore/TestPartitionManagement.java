@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
@@ -97,7 +98,7 @@ public class TestPartitionManagement {
         } else {
           List<String> databases = client.getAllDatabases(catName);
           for (String db : databases) {
-            if (!db.equalsIgnoreCase(Warehouse.DEFAULT_DATABASE_NAME)) {
+            if (!db.equalsIgnoreCase(WarehouseUtils.DEFAULT_DATABASE_NAME)) {
               client.dropDatabase(catName, db, true, false, true);
             }
           }

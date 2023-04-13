@@ -43,7 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertEqualStatistics;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
 
 public class TestCachedStoreUpdateUsingEvents {
 

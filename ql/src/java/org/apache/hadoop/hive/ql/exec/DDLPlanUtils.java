@@ -27,7 +27,6 @@ import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -43,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
 import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
@@ -1048,7 +1048,7 @@ public class DDLPlanUtils {
     Map<String, String> serdeParams = serdeInfo.getParameters();
     if (table.getStorageHandler() == null) {
       // If serialization.format property has the default value, it will not to be included in SERDE properties
-      if (Warehouse.DEFAULT_SERIALIZATION_FORMAT.equals(serdeParams.get(serdeConstants.SERIALIZATION_FORMAT))) {
+      if (WarehouseUtils.DEFAULT_SERIALIZATION_FORMAT.equals(serdeParams.get(serdeConstants.SERIALIZATION_FORMAT))) {
         serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
       }
       if (!serdeParams.isEmpty()) {

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.utils;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -128,5 +129,15 @@ public class StringUtils {
    */
   public static boolean isEmpty(CharSequence cs) {
     return cs == null || cs.length() == 0;
+  }
+
+  /**
+   * A utility method to check the occurrence of a sample string in a collection of strings.
+   * @param sample the sample string
+   * @param strings the collection of strings
+   * @return true if the string exists, false otherwise
+   */
+  public static boolean matchesAnyStringInCollection(String sample, String... strings) {
+    return Arrays.stream(strings).anyMatch(sample::equals);
   }
 }

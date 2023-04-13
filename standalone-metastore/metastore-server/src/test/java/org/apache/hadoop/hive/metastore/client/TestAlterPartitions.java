@@ -55,7 +55,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static java.util.stream.Collectors.joining;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;

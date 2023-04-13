@@ -17,13 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
 import org.apache.hadoop.hive.metastore.api.SchemaType;
 import org.apache.hadoop.hive.metastore.api.SchemaValidation;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 
 public class ISchemaBuilder {
   private SchemaType schemaType; // required
@@ -39,8 +39,8 @@ public class ISchemaBuilder {
     compatibility = SchemaCompatibility.BACKWARD;
     validationLevel = SchemaValidation.ALL;
     canEvolve = true;
-    dbName = Warehouse.DEFAULT_DATABASE_NAME;
-    catName = Warehouse.DEFAULT_CATALOG_NAME;
+    dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
+    catName = WarehouseUtils.DEFAULT_CATALOG_NAME;
   }
 
   public ISchemaBuilder setSchemaType(SchemaType schemaType) {

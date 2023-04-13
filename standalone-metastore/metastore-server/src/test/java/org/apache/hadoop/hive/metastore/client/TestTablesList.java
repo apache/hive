@@ -44,7 +44,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.List;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 
 /**
  * Test class for IMetaStoreClient API. Testing the Table related functions for metadata

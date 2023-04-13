@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -426,7 +425,7 @@ public class MetaStoreUtils {
     // or a regex of the form ".*"
     // This works because the "=" and "/" separating key names and partition key/values
     // are not escaped.
-    String partNameMatcher = Warehouse.makePartName(partCols, partVals, defaultStr);
+    String partNameMatcher = WarehouseUtils.makePartName(partCols, partVals, defaultStr);
     // add ".*" to the regex to match anything else afterwards the partial spec.
     if (partVals.size() < numPartKeys) {
       partNameMatcher += defaultStr;
@@ -1058,11 +1057,11 @@ public class MetaStoreUtils {
   public static String getDefaultCatalog(Configuration conf) {
     if (conf == null) {
       LOG.warn("Configuration is null, so going with default catalog.");
-      return Warehouse.DEFAULT_CATALOG_NAME;
+      return WarehouseUtils.DEFAULT_CATALOG_NAME;
     }
     String catName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     if (catName == null || "".equals(catName)) {
-      catName = Warehouse.DEFAULT_CATALOG_NAME;
+      catName = WarehouseUtils.DEFAULT_CATALOG_NAME;
     }
     return catName;
   }

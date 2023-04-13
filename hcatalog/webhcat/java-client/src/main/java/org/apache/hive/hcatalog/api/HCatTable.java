@@ -31,12 +31,12 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -108,7 +108,7 @@ public class HCatTable {
   public static final String DEFAULT_INPUT_FORMAT_CLASS = org.apache.hadoop.mapred.TextInputFormat.class.getName();
   public static final String DEFAULT_OUTPUT_FORMAT_CLASS = org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat.class.getName();
 
-  private String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+  private String dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
   private String tableName;
   private HiveConf conf;
   private String tableType;
@@ -122,7 +122,7 @@ public class HCatTable {
   private String owner;
 
   public HCatTable(String dbName, String tableName) {
-    this.dbName = StringUtils.isBlank(dbName)? Warehouse.DEFAULT_DATABASE_NAME : dbName;
+    this.dbName = StringUtils.isBlank(dbName)? WarehouseUtils.DEFAULT_DATABASE_NAME : dbName;
     this.tableName = tableName;
     this.sd = new StorageDescriptor();
     this.sd.setInputFormat(DEFAULT_INPUT_FORMAT_CLASS);

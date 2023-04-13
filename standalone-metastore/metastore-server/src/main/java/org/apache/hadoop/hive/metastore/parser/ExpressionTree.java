@@ -29,7 +29,6 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -38,6 +37,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 
 /**
  * The Class representing the filter as a  binary tree. The tree has TreeNode's
@@ -531,7 +531,7 @@ public class ExpressionTree {
     // If a partition has multiple partition keys, we make the assumption that
     // makePartName with one key will return a substring of the name made
     // with both all the keys.
-    String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
+    String escapedNameFragment = WarehouseUtils.makePartName(partKeyToVal, false);
     if (keyCount == 1) {
       // Case where this is no other partition columns
       params.put(paramName, escapedNameFragment);

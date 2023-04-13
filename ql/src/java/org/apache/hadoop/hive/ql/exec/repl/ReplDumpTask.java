@@ -123,6 +123,7 @@ import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DB_PROPERTY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.TARGET_OF_REPLICATION;
@@ -546,6 +547,25 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         LOG.debug("Database {} does not exist. Cannot set replication failover and failback metrics", work.dbNameOrPattern);
       }
     }
+
+    // We clear the flag that signifies the database is in failover state with reverse sync pending
+    // during the third dump cycle of the reverse sync after the failover (i.e. the cycle after Optimized Bootstrap is over)
+    if (!isDbTargetOfFailover(work.dbNameOrPattern, getHive())) {
+      if (database != null) {  // database could be null for multi-database replication
+        Map<String, String> dbParameters = new HashMap<>(database.getParameters());
+        if (dbParameters.containsKey(REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING)) {
+          LOG.debug("Database [{}] properties before removal: [{}]", work.dbNameOrPattern, dbParameters);
+          dbParameters.remove(REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING);
+          database.setParameters(dbParameters);
+          getHive().alterDatabase(work.dbNameOrPattern, database);
+          LOG.info("Removed property [{}] from the database: {}", REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING, work.dbNameOrPattern);
+          LOG.debug("Database [{}] properties after removal: [{}]", work.dbNameOrPattern, dbParameters);
+        }
+      } else {
+        LOG.debug("Database {} does not exist. Cannot remove db parameters", work.dbNameOrPattern);
+      }
+    }
+
     Utils.create(dumpAckFile, conf);
     prepareReturnValues(work.getResultValues());
     if (isFailoverInProgress) {

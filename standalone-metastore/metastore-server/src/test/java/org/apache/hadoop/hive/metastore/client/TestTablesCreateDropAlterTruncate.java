@@ -85,8 +85,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.apache.hadoop.hive.metastore.TestHiveMetaStore.createSourceTable;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 

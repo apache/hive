@@ -111,6 +111,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.DriverState;
@@ -2904,7 +2905,7 @@ public final class Utilities {
       for (Map.Entry<Path, Optional<List<Path>>> partEntry : allPartition.entrySet()) {
         Path partPath = partEntry.getKey();
         Map<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
-        String staticParts =  Warehouse.makeDynamicPartName(partSpec);
+        String staticParts =  WarehouseUtils.makeDynamicPartName(partSpec);
         Path computedPath = partPath;
         if (!staticParts.isEmpty() ) {
           computedPath = new Path(new Path(partPath.getParent(), staticParts), partPath.getName());

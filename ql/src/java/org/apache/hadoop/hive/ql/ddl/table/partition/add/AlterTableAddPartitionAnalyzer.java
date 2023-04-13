@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.ddl.table.partition.add;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -101,7 +101,7 @@ public class AlterTableAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer
         loadTableWork.setInheritTableSpecs(true);
         try {
           partitionDesc.setLocation(new Path(table.getDataLocation(),
-              Warehouse.makePartPath(partitionDesc.getPartSpec())).toString());
+              WarehouseUtils.makePartPath(partitionDesc.getPartSpec())).toString());
         } catch (MetaException ex) {
           throw new SemanticException("Could not determine partition path due to: " + ex.getMessage(), ex);
         }

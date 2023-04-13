@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -80,6 +79,7 @@ import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -97,6 +97,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -104,6 +105,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -120,7 +122,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertEqualStatistics;
 import static org.apache.hadoop.hive.metastore.TestHiveMetaStore.createSourceTable;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -215,7 +218,7 @@ public class TestObjectStore {
     }
     Catalog cat = objectStore.getCatalog(fetchedNames.get(2));
     Assert.assertEquals(DEFAULT_CATALOG_NAME, cat.getName());
-    Assert.assertEquals(Warehouse.DEFAULT_CATALOG_COMMENT, cat.getDescription());
+    Assert.assertEquals(WarehouseUtils.DEFAULT_CATALOG_COMMENT, cat.getDescription());
     // Location will vary by system.
 
     for (int i = 0; i < names.length; i++) objectStore.dropCatalog(names[i]);
@@ -1067,6 +1070,80 @@ public class TestObjectStore {
     objectStore.cleanNotificationEvents(0);
     eventResponse = objectStore.getNextNotification(new NotificationEventRequest());
     Assert.assertEquals(0, eventResponse.getEventsSize());
+  }
+
+  @Test public void testIncreasedNotificationRetentionDuringFailover()
+      throws MetaException, InvalidObjectException, NoSuchObjectException {
+    String catalogName = "test_cat_1";
+    String dbName = "test_db_1";
+    int epochSecond = new Long(Instant.now().getEpochSecond()).intValue();
+
+    createTestCatalog(catalogName); // Creates a test catalog
+
+    // Let's create a database in failover state and reverse sync pending
+    Database database = new Database(dbName, "Test Database", "Test Location", null);
+    database.setCatalogName(catalogName);
+    Map<String, String> dbParams = new HashMap<>();
+    dbParams.put(REPL_DB_UNDER_FAILOVER_REV_SYNC_PENDING, "true");
+    database.setParameters(dbParams);
+    objectStore.createDatabase(database);
+
+    // Adding a bunch of notification log entries with different event time and types for different database/catalog combination
+    NotificationEvent event1 =
+        new NotificationEvent(1, epochSecond - 7200, EventMessage.EventType.CREATE_DATABASE.toString(), "");
+    event1.setCatName(catalogName);
+    event1.setDbName(dbName);
+    objectStore.addNotificationEvent(event1);
+
+    NotificationEvent event2 =
+        new NotificationEvent(2, epochSecond - 7000, EventMessage.EventType.CREATE_DATABASE.toString(), "");
+    event2.setCatName(catalogName);
+    event2.setDbName("another_db");
+    objectStore.addNotificationEvent(event2);
+
+    NotificationEvent event3 =
+        new NotificationEvent(3, epochSecond - 6700, EventMessage.EventType.OPEN_TXN.toString(), "");
+    objectStore.addNotificationEvent(event3);
+
+    NotificationEvent event4 =
+        new NotificationEvent(4, epochSecond - 6500, EventMessage.EventType.COMMIT_TXN.toString(), "");
+    objectStore.addNotificationEvent(event4);
+
+    NotificationEvent event5 =
+        new NotificationEvent(5, epochSecond - 6000, EventMessage.EventType.CREATE_DATABASE.toString(), "");
+    event5.setCatName(catalogName);
+    event5.setDbName("yet_another_db");
+    objectStore.addNotificationEvent(event5);
+
+    NotificationEvent event6 =
+        new NotificationEvent(6, epochSecond - 5500, EventMessage.EventType.ALTER_TABLE.toString(), "");
+    event6.setCatName(catalogName);
+    event6.setDbName(dbName);
+    objectStore.addNotificationEvent(event6);
+
+    NotificationEvent event7 =
+        new NotificationEvent(7, epochSecond - 5000, EventMessage.EventType.ALLOC_WRITE_ID.toString(), "");
+    event7.setDbName(dbName);
+    objectStore.addNotificationEvent(event7);
+
+    NotificationEventResponse eventResponse = objectStore.getNextNotification(new NotificationEventRequest(0));
+    Assert.assertEquals(7, eventResponse.getEventsSize());
+
+    // Simulating the first execution of Notification Cleaner thread, this should purge notification entries selectively
+    objectStore.cleanNotificationEvents(0);
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest());
+    Assert.assertEquals(4, eventResponse.getEventsSize());
+
+    // Let's clear the database in failover flag
+    database = objectStore.getDatabase(catalogName, dbName);
+    database.unsetParameters();
+    objectStore.alterDatabase(catalogName, dbName, database);
+
+    // Now this is the second execution of the Notification Cleaner thread, this time all the events beyond retention period would be deleted
+    objectStore.cleanNotificationEvents(0);
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest());
+    Assert.assertEquals(0, eventResponse.getEventsSize());
+
   }
 
   /**

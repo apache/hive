@@ -17,7 +17,7 @@
  */
 
 package org.apache.hadoop.hive.ql.session;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
 
 import java.io.Closeable;

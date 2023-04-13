@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore.tools.schematool;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -60,7 +60,7 @@ public class SchemaToolTaskDrop extends SchemaToolTask {
     Connection conn = schemaTool.getConnectionToMetastore(true);
     try {
       try (Statement stmt = conn.createStatement()) {
-        final String def = Warehouse.DEFAULT_DATABASE_NAME;
+        final String def = WarehouseUtils.DEFAULT_DATABASE_NAME;
 
         // List databases
         List<String> databases = new ArrayList<>();

@@ -18,10 +18,10 @@
 package org.apache.hadoop.hive.metastore.client.builder;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class SQLForeignKeyBuilder extends ConstraintBuilder<SQLForeignKeyBuilder
     super.setChild(this);
     updateRule = deleteRule = 0;
     pkColumns = new ArrayList<>();
-    pkDb = Warehouse.DEFAULT_DATABASE_NAME;
+    pkDb = WarehouseUtils.DEFAULT_DATABASE_NAME;
   }
 
   public SQLForeignKeyBuilder setPkDb(String pkDb) {

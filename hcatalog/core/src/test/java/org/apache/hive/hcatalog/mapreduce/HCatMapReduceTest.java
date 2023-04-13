@@ -38,12 +38,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -91,7 +91,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
   private static final Path TEST_TMP_DIR = new Path(System.getProperty("test.tmp.dir",
       "target" + File.separator + "test" + File.separator + "tmp"));
 
-  protected static String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+  protected static String dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
   protected static final String TABLE_NAME = "testHCatMapReduceTable";
 
   private static List<HCatRecord> writeRecords = new ArrayList<HCatRecord>();
@@ -158,7 +158,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
   @After
   public void deleteTable() throws Exception {
     try {
-      String databaseName = (dbName == null) ? Warehouse.DEFAULT_DATABASE_NAME : dbName;
+      String databaseName = (dbName == null) ? WarehouseUtils.DEFAULT_DATABASE_NAME : dbName;
 
       client.dropTable(databaseName, tableName);
       // in case of external table, drop the table contents as well
@@ -181,7 +181,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     // SerDe is in the disabled serdes list.
     Assume.assumeTrue(!DISABLED_SERDES.contains(serdeClass));
 
-    String databaseName = (dbName == null) ? Warehouse.DEFAULT_DATABASE_NAME : dbName;
+    String databaseName = (dbName == null) ? WarehouseUtils.DEFAULT_DATABASE_NAME : dbName;
     try {
       client.dropTable(databaseName, tableName);
     } catch (Exception e) {

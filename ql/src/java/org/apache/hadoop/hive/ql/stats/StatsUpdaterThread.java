@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RawStoreProxy;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -57,6 +56,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -341,7 +341,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
       }
       int currentIxInBatch = nextIxInBatch++;
       Partition part = currentBatch.get(currentIxInBatch);
-      String partName = Warehouse.makePartName(t.getPartitionKeys(), part.getValues());
+      String partName = WarehouseUtils.makePartName(t.getPartitionKeys(), part.getValues());
       LOG.debug("Processing partition ({} in batch), {}", currentIxInBatch, partName);
 
       // Skip the partitions in progress, and the ones for which stats update is disabled.
@@ -426,7 +426,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     // Current match may be out of order w.r.t. the global name list, so add specific parts.
     for (int i = 0; i < currentIxInBatch; ++i) {
-      String name = Warehouse.makePartName(t.getPartitionKeys(), currentBatch.get(i).getValues());
+      String name = WarehouseUtils.makePartName(t.getPartitionKeys(), currentBatch.get(i).getValues());
       LOG.trace("Adding previous {}, {}", name, cols);
       partsToAnalyze.put(name, cols);
     }

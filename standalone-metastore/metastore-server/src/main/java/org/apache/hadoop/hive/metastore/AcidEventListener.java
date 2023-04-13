@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -126,7 +127,7 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
 
               List<FieldSchema> partCols = partitionEvent.getTable().getPartitionKeys();  // partition columns
               List<String> partVals = p.getValues();
-              rqst.setPartitionname(Warehouse.makePartName(partCols, partVals));
+              rqst.setPartitionname(WarehouseUtils.makePartName(partCols, partVals));
               rqst.putToProperties("location", p.getSd().getLocation());
 
               txnHandler.submitForCleanup(rqst, writeId, currentTxn);
@@ -163,8 +164,8 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
     Partition oldPart = partitionEvent.getOldPartition();
     Partition newPart = partitionEvent.getNewPartition();
     Table t = partitionEvent.getTable();
-    String oldPartName = Warehouse.makePartName(t.getPartitionKeys(), oldPart.getValues());
-    String newPartName = Warehouse.makePartName(t.getPartitionKeys(), newPart.getValues());
+    String oldPartName = WarehouseUtils.makePartName(t.getPartitionKeys(), oldPart.getValues());
+    String newPartName = WarehouseUtils.makePartName(t.getPartitionKeys(), newPart.getValues());
     if (!oldPartName.equals(newPartName)) {
       txnHandler = getTxnHandler();
       txnHandler.onRename(t.getCatName(), t.getDbName(), t.getTableName(), oldPartName,

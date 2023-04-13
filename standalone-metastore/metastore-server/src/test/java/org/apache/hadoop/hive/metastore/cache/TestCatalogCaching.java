@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -92,7 +93,7 @@ public class TestCatalogCaching {
     // Only the hive catalog should be cached
     List<String> cachedCatalogs = cachedStore.getCatalogs();
     Assert.assertEquals(1, cachedCatalogs.size());
-    Assert.assertEquals(Warehouse.DEFAULT_CATALOG_NAME, cachedCatalogs.get(0));
+    Assert.assertEquals(WarehouseUtils.DEFAULT_CATALOG_NAME, cachedCatalogs.get(0));
   }
 
   @Test
@@ -115,7 +116,7 @@ public class TestCatalogCaching {
     cachedCatalogs.sort(Comparator.naturalOrder());
     Assert.assertEquals(CAT1_NAME, cachedCatalogs.get(0));
     Assert.assertEquals(CAT2_NAME, cachedCatalogs.get(1));
-    Assert.assertEquals(Warehouse.DEFAULT_CATALOG_NAME, cachedCatalogs.get(2));
+    Assert.assertEquals(WarehouseUtils.DEFAULT_CATALOG_NAME, cachedCatalogs.get(2));
   }
 
   @Test

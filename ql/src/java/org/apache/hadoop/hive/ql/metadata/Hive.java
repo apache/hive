@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -126,7 +127,6 @@ import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -2905,7 +2905,7 @@ public class Hive {
 
   private static Path genPartPathFromTable(Table tbl, Map<String, String> partSpec,
       Path tblDataLocationPath) throws MetaException {
-    Path partPath = new Path(tbl.getDataLocation(), Warehouse.makePartPath(partSpec));
+    Path partPath = new Path(tbl.getDataLocation(), WarehouseUtils.makePartPath(partSpec));
     return new Path(tblDataLocationPath.toUri().getScheme(),
         tblDataLocationPath.toUri().getAuthority(), partPath.toUri().getPath());
   }
@@ -3173,7 +3173,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<String> partitionNames = new LinkedList<>();
       for(PartitionDetails details : partitionDetailsMap.values()) {
         if (details.fullSpec != null && !details.fullSpec.isEmpty()) {
-          partitionNames.add(Warehouse.makeDynamicPartNameNoTrailingSeperator(details.fullSpec));
+          partitionNames.add(WarehouseUtils.makeDynamicPartNameNoTrailingSeperator(details.fullSpec));
         }
       }
       List<Partition> partitions = Hive.get().getPartitionsByNames(tbl, partitionNames);
@@ -4383,7 +4383,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               || partitionWithoutSD.getRelativePath().isEmpty()) {
             if (tbl.getDataLocation() != null) {
               Path partPath = new Path(tbl.getDataLocation(),
-                  Warehouse.makePartName(tbl.getPartCols(),
+                  WarehouseUtils.makePartName(tbl.getPartCols(),
                       partitionWithoutSD.getValues()));
               partitionLocation = partPath.toString();
             }

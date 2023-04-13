@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,6 +40,7 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -64,14 +64,7 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFI
  * This class represents a warehouse where data of Hive tables is stored
  */
 public class Warehouse {
-  public static final String DEFAULT_CATALOG_NAME = "hive";
-  public static final String DEFAULT_CATALOG_COMMENT = "Default catalog, for Hive";
-  public static final String DEFAULT_DATABASE_NAME = "default";
-  public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
-  public static final String DEFAULT_SERIALIZATION_FORMAT = "1";
-  public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
   private static final String CAT_DB_TABLE_SEPARATOR = ".";
-
   private Path whRoot;
   private Path whRootExternal;
   private final Configuration conf;
@@ -235,8 +228,8 @@ public class Warehouse {
     if (db.isSetLocationUri()) {
       return getDnsPath(new Path(db.getLocationUri()));
     }
-    if (cat == null || cat.getName().equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
-      if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+    if (cat == null || cat.getName().equalsIgnoreCase(WarehouseUtils.DEFAULT_CATALOG_NAME)) {
+      if (db.getName().equalsIgnoreCase(WarehouseUtils.DEFAULT_DATABASE_NAME)) {
         return getWhRootExternal();
       } else {
         return new Path(getWhRootExternal(), dbDirFromDbName(db));
@@ -247,7 +240,7 @@ public class Warehouse {
   }
 
   private String dbDirFromDbName(Database db) throws MetaException {
-    return db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX;
+    return db.getName().toLowerCase() + WarehouseUtils.DATABASE_WAREHOUSE_SUFFIX;
   }
 
   /**
@@ -262,8 +255,8 @@ public class Warehouse {
     if (db.getManagedLocationUri() != null) {
       return getDnsPath(new Path(db.getManagedLocationUri()));
     }
-    if (db.getCatalogName().equalsIgnoreCase(DEFAULT_CATALOG_NAME) &&
-        db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+    if (db.getCatalogName().equalsIgnoreCase(WarehouseUtils.DEFAULT_CATALOG_NAME) &&
+        db.getName().equalsIgnoreCase(WarehouseUtils.DEFAULT_DATABASE_NAME)) {
       return getWhRoot();
     }
     // this is for backward-compatibility where certain DBs do not have managedLocationUri set
@@ -299,14 +292,14 @@ public class Warehouse {
     if (db.getManagedLocationUri() != null) {
       return getDnsPath(new Path(db.getManagedLocationUri()));
     }
-    if (!db.getCatalogName().equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
+    if (!db.getCatalogName().equalsIgnoreCase(WarehouseUtils.DEFAULT_CATALOG_NAME)) {
       return new Path(db.getLocationUri());
     }
-    if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+    if (db.getName().equalsIgnoreCase(WarehouseUtils.DEFAULT_DATABASE_NAME)) {
       return getWhRoot();
     }
 
-    return new Path(getWhRoot(), db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    return new Path(getWhRoot(), db.getName().toLowerCase() + WarehouseUtils.DATABASE_WAREHOUSE_SUFFIX);
   }
 
   public Path getDefaultDatabasePath(String dbName) throws MetaException {
@@ -325,15 +318,15 @@ public class Warehouse {
   // should only be used to determine paths before the creation of databases
   public Path getDefaultDatabasePath(String dbName, boolean inExternalWH) throws MetaException {
     if (inExternalWH) {
-      if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+      if (dbName.equalsIgnoreCase(WarehouseUtils.DEFAULT_DATABASE_NAME)) {
         return getWhRootExternal();
       }
-      return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+      return new Path(getWhRootExternal(), dbName.toLowerCase() + WarehouseUtils.DATABASE_WAREHOUSE_SUFFIX);
     } else {
-      if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+      if (dbName.equalsIgnoreCase(WarehouseUtils.DEFAULT_DATABASE_NAME)) {
         return getWhRoot();
       }
-      return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+      return new Path(getWhRoot(), dbName.toLowerCase() + WarehouseUtils.DATABASE_WAREHOUSE_SUFFIX);
     }
   }
 
@@ -540,116 +533,8 @@ public class Warehouse {
     }
   }
 
-  public static String escapePathName(String path) {
-    return FileUtils.escapePathName(path);
-  }
-
   private static String unescapePathName(String path) {
     return FileUtils.unescapePathName(path);
-  }
-
-  /**
-   * Given a partition specification, return the path corresponding to the
-   * partition spec. By default, the specification does not include dynamic partitions.
-   * @param spec
-   * @return string representation of the partition specification.
-   * @throws MetaException
-   */
-  public static String makePartPath(Map<String, String> spec)
-      throws MetaException {
-    return makePartName(spec, true);
-  }
-
-  /**
-   * Makes a partition name from a specification
-   * @param spec The partition specification, key and value pairs.
-   * @param addTrailingSeperator If true, adds a trailing separator e.g. 'ds=1/'.
-   * @param dynamic If true, create a dynamic partition name.
-   * @return partition name
-   * @throws MetaException
-   */
-  public static String makePartNameUtil(Map<String, String> spec, boolean addTrailingSeperator, boolean dynamic)
-          throws MetaException {
-    StringBuilder suffixBuf = new StringBuilder();
-    int i = 0;
-    for (Entry<String, String> e : spec.entrySet()) {
-      // Throw an exception if it is not a dynamic partition.
-      if (e.getValue() == null || e.getValue().length() == 0) {
-        if (dynamic) {
-          break;
-        }
-        else {
-          throw new MetaException("Partition spec is incorrect. " + spec);
-        }
-      }
-
-      if (i > 0) {
-        suffixBuf.append(Path.SEPARATOR);
-      }
-      suffixBuf.append(escapePathName(e.getKey()));
-      suffixBuf.append('=');
-      suffixBuf.append(escapePathName(e.getValue()));
-      i++;
-    }
-
-    if (addTrailingSeperator && i > 0) {
-      suffixBuf.append(Path.SEPARATOR);
-    }
-
-    return suffixBuf.toString();
-  }
-
-  /**
-   * Makes a partition name from a specification
-   * @param spec
-   * @param addTrailingSeperator if true, adds a trailing separator e.g. 'ds=1/'
-   * @return partition name
-   * @throws MetaException
-   */
-  public static String makePartName(Map<String, String> spec,
-      boolean addTrailingSeperator)
-      throws MetaException {
-    return makePartNameUtil(spec, addTrailingSeperator, false);
-  }
-
-  /**
-   * Given a dynamic partition specification, return the path corresponding to the
-   * static part of partition specification. This is basically similar to makePartName
-   * but we get rid of MetaException since it is not serializable.
-   * @param spec
-   * @return string representation of the static part of the partition specification.
-   */
-  public static String makeDynamicPartName(Map<String, String> spec) {
-    String partName = null;
-    try {
-       partName = makePartNameUtil(spec, true, true);
-    }
-    catch (MetaException e) {
-      // This exception is not thrown when dynamic=true. This is a Noop and
-      // can be ignored.
-    }
-    return partName;
-  }
-
-  /**
-   * Given a dynamic partition specification, return the path corresponding to the
-   * static part of partition specification. This is basically similar to makePartName
-   * but we get rid of MetaException since it is not serializable. This method skips
-   * the trailing path seperator also.
-   *
-   * @param spec
-   * @return string representation of the static part of the partition specification.
-   */
-  public static String makeDynamicPartNameNoTrailingSeperator(Map<String, String> spec) {
-    String partName = null;
-    try {
-      partName = makePartNameUtil(spec, false, true);
-    }
-    catch (MetaException e) {
-      // This exception is not thrown when dynamic=true. This is a Noop and
-      // can be ignored.
-    }
-    return partName;
   }
 
   static final Pattern pat = Pattern.compile("([^/]+)=([^/]+)");
@@ -782,7 +667,7 @@ public class Warehouse {
    */
   public Path getPartitionPath(Path tblPath, Map<String, String> pm)
       throws MetaException {
-    return new Path(tblPath, makePartPath(pm));
+    return new Path(tblPath, WarehouseUtils.makePartPath(pm));
   }
 
   /**
@@ -833,11 +718,6 @@ public class Warehouse {
     return true;
   }
 
-  public static String makePartName(List<FieldSchema> partCols,
-      List<String> vals) throws MetaException {
-    return makePartName(partCols, vals, null);
-  }
-
   /**
    * @param desc
    * @return array of FileStatus objects corresponding to the files
@@ -881,35 +761,6 @@ public class Warehouse {
       MetaStoreUtils.throwMetaException(ioe);
     }
     return null;
-  }
-
-  /**
-   * Makes a valid partition name.
-   * @param partCols The partition columns
-   * @param vals The partition values
-   * @param defaultStr
-   *    The default name given to a partition value if the respective value is empty or null.
-   * @return An escaped, valid partition name.
-   * @throws MetaException
-   */
-  public static String makePartName(List<FieldSchema> partCols,
-      List<String> vals, String defaultStr) throws MetaException {
-    if ((partCols.size() != vals.size()) || (partCols.size() == 0)) {
-      StringBuilder errorStrBuilder = new StringBuilder("Invalid partition key & values; keys [");
-      for (FieldSchema fs : partCols) {
-        errorStrBuilder.append(fs.getName()).append(", ");
-      }
-      errorStrBuilder.append("], values [");
-      for (String val : vals) {
-        errorStrBuilder.append(val).append(", ");
-      }
-      throw new MetaException(errorStrBuilder.append("]").toString());
-    }
-    List<String> colNames = new ArrayList<>();
-    for (FieldSchema col: partCols) {
-      colNames.add(col.getName());
-    }
-    return FileUtils.makePartName(colNames, vals, defaultStr);
   }
 
   public static List<String> getPartValuesFromPartName(String partName)

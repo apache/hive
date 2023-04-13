@@ -23,7 +23,6 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
@@ -32,6 +31,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -77,7 +77,7 @@ public class TestMetaStoreEventListenerOnlyOnCommit {
     String dbName = "tmpDb";
     Database db = new DatabaseBuilder()
         .setName(dbName)
-        .setCatalogName(Warehouse.DEFAULT_CATALOG_NAME)
+        .setCatalogName(WarehouseUtils.DEFAULT_CATALOG_NAME)
         .create(msc, conf);
 
     listSize += 1;

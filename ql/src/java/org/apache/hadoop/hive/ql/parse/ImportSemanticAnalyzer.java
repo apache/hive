@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -89,8 +89,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-
 
 /**
  * ImportSemanticAnalyzer.
@@ -399,7 +397,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       location = ReplExternalTables.externalTableLocation(conf, partition.getSd().getLocation());
       LOG.debug("partition {} has data location: {}", partition, location);
     } else {
-      location = new Path(fromPath, Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString();
+      location = new Path(fromPath, WarehouseUtils.makePartName(tblDesc.getPartCols(), partition.getValues())).toString();
     }
 
     long writeId = -1;
@@ -767,16 +765,16 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (tblDesc.getLocation() == null) {
       if (table.getDataLocation() != null) {
         tgtPath = new Path(table.getDataLocation().toString(),
-            Warehouse.makePartPath(partSpec.getPartSpec()));
+            WarehouseUtils.makePartPath(partSpec.getPartSpec()));
       } else {
         Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
         tgtPath = new Path(
             wh.getDefaultTablePath( parentDb, tblDesc.getTableName(), tblDesc.isExternal()),
-            Warehouse.makePartPath(partSpec.getPartSpec()));
+            WarehouseUtils.makePartPath(partSpec.getPartSpec()));
       }
     } else {
       tgtPath = new Path(tblDesc.getLocation(),
-          Warehouse.makePartPath(partSpec.getPartSpec()));
+          WarehouseUtils.makePartPath(partSpec.getPartSpec()));
     }
     FileSystem tgtFs = FileSystem.get(tgtPath.toUri(), x.getConf());
     checkTargetLocationEmpty(tgtFs, tgtPath, replicationSpec, x.getLOG());

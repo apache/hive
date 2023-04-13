@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.common.AcidConstants.DELETE_DELTA_PREFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_PREFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PREFIX;
 import static org.apache.hadoop.hive.metastore.PartFilterExprUtil.createExpressionProxy;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getAllPartitionsOf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getDataLocation;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartColNames;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartCols;
@@ -36,7 +35,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isPart
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -60,9 +58,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
-import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -73,6 +69,7 @@ import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSp
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -138,7 +135,7 @@ public class HiveMetaStoreChecker {
       throws MetastoreException, IOException {
     CheckResult result = new CheckResult();
     if (dbName == null || "".equalsIgnoreCase(dbName)) {
-      dbName = Warehouse.DEFAULT_DATABASE_NAME;
+      dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
     }
 
     try {

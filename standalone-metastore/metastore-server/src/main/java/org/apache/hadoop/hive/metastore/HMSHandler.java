@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.thrift.TException;
@@ -116,9 +117,9 @@ import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.throwMetaException;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_COMMENT;
+import static org.apache.hadoop.hive.metastore.utils.WarehouseUtils.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTLT;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
@@ -623,7 +624,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       Catalog cat = new Catalog(DEFAULT_CATALOG_NAME, wh.getWhRoot().toString());
       long time = System.currentTimeMillis() / 1000;
       cat.setCreateTime((int) time);
-      cat.setDescription(Warehouse.DEFAULT_CATALOG_COMMENT);
+      cat.setDescription(WarehouseUtils.DEFAULT_CATALOG_COMMENT);
       ms.createCatalog(cat);
     }
   }
@@ -1210,7 +1211,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
       if (db.getCatalogName() != null && !db.getCatalogName().
-          equals(Warehouse.DEFAULT_CATALOG_NAME)) {
+          equals(WarehouseUtils.DEFAULT_CATALOG_NAME)) {
         if (!wh.isDir(dbExtPath)) {
           LOG.debug("Creating database path " + dbExtPath);
           if (!wh.mkdirs(dbExtPath)) {
@@ -1289,7 +1290,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ms.rollbackTransaction();
 
         if (db.getCatalogName() != null && !db.getCatalogName().
-            equals(Warehouse.DEFAULT_CATALOG_NAME)) {
+            equals(WarehouseUtils.DEFAULT_CATALOG_NAME)) {
           if (madeManagedDir && dbMgdPath != null) {
             wh.deleteDir(dbMgdPath, true, db);
           }
@@ -3915,7 +3916,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       firePreEvent(new PreAddPartitionEvent(tbl, part, this));
 
       part.setSd(tbl.getSd().deepCopy());
-      partLocation = new Path(tbl.getSd().getLocation(), Warehouse
+      partLocation = new Path(tbl.getSd().getLocation(), WarehouseUtils
           .makePartName(tbl.getPartitionKeys(), part_vals));
       part.getSd().setLocation(partLocation.toString());
 
@@ -4587,7 +4588,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // set default location if not specified and this is
       // a physical table partition (not a view)
       if (tbl.getSd().getLocation() != null) {
-        partLocation = new Path(tbl.getSd().getLocation(), Warehouse
+        partLocation = new Path(tbl.getSd().getLocation(), WarehouseUtils
             .makePartName(tbl.getPartitionKeys(), part.getValues()));
       }
     } else {
@@ -4862,9 +4863,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           " Their partitions cannot be exchanged.");
     }
     Path sourcePath = new Path(sourceTable.getSd().getLocation(),
-        Warehouse.makePartName(partitionKeysPresent, partValsPresent));
+        WarehouseUtils.makePartName(partitionKeysPresent, partValsPresent));
     Path destPath = new Path(destinationTable.getSd().getLocation(),
-        Warehouse.makePartName(partitionKeysPresent, partValsPresent));
+        WarehouseUtils.makePartName(partitionKeysPresent, partValsPresent));
     List<Partition> destPartitions = new ArrayList<>();
 
     Map<String, String> transactionalListenerResponsesForAddPartition = Collections.emptyMap();
@@ -4877,7 +4878,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (destPartitionNames != null && !destPartitionNames.isEmpty()) {
       for (Partition partition : partitionsToExchange) {
         String partToExchangeName =
-            Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues());
+            WarehouseUtils.makePartName(destinationTable.getPartitionKeys(), partition.getValues());
         if (destPartitionNames.contains(partToExchangeName)) {
           throw new MetaException("The partition " + partToExchangeName
               + " already exists in the table " + destTableName);
@@ -4898,7 +4899,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         destPartition.setDbName(parsedDestDbName[DB_NAME]);
         destPartition.setTableName(destinationTable.getTableName());
         Path destPartitionPath = new Path(destinationTable.getSd().getLocation(),
-            Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues()));
+            WarehouseUtils.makePartName(destinationTable.getPartitionKeys(), partition.getValues()));
         destPartition.getSd().setLocation(destPartitionPath.toString());
         ms.addPartition(destPartition);
         destPartitions.add(destPartition);
@@ -7499,7 +7500,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // Since each partition may have stats collected for different set of columns, we
         // request them separately.
         for (Partition part: ret) {
-          String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+          String partName = WarehouseUtils.makePartName(table.getPartitionKeys(), part.getValues());
           List<ColumnStatistics> partColStatsList =
               getMS().getPartitionColumnStatistics(parsedCatName, parsedDbName, tblName,
                   Collections.singletonList(partName),
@@ -7573,7 +7574,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             getDefaultCatalog(conf);
         Table table = get_table_core(catName, hiveObject.getDbName(), hiveObject
             .getObjectName());
-        partName = Warehouse
+        partName = WarehouseUtils
             .makePartName(table.getPartitionKeys(), partValue);
       } catch (NoSuchObjectException e) {
         throw new MetaException(e.getMessage());
@@ -8010,7 +8011,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         return getMS().listPrincipalPartitionColumnGrantsAll(principalName, principalType);
       }
       Table tbl = get_table_core(catName, dbName, tableName);
-      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), partValues);
+      String partName = WarehouseUtils.makePartName(tbl.getPartitionKeys(), partValues);
       if (principalName == null) {
         return getMS().listPartitionColumnGrantsAll(catName, dbName, tableName, partName, columnName);
       }
@@ -8069,7 +8070,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         return getMS().listPrincipalPartitionGrantsAll(principalName, principalType);
       }
       Table tbl = get_table_core(catName, dbName, tableName);
-      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), partValues);
+      String partName = WarehouseUtils.makePartName(tbl.getPartitionKeys(), partValues);
       if (principalName == null) {
         return getMS().listPartitionGrantsAll(catName, dbName, tableName, partName);
       }
@@ -8899,7 +8900,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws MetaException {
     String partition = ""; //Empty string is an invalid partition name. Can be used for non partitioned table.
     if (ptnObj != null) {
-      partition = Warehouse.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals());
+      partition = WarehouseUtils.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals());
     }
     AcidWriteEvent event = new AcidWriteEvent(partition, tableObj, ptnObj, rqst);
     getTxnHandler().addWriteNotificationLog(event);
@@ -8950,7 +8951,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (tableObj.getPartitionKeys().size() != 0) {
       // partitioned table
       for (WriteNotificationLogRequest rqst : batchRequest.getRequestList()) {
-        String partition = Warehouse.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals());
+        String partition = WarehouseUtils.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals());
         partNameList.add(partition);
         // This is used to ignore those request for which the partition does not exists.
         rqstMap.put(partition, rqst);
@@ -8969,7 +8970,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String partition = ""; //Empty string is an invalid partition name. Can be used for non partitioned table.
       WriteNotificationLogRequest request;
       if (partObject != null) {
-        partition = Warehouse.makePartName(tableObj.getPartitionKeys(), partObject.getValues());
+        partition = WarehouseUtils.makePartName(tableObj.getPartitionKeys(), partObject.getValues());
         request = rqstMap.get(partition);
       } else {
         // for non partitioned table, we can get serially from the list.
