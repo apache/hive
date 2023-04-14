@@ -27,15 +27,15 @@ CREATE TABLE DUP_TEST_TARGET (id int , in_date timestamp , sample varchar(100)) 
 INSERT INTO DUP_TEST
 (id , in_date , sample)
 values
-(1  , CURRENT_TIMESTAMP , 'test1'),
-(2  , CURRENT_TIMESTAMP , 'test2'),
-(3  , CURRENT_TIMESTAMP , 'test3'),
-(4  , CURRENT_TIMESTAMP , 'test4'),
-(5  , CURRENT_TIMESTAMP , 'test5'),
-(6  , CURRENT_TIMESTAMP , 'test6'),
-(7  , CURRENT_TIMESTAMP , 'test7'),
-(8, CURRENT_TIMESTAMP , 'test8'),
-(9  , CURRENT_TIMESTAMP , 'test9');
+(1  , '2023-04-14 10:11:12.111' , 'test1'),
+(2  , '2023-04-14 10:11:12.111' , 'test2'),
+(3  , '2023-04-14 10:11:12.111' , 'test3'),
+(4  , '2023-04-14 10:11:12.111' , 'test4'),
+(5  , '2023-04-14 10:11:12.111' , 'test5'),
+(6  , '2023-04-14 10:11:12.111' , 'test6'),
+(7  , '2023-04-14 10:11:12.111' , 'test7'),
+(8  , '2023-04-14 10:11:12.111' , 'test8'),
+(9  , '2023-04-14 10:11:12.111' , 'test9');
 
 -- Run merge into the target table for the first time
 MERGE INTO DUP_TEST_TARGET T USING (SELECT id , in_date , sample FROM (SELECT id , in_date , sample ,ROW_NUMBER()

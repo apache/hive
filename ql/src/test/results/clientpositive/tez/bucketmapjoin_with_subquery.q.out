@@ -17,30 +17,30 @@ POSTHOOK: Output: default@DUP_TEST_TARGET
 PREHOOK: query: INSERT INTO DUP_TEST
 (id , in_date , sample)
 values
-(1  , CURRENT_TIMESTAMP , 'test1'),
-(2  , CURRENT_TIMESTAMP , 'test2'),
-(3  , CURRENT_TIMESTAMP , 'test3'),
-(4  , CURRENT_TIMESTAMP , 'test4'),
-(5  , CURRENT_TIMESTAMP , 'test5'),
-(6  , CURRENT_TIMESTAMP , 'test6'),
-(7  , CURRENT_TIMESTAMP , 'test7'),
-(8, CURRENT_TIMESTAMP , 'test8'),
-(9  , CURRENT_TIMESTAMP , 'test9')
+(1  , '2023-04-14 10:11:12.111' , 'test1'),
+(2  , '2023-04-14 10:11:12.111' , 'test2'),
+(3  , '2023-04-14 10:11:12.111' , 'test3'),
+(4  , '2023-04-14 10:11:12.111' , 'test4'),
+(5  , '2023-04-14 10:11:12.111' , 'test5'),
+(6  , '2023-04-14 10:11:12.111' , 'test6'),
+(7  , '2023-04-14 10:11:12.111' , 'test7'),
+(8  , '2023-04-14 10:11:12.111' , 'test8'),
+(9  , '2023-04-14 10:11:12.111' , 'test9')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dup_test
 POSTHOOK: query: INSERT INTO DUP_TEST
 (id , in_date , sample)
 values
-(1  , CURRENT_TIMESTAMP , 'test1'),
-(2  , CURRENT_TIMESTAMP , 'test2'),
-(3  , CURRENT_TIMESTAMP , 'test3'),
-(4  , CURRENT_TIMESTAMP , 'test4'),
-(5  , CURRENT_TIMESTAMP , 'test5'),
-(6  , CURRENT_TIMESTAMP , 'test6'),
-(7  , CURRENT_TIMESTAMP , 'test7'),
-(8, CURRENT_TIMESTAMP , 'test8'),
-(9  , CURRENT_TIMESTAMP , 'test9')
+(1  , '2023-04-14 10:11:12.111' , 'test1'),
+(2  , '2023-04-14 10:11:12.111' , 'test2'),
+(3  , '2023-04-14 10:11:12.111' , 'test3'),
+(4  , '2023-04-14 10:11:12.111' , 'test4'),
+(5  , '2023-04-14 10:11:12.111' , 'test5'),
+(6  , '2023-04-14 10:11:12.111' , 'test6'),
+(7  , '2023-04-14 10:11:12.111' , 'test7'),
+(8  , '2023-04-14 10:11:12.111' , 'test8'),
+(9  , '2023-04-14 10:11:12.111' , 'test9')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dup_test
@@ -102,7 +102,7 @@ STAGE PLANS:
         Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: t
@@ -156,7 +156,7 @@ STAGE PLANS:
                     dataColumns: id:int, in_date:timestamp, sample:varchar(100)
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
-        Map 2
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: dup_test
@@ -202,7 +202,7 @@ STAGE PLANS:
                     dataColumns: id:int, in_date:timestamp, sample:varchar(100)
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
-        Reducer 3
+        Reducer 3 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
@@ -325,15 +325,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dup_test
 POSTHOOK: Input: default@dup_test_target
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2	2023-04-13 04:45:57.462	test2	2	2023-04-13 04:45:57.462	test2
-3	2023-04-13 04:45:57.462	test3	3	2023-04-13 04:45:57.462	test3
-6	2023-04-13 04:45:57.462	test6	6	2023-04-13 04:45:57.462	test6
-7	2023-04-13 04:45:57.462	test7	7	2023-04-13 04:45:57.462	test7
-1	2023-04-13 04:45:57.462	test1	1	2023-04-13 04:45:57.462	test1
-4	2023-04-13 04:45:57.462	test4	4	2023-04-13 04:45:57.462	test4
-5	2023-04-13 04:45:57.462	test5	5	2023-04-13 04:45:57.462	test5
-8	2023-04-13 04:45:57.462	test8	8	2023-04-13 04:45:57.462	test8
-9	2023-04-13 04:45:57.462	test9	9	2023-04-13 04:45:57.462	test9
+2	2023-04-14 10:11:12.111	test2	2	2023-04-14 10:11:12.111	test2
+3	2023-04-14 10:11:12.111	test3	3	2023-04-14 10:11:12.111	test3
+6	2023-04-14 10:11:12.111	test6	6	2023-04-14 10:11:12.111	test6
+7	2023-04-14 10:11:12.111	test7	7	2023-04-14 10:11:12.111	test7
+1	2023-04-14 10:11:12.111	test1	1	2023-04-14 10:11:12.111	test1
+4	2023-04-14 10:11:12.111	test4	4	2023-04-14 10:11:12.111	test4
+5	2023-04-14 10:11:12.111	test5	5	2023-04-14 10:11:12.111	test5
+8	2023-04-14 10:11:12.111	test8	8	2023-04-14 10:11:12.111	test8
+9	2023-04-14 10:11:12.111	test9	9	2023-04-14 10:11:12.111	test9
 PREHOOK: query: select * from DUP_TEST_TARGET T join DUP_TEST S ON T.id = S.id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dup_test
@@ -344,12 +344,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dup_test
 POSTHOOK: Input: default@dup_test_target
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	2023-04-13 04:45:57.462	test1	1	2023-04-13 04:45:57.462	test1
-8	2023-04-13 04:45:57.462	test8	8	2023-04-13 04:45:57.462	test8
-4	2023-04-13 04:45:57.462	test4	4	2023-04-13 04:45:57.462	test4
-5	2023-04-13 04:45:57.462	test5	5	2023-04-13 04:45:57.462	test5
-3	2023-04-13 04:45:57.462	test3	3	2023-04-13 04:45:57.462	test3
-7	2023-04-13 04:45:57.462	test7	7	2023-04-13 04:45:57.462	test7
-9	2023-04-13 04:45:57.462	test9	9	2023-04-13 04:45:57.462	test9
-2	2023-04-13 04:45:57.462	test2	2	2023-04-13 04:45:57.462	test2
-6	2023-04-13 04:45:57.462	test6	6	2023-04-13 04:45:57.462	test6
+1	2023-04-14 10:11:12.111	test1	1	2023-04-14 10:11:12.111	test1
+8	2023-04-14 10:11:12.111	test8	8	2023-04-14 10:11:12.111	test8
+4	2023-04-14 10:11:12.111	test4	4	2023-04-14 10:11:12.111	test4
+5	2023-04-14 10:11:12.111	test5	5	2023-04-14 10:11:12.111	test5
+3	2023-04-14 10:11:12.111	test3	3	2023-04-14 10:11:12.111	test3
+7	2023-04-14 10:11:12.111	test7	7	2023-04-14 10:11:12.111	test7
+9	2023-04-14 10:11:12.111	test9	9	2023-04-14 10:11:12.111	test9
+2	2023-04-14 10:11:12.111	test2	2	2023-04-14 10:11:12.111	test2
+6	2023-04-14 10:11:12.111	test6	6	2023-04-14 10:11:12.111	test6
