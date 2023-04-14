@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.WarehouseUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -67,7 +67,7 @@ public class TestTempAcidTable {
   @Test
   public void testTempInsertOnlyTableTranslate() throws Throwable {
     try {
-      String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+      String dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
       String tableName = "temp_table";
       hive.dropTable(dbName, tableName);
       Table table = new Table(dbName, tableName);
@@ -99,7 +99,7 @@ public class TestTempAcidTable {
   @Test
   public void testTempFullAcidTableTranslate() throws Throwable {
     try {
-      String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+      String dbName = WarehouseUtils.DEFAULT_DATABASE_NAME;
       String tableName = "temp_table";
       hive.dropTable(dbName, tableName);
       Table table = new Table(dbName, tableName);
