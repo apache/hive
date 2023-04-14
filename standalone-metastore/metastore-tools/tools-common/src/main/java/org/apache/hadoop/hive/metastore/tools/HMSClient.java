@@ -250,7 +250,12 @@ final class HMSClient implements AutoCloseable {
   }
 
   boolean dropTable(@NotNull String dbName, @NotNull String tableName) throws TException {
-    client.drop_table(dbName, tableName, true);
+    return dropTable(dbName, tableName, true);
+  }
+
+  boolean dropTable(@NotNull String dbName, @NotNull String tableName, boolean deleteData)
+    throws TException {
+    client.drop_table(dbName, tableName, deleteData);
     return true;
   }
 

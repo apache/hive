@@ -48,6 +48,7 @@ import static org.apache.hadoop.hive.metastore.tools.Constants.HMS_DEFAULT_PORT;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkCreatePartition;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkCreatePartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDeleteCreate;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDeleteMetaOnlyWithPartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDeleteWithPartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDropDatabase;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDropPartition;
@@ -271,6 +272,8 @@ public class BenchmarkTool implements Runnable {
         .add("dropTable", () -> benchmarkDeleteCreate(bench, bData))
         .add("dropTableWithPartitions",
             () -> benchmarkDeleteWithPartitions(bench, bData, 1, nParameters[0]))
+        .add("dropTableMetadataWithPartitions",
+            () -> benchmarkDeleteMetaOnlyWithPartitions(bench, bData, 1, nParameters[0]))
         .add("addPartition", () -> benchmarkCreatePartition(bench, bData))
         .add("dropPartition", () -> benchmarkDropPartition(bench, bData))
         .add("listPartition", () -> benchmarkListPartition(bench, bData))
@@ -294,6 +297,8 @@ public class BenchmarkTool implements Runnable {
           () -> benchmarkListTables(bench, bData, howMany))
           .add("dropTableWithPartitions" + '.' + howMany,
               () -> benchmarkDeleteWithPartitions(bench, bData, howMany, nParameters[0]))
+          .add("dropTableMetaOnlyWithPartitions" + '.' + howMany,
+              () -> benchmarkDeleteMetaOnlyWithPartitions(bench, bData, howMany, nParameters[0]))
           .add("listPartitions" + '.' + howMany,
               () -> benchmarkListManyPartitions(bench, bData, howMany))
           .add("getPartitions" + '.' + howMany,

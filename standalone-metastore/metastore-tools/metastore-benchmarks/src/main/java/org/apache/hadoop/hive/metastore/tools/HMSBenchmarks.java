@@ -123,6 +123,31 @@ final class HMSBenchmarks {
         null);
   }
 
+  static DescriptiveStatistics benchmarkDeleteMetaOnlyWithPartitions(@NotNull MicroBenchmark bench,
+                                                                        @NotNull BenchData data,
+                                                                        int howMany,
+                                                                        int nparams) {
+    final HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableName = data.tableName;
+
+    // Create many parameters
+    Map<String, String> parameters = new HashMap<>(nparams);
+    for (int i = 0; i < nparams; i++) {
+      parameters.put(PARAM_KEY + i, PARAM_VALUE + i);
+    }
+
+    return bench.measure(
+            () -> throwingSupplierWrapper(() -> {
+              BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
+              addManyPartitions(client, dbName, tableName, parameters,
+                      Collections.singletonList("d"), howMany);
+              return true;
+            }),
+            () -> throwingSupplierWrapper(() -> client.dropTable(dbName, tableName, false)),
+            null);
+  }
+
   static DescriptiveStatistics benchmarkGetTable(@NotNull MicroBenchmark bench,
                                                  @NotNull BenchData data) {
     final HMSClient client = data.getClient();
