@@ -63,10 +63,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.ExceptionHandler;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -525,12 +527,16 @@ public class MetaStoreServerUtils {
         String val = new String(buffer.array(), StandardCharsets.UTF_8);
         if (StatsSetupConst.TRUE.equals(val)) {
           try {
+            boolean isIcebergTable =
+                HiveMetaHook.ICEBERG.equalsIgnoreCase(tbl.getParameters().get(HiveMetaHook.TABLE_TYPE));
+            PathFilter pathFilter = isIcebergTable ?
+                path -> !"metadata".equals(path.getName()) : FileUtils.HIDDEN_FILES_PATH_FILTER;
             // Set the column stats true in order to make it merge-able
-            if (newDir || wh.isEmptyDir(tblPath, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
+            if (newDir || wh.isEmptyDir(tblPath, pathFilter)) {
               List<String> columns = getColumnNames(tbl.getSd().getCols());
               if (values.size() > 1 && (buffer = values.get(1)).hasArray()) {
-                columns = Arrays.stream(new String(buffer.array(), StandardCharsets.UTF_8).split(",")).
-                    collect(Collectors.toList());
+                columns = Arrays.stream(new String(buffer.array(), StandardCharsets.UTF_8).
+                    split("\0")).collect(Collectors.toList());
               }
               StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(), columns, StatsSetupConst.TRUE);
             }

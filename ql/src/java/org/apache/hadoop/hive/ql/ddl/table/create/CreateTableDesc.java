@@ -935,9 +935,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
         // ObjectDictionary is meant to convey repeatitive messages.
         ObjectDictionary dictionary = tbl.getTTable().isSetDictionary() ?
             tbl.getTTable().getDictionary() : new ObjectDictionary();
-        // In case we get the columns from SerDe
-        String cols = MetaStoreUtils.getColumnNames(tbl.getCols()).stream()
-            .collect(Collectors.joining(","));
+        String cols = MetaStoreUtils.getColumnNames(tbl.getCols()).stream().collect(Collectors.joining("\0"));
         List<java.nio.ByteBuffer> buffers = new ArrayList<>();
         buffers.add(java.nio.ByteBuffer.wrap(StatsSetupConst.TRUE.getBytes(StandardCharsets.UTF_8)));
         buffers.add(java.nio.ByteBuffer.wrap(cols.getBytes(StandardCharsets.UTF_8)));
