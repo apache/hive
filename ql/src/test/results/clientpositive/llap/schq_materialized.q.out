@@ -113,6 +113,9 @@ POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.deptname SIMPLE [(depts)depts.FieldSchema(name:deptname, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1.empid SIMPLE [(emps)emps.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.hire_date SIMPLE [(emps)emps.FieldSchema(name:hire_date, type:timestamp, comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT empid, deptname FROM emps
 JOIN depts ON (emps.deptno = depts.deptno)
