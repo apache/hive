@@ -1,0 +1,61 @@
+PREHOOK: query: CREATE TABLE T1 (c_primitive int, c_array array<int>, c_nested array<struct<f1:int, f2:map<int, double>, f3:array<char(10)>>>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
+POSTHOOK: query: CREATE TABLE T1 (c_primitive int, c_array array<int>, c_nested array<struct<f1:int, f2:map<int, double>, f3:array<char(10)>>>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1
+PREHOOK: query: CREATE TABLE T2 AS SELECT * FROM T1 LIMIT 0
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
+POSTHOOK: query: CREATE TABLE T2 AS SELECT * FROM T1 LIMIT 0
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2
+POSTHOOK: Lineage: t2.c_array EXPRESSION []
+POSTHOOK: Lineage: t2.c_nested EXPRESSION []
+POSTHOOK: Lineage: t2.c_primitive SIMPLE []
+t1.c_primitive	t1.c_array	t1.c_nested
+PREHOOK: query: DESCRIBE FORMATTED t2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t2
+POSTHOOK: query: DESCRIBE FORMATTED t2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t2
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+c_primitive         	int                 	                    
+c_array             	array<int>          	                    
+c_nested            	array<struct<f1:int,f2:map<int,double>,f3:array<char(10)>>>	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

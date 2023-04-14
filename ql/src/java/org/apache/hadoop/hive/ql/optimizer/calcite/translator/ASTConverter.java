@@ -218,6 +218,13 @@ public class ASTConverter {
       return mapCallNode.node();
     }
 
+    if (fieldType.getSqlTypeName() == SqlTypeName.ARRAY) {
+      ASTBuilder arrayCallNode = ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+      arrayCallNode.add(HiveParser.Identifier, "array");
+      arrayCallNode.add(createNullField(fieldType.getComponentType()));
+      return arrayCallNode.node();
+    }
+
     return createCastNull(fieldType);
   }
 
