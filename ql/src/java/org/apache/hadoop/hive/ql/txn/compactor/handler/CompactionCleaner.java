@@ -122,13 +122,13 @@ class CompactionCleaner extends TaskHandler {
           // The table was dropped before we got around to cleaning it.
           LOG.info("Unable to find table {}, assuming it was dropped. {}", ci.getFullTableName(),
                   idWatermark(ci));
-          txnHandler.markCleaned(ci);
+          txnHandler.markCleaned(ci, false);
           return;
         }
         if (MetaStoreUtils.isNoCleanUpSet(t.getParameters())) {
           // The table was marked no clean up true.
           LOG.info("Skipping table {} clean up, as NO_CLEANUP set to true", ci.getFullTableName());
-          txnHandler.markCleaned(ci);
+          txnHandler.markRefused(ci);
           return;
         }
         if (!isNull(ci.partName)) {
@@ -137,13 +137,13 @@ class CompactionCleaner extends TaskHandler {
             // The partition was dropped before we got around to cleaning it.
             LOG.info("Unable to find partition {}, assuming it was dropped. {}",
                     ci.getFullPartitionName(), idWatermark(ci));
-            txnHandler.markCleaned(ci);
+            txnHandler.markCleaned(ci, false);
             return;
           }
           if (MetaStoreUtils.isNoCleanUpSet(p.getParameters())) {
             // The partition was marked no clean up true.
             LOG.info("Skipping partition {} clean up, as NO_CLEANUP set to true", ci.getFullPartitionName());
-            txnHandler.markCleaned(ci);
+            txnHandler.markRefused(ci);
             return;
           }
         }
@@ -204,7 +204,7 @@ class CompactionCleaner extends TaskHandler {
       deleted = fsRemover.clean(getCleaningRequestBasedOnLocation(ci, path));
     }
     if (!deleted.isEmpty()) {
-      txnHandler.markCleaned(ci);
+      txnHandler.markCleaned(ci, false);
     } else {
       txnHandler.clearCleanerStart(ci);
     }
@@ -247,13 +247,13 @@ class CompactionCleaner extends TaskHandler {
      */
 
     // Creating 'reader' list since we are interested in the set of 'obsolete' files
-    ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdListForCompactionCleaner(ci, validTxnList);
+    ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
     Table table = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
     boolean success = cleanAndVerifyObsoleteDirectories(ci, location, validWriteIdList, table);
     if (success || CompactorUtil.isDynPartAbort(table, ci.partName)) {
-      txnHandler.markCleaned(ci);
+      txnHandler.markCleaned(ci, false);
     } else {
       txnHandler.clearCleanerStart(ci);
       LOG.warn("No files were removed. Leaving queue entry {} in ready for cleaning state.", ci);
@@ -287,9 +287,9 @@ class CompactionCleaner extends TaskHandler {
     return " id=" + ci.id;
   }
 
-  private ValidReaderWriteIdList getValidCleanerWriteIdListForCompactionCleaner(CompactionInfo ci, ValidTxnList validTxnList)
+  protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
           throws NoSuchTxnException, MetaException {
-    ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
+    ValidReaderWriteIdList validWriteIdList = super.getValidCleanerWriteIdList(ci, validTxnList);
     /*
      * We need to filter the obsoletes dir list, to only remove directories that were made obsolete by this compaction
      * If we have a higher retentionTime it is possible for a second compaction to run on the same partition. Cleaning up the first compaction

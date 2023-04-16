@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
-import org.apache.hadoop.hive.metastore.txn.AcidTxnInfo;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
@@ -103,9 +103,9 @@ public abstract class TaskHandler {
     }
   }
 
-  protected ValidReaderWriteIdList getValidCleanerWriteIdList(AcidTxnInfo acidTxnInfo, ValidTxnList validTxnList)
+  protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo info, ValidTxnList validTxnList)
           throws NoSuchTxnException, MetaException {
-    List<String> tblNames = Collections.singletonList(AcidUtils.getFullTableName(acidTxnInfo.dbname, acidTxnInfo.tableName));
+    List<String> tblNames = Collections.singletonList(AcidUtils.getFullTableName(info.dbname, info.tableName));
     GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(tblNames);
     request.setValidTxnList(validTxnList.writeToString());
     GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(request);
@@ -117,7 +117,7 @@ public abstract class TaskHandler {
     return TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
   }
 
-  protected boolean cleanAndVerifyObsoleteDirectories(AcidTxnInfo acidTxnInfo, String location,
+  protected boolean cleanAndVerifyObsoleteDirectories(CompactionInfo info, String location,
                                                       ValidReaderWriteIdList validWriteIdList, Table table) throws MetaException, IOException {
     Path path = new Path(location);
     FileSystem fs = path.getFileSystem(conf);
@@ -126,20 +126,20 @@ public abstract class TaskHandler {
     Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshotsForCleaner(fs, path);
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, validWriteIdList, Ref.from(false), false,
             dirSnapshots);
-    boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, acidTxnInfo.partName);
+    boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, info.partName);
 
     List<Path> obsoleteDirs = CompactorUtil.getObsoleteDirs(dir, isDynPartAbort);
     if (isDynPartAbort || dir.hasUncompactedAborts()) {
-      acidTxnInfo.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
+      info.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
     }
 
     List<Path> deleted = fsRemover.clean(new CleanupRequest.CleanupRequestBuilder().setLocation(location)
-            .setDbName(acidTxnInfo.dbname).setFullPartitionName(acidTxnInfo.getFullPartitionName())
-            .setRunAs(acidTxnInfo.runAs).setObsoleteDirs(obsoleteDirs).setPurge(true)
+            .setDbName(info.dbname).setFullPartitionName(info.getFullPartitionName())
+            .setRunAs(info.runAs).setObsoleteDirs(obsoleteDirs).setPurge(true)
             .build());
 
     if (!deleted.isEmpty()) {
-      AcidMetricService.updateMetricsFromCleaner(acidTxnInfo.dbname, acidTxnInfo.tableName, acidTxnInfo.partName, dir.getObsolete(), conf,
+      AcidMetricService.updateMetricsFromCleaner(info.dbname, info.tableName, info.partName, dir.getObsolete(), conf,
               txnHandler);
     }
 
@@ -147,7 +147,7 @@ public abstract class TaskHandler {
     boolean success = false;
     conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
     dir = AcidUtils.getAcidState(fs, path, conf, new ValidReaderWriteIdList(
-                    acidTxnInfo.getFullTableName(), new long[0], new BitSet(), acidTxnInfo.highestWriteId, Long.MAX_VALUE),
+                    info.getFullTableName(), new long[0], new BitSet(), info.highestWriteId, Long.MAX_VALUE),
             Ref.from(false), false, dirSnapshots);
 
     List<Path> remained = subtract(CompactorUtil.getObsoleteDirs(dir, isDynPartAbort), deleted);
@@ -155,7 +155,7 @@ public abstract class TaskHandler {
       LOG.warn("Remained {} obsolete directories from {}. {}",
               remained.size(), location, CompactorUtil.getDebugInfo(remained));
     } else {
-      LOG.debug("All cleared below the watermark: {} from {}", acidTxnInfo.highestWriteId, location);
+      LOG.debug("All cleared below the watermark: {} from {}", info.highestWriteId, location);
       success = true;
     }
 

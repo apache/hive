@@ -65,11 +65,11 @@ public class TxnUtils {
     long[] abortedTxns = new long[txns.getOpen_txnsSize()];
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
     int i = 0;
-    for(long txnId : txns.getOpen_txns()) {
-      if(txnId > highWatermark) {
+    for (long txnId : txns.getOpen_txns()) {
+      if (txnId > highWatermark) {
         break;
       }
-      if(abortedBits.get(i)) {
+      if (abortedBits.get(i)) {
         abortedTxns[i] = txnId;
       }
       else {
@@ -90,20 +90,18 @@ public class TxnUtils {
     long[] exceptions = new long[txns.getOpen_txnsSize()];
     int i = 0;
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
-    // getOpen_txns() guarantees that the list contains only aborted & open txns.
+    // getOpen_txns() guarantees that the list is sorted & contains only aborted and open txns.
     // exceptions list must contain both txn types since validWriteIdList filters out the aborted ones and valid ones for that table.
     // If a txn is not in exception list, it is considered as a valid one and thought of as an uncompacted write.
     // See TxnHandler#getValidWriteIdsForTable() for more details.
-    for(long txnId : txns.getOpen_txns()) {
-      if(txnId > highWatermark) {
+    for (long txnId : txns.getOpen_txns()) {
+      if (txnId > highWatermark) {
         break;
       }
       exceptions[i] = txnId;
       i++;
     }
     exceptions = Arrays.copyOf(exceptions, i);
-    //add ValidCleanerTxnList? - could be problematic for all the places that read it from
-    // string as they'd have to know which object to instantiate
     return new ValidReadTxnList(exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
   }
   /**

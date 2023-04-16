@@ -18,10 +18,12 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 
 import java.sql.PreparedStatement;
@@ -32,7 +34,7 @@ import java.util.Set;
 /**
  * Information on a possible or running compaction.
  */
-public class CompactionInfo extends AcidTxnInfo implements Comparable<CompactionInfo> {
+public class CompactionInfo implements Comparable<CompactionInfo> {
 
   /**
    *  Modifying this variables or adding new ones should be done in sync
@@ -42,6 +44,9 @@ public class CompactionInfo extends AcidTxnInfo implements Comparable<Compaction
    *  being resetted. This will be fixed at HIVE-21056.
    */
   public long id;
+  public String dbname;
+  public String tableName;
+  public String partName;
   public char state;
   public CompactionType type;
   public String workerId;
@@ -50,20 +55,35 @@ public class CompactionInfo extends AcidTxnInfo implements Comparable<Compaction
   public String initiatorVersion;
   public long enqueueTime;
   public long start;
+  public String runAs;
   public String properties;
   public boolean tooManyAborts = false;
   public boolean hasOldAbort = false;
   public long retryRetention = 0;
   public long nextTxnId = 0;
   public long minOpenWriteId = -1;
+  public long txnId = 0;
   public long commitTime = 0;
   public String poolName;
   public int numberOfBuckets = 0;
   public String orderByClause;
 
+  /**
+   * The highest write id that the compaction job will pay attention to.
+   * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL)
+   * See also {@link TxnUtils#createValidCompactWriteIdList(TableValidWriteIds)} and
+   * {@link ValidCompactorWriteIdList#highWatermark}.
+   */
+  public long highestWriteId;
+  public Set<Long> writeIds;
+  public boolean hasUncompactedAborts;
+
   byte[] metaInfo;
   String hadoopJobId;
   public String errorMessage;
+
+  private String fullPartitionName = null;
+  private String fullTableName = null;
   private StringableMap propertiesMap;
 
   public CompactionInfo(String dbname, String tableName, String partName, CompactionType type) {
@@ -94,6 +114,30 @@ public class CompactionInfo extends AcidTxnInfo implements Comparable<Compaction
     properties = propertiesMap.toString();
   }
 
+  public String getFullPartitionName() {
+    if (fullPartitionName == null) {
+      StringBuilder buf = new StringBuilder(dbname);
+      buf.append('.');
+      buf.append(tableName);
+      if (partName != null) {
+        buf.append('.');
+        buf.append(partName);
+      }
+      fullPartitionName = buf.toString();
+    }
+    return fullPartitionName;
+  }
+
+  public String getFullTableName() {
+    if (fullTableName == null) {
+      StringBuilder buf = new StringBuilder(dbname);
+      buf.append('.');
+      buf.append(tableName);
+      fullTableName = buf.toString();
+    }
+    return fullTableName;
+  }
+
   public boolean isMajorCompaction() {
     return CompactionType.MAJOR == type;
   }
@@ -107,7 +151,6 @@ public class CompactionInfo extends AcidTxnInfo implements Comparable<Compaction
     return getFullPartitionName().compareTo(o.getFullPartitionName());
   }
 
-  @Override
   public String toString() {
     return new ToStringBuilder(this)
         .append("id", id)
@@ -302,5 +345,10 @@ public class CompactionInfo extends AcidTxnInfo implements Comparable<Compaction
       return compactionStructToInfo(ocis.getCi());
     }
     return null;
+  }
+
+  public void setWriteIds(boolean hasUncompactedAborts, Set<Long> writeIds) {
+    this.hasUncompactedAborts = hasUncompactedAborts;
+    this.writeIds = writeIds;
   }
 }

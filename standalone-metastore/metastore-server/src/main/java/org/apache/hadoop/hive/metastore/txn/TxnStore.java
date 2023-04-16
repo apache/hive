@@ -527,7 +527,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  List<AcidTxnInfo> findReadyToCleanForAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
+  List<CompactionInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
 
   /**
    * Sets the cleaning start time for a particular compaction
@@ -550,18 +550,10 @@ public interface TxnStore extends Configurable {
    * it has been compacted.
    *
    * @param info info on the compaction entry to remove
+   * @param isAbortOnly whether to cleanup only abort related cleanup information
    */
   @RetrySemantics.CannotRetry
-  void markCleaned(CompactionInfo info) throws MetaException;
-
-  /**
-   * This will remove an aborted entries from TXN_COMPONENTS table after
-   * the aborted directories are removed from the filesystem.
-   * @param info info on the aborted directories cleanup that needs to be removed
-   * @throws MetaException
-   */
-  @RetrySemantics.CannotRetry
-  void markCleanedForAborts(AcidTxnInfo info) throws MetaException;
+  void markCleaned(CompactionInfo info, boolean isAbortOnly) throws MetaException;
 
   /**
    * Mark a compaction entry as failed.  This will move it to the compaction history queue with a
@@ -606,7 +598,7 @@ public interface TxnStore extends Configurable {
   /**
    * Clean up aborted or committed transactions from txns that have no components in txn_components.  The reason such
    * txns exist can be that no work was done in this txn (e.g. Streaming opened TransactionBatch and
-   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called,
+   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo, boolean)} being called,
    * or the delete from the txns was delayed because of TXN_OPENTXN_TIMEOUT window.
    */
   @RetrySemantics.SafeToRetry

@@ -62,8 +62,7 @@ public class Cleaner extends MetaStoreCompactorThread {
             COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
     FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
     cleanupHandlers = TaskHandlerFactory.getInstance()
-            .getHandlers(conf, txnHandler, metadataCache,
-                    metricsEnabled, fsRemover);
+            .getHandlers(conf, txnHandler, metadataCache, metricsEnabled, fsRemover);
   }
 
   @Override

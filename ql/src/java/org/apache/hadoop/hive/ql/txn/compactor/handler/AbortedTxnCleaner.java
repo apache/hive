@@ -25,10 +25,9 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
-import org.apache.hadoop.hive.metastore.txn.AcidTxnInfo;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
 import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
@@ -64,7 +63,7 @@ class AbortedTxnCleaner extends TaskHandler {
       only sees the aborted deltas and does not read the file).<br><br>
 
    The following algorithm is used to clean the set of aborted directories - <br>
-      a. Find the list of entries which are suitable for cleanup (This is done in {@link TxnStore#findReadyToCleanForAborts(long, int)}).<br>
+      a. Find the list of entries which are suitable for cleanup (This is done in {@link TxnStore#findReadyToCleanAborts(long, int)}).<br>
       b. If the table/partition does not exist, then remove the associated aborted entry in TXN_COMPONENTS table. <br>
       c. Get the AcidState of the table by using the min open txnID, database name, tableName, partition name, highest write ID <br>
       d. Fetch the aborted directories and delete the directories. <br>
@@ -77,7 +76,7 @@ class AbortedTxnCleaner extends TaskHandler {
     long abortedTimeThreshold = HiveConf
               .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
                       TimeUnit.MILLISECONDS);
-    List<AcidTxnInfo> readyToCleanAborts = txnHandler.findReadyToCleanForAborts(abortedTimeThreshold, abortedThreshold);
+    List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanAborts(abortedTimeThreshold, abortedThreshold);
 
     if (!readyToCleanAborts.isEmpty()) {
       return readyToCleanAborts.stream().map(ci -> ThrowingRunnable.unchecked(() ->
@@ -87,7 +86,7 @@ class AbortedTxnCleaner extends TaskHandler {
     return Collections.emptyList();
   }
 
-  private void clean(AcidTxnInfo info, long minOpenTxn, boolean metricsEnabled) throws MetaException {
+  private void clean(CompactionInfo info, long minOpenTxn, boolean metricsEnabled) throws MetaException {
     LOG.info("Starting cleaning for {}", info);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_";
@@ -95,18 +94,12 @@ class AbortedTxnCleaner extends TaskHandler {
       if (metricsEnabled) {
         perfLogger.perfLogBegin(AbortedTxnCleaner.class.getName(), cleanerMetric);
       }
-      Table t;
       Partition p = null;
-      t = metadataCache.computeIfAbsent(info.getFullTableName(), () -> resolveTable(info.dbname, info.tableName));
+      Table t = metadataCache.computeIfAbsent(info.getFullTableName(), () -> resolveTable(info.dbname, info.tableName));
       if (isNull(t)) {
         // The table was dropped before we got around to cleaning it.
         LOG.info("Unable to find table {}, assuming it was dropped.", info.getFullTableName());
-        txnHandler.markCleanedForAborts(info);
-        return;
-      }
-      if (MetaStoreUtils.isNoCleanUpSet(t.getParameters())) {
-        // The table was marked no clean up true.
-        LOG.info("Skipping table {} clean up, as NO_CLEANUP set to true", info.getFullTableName());
+        txnHandler.markCleaned(info, true);
         return;
       }
       if (!isNull(info.partName)) {
@@ -115,12 +108,7 @@ class AbortedTxnCleaner extends TaskHandler {
           // The partition was dropped before we got around to cleaning it.
           LOG.info("Unable to find partition {}, assuming it was dropped.",
                   info.getFullPartitionName());
-          txnHandler.markCleanedForAborts(info);
-          return;
-        }
-        if (MetaStoreUtils.isNoCleanUpSet(p.getParameters())) {
-          // The partition was marked no clean up true.
-          LOG.info("Skipping partition {} clean up, as NO_CLEANUP set to true", info.getFullPartitionName());
+          txnHandler.markCleaned(info, true);
           return;
         }
       }
@@ -140,7 +128,7 @@ class AbortedTxnCleaner extends TaskHandler {
     }
   }
 
-  private void abortCleanUsingAcidDir(AcidTxnInfo info, String location, long minOpenTxn) throws Exception {
+  private void abortCleanUsingAcidDir(CompactionInfo info, String location, long minOpenTxn) throws Exception {
     ValidTxnList validTxnList =
             TxnUtils.createValidTxnListForAbortedTxnCleaner(txnHandler.getOpenTxns(), minOpenTxn);
     //save it so that getAcidState() sees it
@@ -159,7 +147,7 @@ class AbortedTxnCleaner extends TaskHandler {
 
     boolean success = cleanAndVerifyObsoleteDirectories(info, location, validWriteIdList, table);
     if (success || CompactorUtil.isDynPartAbort(table, info.partName)) {
-      txnHandler.markCleanedForAborts(info);
+      txnHandler.markCleaned(info, false);
     } else {
       LOG.warn("Leaving aborted entry {} in TXN_COMPONENTS table.", info);
     }
