@@ -195,7 +195,7 @@ public class TestHivePointLookupOptimizerRule {
 
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
-    assertEquals("IN($0, 2, 1, 3)", condition.toString());
+    assertEquals("IN($0, 1, 2, 3)", condition.toString());
   }
 
   @Test
