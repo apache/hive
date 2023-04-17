@@ -1,3 +1,5 @@
+set hive.optimize.point.lookup.min=2;
+
 create table r_table (
   string_col varchar(30)
 );
