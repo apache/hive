@@ -433,15 +433,17 @@ public class HiveSessionImpl implements HiveSession {
     }
 
     // We have already set the thread-local Hive belonging to the current session,
-    // if the thread-local Hive has been changed after running the operation,
+    // if the thread-local Hive has been changed/updated after running the operation,
     // the Hive after should belong to the same session, and we should update the sessionHive.
     // The thread-local hive would be recreated only when the underlying
     // HiveMetaStoreClient is incompatible with the newest session conf.
-    if (Hive.getThreadLocal() != null && Hive.getThreadLocal() != sessionHive) {
-      // The sessionHive would be GC'ed finally, or should we force close it?
-      sessionHive = Hive.getThreadLocal();
+    Hive localHive = Hive.getThreadLocal();
+    if (localHive != null && localHive != sessionHive) {
+      // The previous sessionHive would be GC'ed finally, or should we force close it?
+      sessionHive = localHive;
       sessionHive.setAllowClose(false);
     }
+
     SessionState.detachSession();
     if (ThreadWithGarbageCleanup.currentThread() instanceof ThreadWithGarbageCleanup) {
       ThreadWithGarbageCleanup currentThread =
