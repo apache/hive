@@ -682,7 +682,12 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
       RexLiteral rexLiteral1 = (RexLiteral) rexNode1;
       RexLiteral rexLiteral2 = (RexLiteral) rexNode2;
-      return rexLiteral1.getValue().compareTo(rexLiteral2.getValue()) == 0 &&
+
+      if (rexLiteral1.getValue() == null && rexLiteral2.getValue() == null) {
+        return true;
+      }
+
+      return rexLiteral1.getValue() != null && rexLiteral1.getValue().compareTo(rexLiteral2.getValue()) == 0 &&
               rexLiteral1.getType().getSqlTypeName().equals(rexLiteral2.getType().getSqlTypeName());
     }
 
