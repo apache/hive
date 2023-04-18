@@ -45,7 +45,7 @@ import org.junit.experimental.categories.Category;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@org.junit.Ignore("flaky HIVE-23682")
+
 @Category(MetastoreUnitTest.class)
 public class TestMetrics {
   private static final long REPORT_INTERVAL = 1;
