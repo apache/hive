@@ -608,9 +608,9 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   public static final String DELETE_PREFIX = "__d__";
   public static final String SUB_QUERY_ALIAS = "s";
 
-  protected ColumnAppender getColumnAppender(String subQueryAlias) {
+  protected ColumnAppender getColumnAppender(String subQueryAlias, String deletePrefix) {
     boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable, true);
-    return nonNativeAcid ? new NonNativeAcidColumnAppender(targetTable, conf, subQueryAlias) :
+    return nonNativeAcid ? new NonNativeAcidColumnAppender(targetTable, conf, subQueryAlias, deletePrefix) :
             new NativeAcidColumnAppender(targetTable, conf, subQueryAlias);
   }
 
@@ -670,9 +670,11 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   }
 
   protected static class NonNativeAcidColumnAppender extends ColumnAppender {
+    private final String deletePrefix;
 
-    public NonNativeAcidColumnAppender(Table table, HiveConf conf, String subQueryAlias) {
+    public NonNativeAcidColumnAppender(Table table, HiveConf conf, String subQueryAlias, String deletePrefix) {
       super(table, conf, subQueryAlias);
+      this.deletePrefix = deletePrefix;
     }
 
     @Override
@@ -680,9 +682,13 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
       List<FieldSchema> acidSelectColumns = table.getStorageHandler().acidSelectColumns(table, operation);
       for (FieldSchema fieldSchema : acidSelectColumns) {
         String identifier = HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
-        stringBuilder.append(identifier).append(" AS ");
-        String prefixedIdentifier = HiveUtils.unparseIdentifier(DELETE_PREFIX + fieldSchema.getName(), this.conf);
-        stringBuilder.append(prefixedIdentifier);
+        stringBuilder.append(identifier);
+        
+        if (StringUtils.isNotEmpty(deletePrefix)) {
+          stringBuilder.append(" AS ");
+          String prefixedIdentifier = HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
+          stringBuilder.append(prefixedIdentifier);
+        }
         stringBuilder.append(",");
       }
     }
@@ -692,7 +698,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
       List<FieldSchema> acidSelectColumns = table.getStorageHandler().acidSelectColumns(table, operation);
       List<String> deleteValues = new ArrayList<>(acidSelectColumns.size());
       for (FieldSchema fieldSchema : acidSelectColumns) {
-        String prefixedIdentifier = HiveUtils.unparseIdentifier(DELETE_PREFIX + fieldSchema.getName(), this.conf);
+        String prefixedIdentifier = HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
         deleteValues.add(qualify(prefixedIdentifier));
       }
       return deleteValues;
@@ -702,7 +708,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     public List<String> getSortKeys() {
       return table.getStorageHandler().acidSortColumns(table, Context.Operation.DELETE).stream()
               .map(fieldSchema -> qualify(
-                      HiveUtils.unparseIdentifier(DELETE_PREFIX + fieldSchema.getName(), this.conf)))
+                      HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))
               .collect(Collectors.toList());
     }
   }

@@ -125,7 +125,7 @@ public class GenericUDFPower extends GenericUDF {
       return null;
     }
 
-    doubleWritable.set(Math.pow(((DoubleWritable)base).get(), ((DoubleWritable)power).get()));
+    doubleWritable.set(StrictMath.pow(((DoubleWritable)base).get(), ((DoubleWritable)power).get()));
     return doubleWritable;
   }
 

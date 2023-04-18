@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -875,9 +876,15 @@ public class Hive {
       if (newTbl.getParameters() != null) {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
-      newTbl.checkValidity(conf);
       if (environmentContext == null) {
         environmentContext = new EnvironmentContext();
+      }
+      if (isRename(environmentContext)) {
+        newTbl.validateName(conf);
+        environmentContext.putToProperties(HiveMetaHook.OLD_TABLE_NAME, tblName);
+        environmentContext.putToProperties(HiveMetaHook.OLD_DB_NAME, dbName);
+      } else {
+        newTbl.checkValidity(conf);
       }
       if (cascade) {
         environmentContext.putToProperties(StatsSetupConst.CASCADE, StatsSetupConst.TRUE);
@@ -916,6 +923,14 @@ public class Hive {
     } catch (TException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     }
+  }
+
+  private static boolean isRename(EnvironmentContext environmentContext) {
+    if (environmentContext.isSetProperties()) {
+      String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
+      return operation != null && AlterTableType.RENAME == AlterTableType.valueOf(operation);
+    }
+    return false;
   }
 
   /**
@@ -2979,10 +2994,10 @@ public class Hive {
   }
 
   private void setStatsPropAndAlterPartitions(boolean resetStatistics, Table tbl,
-                                             List<Partition> partitions,
+                                              List<Partition> partitions,
                                               AcidUtils.TableSnapshot tableSnapshot)
           throws TException {
-    if (partitions.isEmpty()) {
+    if (partitions.isEmpty() || conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)) {
       return;
     }
     EnvironmentContext ec = new EnvironmentContext();
@@ -3373,6 +3388,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
           get(conf).getSynchronizedMSC().addWriteNotificationLog(request);
         }
         supported = false;
+      } else {
+	// Rethrow the exception, so failures are visible. Missing a write notification can be very difficult
+	// to debug otherwise.
+	throw e;
       }
     }
     long end = System.currentTimeMillis();
@@ -3796,6 +3815,47 @@ private void constructOneLBLocationMap(FileStatus fSta,
       get(conf).getSynchronizedMSC().addWriteNotificationLog(rqst);
     } else {
       requestList.add(rqst);
+    }
+  }
+
+  /**
+   * This method helps callers trigger an INSERT event for DML queries without having to deal with
+   * HMS objects. This takes java object types as arguments.
+   * @param dbName Name of the hive database this table belongs to.
+   * @param tblName Name of the hive table this event is for.
+   * @param partitionSpec Map containing key/values for each partition column. Can be null if the event is for a table
+   * @param replace boolean to indicate whether the filelist is replacement of existing files. Treated as additions otherwise
+   * @param newFiles List of file paths affected (added/replaced) by this DML query. Can be null
+   * @throws HiveException if the table or partition does not exist or other internal errors in fetching them
+   */
+  public void fireInsertEvent(String dbName, String tblName,
+      Map<String, String> partitionSpec, boolean replace, List<String> newFiles)
+      throws HiveException {
+    if (!conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
+      LOG.info("DML Events not enabled. Set " + ConfVars.FIRE_EVENTS_FOR_DML.varname);
+      return;
+    }
+    Table table = getTable(dbName, tblName);
+    if (table != null && !table.isTemporary()) {
+      List<FileStatus> newFileStatusObject = null;
+      String parentDir = null;
+      if (newFiles != null && newFiles.size() > 0) {
+        newFileStatusObject = new ArrayList<>(newFiles.size());
+        if (partitionSpec != null && partitionSpec.size() > 0) {
+          // fetch the partition object to determine its location
+          Partition part = getPartition(table, partitionSpec, false);
+          parentDir = part.getLocation();
+        } else {
+          // fetch the table location
+          parentDir = table.getSd().getLocation();
+        }
+        for (String fileName: newFiles) {
+          FileStatus fStatus = new FileStatus();
+          fStatus.setPath(new Path(parentDir, fileName));
+          newFileStatusObject.add(fStatus);
+        }
+      }
+      fireInsertEvent(table, partitionSpec, replace, newFileStatusObject);
     }
   }
 
@@ -4705,7 +4765,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
 
-    LOG.debug("The source path is " + fullF1 + " and the destination path is " + fullF2);
     return fullF1.startsWith(fullF2);
   }
 

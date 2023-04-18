@@ -45,7 +45,7 @@ public class UDFSqrt extends UDFMath {
     if (a.get() < 0) {
       return null;
     } else {
-      result.set(Math.sqrt(a.get()));
+      result.set(StrictMath.sqrt(a.get()));
       return result;
     }
   }

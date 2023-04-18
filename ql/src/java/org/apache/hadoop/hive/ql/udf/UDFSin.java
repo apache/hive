@@ -42,7 +42,7 @@ public class UDFSin extends UDFMath {
    */
   @Override
   protected DoubleWritable doEvaluate(DoubleWritable a) {
-    result.set(Math.sin(a.get()));
+    result.set(StrictMath.sin(a.get()));
     return result;
   }
 

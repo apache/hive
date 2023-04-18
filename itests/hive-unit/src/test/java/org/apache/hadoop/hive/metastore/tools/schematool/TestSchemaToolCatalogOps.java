@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.tools.schematool;
 
+import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -35,7 +36,6 @@ import org.apache.hadoop.hive.metastore.client.builder.FunctionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hive.com.google.common.io.Files;
 import org.apache.thrift.TException;
 import org.junit.AfterClass;
 import org.junit.Assert;

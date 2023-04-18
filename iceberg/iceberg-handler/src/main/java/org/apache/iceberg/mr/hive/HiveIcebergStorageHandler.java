@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
@@ -315,8 +316,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public Map<String, String> getBasicStatistics(Partish partish) {
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
-    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
-    Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
+    // For write queries where rows got modified, don't fetch from cache as values could have changed.
+    Table table = getTable(hmsTable);
     String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM).toLowerCase();
     Map<String, String> stats = Maps.newHashMap();
     switch (statsSource) {
@@ -347,6 +348,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         // fall back to metastore
     }
     return stats;
+  }
+
+  private Table getTable(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table;
+    final Optional<QueryState> queryState = SessionStateUtil.getQueryState(conf);
+    if (!queryState.isPresent() || queryState.get().getNumModifiedRows() > 0) {
+      table = IcebergTableUtil.getTable(conf, hmsTable.getTTable(), true);
+    } else {
+      table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    }
+    return table;
   }
 
   /**
@@ -671,9 +683,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       case UPDATE:
         // TODO: make it configurable whether we want to include the table columns in the select query.
         // It might make delete writes faster if we don't have to write out the row object
-        return Stream.of(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols())
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+        return ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+      case MERGE:
+        return ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default:
         return ImmutableList.of();
     }
