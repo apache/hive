@@ -422,12 +422,12 @@ POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders
 PREHOOK: query: INSERT INTO llap_orders VALUES
-(22, 99, 9, 'EU', 'DE', timestamp('2021-01-04 19:55:46.129'), 'M��nchen')
+(22, 99, 9, 'EU', 'DE', timestamp('2021-01-04 19:55:46.129'), 'München')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@llap_orders
 POSTHOOK: query: INSERT INTO llap_orders VALUES
-(22, 99, 9, 'EU', 'DE', timestamp('2021-01-04 19:55:46.129'), 'M��nchen')
+(22, 99, 9, 'EU', 'DE', timestamp('2021-01-04 19:55:46.129'), 'München')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_orders
@@ -439,7 +439,7 @@ POSTHOOK: query: SELECT state, max(city) from llap_orders WHERE region = 'EU' GR
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@llap_orders
 #### A masked pattern was here ####
-DE	M��nchen
+DE	München
 ES	NULL
 FR	NULL
 HU	NULL
@@ -533,7 +533,7 @@ POSTHOOK: query: SELECT state, max(city), avg(itemid) from llap_orders WHERE reg
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@llap_orders
 #### A masked pattern was here ####
-DE	M��nchen	5.75
+DE	München	5.75
 ES	NULL	5.0
 FR	Paris	3.2
 HU	NULL	7.0

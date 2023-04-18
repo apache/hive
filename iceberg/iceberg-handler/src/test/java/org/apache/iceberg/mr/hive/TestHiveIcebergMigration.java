@@ -84,7 +84,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
         "129 " +
         ")", identifier.name()));
 
-    validateMigration(identifier.name(), null);
+    validateMigration(identifier.name());
   }
 
   @Test
@@ -98,8 +98,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
         testTables.locationForCreateTableSQL(identifier), testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
     AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
         "Cannot convert hive table to iceberg that", () -> {
-          shell.executeStatement(String.format("ALTER TABLE %s SET TBLPROPERTIES " +
-              "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')", identifier.name()));
+          shell.executeStatement(String.format("ALTER TABLE %s Convert to iceberg", identifier.name()));
         });
   }
 
@@ -139,7 +138,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
         "named_struct('map1', map('a', 'b'), 'map2', map('c', 'd')) " +
         ")", identifier.name()));
 
-    validateMigration(identifier.name(), null);
+    validateMigration(identifier.name());
   }
 
   @Test
@@ -175,7 +174,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
         testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     shell.executeStatement(createQuery);
     shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
-    validateMigration(tableName, null);
+    validateMigration(tableName);
   }
 
   @Test
@@ -188,7 +187,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb') VALUES (4), (5)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc') VALUES (6)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ddd') VALUES (7), (8), (9), (10)");
-    validateMigration(tableName, null);
+    validateMigration(tableName);
   }
 
   @Test
@@ -202,7 +201,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb') VALUES (4), (5)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc') VALUES (6)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ddd') VALUES (7), (8), (9), (10)");
-    validateMigration(tableName, null);
+    validateMigration(tableName);
   }
 
   @Test
@@ -270,8 +269,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
       shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
       AssertHelpers.assertThrows("Migrating a " + format + " table to Iceberg should have thrown an exception.",
           IllegalArgumentException.class, "Cannot convert hive table to iceberg with input format: ",
-          () -> shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
-              "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')"));
+          () -> shell.executeStatement("ALTER TABLE " + tableName + " Convert to iceberg"));
       shell.executeStatement("DROP TABLE " + tableName);
     });
   }
@@ -288,8 +286,11 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
     AssertHelpers.assertThrows("Migrating a managed table to Iceberg should have thrown an exception.",
         IllegalArgumentException.class, "Converting non-external, temporary or transactional hive table to iceberg",
-        () -> shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
-            "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')"));
+        () -> shell.executeStatement("ALTER TABLE " + tableName + " convert to iceberg"));
+  }
+
+  private Table validateMigration(String tableName) throws TException, InterruptedException {
+    return validateMigration(tableName, null);
   }
 
   private Table validateMigration(String tableName, String tblProperties)
