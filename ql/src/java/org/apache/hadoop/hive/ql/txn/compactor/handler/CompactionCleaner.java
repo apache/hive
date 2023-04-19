@@ -212,7 +212,7 @@ class CompactionCleaner extends TaskHandler {
 
   private void cleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxn) throws Exception {
     ValidTxnList validTxnList =
-            TxnUtils.createValidTxnListForCompactionCleaner(txnHandler.getOpenTxns(), minOpenTxn);
+            TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxn, false);
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     /*
@@ -287,6 +287,7 @@ class CompactionCleaner extends TaskHandler {
     return " id=" + ci.id;
   }
 
+  @Override
   protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
           throws NoSuchTxnException, MetaException {
     ValidReaderWriteIdList validWriteIdList = super.getValidCleanerWriteIdList(ci, validTxnList);

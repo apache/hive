@@ -282,7 +282,7 @@ public abstract class CompactorTest {
 
   protected void acquireLock(Table t, Partition p, long txnId) throws Exception {
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
-            .setLock(LockType.EXCL_WRITE)
+            .setLock(LockType.SHARED_WRITE)
             .setOperationType(DataOperationType.INSERT)
             .setDbName(t.getDbName())
             .setTableName(t.getTableName())

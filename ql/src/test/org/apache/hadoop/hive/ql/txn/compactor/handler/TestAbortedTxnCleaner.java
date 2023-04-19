@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -275,5 +276,48 @@ public class TestAbortedTxnCleaner extends TestHandler {
     directories = getDirectories(conf, t, null);
     // The table is already compacted, so we must see 1 base delta
     Assert.assertEquals(1, directories.size());
+  }
+
+  @Test
+  public void testAbortedCleaningWithThreeTxnsWithDiffWriteIds() throws Exception {
+    String dbName = "default", tableName = "handler_unpart_writeid_test";
+    Table t = newTable(dbName, tableName, false);
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, null, 2, false);
+    addDeltaFileWithTxnComponents(t, null, 2, true);
+    addDeltaFileWithTxnComponents(t, null, 2, true);
+    addDeltaFileWithTxnComponents(t, null, 2, false);
+
+    long openTxnId1 = openTxn();
+    long openTxnId2 = openTxn();
+    long openTxnId3 = openTxn();
+    long writeId2 = ms.allocateTableWriteId(openTxnId2, t.getDbName(), t.getTableName());
+    long writeId3 = ms.allocateTableWriteId(openTxnId3, t.getDbName(), t.getTableName());
+    long writeId1 = ms.allocateTableWriteId(openTxnId1, t.getDbName(), t.getTableName());
+    assert writeId2 < writeId1 && writeId2 < writeId3;
+    acquireLock(t, null, openTxnId3);
+    acquireLock(t, null, openTxnId2);
+    acquireLock(t, null, openTxnId1);
+    addDeltaFile(t, null, writeId3, writeId3, 2);
+    addDeltaFile(t, null, writeId1, writeId1, 2);
+    addDeltaFile(t, null, writeId2, writeId2, 2);
+
+    ms.abortTxns(Collections.singletonList(openTxnId2));
+    ms.commitTxn(openTxnId3);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler mockedTaskHandler = Mockito.spy(new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover));
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.run();
+
+    List<Path> directories = getDirectories(conf, t, null);
+    Assert.assertEquals(5, directories.size());
   }
 }

@@ -475,15 +475,16 @@ class CompactionTxnHandler extends TxnHandler {
            Statement stmt = dbConn.createStatement()) {
         boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
         String sCheckAborted = "SELECT \"tc\".\"TC_DATABASE\", \"tc\".\"TC_TABLE\", \"tc\".\"TC_PARTITION\", " +
-            " \"tc\".\"MIN_TXN_START_TIME\", \"tc\".\"ABORTED_TXN_COUNT\", \"minOpenTxnId\".\"MIN_OPEN_TXNID\" FROM " +
+            " \"tc\".\"MIN_TXN_START_TIME\", \"tc\".\"ABORTED_TXN_COUNT\", \"minOpenWriteTxnId\".\"MIN_OPEN_WRITE_TXNID\" FROM " +
             " ( SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
             " MIN(\"TXN_STARTED\") AS \"MIN_TXN_START_TIME\", COUNT(*) AS \"ABORTED_TXN_COUNT\" FROM \"TXNS\", \"TXN_COMPONENTS\" " +
             " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.ABORTED +
             " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" " +
             (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold) + " ) \"tc\" " +
-            " LEFT JOIN ( SELECT MIN(\"TC_TXNID\") AS \"MIN_OPEN_TXNID\", \"TC_DATABASE\", \"TC_TABLE\" FROM \"TXNS\", \"TXN_COMPONENTS\" " +
-            " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\"=" + TxnStatus.OPEN + " GROUP BY \"TC_DATABASE\", \"TC_TABLE\" ) \"minOpenTxnId\" " +
-            " ON \"tc\".\"TC_DATABASE\" = \"minOpenTxnId\".\"TC_DATABASE\" AND \"tc\".\"TC_TABLE\" = \"minOpenTxnId\".\"TC_TABLE\"";
+            " LEFT JOIN ( SELECT MIN(\"TC_TXNID\") AS \"MIN_OPEN_WRITE_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXNS\", \"TXN_COMPONENTS\" " +
+            " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\"=" + TxnStatus.OPEN + " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" ) \"minOpenWriteTxnId\" " +
+            " ON \"tc\".\"TC_DATABASE\" = \"minOpenWriteTxnId\".\"TC_DATABASE\" AND \"tc\".\"TC_TABLE\" = \"minOpenWriteTxnId\".\"TC_TABLE\"" +
+            " AND (\"tc\".\"TC_PARTITION\" = \"minOpenWriteTxnId\".\"TC_PARTITION\" OR (\"tc\".\"TC_PARTITION\" IS NULL AND \"minOpenWriteTxnId\".\"TC_PARTITION\" IS NULL))";
 
         LOG.debug("Going to execute query <{}>", sCheckAborted);
         try (ResultSet rs = stmt.executeQuery(sCheckAborted)) {
@@ -497,7 +498,7 @@ class CompactionTxnHandler extends TxnHandler {
               info.dbname = rs.getString(1);
               info.tableName = rs.getString(2);
               info.partName = rs.getString(3);
-              // In this case, this field contains min open txn ID.
+              // In this case, this field contains min open write txn ID.
               info.txnId = rs.getLong(6);
               readyToCleanAborts.add(info);
             }

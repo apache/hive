@@ -86,7 +86,7 @@ class AbortedTxnCleaner extends TaskHandler {
     return Collections.emptyList();
   }
 
-  private void clean(CompactionInfo info, long minOpenTxn, boolean metricsEnabled) throws MetaException {
+  private void clean(CompactionInfo info, long minOpenWriteTxn, boolean metricsEnabled) throws MetaException, InterruptedException {
     LOG.info("Starting cleaning for {}", info);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_";
@@ -115,8 +115,10 @@ class AbortedTxnCleaner extends TaskHandler {
 
       String location = CompactorUtil.resolveStorageDescriptor(t,p).getLocation();
       info.runAs = TxnUtils.findUserToRunAs(location, t, conf);
-      abortCleanUsingAcidDir(info, location, minOpenTxn);
+      abortCleanUsingAcidDir(info, location, minOpenWriteTxn);
 
+    } catch (InterruptedException e) {
+      throw e;
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", info,
               e.getMessage());
@@ -128,9 +130,9 @@ class AbortedTxnCleaner extends TaskHandler {
     }
   }
 
-  private void abortCleanUsingAcidDir(CompactionInfo info, String location, long minOpenTxn) throws Exception {
+  private void abortCleanUsingAcidDir(CompactionInfo info, String location, long minOpenWriteTxn) throws Exception {
     ValidTxnList validTxnList =
-            TxnUtils.createValidTxnListForAbortedTxnCleaner(txnHandler.getOpenTxns(), minOpenTxn);
+            TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenWriteTxn, true);
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 
