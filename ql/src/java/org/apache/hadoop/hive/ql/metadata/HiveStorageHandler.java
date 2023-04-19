@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -242,6 +245,44 @@ public interface HiveStorageHandler extends Configurable {
    * @return true if the storage handler can supply the basic statistics
    */
   default boolean canProvideBasicStatistics() {
+    return false;
+  }
+
+  /**
+   * Return some col statistics (Lower bounds, Upper bounds, Null value counts, NaN, total counts) calculated by
+   * the underlying storage handler implementation.
+   * @param table
+   * @return A List of Column Statistics Objects, can be null
+   */
+  default List<ColumnStatisticsObj>getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return null;
+  }
+
+  /**
+   * Set column stats for non-native tables
+   * @param table
+   * @param colStats
+   * @return boolean
+   */
+  default boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table table,
+      List<ColumnStatistics> colStats) {
+    return false;
+  }
+
+  /**
+   * Check if the storage handler can provide col statistics.
+   * @param tbl
+   * @return true if the storage handler can supply the col statistics
+   */
+  default boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+    return false;
+  }
+
+  /**
+   * Check if the storage handler can set col statistics.
+   * @return true if the storage handler can set the col statistics
+   */
+  default boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
     return false;
   }
 
