@@ -334,6 +334,7 @@ POSTHOOK: Input: default@intermediate_n3_temp
 POSTHOOK: Input: default@intermediate_n3_temp@p=455
 POSTHOOK: Input: default@intermediate_n3_temp@p=456
 POSTHOOK: Input: default@intermediate_n3_temp@p=457
+POSTHOOK: Output: default@multi_partitioned_temp
 POSTHOOK: Output: default@multi_partitioned_temp@p=1
 POSTHOOK: Output: default@multi_partitioned_temp@p=455
 POSTHOOK: Output: default@multi_partitioned_temp@p=456
@@ -451,10 +452,11 @@ POSTHOOK: Input: default@intermediate_n3_temp
 POSTHOOK: Input: default@intermediate_n3_temp@p=455
 POSTHOOK: Input: default@intermediate_n3_temp@p=456
 POSTHOOK: Input: default@intermediate_n3_temp@p=457
+POSTHOOK: Output: default@multi_partitioned_temp
 POSTHOOK: Output: default@multi_partitioned_temp@p=1
 POSTHOOK: Lineage: multi_partitioned_temp PARTITION(p=1).key SIMPLE [(intermediate_n3_temp)intermediate_n3_temp.FieldSchema(name:p, type:int, comment:null), ]
-POSTHOOK: Lineage: multi_partitioned_temp PARTITION(p=1).key2 SIMPLE [(intermediate_n3_temp)intermediate_n3_temp.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi_partitioned_temp PARTITION(p=1).key SIMPLE [(intermediate_n3_temp)intermediate_n3_temp.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned_temp PARTITION(p=1).key2 SIMPLE [(intermediate_n3_temp)intermediate_n3_temp.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi_partitioned_temp PARTITION(p=1).key2 SIMPLE [(intermediate_n3_temp)intermediate_n3_temp.FieldSchema(name:p, type:int, comment:null), ]
 PREHOOK: query: select key, key2, p from multi_partitioned_temp order by key, key2, p
 PREHOOK: type: QUERY
