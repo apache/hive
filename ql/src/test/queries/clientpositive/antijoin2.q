@@ -73,3 +73,28 @@ and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_nu
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
+
+
+-- Test MergeJoin -> MapJoin pattern
+
+set hive.merge.nway.joins=false;
+set hive.vectorized.execution.enabled=false;
+set hive.auto.convert.join=true;
+set hive.auto.convert.anti.join=true;
+
+alter table tt1 update statistics set ('numRows'='10000000');
+alter table tt2 update statistics set ('numRows'='10000000');
+alter table tt3 update statistics set ('numRows'='2');
+
+explain
+select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
+explain cbo
+select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
+select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
+where ws1.ws_order_number = ws2.ws_order_number
+and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number);
+
