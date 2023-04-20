@@ -35,6 +35,11 @@
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- intra-project -->
     <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>${commons-httpclient.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-core</artifactId>
       <version>${project.version}</version>

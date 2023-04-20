@@ -114,24 +114,5 @@
       <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.pig</groupId>
-      <artifactId>pig</artifactId>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>hsqldb</groupId>
-          <artifactId>hsqldb</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>tomcat</groupId>
-          <artifactId>jasper-compiler</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>tomcat</groupId>
-          <artifactId>jasper-runtime</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
   </dependencies>
 </project>

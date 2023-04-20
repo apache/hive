@@ -28,9 +28,6 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatUtil;
-import org.apache.pig.ExecType;
-import org.apache.pig.PigServer;
-import org.apache.pig.backend.executionengine.ExecException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,8 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * Simplify writing HCatalog tests that require a HiveMetaStore.
@@ -98,46 +93,5 @@ public abstract class HCatBaseTest {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-  }
-
-  protected void logAndRegister(PigServer server, String query) throws IOException {
-    logAndRegister(server, query, 1);
-  }
-  protected void logAndRegister(PigServer server, String query, int lineNumber) throws IOException {
-    assert lineNumber > 0 : "(lineNumber > 0) is false";
-    LOG.info("Registering pig query: " + query);
-    server.registerQuery(query, lineNumber);
-  }
-
-  public static PigServer createPigServer(boolean stopOnFailure) throws ExecException {
-    return createPigServer(stopOnFailure, new Properties());
-  }
-
-  /**
-   * creates PigServer in LOCAL mode.
-   * http://pig.apache.org/docs/r0.12.0/perf.html#error-handling
-   * @param stopOnFailure equivalent of "-stop_on_failure" command line arg, setting to 'true' makes
-   *                      debugging easier
-   */
-  public static PigServer createPigServer(boolean stopOnFailure, Properties p) throws
-          ExecException {
-    Path workDir = new Path(System.getProperty("test.tmp.dir",
-        "target" + File.separator + "test" + File.separator + "tmp"));
-    String testId = "HCatBaseTest_" + System.currentTimeMillis();
-    p.put("mapred.local.dir", workDir + File.separator + testId
-        + File.separator + "mapred" + File.separator + "local");
-    p.put("mapred.system.dir", workDir + File.separator + testId
-        + File.separator + "mapred" + File.separator + "system");
-    p.put("mapreduce.jobtracker.staging.root.dir", workDir + File.separator + testId
-        + File.separator + "mapred" + File.separator + "staging");
-    p.put("mapred.temp.dir", workDir + File.separator + testId
-        + File.separator + "mapred" + File.separator + "temp");
-    p.put("pig.temp.dir", workDir + File.separator + testId
-        + File.separator + "pig" + File.separator + "temp");
-    if(stopOnFailure) {
-      p.put("stop.on.failure", Boolean.TRUE.toString());
-      return new PigServer(ExecType.LOCAL, p);
-    }
-    return new PigServer(ExecType.LOCAL, p);
   }
 }
