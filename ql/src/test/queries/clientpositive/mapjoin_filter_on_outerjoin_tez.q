@@ -45,3 +45,35 @@ SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.ke
 explain
 SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src2.key < 10);
 SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src2.key < 10);
+
+
+-- Test FullOuterJoin with filters on both tables
+
+set hive.optimize.dynamic.partition.hashjoin=true;
+DROP TABLE IF EXISTS c;
+CREATE TABLE c (key int, value int);
+INSERT INTO c VALUES (1, 0), (2, 0);
+DROP TABLE IF EXISTS d;
+CREATE TABLE d (key int, value int);
+INSERT INTO d VALUES (1, 1), (2, 1);
+
+-- TOOD: Currently VectorMapJoin returns wrong result.
+-- set hive.auto.convert.join=true;
+-- set hive.vectorized.execution.enabled=true;
+
+-- explain
+-- SELECT * from c FULL OUTER JOIN d on c.key = d.key AND c.key > 0 AND d.key > 1;
+-- SELECT * from c FULL OUTER JOIN d on c.key = d.key AND c.key > 0 AND d.key > 1;
+
+set hive.auto.convert.join=true;
+set hive.vectorized.execution.enabled=false;
+
+explain
+SELECT * from c FULL OUTER JOIN d on c.key = d.key AND c.key > 0 AND d.key > 1;
+SELECT * from c FULL OUTER JOIN d on c.key = d.key AND c.key > 0 AND d.key > 1;
+
+set hive.auto.convert.join=false;
+
+explain
+SELECT * from c FULL OUTER JOIN d on c.key = d.key AND c.key > 0 AND d.key > 1;
+SELECT * from c FULL OUTER JOIN d on c.key = d.key AND c.key > 0 AND d.key > 1;

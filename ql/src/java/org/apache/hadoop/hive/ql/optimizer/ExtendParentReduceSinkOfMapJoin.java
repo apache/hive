@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.udf.UDFToShort;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMultiply;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -53,14 +54,15 @@ public class ExtendParentReduceSinkOfMapJoin implements SemanticNodeProcessor {
   private final TypeInfo shortType = TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME);
 
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-      Object... nodeOutputs) throws SemanticException {
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+      throws SemanticException {
     MapJoinOperator mapJoinOp = (MapJoinOperator) nd;
     MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
 
     if (mapJoinDesc.getFilterMap() != null) {
       int[][] filterMap = mapJoinDesc.getFilterMap();
 
+      // 1. Extend ReduceSinkoperator if it's output is filtered by MapJoinOperator.
       for (byte pos = 0; pos < filterMap.length; pos++) {
         if (pos == mapJoinDesc.getPosBigTable() || filterMap[pos] == null) {
           continue;
@@ -91,8 +93,8 @@ public class ExtendParentReduceSinkOfMapJoin implements SemanticNodeProcessor {
 
         pRsConf.getValueCols().add(mapSideFilterTagExpr);
         pRsConf.getOutputValueColumnNames().add(filterColumnName);
-        pRsConf.getColumnExprMap().put(
-            Utilities.ReduceField.VALUE + "." + filterColumnName, mapSideFilterTagExpr);
+        pRsConf.getColumnExprMap()
+            .put(Utilities.ReduceField.VALUE + "." + filterColumnName, mapSideFilterTagExpr);
 
         ColumnInfo filterTagColumnInfo =
             new ColumnInfo(Utilities.ReduceField.VALUE + "." + filterColumnName, shortType, "", false);
@@ -103,6 +105,31 @@ public class ExtendParentReduceSinkOfMapJoin implements SemanticNodeProcessor {
                 PlanUtils.getFieldSchemasFromColumnList(pRsConf.getValueCols(), "_col"));
         pRsConf.setValueSerializeInfo(newTableDesc);
       }
+
+      // 2. Update MapJoinOperator's valueFilteredTableDescs.
+      // Unlike HashTableSinkOperator used in MR engine, Tez engine directly passes rows from RS to MapJoin.
+      // Therefore, RS's writer and MapJoin's reader should have the same TableDesc. We create valueTableDesc
+      // here again because it can be different from RS's valueSerializeInfo due to ColumnPruner.
+      List<TableDesc> newMapJoinValueFilteredTableDescs = new ArrayList<>();
+      for (byte pos = 0; pos < mapJoinOp.getParentOperators().size(); pos++) {
+        TableDesc tableDesc;
+
+        if (pos == mapJoinDesc.getPosBigTable() || filterMap[pos] == null) {
+          // We did not change corresponding parent operator. Use the original tableDesc.
+          tableDesc = mapJoinDesc.getValueFilteredTblDescs().get(pos);
+        } else {
+          // Create a new TableDesc based on corresponding parent RSOperator.
+          ReduceSinkOperator parent = (ReduceSinkOperator) mapJoinOp.getParentOperators().get(pos);
+          ReduceSinkDesc pRsConf = parent.getConf();
+
+          tableDesc =
+              PlanUtils.getMapJoinValueTableDesc(
+                  PlanUtils.getFieldSchemasFromColumnList(pRsConf.getValueCols(), "mapjoinvalue"));
+        }
+
+        newMapJoinValueFilteredTableDescs.add(tableDesc);
+      }
+      mapJoinDesc.setValueFilteredTblDescs(newMapJoinValueFilteredTableDescs);
     }
 
     return null;
@@ -153,12 +180,18 @@ public class ExtendParentReduceSinkOfMapJoin implements SemanticNodeProcessor {
   private ExprNodeDesc generateFilterTagMask(byte tag, ExprNodeDesc condition) {
     ExprNodeDesc filterMaskValue = new ExprNodeConstantDesc(shortType, (short) (1 << tag));
 
+    List<ExprNodeDesc> negateArg = new ArrayList<>(1);
+    negateArg.add(condition);
+    ExprNodeDesc negate = new ExprNodeGenericFuncDesc(
+        TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME),
+        new GenericUDFOPNot(), negateArg);
+
     GenericUDFBridge toShort = new GenericUDFBridge();
     toShort.setUdfClassName(UDFToShort.class.getName());
     toShort.setUdfName(UDFToShort.class.getSimpleName());
 
     List<ExprNodeDesc> toShortArg = new ArrayList<>(1);
-    toShortArg.add(condition);
+    toShortArg.add(negate);
     ExprNodeDesc conditionAsShort = new ExprNodeGenericFuncDesc(shortType, toShort, toShortArg);
 
     List<ExprNodeDesc> multiplyArgs = new ArrayList<>(2);
@@ -169,3 +202,4 @@ public class ExtendParentReduceSinkOfMapJoin implements SemanticNodeProcessor {
     return multiply;
   }
 }
+
