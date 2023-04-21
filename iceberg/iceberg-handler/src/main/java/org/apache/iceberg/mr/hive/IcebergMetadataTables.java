@@ -21,7 +21,8 @@ package org.apache.iceberg.mr.hive;
 
 public enum IcebergMetadataTables {
 
-  ENTRIES, FILES, HISTORY, SNAPSHOTS, MANIFESTS, PARTITIONS, ALL_DATA_FILES, ALL_MANIFESTS, ALL_ENTRIES;
+  ENTRIES, FILES, HISTORY, SNAPSHOTS, MANIFESTS, PARTITIONS, ALL_DATA_FILES, ALL_MANIFESTS, ALL_ENTRIES,
+  DATA_FILES, DELETE_FILES, METADATA_LOG_ENTRIES, REFS, ALL_DELETE_FILES, ALL_FILES;
 
   public static boolean isValidMetaTable(String metaTableName) {
     for (IcebergMetadataTables metaTable : IcebergMetadataTables.values()) {

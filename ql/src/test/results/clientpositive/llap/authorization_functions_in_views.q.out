@@ -134,11 +134,11 @@ POSTHOOK: Input: default@view_using_udf
 PREHOOK: query: drop function test.UDF_Upper
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: database:test
-PREHOOK: Output: test.UDF_Upper
+PREHOOK: Output: test.udf_upper
 POSTHOOK: query: drop function test.UDF_Upper
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:test
-POSTHOOK: Output: test.UDF_Upper
+POSTHOOK: Output: test.udf_upper
 PREHOOK: query: drop database test
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test

@@ -28,6 +28,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -629,8 +630,9 @@ public class WarehouseInstance implements Closeable {
       Path localPath = new Path(uri);
       try {
         FileSystem localFs = localPath.getFileSystem(hiveConf);
+        DataCopyStatistics copyStatistics = new DataCopyStatistics();
         boolean success = FileUtils
-            .copy(localFs, localPath, fs, destinationBasePath, false, false, hiveConf);
+            .copy(localFs, localPath, fs, destinationBasePath, false, false, hiveConf, copyStatistics);
         if (!success) {
           fail("FileUtils could not copy local uri " + localPath.toString() + " to hdfs");
         }

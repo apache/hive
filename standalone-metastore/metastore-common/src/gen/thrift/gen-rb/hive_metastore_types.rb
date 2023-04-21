@@ -172,8 +172,9 @@ module TxnType
   COMPACTION = 3
   MATER_VIEW_REBUILD = 4
   SOFT_DELETE = 5
-  VALUE_MAP = {0 => "DEFAULT", 1 => "REPL_CREATED", 2 => "READ_ONLY", 3 => "COMPACTION", 4 => "MATER_VIEW_REBUILD", 5 => "SOFT_DELETE"}
-  VALID_VALUES = Set.new([DEFAULT, REPL_CREATED, READ_ONLY, COMPACTION, MATER_VIEW_REBUILD, SOFT_DELETE]).freeze
+  REBALANCE_COMPACTION = 6
+  VALUE_MAP = {0 => "DEFAULT", 1 => "REPL_CREATED", 2 => "READ_ONLY", 3 => "COMPACTION", 4 => "MATER_VIEW_REBUILD", 5 => "SOFT_DELETE", 6 => "REBALANCE_COMPACTION"}
+  VALID_VALUES = Set.new([DEFAULT, REPL_CREATED, READ_ONLY, COMPACTION, MATER_VIEW_REBUILD, SOFT_DELETE, REBALANCE_COMPACTION]).freeze
 end
 
 module GetTablesExtRequestFields
@@ -4225,6 +4226,7 @@ class LockRequest
   AGENTINFO = 5
   ZEROWAITREADENABLED = 6
   EXCLUSIVECTAS = 7
+  LOCKLESSREADSENABLED = 8
 
   FIELDS = {
     COMPONENT => {:type => ::Thrift::Types::LIST, :name => 'component', :element => {:type => ::Thrift::Types::STRUCT, :class => ::LockComponent}},
@@ -4233,7 +4235,8 @@ class LockRequest
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
     AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true},
     ZEROWAITREADENABLED => {:type => ::Thrift::Types::BOOL, :name => 'zeroWaitReadEnabled', :default => false, :optional => true},
-    EXCLUSIVECTAS => {:type => ::Thrift::Types::BOOL, :name => 'exclusiveCTAS', :default => false, :optional => true}
+    EXCLUSIVECTAS => {:type => ::Thrift::Types::BOOL, :name => 'exclusiveCTAS', :default => false, :optional => true},
+    LOCKLESSREADSENABLED => {:type => ::Thrift::Types::BOOL, :name => 'locklessReadsEnabled', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4479,6 +4482,7 @@ class CompactionRequest
   INITIATORVERSION = 8
   POOLNAME = 9
   NUMBEROFBUCKETS = 10
+  ORDERBYCLAUSE = 11
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4490,7 +4494,8 @@ class CompactionRequest
     INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
     INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true},
     POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true},
-    NUMBEROFBUCKETS => {:type => ::Thrift::Types::I32, :name => 'numberOfBuckets', :optional => true}
+    NUMBEROFBUCKETS => {:type => ::Thrift::Types::I32, :name => 'numberOfBuckets', :optional => true},
+    ORDERBYCLAUSE => {:type => ::Thrift::Types::STRING, :name => 'orderByClause', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4527,6 +4532,7 @@ class CompactionInfoStruct
   RETRYRETENTION = 16
   POOLNAME = 17
   NUMBEROFBUCKETS = 18
+  ORDERBYCLAUSE = 19
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -4546,7 +4552,8 @@ class CompactionInfoStruct
     ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true},
     RETRYRETENTION => {:type => ::Thrift::Types::I64, :name => 'retryRetention', :optional => true},
     POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolname', :optional => true},
-    NUMBEROFBUCKETS => {:type => ::Thrift::Types::I32, :name => 'numberOfBuckets', :optional => true}
+    NUMBEROFBUCKETS => {:type => ::Thrift::Types::I32, :name => 'numberOfBuckets', :optional => true},
+    ORDERBYCLAUSE => {:type => ::Thrift::Types::STRING, :name => 'orderByClause', :optional => true}
   }
 
   def struct_fields; FIELDS; end

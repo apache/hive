@@ -42,6 +42,7 @@ public class InputFormatConfig {
   public static final String IN_MEMORY_DATA_MODEL = "iceberg.mr.in.memory.data.model";
   public static final String READ_SCHEMA = "iceberg.mr.read.schema";
   public static final String SNAPSHOT_ID = "iceberg.mr.snapshot.id";
+  public static final String SNAPSHOT_ID_INTERVAL_FROM = "iceberg.mr.snapshot.id.interval.from";
   public static final String SPLIT_SIZE = "iceberg.mr.split.size";
   public static final String SCHEMA_AUTO_CONVERSION = "iceberg.mr.schema.auto.conversion";
   public static final String TABLE_IDENTIFIER = "iceberg.mr.table.identifier";
@@ -106,6 +107,7 @@ public class InputFormatConfig {
   public static final String CATALOG_TYPE_TEMPLATE = "iceberg.catalog.%s.type";
   public static final String CATALOG_WAREHOUSE_TEMPLATE = "iceberg.catalog.%s.warehouse";
   public static final String CATALOG_CLASS_TEMPLATE = "iceberg.catalog.%s.catalog-impl";
+  public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
 
   public enum InMemoryDataModel {
     PIG,

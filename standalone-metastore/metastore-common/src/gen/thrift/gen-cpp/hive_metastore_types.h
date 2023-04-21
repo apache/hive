@@ -300,7 +300,8 @@ struct TxnType {
     READ_ONLY = 2,
     COMPACTION = 3,
     MATER_VIEW_REBUILD = 4,
-    SOFT_DELETE = 5
+    SOFT_DELETE = 5,
+    REBALANCE_COMPACTION = 6
   };
 };
 
@@ -9965,11 +9966,12 @@ void swap(LockComponent &a, LockComponent &b);
 std::ostream& operator<<(std::ostream& out, const LockComponent& obj);
 
 typedef struct _LockRequest__isset {
-  _LockRequest__isset() : txnid(false), agentInfo(true), zeroWaitReadEnabled(true), exclusiveCTAS(true) {}
+  _LockRequest__isset() : txnid(false), agentInfo(true), zeroWaitReadEnabled(true), exclusiveCTAS(true), locklessReadsEnabled(true) {}
   bool txnid :1;
   bool agentInfo :1;
   bool zeroWaitReadEnabled :1;
   bool exclusiveCTAS :1;
+  bool locklessReadsEnabled :1;
 } _LockRequest__isset;
 
 class LockRequest : public virtual ::apache::thrift::TBase {
@@ -9982,7 +9984,8 @@ class LockRequest : public virtual ::apache::thrift::TBase {
                   hostname(),
                   agentInfo("Unknown"),
                   zeroWaitReadEnabled(false),
-                  exclusiveCTAS(false) {
+                  exclusiveCTAS(false),
+                  locklessReadsEnabled(false) {
   }
 
   virtual ~LockRequest() noexcept;
@@ -9993,6 +9996,7 @@ class LockRequest : public virtual ::apache::thrift::TBase {
   std::string agentInfo;
   bool zeroWaitReadEnabled;
   bool exclusiveCTAS;
+  bool locklessReadsEnabled;
 
   _LockRequest__isset __isset;
 
@@ -10009,6 +10013,8 @@ class LockRequest : public virtual ::apache::thrift::TBase {
   void __set_zeroWaitReadEnabled(const bool val);
 
   void __set_exclusiveCTAS(const bool val);
+
+  void __set_locklessReadsEnabled(const bool val);
 
   bool operator == (const LockRequest & rhs) const
   {
@@ -10033,6 +10039,10 @@ class LockRequest : public virtual ::apache::thrift::TBase {
     if (__isset.exclusiveCTAS != rhs.__isset.exclusiveCTAS)
       return false;
     else if (__isset.exclusiveCTAS && !(exclusiveCTAS == rhs.exclusiveCTAS))
+      return false;
+    if (__isset.locklessReadsEnabled != rhs.__isset.locklessReadsEnabled)
+      return false;
+    else if (__isset.locklessReadsEnabled && !(locklessReadsEnabled == rhs.locklessReadsEnabled))
       return false;
     return true;
   }
@@ -10639,7 +10649,7 @@ void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b);
 std::ostream& operator<<(std::ostream& out, const HeartbeatTxnRangeResponse& obj);
 
 typedef struct _CompactionRequest__isset {
-  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false), numberOfBuckets(false) {}
+  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false), numberOfBuckets(false), orderByClause(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -10647,6 +10657,7 @@ typedef struct _CompactionRequest__isset {
   bool initiatorVersion :1;
   bool poolName :1;
   bool numberOfBuckets :1;
+  bool orderByClause :1;
 } _CompactionRequest__isset;
 
 class CompactionRequest : public virtual ::apache::thrift::TBase {
@@ -10663,7 +10674,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
                       initiatorId(),
                       initiatorVersion(),
                       poolName(),
-                      numberOfBuckets(0) {
+                      numberOfBuckets(0),
+                      orderByClause() {
   }
 
   virtual ~CompactionRequest() noexcept;
@@ -10681,6 +10693,7 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   std::string initiatorVersion;
   std::string poolName;
   int32_t numberOfBuckets;
+  std::string orderByClause;
 
   _CompactionRequest__isset __isset;
 
@@ -10703,6 +10716,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   void __set_poolName(const std::string& val);
 
   void __set_numberOfBuckets(const int32_t val);
+
+  void __set_orderByClause(const std::string& val);
 
   bool operator == (const CompactionRequest & rhs) const
   {
@@ -10740,6 +10755,10 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.numberOfBuckets && !(numberOfBuckets == rhs.numberOfBuckets))
       return false;
+    if (__isset.orderByClause != rhs.__isset.orderByClause)
+      return false;
+    else if (__isset.orderByClause && !(orderByClause == rhs.orderByClause))
+      return false;
     return true;
   }
   bool operator != (const CompactionRequest &rhs) const {
@@ -10759,7 +10778,7 @@ void swap(CompactionRequest &a, CompactionRequest &b);
 std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj);
 
 typedef struct _CompactionInfoStruct__isset {
-  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false), numberOfBuckets(false) {}
+  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false), numberOfBuckets(false), orderByClause(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -10774,6 +10793,7 @@ typedef struct _CompactionInfoStruct__isset {
   bool retryRetention :1;
   bool poolname :1;
   bool numberOfBuckets :1;
+  bool orderByClause :1;
 } _CompactionInfoStruct__isset;
 
 class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
@@ -10799,7 +10819,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
                          enqueueTime(0),
                          retryRetention(0),
                          poolname(),
-                         numberOfBuckets(0) {
+                         numberOfBuckets(0),
+                         orderByClause() {
   }
 
   virtual ~CompactionInfoStruct() noexcept;
@@ -10825,6 +10846,7 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   int64_t retryRetention;
   std::string poolname;
   int32_t numberOfBuckets;
+  std::string orderByClause;
 
   _CompactionInfoStruct__isset __isset;
 
@@ -10863,6 +10885,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   void __set_poolname(const std::string& val);
 
   void __set_numberOfBuckets(const int32_t val);
+
+  void __set_orderByClause(const std::string& val);
 
   bool operator == (const CompactionInfoStruct & rhs) const
   {
@@ -10929,6 +10953,10 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
     if (__isset.numberOfBuckets != rhs.__isset.numberOfBuckets)
       return false;
     else if (__isset.numberOfBuckets && !(numberOfBuckets == rhs.numberOfBuckets))
+      return false;
+    if (__isset.orderByClause != rhs.__isset.orderByClause)
+      return false;
+    else if (__isset.orderByClause && !(orderByClause == rhs.orderByClause))
       return false;
     return true;
   }

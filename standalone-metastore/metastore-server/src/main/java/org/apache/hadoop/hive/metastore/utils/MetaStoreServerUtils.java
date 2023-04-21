@@ -75,6 +75,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
@@ -89,6 +91,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
@@ -1396,6 +1399,43 @@ public class MetaStoreServerUtils {
     }
   }
 
+  public static List<Partition> getPartitionsByProjectSpec(IMetaStoreClient msc, GetPartitionsRequest request)
+      throws MetastoreException {
+    try {
+      GetPartitionsResponse response = msc.getPartitionsWithSpecs(request);
+      List<PartitionSpec> partitionSpecList = response.getPartitionSpec();
+      List<Partition> result = new ArrayList<>();
+      for (PartitionSpec spec : partitionSpecList) {
+        if (spec.getPartitionList() != null && spec.getPartitionList().getPartitions() != null) {
+          spec.getPartitionList().getPartitions().forEach(partition -> {
+            partition.setCatName(spec.getCatName());
+            partition.setDbName(spec.getDbName());
+            partition.setTableName(spec.getTableName());
+            result.add(partition);
+          });
+        }
+        PartitionSpecWithSharedSD pSpecWithSharedSD = spec.getSharedSDPartitionSpec();
+        if (pSpecWithSharedSD == null) {
+          continue;
+        }
+        List<PartitionWithoutSD> withoutSDList = pSpecWithSharedSD.getPartitions();
+        StorageDescriptor descriptor = pSpecWithSharedSD.getSd();
+        if (withoutSDList != null) {
+          for (PartitionWithoutSD psd : withoutSDList) {
+            StorageDescriptor newSD = new StorageDescriptor(descriptor);
+            Partition partition = new Partition(psd.getValues(), spec.getDbName(), spec.getTableName(),
+                psd.getCreateTime(), psd.getLastAccessTime(), newSD, psd.getParameters());
+            partition.getSd().setLocation(newSD.getLocation() + psd.getRelativePath());
+            result.add(partition);
+          }
+        }
+      }
+      return result;
+    } catch (Exception e) {
+      throw new MetastoreException(e);
+    }
+  }
+
   public static void getPartitionListByFilterExp(IMetaStoreClient msc, Table table, byte[] filterExp,
                                                  String defaultPartName, List<Partition> results)
       throws MetastoreException {
@@ -1616,5 +1656,9 @@ public class MetaStoreServerUtils {
       return cols.stream().map(FieldSchema::getName).map(String::toLowerCase).collect(Collectors.toList());
     }
     return null;
+  }
+
+  public static boolean isCompactionTxn(TxnType txnType) {
+    return TxnType.COMPACTION.equals(txnType) || TxnType.REBALANCE_COMPACTION.equals(txnType);
   }
 }

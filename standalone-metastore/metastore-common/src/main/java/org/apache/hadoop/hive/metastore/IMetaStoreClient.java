@@ -43,7 +43,7 @@ import org.apache.thrift.TException;
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
-public interface IMetaStoreClient {
+public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Returns whether current client is compatible with conf argument or not
@@ -3079,6 +3079,13 @@ public interface IMetaStoreClient {
           throws TException;
 
   /**
+   * Persists minOpenWriteId list to identify obsolete directories eligible for cleanup
+   * @param txnId transaction identifier
+   * @param writeIds list of minOpenWriteId
+   */
+  void addWriteIdsToMinHistory(long txnId, Map<String, Long> writeIds) throws TException;
+    
+  /**
    * Initiate a transaction.
    * @param user User who is opening this transaction.  This is the Hive user,
    *             not necessarily the OS user.  It is assumed that this user has already been
@@ -3581,6 +3588,11 @@ public interface IMetaStoreClient {
    */
   void insertTable(Table table, boolean overwrite) throws MetaException;
 
+  /**
+   * Checks if there is a conflicting transaction
+   * @param txnId
+   * @return latest txnId in conflict
+   */
   long getLatestTxnIdInConflict(long txnId) throws TException;
 
   /**

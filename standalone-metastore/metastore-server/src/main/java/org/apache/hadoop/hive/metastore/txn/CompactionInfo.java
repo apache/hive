@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -60,10 +62,12 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public boolean hasOldAbort = false;
   public long retryRetention = 0;
   public long nextTxnId = 0;
+  public long minOpenWriteId = -1;
   public long txnId = 0;
   public long commitTime = 0;
   public String poolName;
   public int numberOfBuckets = 0;
+  public String orderByClause;
 
   /**
    * The highest write id that the compaction job will pay attention to.
@@ -147,31 +151,35 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public int compareTo(CompactionInfo o) {
     return getFullPartitionName().compareTo(o.getFullPartitionName());
   }
+
   public String toString() {
-    return "id:" + id + "," +
-      "dbname:" + dbname + "," +
-      "tableName:" + tableName + "," +
-      "partName:" + partName + "," +
-      "state:" + state + "," +
-      "type:" + type + "," +
-      "enqueueTime:" + enqueueTime + "," +
-      "commitTime:" + commitTime + "," +
-      "start:" + start + "," +
-      "properties:" + properties + "," +
-      "runAs:" + runAs + "," +
-      "tooManyAborts:" + tooManyAborts + "," +
-      "hasOldAbort:" + hasOldAbort + "," +
-      "highestWriteId:" + highestWriteId + "," +
-      "errorMessage:" + errorMessage + "," +
-      "workerId: " + workerId + "," +
-      "workerVersion: " + workerVersion + "," +
-      "initiatorId: " + initiatorId + "," +
-      "initiatorVersion: " + initiatorVersion + "," +
-      "retryRetention" + retryRetention + "," +
-      "txnId" + txnId + "," +
-      "nextTxnId" + nextTxnId + "," +
-      "poolname" + poolName + "," +
-      "numberOfBuckets" + numberOfBuckets;
+    return new ToStringBuilder(this)
+        .append("id", id)
+        .append("dbname", dbname)
+        .append("tableName", tableName)
+        .append("partName", partName)
+        .append("state", state)
+        .append("type", type)
+        .append("enqueueTime", enqueueTime)
+        .append("commitTime", commitTime)
+        .append("start", start)
+        .append("properties", properties)
+        .append("runAs", runAs)
+        .append("tooManyAborts", tooManyAborts)
+        .append("hasOldAbort", hasOldAbort)
+        .append("highestWriteId", highestWriteId)
+        .append("errorMessage", errorMessage)
+        .append("workerId", workerId)
+        .append("workerVersion", workerVersion)
+        .append("initiatorId", initiatorId)
+        .append("initiatorVersion", initiatorVersion)
+        .append("retryRetention", retryRetention)
+        .append("txnId", txnId)
+        .append("nextTxnId", nextTxnId)
+        .append("poolName", poolName)
+        .append("numberOfBuckets", numberOfBuckets)
+        .append("orderByClause", orderByClause)
+        .build();
   }
 
   @Override
@@ -224,6 +232,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.commitTime = rs.getLong(22);
     fullCi.poolName = rs.getString(23);
     fullCi.numberOfBuckets = rs.getInt(24);
+    fullCi.orderByClause = rs.getString(25);
     return fullCi;
   }
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
@@ -251,6 +260,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setLong(22, ci.commitTime);
     pStmt.setString(23, ci.poolName);
     pStmt.setInt(24, ci.numberOfBuckets);
+    pStmt.setString(25, ci.orderByClause);
   }
 
   public static CompactionInfo compactionStructToInfo(CompactionInfoStruct cr) {
@@ -294,6 +304,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     if (cr.isSetNumberOfBuckets()) {
       ci.numberOfBuckets = cr.getNumberOfBuckets();
     }
+    if (cr.isSetOrderByClause()) {
+      ci.orderByClause = cr.getOrderByClause();
+    }
     return ci;
   }
 
@@ -316,6 +329,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setRetryRetention(ci.retryRetention);
     cr.setPoolname(ci.poolName);
     cr.setNumberOfBuckets(ci.numberOfBuckets);
+    cr.setOrderByClause(ci.orderByClause);
     return cr;
   }
 

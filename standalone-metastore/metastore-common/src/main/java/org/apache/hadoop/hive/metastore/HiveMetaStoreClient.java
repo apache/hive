@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -621,6 +622,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return transport;
   }
 
+  private Map<String, String> getAdditionalHeaders() {
+    Map<String, String> headers = new HashMap<>();
+    String keyValuePairs = MetastoreConf.getVar(conf,
+        ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS);
+    try {
+      String[] headerKeyValues = keyValuePairs.split(",");
+      for (String header : headerKeyValues) {
+        String[] parts = header.split("=");
+        headers.put(parts[0].trim(), parts[1].trim());
+      }
+    } catch (Exception ex) {
+      LOG.warn("Could not parse the headers provided in "
+          + ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS, ex);
+    }
+    return headers;
+  }
+
   /*
   Creates a THttpClient if HTTP mode is enabled. If Client auth mode is set to JWT,
   then the method fetches JWT from environment variable: HMS_JWT and sets in auth
@@ -629,10 +647,47 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private THttpClient createHttpClient(URI store, boolean useSSL) throws MetaException,
       TTransportException {
     String path = MetaStoreUtils.getHttpPath(MetastoreConf.getVar(conf, ConfVars.THRIFT_HTTP_PATH));
-    String httpUrl = (useSSL ? "https://" : "http://") + store.getHost() + ":" + store.getPort() + path;
+    String urlScheme;
+    if (useSSL || Objects.equals(store.getScheme(), "https")) {
+      urlScheme = "https://";
+    } else {
+      urlScheme = "http://";
+    }
+    String httpUrl = urlScheme + store.getHost() + ":" + store.getPort() + path;
 
+    HttpClientBuilder httpClientBuilder = createHttpClientBuilder();
+    THttpClient tHttpClient;
+    try {
+      if (useSSL) {
+        String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
+        if (trustStorePath.isEmpty()) {
+          throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH + " Not configured for SSL connection");
+        }
+        String trustStorePassword = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
+        String trustStoreType = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
+        String trustStoreAlgorithm = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+        tHttpClient =
+            SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword, trustStoreAlgorithm,
+                trustStoreType, httpClientBuilder);
+      } else {
+        tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
+      }
+    } catch (Exception e) {
+      if (e instanceof TTransportException) {
+        throw (TTransportException) e;
+      } else {
+        throw new MetaException("Failed to create http transport client to url: " + httpUrl + ". Error:" + e);
+      }
+    }
+    LOG.debug("Created thrift http client for URL: " + httpUrl);
+    return configureThriftMaxMessageSize(tHttpClient);
+  }
+
+  @VisibleForTesting
+  protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
     String authType = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
+    Map<String, String> additionalHeaders = getAdditionalHeaders();
     if (authType.equalsIgnoreCase("jwt")) {
       // fetch JWT token from environment and set it in Auth Header in HTTP request
       String jwtToken = System.getenv("HMS_JWT");
@@ -646,6 +701,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         public void process(HttpRequest httpRequest, HttpContext httpContext)
             throws HttpException, IOException {
           httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
+          for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+            httpRequest.addHeader(entry.getKey(), entry.getValue());
+          }
         }
       });
     } else {
@@ -663,38 +721,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         public void process(HttpRequest httpRequest, HttpContext httpContext)
             throws HttpException, IOException {
           httpRequest.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
+          for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+            httpRequest.addHeader(entry.getKey(), entry.getValue());
+          }
         }
       });
     }
-    THttpClient tHttpClient;
-    try {
-      if (useSSL) {
-        String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
-        if (trustStorePath.isEmpty()) {
-          throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH
-              + " Not configured for SSL connection");
-        }
-        String trustStorePassword =
-            MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
-        String trustStoreType =
-            MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
-        String trustStoreAlgorithm =
-            MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
-        tHttpClient = SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword,
-            trustStoreAlgorithm, trustStoreType, httpClientBuilder);
-      }  else {
-        tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
-      }
-    } catch (Exception e) {
-      if (e instanceof TTransportException) {
-        throw (TTransportException)e;
-      } else {
-        throw new MetaException("Failed to create http transport client to url: " + httpUrl
-            + ". Error:" + e);
-      }
-    }
-    LOG.debug("Created thrift http client for URL: " + httpUrl);
-    return configureThriftMaxMessageSize(tHttpClient);
+    return httpClientBuilder;
   }
 
   private TTransport createBinaryClient(URI store, boolean useSSL) throws TTransportException,
@@ -3945,6 +3978,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected GetValidWriteIdsResponse getValidWriteIdsInternal(GetValidWriteIdsRequest rqst) throws TException {
     return client.get_valid_write_ids(rqst);
+  }
+
+  @Override
+  public void addWriteIdsToMinHistory(long txnId, Map<String, Long> writeIds) throws TException {
+    client.add_write_ids_to_min_history(txnId, writeIds);
   }
 
   @Override

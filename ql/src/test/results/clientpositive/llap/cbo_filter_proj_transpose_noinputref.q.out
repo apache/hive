@@ -44,11 +44,11 @@ POSTHOOK: Input: default@test2
 CBO PLAN:
 HiveProject(m=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(m=[substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)])
-      HiveFilter(condition=[=(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2')])
+    HiveProject(m=[substr(FROM_UNIXTIME(UNIX_TIMESTAMP(), _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)])
+      HiveFilter(condition=[=(substr(FROM_UNIXTIME(UNIX_TIMESTAMP(), _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2')])
         HiveProject(DUMMY=[0])
           HiveTableScan(table=[[default, test1]], table:alias=[test1])
-    HiveProject($f0=[substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)])
-      HiveFilter(condition=[AND(=($0, substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2'))])
+    HiveProject($f0=[substr(FROM_UNIXTIME(UNIX_TIMESTAMP(), _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)])
+      HiveFilter(condition=[AND(=($0, substr(FROM_UNIXTIME(UNIX_TIMESTAMP(), _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP(), _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2'))])
         HiveTableScan(table=[[default, test2]], table:alias=[d])
 

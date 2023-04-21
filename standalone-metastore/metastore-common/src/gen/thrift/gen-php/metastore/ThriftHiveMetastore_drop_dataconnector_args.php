@@ -26,12 +26,12 @@ class ThriftHiveMetastore_drop_dataconnector_args
             'isRequired' => false,
             'type' => TType::STRING,
         ),
-        -1 => array(
+        2 => array(
             'var' => 'ifNotExists',
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
-        -2 => array(
+        3 => array(
             'var' => 'checkReferences',
             'isRequired' => false,
             'type' => TType::BOOL,
@@ -92,14 +92,14 @@ class ThriftHiveMetastore_drop_dataconnector_args
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case -1:
+                case 2:
                     if ($ftype == TType::BOOL) {
                         $xfer += $input->readBool($this->ifNotExists);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case -2:
+                case 3:
                     if ($ftype == TType::BOOL) {
                         $xfer += $input->readBool($this->checkReferences);
                     } else {
@@ -120,19 +120,19 @@ class ThriftHiveMetastore_drop_dataconnector_args
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('ThriftHiveMetastore_drop_dataconnector_args');
-        if ($this->checkReferences !== null) {
-            $xfer += $output->writeFieldBegin('checkReferences', TType::BOOL, -2);
-            $xfer += $output->writeBool($this->checkReferences);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->ifNotExists !== null) {
-            $xfer += $output->writeFieldBegin('ifNotExists', TType::BOOL, -1);
-            $xfer += $output->writeBool($this->ifNotExists);
-            $xfer += $output->writeFieldEnd();
-        }
         if ($this->name !== null) {
             $xfer += $output->writeFieldBegin('name', TType::STRING, 1);
             $xfer += $output->writeString($this->name);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->ifNotExists !== null) {
+            $xfer += $output->writeFieldBegin('ifNotExists', TType::BOOL, 2);
+            $xfer += $output->writeBool($this->ifNotExists);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->checkReferences !== null) {
+            $xfer += $output->writeFieldBegin('checkReferences', TType::BOOL, 3);
+            $xfer += $output->writeBool($this->checkReferences);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

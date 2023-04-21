@@ -11690,6 +11690,66 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_valid_write_ids failed: unknown result");
     }
 
+    public function add_write_ids_to_min_history($txnId, array $writeIds)
+    {
+        $this->send_add_write_ids_to_min_history($txnId, $writeIds);
+        $this->recv_add_write_ids_to_min_history();
+    }
+
+    public function send_add_write_ids_to_min_history($txnId, array $writeIds)
+    {
+        $args = new \metastore\ThriftHiveMetastore_add_write_ids_to_min_history_args();
+        $args->txnId = $txnId;
+        $args->writeIds = $writeIds;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'add_write_ids_to_min_history',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('add_write_ids_to_min_history', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_add_write_ids_to_min_history()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_add_write_ids_to_min_history_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_add_write_ids_to_min_history_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
+        }
+        return;
+    }
+
     public function allocate_table_write_ids(\metastore\AllocateTableWriteIdsRequest $rqst)
     {
         $this->send_allocate_table_write_ids($rqst);
