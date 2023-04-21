@@ -135,18 +135,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     return true;
   }
 
-  private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)
-      throws MetaException {
-    return newRetryingHMSHandler(baseHandler, conf, false);
-  }
-
-  private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf,
-      boolean local) throws MetaException {
-    return RetryingHMSHandler.getProxy(conf, baseHandler, local);
-  }
-
   /**
-   * Create retrying HMS handler for embedded metastore.
+   * Create HMS handler for embedded metastore.
    *
    * <h1>IMPORTANT</h1>
    *
@@ -157,10 +147,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @param conf configuration to use
    * @throws MetaException
    */
-  static Iface newRetryingHMSHandler(Configuration conf)
+  static Iface newHMSHandler(Configuration conf)
       throws MetaException {
     HMSHandler baseHandler = new HMSHandler("hive client", conf);
-    return RetryingHMSHandler.getProxy(conf, baseHandler, true);
+    return HMSHandlerProxyFactory.getProxy(conf, baseHandler, true);
   }
 
   /**
@@ -446,7 +436,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     HMSHandler baseHandler = new HMSHandler("new db based metaserver", conf);
-    IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+    IHMSHandler handler = HMSHandlerProxyFactory.getProxy(conf, baseHandler, false);
     processor = new ThriftHiveMetastore.Processor<>(handler);
     LOG.info("Starting DB backed MetaStore Server with generic processor");
     TServlet thriftHttpServlet = new HmsThriftHttpServlet(processor, protocolFactory, conf);
@@ -557,7 +547,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       LOG.info("Binding host " + msHost + " for metastore server");
     }
     
-    IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+    IHMSHandler handler = HMSHandlerProxyFactory.getProxy(conf, baseHandler, false);
     TServerSocket serverSocket;
     if (useSasl) {
       processor = saslServer.wrapProcessor(

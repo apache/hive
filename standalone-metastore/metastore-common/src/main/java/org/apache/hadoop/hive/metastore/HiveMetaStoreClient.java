@@ -138,8 +138,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       "org.apache.hadoop.hive.metastore.HiveMetaStore";
 
   // Method used to create Hive Metastore client. It is called as
-  // HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
-  private static final String HIVE_METASTORE_CREATE_HANDLER_METHOD = "newRetryingHMSHandler";
+  // HiveMetaStore.newHMSHandler("hive client", this.conf, true);
+  private static final String HIVE_METASTORE_CREATE_HANDLER_METHOD = "newHMSHandler";
 
   ThriftHiveMetastore.Iface client = null;
   private TTransport transport = null;
@@ -292,10 +292,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     //
     // The code below simulates the following code
     //
-    // client = HiveMetaStore.newRetryingHMSHandler(this.conf);
+    // client = HiveMetaStore.newHMSHandler(this.conf);
     //
     // using reflection API. This is done to avoid dependency of MetastoreClient on Hive Metastore.
-    // Note that newRetryingHMSHandler is static method, so we pass null as the object reference.
+    // Note that newHMSHandler is static method, so we pass null as the object reference.
     //
     try {
       Class<?> clazz = Class.forName(HIVE_METASTORE_CLASS);
