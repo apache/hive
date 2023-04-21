@@ -105,7 +105,7 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<TableMeta> filterTableMetas(String catName, String dbName,List<TableMeta> tableMetas) throws MetaException {
+    public List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException {
       return tableMetas;
     }
 

@@ -194,17 +194,14 @@ public class FilterUtils {
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  public static List<TableMeta> filterTableMetasIfEnabled(
-      boolean isFilterEnabled, MetaStoreFilterHook filterHook,
-      String catName, String dbName, List<TableMeta> tableMetas)
-      throws MetaException, NoSuchObjectException {
+  public static List<TableMeta> filterTableMetasIfEnabled(boolean isFilterEnabled, MetaStoreFilterHook filterHook,
+      List<TableMeta> tableMetas) throws MetaException, NoSuchObjectException {
     if (tableMetas == null || tableMetas.isEmpty()) {
       return tableMetas;
     }
 
     if (isFilterEnabled) {
-      return filterHook.filterTableMetas(
-          catName, dbName, tableMetas);
+      return filterHook.filterTableMetas(tableMetas);
     }
 
     return tableMetas;
