@@ -1,0 +1,79 @@
+PREHOOK: query: create table r_table (
+  string_col varchar(30)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@r_table
+POSTHOOK: query: create table r_table (
+  string_col varchar(30)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@r_table
+PREHOOK: query: create table l_table (
+  string_col varchar(14)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@l_table
+POSTHOOK: query: create table l_table (
+  string_col varchar(14)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@l_table
+PREHOOK: query: insert into r_table VALUES ('AAA111')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@r_table
+POSTHOOK: query: insert into r_table VALUES ('AAA111')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@r_table
+POSTHOOK: Lineage: r_table.string_col SCRIPT []
+PREHOOK: query: insert into l_table VALUES ('AAA111')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@l_table
+POSTHOOK: query: insert into l_table VALUES ('AAA111')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@l_table
+POSTHOOK: Lineage: l_table.string_col SCRIPT []
+PREHOOK: query: explain cbo
+SELECT l_table.string_col from l_table, r_table
+WHERE r_table.string_col = l_table.string_col AND l_table.string_col IN ('AAA111', 'BBB222') AND r_table.string_col IN ('AAA111', 'BBB222')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@l_table
+PREHOOK: Input: default@r_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+SELECT l_table.string_col from l_table, r_table
+WHERE r_table.string_col = l_table.string_col AND l_table.string_col IN ('AAA111', 'BBB222') AND r_table.string_col IN ('AAA111', 'BBB222')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l_table
+POSTHOOK: Input: default@r_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(string_col=[$0])
+  HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(string_col=[$0])
+      HiveFilter(condition=[IN($0, _UTF-16LE'AAA111':VARCHAR(14) CHARACTER SET "UTF-16LE", _UTF-16LE'BBB222':VARCHAR(14) CHARACTER SET "UTF-16LE")])
+        HiveTableScan(table=[[default, l_table]], table:alias=[l_table])
+    HiveProject(string_col=[$0])
+      HiveFilter(condition=[IN($0, _UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET "UTF-16LE")])
+        HiveTableScan(table=[[default, r_table]], table:alias=[r_table])
+
+PREHOOK: query: SELECT l_table.string_col from l_table, r_table
+WHERE r_table.string_col = l_table.string_col AND l_table.string_col IN ('AAA111', 'BBB222') AND r_table.string_col IN ('AAA111', 'BBB222')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@l_table
+PREHOOK: Input: default@r_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT l_table.string_col from l_table, r_table
+WHERE r_table.string_col = l_table.string_col AND l_table.string_col IN ('AAA111', 'BBB222') AND r_table.string_col IN ('AAA111', 'BBB222')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l_table
+POSTHOOK: Input: default@r_table
+#### A masked pattern was here ####
+AAA111
