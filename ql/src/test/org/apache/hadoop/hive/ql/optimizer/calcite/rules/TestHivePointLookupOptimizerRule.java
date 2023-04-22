@@ -21,17 +21,25 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.AbstractRelOptPlanner;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlCollation;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.util.ConversionUtil;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.nio.charset.Charset;
 import java.util.Collections;
 
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.buildPlanner;
@@ -348,4 +356,167 @@ public class TestHivePointLookupOptimizerRule {
         condition.toString());
   }
 
+  @Test
+  public void testSameVarcharLiteralDifferentPrecision() {
+
+    final RexBuilder rexBuilder = relBuilder.getRexBuilder();
+    RelDataType stringType30 = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+            rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, 30),
+            Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    RexNode lita30 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("AAA111"), stringType30, true);
+    RexNode litb30 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("BBB222"), stringType30, true);
+
+    RelDataType stringType14 = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+            rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, 14),
+            Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    RexNode lita14 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("AAA111"), stringType14, true);
+    RexNode litb14 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("BBB222"), stringType14, true);
+
+    final RelNode basePlan = relBuilder
+          .scan("t")
+          .filter(and(relBuilder,
+                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita30, litb30),
+                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita14, litb14)))
+          .build();
+
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    System.out.println(condition);
+    assertEquals("IN($1, " +
+                    "_UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
+                    "_UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
+            condition.toString());
+  }
+
+  @Test
+  public void testSameVarcharLiteralDifferentPrecisionValueOverflow() {
+
+    final RexBuilder rexBuilder = relBuilder.getRexBuilder();
+    RelDataType stringType30 = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+            rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, 30),
+            Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    RexNode lita30 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("AAA111"), stringType30, true);
+    RexNode litb30 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("BBB222"), stringType30, true);
+
+    RelDataType stringType4 = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+            rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, 4),
+            Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    RexNode litaOverflow =
+            rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("AAA111"), stringType4, true);
+    RexNode litbOverflow =
+            rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("BBB222"), stringType4, true);
+
+    final RelNode basePlan = relBuilder
+          .scan("t")
+          .filter(and(relBuilder,
+                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita30, litb30),
+                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), litaOverflow, litbOverflow)))
+          .build();
+
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    System.out.println(condition);
+    assertEquals("false", condition.toString());
+  }
+
+  @Test
+  public void testSameVarcharAndNullLiterals() {
+
+    final RexBuilder rexBuilder = relBuilder.getRexBuilder();
+    RelDataType stringType30 = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+            rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, 30),
+            Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    RexNode lita30 = rexBuilder.makeNullLiteral(stringType30);
+    RexNode litb30 = rexBuilder.makeNullLiteral(stringType30);
+
+    RelDataType stringType14 = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+            rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, 14),
+            Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    RexNode lita14 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("AAA111"), stringType14, true);
+    RexNode litb14 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("BBB222"), stringType14, true);
+
+    final RelNode basePlan = relBuilder
+            .scan("t")
+            .filter(and(relBuilder,
+                    relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita30, litb30),
+                    relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita14, litb14)))
+            .build();
+
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    System.out.println(condition);
+    assertEquals("AND(IS NULL(null:VARCHAR(30) CHARACTER SET \"UTF-16LE\"), null)", condition.toString());
+  }
+
+  @Test
+  public void testSameVarcharLiteralsDifferentPrecisionInOrExpression() {
+
+    final RexBuilder rexBuilder = relBuilder.getRexBuilder();
+    RelDataType stringType30 = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+            rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, 30),
+            Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    RexNode lita30 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("AAA111"), stringType30, true);
+    RexNode litb30 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("BBB222"), stringType30, true);
+
+    RelDataType stringType14 = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+            rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, 14),
+            Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    RexNode lita14 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("AAA111"), stringType14, true);
+    RexNode litb14 = rexBuilder.makeLiteral(RexNodeExprFactory.makeHiveUnicodeString("BBB222"), stringType14, true);
+
+    final RelNode basePlan = relBuilder
+            .scan("t")
+            .filter(or(relBuilder,
+                    relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita30, litb30),
+                    relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita14, litb14)))
+            .build();
+
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    System.out.println(condition);
+    assertEquals("IN($1, " +
+                    "_UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
+                    "_UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
+            condition.toString());
+  }
+
+  @Test
+  public void testSameDecimalLiteralDifferentPrecision() {
+
+    final RexBuilder rexBuilder = relBuilder.getRexBuilder();
+    RelDataType decimalType30 = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.DECIMAL, 30, 5);
+    RexNode lita30 = rexBuilder.makeLiteral(10000, decimalType30, true);
+    RexNode litb30 = rexBuilder.makeLiteral(11000, decimalType30, true);
+
+    RelDataType decimalType14 = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.DECIMAL, 14, 5);
+    RexNode lita14 = rexBuilder.makeLiteral(10000, decimalType14, true);
+    RexNode litb14 = rexBuilder.makeLiteral(11000, decimalType14, true);
+
+    final RelNode basePlan = relBuilder
+          .scan("t")
+          .filter(and(relBuilder,
+                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita30, litb30),
+                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita14, litb14)))
+          .build();
+
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    System.out.println(condition);
+    assertEquals("IN($1, 10000:DECIMAL(19, 5), 11000:DECIMAL(19, 5))", condition.toString());
+  }
 }
