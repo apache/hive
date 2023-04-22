@@ -137,6 +137,9 @@ public class TestHiveMetaStoreTimeout {
     } catch (TTransportException e) {
       Assert.assertTrue("unexpected Exception", e.getMessage().contains("Read timed out"));
     }
+
+    // restore
+    DelayedHMSHandler.testTimeoutValue = -1;
   }
 
   @Test

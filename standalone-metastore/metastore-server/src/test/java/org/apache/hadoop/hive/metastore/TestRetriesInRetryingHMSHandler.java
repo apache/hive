@@ -95,7 +95,7 @@ public class TestRetriesInRetryingHMSHandler {
     try {
       HMSHandlerProxyFactory.getProxy(conf, mockBaseHandler, false);
       Assert.fail("should fail for mockBaseHandler init.");
-    } catch (RuntimeException e) {
+    } catch (MetaException e) {
       // expected
     }
     Mockito.verify(mockBaseHandler, Mockito.times(RETRY_ATTEMPTS + 1)).init();

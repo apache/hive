@@ -18,26 +18,42 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Proxy;
 
 public class HMSHandlerProxyFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSHandlerProxyFactory.class);
+
   public static IHMSHandler getProxy(Configuration conf, IHMSHandler handler, boolean local)
       throws MetaException {
     String hmsHandlerProxyName = MetastoreConf.getVar(conf, ConfVars.HMS_HANDLER_PROXY_CLASS);
+    LOG.info("Creating HMSHandler proxy by class: {}", hmsHandlerProxyName);
     Class<? extends AbstractHMSHandlerProxy> proxyClass =
             JavaUtils.getClass(hmsHandlerProxyName, AbstractHMSHandlerProxy.class);
-    AbstractHMSHandlerProxy invacationHandler = JavaUtils.newInstance(proxyClass,
-        new Class[]{Configuration.class, IHMSHandler.class, boolean.class},
-            new Object[]{conf, handler, local});
+    AbstractHMSHandlerProxy invocationHandler = null;
+    try {
+      invocationHandler = JavaUtils.newInstance(proxyClass,
+          new Class[]{Configuration.class, IHMSHandler.class, boolean.class},
+          new Object[]{conf, handler, local});
+    } catch (Throwable t) {
+      // Reflection by JavaUtils will throw RuntimeException, try to get real MetaException here.
+      Throwable rootCause = ExceptionUtils.getRootCause(t);
+      if (rootCause instanceof Exception) {
+        throw ExceptionHandler.newMetaException((Exception) rootCause);
+      }
+      throw t;
+    }
 
     return (IHMSHandler) Proxy.newProxyInstance(
             HMSHandlerProxyFactory.class.getClassLoader(),
-            new Class[]{ IHMSHandler.class }, invacationHandler);
+            new Class[]{ IHMSHandler.class }, invocationHandler);
   }
 }
