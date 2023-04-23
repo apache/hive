@@ -119,13 +119,12 @@ public class TestHS2SessionHive {
   private class Task extends Thread {
     TCLIService.Iface client;
     TSessionHandle sessionHandle;
-    boolean result;
+    boolean result = false;
     Task(String threadName,
          TCLIService.Iface client,
          TSessionHandle sessionHandle) {
       this.client = client;
       this.sessionHandle = sessionHandle;
-      this.result = false;
       this.setName(threadName);
       this.setDaemon(true);
       this.start();
@@ -186,6 +185,8 @@ public class TestHS2SessionHive {
       System.out.println("Unable to start MiniHS2: " + e);
       throw e;
     }
+
+    miniHS2.getHiveConf().setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + miniHS2.getHmsPort());
 
     try (Connection conn = DriverManager.
         getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "");
