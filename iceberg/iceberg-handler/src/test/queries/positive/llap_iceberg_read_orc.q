@@ -139,7 +139,7 @@ SELECT i.name, i.description, SUM(o.quantity) FROM llap_items i JOIN llap_orders
 
 CREATE EXTERNAL TABLE mig_source (id int) partitioned by (region string) stored as ORC;
 INSERT INTO mig_source VALUES (1, 'EU'), (1, 'US'), (2, 'EU'), (3, 'EU'), (2, 'US');
-ALTER TABLE mig_source SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler');
+ALTER TABLE mig_source CONVERT TO ICEBERG;
 
 -- Should miss, but fill cache
 SELECT region, SUM(id) from mig_source GROUP BY region;

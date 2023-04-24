@@ -8,7 +8,7 @@ set hive.enforce.bucketing=true;
 create table insert_only(col1 Int, col2 String) stored as orc  TBLPROPERTIES ('transactional'='true','transactional_properties'='insert_only');
 insert into insert_only values(1,'hi'),(2,'hello');
 describe formatted insert_only;
-ALTER TABLE insert_only SET TBLPROPERTIES ('transactional'='true','transactional_properties'='default');
+ALTER TABLE insert_only convert to acid TBLPROPERTIES ('transactional_properties'='default');
 describe formatted insert_only;
 insert into insert_only values(1,'hi'),(2,'hello');
 select * from insert_only;

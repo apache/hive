@@ -53,12 +53,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE insert_only SET TBLPROPERTIES ('transactional'='true','transactional_properties'='default')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: ALTER TABLE insert_only convert to acid TBLPROPERTIES ('transactional_properties'='default')
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@insert_only
-PREHOOK: Output: default@insert_only
-POSTHOOK: query: ALTER TABLE insert_only SET TBLPROPERTIES ('transactional'='true','transactional_properties'='default')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: ALTER TABLE insert_only convert to acid TBLPROPERTIES ('transactional_properties'='default')
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@insert_only
 POSTHOOK: Output: default@insert_only
 PREHOOK: query: describe formatted insert_only

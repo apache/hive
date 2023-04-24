@@ -141,12 +141,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_meta_3@b=four/c=Sunday
 POSTHOOK: Lineage: ice_meta_3 PARTITION(b=four,c=Sunday).a SCRIPT []
-PREHOOK: query: alter table ice_meta_3 set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: alter table ice_meta_3 convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@ice_meta_3
-PREHOOK: Output: default@ice_meta_3
-POSTHOOK: query: alter table ice_meta_3 set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: alter table ice_meta_3 convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: default@ice_meta_3
 PREHOOK: query: select * from ice_meta_3

@@ -23,7 +23,7 @@ insert into table test_truncate partition (b='one') values (1), (2), (3);
 insert into table test_truncate partition (b='two') values (4), (5);
 insert into table test_truncate partition (b='three') values (6), (7), (8);
 insert into table test_truncate partition (b='four') values (9);
-alter table test_truncate set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler');
+alter table test_truncate convert to iceberg;
 
 analyze table test_truncate compute statistics;
 describe formatted test_truncate;

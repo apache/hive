@@ -111,12 +111,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	three
 8	three
 9	four
-PREHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: explain alter table tbl_orc convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@tbl_orc
-PREHOOK: Output: default@tbl_orc
-POSTHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table tbl_orc convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_orc
+Stage-0
+  Convert operation{"table name:":"default.tbl_orc","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_orc convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: alter table tbl_orc convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@tbl_orc
 POSTHOOK: Output: default@tbl_orc
 PREHOOK: query: describe formatted tbl_orc
@@ -314,12 +322,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	three
 8	three
 9	four
-PREHOOK: query: alter table tbl_parquet set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: explain alter table tbl_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@tbl_parquet
-PREHOOK: Output: default@tbl_parquet
-POSTHOOK: query: alter table tbl_parquet set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table tbl_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet
+Stage-0
+  Convert operation{"table name:":"default.tbl_parquet","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet
+POSTHOOK: query: alter table tbl_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@tbl_parquet
 POSTHOOK: Output: default@tbl_parquet
 PREHOOK: query: describe formatted tbl_parquet
@@ -517,12 +533,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	three
 8	three
 9	four
-PREHOOK: query: alter table tbl_avro set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: explain alter table tbl_avro convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@tbl_avro
-PREHOOK: Output: default@tbl_avro
-POSTHOOK: query: alter table tbl_avro set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table tbl_avro convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_avro
+Stage-0
+  Convert operation{"table name:":"default.tbl_avro","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_avro convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_avro
+POSTHOOK: query: alter table tbl_avro convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@tbl_avro
 POSTHOOK: Output: default@tbl_avro
 PREHOOK: query: describe formatted tbl_avro

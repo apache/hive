@@ -75,12 +75,26 @@ POSTHOOK: Input: default@simple_to_mm
 0
 98
 100
-PREHOOK: query: alter table simple_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: explain alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only")
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@simple_to_mm
-PREHOOK: Output: default@simple_to_mm
-POSTHOOK: query: alter table simple_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only")
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@simple_to_mm
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Convert operation
+      table name: default.simple_to_mm
+      spec: AlterTableConvertSpec{ConvertTo=acid, TBLProperties={transactional_properties=insert_only}}
+
+PREHOOK: query: alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only")
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@simple_to_mm
+POSTHOOK: query: alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only")
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@simple_to_mm
 POSTHOOK: Output: default@simple_to_mm
 PREHOOK: query: export table simple_to_mm to 'ql/test/data/exports/export0'
