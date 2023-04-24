@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeletePartitionColumnStatEvent;
+import org.apache.hadoop.hive.metastore.events.ReloadEvent;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import java.sql.Connection;
 
@@ -408,6 +409,15 @@ public abstract class MetaStoreEventListener implements Configurable {
    */
   public void onCommitCompaction(CommitCompactionEvent commitCompactionEvent, Connection dbConn,
       SQLGenerator sqlGenerator) throws MetaException {
+  }
+
+  /**
+   * This will be called to reload table/partition
+   * @param reloadEvent event to be processed
+   * @throws MetaException
+   */
+  public void onReload(ReloadEvent reloadEvent)
+          throws MetaException {
   }
 
   /**

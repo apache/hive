@@ -2459,6 +2459,7 @@ message FireEventRequestData {
   oneof fireEventRequestData {
     InsertEventRequestData insert_data = 1;
     InsertEventRequestDataList insert_datas = 2;
+    bool refresh_event = 3;
   }
 }
 
@@ -2469,6 +2470,7 @@ message FireListenerEventRequest {
   string table_name = 4;
   repeated string partition_vals = 5;
   string cat_name = 6;
+  map<string, string> tblParams = 7;
 }
 
 message FireListenerEventResponse {

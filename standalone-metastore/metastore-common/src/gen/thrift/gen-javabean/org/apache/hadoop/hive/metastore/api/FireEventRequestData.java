@@ -12,11 +12,13 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FireEventRequestData");
   private static final org.apache.thrift.protocol.TField INSERT_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("insertData", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField INSERT_DATAS_FIELD_DESC = new org.apache.thrift.protocol.TField("insertDatas", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField REFRESH_EVENT_FIELD_DESC = new org.apache.thrift.protocol.TField("refreshEvent", org.apache.thrift.protocol.TType.BOOL, (short)3);
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     INSERT_DATA((short)1, "insertData"),
-    INSERT_DATAS((short)2, "insertDatas");
+    INSERT_DATAS((short)2, "insertDatas"),
+    REFRESH_EVENT((short)3, "refreshEvent");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -36,6 +38,8 @@ package org.apache.hadoop.hive.metastore.api;
           return INSERT_DATA;
         case 2: // INSERT_DATAS
           return INSERT_DATAS;
+        case 3: // REFRESH_EVENT
+          return REFRESH_EVENT;
         default:
           return null;
       }
@@ -84,6 +88,8 @@ package org.apache.hadoop.hive.metastore.api;
     tmpMap.put(_Fields.INSERT_DATAS, new org.apache.thrift.meta_data.FieldMetaData("insertDatas", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, InsertEventRequestData.class))));
+    tmpMap.put(_Fields.REFRESH_EVENT, new org.apache.thrift.meta_data.FieldMetaData("refreshEvent", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FireEventRequestData.class, metaDataMap);
   }
@@ -115,6 +121,12 @@ package org.apache.hadoop.hive.metastore.api;
     return x;
   }
 
+  public static FireEventRequestData refreshEvent(boolean value) {
+    FireEventRequestData x = new FireEventRequestData();
+    x.setRefreshEvent(value);
+    return x;
+  }
+
 
   @Override
   protected void checkType(_Fields setField, java.lang.Object value) throws java.lang.ClassCastException {
@@ -129,6 +141,11 @@ package org.apache.hadoop.hive.metastore.api;
           break;
         }
         throw new java.lang.ClassCastException("Was expecting value of type java.util.List<InsertEventRequestData> for field 'insertDatas', but got " + value.getClass().getSimpleName());
+      case REFRESH_EVENT:
+        if (value instanceof java.lang.Boolean) {
+          break;
+        }
+        throw new java.lang.ClassCastException("Was expecting value of type java.lang.Boolean for field 'refreshEvent', but got " + value.getClass().getSimpleName());
       default:
         throw new java.lang.IllegalArgumentException("Unknown field id " + setField);
     }
@@ -169,6 +186,15 @@ package org.apache.hadoop.hive.metastore.api;
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             return null;
           }
+        case REFRESH_EVENT:
+          if (field.type == REFRESH_EVENT_FIELD_DESC.type) {
+            java.lang.Boolean refreshEvent;
+            refreshEvent = iprot.readBool();
+            return refreshEvent;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
         default:
           throw new java.lang.IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -195,6 +221,10 @@ package org.apache.hadoop.hive.metastore.api;
           }
           oprot.writeListEnd();
         }
+        return;
+      case REFRESH_EVENT:
+        java.lang.Boolean refreshEvent = (java.lang.Boolean)value_;
+        oprot.writeBool(refreshEvent);
         return;
       default:
         throw new java.lang.IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -226,6 +256,10 @@ package org.apache.hadoop.hive.metastore.api;
             iprot.readListEnd();
           }
           return insertDatas;
+        case REFRESH_EVENT:
+          java.lang.Boolean refreshEvent;
+          refreshEvent = iprot.readBool();
+          return refreshEvent;
         default:
           throw new java.lang.IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -252,6 +286,10 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeListEnd();
         }
         return;
+      case REFRESH_EVENT:
+        java.lang.Boolean refreshEvent = (java.lang.Boolean)value_;
+        oprot.writeBool(refreshEvent);
+        return;
       default:
         throw new java.lang.IllegalStateException("Cannot write union with unknown field " + setField_);
     }
@@ -264,6 +302,8 @@ package org.apache.hadoop.hive.metastore.api;
         return INSERT_DATA_FIELD_DESC;
       case INSERT_DATAS:
         return INSERT_DATAS_FIELD_DESC;
+      case REFRESH_EVENT:
+        return REFRESH_EVENT_FIELD_DESC;
       default:
         throw new java.lang.IllegalArgumentException("Unknown field id " + setField);
     }
@@ -311,6 +351,19 @@ package org.apache.hadoop.hive.metastore.api;
     value_ = java.util.Objects.requireNonNull(value,"_Fields.INSERT_DATAS");
   }
 
+  public boolean getRefreshEvent() {
+    if (getSetField() == _Fields.REFRESH_EVENT) {
+      return (java.lang.Boolean)getFieldValue();
+    } else {
+      throw new java.lang.RuntimeException("Cannot get field 'refreshEvent' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setRefreshEvent(boolean value) {
+    setField_ = _Fields.REFRESH_EVENT;
+    value_ = value;
+  }
+
   public boolean isSetInsertData() {
     return setField_ == _Fields.INSERT_DATA;
   }
@@ -318,6 +371,11 @@ package org.apache.hadoop.hive.metastore.api;
 
   public boolean isSetInsertDatas() {
     return setField_ == _Fields.INSERT_DATAS;
+  }
+
+
+  public boolean isSetRefreshEvent() {
+    return setField_ == _Fields.REFRESH_EVENT;
   }
 
 

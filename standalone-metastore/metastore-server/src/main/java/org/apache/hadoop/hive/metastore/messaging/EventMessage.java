@@ -42,6 +42,7 @@ public abstract class EventMessage {
     INSERT(MessageBuilder.INSERT_EVENT),
     CREATE_FUNCTION(MessageBuilder.CREATE_FUNCTION_EVENT),
     DROP_FUNCTION(MessageBuilder.DROP_FUNCTION_EVENT),
+    RELOAD(MessageBuilder.RELOAD_EVENT),
 
     ADD_PRIMARYKEY(MessageBuilder.ADD_PRIMARYKEY_EVENT),
     ADD_FOREIGNKEY(MessageBuilder.ADD_FOREIGNKEY_EVENT),
