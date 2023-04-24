@@ -174,8 +174,6 @@ public abstract class HMSTestBase {
    * @throws Exception
    */
   protected int createServer(Configuration conf) throws Exception {
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_TRANSPORT_MODE, "http");
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_PROTOCOL, "json");
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
   }
 
@@ -186,8 +184,6 @@ public abstract class HMSTestBase {
    */
   protected PropertyClient createClient(Configuration conf, int port) throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "http://localhost:" + port);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE, "http");
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_THRIFT_PROTOCOL, "json");
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
     return new ThriftPropertyClient(NS, client);
