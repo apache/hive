@@ -68,8 +68,6 @@ public class HMSThriftTest extends HMSTestBase {
    */
   protected PropertyClient createClient(Configuration conf, int port) throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "http://localhost:" + port);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE, "http");
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_THRIFT_PROTOCOL, "json");
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
     return new ThriftPropertyClient(NS, client);
