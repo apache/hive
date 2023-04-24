@@ -14599,8 +14599,10 @@ class ThriftHiveMetastore_get_properties_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_get_properties_result__isset {
-  _ThriftHiveMetastore_get_properties_result__isset() : success(false) {}
+  _ThriftHiveMetastore_get_properties_result__isset() : success(false), e1(false), e2(false) {}
   bool success :1;
+  bool e1 :1;
+  bool e2 :1;
 } _ThriftHiveMetastore_get_properties_result__isset;
 
 class ThriftHiveMetastore_get_properties_result {
@@ -14613,14 +14615,24 @@ class ThriftHiveMetastore_get_properties_result {
 
   virtual ~ThriftHiveMetastore_get_properties_result() noexcept;
   PropertyGetResponse success;
+  MetaException e1;
+  NoSuchObjectException e2;
 
   _ThriftHiveMetastore_get_properties_result__isset __isset;
 
   void __set_success(const PropertyGetResponse& val);
 
+  void __set_e1(const MetaException& val);
+
+  void __set_e2(const NoSuchObjectException& val);
+
   bool operator == (const ThriftHiveMetastore_get_properties_result & rhs) const
   {
     if (!(success == rhs.success))
+      return false;
+    if (!(e1 == rhs.e1))
+      return false;
+    if (!(e2 == rhs.e2))
       return false;
     return true;
   }
@@ -14636,8 +14648,10 @@ class ThriftHiveMetastore_get_properties_result {
 };
 
 typedef struct _ThriftHiveMetastore_get_properties_presult__isset {
-  _ThriftHiveMetastore_get_properties_presult__isset() : success(false) {}
+  _ThriftHiveMetastore_get_properties_presult__isset() : success(false), e1(false), e2(false) {}
   bool success :1;
+  bool e1 :1;
+  bool e2 :1;
 } _ThriftHiveMetastore_get_properties_presult__isset;
 
 class ThriftHiveMetastore_get_properties_presult {
@@ -14646,6 +14660,8 @@ class ThriftHiveMetastore_get_properties_presult {
 
   virtual ~ThriftHiveMetastore_get_properties_presult() noexcept;
   PropertyGetResponse* success;
+  MetaException e1;
+  NoSuchObjectException e2;
 
   _ThriftHiveMetastore_get_properties_presult__isset __isset;
 
@@ -14703,29 +14719,41 @@ class ThriftHiveMetastore_set_properties_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_set_properties_result__isset {
-  _ThriftHiveMetastore_set_properties_result__isset() : success(false) {}
+  _ThriftHiveMetastore_set_properties_result__isset() : success(false), e1(false), e2(false) {}
   bool success :1;
+  bool e1 :1;
+  bool e2 :1;
 } _ThriftHiveMetastore_set_properties_result__isset;
 
 class ThriftHiveMetastore_set_properties_result {
  public:
 
-  ThriftHiveMetastore_set_properties_result(const ThriftHiveMetastore_set_properties_result&) noexcept;
-  ThriftHiveMetastore_set_properties_result& operator=(const ThriftHiveMetastore_set_properties_result&) noexcept;
+  ThriftHiveMetastore_set_properties_result(const ThriftHiveMetastore_set_properties_result&);
+  ThriftHiveMetastore_set_properties_result& operator=(const ThriftHiveMetastore_set_properties_result&);
   ThriftHiveMetastore_set_properties_result() noexcept
                                             : success(0) {
   }
 
   virtual ~ThriftHiveMetastore_set_properties_result() noexcept;
   bool success;
+  MetaException e1;
+  NoSuchObjectException e2;
 
   _ThriftHiveMetastore_set_properties_result__isset __isset;
 
   void __set_success(const bool val);
 
+  void __set_e1(const MetaException& val);
+
+  void __set_e2(const NoSuchObjectException& val);
+
   bool operator == (const ThriftHiveMetastore_set_properties_result & rhs) const
   {
     if (!(success == rhs.success))
+      return false;
+    if (!(e1 == rhs.e1))
+      return false;
+    if (!(e2 == rhs.e2))
       return false;
     return true;
   }
@@ -14741,8 +14769,10 @@ class ThriftHiveMetastore_set_properties_result {
 };
 
 typedef struct _ThriftHiveMetastore_set_properties_presult__isset {
-  _ThriftHiveMetastore_set_properties_presult__isset() : success(false) {}
+  _ThriftHiveMetastore_set_properties_presult__isset() : success(false), e1(false), e2(false) {}
   bool success :1;
+  bool e1 :1;
+  bool e2 :1;
 } _ThriftHiveMetastore_set_properties_presult__isset;
 
 class ThriftHiveMetastore_set_properties_presult {
@@ -14751,6 +14781,8 @@ class ThriftHiveMetastore_set_properties_presult {
 
   virtual ~ThriftHiveMetastore_set_properties_presult() noexcept;
   bool* success;
+  MetaException e1;
+  NoSuchObjectException e2;
 
   _ThriftHiveMetastore_set_properties_presult__isset __isset;
 

@@ -27,18 +27,44 @@ class ThriftHiveMetastore_get_properties_result
             'type' => TType::STRUCT,
             'class' => '\metastore\PropertyGetResponse',
         ),
+        1 => array(
+            'var' => 'e1',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\MetaException',
+        ),
+        2 => array(
+            'var' => 'e2',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\NoSuchObjectException',
+        ),
     );
 
     /**
      * @var \metastore\PropertyGetResponse
      */
     public $success = null;
+    /**
+     * @var \metastore\MetaException
+     */
+    public $e1 = null;
+    /**
+     * @var \metastore\NoSuchObjectException
+     */
+    public $e2 = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['success'])) {
                 $this->success = $vals['success'];
+            }
+            if (isset($vals['e1'])) {
+                $this->e1 = $vals['e1'];
+            }
+            if (isset($vals['e2'])) {
+                $this->e2 = $vals['e2'];
             }
         }
     }
@@ -70,6 +96,22 @@ class ThriftHiveMetastore_get_properties_result
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 1:
+                    if ($ftype == TType::STRUCT) {
+                        $this->e1 = new \metastore\MetaException();
+                        $xfer += $this->e1->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 2:
+                    if ($ftype == TType::STRUCT) {
+                        $this->e2 = new \metastore\NoSuchObjectException();
+                        $xfer += $this->e2->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -90,6 +132,16 @@ class ThriftHiveMetastore_get_properties_result
             }
             $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
             $xfer += $this->success->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->e1 !== null) {
+            $xfer += $output->writeFieldBegin('e1', TType::STRUCT, 1);
+            $xfer += $this->e1->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->e2 !== null) {
+            $xfer += $output->writeFieldBegin('e2', TType::STRUCT, 2);
+            $xfer += $this->e2->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

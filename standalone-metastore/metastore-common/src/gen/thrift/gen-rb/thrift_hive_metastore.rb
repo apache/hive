@@ -1785,6 +1785,8 @@ module ThriftHiveMetastore
     def recv_get_properties()
       result = receive_message(Get_properties_result)
       return result.success unless result.success.nil?
+      raise result.e1 unless result.e1.nil?
+      raise result.e2 unless result.e2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_properties failed: unknown result')
     end
 
@@ -1800,6 +1802,8 @@ module ThriftHiveMetastore
     def recv_set_properties()
       result = receive_message(Set_properties_result)
       return result.success unless result.success.nil?
+      raise result.e1 unless result.e1.nil?
+      raise result.e2 unless result.e2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'set_properties failed: unknown result')
     end
 
@@ -5955,14 +5959,26 @@ module ThriftHiveMetastore
     def process_get_properties(seqid, iprot, oprot)
       args = read_args(iprot, Get_properties_args)
       result = Get_properties_result.new()
-      result.success = @handler.get_properties(args.req)
+      begin
+        result.success = @handler.get_properties(args.req)
+      rescue ::MetaException => e1
+        result.e1 = e1
+      rescue ::NoSuchObjectException => e2
+        result.e2 = e2
+      end
       write_result(result, oprot, 'get_properties', seqid)
     end
 
     def process_set_properties(seqid, iprot, oprot)
       args = read_args(iprot, Set_properties_args)
       result = Set_properties_result.new()
-      result.success = @handler.set_properties(args.req)
+      begin
+        result.success = @handler.set_properties(args.req)
+      rescue ::MetaException => e1
+        result.e1 = e1
+      rescue ::NoSuchObjectException => e2
+        result.e2 = e2
+      end
       write_result(result, oprot, 'set_properties', seqid)
     end
 
@@ -11936,9 +11952,13 @@ module ThriftHiveMetastore
   class Get_properties_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
+    E1 = 1
+    E2 = 2
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::PropertyGetResponse}
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::PropertyGetResponse},
+      E1 => {:type => ::Thrift::Types::STRUCT, :name => 'e1', :class => ::MetaException},
+      E2 => {:type => ::Thrift::Types::STRUCT, :name => 'e2', :class => ::NoSuchObjectException}
     }
 
     def struct_fields; FIELDS; end
@@ -11968,9 +11988,13 @@ module ThriftHiveMetastore
   class Set_properties_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
+    E1 = 1
+    E2 = 2
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'}
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      E1 => {:type => ::Thrift::Types::STRUCT, :name => 'e1', :class => ::MetaException},
+      E2 => {:type => ::Thrift::Types::STRUCT, :name => 'e2', :class => ::NoSuchObjectException}
     }
 
     def struct_fields; FIELDS; end

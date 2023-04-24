@@ -28,7 +28,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-jexl3</artifactId>
-      <version>3.3</version>
+      <version>${jexl.version}</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
