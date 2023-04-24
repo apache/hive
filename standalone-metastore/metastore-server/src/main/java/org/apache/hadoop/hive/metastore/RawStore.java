@@ -2189,30 +2189,8 @@ public interface RawStore extends Configurable {
   void dropPackage(DropPackageRequest request);
 
   /** Persistent Property Management. */
-  default MMetastoreDBProperties putProperties(String key, String value, String description, byte[] content) throws MetaException {
-    return null;
-  }
-
-  default <T> T getProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
-    return null;
-  }
-  default <T> Map<String, T> selectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
-    return null;
-  }
-
-  default boolean renameProperties(String mapKey, String newKey) throws MetaException {
-    return false;
-  }
-
-  default boolean dropProperties(String key) throws MetaException {
-    return false;
-  }
-
   default PropertyStore getPropertyStore() {
-    return new JdoPropertyStore(this);
+    return null;
   }
 
-  default boolean runInTransaction(Runnable exec) throws MetaException {
-    return false;
-  }
 }
