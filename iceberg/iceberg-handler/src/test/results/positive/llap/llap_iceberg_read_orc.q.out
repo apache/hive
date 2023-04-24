@@ -589,12 +589,11 @@ POSTHOOK: Output: default@mig_source@region=EU
 POSTHOOK: Output: default@mig_source@region=US
 POSTHOOK: Lineage: mig_source PARTITION(region=EU).id SCRIPT []
 POSTHOOK: Lineage: mig_source PARTITION(region=US).id SCRIPT []
-PREHOOK: query: ALTER TABLE mig_source SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: ALTER TABLE mig_source CONVERT TO ICEBERG
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@mig_source
-PREHOOK: Output: default@mig_source
-POSTHOOK: query: ALTER TABLE mig_source SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: ALTER TABLE mig_source CONVERT TO ICEBERG
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@mig_source
 POSTHOOK: Output: default@mig_source
 PREHOOK: query: SELECT region, SUM(id) from mig_source GROUP BY region
