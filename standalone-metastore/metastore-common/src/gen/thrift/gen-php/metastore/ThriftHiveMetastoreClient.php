@@ -6941,6 +6941,12 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         if ($result->success !== null) {
             return $result->success;
         }
+        if ($result->e1 !== null) {
+            throw $result->e1;
+        }
+        if ($result->e2 !== null) {
+            throw $result->e2;
+        }
         throw new \Exception("get_properties failed: unknown result");
     }
 
@@ -6999,6 +7005,12 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         }
         if ($result->success !== null) {
             return $result->success;
+        }
+        if ($result->e1 !== null) {
+            throw $result->e1;
+        }
+        if ($result->e2 !== null) {
+            throw $result->e2;
         }
         throw new \Exception("set_properties failed: unknown result");
     }

@@ -7530,13 +7530,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * @return the manager instance
    * @throws TException
    */
-  private PropertyManager getPropertyManager(String ns) throws TException {
+  private PropertyManager getPropertyManager(String ns) throws MetaException, NoSuchObjectException {
     PropertyStore propertyStore = getMS().getPropertyStore();
     PropertyManager mgr = PropertyManager.create(ns, propertyStore);
     return mgr;
   }
   @Override
-  public PropertyGetResponse get_properties(PropertyGetRequest req) throws TException {
+  public PropertyGetResponse get_properties(PropertyGetRequest req) throws MetaException, NoSuchObjectException, TException {
     PropertyManager mgr = getPropertyManager(req.getNameSpace());
     Map<String, PropertyMap> selected = mgr.selectProperties(req.getMapPrefix(), req.getMapPredicate(), req.getMapSelection());
     PropertyGetResponse response = new PropertyGetResponse();
@@ -7558,7 +7558,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject, String userName,
-                                                 List<String> groupNames) throws TException {
+                                                 List<String> groupNames) throws MetaException, NoSuchObjectException, TException {
     firePreEvent(new PreAuthorizationCallEvent(this));
     String catName = hiveObject.isSetCatName() ? hiveObject.getCatName() : getDefaultCatalog(conf);
     HiveObjectType debug = hiveObject.getObjectType();

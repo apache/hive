@@ -28,8 +28,8 @@ import org.apache.hadoop.hive.metastore.TestObjectStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.MaintenanceOpStatus;
-import org.apache.hadoop.hive.metastore.api.MaintenanceOpType;
+import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpStatus;
+import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -233,11 +233,11 @@ public abstract class HMSTestBase {
         jsonjexl.evaluate(null, strw, tname, i * i % 100, (i + 1) % 7);
         ptyMap.put(tb + "policy", strw.toString());
 
-        MaintenanceOpStatus status = MaintenanceOpStatus.findByValue(1 + i % MaintenanceOpStatus.values().length);
+        HMSPropertyManager.MaintenanceOpStatus status = HMSPropertyManager.findOpStatus( i % MaintenanceOpStatus.values().length);
         Assert.assertNotNull(status);
         ptyMap.put(tb + "maint_status", status.toString());
 
-        MaintenanceOpType type = MaintenanceOpType.findByValue(1 + i % MaintenanceOpType.values().length);
+        HMSPropertyManager.MaintenanceOpType type = HMSPropertyManager.findOpType(i % MaintenanceOpType.values().length);
         Assert.assertNotNull(type);
         ptyMap.put(tb + "maint_operation", type.toString());
       }

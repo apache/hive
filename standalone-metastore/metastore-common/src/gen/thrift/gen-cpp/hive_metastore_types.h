@@ -53,48 +53,6 @@ std::ostream& operator<<(std::ostream& out, const PrincipalType::type& val);
 
 std::string to_string(const PrincipalType::type& val);
 
-/**
- * Table maintenance operation type.
- */
-struct MaintenanceOpType {
-  enum type {
-    COMPACTION = 1,
-    SNAPSHOT_EXPIRY = 2,
-    STATS_REBUILD = 3,
-    MV_BUILD = 4,
-    MV_REFRESH = 5,
-    SHUFFLE_TO_NEW_PART = 6,
-    RECOMPRESS = 7,
-    REORG = 8
-  };
-};
-
-extern const std::map<int, const char*> _MaintenanceOpType_VALUES_TO_NAMES;
-
-std::ostream& operator<<(std::ostream& out, const MaintenanceOpType::type& val);
-
-std::string to_string(const MaintenanceOpType::type& val);
-
-/**
- * Table maintenance operation status.
- */
-struct MaintenanceOpStatus {
-  enum type {
-    MAINTENANCE_NEEDED = 1,
-    SCHEDULED = 2,
-    IN_PROGRESS = 3,
-    DONE = 4,
-    CLEANUP_NEEDED = 5,
-    FAILED = 6
-  };
-};
-
-extern const std::map<int, const char*> _MaintenanceOpStatus_VALUES_TO_NAMES;
-
-std::ostream& operator<<(std::ostream& out, const MaintenanceOpStatus::type& val);
-
-std::string to_string(const MaintenanceOpStatus::type& val);
-
 struct PartitionEventType {
   enum type {
     LOAD_DONE = 1
