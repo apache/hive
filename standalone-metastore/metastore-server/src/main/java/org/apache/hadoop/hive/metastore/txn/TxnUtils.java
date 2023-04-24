@@ -60,30 +60,45 @@ import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.D
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
 
-  public static ValidTxnList createValidTxnListForCleaner(GetOpenTxnsResponse txns, long minOpenTxnGLB) {
-    long highWaterMark = minOpenTxnGLB - 1;
-    long[] abortedTxns = new long[txns.getOpen_txnsSize()];
+  /**
+   * Returns a valid txn list for cleaner.
+   * @param txns Response containing open txns list.
+   * @param minOpenTxn Minimum open txn which is min open write txn on the table in the case of abort cleanup.
+   * @param isAbortCleanup Whether the request is for abort cleanup.
+   * @return a valid txn list
+   */
+  public static ValidTxnList createValidTxnListForCleaner(GetOpenTxnsResponse txns, long minOpenTxn, boolean isAbortCleanup) {
+    long highWatermark = minOpenTxn - 1;
+    long[] exceptions = new long[txns.getOpen_txnsSize()];
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
     int i = 0;
-    for(long txnId : txns.getOpen_txns()) {
-      if(txnId > highWaterMark) {
+    for (long txnId : txns.getOpen_txns()) {
+      if (txnId > highWatermark) {
         break;
       }
-      if(abortedBits.get(i)) {
-        abortedTxns[i] = txnId;
-      }
-      else {
-        assert false : JavaUtils.txnIdToString(txnId) + " is open and <= hwm:" + highWaterMark;
+      if (abortedBits.get(i)) {
+        exceptions[i] = txnId;
+      } else {
+        if (isAbortCleanup) {
+          exceptions[i] = txnId;
+        } else {
+          assert false : JavaUtils.txnIdToString(txnId) + " is open and <= hwm:" + highWatermark;
+        }
       }
       ++i;
     }
-    abortedTxns = Arrays.copyOf(abortedTxns, i);
-    BitSet bitSet = new BitSet(abortedTxns.length);
-    bitSet.set(0, abortedTxns.length);
-    //add ValidCleanerTxnList? - could be problematic for all the places that read it from
-    // string as they'd have to know which object to instantiate
-    return new ValidReadTxnList(abortedTxns, bitSet, highWaterMark, Long.MAX_VALUE);
+    exceptions = Arrays.copyOf(exceptions, i);
+    if (!isAbortCleanup) {
+      BitSet bitSet = new BitSet(exceptions.length);
+      bitSet.set(0, exceptions.length);
+      //add ValidCleanerTxnList? - could be problematic for all the places that read it from
+      // string as they'd have to know which object to instantiate
+      return new ValidReadTxnList(exceptions, bitSet, highWatermark, Long.MAX_VALUE);
+    } else {
+      return new ValidReadTxnList(exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
+    }
   }
+
   /**
    * Transform a {@link org.apache.hadoop.hive.metastore.api.TableValidWriteIds} to a
    * {@link org.apache.hadoop.hive.common.ValidCompactorWriteIdList}.  This assumes that the caller intends to

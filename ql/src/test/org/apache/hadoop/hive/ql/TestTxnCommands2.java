@@ -156,6 +156,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     //TestTxnCommands2WithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    //TestTxnCommands2WithAbortCleanupUsingCompactionCycle has the tests with abort cleanup in compaction cycle
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, false);
   }
@@ -2620,6 +2622,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
   @Test
   public void testDynPartInsertWithAborts() throws Exception {
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
     int[][] resultData = new int[][]{{1, 1}, {2, 2}};
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1')");
     verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
@@ -2641,7 +2644,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     count = TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE");
     // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
     // with rows in TXN_COMPONENTS
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"),
+            useCleanerForAbortCleanup ? 0 : 1, count);
 
     runWorker(hiveConf);
     runCleaner(hiveConf);
@@ -2651,6 +2655,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
   @Test
   public void testDynPartInsertWithMultiPartitionAborts() throws Exception {
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
     int [][] resultData = new int[][] {{1,1}, {2,2}};
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1')");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p2'),(2,2,'p2')");
@@ -2680,7 +2685,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     count = TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE");
     // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
     // with rows in TXN_COMPONENTS
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"),
+            useCleanerForAbortCleanup ? 0 : 1, count);
 
     r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
     Assert.assertEquals("4", r1.get(0));
@@ -2696,6 +2702,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
   @Test
   public void testDynPartIOWWithAborts() throws Exception {
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
     int [][] resultData = new int[][] {{1,1}, {2,2}};
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1')");
     verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
@@ -2718,7 +2725,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     count = TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE");
     // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
     // with rows in TXN_COMPONENTS
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"),
+            useCleanerForAbortCleanup ? 0 : 1, count);
 
     runWorker(hiveConf);
     runCleaner(hiveConf);
@@ -2729,6 +2737,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
   @Test
   public void testDynPartIOWWithMultiPartitionAborts() throws Exception {
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
     int [][] resultData = new int[][] {{1,1}, {2,2}};
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1')");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p2'),(2,2,'p2')");
@@ -2760,7 +2769,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     count = TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE");
     // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
     // with rows in TXN_COMPONENTS
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"),
+            useCleanerForAbortCleanup ? 0 : 1, count);
 
     r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
     Assert.assertEquals("4", r1.get(0));
@@ -2778,6 +2788,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
   @Test
   public void testDynPartUpdateWithAborts() throws Exception {
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
     int[][] resultData1 = new int[][]{{1, 2}, {3, 4}};
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values (1,2,'p1')");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values (3,4,'p1')");
@@ -2801,7 +2812,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     count = TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE");
     // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
     // with rows in TXN_COMPONENTS
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"),
+            useCleanerForAbortCleanup ? 0 : 1, count);
 
     runWorker(hiveConf);
     runCleaner(hiveConf);
@@ -2812,6 +2824,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
   @Test
   public void testDynPartMergeWithAborts() throws Exception {
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
     int [][] resultData = new int[][] {{1,1}, {2,2}};
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1')");
     verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
@@ -2845,7 +2858,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     count = TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE");
     // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
     // with rows in TXN_COMPONENTS
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"),
+            useCleanerForAbortCleanup ? 0 : 1, count);
 
     r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
     Assert.assertEquals("2", r1.get(0));

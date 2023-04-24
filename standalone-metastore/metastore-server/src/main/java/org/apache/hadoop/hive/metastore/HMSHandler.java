@@ -8815,7 +8815,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void mark_cleaned(CompactionInfoStruct cr) throws MetaException {
-    getTxnHandler().markCleaned(CompactionInfo.compactionStructToInfo(cr));
+    getTxnHandler().markCleaned(CompactionInfo.compactionStructToInfo(cr), false);
   }
 
   @Override

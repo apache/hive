@@ -157,8 +157,7 @@ public class Initiator extends MetaStoreCompactorThread {
               .parallelStream()
               .filter(ci -> isEligibleForCompaction(ci, currentCompactions, skipDBs, skipTables))
               .collect(Collectors.toSet())).get();
-          LOG.debug("Found " + potentials.size() + " potential compactions, " +
-              "checking to see if we should compact any of them");
+          LOG.debug("Found {} potential compactions, checking to see if we should compact any of them", potentials.size());
 
           checkInterrupt();
 
@@ -246,7 +245,7 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   @Override
-  public boolean isCacheEnabled() {
+  protected boolean isCacheEnabled() {
     return MetastoreConf.getBoolVar(conf,
             MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
   }

@@ -88,7 +88,7 @@ public abstract class MetaStoreCompactorThread extends CompactorThread implement
     return CompactorUtil.getPartitionsByNames(conf, ci.dbname, ci.tableName, ci.partName);
   }
 
-  public abstract boolean isCacheEnabled();
+  protected abstract boolean isCacheEnabled();
 
   protected void startCycleUpdater(long updateInterval, Runnable taskToRun) {
     if (cycleUpdaterExecutorService == null) {
