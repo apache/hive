@@ -443,6 +443,7 @@ public class ObjectStore implements RawStore, Configurable {
   /**
    * @return the property store instance
    */
+  @Override
   public PropertyStore getPropertyStore() {
     return propertyStore;
   }
@@ -4213,7 +4214,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Gets partition names from the table via ORM (JDOQL) filter pushdown.
-   * @param table The table.
+   * @param tblName The table.
    * @param tree The expression tree from which JDOQL filter will be made.
    * @param maxParts Maximum number of partitions to return.
    * @param isValidatedFilter Whether the filter was pre-validated for JDOQL pushdown by a client
@@ -5701,7 +5702,6 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  @Override
   public boolean runInTransaction(Runnable exec) throws MetaException {
     boolean success = false;
     Transaction tx = null;
@@ -5718,7 +5718,6 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
-  @Override
   public boolean dropProperties(String key) throws MetaException {
     boolean success = false;
     Transaction tx = null;
@@ -5741,7 +5740,7 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
-  @Override
+
   public MMetastoreDBProperties putProperties(String key, String value, String description,  byte[] content) throws MetaException {
     boolean success = false;
     try {
@@ -5781,7 +5780,7 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  @Override
+
   public boolean renameProperties(String mapKey, String newKey) throws MetaException {
     boolean success = false;
     Transaction tx = null;
@@ -5844,7 +5843,6 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  @Override
   public <T> T getProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
     boolean success = false;
     T properties = null;
@@ -5890,7 +5888,6 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  @Override
   public <T> Map<String, T> selectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
     boolean success = false;
     Map<String, T> properties = null;
