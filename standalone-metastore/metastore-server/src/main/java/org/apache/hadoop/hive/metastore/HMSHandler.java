@@ -4903,7 +4903,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ms.addPartition(destPartition);
         destPartitions.add(destPartition);
         ms.dropPartition(parsedSourceDbName[CAT_NAME], partition.getDbName(), sourceTable.getTableName(),
-            partition.getValues());
+            Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues()));
       }
       Path destParentPath = destPath.getParent();
       if (!wh.isDir(destParentPath)) {
@@ -5026,20 +5026,18 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         verifyIsWritablePath(partPath);
       }
 
-      if (!ms.dropPartition(catName, db_name, tbl_name, part_vals)) {
-        throw new MetaException("Unable to drop partition");
-      } else {
-        if (!transactionalListeners.isEmpty()) {
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part_vals);
+      ms.dropPartition(catName, db_name, tbl_name, partName);
 
-          transactionalListenerResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.DROP_PARTITION,
-                  new DropPartitionEvent(tbl, part, true, deleteData, this),
-                  envContext);
-        }
-        needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, db_name), tbl);
-        success = ms.commitTransaction();
+      if (!transactionalListeners.isEmpty()) {
+        transactionalListenerResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventType.DROP_PARTITION,
+                new DropPartitionEvent(tbl, part, true, deleteData, this),
+                envContext);
       }
+      needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, db_name), tbl);
+      success = ms.commitTransaction();
     } finally {
       if (!success) {
         ms.rollbackTransaction();

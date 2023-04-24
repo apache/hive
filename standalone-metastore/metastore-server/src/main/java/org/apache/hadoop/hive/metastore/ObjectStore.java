@@ -37,6 +37,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,7 +66,6 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -251,7 +251,6 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
@@ -3092,6 +3091,22 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MPartition part = getMPartition(catName, dbName, tableName, part_vals, null);
       dropPartitionCommon(part);
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return success;
+  }
+
+  @Override
+  public boolean dropPartition(String catName, String dbName, String tableName, String partName)
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean success = false;
+    try {
+      openTransaction();
+      dropPartitionsInternal(catName, dbName, tableName, Arrays.asList(partName), true, true);
       success = commitTransaction();
     } finally {
       if (!success) {

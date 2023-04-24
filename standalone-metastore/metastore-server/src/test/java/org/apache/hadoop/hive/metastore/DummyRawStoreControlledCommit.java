@@ -341,6 +341,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public boolean dropPartition(String catName, String dbName, String tableName, String partName)
+      throws MetaException, NoSuchObjectException,
+      InvalidObjectException, InvalidInputException {
+    return objectStore.dropPartition(catName, dbName, tableName, partName);
+  }
+
+  @Override
   public List<Partition> getPartitions(String catName, String dbName, String tableName, int max)
       throws MetaException, NoSuchObjectException {
     return objectStore.getPartitions(catName, dbName, tableName, max);
