@@ -517,6 +517,19 @@ public interface TxnStore extends Configurable {
   List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException;
 
   /**
+   * Find the aborted entries in TXN_COMPONENTS which can be used to
+   * clean directories belonging to transactions in aborted state.
+   * @param abortedTimeThreshold Age of table/partition's oldest aborted transaction involving a given table
+   *                            or partition that will trigger cleanup.
+   * @param abortedThreshold Number of aborted transactions involving a given table or partition
+   *                         that will trigger cleanup.
+   * @return Information of potential abort items that needs to be cleaned.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  List<CompactionInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
+
+  /**
    * Sets the cleaning start time for a particular compaction
    *
    * @param info info on the compaction entry
@@ -537,9 +550,10 @@ public interface TxnStore extends Configurable {
    * it has been compacted.
    *
    * @param info info on the compaction entry to remove
+   * @param isAbortOnly whether to cleanup only abort related cleanup information
    */
   @RetrySemantics.CannotRetry
-  void markCleaned(CompactionInfo info) throws MetaException;
+  void markCleaned(CompactionInfo info, boolean isAbortOnly) throws MetaException;
 
   /**
    * Mark a compaction entry as failed.  This will move it to the compaction history queue with a
@@ -584,7 +598,7 @@ public interface TxnStore extends Configurable {
   /**
    * Clean up aborted or committed transactions from txns that have no components in txn_components.  The reason such
    * txns exist can be that no work was done in this txn (e.g. Streaming opened TransactionBatch and
-   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called,
+   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo, boolean)} being called,
    * or the delete from the txns was delayed because of TXN_OPENTXN_TIMEOUT window.
    */
   @RetrySemantics.SafeToRetry
