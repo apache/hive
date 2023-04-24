@@ -55,7 +55,7 @@ public class HMSPropertyManager extends PropertyManager {
       if (value == null) {
         return null;
       }
-      if(value instanceof Number) {
+      if (value instanceof Number) {
         return MaintenanceOpType.findByValue(((Number) value).intValue());
       }
       return parse(value.toString());
@@ -86,7 +86,7 @@ public class HMSPropertyManager extends PropertyManager {
       if (value == null) {
         return null;
       }
-      if(value instanceof Number) {
+      if (value instanceof Number) {
         return MaintenanceOpStatus.findByValue(((Number) value).intValue());
       }
       return parse(value.toString());
