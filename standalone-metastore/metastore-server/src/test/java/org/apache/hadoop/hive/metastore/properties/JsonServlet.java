@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -73,7 +72,7 @@ public class JsonServlet extends HttpServlet {
     return "";
   }
 
-  private PropertyManager getPropertyManager(String ns) throws MetaException, NoSuchObjectException {
+  private PropertyManager getPropertyManager(String ns) {
     PropertyStore propertyStore = objectStore.getPropertyStore();
     PropertyManager mgr = PropertyManager.create(ns, propertyStore);
     return mgr;
@@ -103,12 +102,7 @@ public class JsonServlet extends HttpServlet {
   protected void doPost(HttpServletRequest request,
                         HttpServletResponse response) throws ServletException, IOException {
     String ns = getNamespace(request.getRequestURI());
-    PropertyManager mgr;
-    try {
-      mgr = getPropertyManager(ns);
-    } catch (MetaException | NoSuchObjectException xpty) {
-      throw new ServletException(xpty);
-    }
+    PropertyManager mgr = getPropertyManager(ns);
     Object json = readJson(request);
     if (json instanceof Map) {
       Map<String, Object> call = (Map<String, Object>) json;
@@ -147,12 +141,7 @@ public class JsonServlet extends HttpServlet {
   protected void doPut(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
     String ns = getNamespace(request.getRequestURI());
-    PropertyManager mgr;
-    try {
-      mgr = getPropertyManager(ns);
-    } catch (MetaException | NoSuchObjectException xpty) {
-      throw new ServletException(xpty);
-    }
+    PropertyManager mgr = getPropertyManager(ns);
     Object json = readJson(request);
     if (json instanceof Map) {
       try {
