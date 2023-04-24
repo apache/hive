@@ -3272,11 +3272,11 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD("hive.compactor.abortedtxn.threshold", 1000,
         "Number of aborted transactions involving a given table or partition that will trigger\n" +
-        "a major compaction."),
+        "a major compaction / cleanup of aborted directories."),
 
     HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD("hive.compactor.aborted.txn.time.threshold", "12h",
         new TimeValidator(TimeUnit.HOURS),
-        "Age of table/partition's oldest aborted transaction when compaction will be triggered. " +
+        "Age of table/partition's oldest aborted transaction when compaction / cleanup of aborted directories will be triggered. " +
         "Default time unit is: hours. Set to a negative number to disable."),
 
     HIVE_COMPACTOR_ACTIVE_DELTA_DIR_THRESHOLD("hive.compactor.active.delta.dir.threshold", 200,

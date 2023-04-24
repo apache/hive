@@ -67,6 +67,7 @@ import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.addVisibilitySuffix;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -107,7 +108,7 @@ public class TestCleaner extends CompactorTest {
     FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
     List<TaskHandler> taskHandlers = TaskHandlerFactory.getInstance()
             .getHandlers(conf, mockedHandler, metadataCache, false, fsRemover);
-    doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
+    doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class), eq(false));
 
     Table t = newTable("default", "retry_test", false);
 
@@ -130,8 +131,8 @@ public class TestCleaner extends CompactorTest {
     for (int i = 1; i < 4; i++) {
       Cleaner cleaner = new Cleaner();
       cleaner.setConf(conf);
-      cleaner.setCleanupHandlers(taskHandlers);
       cleaner.init(new AtomicBoolean(true));
+      cleaner.setCleanupHandlers(taskHandlers);
       FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
       cleaner.run();
@@ -157,8 +158,8 @@ public class TestCleaner extends CompactorTest {
     //Do a final run to reach the maximum retry attempts, so the state finally should be set to failed
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
-    cleaner.setCleanupHandlers(taskHandlers);
     cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(taskHandlers);
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
     cleaner.run();
@@ -195,13 +196,13 @@ public class TestCleaner extends CompactorTest {
     FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
     List<TaskHandler> taskHandlers = TaskHandlerFactory.getInstance()
             .getHandlers(conf, mockedHandler, metadataCache, false, fsRemover);
-    doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
+    doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class), eq(false));
 
     //Do a run to fail the clean and set the retention time
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
-    cleaner.setCleanupHandlers(taskHandlers);
     cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(taskHandlers);
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
     cleaner.run();
@@ -216,8 +217,8 @@ public class TestCleaner extends CompactorTest {
     //Do a final run and check if the compaction is not picked up again
     cleaner = new Cleaner();
     cleaner.setConf(conf);
-    cleaner.setCleanupHandlers(taskHandlers);
     cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(taskHandlers);
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
     cleaner.run();
@@ -815,7 +816,7 @@ public class TestCleaner extends CompactorTest {
   }
 
   @Test
-  public void NoCleanupAfterMajorCompaction() throws Exception {
+  public void noCleanupAfterMajorCompaction() throws Exception {
     Map<String, String> parameters = new HashMap<>();
 
     //With no cleanup true
@@ -836,7 +837,7 @@ public class TestCleaner extends CompactorTest {
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(1, rsp.getCompactsSize());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, rsp.getCompacts().get(0).getState());
 
     // Check that the files are not removed
     List<Path> paths = getDirectories(conf, t, null);
@@ -884,7 +885,7 @@ public class TestCleaner extends CompactorTest {
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(1, rsp.getCompactsSize());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, rsp.getCompacts().get(0).getState());
 
     // Check that the files are not removed
     List<Path> paths = getDirectories(conf, t, p);
