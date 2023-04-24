@@ -218,7 +218,7 @@ public abstract class PropertyManager {
    * If the value is null, the property is removed.
    * @param map the map of properties to inject.
    */
-  public void setProperties(Map<String, Object> map) {
+  public void setProperties(Map<String, ?> map) {
     map.forEach(this::setProperty);
   }
 
