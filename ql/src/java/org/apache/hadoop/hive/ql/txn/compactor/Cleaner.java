@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -61,12 +60,9 @@ public class Cleaner extends MetaStoreCompactorThread {
     cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
             COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
-    if (CollectionUtils.isEmpty(cleanupHandlers)) {
-      FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
-      cleanupHandlers = TaskHandlerFactory.getInstance()
-              .getHandlers(conf, txnHandler, metadataCache,
-                      metricsEnabled, fsRemover);
-    }
+    FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
+    cleanupHandlers = TaskHandlerFactory.getInstance()
+            .getHandlers(conf, txnHandler, metadataCache, metricsEnabled, fsRemover);
   }
 
   @Override
@@ -150,7 +146,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   @Override
-  public boolean isCacheEnabled() {
+  protected boolean isCacheEnabled() {
     return MetastoreConf.getBoolVar(conf,
             MetastoreConf.ConfVars.COMPACTOR_CLEANER_TABLECACHE_ON);
   }

@@ -67,8 +67,8 @@ public class TestHandler extends TestCleaner {
     AtomicBoolean stop = new AtomicBoolean(true);
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
     cleaner.init(stop);
+    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
@@ -98,8 +98,8 @@ public class TestHandler extends TestCleaner {
             false, fsRemover));
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
     cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
     cleaner.run();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
