@@ -37,13 +37,13 @@ import java.util.function.Predicate;
  */
 public class JdoPropertyStore extends PropertyStore {
   /** The jdo objects store. */
-  private final RawStore objectStore;
+  private final ObjectStore objectStore;
 
   /**
    * Basic ctor.
    * @param store the object store
    */
-  public JdoPropertyStore(RawStore store) {
+  public JdoPropertyStore(ObjectStore store) {
     this.objectStore = store;
   }
 
