@@ -28,8 +28,8 @@ import org.apache.hadoop.hive.metastore.TestObjectStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpStatus;
-import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpType;
+import org.apache.hadoop.hive.metastore.api.MaintenanceOpStatus;
+import org.apache.hadoop.hive.metastore.api.MaintenanceOpType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -174,6 +174,8 @@ public abstract class HMSTestBase {
    * @throws Exception
    */
   protected int createServer(Configuration conf) throws Exception {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_TRANSPORT_MODE, "http");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_PROTOCOL, "json");
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
   }
 
@@ -184,6 +186,8 @@ public abstract class HMSTestBase {
    */
   protected PropertyClient createClient(Configuration conf, int port) throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "http://localhost:" + port);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE, "http");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_THRIFT_PROTOCOL, "json");
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
     return new ThriftPropertyClient(NS, client);
@@ -233,11 +237,11 @@ public abstract class HMSTestBase {
         jsonjexl.evaluate(null, strw, tname, i * i % 100, (i + 1) % 7);
         ptyMap.put(tb + "policy", strw.toString());
 
-        HMSPropertyManager.MaintenanceOpStatus status = HMSPropertyManager.findOpStatus( i % MaintenanceOpStatus.values().length);
+        MaintenanceOpStatus status = MaintenanceOpStatus.findByValue(1 + i % MaintenanceOpStatus.values().length);
         Assert.assertNotNull(status);
         ptyMap.put(tb + "maint_status", status.toString());
 
-        HMSPropertyManager.MaintenanceOpType type = HMSPropertyManager.findOpType(i % MaintenanceOpType.values().length);
+        MaintenanceOpType type = MaintenanceOpType.findByValue(1 + i % MaintenanceOpType.values().length);
         Assert.assertNotNull(type);
         ptyMap.put(tb + "maint_operation", type.toString());
       }

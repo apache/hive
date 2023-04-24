@@ -18,8 +18,9 @@
 
 package org.apache.hadoop.hive.metastore.properties;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import org.apache.hadoop.hive.metastore.api.MaintenanceOpStatus;
+import org.apache.hadoop.hive.metastore.api.MaintenanceOpType;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -43,53 +44,6 @@ public class HMSPropertyManager extends PropertyManager {
     PropertyManager.declare("hms", HMSPropertyManager.class);
   }
 
-  /** Table maintenance operation type. */
-  public enum MaintenanceOpType {
-    COMPACTION,
-    SNAPSHOT_EXPIRY,
-    STATS_REBUILD,
-    MV_BUILD,
-    MV_REFRESH,
-    SHUFFLE_TO_NEW_PART,
-    RECOMPRESS,
-    REORG
-  }
-
-  /**
-   * Finds an op-type by its ordinal.
-   * @param ordinal the enum ordinal
-   * @return the enum value or null if not found
-   */
-  public static MaintenanceOpType findOpType(int ordinal) {
-    return MOP.get(ordinal);
-  }
-
-  /** The map form ordinal to OpType. */
-  private static final Map<Integer, MaintenanceOpType> MOP;
-  static {
-    MOP = new HashMap<>(MaintenanceOpType.values().length);
-    Arrays.stream(MaintenanceOpType.values()).forEach(e -> MOP.put(e.ordinal(), e));
-  }
-
-  /** Table maintenance operation status. */
-  public enum MaintenanceOpStatus {
-    MAINTENANCE_NEEDED, SCHEDULED, IN_PROGRESS, DONE, CLEANUP_NEEDED, FAILED;
-  }
-  /** The map form ordinal to OpStatus. */
-  private static final Map<Integer, MaintenanceOpStatus> MOS;
-  static {
-    MOS = new HashMap<>(MaintenanceOpStatus.values().length);
-    Arrays.stream(MaintenanceOpStatus.values()).forEach(e -> MOS.put(e.ordinal(), e));
-  }
-  /**
-   * Finds an op-type by its ordinal.
-   * @param ordinal the enum ordinal
-   * @return the enum value or null if not found
-   */
-  public static MaintenanceOpStatus findOpStatus(int ordinal) {
-    return MOS.get(ordinal);
-  }
-
   /**
    * Maintenance Operation Type.
    */
@@ -102,7 +56,7 @@ public class HMSPropertyManager extends PropertyManager {
         return null;
       }
       if (value instanceof Number) {
-        return findOpType(((Number) value).intValue());
+        return MaintenanceOpType.findByValue(((Number) value).intValue());
       }
       return parse(value.toString());
     }
@@ -133,7 +87,7 @@ public class HMSPropertyManager extends PropertyManager {
         return null;
       }
       if (value instanceof Number) {
-        return findOpStatus(((Number) value).intValue());
+        return MaintenanceOpStatus.findByValue(((Number) value).intValue());
       }
       return parse(value.toString());
     }
