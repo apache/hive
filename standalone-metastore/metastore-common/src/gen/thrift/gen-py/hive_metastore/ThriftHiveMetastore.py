@@ -6329,6 +6329,10 @@ class Client(fb303.FacebookService.Client, Iface):
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
+        if result.e1 is not None:
+            raise result.e1
+        if result.e2 is not None:
+            raise result.e2
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_properties failed: unknown result")
 
     def set_properties(self, req):
@@ -6361,6 +6365,10 @@ class Client(fb303.FacebookService.Client, Iface):
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
+        if result.e1 is not None:
+            raise result.e1
+        if result.e2 is not None:
+            raise result.e2
         raise TApplicationException(TApplicationException.MISSING_RESULT, "set_properties failed: unknown result")
 
     def alter_partition(self, db_name, tbl_name, new_part):
@@ -15674,6 +15682,12 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
+        except MetaException as e1:
+            msg_type = TMessageType.REPLY
+            result.e1 = e1
+        except NoSuchObjectException as e2:
+            msg_type = TMessageType.REPLY
+            result.e2 = e2
         except TApplicationException as ex:
             logging.exception('TApplication exception in handler')
             msg_type = TMessageType.EXCEPTION
@@ -15697,6 +15711,12 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
+        except MetaException as e1:
+            msg_type = TMessageType.REPLY
+            result.e1 = e1
+        except NoSuchObjectException as e2:
+            msg_type = TMessageType.REPLY
+            result.e2 = e2
         except TApplicationException as ex:
             logging.exception('TApplication exception in handler')
             msg_type = TMessageType.EXCEPTION
@@ -37624,12 +37644,16 @@ class get_properties_result(object):
     """
     Attributes:
      - success
+     - e1
+     - e2
 
     """
 
 
-    def __init__(self, success=None,):
+    def __init__(self, success=None, e1=None, e2=None,):
         self.success = success
+        self.e1 = e1
+        self.e2 = e2
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -37646,6 +37670,16 @@ class get_properties_result(object):
                     self.success.read(iprot)
                 else:
                     iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.e2 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -37659,6 +37693,14 @@ class get_properties_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.STRUCT, 0)
             self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.e1 is not None:
+            oprot.writeFieldBegin('e1', TType.STRUCT, 1)
+            self.e1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.e2 is not None:
+            oprot.writeFieldBegin('e2', TType.STRUCT, 2)
+            self.e2.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -37679,6 +37721,8 @@ class get_properties_result(object):
 all_structs.append(get_properties_result)
 get_properties_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [PropertyGetResponse, None], None, ),  # 0
+    (1, TType.STRUCT, 'e1', [MetaException, None], None, ),  # 1
+    (2, TType.STRUCT, 'e2', [NoSuchObjectException, None], None, ),  # 2
 )
 
 
@@ -37749,12 +37793,16 @@ class set_properties_result(object):
     """
     Attributes:
      - success
+     - e1
+     - e2
 
     """
 
 
-    def __init__(self, success=None,):
+    def __init__(self, success=None, e1=None, e2=None,):
         self.success = success
+        self.e1 = e1
+        self.e2 = e2
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -37770,6 +37818,16 @@ class set_properties_result(object):
                     self.success = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.e2 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -37783,6 +37841,14 @@ class set_properties_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.BOOL, 0)
             oprot.writeBool(self.success)
+            oprot.writeFieldEnd()
+        if self.e1 is not None:
+            oprot.writeFieldBegin('e1', TType.STRUCT, 1)
+            self.e1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.e2 is not None:
+            oprot.writeFieldBegin('e2', TType.STRUCT, 2)
+            self.e2.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -37803,6 +37869,8 @@ class set_properties_result(object):
 all_structs.append(set_properties_result)
 set_properties_result.thrift_spec = (
     (0, TType.BOOL, 'success', None, None, ),  # 0
+    (1, TType.STRUCT, 'e1', [MetaException, None], None, ),  # 1
+    (2, TType.STRUCT, 'e2', [NoSuchObjectException, None], None, ),  # 2
 )
 
 
