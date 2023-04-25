@@ -138,7 +138,7 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     return objs;
   }
 
-  private HivePrivilegeObject createPrivilegeObject(String dbName, String tableName, String owner,
+  private HivePrivilegeObject createPrivilegeObjectForTable(String dbName, String tableName, String owner,
       PrincipalType ownerType) {
     return new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, dbName, tableName, null, null,
         HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null, owner, ownerType);
@@ -147,7 +147,7 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
   private List<HivePrivilegeObject> tablesToPrivilegeObjs(List<Table> tableList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
     for (Table tableObject : tableList) {
-      objs.add(createPrivilegeObject(tableObject.getDbName(), tableObject.getTableName(), tableObject.getOwner(),
+      objs.add(createPrivilegeObjectForTable(tableObject.getDbName(), tableObject.getTableName(), tableObject.getOwner(),
           tableObject.getOwnerType()));
     }
     return objs;
@@ -156,7 +156,7 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
   private List<HivePrivilegeObject> tableMetasToPrivilegeObjs(List<TableMeta> tableMetas) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
     for (TableMeta tableMeta : tableMetas) {
-      objs.add(createPrivilegeObject(tableMeta.getDbName(), tableMeta.getTableName(), tableMeta.getOwnerName(),
+      objs.add(createPrivilegeObjectForTable(tableMeta.getDbName(), tableMeta.getTableName(), tableMeta.getOwnerName(),
           tableMeta.getOwnerType()));
     }
     return objs;
