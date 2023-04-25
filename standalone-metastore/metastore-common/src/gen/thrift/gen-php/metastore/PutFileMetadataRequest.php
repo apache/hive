@@ -97,13 +97,13 @@ class PutFileMetadataRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->fileIds = array();
-                        $_size950 = 0;
-                        $_etype953 = 0;
-                        $xfer += $input->readListBegin($_etype953, $_size950);
-                        for ($_i954 = 0; $_i954 < $_size950; ++$_i954) {
-                            $elem955 = null;
-                            $xfer += $input->readI64($elem955);
-                            $this->fileIds []= $elem955;
+                        $_size925 = 0;
+                        $_etype928 = 0;
+                        $xfer += $input->readListBegin($_etype928, $_size925);
+                        for ($_i929 = 0; $_i929 < $_size925; ++$_i929) {
+                            $elem930 = null;
+                            $xfer += $input->readI64($elem930);
+                            $this->fileIds []= $elem930;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -113,13 +113,13 @@ class PutFileMetadataRequest
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->metadata = array();
-                        $_size956 = 0;
-                        $_etype959 = 0;
-                        $xfer += $input->readListBegin($_etype959, $_size956);
-                        for ($_i960 = 0; $_i960 < $_size956; ++$_i960) {
-                            $elem961 = null;
-                            $xfer += $input->readString($elem961);
-                            $this->metadata []= $elem961;
+                        $_size931 = 0;
+                        $_etype934 = 0;
+                        $xfer += $input->readListBegin($_etype934, $_size931);
+                        for ($_i935 = 0; $_i935 < $_size931; ++$_i935) {
+                            $elem936 = null;
+                            $xfer += $input->readString($elem936);
+                            $this->metadata []= $elem936;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -153,8 +153,8 @@ class PutFileMetadataRequest
             }
             $xfer += $output->writeFieldBegin('fileIds', TType::LST, 1);
             $output->writeListBegin(TType::I64, count($this->fileIds));
-            foreach ($this->fileIds as $iter962) {
-                $xfer += $output->writeI64($iter962);
+            foreach ($this->fileIds as $iter937) {
+                $xfer += $output->writeI64($iter937);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -165,8 +165,8 @@ class PutFileMetadataRequest
             }
             $xfer += $output->writeFieldBegin('metadata', TType::LST, 2);
             $output->writeListBegin(TType::STRING, count($this->metadata));
-            foreach ($this->metadata as $iter963) {
-                $xfer += $output->writeString($iter963);
+            foreach ($this->metadata as $iter938) {
+                $xfer += $output->writeString($iter938);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

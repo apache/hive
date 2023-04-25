@@ -141,14 +141,14 @@ class WMFullResourcePlan
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->pools = array();
-                        $_size1048 = 0;
-                        $_etype1051 = 0;
-                        $xfer += $input->readListBegin($_etype1051, $_size1048);
-                        for ($_i1052 = 0; $_i1052 < $_size1048; ++$_i1052) {
-                            $elem1053 = null;
-                            $elem1053 = new \metastore\WMPool();
-                            $xfer += $elem1053->read($input);
-                            $this->pools []= $elem1053;
+                        $_size1023 = 0;
+                        $_etype1026 = 0;
+                        $xfer += $input->readListBegin($_etype1026, $_size1023);
+                        for ($_i1027 = 0; $_i1027 < $_size1023; ++$_i1027) {
+                            $elem1028 = null;
+                            $elem1028 = new \metastore\WMPool();
+                            $xfer += $elem1028->read($input);
+                            $this->pools []= $elem1028;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -158,14 +158,14 @@ class WMFullResourcePlan
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->mappings = array();
-                        $_size1054 = 0;
-                        $_etype1057 = 0;
-                        $xfer += $input->readListBegin($_etype1057, $_size1054);
-                        for ($_i1058 = 0; $_i1058 < $_size1054; ++$_i1058) {
-                            $elem1059 = null;
-                            $elem1059 = new \metastore\WMMapping();
-                            $xfer += $elem1059->read($input);
-                            $this->mappings []= $elem1059;
+                        $_size1029 = 0;
+                        $_etype1032 = 0;
+                        $xfer += $input->readListBegin($_etype1032, $_size1029);
+                        for ($_i1033 = 0; $_i1033 < $_size1029; ++$_i1033) {
+                            $elem1034 = null;
+                            $elem1034 = new \metastore\WMMapping();
+                            $xfer += $elem1034->read($input);
+                            $this->mappings []= $elem1034;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -175,14 +175,14 @@ class WMFullResourcePlan
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->triggers = array();
-                        $_size1060 = 0;
-                        $_etype1063 = 0;
-                        $xfer += $input->readListBegin($_etype1063, $_size1060);
-                        for ($_i1064 = 0; $_i1064 < $_size1060; ++$_i1064) {
-                            $elem1065 = null;
-                            $elem1065 = new \metastore\WMTrigger();
-                            $xfer += $elem1065->read($input);
-                            $this->triggers []= $elem1065;
+                        $_size1035 = 0;
+                        $_etype1038 = 0;
+                        $xfer += $input->readListBegin($_etype1038, $_size1035);
+                        for ($_i1039 = 0; $_i1039 < $_size1035; ++$_i1039) {
+                            $elem1040 = null;
+                            $elem1040 = new \metastore\WMTrigger();
+                            $xfer += $elem1040->read($input);
+                            $this->triggers []= $elem1040;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -192,14 +192,14 @@ class WMFullResourcePlan
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->poolTriggers = array();
-                        $_size1066 = 0;
-                        $_etype1069 = 0;
-                        $xfer += $input->readListBegin($_etype1069, $_size1066);
-                        for ($_i1070 = 0; $_i1070 < $_size1066; ++$_i1070) {
-                            $elem1071 = null;
-                            $elem1071 = new \metastore\WMPoolTrigger();
-                            $xfer += $elem1071->read($input);
-                            $this->poolTriggers []= $elem1071;
+                        $_size1041 = 0;
+                        $_etype1044 = 0;
+                        $xfer += $input->readListBegin($_etype1044, $_size1041);
+                        for ($_i1045 = 0; $_i1045 < $_size1041; ++$_i1045) {
+                            $elem1046 = null;
+                            $elem1046 = new \metastore\WMPoolTrigger();
+                            $xfer += $elem1046->read($input);
+                            $this->poolTriggers []= $elem1046;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -234,8 +234,8 @@ class WMFullResourcePlan
             }
             $xfer += $output->writeFieldBegin('pools', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->pools));
-            foreach ($this->pools as $iter1072) {
-                $xfer += $iter1072->write($output);
+            foreach ($this->pools as $iter1047) {
+                $xfer += $iter1047->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -246,8 +246,8 @@ class WMFullResourcePlan
             }
             $xfer += $output->writeFieldBegin('mappings', TType::LST, 3);
             $output->writeListBegin(TType::STRUCT, count($this->mappings));
-            foreach ($this->mappings as $iter1073) {
-                $xfer += $iter1073->write($output);
+            foreach ($this->mappings as $iter1048) {
+                $xfer += $iter1048->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -258,8 +258,8 @@ class WMFullResourcePlan
             }
             $xfer += $output->writeFieldBegin('triggers', TType::LST, 4);
             $output->writeListBegin(TType::STRUCT, count($this->triggers));
-            foreach ($this->triggers as $iter1074) {
-                $xfer += $iter1074->write($output);
+            foreach ($this->triggers as $iter1049) {
+                $xfer += $iter1049->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -270,8 +270,8 @@ class WMFullResourcePlan
             }
             $xfer += $output->writeFieldBegin('poolTriggers', TType::LST, 5);
             $output->writeListBegin(TType::STRUCT, count($this->poolTriggers));
-            foreach ($this->poolTriggers as $iter1075) {
-                $xfer += $iter1075->write($output);
+            foreach ($this->poolTriggers as $iter1050) {
+                $xfer += $iter1050->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

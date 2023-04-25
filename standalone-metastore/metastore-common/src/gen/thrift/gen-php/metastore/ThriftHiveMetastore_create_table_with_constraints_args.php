@@ -175,14 +175,14 @@ class ThriftHiveMetastore_create_table_with_constraints_args
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->primaryKeys = array();
-                        $_size1360 = 0;
-                        $_etype1363 = 0;
-                        $xfer += $input->readListBegin($_etype1363, $_size1360);
-                        for ($_i1364 = 0; $_i1364 < $_size1360; ++$_i1364) {
-                            $elem1365 = null;
-                            $elem1365 = new \metastore\SQLPrimaryKey();
-                            $xfer += $elem1365->read($input);
-                            $this->primaryKeys []= $elem1365;
+                        $_size1335 = 0;
+                        $_etype1338 = 0;
+                        $xfer += $input->readListBegin($_etype1338, $_size1335);
+                        for ($_i1339 = 0; $_i1339 < $_size1335; ++$_i1339) {
+                            $elem1340 = null;
+                            $elem1340 = new \metastore\SQLPrimaryKey();
+                            $xfer += $elem1340->read($input);
+                            $this->primaryKeys []= $elem1340;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -192,14 +192,14 @@ class ThriftHiveMetastore_create_table_with_constraints_args
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->foreignKeys = array();
-                        $_size1366 = 0;
-                        $_etype1369 = 0;
-                        $xfer += $input->readListBegin($_etype1369, $_size1366);
-                        for ($_i1370 = 0; $_i1370 < $_size1366; ++$_i1370) {
-                            $elem1371 = null;
-                            $elem1371 = new \metastore\SQLForeignKey();
-                            $xfer += $elem1371->read($input);
-                            $this->foreignKeys []= $elem1371;
+                        $_size1341 = 0;
+                        $_etype1344 = 0;
+                        $xfer += $input->readListBegin($_etype1344, $_size1341);
+                        for ($_i1345 = 0; $_i1345 < $_size1341; ++$_i1345) {
+                            $elem1346 = null;
+                            $elem1346 = new \metastore\SQLForeignKey();
+                            $xfer += $elem1346->read($input);
+                            $this->foreignKeys []= $elem1346;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -209,14 +209,14 @@ class ThriftHiveMetastore_create_table_with_constraints_args
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->uniqueConstraints = array();
-                        $_size1372 = 0;
-                        $_etype1375 = 0;
-                        $xfer += $input->readListBegin($_etype1375, $_size1372);
-                        for ($_i1376 = 0; $_i1376 < $_size1372; ++$_i1376) {
-                            $elem1377 = null;
-                            $elem1377 = new \metastore\SQLUniqueConstraint();
-                            $xfer += $elem1377->read($input);
-                            $this->uniqueConstraints []= $elem1377;
+                        $_size1347 = 0;
+                        $_etype1350 = 0;
+                        $xfer += $input->readListBegin($_etype1350, $_size1347);
+                        for ($_i1351 = 0; $_i1351 < $_size1347; ++$_i1351) {
+                            $elem1352 = null;
+                            $elem1352 = new \metastore\SQLUniqueConstraint();
+                            $xfer += $elem1352->read($input);
+                            $this->uniqueConstraints []= $elem1352;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -226,14 +226,14 @@ class ThriftHiveMetastore_create_table_with_constraints_args
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->notNullConstraints = array();
-                        $_size1378 = 0;
-                        $_etype1381 = 0;
-                        $xfer += $input->readListBegin($_etype1381, $_size1378);
-                        for ($_i1382 = 0; $_i1382 < $_size1378; ++$_i1382) {
-                            $elem1383 = null;
-                            $elem1383 = new \metastore\SQLNotNullConstraint();
-                            $xfer += $elem1383->read($input);
-                            $this->notNullConstraints []= $elem1383;
+                        $_size1353 = 0;
+                        $_etype1356 = 0;
+                        $xfer += $input->readListBegin($_etype1356, $_size1353);
+                        for ($_i1357 = 0; $_i1357 < $_size1353; ++$_i1357) {
+                            $elem1358 = null;
+                            $elem1358 = new \metastore\SQLNotNullConstraint();
+                            $xfer += $elem1358->read($input);
+                            $this->notNullConstraints []= $elem1358;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -243,14 +243,14 @@ class ThriftHiveMetastore_create_table_with_constraints_args
                 case 6:
                     if ($ftype == TType::LST) {
                         $this->defaultConstraints = array();
-                        $_size1384 = 0;
-                        $_etype1387 = 0;
-                        $xfer += $input->readListBegin($_etype1387, $_size1384);
-                        for ($_i1388 = 0; $_i1388 < $_size1384; ++$_i1388) {
-                            $elem1389 = null;
-                            $elem1389 = new \metastore\SQLDefaultConstraint();
-                            $xfer += $elem1389->read($input);
-                            $this->defaultConstraints []= $elem1389;
+                        $_size1359 = 0;
+                        $_etype1362 = 0;
+                        $xfer += $input->readListBegin($_etype1362, $_size1359);
+                        for ($_i1363 = 0; $_i1363 < $_size1359; ++$_i1363) {
+                            $elem1364 = null;
+                            $elem1364 = new \metastore\SQLDefaultConstraint();
+                            $xfer += $elem1364->read($input);
+                            $this->defaultConstraints []= $elem1364;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -260,14 +260,14 @@ class ThriftHiveMetastore_create_table_with_constraints_args
                 case 7:
                     if ($ftype == TType::LST) {
                         $this->checkConstraints = array();
-                        $_size1390 = 0;
-                        $_etype1393 = 0;
-                        $xfer += $input->readListBegin($_etype1393, $_size1390);
-                        for ($_i1394 = 0; $_i1394 < $_size1390; ++$_i1394) {
-                            $elem1395 = null;
-                            $elem1395 = new \metastore\SQLCheckConstraint();
-                            $xfer += $elem1395->read($input);
-                            $this->checkConstraints []= $elem1395;
+                        $_size1365 = 0;
+                        $_etype1368 = 0;
+                        $xfer += $input->readListBegin($_etype1368, $_size1365);
+                        for ($_i1369 = 0; $_i1369 < $_size1365; ++$_i1369) {
+                            $elem1370 = null;
+                            $elem1370 = new \metastore\SQLCheckConstraint();
+                            $xfer += $elem1370->read($input);
+                            $this->checkConstraints []= $elem1370;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -302,8 +302,8 @@ class ThriftHiveMetastore_create_table_with_constraints_args
             }
             $xfer += $output->writeFieldBegin('primaryKeys', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->primaryKeys));
-            foreach ($this->primaryKeys as $iter1396) {
-                $xfer += $iter1396->write($output);
+            foreach ($this->primaryKeys as $iter1371) {
+                $xfer += $iter1371->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -314,8 +314,8 @@ class ThriftHiveMetastore_create_table_with_constraints_args
             }
             $xfer += $output->writeFieldBegin('foreignKeys', TType::LST, 3);
             $output->writeListBegin(TType::STRUCT, count($this->foreignKeys));
-            foreach ($this->foreignKeys as $iter1397) {
-                $xfer += $iter1397->write($output);
+            foreach ($this->foreignKeys as $iter1372) {
+                $xfer += $iter1372->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -326,8 +326,8 @@ class ThriftHiveMetastore_create_table_with_constraints_args
             }
             $xfer += $output->writeFieldBegin('uniqueConstraints', TType::LST, 4);
             $output->writeListBegin(TType::STRUCT, count($this->uniqueConstraints));
-            foreach ($this->uniqueConstraints as $iter1398) {
-                $xfer += $iter1398->write($output);
+            foreach ($this->uniqueConstraints as $iter1373) {
+                $xfer += $iter1373->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -338,8 +338,8 @@ class ThriftHiveMetastore_create_table_with_constraints_args
             }
             $xfer += $output->writeFieldBegin('notNullConstraints', TType::LST, 5);
             $output->writeListBegin(TType::STRUCT, count($this->notNullConstraints));
-            foreach ($this->notNullConstraints as $iter1399) {
-                $xfer += $iter1399->write($output);
+            foreach ($this->notNullConstraints as $iter1374) {
+                $xfer += $iter1374->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -350,8 +350,8 @@ class ThriftHiveMetastore_create_table_with_constraints_args
             }
             $xfer += $output->writeFieldBegin('defaultConstraints', TType::LST, 6);
             $output->writeListBegin(TType::STRUCT, count($this->defaultConstraints));
-            foreach ($this->defaultConstraints as $iter1400) {
-                $xfer += $iter1400->write($output);
+            foreach ($this->defaultConstraints as $iter1375) {
+                $xfer += $iter1375->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -362,8 +362,8 @@ class ThriftHiveMetastore_create_table_with_constraints_args
             }
             $xfer += $output->writeFieldBegin('checkConstraints', TType::LST, 7);
             $output->writeListBegin(TType::STRUCT, count($this->checkConstraints));
-            foreach ($this->checkConstraints as $iter1401) {
-                $xfer += $iter1401->write($output);
+            foreach ($this->checkConstraints as $iter1376) {
+                $xfer += $iter1376->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
