@@ -332,7 +332,7 @@
                   <goal>shade</goal>
                 </goals>
                 <configuration>
-                  <shadeTestJar>true</shadeTestJar>
+                  <shadeTestJar>false</shadeTestJar>
                   <createDependencyReducedPom>false</createDependencyReducedPom>
                   <relocations>
                     <relocation>
