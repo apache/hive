@@ -198,7 +198,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
               b2 -> b2.operand(Values.class).predicate(Values::isEmpty).noInputs()))
       .withDescription("PruneEmptyCorrelate(right)")
       .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-      .as(CorrelateEmptyRuleConfig.class)
+      .as(CorrelateRightEmptyRuleConfig.class)
       .toRule();
   public static final RelOptRule CORRELATE_LEFT_INSTANCE = RelRule.Config.EMPTY
       .withOperandSupplier(b0 ->
@@ -207,43 +207,53 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
               b2 -> b2.operand(RelNode.class).anyInputs()))
       .withDescription("PruneEmptyCorrelate(left)")
       .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-      .as(CorrelateEmptyRuleConfig.class)
+      .as(CorrelateLeftEmptyRuleConfig.class)
       .toRule();
-  
-  /** Configuration for rule that prunes a correlate if one of its inputs is empty. */
-  public interface CorrelateEmptyRuleConfig extends PruneEmptyRule.Config {
+
+  /** Configuration for rule that prunes a correlate if left input is empty. */
+  public interface CorrelateLeftEmptyRuleConfig extends PruneEmptyRule.Config {
     @Override
     default PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
         @Override
         public void onMatch(RelOptRuleCall call) {
           if (Bug.CALCITE_5669_FIXED) {
-            throw new IllegalStateException(
-                "Class is redundant after fix is merged into Calcite");
+            throw new IllegalStateException("Class is redundant after fix is merged into Calcite");
+          }
+          final Correlate corr = call.rel(0);
+          call.transformTo(call.builder().push(corr).empty().build());
+        }
+      };
+    }
+  }
+
+  /** Configuration for rule that prunes a correlate if right input is empty. */
+  public interface CorrelateRightEmptyRuleConfig extends PruneEmptyRule.Config {
+    @Override
+    default PruneEmptyRule toRule() {
+      return new PruneEmptyRule(this) {
+        @Override
+        public void onMatch(RelOptRuleCall call) {
+          if (Bug.CALCITE_5669_FIXED) {
+            throw new IllegalStateException("Class is redundant after fix is merged into Calcite");
           }
           final Correlate corr = call.rel(0);
           final RelNode left = call.rel(1);
-          final RelNode right = call.rel(2);
+          final RelBuilder b = call.builder();
           final RelNode newRel;
-          RelBuilder b = call.builder();
-          if (left instanceof Values) {
+          switch (corr.getJoinType()) {
+          case LEFT:
+            newRel = padWithNulls(b, left, corr.getRowType(), false);
+            break;
+          case INNER:
+          case SEMI:
             newRel = b.push(corr).empty().build();
-          } else {
-            assert right instanceof Values;
-            switch (corr.getJoinType()) {
-            case LEFT:
-              newRel = padWithNulls(b, left, corr.getRowType(), false);
-              break;
-            case INNER:
-            case SEMI:
-              newRel = b.push(corr).empty().build();
-              break;
-            case ANTI:
-              newRel = left;
-              break;
-            default:
-              throw new IllegalStateException("Correlate does not support " + corr.getJoinType());
-            }
+            break;
+          case ANTI:
+            newRel = left;
+            break;
+          default:
+            throw new IllegalStateException("Correlate does not support " + corr.getJoinType());
           }
           call.transformTo(newRel);
         }
