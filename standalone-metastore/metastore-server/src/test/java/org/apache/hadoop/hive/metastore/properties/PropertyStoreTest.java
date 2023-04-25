@@ -36,8 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 
-import static org.apache.hadoop.hive.metastore.TestObjectStore.*;
-
 public class PropertyStoreTest {
   private ObjectStore objectStore = null;
   private Configuration conf;
@@ -86,7 +84,7 @@ public class PropertyStoreTest {
     MMetastoreDBProperties p0 = objectStore.putProperties("key", "value", null, "content".getBytes(StandardCharsets.UTF_8));
     Assert.assertNotNull(p0);
     Assert.assertNotNull(p0.getPropertyContent());
-    MMetastoreDBProperties p1 = objectStore.getProperties("key", (p)->{ p.getPropertyContent(); return p; });
+    MMetastoreDBProperties p1 = objectStore.fetchProperties("key", (p)->{ p.getPropertyContent(); return p; });
     Assert.assertNotNull(p1);
     Assert.assertEquals(p0.getPropertykey(), p1.getPropertykey());
     Assert.assertEquals(p0.getPropertyValue(), p1.getPropertyValue());
@@ -100,9 +98,9 @@ public class PropertyStoreTest {
     Assert.assertFalse(objectStore.renameProperties("yek", "key"));
     boolean b = objectStore.renameProperties("key", "KEY");
     Assert.assertTrue(b);
-    p1 = objectStore.getProperties("key", (p)->{ p.getPropertyContent(); return p; });
+    p1 = objectStore.fetchProperties("key", (p)->{ p.getPropertyContent(); return p; });
     Assert.assertNull(p1);
-    p1 = objectStore.getProperties("KEY", (p)->{ p.getPropertyContent(); return p; });
+    p1 = objectStore.fetchProperties("KEY", (p)->{ p.getPropertyContent(); return p; });
     Assert.assertNotNull(p1);
     Assert.assertTrue(p0.getPropertyContent() != p1.getPropertyContent());
     cp1 = new String(p1.getPropertyContent(), StandardCharsets.UTF_8);

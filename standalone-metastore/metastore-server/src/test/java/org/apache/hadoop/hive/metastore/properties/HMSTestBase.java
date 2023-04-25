@@ -182,12 +182,8 @@ public abstract class HMSTestBase {
    * @return the client instance
    * @throws Exception
    */
-  protected PropertyClient createClient(Configuration conf, int port) throws Exception {
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "http://localhost:" + port);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
-    HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
-    return new ThriftPropertyClient(NS, client);
-  }
+
+  protected abstract PropertyClient createClient(Configuration conf, int port) throws Exception;
 
 
   public void runOtherProperties0(PropertyClient client) throws Exception {
@@ -217,7 +213,7 @@ public abstract class HMSTestBase {
     // link store and manager
     try {
       String json = IOUtils.toString(
-          HMSDirectTest.class.getResourceAsStream("pol0.json"),
+          HMSDirectTest.class.getResourceAsStream("payload.json"),
           "UTF-8"
       );
       JxltEngine JXLT = JEXL.createJxltEngine();

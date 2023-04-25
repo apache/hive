@@ -64,7 +64,8 @@ public class HMSServletTest extends HMSTestBase {
     return server;
   }
 
-  protected PropertyClient createClient(int sport) throws Exception {
+  @Override
+  protected PropertyClient createClient(Configuration conf, int sport) throws Exception {
     URL url = new URL("http://localhost:" + sport + "/" + CLI + "/" + NS);
     return new JSonClient(url);
   }
