@@ -1,4 +1,4 @@
-// template for properties payload
+
 {
   "Database-name": "SampleDB",
   "Table-name": "${table}",
