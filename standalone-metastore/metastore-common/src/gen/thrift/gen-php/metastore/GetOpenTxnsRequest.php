@@ -69,13 +69,13 @@ class GetOpenTxnsRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->excludeTxnTypes = array();
-                        $_size1304 = 0;
-                        $_etype1307 = 0;
-                        $xfer += $input->readListBegin($_etype1307, $_size1304);
-                        for ($_i1308 = 0; $_i1308 < $_size1304; ++$_i1308) {
-                            $elem1309 = null;
-                            $xfer += $input->readI32($elem1309);
-                            $this->excludeTxnTypes []= $elem1309;
+                        $_size1295 = 0;
+                        $_etype1298 = 0;
+                        $xfer += $input->readListBegin($_etype1298, $_size1295);
+                        for ($_i1299 = 0; $_i1299 < $_size1295; ++$_i1299) {
+                            $elem1300 = null;
+                            $xfer += $input->readI32($elem1300);
+                            $this->excludeTxnTypes []= $elem1300;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -102,8 +102,8 @@ class GetOpenTxnsRequest
             }
             $xfer += $output->writeFieldBegin('excludeTxnTypes', TType::LST, 1);
             $output->writeListBegin(TType::I32, count($this->excludeTxnTypes));
-            foreach ($this->excludeTxnTypes as $iter1310) {
-                $xfer += $output->writeI32($iter1310);
+            foreach ($this->excludeTxnTypes as $iter1301) {
+                $xfer += $output->writeI32($iter1301);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
