@@ -436,7 +436,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     if (propertyStore == null) {
-      propertyStore = new CachingPropertyStore(new JdoPropertyStore(this));
+      propertyStore = new CachingPropertyStore(new JdoPropertyStore(this), conf);
     }
   }
 
@@ -5740,7 +5740,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (openTransaction()) {
         //pm.currentTransaction().setOptimistic(false);
         // fetch first to determine new vs update
-        MMetastoreDBProperties properties = doGetProperties(key, null);
+        MMetastoreDBProperties properties = doFetchProperties(key, null);
         final boolean newInstance;
         if (properties == null) {
           newInstance = true;
@@ -5781,7 +5781,8 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       LOG.debug("Attempting to rename property {} to {} for the metastore db", mapKey, newKey);
       if (openTransaction()) {
-        // ensure the target is clear
+        // ensure the target is clear;
+        // query is cleaned up in finally block
         query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
         query.declareParameters("java.lang.String key");
         query.setUnique(true);
@@ -5821,7 +5822,7 @@ public class ObjectStore implements RawStore, Configurable {
     return false;
   }
 
-  private <T> T doGetProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
+  private <T> T doFetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
     Query query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
     query.declareParameters("java.lang.String key");
     query.setUnique(true);
@@ -5836,12 +5837,12 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  public <T> T getProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
+  public <T> T fetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
     boolean success = false;
     T properties = null;
     try {
       if (openTransaction()) {
-        properties = doGetProperties(key, transform);
+        properties = doFetchProperties(key, transform);
         success = commitTransaction();
       }
     } finally {

@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.commons.jexl3.JexlException;
-import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.properties.PropertyException;
@@ -50,7 +49,7 @@ public class JdoPropertyStore extends PropertyStore {
   @Override
   public PropertyMap fetchProperties(final String mapKey, Function<String, PropertySchema> getSchema) {
     try {
-      return objectStore.getProperties(mapKey, getPropertyMapFunction(null, getSchema));
+      return objectStore.fetchProperties(mapKey, getPropertyMapFunction(null, getSchema));
     } catch (MetaException | JexlException e) {
       throw new PropertyException(e);
     }
@@ -68,7 +67,7 @@ public class JdoPropertyStore extends PropertyStore {
   @Override
   public UUID fetchDigest(String mapKey) {
     try {
-      return objectStore.getProperties(mapKey, (mm) -> UUID.fromString(mm.getPropertyValue()));
+      return objectStore.fetchProperties(mapKey, (mm) -> UUID.fromString(mm.getPropertyValue()));
     } catch (MetaException | JexlException e) {
       throw new PropertyException(e);
     }

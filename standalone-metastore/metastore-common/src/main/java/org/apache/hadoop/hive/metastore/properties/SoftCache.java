@@ -45,6 +45,8 @@ public class SoftCache<K, V> {
     private final boolean synchro;
     /** The cache capacity. */
     private final int capacity;
+    /** The cache load factor. */
+    private final double loadFactor;
     /** The soft reference to the cache map. */
     private SoftReference<Map<K, V>> ref = null;
 
@@ -60,16 +62,18 @@ public class SoftCache<K, V> {
      * @param theCapacity the cache size
      */
     public SoftCache(int theCapacity) {
-        this(theCapacity, false);
+        this(theCapacity, LOAD_FACTOR, false);
     }
 
     /**
      * Creates a new instance of a soft cache.
      * @param theCapacity the cache capacity
+     * @param theLoadFactor the cache load actor
      * @param synchronizd whether it is synchronized or not
      */
-    public SoftCache(int theCapacity, boolean synchronizd) {
+    public SoftCache(int theCapacity, double theLoadFactor, boolean synchronizd) {
         capacity = theCapacity;
+        loadFactor = theLoadFactor;
         synchro = synchronizd;
     }
 

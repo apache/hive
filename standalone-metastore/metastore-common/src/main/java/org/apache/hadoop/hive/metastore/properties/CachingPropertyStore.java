@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -32,16 +35,17 @@ import java.util.function.Predicate;
  * using stale data.
  */
 public class CachingPropertyStore extends PropertyStore {
-  private static final int MAP_CACHE = 64;
   protected  SoftCache<String, PropertyMap> maps;
   protected PropertyStore store;
   public CachingPropertyStore(PropertyStore wrap) {
-    this(wrap, MAP_CACHE);
+    this(wrap, null);
   }
 
-  public CachingPropertyStore(PropertyStore wrap, int capacity) {
+  public CachingPropertyStore(PropertyStore wrap, Configuration conf) {
     store = wrap;
-    maps = new SoftCache<>(capacity, false);
+    int capacity = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.PROPERTIES_CACHE_CAPACITY);
+    double fillFactor = MetastoreConf.getDoubleVar(conf, MetastoreConf.ConfVars.PROPERTIES_CACHE_LOADFACTOR);
+    maps = new SoftCache<>(capacity, fillFactor, false);
   }
   public void clearCache() {
     maps.clear();
