@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.accumulo.serde;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.slf4j.Logger;
@@ -54,7 +54,7 @@ public class FirstCharAccumuloCompositeRowId extends AccumuloCompositeRowId {
     log.info("Separator: " + String.format("%04x", (int) separator));
 
     // Get the character/byte at the offset in the string equal to the fieldID
-    String[] fieldBytes = StringUtils.split(bytesAsString, separator);
+    String[] fieldBytes = bytesAsString.split(bytesAsString, separator);
 
     log.info("Fields: " + Arrays.toString(fieldBytes));
 
