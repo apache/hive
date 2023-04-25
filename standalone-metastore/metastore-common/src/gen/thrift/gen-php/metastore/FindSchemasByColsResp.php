@@ -69,14 +69,14 @@ class FindSchemasByColsResp
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->schemaVersions = array();
-                        $_size1120 = 0;
-                        $_etype1123 = 0;
-                        $xfer += $input->readListBegin($_etype1123, $_size1120);
-                        for ($_i1124 = 0; $_i1124 < $_size1120; ++$_i1124) {
-                            $elem1125 = null;
-                            $elem1125 = new \metastore\SchemaVersionDescriptor();
-                            $xfer += $elem1125->read($input);
-                            $this->schemaVersions []= $elem1125;
+                        $_size1111 = 0;
+                        $_etype1114 = 0;
+                        $xfer += $input->readListBegin($_etype1114, $_size1111);
+                        for ($_i1115 = 0; $_i1115 < $_size1111; ++$_i1115) {
+                            $elem1116 = null;
+                            $elem1116 = new \metastore\SchemaVersionDescriptor();
+                            $xfer += $elem1116->read($input);
+                            $this->schemaVersions []= $elem1116;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class FindSchemasByColsResp
             }
             $xfer += $output->writeFieldBegin('schemaVersions', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->schemaVersions));
-            foreach ($this->schemaVersions as $iter1126) {
-                $xfer += $iter1126->write($output);
+            foreach ($this->schemaVersions as $iter1117) {
+                $xfer += $iter1117->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

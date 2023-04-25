@@ -5226,20 +5226,14 @@ class FireEventRequestData < ::Thrift::Union
     def insertDatas(val)
       FireEventRequestData.new(:insertDatas, val)
     end
-
-    def refreshEvent(val)
-      FireEventRequestData.new(:refreshEvent, val)
-    end
   end
 
   INSERTDATA = 1
   INSERTDATAS = 2
-  REFRESHEVENT = 3
 
   FIELDS = {
     INSERTDATA => {:type => ::Thrift::Types::STRUCT, :name => 'insertData', :class => ::InsertEventRequestData, :optional => true},
-    INSERTDATAS => {:type => ::Thrift::Types::LIST, :name => 'insertDatas', :element => {:type => ::Thrift::Types::STRUCT, :class => ::InsertEventRequestData}, :optional => true},
-    REFRESHEVENT => {:type => ::Thrift::Types::BOOL, :name => 'refreshEvent', :optional => true}
+    INSERTDATAS => {:type => ::Thrift::Types::LIST, :name => 'insertDatas', :element => {:type => ::Thrift::Types::STRUCT, :class => ::InsertEventRequestData}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5259,7 +5253,6 @@ class FireEventRequest
   TABLENAME = 4
   PARTITIONVALS = 5
   CATNAME = 6
-  TBLPARAMS = 7
 
   FIELDS = {
     SUCCESSFUL => {:type => ::Thrift::Types::BOOL, :name => 'successful'},
@@ -5267,8 +5260,7 @@ class FireEventRequest
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
     PARTITIONVALS => {:type => ::Thrift::Types::LIST, :name => 'partitionVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    TBLPARAMS => {:type => ::Thrift::Types::MAP, :name => 'tblParams', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
