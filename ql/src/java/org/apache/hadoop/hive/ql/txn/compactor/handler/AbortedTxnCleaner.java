@@ -41,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 
 /**
  * Abort-cleanup based implementation of TaskHandler.
@@ -63,7 +65,7 @@ class AbortedTxnCleaner extends TaskHandler {
       only sees the aborted deltas and does not read the file).<br><br>
 
    The following algorithm is used to clean the set of aborted directories - <br>
-      a. Find the list of entries which are suitable for cleanup (This is done in {@link TxnStore#findReadyToCleanAborts(long, int)}).<br>
+      a. Find the list of entries which are suitable for cleanup (This is done in {@link TxnStore#findReadyToCleanAborts(long, int, long)}).<br>
       b. If the table/partition does not exist, then remove the associated aborted entry in TXN_COMPONENTS table. <br>
       c. Get the AcidState of the table by using the min open txnID, database name, tableName, partition name, highest write ID <br>
       d. Fetch the aborted directories and delete the directories. <br>
@@ -76,7 +78,10 @@ class AbortedTxnCleaner extends TaskHandler {
     long abortedTimeThreshold = HiveConf
               .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
                       TimeUnit.MILLISECONDS);
-    List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanAborts(abortedTimeThreshold, abortedThreshold);
+    long retentionTime = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
+            ? HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS)
+            : 0;
+    List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanAborts(abortedTimeThreshold, abortedThreshold, retentionTime);
 
     if (!readyToCleanAborts.isEmpty()) {
       return readyToCleanAborts.stream().map(ci -> ThrowingRunnable.unchecked(() ->
@@ -118,10 +123,16 @@ class AbortedTxnCleaner extends TaskHandler {
       abortCleanUsingAcidDir(info, location, minOpenWriteTxn);
 
     } catch (InterruptedException e) {
+      LOG.error("Caught an interrupted exception when cleaning, unable to complete cleaning of {} due to {}", info,
+              e.getMessage());
+      info.errorMessage = e.getMessage();
+      handleCleanerAttemptFailure(info, true);
       throw e;
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", info,
               e.getMessage());
+      info.errorMessage = e.getMessage();
+      handleCleanerAttemptFailure(info, true);
       throw new MetaException(e.getMessage());
     } finally {
       if (metricsEnabled) {

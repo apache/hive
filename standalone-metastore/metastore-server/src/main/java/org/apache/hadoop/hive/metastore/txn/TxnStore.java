@@ -523,11 +523,12 @@ public interface TxnStore extends Configurable {
    *                            or partition that will trigger cleanup.
    * @param abortedThreshold Number of aborted transactions involving a given table or partition
    *                         that will trigger cleanup.
+   * @param retentionTime Milliseconds to delay the cleaner
    * @return Information of potential abort items that needs to be cleaned.
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  List<CompactionInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
+  List<CompactionInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold, long retentionTime) throws MetaException;
 
   /**
    * Sets the cleaning start time for a particular compaction
@@ -577,10 +578,11 @@ public interface TxnStore extends Configurable {
    * Stores the value of {@link CompactionInfo#retryRetention} and {@link CompactionInfo#errorMessage} fields
    * of the CompactionInfo in the HMS database.
    * @param info The {@link CompactionInfo} object holding the values.
+   * @param isAbort Whether the entry is associated to compaction/abort cleanup.
    * @throws MetaException
    */
   @RetrySemantics.CannotRetry
-  void setCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException;
+  void setCleanerRetryRetentionTimeOnError(CompactionInfo info, boolean isAbort) throws MetaException;
 
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by

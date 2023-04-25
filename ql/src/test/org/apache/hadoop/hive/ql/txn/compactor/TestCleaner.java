@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandlerFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.internal.util.reflection.FieldSetter;
 
 import java.util.ArrayList;
@@ -811,6 +812,7 @@ public class TestCleaner extends CompactorTest {
   }
 
   @After
+  @AfterEach
   public void tearDown() throws Exception {
     compactorTestCleanup();
   }

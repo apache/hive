@@ -25,6 +25,9 @@ import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.CleanupRequest;
@@ -32,14 +35,19 @@ import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 public class TestAbortedTxnCleaner extends TestHandler {
 
@@ -319,5 +327,306 @@ public class TestAbortedTxnCleaner extends TestHandler {
 
     List<Path> directories = getDirectories(conf, t, null);
     Assert.assertEquals(5, directories.size());
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testRetryEntryOnFailures(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_retry_entry", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TxnStore mockedTxnHandler = Mockito.spy(txnHandler);
+    TaskHandler mockedTaskHandler = Mockito.spy(new AbortedTxnCleaner(conf, mockedTxnHandler, metadataCache,
+            false, mockedFSRemover));
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.run();
+
+    Mockito.verify(mockedTxnHandler, Mockito.times(1)).setCleanerRetryRetentionTimeOnError(any(), eq(true));
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\""));
+    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " +
+            "WHERE \"TCQ_DATABASE\" = '" + dbName+ "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
+            TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+    // Cast clob to varchar to get the string output
+    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " +
+            "WHERE \"TCQ_DATABASE\" = '" + dbName+ "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
+            .replace("\n", "").trim().contains("Testing retry"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testRetryInfoBeingUsed(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_retry_usage", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    // Set retry retention time as 10 s (10000 ms).
+    long retryRetentionTime = 10000;
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover);
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\""));
+    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " +
+            "WHERE \"TCQ_DATABASE\" = '" + dbName+ "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+    // Cast clob to varchar to get the string output
+    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " +
+            "WHERE \"TCQ_DATABASE\" = '" + dbName+ "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
+            .replace("\n", "").trim().contains("Testing retry"));
+
+    // Delay for time specified in retry retention.
+    Thread.sleep(retryRetentionTime);
+
+    Mockito.doAnswer(InvocationOnMock::callRealMethod).when(mockedFSRemover).clean(any());
+
+    cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\""));
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testRetryWithNoDelay(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_retry_nodelay", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover);
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\""));
+    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " +
+            "WHERE \"TCQ_DATABASE\" = '" + dbName+ "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
+            TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+    // Cast clob to varchar to get the string output
+    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " +
+            "WHERE \"TCQ_DATABASE\" = '" + dbName+ "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
+            .replace("\n", "").trim().contains("Testing retry"));
+
+    Mockito.doAnswer(InvocationOnMock::callRealMethod).when(mockedFSRemover).clean(any());
+
+    cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    // The retry entry is not removed since retry conditions are not achieved hence its not picked for cleanup.
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\""));
+    Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
+            TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+    // Cast clob to varchar to get the string output
+    Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
+            .replace("\n", "").trim().contains("Testing retry"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testRetryUpdateRetentionTimeWhenFailedTwice(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_retry_retention_time_failed_twice", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    // Set retry retention time as 10 s (10000 ms).
+    long retryRetentionTime = 10000;
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover);
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\""));
+    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " +
+            "WHERE \"TCQ_DATABASE\" = '" + dbName + "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+    // Cast clob to varchar to get the string output
+    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " +
+            "WHERE \"TCQ_DATABASE\" = '" + dbName + "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
+            .replace("\n", "").trim().contains("Testing retry"));
+
+    // Delay for time specified in retry retention.
+    Thread.sleep(retryRetentionTime);
+
+    cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    // The retry entry is not removed since retry has failed.
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\""));
+    // The retry entry must reflect double the retention time now.
+    Assert.assertEquals(Long.toString(2 * retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+    // Cast clob to varchar to get the string output
+    Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
+            .replace("\n", "").trim().contains("Testing retry"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testRetryUpdateErrorMessageWhenFailedTwice(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_retry_error_msg_failed_twice", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    // Set retry retention time as 10 s (10000 ms).
+    long retryRetentionTime = 10000;
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover);
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing first retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\""));
+    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " +
+            "WHERE \"TCQ_DATABASE\" = '" + dbName + "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+    // Cast clob to varchar to get the string output
+    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " +
+            "WHERE \"TCQ_DATABASE\" = '" + dbName + "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery)
+            .replace("\n", "").trim().contains("Testing first retry"));
+
+    // Delay for time specified in retry retention.
+    Thread.sleep(retryRetentionTime);
+
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing second retry");
+    }).when(mockedFSRemover).clean(any());
+
+    cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    // The retry entry is not removed since retry has failed.
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\""));
+    // The retry entry must reflect double the retention time now.
+    Assert.assertEquals(Long.toString(2 * retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+    // Cast clob to varchar to get the string output
+    Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
+            .replace("\n", "").trim().contains("Testing second retry"));
   }
 }
