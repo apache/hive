@@ -86,6 +86,17 @@ public interface MetaStoreFilterHook {
       throws MetaException;
 
   /**
+   * Filter given list of TableMeta objects
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tableMetas list of table returned by the metastore
+   * @deprecated Replaced by {@link #filterTableMetas(List)}
+   * @return List of filtered table names
+   */
+  @Deprecated
+  List<TableMeta> filterTableMetas(String catName, String dbName, List<TableMeta> tableMetas) throws MetaException;
+
+  /**
    * Filter a list of TableMeta objects.
    * @param tableMetas list of TableMetas to filter
    * @return filtered table metas
