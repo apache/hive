@@ -188,7 +188,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     return builder.convert(resultType, true).build();
   }
 
-  public static final RelOptRule CORRELATE_RIGHT_INSTANCE = new CorrelateLeftEmptyRuleConfig()
+  public static final RelOptRule CORRELATE_RIGHT_INSTANCE = new CorrelateRightEmptyRuleConfig()
       .withOperandSupplier(b0 ->
           b0.operand(Correlate.class).inputs(
               b1 -> b1.operand(RelNode.class).anyInputs(),
@@ -197,7 +197,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
       .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
       .as(CorrelateRightEmptyRuleConfig.class)
       .toRule();
-  public static final RelOptRule CORRELATE_LEFT_INSTANCE = new CorrelateRightEmptyRuleConfig()
+  public static final RelOptRule CORRELATE_LEFT_INSTANCE = new CorrelateLeftEmptyRuleConfig()
       .withOperandSupplier(b0 ->
           b0.operand(Correlate.class).inputs(
               b1 -> b1.operand(Values.class).predicate(Values::isEmpty).noInputs(),
