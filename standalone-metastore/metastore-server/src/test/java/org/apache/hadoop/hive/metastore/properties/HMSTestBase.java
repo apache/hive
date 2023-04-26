@@ -72,8 +72,8 @@ public abstract class HMSTestBase {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestObjectStore.class.getName());
   static Random RND = new Random(20230424);
-  protected final String NS = "hms" + RND.nextInt(100);
-  protected final String DB = "dbtest" + RND.nextInt(100);
+  protected String NS;// = "hms" + RND.nextInt(100);
+  protected String DB;// = "dbtest" + RND.nextInt(100);
   protected PropertyClient client;
   protected int port = -1;
 
@@ -100,22 +100,24 @@ public abstract class HMSTestBase {
 
   @Before
   public void setUp() throws Exception {
+    NS = "hms" + RND.nextInt(100);
+    DB = "dbtest" + RND.nextInt(100);
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     // Events that get cleaned happen in batches of 1 to exercise batching code
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    if (port > 0) {
-      Assert.assertNotNull("Unable to connect to the MetaStore server", client);
-      return;
-    }
     // The server
     port = createServer(conf);
     System.out.println("Starting MetaStore Server on port " + port);
-
     // The store
-    boolean inited = createStore(conf);
-    LOG.info("MetaStore store initialization " + (inited ? "successful" : "failed"));
+    if (objectStore == null) {
+      // The store
+      boolean inited = createStore(conf);
+      LOG.info("MetaStore store initialization " + (inited ? "successful" : "failed"));
+    }
+    // The manager decl
+    PropertyManager.declare(NS, HMSPropertyManager.class);
     // The client
     client = createClient(conf, port);
     Assert.assertNotNull("Unable to connect to the MetaStore server", client);
@@ -129,42 +131,13 @@ public abstract class HMSTestBase {
       objectStore = null;
     }
     if (port >= 0) {
-      MetaStoreTestUtils.close(port);
+      stopServer(port);
+      port = -1;
     }
     // Clear the SSL system properties before each test.
     System.clearProperty(ObjectStore.TRUSTSTORE_PATH_KEY);
     System.clearProperty(ObjectStore.TRUSTSTORE_PASSWORD_KEY);
     System.clearProperty(ObjectStore.TRUSTSTORE_TYPE_KEY);
-  }
-
-  /**
-   * A Thrift based property client.
-   */
-  static class ThriftPropertyClient implements PropertyClient {
-    private final String namespace;
-    private final HiveMetaStoreClient client;
-    ThriftPropertyClient(String ns, HiveMetaStoreClient c) {
-      this.namespace = ns;
-      this.client = c;
-    }
-
-    @Override
-    public boolean setProperties(Map<String, String> properties) {
-      try {
-        return client.setProperties(namespace, properties);
-      } catch(TException tex) {
-        return false;
-      }
-    }
-
-    @Override
-    public Map<String, Map<String, String>> getProperties(String mapPrefix, String mapPredicate, String... selection) throws IOException {
-      try {
-        return client.getProperties(namespace, mapPrefix, mapPredicate, selection);
-      } catch(TException tex) {
-        return null;
-      }
-    }
   }
 
   /**
@@ -174,7 +147,16 @@ public abstract class HMSTestBase {
    * @throws Exception
    */
   protected int createServer(Configuration conf) throws Exception {
-    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
+    return 0;
+  }
+
+  /**
+   * Stops the server.
+   * @param port the server port
+   * @throws Exception
+   */
+  protected void stopServer(int port) throws Exception {
+    // nothing
   }
 
   /**
@@ -182,12 +164,11 @@ public abstract class HMSTestBase {
    * @return the client instance
    * @throws Exception
    */
-
   protected abstract PropertyClient createClient(Configuration conf, int port) throws Exception;
 
 
   public void runOtherProperties0(PropertyClient client) throws Exception {
-    Map<String, String> ptyMap = createProperties0(NS);
+    Map<String, String> ptyMap = createProperties0();
     boolean commit = client.setProperties(ptyMap);
     Assert.assertTrue(commit);
     // select tables whose policy table name starts with table0
@@ -203,8 +184,7 @@ public abstract class HMSTestBase {
     Assert.assertEquals(2, project.size());
   }
 
-  static Map<String, String> createProperties0(String ns) {
-    PropertyManager.declare(ns, HMSPropertyManager.class);
+  static Map<String, String> createProperties0() {
     // configure hms
     HMSPropertyManager.declareTableProperty("fillFactor", DOUBLE, 0.75d);
     HMSPropertyManager.declareTableProperty("policy", JSON, null);
@@ -244,7 +224,7 @@ public abstract class HMSTestBase {
   }
 
   public void runOtherProperties1(PropertyClient client) throws Exception {
-    Map<String, String> ptyMap = createProperties1(NS);
+    Map<String, String> ptyMap = createProperties1();
     boolean commit = client.setProperties(ptyMap);
     Assert.assertTrue(commit);
     // go get some
@@ -252,8 +232,7 @@ public abstract class HMSTestBase {
     Assert.assertNotNull(maps);
   }
 
-  static Map<String, String> createProperties1(String ns) {
-    PropertyManager.declare(ns, HMSPropertyManager.class);
+  static Map<String, String> createProperties1() {
     // configure hms
     HMSPropertyManager.declareTableProperty("id", INTEGER, null);
     HMSPropertyManager.declareTableProperty("name", STRING, null);

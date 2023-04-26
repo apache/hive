@@ -26,6 +26,11 @@ import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.servlet.Source;
+import org.junit.Assert;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -53,15 +58,7 @@ public class JsonServlet extends HttpServlet {
   /** The object store. */
   protected RawStore objectStore = null;
 
-  JsonServlet(Configuration conf) {
-    try {
-      objectStore = HMSHandler.getMSForConf(conf);
-    } catch (MetaException e) {
-      objectStore = null;
-    }
-  }
-
-  JsonServlet(ObjectStore store) {
+  JsonServlet(RawStore store) {
     this.objectStore = store;
   }
 
@@ -158,6 +155,7 @@ public class JsonServlet extends HttpServlet {
       try {
         mgr.setProperties((Map) json);
         mgr.commit();
+        response.setStatus(HttpServletResponse.SC_OK);
         return;
       } catch (Exception xany) {
         mgr.rollback();
@@ -202,5 +200,18 @@ public class JsonServlet extends HttpServlet {
       }
     }
     return null;
+  }
+  static Server startServer(Configuration conf, String cli, RawStore store) throws Exception {
+    Server server = new Server(0);
+    ServletHandler handler = new ServletHandler();
+    server.setHandler(handler);
+    //ServletContextHandler context = new ServletContextHandler(
+    //    ServletContextHandler.NO_SECURITY | ServletContextHandler.NO_SESSIONS);
+    // context.addServlet(new ServletHolder(JsonServlet.class),  "/testJSONServlet");
+    ServletHolder holder = handler.newServletHolder(Source.EMBEDDED);
+    holder.setServlet(new JsonServlet(store)); //
+    handler.addServletWithMapping(holder, "/"+cli+"/*");
+    server.start();
+    return server;
   }
 }

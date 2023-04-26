@@ -19,15 +19,18 @@ package org.apache.hadoop.hive.metastore.properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.thrift.TException;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Map;
 
 public class HMSThriftTest extends HMSTestBase {
-
   /**
    * A Thrift based property client.
    */
@@ -58,12 +61,20 @@ public class HMSThriftTest extends HMSTestBase {
     }
   }
 
+  @Override protected int createServer(Configuration conf) throws Exception {
+    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
+  }
+
+  @Override protected void stopServer(int port) {
+    MetaStoreTestUtils.close(port);
+  }
+
   /**
    * Creates a client.
    * @return the client instance
    * @throws Exception
    */
-  protected PropertyClient createClient(Configuration conf, int port) throws Exception {
+  @Override protected PropertyClient createClient(Configuration conf, int port) throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "http://localhost:" + port);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
