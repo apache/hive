@@ -155,7 +155,7 @@
                   <goal>shade</goal>
                 </goals>
                 <configuration>
-                  <shadeTestJar>false</shadeTestJar>
+                  <shadeTestJar>true</shadeTestJar>
                   <createDependencyReducedPom>false</createDependencyReducedPom>
                   <artifactSet>
                     <includes>
