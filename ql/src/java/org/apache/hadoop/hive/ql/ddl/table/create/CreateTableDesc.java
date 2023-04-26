@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.create;
 
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -925,8 +926,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     // reset it on replica.
     if (replicationSpec == null || !replicationSpec.isInReplicationScope()) {
       // Remove COLUMN_STATS_ACCURATE=true from table's parameter, let the HMS determine if
-      // there is need to add column stats dependent on the table's location in case the metastore transformer
-      // sets or alters the table's location.
+      // there is need to add column stats dependent on the table's location.
       StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
           StatsSetupConst.FALSE);
       if (!this.isCTAS && !tbl.isPartitioned() && !tbl.isTemporary() &&
@@ -935,10 +935,11 @@ public class CreateTableDesc implements DDLDesc, Serializable {
         // ObjectDictionary is meant to convey repeatitive messages.
         ObjectDictionary dictionary = tbl.getTTable().isSetDictionary() ?
             tbl.getTTable().getDictionary() : new ObjectDictionary();
-        String cols = MetaStoreUtils.getColumnNames(tbl.getCols()).stream().collect(Collectors.joining("\0"));
-        List<java.nio.ByteBuffer> buffers = new ArrayList<>();
-        buffers.add(java.nio.ByteBuffer.wrap(StatsSetupConst.TRUE.getBytes(StandardCharsets.UTF_8)));
-        buffers.add(java.nio.ByteBuffer.wrap(cols.getBytes(StandardCharsets.UTF_8)));
+        List<ByteBuffer> buffers = new ArrayList<>();
+        String statsSetup = StatsSetupConst.ColumnStatsSetup.getStatsSetupAsString(true,
+            tbl.isIcebergTable() ? "metadata" : null, // Skip metadata directory for Iceberg table
+            MetaStoreUtils.getColumnNames(tbl.getCols()));
+        buffers.add(ByteBuffer.wrap(statsSetup.getBytes(StandardCharsets.UTF_8)));
         dictionary.putToValues(StatsSetupConst.STATS_FOR_CREATE_TABLE, buffers);
         tbl.getTTable().setDictionary(dictionary);
       }

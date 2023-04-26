@@ -25,14 +25,15 @@ import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -68,7 +69,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.ExceptionHandler;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -520,23 +520,27 @@ public class MetaStoreServerUtils {
     }
     assert tblPath != null;
     if (tbl.isSetDictionary() && tbl.getDictionary().getValues() != null) {
-      List<java.nio.ByteBuffer> values = tbl.getDictionary().getValues().
+      List<ByteBuffer> values = tbl.getDictionary().getValues().
           remove(StatsSetupConst.STATS_FOR_CREATE_TABLE);
-      java.nio.ByteBuffer buffer;
+      ByteBuffer buffer;
       if (values != null && values.size() > 0 && (buffer = values.get(0)).hasArray()) {
         String val = new String(buffer.array(), StandardCharsets.UTF_8);
-        if (StatsSetupConst.TRUE.equals(val)) {
+        StatsSetupConst.ColumnStatsSetup statsSetup = StatsSetupConst.ColumnStatsSetup.parseStatsSetup(val);
+        if (statsSetup.enabled) {
           try {
-            boolean isIcebergTable =
-                HiveMetaHook.ICEBERG.equalsIgnoreCase(tbl.getParameters().get(HiveMetaHook.TABLE_TYPE));
-            PathFilter pathFilter = isIcebergTable ?
-                path -> !"metadata".equals(path.getName()) : FileUtils.HIDDEN_FILES_PATH_FILTER;
+            PathFilter pathFilter = FileUtils.HIDDEN_FILES_PATH_FILTER;
+            if (StringUtils.isNotEmpty(statsSetup.fileToEscape)) {
+              final Set<String> filesToEscape = new HashSet<>();
+              for (String fileName : statsSetup.fileToEscape.split(",")) {
+                filesToEscape.add(fileName.trim());
+              }
+              pathFilter = p -> !filesToEscape.contains(p.getName());
+            }
             // Set the column stats true in order to make it merge-able
             if (newDir || wh.isEmptyDir(tblPath, pathFilter)) {
-              List<String> columns = getColumnNames(tbl.getSd().getCols());
-              if (values.size() > 1 && (buffer = values.get(1)).hasArray()) {
-                columns = Arrays.stream(new String(buffer.array(), StandardCharsets.UTF_8).
-                    split("\0")).collect(Collectors.toList());
+              List<String> columns = statsSetup.columnNames;
+              if (columns == null || columns.isEmpty()) {
+                columns = getColumnNames(tbl.getSd().getCols());
               }
               StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(), columns, StatsSetupConst.TRUE);
             }
