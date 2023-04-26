@@ -34,38 +34,39 @@ import java.util.TreeMap;
 public class HMSServletTest extends HMSTestBase {
   // the url part
   private static final String CLI = "hmscli";
-  Server servletServer;
-  int sport;
+  Server servletServer = null;
+  int sport = -1;
 
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    servletServer = startServer(conf);
-    sport = servletServer.getURI().getPort();
+  @Override protected int createServer(Configuration conf) throws Exception {
+    // need store before server for servlet
+    if (objectStore == null) {
+      boolean inited = createStore(conf);
+      LOG.info("MetaStore store initialization " + (inited ? "successful" : "failed"));
+    }
+    if (servletServer == null) {
+      servletServer = JsonServlet.startServer(conf, CLI, objectStore);
+      if (!servletServer.isStarted()) {
+        Assert.fail("http server did not start");
+      }
+      sport = servletServer.getURI().getPort();
+    }
+    return sport;
   }
 
-  @After
-  public void tearDown() throws Exception {
-    servletServer.stop();
-    super.tearDown();
-  }
-
-  Server startServer(Configuration conf) throws Exception {
-    Server server = new Server(0);
-    ServletHandler handler = new ServletHandler();
-    server.setHandler(handler);
-    //ServletContextHandler context = new ServletContextHandler(
-    //    ServletContextHandler.NO_SECURITY | ServletContextHandler.NO_SESSIONS);
-    // context.addServlet(new ServletHolder(JsonServlet.class),  "/testJSONServlet");
-    ServletHolder holder = handler.newServletHolder(Source.EMBEDDED);
-    holder.setServlet(new JsonServlet(conf)); //?
-    handler.addServletWithMapping(holder, "/"+CLI+"/*");
-    server.start();
-    return server;
+  /**
+   * Stops the server.
+   * @param port the server port
+   */
+  @Override protected void stopServer(int port) throws Exception {
+    if (servletServer != null) {
+      servletServer.stop();
+      servletServer = null;
+      sport = -1;
+    }
   }
 
   @Override
-  protected PropertyClient createClient(Configuration conf, int sport) throws Exception {
+  protected JSonClient createClient(Configuration conf, int sport) throws Exception {
     URL url = new URL("http://localhost:" + sport + "/" + CLI + "/" + NS);
     return new JSonClient(url);
   }
@@ -105,16 +106,17 @@ public class HMSServletTest extends HMSTestBase {
 
   @Test
   public void testJSONServlet() throws Exception {
-      URL url = new URL("http://localhost:" + sport + "/" + CLI + "/hms");
+      URL url = new URL("http://localhost:" + sport + "/" + CLI + "/" + NS);
       Map<String, String> json = Collections.singletonMap("method", "echo");
       Object response = JsonServlet.clientCall(url, "POST", json);
       Assert.assertNotNull(response);
-      Assert.assertEquals(json, response);
+      Assert.assertEquals(json, response);;
   }
 
   @Test
   public void testProperties1() throws Exception {
       runOtherProperties1(client);
+
   }
 
   @Test

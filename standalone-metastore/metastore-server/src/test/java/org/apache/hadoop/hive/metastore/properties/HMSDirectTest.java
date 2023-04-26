@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.RawStore;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,7 +32,6 @@ import static org.apache.hadoop.hive.metastore.properties.PropertyType.INTEGER;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.STRING;
 
 public class HMSDirectTest extends HMSTestBase {
-
   /**
    * An embedded property client.
    */
@@ -70,12 +70,9 @@ public class HMSDirectTest extends HMSTestBase {
     }
   }
 
-//  protected int createServer(Configuration conf) throws Exception {
-//    return 0;
-//  }
-
-  protected PropertyClient createClient(Configuration conf, int port) throws Exception {
-    HMSPropertyManager mgr = new HMSPropertyManager(objectStore.getPropertyStore());
+  @Override protected PropertyClient createClient(Configuration conf, int port) throws Exception {
+    RawStore store = objectStore;
+    HMSPropertyManager mgr = new HMSPropertyManager(store.getPropertyStore());
     return new DirectPropertyClient(mgr);
   }
 
