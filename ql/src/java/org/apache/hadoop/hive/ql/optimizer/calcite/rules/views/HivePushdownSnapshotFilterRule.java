@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.BaseMutableHiveConfig;
 
 import java.util.Objects;
 import java.util.Set;
@@ -60,15 +61,15 @@ import java.util.Set;
 public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshotFilterRule.Config> {
 
   public static final RelOptRule INSTANCE =
-          RelRule.Config.EMPTY.as(HivePushdownSnapshotFilterRule.Config.class)
+          new Config().as(HivePushdownSnapshotFilterRule.Config.class)
             .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
             .withOperandSupplier(operandBuilder -> operandBuilder.operand(HiveFilter.class).anyInputs())
             .withDescription("HivePushdownSnapshotFilterRule")
             .toRule();
 
-  public interface Config extends RelRule.Config {
+  public static class Config extends BaseMutableHiveConfig {
     @Override
-    default HivePushdownSnapshotFilterRule toRule() {
+    public HivePushdownSnapshotFilterRule toRule() {
       return new HivePushdownSnapshotFilterRule(this);
     }
   }
