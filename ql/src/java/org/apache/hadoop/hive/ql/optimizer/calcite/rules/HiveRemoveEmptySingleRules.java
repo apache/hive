@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.RelNode;
@@ -187,7 +188,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     return builder.convert(resultType, true).build();
   }
 
-  public static final RelOptRule CORRELATE_RIGHT_INSTANCE = RelRule.Config.EMPTY
+  public static final RelOptRule CORRELATE_RIGHT_INSTANCE = new CorrelateLeftEmptyRuleConfig()
       .withOperandSupplier(b0 ->
           b0.operand(Correlate.class).inputs(
               b1 -> b1.operand(RelNode.class).anyInputs(),
@@ -196,7 +197,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
       .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
       .as(CorrelateRightEmptyRuleConfig.class)
       .toRule();
-  public static final RelOptRule CORRELATE_LEFT_INSTANCE = RelRule.Config.EMPTY
+  public static final RelOptRule CORRELATE_LEFT_INSTANCE = new CorrelateRightEmptyRuleConfig()
       .withOperandSupplier(b0 ->
           b0.operand(Correlate.class).inputs(
               b1 -> b1.operand(Values.class).predicate(Values::isEmpty).noInputs(),
@@ -207,9 +208,9 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
       .toRule();
 
   /** Configuration for rule that prunes a correlate if left input is empty. */
-  public interface CorrelateLeftEmptyRuleConfig extends PruneEmptyRule.Config {
+  public static class CorrelateLeftEmptyRuleConfig extends BaseMutableHiveConfig implements PruneEmptyRule.Config {
     @Override
-    default PruneEmptyRule toRule() {
+    public PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
         @Override
         public void onMatch(RelOptRuleCall call) {
@@ -224,9 +225,9 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
   }
 
   /** Configuration for rule that prunes a correlate if right input is empty. */
-  public interface CorrelateRightEmptyRuleConfig extends PruneEmptyRule.Config {
+  public static class CorrelateRightEmptyRuleConfig extends BaseMutableHiveConfig implements PruneEmptyRule.Config {
     @Override
-    default PruneEmptyRule toRule() {
+    public PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
         @Override
         public void onMatch(RelOptRuleCall call) {
