@@ -445,6 +445,7 @@ public class GenTezUtils {
           replacementMap.put(current, current.getChildOperators().get(0));
         } else {
           parent.removeChildAndAdoptItsChildren(current);
+          operators.remove(current);
         }
       }
 
