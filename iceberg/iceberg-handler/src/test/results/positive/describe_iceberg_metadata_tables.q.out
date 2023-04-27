@@ -55,6 +55,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.entries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -154,6 +155,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.all_entries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -186,6 +188,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.delete_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -207,6 +210,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.metadata_log_entries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -251,6 +255,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.all_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -272,6 +277,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -294,6 +300,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.entries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -400,6 +407,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.all_entries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -434,6 +442,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.delete_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -456,6 +465,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.metadata_log_entries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -503,6 +513,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.all_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -525,6 +536,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe extended default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -546,6 +558,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe extended default.ice_meta_desc.entries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -645,6 +658,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe extended default.ice_meta_desc.all_entries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -678,6 +692,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.delete_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -700,6 +715,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.metadata_log_entries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -747,6 +763,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.all_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -769,6 +786,7 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: drop table ice_meta_desc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice_meta_desc
