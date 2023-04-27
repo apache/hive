@@ -467,8 +467,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
    * @param rel Values to be rewritten
    */
   public Frame decorrelateRel(Values rel) {
-    // There are no inputs, so rel does not need to be changed.
-    return null;
+    return decorrelateRel((RelNode) rel);
   }
 
   /**
@@ -1243,11 +1242,6 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
 
     if (leftFrame == null || rightFrame == null) {
       // If any input has not been rewritten, do not rewrite this rel.
-      valueGen.pop();
-      return null;
-    }
-
-    if (rightFrame.corDefOutputs.isEmpty()) {
       valueGen.pop();
       return null;
     }
