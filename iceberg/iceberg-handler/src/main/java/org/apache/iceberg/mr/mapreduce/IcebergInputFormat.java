@@ -56,6 +56,7 @@ import org.apache.iceberg.Scan;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -114,7 +115,17 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
   private static TableScan createTableScan(Table table, Configuration conf) {
     TableScan scan = table.newScan();
 
-    long snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
+    long snapshotId = -1;
+    try {
+      snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
+    } catch (NumberFormatException e) {
+      String version = conf.get(InputFormatConfig.SNAPSHOT_ID);
+      SnapshotRef ref = table.refs().get(version);
+      if (ref == null) {
+        throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " + version);
+      }
+      snapshotId = ref.snapshotId();
+    }
     if (snapshotId != -1) {
       scan = scan.useSnapshot(snapshotId);
     }
