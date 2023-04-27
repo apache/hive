@@ -214,7 +214,7 @@ public class TestParquetFilterPredicate {
     Type parquetType = schema.getType(leaf.getColumnName());
     HiveException exception = Assert.assertThrows(HiveException.class, () -> leafFilterFactory
             .getLeafFilterBuilderByType(leaf.getType(), parquetType));
-    Assert.assertEquals(String.format(LeafFilterFactory.MESSAGE,type),exception.getMessage());
+    Assert.assertEquals(String.format(LeafFilterFactory.FILTER_PREDICATE_CONVERSION_NOT_SUPPORTED,type),exception.getMessage());
   }
 
 
