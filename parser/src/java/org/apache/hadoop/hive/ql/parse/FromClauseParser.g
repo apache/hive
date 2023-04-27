@@ -220,7 +220,7 @@ asOfClause
     (KW_FOR KW_SYSTEM_TIME KW_AS KW_OF asOfTime=expression)
     -> ^(TOK_AS_OF_TIME $asOfTime)
     |
-    (KW_FOR KW_SYSTEM_VERSION KW_AS KW_OF asOfVersion=Number)
+    (KW_FOR KW_SYSTEM_VERSION KW_AS KW_OF asOfVersion=expression)
     -> ^(TOK_AS_OF_VERSION $asOfVersion)
     ;
 

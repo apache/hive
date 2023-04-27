@@ -88,6 +88,36 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
+  public void testSelectAsOfBranchReference() throws IOException, InterruptedException {
+    Table table = testTables.createTableWithVersions(shell, "customers",
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    long firstSnapshotId = table.history().get(0).snapshotId();
+    table.manageSnapshots().createBranch("main_branch", firstSnapshotId).commit();
+    List<Object[]> rows =
+        shell.executeStatement("SELECT * FROM customers FOR SYSTEM_VERSION AS OF 'main_branch'");
+
+    Assert.assertEquals(3, rows.size());
+
+    long secondSnapshotId = table.history().get(1).snapshotId();
+    table.manageSnapshots().createBranch("test_branch", secondSnapshotId).commit();
+    rows = shell.executeStatement("SELECT * FROM customers FOR SYSTEM_VERSION AS OF 'test_branch'");
+
+    Assert.assertEquals(4, rows.size());
+
+    try {
+      shell.executeStatement("SELECT * FROM customers FOR SYSTEM_VERSION AS OF 'unknown_branch'");
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Cannot find matching snapshot ID or reference name for " +
+          "version unknown_branch"));
+    }
+  }
+
+  @Test
   public void testCTASAsOfVersionAndTimestamp() throws IOException, InterruptedException {
     Table table = testTables.createTableWithVersions(shell, "customers",
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
