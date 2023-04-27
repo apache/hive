@@ -238,7 +238,7 @@ public class TestCompactionTxnHandler {
     List<CompactionInfo> toClean = txnHandler.findReadyToClean(0, 0);
     assertEquals(1, toClean.size());
     assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
-    txnHandler.markCleaned(ci);
+    txnHandler.markCleaned(ci, false);
     assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
     assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
 
@@ -529,7 +529,7 @@ public class TestCompactionTxnHandler {
     txnHandler.compact(rqst);
     ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
     assertNotNull(ci);
-    txnHandler.markCleaned(ci);
+    txnHandler.markCleaned(ci, false);
   }
 
   private void addWaitingForCleaningCompaction(String dbName, String tableName, CompactionType type,
@@ -866,7 +866,7 @@ public class TestCompactionTxnHandler {
     Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
     List<CompactionInfo> toClean = txnHandler.findReadyToClean(0, 0);
     assertEquals(1, toClean.size());
-    txnHandler.markCleaned(ci);
+    txnHandler.markCleaned(ci, false);
 
     // Check that we are cleaning up the empty aborted transactions
     GetOpenTxnsResponse txnList = txnHandler.getOpenTxns();
@@ -892,7 +892,7 @@ public class TestCompactionTxnHandler {
 
     toClean = txnHandler.findReadyToClean(0, 0);
     assertEquals(1, toClean.size());
-    txnHandler.markCleaned(ci);
+    txnHandler.markCleaned(ci, false);
 
     txnHandler.openTxns(new OpenTxnRequest(1, "me", "localhost"));
     // The open txn will became the low water mark
@@ -999,7 +999,7 @@ public class TestCompactionTxnHandler {
     txnHandler.markCompacted(ci);
     checkEnqueueTime(enqueueTime);
 
-    txnHandler.markCleaned(ci);
+    txnHandler.markCleaned(ci, false);
     checkEnqueueTime(enqueueTime);
   }
 

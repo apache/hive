@@ -25,11 +25,13 @@ import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.Correlate;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.rules.PruneEmptyRules;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
@@ -105,21 +107,13 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
           }
 
           final Join join = call.rel(0);
-          final Values empty = call.rel(1);
           final RelNode right = call.rel(2);
           final RelBuilder relBuilder = call.builder();
           if (join.getJoinType().generatesNullsOnLeft()) {
             // If "emp" is empty, "select * from emp right join dept" will have
             // the same number of rows as "dept", and null values for the
             // columns from "emp". The left side of the join can be removed.
-            final List<RexNode> nullLiterals =
-                    Collections.nCopies(empty.getRowType().getFieldCount(),
-                            relBuilder.literal(null));
-            call.transformTo(
-                    relBuilder.push(right)
-                            .project(concat(nullLiterals, relBuilder.fields()))
-                            .convert(join.getRowType(), true)
-                            .build());
+            call.transformTo(padWithNulls(relBuilder, right, join.getRowType(), true));
             return;
           }
           call.transformTo(relBuilder.push(join).empty().build());
@@ -165,20 +159,12 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
 
           final Join join = call.rel(0);
           final RelNode left = call.rel(1);
-          final Values empty = call.rel(2);
           final RelBuilder relBuilder = call.builder();
           if (join.getJoinType().generatesNullsOnRight()) {
             // If "dept" is empty, "select * from emp left join dept" will have
             // the same number of rows as "emp", and null values for the
             // columns from "dept". The right side of the join can be removed.
-            final List<RexNode> nullLiterals =
-                    Collections.nCopies(empty.getRowType().getFieldCount(),
-                            relBuilder.literal(null));
-            call.transformTo(
-                    relBuilder.push(left)
-                            .project(concat(relBuilder.fields(), nullLiterals))
-                            .convert(join.getRowType(), true)
-                            .build());
+            call.transformTo(padWithNulls(relBuilder, left, join.getRowType(), false));
             return;
           }
           if (join.getJoinType() == JoinRelType.ANTI) {
@@ -187,6 +173,89 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
             return;
           }
           call.transformTo(relBuilder.push(join).empty().build());
+        }
+      };
+    }
+  }
+
+  private static RelNode padWithNulls(RelBuilder builder, RelNode input, RelDataType resultType,
+      boolean leftPadding) {
+    int padding = resultType.getFieldCount() - input.getRowType().getFieldCount();
+    List<RexNode> nullLiterals = Collections.nCopies(padding, builder.literal(null));
+    builder.push(input);
+    if (leftPadding) {
+      builder.project(concat(nullLiterals, builder.fields()));
+    } else {
+      builder.project(concat(builder.fields(), nullLiterals));
+    }
+    return builder.convert(resultType, true).build();
+  }
+
+  public static final RelOptRule CORRELATE_RIGHT_INSTANCE = RelRule.Config.EMPTY
+      .withOperandSupplier(b0 ->
+          b0.operand(Correlate.class).inputs(
+              b1 -> b1.operand(RelNode.class).anyInputs(),
+              b2 -> b2.operand(Values.class).predicate(Values::isEmpty).noInputs()))
+      .withDescription("PruneEmptyCorrelate(right)")
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .as(CorrelateRightEmptyRuleConfig.class)
+      .toRule();
+  public static final RelOptRule CORRELATE_LEFT_INSTANCE = RelRule.Config.EMPTY
+      .withOperandSupplier(b0 ->
+          b0.operand(Correlate.class).inputs(
+              b1 -> b1.operand(Values.class).predicate(Values::isEmpty).noInputs(),
+              b2 -> b2.operand(RelNode.class).anyInputs()))
+      .withDescription("PruneEmptyCorrelate(left)")
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .as(CorrelateLeftEmptyRuleConfig.class)
+      .toRule();
+
+  /** Configuration for rule that prunes a correlate if left input is empty. */
+  public interface CorrelateLeftEmptyRuleConfig extends PruneEmptyRule.Config {
+    @Override
+    default PruneEmptyRule toRule() {
+      return new PruneEmptyRule(this) {
+        @Override
+        public void onMatch(RelOptRuleCall call) {
+          if (Bug.CALCITE_5669_FIXED) {
+            throw new IllegalStateException("Class is redundant after fix is merged into Calcite");
+          }
+          final Correlate corr = call.rel(0);
+          call.transformTo(call.builder().push(corr).empty().build());
+        }
+      };
+    }
+  }
+
+  /** Configuration for rule that prunes a correlate if right input is empty. */
+  public interface CorrelateRightEmptyRuleConfig extends PruneEmptyRule.Config {
+    @Override
+    default PruneEmptyRule toRule() {
+      return new PruneEmptyRule(this) {
+        @Override
+        public void onMatch(RelOptRuleCall call) {
+          if (Bug.CALCITE_5669_FIXED) {
+            throw new IllegalStateException("Class is redundant after fix is merged into Calcite");
+          }
+          final Correlate corr = call.rel(0);
+          final RelNode left = call.rel(1);
+          final RelBuilder b = call.builder();
+          final RelNode newRel;
+          switch (corr.getJoinType()) {
+          case LEFT:
+            newRel = padWithNulls(b, left, corr.getRowType(), false);
+            break;
+          case INNER:
+          case SEMI:
+            newRel = b.push(corr).empty().build();
+            break;
+          case ANTI:
+            newRel = left;
+            break;
+          default:
+            throw new IllegalStateException("Correlate does not support " + corr.getJoinType());
+          }
+          call.transformTo(newRel);
         }
       };
     }

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
@@ -289,6 +290,13 @@ final class HMSClient implements AutoCloseable {
                                @NotNull List<String> arguments)
       throws TException {
     return client.drop_partition(dbName, tableName, arguments, true);
+  }
+
+  public boolean dropPartition(@NotNull String dbName, @NotNull String tableName,
+                               @NotNull String arguments)
+          throws TException {
+    List<String> partVals = Warehouse.getPartValuesFromPartName(arguments);
+    return dropPartition(dbName, tableName, partVals);
   }
 
   List<Partition> getPartitions(@NotNull String dbName, @NotNull String tableName) throws TException {

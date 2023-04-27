@@ -54,12 +54,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_truncate@b=four
 POSTHOOK: Lineage: test_truncate PARTITION(b=four).a SCRIPT []
-PREHOOK: query: alter table test_truncate set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: alter table test_truncate convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@test_truncate
-PREHOOK: Output: default@test_truncate
-POSTHOOK: query: alter table test_truncate set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: alter table test_truncate convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@test_truncate
 POSTHOOK: Output: default@test_truncate
 PREHOOK: query: analyze table test_truncate compute statistics

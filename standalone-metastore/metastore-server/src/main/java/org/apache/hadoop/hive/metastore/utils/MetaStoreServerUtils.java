@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -844,7 +846,15 @@ public class MetaStoreServerUtils {
     Map<String, Collection<String>> proxyHosts = sip.getProxyHosts();
     Collection<String> hostEntries = proxyHosts.get(sip.getProxySuperuserIpConfKey(user));
     MachineList machineList = new MachineList(hostEntries);
-    ipAddress = (ipAddress == null) ? StringUtils.EMPTY : ipAddress;
+    // when schematool or metatool use this, its possible that the saslServer.getRemoteAddress() returns null
+    // use localhost address first to see if it part of hadoop.proxyuser hosts.
+    if (ipAddress == null) {
+      try {
+        ipAddress = InetAddress.getLocalHost().getHostAddress();
+      } catch (UnknownHostException e) {
+        ipAddress = StringUtils.EMPTY;
+      }
+    }
     return machineList.includes(ipAddress);
   }
 

@@ -3388,6 +3388,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
           get(conf).getSynchronizedMSC().addWriteNotificationLog(request);
         }
         supported = false;
+      } else {
+	// Rethrow the exception, so failures are visible. Missing a write notification can be very difficult
+	// to debug otherwise.
+	throw e;
       }
     }
     long end = System.currentTimeMillis();

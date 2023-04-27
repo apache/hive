@@ -18,11 +18,12 @@
 package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,7 +44,14 @@ public class TaskHandlerFactory {
 
   public List<TaskHandler> getHandlers(HiveConf conf, TxnStore txnHandler, MetadataCache metadataCache,
                                                   boolean metricsEnabled, FSRemover fsRemover) {
-    return Arrays.asList(new CompactionCleaner(conf, txnHandler, metadataCache,
+    boolean useAbortHandler = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
+    List<TaskHandler> taskHandlers = new ArrayList<>();
+    if (useAbortHandler) {
+      taskHandlers.add(new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+              metricsEnabled, fsRemover));
+    }
+    taskHandlers.add(new CompactionCleaner(conf, txnHandler, metadataCache,
             metricsEnabled, fsRemover));
+    return taskHandlers;
   }
 }

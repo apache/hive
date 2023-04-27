@@ -4901,7 +4901,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ms.addPartition(destPartition);
         destPartitions.add(destPartition);
         ms.dropPartition(parsedSourceDbName[CAT_NAME], partition.getDbName(), sourceTable.getTableName(),
-            partition.getValues());
+            Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues()));
       }
       Path destParentPath = destPath.getParent();
       if (!wh.isDir(destParentPath)) {
@@ -5024,20 +5024,18 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         verifyIsWritablePath(partPath);
       }
 
-      if (!ms.dropPartition(catName, db_name, tbl_name, part_vals)) {
-        throw new MetaException("Unable to drop partition");
-      } else {
-        if (!transactionalListeners.isEmpty()) {
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part_vals);
+      ms.dropPartition(catName, db_name, tbl_name, partName);
 
-          transactionalListenerResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.DROP_PARTITION,
-                  new DropPartitionEvent(tbl, part, true, deleteData, this),
-                  envContext);
-        }
-        needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, db_name), tbl);
-        success = ms.commitTransaction();
+      if (!transactionalListeners.isEmpty()) {
+        transactionalListenerResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventType.DROP_PARTITION,
+                new DropPartitionEvent(tbl, part, true, deleteData, this),
+                envContext);
       }
+      needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, db_name), tbl);
+      success = ms.commitTransaction();
     } finally {
       if (!success) {
         ms.rollbackTransaction();
@@ -8813,7 +8811,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void mark_cleaned(CompactionInfoStruct cr) throws MetaException {
-    getTxnHandler().markCleaned(CompactionInfo.compactionStructToInfo(cr));
+    getTxnHandler().markCleaned(CompactionInfo.compactionStructToInfo(cr), false);
   }
 
   @Override
@@ -9442,6 +9440,35 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                   .getTableName();
           LOG.warn(msg);
         }
+      }
+      return response;
+    case REFRESH_EVENT:
+      response = new FireEventResponse();
+      catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
+      dbName = rqst.getDbName();
+      tblName = rqst.getTableName();
+      List<String> partitionVals = rqst.getPartitionVals();
+      Map<String, String> tableParams = rqst.getTblParams();
+      ReloadEvent event = new ReloadEvent(catName, dbName, tblName, partitionVals, rqst.isSuccessful(),
+              rqst.getData().getRefreshEvent(), tableParams, this);
+      MetaStoreListenerNotifier
+              .notifyEvent(transactionalListeners, EventType.RELOAD, event);
+      MetaStoreListenerNotifier.notifyEvent(listeners, EventType.RELOAD, event);
+      if (event.getParameters() != null && event.getParameters()
+              .containsKey(
+                      MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
+        response.addToEventIds(Long.valueOf(event.getParameters()
+                .get(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)));
+      } else {
+        String msg = "Reload event id not generated for ";
+        if (event.getPartitionObj() != null) {
+          msg += "partition " + Arrays
+                  .toString(event.getPartitionObj().getValues().toArray()) + " of ";
+        }
+        msg +=
+                " of table " + event.getTableObj().getDbName() + "." + event.getTableObj()
+                        .getTableName();
+        LOG.warn(msg);
       }
       return response;
     default:

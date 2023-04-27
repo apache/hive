@@ -1956,7 +1956,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
               HiveRemoveEmptySingleRules.SORT_INSTANCE,
               HiveRemoveEmptySingleRules.SORT_FETCH_ZERO_INSTANCE,
               HiveRemoveEmptySingleRules.AGGREGATE_INSTANCE,
-              HiveRemoveEmptySingleRules.UNION_INSTANCE);
+              HiveRemoveEmptySingleRules.UNION_INSTANCE,
+              HiveRemoveEmptySingleRules.CORRELATE_LEFT_INSTANCE,
+              HiveRemoveEmptySingleRules.CORRELATE_RIGHT_INSTANCE);
 
       // Trigger program
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);

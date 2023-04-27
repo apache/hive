@@ -74,6 +74,7 @@ alterTableStatementSuffix
     | alterStatementSuffixSetOwner
     | alterStatementSuffixSetPartSpec
     | alterStatementSuffixExecute
+    | alterStatementSuffixConvert
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -456,6 +457,13 @@ alterStatementSuffixSetPartSpec
 @after { gParent.popMsg(state); }
     : KW_SET KW_PARTITION KW_SPEC LPAREN (spec = partitionTransformSpec) RPAREN
     -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec)
+    ;
+
+alterStatementSuffixConvert
+@init { gParent.pushMsg("alter table convert to", state); }
+@after { gParent.popMsg(state); }
+    : KW_CONVERT KW_TO genericSpec=identifier tablePropertiesPrefixed?
+    -> ^(TOK_ALTERTABLE_CONVERT $genericSpec tablePropertiesPrefixed?)
     ;
 
 alterStatementSuffixExecute

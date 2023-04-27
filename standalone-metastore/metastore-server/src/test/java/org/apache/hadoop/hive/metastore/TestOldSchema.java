@@ -221,10 +221,8 @@ public class TestOldSchema {
         String db = dbs.get(i);
         List<String> tbls = store.getAllTables(DEFAULT_CATALOG_NAME, db);
         for (String tbl : tbls) {
-          List<Partition> parts = store.getPartitions(DEFAULT_CATALOG_NAME, db, tbl, 100);
-          for (Partition part : parts) {
-            store.dropPartition(DEFAULT_CATALOG_NAME, db, tbl, part.getValues());
-          }
+          List<String> partNames = store.listPartitionNames(DEFAULT_CATALOG_NAME, db, tbl, (short) -1);
+          store.dropPartitions(DEFAULT_CATALOG_NAME, db, tbl, partNames);
           store.dropTable(DEFAULT_CATALOG_NAME, db, tbl);
         }
         store.dropDatabase(DEFAULT_CATALOG_NAME, db);
