@@ -2,8 +2,6 @@ name: Build and Publish docker images for Hive GA
 
 on:
   workflow_dispatch:
-    branches:
-      - "master"
 
 jobs:
   build:
