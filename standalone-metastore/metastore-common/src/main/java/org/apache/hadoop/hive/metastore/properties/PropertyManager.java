@@ -24,9 +24,12 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.JexlFeatures;
+import org.apache.commons.jexl3.JexlScript;
+import org.apache.commons.jexl3.ObjectContext;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.yarn.webapp.hamlet2.Hamlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,12 +55,20 @@ import java.util.function.Function;
  * The manager ties the property schemas into one namespace; all property maps it handles must and will use
  * one of its known schema.
  * </p>
+ * <p>The manager class needs to be registered with its namespace as key</p>
+ * <p>
+ *   Since a collection of properties are stored in a map, to avoid hitting the persistence store for each update
+ *   - which would mean rewriting the map multiple times - the manager keeps track of dirty maps whilst
+ *   serving as transaction manager. This way, when importing multiple properties targeting different elements (think
+ *   setting properties for different tables), each impacted map is only rewritten
+ *   once by the persistence layer during commit. This also allows multiple calls to participate to one transactions.
+ * </p>
  */
 public abstract class PropertyManager {
   /** The logger. */
   public static final Logger LOGGER = LoggerFactory.getLogger(PropertyManager.class);
   /** The set of dirty maps. */
-  protected Map<String, PropertyMap> dirtyMaps = new HashMap<>();
+  protected final Map<String, PropertyMap> dirtyMaps = new HashMap<>();
   /** This manager namespace. */
   protected final String namespace;
   /** The property map store. */
@@ -84,7 +95,7 @@ public abstract class PropertyManager {
   /**
    * Declares a property manager class.
    * @param ns the namespace
-   * @param pmClazz the property mamanger class
+   * @param pmClazz the property manager class
    */
   public static boolean declare(String ns, Class<? extends PropertyManager> pmClazz) {
     try {
@@ -214,6 +225,7 @@ public abstract class PropertyManager {
 
   /**
    * Imports a set of property values.
+   * <p>Transactional call that requires calling {@link #commit()} or {@link #rollback()}.</p>
    * @param map the properties key=value
    */
   public void setProperties(Properties map) {
@@ -223,6 +235,7 @@ public abstract class PropertyManager {
   /**
    * Injects a set of properties.
    * If the value is null, the property is removed.
+   * <p>Transactional call that requires calling {@link #commit()} or {@link #rollback()}.</p>
    * @param map the map of properties to inject.
    */
   public void setProperties(Map<String, ?> map) {
@@ -231,11 +244,28 @@ public abstract class PropertyManager {
 
   /**
    * Sets a property value.
+   * <p>Transactional call that requires calling {@link #commit()} or {@link #rollback()}.</p>
    * @param key the property key
    * @param value the property value or null to unset
    */
   public void setProperty(String key, Object value) {
     setProperty(splitKey(key), value);
+  }
+
+  /**
+   * Runs a JEXL script using this manager as context.
+   * @param src the script source
+   * @return the script result
+   * @throws PropertyException if any error occurs in JEXL
+   */
+  public Object runScript(String src) throws PropertyException {
+    try {
+      JexlScript script = JEXL.createScript(src);
+      ObjectContext<PropertyManager> context = new ObjectContext<>(JEXL, this);
+      return script.execute(context);
+    } catch(JexlException je) {
+      throw new PropertyException("script failed", je);
+    }
   }
 
   /**
@@ -427,6 +457,7 @@ public abstract class PropertyManager {
 
   /**
    * Drops a property map.
+   * <p>Transactional call that requires calling {@link #commit()} or {@link #rollback()}.</p>
    * @param mapName the map name
    * @return true if the properties may exist, false if they did nots
    */
@@ -464,7 +495,7 @@ public abstract class PropertyManager {
    * @param keys the key fragments
    * @param value the new value or null if mapping should be removed
    */
-  public void setProperty(String[] keys, Object value) {
+  protected void setProperty(String[] keys, Object value) {
     // find schema from key (length)
     PropertySchema schema = schemaOf(keys);
     String mapKey = mapKey(keys);
@@ -500,6 +531,13 @@ public abstract class PropertyManager {
     }
   }
 
+  /**
+   * Selects a set of properties.
+   * @param namePrefix the map name prefix
+   * @param predicateStr the condition selecting maps
+   * @param projectStr the projection property names or script
+   * @return the map of property maps keyed by their name
+   */
   public Map<String, PropertyMap> selectProperties(String namePrefix, String predicateStr, String... projectStr) {
     return selectProperties(namePrefix, predicateStr,
         projectStr == null
@@ -509,12 +547,12 @@ public abstract class PropertyManager {
 
   /**
    * Selects a set of properties.
-   * @param mapPrefix the map name prefix
+   * @param namePrefix the map name prefix
    * @param selector the selector/transformer function
    * @return the map of property maps keyed by their name
    */
-  public Map<String, PropertyMap> selectProperties(String mapPrefix, Function<PropertyMap, PropertyMap> selector) {
-    final String mapKey = mapKey(mapPrefix);
+  public Map<String, PropertyMap> selectProperties(String namePrefix, Function<PropertyMap, PropertyMap> selector) {
+    final String mapKey = mapKey(namePrefix);
     final Map<String, PropertyMap> selected = store.selectProperties(mapKey,null, k->schemaOf(splitKey(k)) );
     final Map<String, PropertyMap> maps = new TreeMap<>();
     final Function<PropertyMap, PropertyMap> transform = selector == null? Function.identity() : selector;
@@ -527,7 +565,15 @@ public abstract class PropertyManager {
     });
     return maps;
   }
-  public Map<String, PropertyMap> selectProperties(String prefix, String predicateStr, List<String> projectStr) {
+
+  /**
+   * Selects a set of properties.
+   * @param namePrefix the map name prefix
+   * @param predicateStr the condition selecting maps
+   * @param projectStr the projection property names or script
+   * @return the map of property maps keyed by their name
+   */
+  public Map<String, PropertyMap> selectProperties(String namePrefix, String predicateStr, List<String> projectStr) {
     final JexlExpression predicate;
     try {
       predicate = JEXL.createExpression(predicateStr);
@@ -564,7 +610,8 @@ public abstract class PropertyManager {
               JexlExpression projector = JEXL.createExpression(projectName);
               Object evaluated = projector.evaluate(wrapped);
               if (evaluated instanceof Map<?,?>) {
-                projected.putAll((Map<String,?>) evaluated);
+                @SuppressWarnings("unchecked") Map<String,?> cast = (Map<String,?>) evaluated;
+                projected.putAll(cast);
               }
             } catch(JexlException xany) {
               // if (LOGGER.isDebugEnabled()) {
@@ -578,6 +625,6 @@ public abstract class PropertyManager {
       }
       return  null;
     };
-    return selectProperties(prefix, transform);
+    return selectProperties(namePrefix, transform);
   }
 }
