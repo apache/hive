@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.AlterTableCreateBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -106,6 +107,7 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpec;
@@ -714,6 +716,32 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       thread.setName("remove-snapshot-" + completeName + "-" + deleteThreadsIndex.getAndIncrement());
       return thread;
     });
+  }
+
+  @Override
+  public void createBranchOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      AlterTableCreateBranchSpec createBranchSpec) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+
+    String branchName = createBranchSpec.getBranchName();
+    ManageSnapshots manageSnapshots = icebergTable.manageSnapshots();
+    Long snapShotId = Optional.ofNullable(createBranchSpec.getSnapshotId())
+        .orElse(icebergTable.currentSnapshot().snapshotId());
+    LOG.info("Creating branch {} on iceberg table {}.{}", branchName, hmsTable.getDbName(),
+        hmsTable.getTableName());
+    manageSnapshots.createBranch(branchName, snapShotId);
+    if (createBranchSpec.getMaxRefAgeMs() != null) {
+      manageSnapshots.setMaxRefAgeMs(branchName, createBranchSpec.getMaxRefAgeMs());
+    }
+    if (createBranchSpec.getMinSnapshotsToKeep() != null) {
+      manageSnapshots.setMinSnapshotsToKeep(branchName, createBranchSpec.getMinSnapshotsToKeep());
+    }
+    if (createBranchSpec.getMaxSnapshotAgeMs() != null) {
+      manageSnapshots.setMaxSnapshotAgeMs(branchName, createBranchSpec.getMaxSnapshotAgeMs());
+    }
+
+    manageSnapshots.commit();
   }
 
   @Override
