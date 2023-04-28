@@ -22,22 +22,29 @@ import static org.junit.Assert.assertEquals;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.io.parquet.LeafFilterFactory;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.parquet.filter2.predicate.FilterPredicate;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
+import org.apache.parquet.schema.Type;
+import org.junit.Assert;
+
 import org.junit.Test;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TestParquetFilterPredicate {
+
   @Test
   public void testFilterColumnsThatDoNoExistOnSchema() {
     MessageType schema = MessageTypeParser.parseMessageType("message test { required int32 a; required binary stinger; }");
@@ -172,6 +179,44 @@ public class TestParquetFilterPredicate {
             "and(lteq(bCol, 1), not(lt(bCol, 1)))";
     assertEquals(expected, p.toString());
   }
+
+  @Test
+  public void testFilterBetweenForTimestamp(){
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .between("bCol", PredicateLeaf.Type.TIMESTAMP, new Timestamp(1667586661), new Timestamp(1667932199))
+        .build();
+    testFilterBetweenHelper(sarg, PredicateLeaf.Type.TIMESTAMP);
+  }
+
+  @Test
+  public void testFilterBetweenForDecimal(){
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .between("bCol", PredicateLeaf.Type.DECIMAL, new HiveDecimalWritable("12.21"), new HiveDecimalWritable(1667932199))
+        .build();
+    testFilterBetweenHelper(sarg, PredicateLeaf.Type.DECIMAL);
+
+  }
+
+  @Test
+  public void testFilterBetweenForDate(){
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .between("bCol", PredicateLeaf.Type.DATE, new Date(1667586661), new Date(1667932199))
+        .build();
+    testFilterBetweenHelper(sarg, PredicateLeaf.Type.DATE);
+
+  }
+
+  private void testFilterBetweenHelper(SearchArgument sarg, PredicateLeaf.Type type){
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test {  required int32 bCol; }");
+    LeafFilterFactory leafFilterFactory = new LeafFilterFactory();
+    PredicateLeaf leaf = sarg.getLeaves().get(sarg.getExpression().getLeaf());
+    Type parquetType = schema.getType(leaf.getColumnName());
+    HiveException exception = Assert.assertThrows(HiveException.class, () -> leafFilterFactory
+            .getLeafFilterBuilderByType(leaf.getType(), parquetType));
+    Assert.assertEquals(String.format(LeafFilterFactory.FILTER_PREDICATE_CONVERSION_NOT_SUPPORTED,type),exception.getMessage());
+  }
+
 
   @Test
   public void testFilter() throws Exception {
