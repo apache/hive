@@ -44,6 +44,8 @@ public class NonNativeAcidMaterializedViewASTBuilder extends MaterializedViewAST
 
   @Override
   protected List<ASTNode> createAcidSortNodesInternal(String tableName) {
-    return singletonList(createQualifiedColumnNode(tableName, VirtualColumn.ROWID.getName()));
+    return mvTable.getStorageHandler().acidSortColumns(mvTable, Context.Operation.DELETE).stream()
+            .map(fieldSchema -> createQualifiedColumnNode(tableName, fieldSchema.getName()))
+            .collect(Collectors.toList());
   }
 }
