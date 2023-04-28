@@ -3120,15 +3120,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     List<Path> partPaths = new ArrayList<>();
     while (true) {
-      Map<String, String> partitionLocations = ms.getPartitionLocations(catName, dbName, tableName,
-          tableDnsPath, batchSize);
-      if (partitionLocations == null || partitionLocations.isEmpty()) {
-        // No more partitions left to drop. Return with the collected path list to delete.
-        return partPaths;
-      }
-
+      List<String> partNames;
       if (checkLocation) {
-        for (String partName : partitionLocations.keySet()) {
+        Map<String, String> partitionLocations = ms.getPartitionLocations(catName, dbName, tableName,
+                tableDnsPath, batchSize);
+        partNames = new ArrayList<>(partitionLocations.keySet());
+        for (String partName : partNames) {
           String pathString = partitionLocations.get(partName);
           if (pathString != null) {
             Path partPath = wh.getDnsPath(new Path(pathString));
@@ -3145,19 +3142,26 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             }
           }
         }
+      } else {
+        partNames = ms.listPartitionNames(catName, dbName, tableName, (short) batchSize);
+      }
+
+      if (partNames == null || partNames.isEmpty()) {
+        // No more partitions left to drop. Return with the collected path list to delete.
+        return partPaths;
       }
 
       for (MetaStoreEventListener listener : listeners) {
         //No drop part listener events fired for public listeners historically, for drop table case.
         //Limiting to internal listeners for now, to avoid unexpected calls for public listeners.
         if (listener instanceof HMSMetricsListener) {
-          for (@SuppressWarnings("unused") String partName : partitionLocations.keySet()) {
+          for (@SuppressWarnings("unused") String partName : partNames) {
             listener.onDropPartition(null);
           }
         }
       }
 
-      ms.dropPartitions(catName, dbName, tableName, new ArrayList<>(partitionLocations.keySet()));
+      ms.dropPartitions(catName, dbName, tableName, partNames);
     }
   }
 
