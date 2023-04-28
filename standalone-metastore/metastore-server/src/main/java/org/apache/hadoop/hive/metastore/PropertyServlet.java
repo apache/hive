@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.properties;
+package org.apache.hadoop.hive.metastore;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HMSHandler;
-import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.properties.PropertyException;
+import org.apache.hadoop.hive.metastore.properties.PropertyManager;
+import org.apache.hadoop.hive.metastore.properties.PropertyMap;
+import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlet.Source;
-import org.junit.Assert;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -38,27 +38,36 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
- * A skeleton servlet for tests.
+ * The property  cli servlet.
  */
-public class JsonServlet extends HttpServlet {
+public class PropertyServlet extends HttpServlet {
   /** The object store. */
-  protected RawStore objectStore = null;
+  private final RawStore objectStore;
+  /** The security. */
+  private final ServletSecurity security;
 
-  JsonServlet(RawStore store) {
+  PropertyServlet(Configuration configuration, RawStore store) {
+    this.security = new ServletSecurity(configuration, false);
     this.objectStore = store;
   }
 
@@ -72,13 +81,11 @@ public class JsonServlet extends HttpServlet {
 
   private PropertyManager getPropertyManager(String ns) throws MetaException, NoSuchObjectException {
     PropertyStore propertyStore = objectStore.getPropertyStore();
-    PropertyManager mgr = PropertyManager.create(ns, propertyStore);
-    return mgr;
+    return PropertyManager.create(ns, propertyStore);
   }
 
   private Object readJson(HttpServletRequest request) throws ServletException, IOException {
     ServletInputStream inputStream = request.getInputStream();
-    Object json = null;
     try (Reader reader = new BufferedReader(
         new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
       return new Gson().fromJson(reader, Object.class);
@@ -96,70 +103,121 @@ public class JsonServlet extends HttpServlet {
     writer.flush();
   }
 
-  @Override
-  protected void doPost(HttpServletRequest request,
-                        HttpServletResponse response) throws ServletException, IOException {
-    String ns = getNamespace(request.getRequestURI());
-    PropertyManager mgr;
-    try {
-      mgr = getPropertyManager(ns);
-    } catch (MetaException | NoSuchObjectException xpty) {
-      throw new ServletException(xpty);
-    }
-    Object json = readJson(request);
-    if (json instanceof Map) {
-      Map<String, Object> call = (Map<String, Object>) json;
-      String method = (String) call.get("method");
-      if (method == null || "selectProperties".equals(method)) {
-        String prefix = (String) call.get("prefix");
-        if (prefix == null) {
-          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "null prefix");
-        }
-        String predicate = (String) call.get("predicate");
-        List<String> project = (List<String>) call.get("selection");
-        try {
-          Map<String, PropertyMap> selected = mgr.selectProperties(prefix, predicate, project);
-          Map<String, Map<String, String>> returned = new TreeMap<>();
-          selected.forEach((k, v) -> {
-            returned.put(k, v.export());
-          });
-          mgr.commit();
-          writeJson(response, returned);
-          response.setStatus(HttpServletResponse.SC_OK);
-        } catch (Exception xany) {
-          mgr.rollback();
-          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "select fail " + xany);
-        }
-        return;
-      } else if ("echo".equals(method)) {
-        writeJson(response, json);
-        response.setStatus(HttpServletResponse.SC_OK);
-        return;
-      }
-    }
-    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "bad argument type " + json.getClass());
+  public void init() throws ServletException {
+    super.init();
+    security.init();
   }
 
   @Override
-  protected void doPut(HttpServletRequest request,
+  protected void doPost(HttpServletRequest request,
+                        HttpServletResponse response) throws ServletException, IOException {
+    security.execute(request, response, PropertyServlet.this::runPost);
+  }
+
+  private void runPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
     String ns = getNamespace(request.getRequestURI());
     PropertyManager mgr;
     try {
       mgr = getPropertyManager(ns);
-    } catch (MetaException | NoSuchObjectException xpty) {
-      throw new ServletException(xpty);
+    } catch (MetaException | NoSuchObjectException exception) {
+      throw new ServletException(exception);
+    }
+    Object json = readJson(request);
+    // one or many actions imply...
+    Iterable<?> actions = json instanceof List<?> ? (List<?>) json : Collections.singletonList(json);
+    // ...one or many reactions
+    List<Object> reactions = new ArrayList<>();
+    try {
+      for (Object action : actions) {
+        if (action instanceof Map<?,?>) {
+          @SuppressWarnings("unchecked")  Map<String, Object> call = (Map<String, Object>) action;
+          String method = (String) call.get("method");
+          if (method == null) {
+            method = "selectProperties";
+          }
+          switch (method) {
+            case "selectProperties": {
+              String prefix = (String) call.get("prefix");
+              if (prefix == null) {
+                throw new IllegalArgumentException("null prefix");
+              }
+              String predicate = (String) call.get("predicate");
+              @SuppressWarnings("unchecked") List<String> project = (List<String>) call.get("selection");
+              Map<String, PropertyMap> selected = mgr.selectProperties(prefix, predicate, project);
+              Map<String, Map<String, String>> returned = new TreeMap<>();
+              selected.forEach((k, v) -> returned.put(k, v.export()));
+              reactions.add(returned);
+              break;
+            }
+            case "script": {
+              String src = (String) call.get("source");
+              reactions.add(mgr.runScript(src));
+              break;
+            }
+            case "echo": {
+              reactions.add(action);
+              break;
+            }
+            default: {
+              throw new IllegalArgumentException("bad argument type " + action.getClass());
+            }
+          }
+        }
+      }
+      mgr.commit();
+      // not an array if there was only one action
+      writeJson(response, reactions.size() > 1? reactions : reactions.get(0));
+      response.setStatus(HttpServletResponse.SC_OK);
+    } catch (PropertyException any) {
+      mgr.rollback();
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "servlet fail, property error " + any);
+    } catch (Exception any) {
+      mgr.rollback();
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "servlet fail " + any);
+    }
+  }
+
+//  A way to import values using files sent over http
+//  private void importProperties(HttpServletRequest request) throws ServletException, IOException {
+//    List<Part> fileParts = request.getParts().stream()
+//        .filter(part -> "files".equals(part.getName()) && part.getSize() > 0)
+//        .collect(Collectors.toList()); // Retrieves <input type="file" name="files" multiple="true">
+//
+//    for (Part filePart : fileParts) {
+//      String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
+//      InputStream fileContent = filePart.getInputStream();
+//      // ... (do your job here)
+//    }
+//  }
+
+  @Override
+  protected void doPut(HttpServletRequest request,
+                        HttpServletResponse response) throws ServletException, IOException {
+    security.execute(request, response, PropertyServlet.this::runGet);
+  }
+  private void runGet(HttpServletRequest request,
+                       HttpServletResponse response) throws ServletException, IOException {
+
+    String ns = getNamespace(request.getRequestURI());
+    PropertyManager mgr;
+    try {
+      mgr = getPropertyManager(ns);
+    } catch (MetaException | NoSuchObjectException exception) {
+      throw new ServletException(exception);
     }
     Object json = readJson(request);
     if (json instanceof Map) {
       try {
-        mgr.setProperties((Map) json);
+        @SuppressWarnings("unchecked")
+        Map<String, ?> cast = (Map<String, ?>) json;
+        mgr.setProperties(cast);
         mgr.commit();
         response.setStatus(HttpServletResponse.SC_OK);
         return;
-      } catch (Exception xany) {
+      } catch (Exception any) {
         mgr.rollback();
-        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "select fail " + xany);
+        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "select fail " + any);
       }
     }
     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "bad argument type " + json.getClass());
@@ -168,9 +226,7 @@ public class JsonServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-    String ns = getNamespace(request.getRequestURI());
-    Object json = readJson(request);
-    writeJson(response, json);
+    security.execute(request, response, PropertyServlet.this::runGet);
   }
 
   /**
@@ -179,11 +235,12 @@ public class JsonServlet extends HttpServlet {
    * @param method the http method
    * @param arg the argument that will be transported as JSon
    * @return the result the was returned through Json
-   * @throws IOException
+   * @throws IOException if marshalling the request/response fail
    */
-   static Object clientCall(URL url, String method, Object arg) throws IOException {
+   public static Object clientCall(URL url, String method, Object arg) throws IOException {
     HttpURLConnection con = (HttpURLConnection) url.openConnection();
     con.setRequestMethod(method);
+    con.setRequestProperty(ServletSecurity.X_USER, url.getUserInfo());
     con.setRequestProperty("Content-Type", "application/json");
     con.setRequestProperty("Accept", "application/json");
     con.setDoOutput(true);
@@ -201,15 +258,21 @@ public class JsonServlet extends HttpServlet {
     }
     return null;
   }
-  static Server startServer(Configuration conf, String cli, RawStore store) throws Exception {
+
+  /**
+   * Convenience method to start a http server that only serves this servlet.
+   * @param conf the configuration
+   * @param cli the url part
+   * @param store the store
+   * @return the server instance
+   * @throws Exception if servlet initialization fails
+   */
+  public static Server startServer(Configuration conf, String cli, RawStore store) throws Exception {
     Server server = new Server(0);
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
-    //ServletContextHandler context = new ServletContextHandler(
-    //    ServletContextHandler.NO_SECURITY | ServletContextHandler.NO_SESSIONS);
-    // context.addServlet(new ServletHolder(JsonServlet.class),  "/testJSONServlet");
     ServletHolder holder = handler.newServletHolder(Source.EMBEDDED);
-    holder.setServlet(new JsonServlet(store)); //
+    holder.setServlet(new PropertyServlet(conf, store)); //
     handler.addServletWithMapping(holder, "/"+cli+"/*");
     server.start();
     return server;

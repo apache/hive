@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Properties;
+import java.util.function.BooleanSupplier;
 
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.DATETIME;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.DOUBLE;
@@ -54,18 +55,36 @@ public class PropertyManagerTest {
     manager.importDefaultValues(jutilp);
   }
 
+  @Test
+  public void testSerDerScript() {
+    runSerDer(() -> {
+      return (boolean) manager.runScript(
+          "setProperty('framework', 'llap');" +
+              "setProperty('ser.store', 'Parquet');" +
+              "setProperty('ser.der.id', 42);" +
+              "setProperty('ser.der.name', 'serder');" +
+              "setProperty('ser.der.project', 'Metastore');" +
+              "true;");
+    });
+  }
 
   @Test
   public void testSerDer() {
+    runSerDer(()->{
+      // update main (no commit yet)
+      manager.setProperty("framework", "llap");
+      manager.setProperty("ser.store", "Parquet");
+      manager.setProperty("ser.der.id", 42);
+      manager.setProperty("ser.der.name", "serder");
+      manager.setProperty("ser.der.project", "Metastore");
+      return true;
+    });
+  }
+  private void runSerDer(BooleanSupplier update) {
     // create a second manager to check isolation
     JavaTestManager hms2 = new JavaTestManager(store);
 
-    // update main (no commit yet)
-    manager.setProperty("framework", "llap");
-    manager.setProperty("ser.store", "Parquet");
-    manager.setProperty("ser.der.id", 42);
-    manager.setProperty("ser.der.name", "serder");
-    manager.setProperty("ser.der.project", "Metastore");
+    Assert.assertTrue(update.getAsBoolean());
 
     Assert.assertEquals("llap", manager.getPropertyValue("framework"));
     Assert.assertEquals("Parquet", manager.getPropertyValue("ser.store"));

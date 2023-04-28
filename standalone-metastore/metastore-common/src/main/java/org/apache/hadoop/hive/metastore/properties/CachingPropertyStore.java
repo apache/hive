@@ -31,12 +31,14 @@ import java.util.function.Predicate;
 
 /**
  * A property map store using a pull-thru cache.
+ * <p>
  * Before a map is returned, a check against the stored corresponding digest is performed to avoid
  * using stale data.
+ * </p>
  */
 public class CachingPropertyStore extends PropertyStore {
-  protected  SoftCache<String, PropertyMap> maps;
-  protected PropertyStore store;
+  protected final SoftCache<String, PropertyMap> maps;
+  protected final PropertyStore store;
   public CachingPropertyStore(PropertyStore wrap) {
     this(wrap, null);
   }

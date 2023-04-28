@@ -37,6 +37,10 @@ import java.util.function.Function;
 
 /**
  * A property map pertaining to a given object type (cluster, database, table).
+ * <p>
+ *   Maps follow a copy-on-write scheme gated by a dirty flag (avoid copy of a dirty map). This allows
+ *   sharing their content (the inner properties map) with guaranteed isolation and thread safety.
+ * </p>
  */
 public class PropertyMap implements Serializable {
   // Vital immutable serialization information.
@@ -106,6 +110,8 @@ public class PropertyMap implements Serializable {
 
   /**
    * The projection constructor.
+   * <p>This copies an instance and sets key/value pairs at the same time.</p>
+   * <p>Note that the resulting map is <em>not</em> dirty.</p>
    *
    * @param src   the instance to copy
    * @param input the pairs to set

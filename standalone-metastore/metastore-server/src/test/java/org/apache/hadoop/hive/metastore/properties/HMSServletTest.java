@@ -17,13 +17,9 @@
 package org.apache.hadoop.hive.metastore.properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.PropertyServlet;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.servlet.Source;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import java.io.IOException;
 import java.net.URL;
@@ -44,7 +40,7 @@ public class HMSServletTest extends HMSTestBase {
       LOG.info("MetaStore store initialization " + (inited ? "successful" : "failed"));
     }
     if (servletServer == null) {
-      servletServer = JsonServlet.startServer(conf, CLI, objectStore);
+      servletServer = PropertyServlet.startServer(conf, CLI, objectStore);
       if (!servletServer.isStarted()) {
         Assert.fail("http server did not start");
       }
@@ -67,7 +63,7 @@ public class HMSServletTest extends HMSTestBase {
 
   @Override
   protected JSonClient createClient(Configuration conf, int sport) throws Exception {
-    URL url = new URL("http://localhost:" + sport + "/" + CLI + "/" + NS);
+    URL url = new URL("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
     return new JSonClient(url);
   }
 
@@ -79,7 +75,7 @@ public class HMSServletTest extends HMSTestBase {
 
     public boolean setProperties(Map<String, String> properties) {
       try {
-        JsonServlet.clientCall(url, "PUT", properties);
+        PropertyServlet.clientCall(url, "PUT", properties);
         return true;
       } catch(IOException xio) {
         return false;
@@ -96,7 +92,7 @@ public class HMSServletTest extends HMSTestBase {
         args.put("selection", selection);
       }
       try {
-        Object result = JsonServlet.clientCall(url, "POST", args);
+        Object result = PropertyServlet.clientCall(url, "POST", args);
         return result instanceof Map? (Map<String, Map<String, String>>) result : null ;
       } catch(IOException xio) {
         return null;
@@ -106,9 +102,9 @@ public class HMSServletTest extends HMSTestBase {
 
   @Test
   public void testJSONServlet() throws Exception {
-      URL url = new URL("http://localhost:" + sport + "/" + CLI + "/" + NS);
+      URL url = new URL("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
       Map<String, String> json = Collections.singletonMap("method", "echo");
-      Object response = JsonServlet.clientCall(url, "POST", json);
+      Object response = PropertyServlet.clientCall(url, "POST", json);
       Assert.assertNotNull(response);
       Assert.assertEquals(json, response);;
   }

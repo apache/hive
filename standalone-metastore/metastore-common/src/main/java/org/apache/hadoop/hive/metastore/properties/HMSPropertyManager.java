@@ -73,7 +73,12 @@ public class HMSPropertyManager extends PropertyManager {
 
   /** Table maintenance operation status. */
   public enum MaintenanceOpStatus {
-    MAINTENANCE_NEEDED, SCHEDULED, IN_PROGRESS, DONE, CLEANUP_NEEDED, FAILED;
+    MAINTENANCE_NEEDED,
+    SCHEDULED,
+    IN_PROGRESS,
+    DONE,
+    CLEANUP_NEEDED,
+    FAILED;
   }
   /** The map form ordinal to OpStatus. */
   private static final Map<Integer, MaintenanceOpStatus> MOS;
