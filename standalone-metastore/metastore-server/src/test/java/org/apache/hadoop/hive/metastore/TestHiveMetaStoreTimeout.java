@@ -29,11 +29,12 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -48,8 +49,8 @@ public class TestHiveMetaStoreTimeout {
   protected static Warehouse warehouse;
   protected static int port;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void startMetaStoreServer() throws Exception {
     HMSHandler.testTimeoutEnabled = true;
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
@@ -61,19 +62,22 @@ public class TestHiveMetaStoreTimeout {
     port = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    HMSHandler.testTimeoutEnabled = false;
+  }
+
+  @Before
+  public void setup() throws MetaException {
     client = new HiveMetaStoreClient(conf);
   }
 
   @After
-  public void tearDown() throws Exception {
-    HMSHandler.testTimeoutEnabled = false;
-    try {
-      client.close();
-    } catch (Throwable e) {
-      System.err.println("Unable to close metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw e;
-    }
+  public void cleanup() {
+    client.close();
+    client = null;
   }
 
   @Test
