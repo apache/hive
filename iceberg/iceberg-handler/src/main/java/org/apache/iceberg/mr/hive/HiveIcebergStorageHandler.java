@@ -725,12 +725,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
 
     String branchName = createBranchSpec.getBranchName();
-    ManageSnapshots manageSnapshots = icebergTable.manageSnapshots();
-    Long snapShotId = Optional.ofNullable(createBranchSpec.getSnapshotId())
+    Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() -> new UnsupportedOperationException(
+        String.format("Cannot create branch %s on iceberg table %s.%s which has no snapshot",
+            branchName, hmsTable.getDbName(), hmsTable.getTableName())));
+    Long snapshotId = Optional.ofNullable(createBranchSpec.getSnapshotId())
         .orElse(icebergTable.currentSnapshot().snapshotId());
     LOG.info("Creating branch {} on iceberg table {}.{}", branchName, hmsTable.getDbName(),
         hmsTable.getTableName());
-    manageSnapshots.createBranch(branchName, snapShotId);
+    ManageSnapshots manageSnapshots = icebergTable.manageSnapshots();
+    manageSnapshots.createBranch(branchName, snapshotId);
     if (createBranchSpec.getMaxRefAgeMs() != null) {
       manageSnapshots.setMaxRefAgeMs(branchName, createBranchSpec.getMaxRefAgeMs());
     }

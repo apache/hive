@@ -42,6 +42,16 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     Assert.assertNull(ref.minSnapshotsToKeep());
     Assert.assertNull(ref.maxSnapshotAgeMs());
     Assert.assertNull(ref.maxRefAgeMs());
+
+    // creating a branch which is already exists will fail
+    try {
+      shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s", branchName));
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Ref test_branch_1 already exists"));
+    }
   }
 
   @Test
@@ -137,5 +147,20 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     Assert.assertEquals(minSnapshotsToKeep, ref.minSnapshotsToKeep());
     Assert.assertEquals(TimeUnit.DAYS.toMillis(maxSnapshotAge), ref.maxSnapshotAgeMs().longValue());
     Assert.assertEquals(TimeUnit.DAYS.toMillis(maxRefAge), ref.maxRefAgeMs().longValue());
+  }
+
+  @Test
+  public void testCreateBranchWithNonIcebergTable() {
+    shell.executeStatement("create table nonice_tbl (id int, name string)");
+
+    String branchName = "test_branch_1";
+    try {
+      shell.executeStatement(String.format("ALTER TABLE nonice_tbl CREATE BRANCH %s", branchName));
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Cannot perform ALTER CREATE BRANCH statement on non-iceberg table"));
+    }
   }
 }

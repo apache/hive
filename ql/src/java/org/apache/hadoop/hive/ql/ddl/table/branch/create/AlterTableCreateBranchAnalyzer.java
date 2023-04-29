@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -48,7 +49,7 @@ public class AlterTableCreateBranchAnalyzer extends AbstractAlterTableAnalyzer {
       throws SemanticException {
     Table table = getTable(tableName);
     validateAlterTableType(table, AlterTableType.CREATEBRANCH, false);
-    if (!"ICEBERG".equalsIgnoreCase(table.getParameters().get("table_type"))) {
+    if (!HiveMetaHook.ICEBERG.equalsIgnoreCase(table.getParameters().get(HiveMetaHook.TABLE_TYPE))) {
       throw new SemanticException("Cannot perform ALTER CREATE BRANCH statement on non-iceberg table.");
     }
     inputs.add(new ReadEntity(table));
@@ -62,19 +63,21 @@ public class AlterTableCreateBranchAnalyzer extends AbstractAlterTableAnalyzer {
       ASTNode childNode = (ASTNode) command.getChild(i);
       switch (childNode.getToken().getType()) {
       case HiveParser.TOK_AS_OF_VERSION_BRANCH:
-        snapshotId = Long.valueOf(childNode.getChild(0).getText());
+        snapshotId = Long.parseLong(childNode.getChild(0).getText());
         break;
       case HiveParser.TOK_RETAIN:
         String maxRefAge = childNode.getChild(0).getText();
         String timeUnitOfBranchRetain = childNode.getChild(1).getText();
-        maxRefAgeMs = TimeUnit.valueOf(timeUnitOfBranchRetain.toUpperCase(Locale.ENGLISH)).toMillis(Long.valueOf(maxRefAge));
+        maxRefAgeMs = TimeUnit.valueOf(timeUnitOfBranchRetain.toUpperCase(Locale.ENGLISH))
+            .toMillis(Long.parseLong(maxRefAge));
         break;
       case HiveParser.TOK_WITH_SNAPSHOT_RETENTION:
         minSnapshotsToKeep = Integer.valueOf(childNode.getChild(0).getText());
         if (childNode.getChildren().size() > 1) {
           String maxSnapshotAge = childNode.getChild(1).getText();
           String timeUnitOfSnapshotsRetention = childNode.getChild(2).getText();
-          maxSnapshotAgeMs = TimeUnit.valueOf(timeUnitOfSnapshotsRetention.toUpperCase(Locale.ENGLISH)).toMillis(Long.valueOf(maxSnapshotAge));
+          maxSnapshotAgeMs = TimeUnit.valueOf(timeUnitOfSnapshotsRetention.toUpperCase(Locale.ENGLISH))
+              .toMillis(Long.parseLong(maxSnapshotAge));
         }
         break;
       default:
@@ -82,7 +85,8 @@ public class AlterTableCreateBranchAnalyzer extends AbstractAlterTableAnalyzer {
       }
     }
 
-    AlterTableCreateBranchSpec spec = new AlterTableCreateBranchSpec(branchName, snapshotId, maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs);
+    AlterTableCreateBranchSpec spec = new AlterTableCreateBranchSpec(branchName, snapshotId,
+        maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs);
     AlterTableCreateBranchDesc desc = new AlterTableCreateBranchDesc(tableName, spec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
