@@ -20863,16 +20863,20 @@ class TableMeta(object):
      - tableType
      - comments
      - catName
+     - ownerName
+     - ownerType
 
     """
 
 
-    def __init__(self, dbName=None, tableName=None, tableType=None, comments=None, catName=None,):
+    def __init__(self, dbName=None, tableName=None, tableType=None, comments=None, catName=None, ownerName=None, ownerType=None,):
         self.dbName = dbName
         self.tableName = tableName
         self.tableType = tableType
         self.comments = comments
         self.catName = catName
+        self.ownerName = ownerName
+        self.ownerType = ownerType
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -20908,6 +20912,16 @@ class TableMeta(object):
                     self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.ownerName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I32:
+                    self.ownerType = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -20937,6 +20951,14 @@ class TableMeta(object):
         if self.catName is not None:
             oprot.writeFieldBegin('catName', TType.STRING, 5)
             oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.ownerName is not None:
+            oprot.writeFieldBegin('ownerName', TType.STRING, 6)
+            oprot.writeString(self.ownerName.encode('utf-8') if sys.version_info[0] == 2 else self.ownerName)
+            oprot.writeFieldEnd()
+        if self.ownerType is not None:
+            oprot.writeFieldBegin('ownerType', TType.I32, 7)
+            oprot.writeI32(self.ownerType)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -32163,6 +32185,8 @@ TableMeta.thrift_spec = (
     (3, TType.STRING, 'tableType', 'UTF8', None, ),  # 3
     (4, TType.STRING, 'comments', 'UTF8', None, ),  # 4
     (5, TType.STRING, 'catName', 'UTF8', None, ),  # 5
+    (6, TType.STRING, 'ownerName', 'UTF8', None, ),  # 6
+    (7, TType.I32, 'ownerType', None, None, ),  # 7
 )
 all_structs.append(Materialization)
 Materialization.thrift_spec = (

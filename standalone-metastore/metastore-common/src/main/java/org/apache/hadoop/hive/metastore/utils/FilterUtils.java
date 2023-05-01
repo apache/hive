@@ -186,25 +186,20 @@ public class FilterUtils {
    * Filter list of meta data of tables if filtering is enabled. Otherwise, return original list
    * @param isFilterEnabled true: filtering is enabled; false: filtring is disabled.
    * @param filterHook: the object that does filtering
-   * @param catName: the catalog name
-   * @param dbName: the database name
    * @param tableMetas: the list of meta data of tables
    * @return the list of table meta data that current user has access if filtering is enabled;
    *         otherwise, the original list
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  public static List<TableMeta> filterTableMetasIfEnabled(
-      boolean isFilterEnabled, MetaStoreFilterHook filterHook,
-      String catName, String dbName, List<TableMeta> tableMetas)
-      throws MetaException, NoSuchObjectException {
+  public static List<TableMeta> filterTableMetasIfEnabled(boolean isFilterEnabled, MetaStoreFilterHook filterHook,
+      List<TableMeta> tableMetas) throws MetaException, NoSuchObjectException {
     if (tableMetas == null || tableMetas.isEmpty()) {
       return tableMetas;
     }
 
     if (isFilterEnabled) {
-      return filterHook.filterTableMetas(
-          catName, dbName, tableMetas);
+      return filterHook.filterTableMetas(tableMetas);
     }
 
     return tableMetas;
