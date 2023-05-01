@@ -2934,9 +2934,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
                                       List<String> tableTypes) throws TException {
-    List<TableMeta> tableMetas = client.get_table_meta(prependCatalogToDbName(
-        catName, dbPatterns, conf), tablePatterns, tableTypes);
-    return FilterUtils.filterTableMetasIfEnabled(isClientFilterEnabled, filterHook, catName, dbPatterns, tableMetas);
+    List<TableMeta> tableMetas = client.get_table_meta(prependCatalogToDbName(catName, dbPatterns, conf),
+        tablePatterns, tableTypes);
+    return FilterUtils.filterTableMetasIfEnabled(isClientFilterEnabled, filterHook, tableMetas);
   }
 
   @Override

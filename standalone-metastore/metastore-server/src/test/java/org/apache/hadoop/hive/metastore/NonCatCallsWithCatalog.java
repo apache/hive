@@ -507,6 +507,9 @@ public abstract class NonCatCallsWithCatalog {
       table.unsetCatName();
       client.createTable(table);
       TableMeta tableMeta = new TableMeta(dbName, tableNames[i], TableType.MANAGED_TABLE.name());
+      tableMeta.setOwnerName(table.getOwner());
+      tableMeta.setOwnerType(table.getOwnerType());
+
       tableMeta.setCatName(expectedCatalog());
       expected.add(tableMeta);
     }

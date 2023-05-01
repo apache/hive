@@ -19,18 +19,22 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.conf.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Metastore filter hook for filtering out the list of objects that the current authorization
@@ -51,9 +55,10 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     List<HivePrivilegeObject> listObjs = getHivePrivObjects(dbName, tableList);
     return getFilteredObjectNames(getFilteredObjects(listObjs));
   }
+
   @Override
   public List<Table> filterTables(List<Table> tableList) throws MetaException {
-    List<HivePrivilegeObject> listObjs = getHivePrivObjects(tableList);
+    List<HivePrivilegeObject> listObjs = tablesToPrivilegeObjs(tableList);
     return getFilteredTableList(getFilteredObjects(listObjs),tableList);
   }
 
@@ -133,25 +138,45 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     return objs;
   }
 
-  private List<HivePrivilegeObject> getHivePrivObjects(List<Table> tableList) {
+  private HivePrivilegeObject createPrivilegeObjectForTable(String dbName, String tableName, String owner,
+      PrincipalType ownerType) {
+    return new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, dbName, tableName, null, null,
+        HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null, owner, ownerType);
+  }
+
+  private List<HivePrivilegeObject> tablesToPrivilegeObjs(List<Table> tableList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
-    for(Table tableObject : tableList) {
-      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, tableObject.getDbName(), tableObject.getTableName(), null, null,
-              HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null, tableObject.getOwner(), tableObject.getOwnerType()));
+    for (Table tableObject : tableList) {
+      objs.add(createPrivilegeObjectForTable(tableObject.getDbName(), tableObject.getTableName(), tableObject.getOwner(),
+          tableObject.getOwnerType()));
     }
     return objs;
   }
 
-   @Override
-   public List<TableMeta> filterTableMetas(String catName,String dbName,List<TableMeta> tableMetas) throws MetaException {
-     List<String> tableNames = new ArrayList<>();
-     for(TableMeta tableMeta: tableMetas){
-       tableNames.add(tableMeta.getTableName());
-     }
-     List<String> filteredTableNames = filterTableNames(catName,dbName,tableNames);
-     return tableMetas.stream()
-             .filter(e -> filteredTableNames.contains(e.getTableName())).collect(Collectors.toList());
-   }
+  private List<HivePrivilegeObject> tableMetasToPrivilegeObjs(List<TableMeta> tableMetas) {
+    List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
+    for (TableMeta tableMeta : tableMetas) {
+      objs.add(createPrivilegeObjectForTable(tableMeta.getDbName(), tableMeta.getTableName(), tableMeta.getOwnerName(),
+          tableMeta.getOwnerType()));
+    }
+    return objs;
+  }
+
+  private ImmutablePair<String, String> tableMetaKey(String dbName, String tableName) {
+    return new ImmutablePair(dbName, tableName);
+  }
+
+  @Override
+  public List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException {
+    List<HivePrivilegeObject> listObjs = tableMetasToPrivilegeObjs(tableMetas);
+    List<HivePrivilegeObject> filteredList = getFilteredObjects(listObjs);
+    Set<ImmutablePair<String, String>> filteredNames = filteredList.stream()
+        .map(e -> tableMetaKey(e.getDbname(), e.getObjectName()))
+        .collect(Collectors.toSet());
+    return tableMetas.stream()
+        .filter(e -> filteredNames.contains(tableMetaKey(e.getDbName(), e.getTableName())))
+        .collect(Collectors.toList());
+  }
 
   @Override
   public List<String> filterDataConnectors(List<String> dcList) throws MetaException {
