@@ -390,7 +390,6 @@ bin	binary
 # Detailed Table Information	NULL	NULL
 Database:           	test_db_desc_table_formatted	NULL
 #### A masked pattern was here ####
-LastAccessTime:     	UNKNOWN             	NULL
 Retention:          	0                   	NULL
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	NULL
