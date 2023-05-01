@@ -68,7 +68,7 @@ public class TestHS2SessionHive {
     }
 
     @Override
-    public List<TableMeta> filterTableMetas(String catName, String dbName, List<TableMeta> tableMetas)
+    public List<TableMeta> filterTableMetas(List<TableMeta> tableMetas)
         throws MetaException {
       try {
         Assert.assertNotNull(SessionState.get());
@@ -87,7 +87,7 @@ public class TestHS2SessionHive {
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-      return super.filterTableMetas(catName, dbName, tableMetas);
+      return super.filterTableMetas(tableMetas);
     }
   }
 

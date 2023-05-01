@@ -1771,6 +1771,8 @@ struct TableMeta {
   3: required string tableType;
   4: optional string comments;
   5: optional string catName;
+  6: optional string ownerName;
+  7: optional PrincipalType ownerType;
 }
 
 struct Materialization {
