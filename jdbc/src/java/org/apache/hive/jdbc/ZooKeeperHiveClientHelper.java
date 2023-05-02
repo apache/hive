@@ -100,12 +100,24 @@ class ZooKeeperHiveClientHelper {
     if (sslEnabled) {
       connParams.setZookeeperKeyStoreLocation(
           StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_KEYSTORE_LOCATION), ""));
-      connParams.setZookeeperKeyStorePassword(
-          StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_KEYSTORE_PASSWORD), ""));
+      String keyStorePassword = sessionConf.get(JdbcConnectionParams.ZOOKEEPER_KEYSTORE_PASSWORD);
+      if (keyStorePassword == null) {
+        keyStorePassword = Utils.getPasswordFromCredentialProvider(
+            sessionConf.get(JdbcConnectionParams.SSL_STORE_PASSWORD_PATH),
+            JdbcConnectionParams.ZOOKEEPER_KEYSTORE_PASSWORD);
+        keyStorePassword = StringUtils.defaultString(keyStorePassword, "");
+      }
+      connParams.setZookeeperKeyStorePassword(keyStorePassword);
       connParams.setZookeeperTrustStoreLocation(
           StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_LOCATION), ""));
-      connParams.setZookeeperTrustStorePassword(
-          StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_PASSWORD), ""));
+      String trustStorePassword = sessionConf.get(JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_PASSWORD);
+      if (trustStorePassword == null) {
+        trustStorePassword = Utils.getPasswordFromCredentialProvider(
+            sessionConf.get(JdbcConnectionParams.SSL_STORE_PASSWORD_PATH),
+            JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_PASSWORD);
+        trustStorePassword = StringUtils.defaultString(trustStorePassword, "");
+      }
+      connParams.setZookeeperTrustStorePassword(trustStorePassword);
     }
   }
 
