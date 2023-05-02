@@ -1988,13 +1988,19 @@ public class ObjectStore implements RawStore, Configurable {
       // tables in all databases, essentially a full dump)
       pm.getFetchPlan().addGroup(FetchGroups.FETCH_DATABASE_ON_MTABLE);
       query = pm.newQuery(MTable.class, filterBuilder.toString()) ;
-      query.setResult("database.name, tableName, tableType, parameters.get(\"comment\")");
+      query.setResult("database.name, tableName, tableType, parameters.get(\"comment\"), owner, ownerType");
       List<Object[]> tables = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[0]));
       for (Object[] table : tables) {
         TableMeta metaData = new TableMeta(table[0].toString(), table[1].toString(), table[2].toString());
         metaData.setCatName(catName);
         if (table[3] != null) {
           metaData.setComments(table[3].toString());
+        }
+        if (table[4] != null) {
+          metaData.setOwnerName(table[4].toString());
+        }
+        if (table[5] != null) {
+          metaData.setOwnerType(getPrincipalTypeFromStr(table[5].toString()));
         }
         metas.add(metaData);
       }

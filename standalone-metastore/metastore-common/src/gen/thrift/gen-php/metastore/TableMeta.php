@@ -46,6 +46,17 @@ class TableMeta
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        6 => array(
+            'var' => 'ownerName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        7 => array(
+            'var' => 'ownerType',
+            'isRequired' => false,
+            'type' => TType::I32,
+            'class' => '\metastore\PrincipalType',
+        ),
     );
 
     /**
@@ -68,6 +79,14 @@ class TableMeta
      * @var string
      */
     public $catName = null;
+    /**
+     * @var string
+     */
+    public $ownerName = null;
+    /**
+     * @var int
+     */
+    public $ownerType = null;
 
     public function __construct($vals = null)
     {
@@ -86,6 +105,12 @@ class TableMeta
             }
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
+            }
+            if (isset($vals['ownerName'])) {
+                $this->ownerName = $vals['ownerName'];
+            }
+            if (isset($vals['ownerType'])) {
+                $this->ownerType = $vals['ownerType'];
             }
         }
     }
@@ -144,6 +169,20 @@ class TableMeta
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->ownerName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 7:
+                    if ($ftype == TType::I32) {
+                        $xfer += $input->readI32($this->ownerType);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -181,6 +220,16 @@ class TableMeta
         if ($this->catName !== null) {
             $xfer += $output->writeFieldBegin('catName', TType::STRING, 5);
             $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->ownerName !== null) {
+            $xfer += $output->writeFieldBegin('ownerName', TType::STRING, 6);
+            $xfer += $output->writeString($this->ownerName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->ownerType !== null) {
+            $xfer += $output->writeFieldBegin('ownerType', TType::I32, 7);
+            $xfer += $output->writeI32($this->ownerType);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
