@@ -21,27 +21,33 @@ package org.apache.iceberg.hive;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hive.iceberg.org.apache.avro.generic.GenericData;
 import org.apache.hive.iceberg.org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.iceberg.AssertHelpers;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.Files;
 import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.avro.Avro;
 import org.apache.iceberg.avro.AvroSchemaUtil;
@@ -49,13 +55,16 @@ import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.AlreadyExistsException;
 import org.apache.iceberg.exceptions.CommitFailedException;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.hadoop.ConfigProperties;
+import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.io.FileAppender;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -68,6 +77,7 @@ import static org.apache.iceberg.BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE
 import static org.apache.iceberg.BaseMetastoreTableOperations.METADATA_LOCATION_PROP;
 import static org.apache.iceberg.BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP;
 import static org.apache.iceberg.BaseMetastoreTableOperations.TABLE_TYPE_PROP;
+import static org.apache.iceberg.TableMetadataParser.getFileExtension;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
@@ -405,6 +415,84 @@ public class HiveTableTest extends HiveTableBaseTest {
   }
 
   @Test
+  public void testRegisterHadoopTableToHiveCatalog() throws IOException, TException {
+    // create a hadoop catalog
+    String tableLocation = tempFolder.newFolder().toString();
+    HadoopCatalog hadoopCatalog = new HadoopCatalog(new Configuration(), tableLocation);
+    // create table using hadoop catalog
+    TableIdentifier identifier = TableIdentifier.of(DB_NAME, "table1");
+    Table table =
+        hadoopCatalog.createTable(
+            identifier, schema, PartitionSpec.unpartitioned(), Maps.newHashMap());
+    // insert some data
+    String file1Location = appendData(table, "file1");
+    List<FileScanTask> tasks = Lists.newArrayList(table.newScan().planFiles());
+    Assert.assertEquals("Should scan 1 file", 1, tasks.size());
+    Assert.assertEquals(tasks.get(0).file().path(), file1Location);
+
+    // collect metadata file
+    List<String> metadataFiles =
+        Arrays.stream(new File(table.location() + "/metadata").listFiles())
+            .map(File::getAbsolutePath)
+            .filter(f -> f.endsWith(getFileExtension(TableMetadataParser.Codec.NONE)))
+            .collect(Collectors.toList());
+    Assert.assertEquals(2, metadataFiles.size());
+
+    Assertions.assertThatThrownBy(() -> metastoreClient.getTable(DB_NAME, "table1"))
+        .isInstanceOf(NoSuchObjectException.class)
+        .hasMessage("hivedb.table1 table not found");
+    Assertions.assertThatThrownBy(() -> catalog.loadTable(identifier))
+        .isInstanceOf(NoSuchTableException.class)
+        .hasMessage("Table does not exist: hivedb.table1");
+
+    // register the table to hive catalog using the latest metadata file
+    String latestMetadataFile = ((BaseTable) table).operations().current().metadataFileLocation();
+    catalog.registerTable(identifier, "file:" + latestMetadataFile);
+    Assert.assertNotNull(metastoreClient.getTable(DB_NAME, "table1"));
+
+    // load the table in hive catalog
+    table = catalog.loadTable(identifier);
+    Assert.assertNotNull(table);
+
+    // insert some data
+    String file2Location = appendData(table, "file2");
+    tasks = Lists.newArrayList(table.newScan().planFiles());
+    Assert.assertEquals("Should scan 2 files", 2, tasks.size());
+    Set<String> files =
+        tasks.stream().map(task -> task.file().path().toString()).collect(Collectors.toSet());
+    Assert.assertTrue(files.contains(file1Location) && files.contains(file2Location));
+  }
+
+  private String appendData(Table table, String fileName) throws IOException {
+    GenericRecordBuilder recordBuilder =
+        new GenericRecordBuilder(AvroSchemaUtil.convert(schema, "test"));
+    List<GenericData.Record> records =
+        Lists.newArrayList(
+            recordBuilder.set("id", 1L).build(),
+            recordBuilder.set("id", 2L).build(),
+            recordBuilder.set("id", 3L).build());
+
+    String fileLocation = table.location().replace("file:", "") + "/data/" + fileName + ".avro";
+    try (FileAppender<GenericData.Record> writer =
+        Avro.write(Files.localOutput(fileLocation)).schema(schema).named("test").build()) {
+      for (GenericData.Record rec : records) {
+        writer.add(rec);
+      }
+    }
+
+    DataFile file =
+        DataFiles.builder(table.spec())
+            .withRecordCount(3)
+            .withPath(fileLocation)
+            .withFileSizeInBytes(Files.localInput(fileLocation).getLength())
+            .build();
+
+    table.newAppend().appendFile(file).commit();
+
+    return fileLocation;
+  }
+
+  @Test
   public void testRegisterExistingTable() throws TException {
     org.apache.hadoop.hive.metastore.api.Table originalTable = metastoreClient.getTable(DB_NAME, TABLE_NAME);
 
@@ -417,10 +505,10 @@ public class HiveTableTest extends HiveTableBaseTest {
     Assert.assertEquals(1, metadataVersionFiles.size());
 
     // Try to register an existing table
-    AssertHelpers.assertThrows(
-        "Should complain that the table already exists", AlreadyExistsException.class,
-        "Table already exists",
-        () -> catalog.registerTable(TABLE_IDENTIFIER, "file:" + metadataVersionFiles.get(0)));
+    Assertions.assertThatThrownBy(
+        () -> catalog.registerTable(TABLE_IDENTIFIER, "file:" + metadataVersionFiles.get(0)))
+        .isInstanceOf(AlreadyExistsException.class)
+        .hasMessage("Table already exists: hivedb.tbl");
   }
 
   @Test
@@ -496,10 +584,9 @@ public class HiveTableTest extends HiveTableBaseTest {
     File fakeLocation = new File(metadataLocation(TABLE_NAME) + "_dummy");
 
     Assert.assertTrue(realLocation.renameTo(fakeLocation));
-    AssertHelpers.assertThrows(
-        "HiveTableOperations shouldn't hang indefinitely when a missing metadata file is encountered",
-        NotFoundException.class,
-        () -> catalog.loadTable(TABLE_IDENTIFIER));
+    Assertions.assertThatThrownBy(() -> catalog.loadTable(TABLE_IDENTIFIER))
+        .isInstanceOf(NotFoundException.class)
+        .hasMessageStartingWith("Failed to open input stream for file");
     Assert.assertTrue(fakeLocation.renameTo(realLocation));
   }
 

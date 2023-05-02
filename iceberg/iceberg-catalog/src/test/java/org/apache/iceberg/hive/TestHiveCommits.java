@@ -21,7 +21,6 @@ package org.apache.iceberg.hive;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
@@ -33,6 +32,7 @@ import org.apache.iceberg.exceptions.CommitStateUnknownException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -114,9 +114,9 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     failCommitAndThrowException(spyOps);
 
-    AssertHelpers.assertThrows("We should assume commit state is unknown if the " +
-            "new location is not found in history in commit state check", CommitStateUnknownException.class,
-        "Datacenter on fire", () -> spyOps.commit(metadataV2, metadataV1));
+    Assertions.assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
+        .isInstanceOf(CommitStateUnknownException.class)
+        .hasMessageStartingWith("Datacenter on fire");
 
     ops.refresh();
     Assert.assertEquals("Current metadata should not have changed", metadataV2, ops.current());
@@ -186,9 +186,9 @@ public class TestHiveCommits extends HiveTableBaseTest {
     failCommitAndThrowException(spyOps);
     breakFallbackCatalogCommitCheck(spyOps);
 
-    AssertHelpers.assertThrows("Should throw CommitStateUnknownException since the catalog check was blocked",
-        CommitStateUnknownException.class, "Datacenter on fire",
-        () -> spyOps.commit(metadataV2, metadataV1));
+    Assertions.assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
+        .isInstanceOf(CommitStateUnknownException.class)
+        .hasMessageStartingWith("Datacenter on fire");
 
     ops.refresh();
 
@@ -224,9 +224,9 @@ public class TestHiveCommits extends HiveTableBaseTest {
     commitAndThrowException(ops, spyOps);
     breakFallbackCatalogCommitCheck(spyOps);
 
-    AssertHelpers.assertThrows("Should throw CommitStateUnknownException since the catalog check was blocked",
-        CommitStateUnknownException.class, "Datacenter on fire",
-        () -> spyOps.commit(metadataV2, metadataV1));
+    Assertions.assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
+        .isInstanceOf(CommitStateUnknownException.class)
+        .hasMessageStartingWith("Datacenter on fire");
 
     ops.refresh();
 
@@ -340,11 +340,9 @@ public class TestHiveCommits extends HiveTableBaseTest {
         .persistTable(any(), anyBoolean(), any());
 
     // Should throw a CommitFailedException so the commit could be retried
-    AssertHelpers.assertThrows(
-        "Should throw CommitFailedException since the table has been modified concurrently",
-        CommitFailedException.class,
-        "has been modified concurrently",
-        () -> spyOps.commit(metadataV2, metadataV1));
+    Assertions.assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
+        .isInstanceOf(CommitFailedException.class)
+        .hasMessage("The table hivedb.tbl has been modified concurrently");
 
     ops.refresh();
     Assert.assertEquals("Current metadata should not have changed", metadataV2, ops.current());

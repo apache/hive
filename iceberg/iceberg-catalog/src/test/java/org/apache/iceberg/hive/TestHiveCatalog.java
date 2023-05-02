@@ -24,14 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.CachingCatalog;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
@@ -82,6 +79,7 @@ import static org.apache.iceberg.TableProperties.DEFAULT_PARTITION_SPEC;
 import static org.apache.iceberg.TableProperties.DEFAULT_SORT_ORDER;
 import static org.apache.iceberg.expressions.Expressions.bucket;
 import static org.apache.iceberg.types.Types.NestedField.required;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -327,10 +325,9 @@ public class TestHiveCatalog extends HiveMetastoreTest {
     Assert.assertEquals("There no same location for db and namespace",
         database1.getLocationUri(), defaultUri(namespace1));
 
-    AssertHelpers.assertThrows("Should fail to create when namespace already exist " + namespace1,
-        AlreadyExistsException.class, "Namespace '" + namespace1 + "' already exists!", () -> {
-          catalog.createNamespace(namespace1);
-        });
+    assertThatThrownBy(() -> catalog.createNamespace(namespace1))
+        .isInstanceOf(AlreadyExistsException.class)
+        .hasMessage("Namespace '" + namespace1 + "' already exists!");
     String hiveLocalDir = temp.newFolder().toURI().toString();
     // remove the trailing slash of the URI
     hiveLocalDir = hiveLocalDir.substring(0, hiveLocalDir.length() - 1);
@@ -388,39 +385,30 @@ public class TestHiveCatalog extends HiveMetastoreTest {
         "iceberg",
         PrincipalType.GROUP);
 
-    AssertHelpers.assertThrows(
-        String.format(
-            "Create namespace setting %s without setting %s is not allowed",
-            HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER),
-        IllegalArgumentException.class,
-        () -> {
-          try {
+    assertThatThrownBy(
+        () ->
             createNamespaceAndVerifyOwnership(
                 "create_with_owner_type_alone",
                 ImmutableMap.of(HiveCatalog.HMS_DB_OWNER_TYPE, PrincipalType.USER.name()),
                 "no_post_create_expectation_due_to_exception_thrown",
-                null);
-          } catch (TException e) {
-            throw new RuntimeException("Unexpected Exception", e);
-          }
-        });
+                null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            String.format(
+                "Create namespace setting %s without setting %s is not allowed",
+                HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
 
-    AssertHelpers.assertThrows(
-        "No enum constant " + PrincipalType.class.getCanonicalName(),
-        IllegalArgumentException.class,
-        () -> {
-          try {
+    assertThatThrownBy(
+        () ->
             createNamespaceAndVerifyOwnership(
                 "create_with_invalid_owner_type",
                 ImmutableMap.of(
                     HiveCatalog.HMS_DB_OWNER, "iceberg",
                     HiveCatalog.HMS_DB_OWNER_TYPE, "invalidOwnerType"),
                 "no_post_create_expectation_due_to_exception_thrown",
-                null);
-          } catch (TException e) {
-            throw new RuntimeException("Unexpected Exception", e);
-          }
-        });
+                null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageStartingWith("No enum constant " + PrincipalType.class.getCanonicalName());
   }
 
   private void createNamespaceAndVerifyOwnership(
@@ -492,10 +480,10 @@ public class TestHiveCatalog extends HiveMetastoreTest {
     Assert.assertEquals(database.getParameters().get("owner"), "alter_apache");
     Assert.assertEquals(database.getParameters().get("test"), "test");
     Assert.assertEquals(database.getParameters().get("group"), "iceberg");
-    AssertHelpers.assertThrows("Should fail to namespace not exist" + namespace,
-        NoSuchNamespaceException.class, "Namespace does not exist: ", () -> {
-          catalog.setProperties(Namespace.of("db2", "db2", "ns2"), meta);
-        });
+    assertThatThrownBy(
+        () -> catalog.setProperties(Namespace.of("db2", "db2", "ns2"), ImmutableMap.of()))
+        .isInstanceOf(NoSuchNamespaceException.class)
+        .hasMessage("Namespace does not exist: db2.db2.ns2");
   }
 
   @Test
@@ -556,13 +544,8 @@ public class TestHiveCatalog extends HiveMetastoreTest {
         "some_individual_owner",
         PrincipalType.USER);
 
-    AssertHelpers.assertThrows(
-        String.format(
-            "Setting %s and %s has to be performed together or not at all",
-            HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER),
-        IllegalArgumentException.class,
-        () -> {
-          try {
+    assertThatThrownBy(
+        () ->
             setNamespaceOwnershipAndVerify(
                 "set_owner_without_setting_owner_type",
                 ImmutableMap.of(),
@@ -570,19 +553,15 @@ public class TestHiveCatalog extends HiveMetastoreTest {
                 System.getProperty("user.name"),
                 PrincipalType.USER,
                 "no_post_setting_expectation_due_to_exception_thrown",
-                null);
-          } catch (TException e) {
-            throw new RuntimeException("Unexpected Exception", e);
-          }
-        });
+                null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            String.format(
+                "Setting %s and %s has to be performed together or not at all",
+                HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
 
-    AssertHelpers.assertThrows(
-        String.format(
-            "Setting %s and %s has to be performed together or not at all",
-            HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER),
-        IllegalArgumentException.class,
-        () -> {
-          try {
+    assertThatThrownBy(
+        () ->
             setNamespaceOwnershipAndVerify(
                 "set_owner_type_without_setting_owner",
                 ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_owner"),
@@ -590,21 +569,15 @@ public class TestHiveCatalog extends HiveMetastoreTest {
                 "some_owner",
                 PrincipalType.USER,
                 "no_post_setting_expectation_due_to_exception_thrown",
-                null);
-          } catch (TException e) {
-            throw new RuntimeException("Unexpected Exception", e);
-          }
-        });
+                null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            String.format(
+                "Setting %s and %s has to be performed together or not at all",
+                HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
 
-    AssertHelpers.assertThrows(
-        HiveCatalog.HMS_DB_OWNER_TYPE +
-            " has an invalid value of: " +
-            meta.get(HiveCatalog.HMS_DB_OWNER_TYPE) +
-            ". Acceptable values are: " +
-            Stream.of(PrincipalType.values()).map(Enum::name).collect(Collectors.joining(", ")),
-        IllegalArgumentException.class,
-        () -> {
-          try {
+    assertThatThrownBy(
+        () ->
             setNamespaceOwnershipAndVerify(
                 "set_invalid_owner_type",
                 ImmutableMap.of(),
@@ -614,11 +587,10 @@ public class TestHiveCatalog extends HiveMetastoreTest {
                 System.getProperty("user.name"),
                 PrincipalType.USER,
                 "no_post_setting_expectation_due_to_exception_thrown",
-                null);
-          } catch (TException e) {
-            throw new RuntimeException("Unexpected Exception", e);
-          }
-        });
+                null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "No enum constant org.apache.hadoop.hive.metastore.api.PrincipalType.invalidOwnerType");
   }
 
   @Test
@@ -707,10 +679,13 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
     Assert.assertEquals(database.getParameters().get("owner"), null);
     Assert.assertEquals(database.getParameters().get("group"), "iceberg");
-    AssertHelpers.assertThrows("Should fail to namespace not exist" + namespace,
-        NoSuchNamespaceException.class, "Namespace does not exist: ", () -> {
-          catalog.removeProperties(Namespace.of("db2", "db2", "ns2"), ImmutableSet.of("comment", "owner"));
-        });
+
+    assertThatThrownBy(
+        () ->
+            catalog.removeProperties(
+                Namespace.of("db2", "db2", "ns2"), ImmutableSet.of("comment", "owner")))
+        .isInstanceOf(NoSuchNamespaceException.class)
+        .hasMessage("Namespace does not exist: db2.db2.ns2");
   }
 
   @Test
@@ -777,13 +752,8 @@ public class TestHiveCatalog extends HiveMetastoreTest {
         "some_group_owner",
         PrincipalType.GROUP);
 
-    AssertHelpers.assertThrows(
-        String.format(
-            "Removing %s and %s has to be performed together or not at all",
-            HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER),
-        IllegalArgumentException.class,
-        () -> {
-          try {
+    assertThatThrownBy(
+        () ->
             removeNamespaceOwnershipAndVerify(
                 "remove_owner_without_removing_owner_type",
                 ImmutableMap.of(
@@ -795,19 +765,15 @@ public class TestHiveCatalog extends HiveMetastoreTest {
                 "some_individual_owner",
                 PrincipalType.USER,
                 "no_post_remove_expectation_due_to_exception_thrown",
-                null);
-          } catch (TException e) {
-            throw new RuntimeException("Unexpected Exception", e);
-          }
-        });
+                null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            String.format(
+                "Removing %s and %s has to be performed together or not at all",
+                HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
 
-    AssertHelpers.assertThrows(
-        String.format(
-            "Removing %s and %s has to be performed together or not at all",
-            HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER),
-        IllegalArgumentException.class,
-        () -> {
-          try {
+    assertThatThrownBy(
+        () ->
             removeNamespaceOwnershipAndVerify(
                 "remove_owner_type_without_removing_owner",
                 ImmutableMap.of(
@@ -819,11 +785,12 @@ public class TestHiveCatalog extends HiveMetastoreTest {
                 "some_group_owner",
                 PrincipalType.GROUP,
                 "no_post_remove_expectation_due_to_exception_thrown",
-                null);
-          } catch (TException e) {
-            throw new RuntimeException("Unexpected Exception", e);
-          }
-        });
+                null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            String.format(
+                "Removing %s and %s has to be performed together or not at all",
+                HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
   }
 
   private void removeNamespaceOwnershipAndVerify(
@@ -858,20 +825,17 @@ public class TestHiveCatalog extends HiveMetastoreTest {
     Assert.assertTrue(nameMata.get("owner").equals("apache"));
     Assert.assertTrue(nameMata.get("group").equals("iceberg"));
 
-    AssertHelpers.assertThrows("Should fail to drop namespace is not empty" + namespace,
-        NamespaceNotEmptyException.class,
-        "Namespace dbname_drop is not empty. One or more tables exist.", () -> {
-          catalog.dropNamespace(namespace);
-        });
+    assertThatThrownBy(() -> catalog.dropNamespace(namespace))
+        .isInstanceOf(NamespaceNotEmptyException.class)
+        .hasMessage("Namespace dbname_drop is not empty. One or more tables exist.");
     Assert.assertTrue(catalog.dropTable(identifier, true));
     Assert.assertTrue("Should fail to drop namespace if it is not empty",
         catalog.dropNamespace(namespace));
     Assert.assertFalse("Should fail to drop when namespace doesn't exist",
         catalog.dropNamespace(Namespace.of("db.ns1")));
-    AssertHelpers.assertThrows("Should fail to drop namespace exist" + namespace,
-        NoSuchNamespaceException.class, "Namespace does not exist: ", () -> {
-          catalog.loadNamespaceMetadata(namespace);
-        });
+    assertThatThrownBy(() -> catalog.loadNamespaceMetadata(namespace))
+        .isInstanceOf(NoSuchNamespaceException.class)
+        .hasMessage("Namespace does not exist: dbname_drop");
   }
 
   @Test
