@@ -20,13 +20,10 @@ package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild;
 
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.singletonList;
 
 public class NonNativeAcidMaterializedViewASTBuilder extends MaterializedViewASTBuilder {
   private final Table mvTable;
