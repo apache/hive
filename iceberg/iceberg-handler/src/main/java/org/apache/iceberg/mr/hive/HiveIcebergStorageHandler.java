@@ -1300,7 +1300,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return hasAppendsOnly(table.snapshots(), since);
   }
 
-  public Boolean hasAppendsOnly(Iterable<Snapshot> snapshots, SnapshotContext since) {
+  @VisibleForTesting
+  Boolean hasAppendsOnly(Iterable<Snapshot> snapshots, SnapshotContext since) {
     boolean foundSince = since == null;
     for (Snapshot snapshot : snapshots) {
       if (!foundSince) {
