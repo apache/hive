@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -82,8 +83,8 @@ public class TestHiveMetaStoreTimeout {
           }
         }
         return new Result(object, "error=false");
-      } catch (Exception e) {
-        throw new MetaException(ExceptionUtils.getStackTrace(e));
+      } catch (UndeclaredThrowableException | InvocationTargetException e) {
+        throw e.getCause();
       }
     }
   }
