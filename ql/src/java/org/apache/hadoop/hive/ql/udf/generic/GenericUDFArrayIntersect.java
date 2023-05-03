@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
  * GenericUDFArrayIntersect.
  */
 @Description(name = "array_intersect", value = "_FUNC_(array1, array2) - Returns an array of the elements in the intersection of array1 and array2, without duplicates.", extended =
-    "Example:\n" + "  > SELECT _FUNC_(array(1, 2, 3,4), array(1,2,3)) FROM src LIMIT 1;\n"
-        + "  [1,2]") public class GenericUDFArrayIntersect extends AbstractGenericUDFArrayBase {
+    "Example:\n" + "  > SELECT _FUNC_(array(1, 2, 3,4), array(1,2,3)) FROM src;\n"
+        + "  [1,2,3]") public class GenericUDFArrayIntersect extends AbstractGenericUDFArrayBase {
   static final int ARRAY2_IDX = 1;
   private static final String FUNC_NAME = "ARRAY_INTERSECT";
 
