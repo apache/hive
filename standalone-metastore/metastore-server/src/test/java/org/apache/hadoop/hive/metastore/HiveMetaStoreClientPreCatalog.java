@@ -443,6 +443,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
         ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+    int connectionTimeout = (int) MetastoreConf.getTimeVar(conf,
+        ConfVars.CLIENT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
@@ -466,7 +468,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
               // Create an SSL socket and connect
               transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-                  trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm );
+                  connectionTimeout, trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
               LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
             } catch(IOException e) {
               throw new IllegalArgumentException(e);
@@ -476,7 +478,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
             }
           } else {
             try {
-              transport = new TSocket(new TConfiguration(),store.getHost(), store.getPort(), clientSocketTimeout);
+              transport = new TSocket(new TConfiguration(),
+                  store.getHost(), store.getPort(), clientSocketTimeout, connectionTimeout);
             } catch (TTransportException e) {
               tte = e;
               throw new MetaException(e.toString());

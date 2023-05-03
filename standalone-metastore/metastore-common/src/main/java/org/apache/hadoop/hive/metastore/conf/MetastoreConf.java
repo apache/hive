@@ -402,6 +402,8 @@ public class MetastoreConf {
             "has an infinite lifetime."),
     CLIENT_SOCKET_TIMEOUT("metastore.client.socket.timeout", "hive.metastore.client.socket.timeout", 600,
             TimeUnit.SECONDS, "MetaStore Client socket timeout in seconds"),
+    CLIENT_CONNECTION_TIMEOUT("metastore.client.connection.timeout", "hive.metastore.client.connection.timeout", 600,
+            TimeUnit.SECONDS, "MetaStore Client connection timeout in seconds"),
     COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE("metastore.compactor.history.retention.did.not.initiate",
         "hive.compactor.history.retention.did.not.initiate", 2,
         new RangeValidator(0, 100), "Determines how many compaction records in state " +
