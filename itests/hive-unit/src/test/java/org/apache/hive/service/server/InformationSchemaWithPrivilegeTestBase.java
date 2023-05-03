@@ -21,6 +21,10 @@ package org.apache.hive.service.server;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.tools.schematool.commandparser.NestedScriptParserFactory;
+import org.apache.hadoop.hive.metastore.tools.schematool.hms.EmbeddedTaskProvider;
+import org.apache.hadoop.hive.metastore.tools.schematool.liquibase.LiquibaseTaskProvider;
+import org.apache.hadoop.hive.metastore.tools.schematool.task.SchemaToolTaskFactory;
 import org.apache.hadoop.hive.metastore.utils.SchemaToolTestUtil;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
@@ -41,6 +45,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveResourceACLs;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveResourceACLsImpl;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.DummyHiveAuthorizationValidator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessControllerWrapper;
+import org.apache.hive.beeline.schematool.tasks.HiveTaskProvider;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.OperationHandle;
@@ -62,6 +67,11 @@ import java.util.Map;
  * Test restricted information schema with privilege synchronization
  */
 public abstract class InformationSchemaWithPrivilegeTestBase {
+
+  private static final SchemaToolTaskFactory taskFactory = new SchemaToolTaskFactory(
+      new NestedScriptParserFactory(),
+      new LiquibaseTaskProvider(new EmbeddedTaskProvider()),
+      new HiveTaskProvider(new EmbeddedTaskProvider()));
 
   // Group mapping:
   // group_a: user1, user2
@@ -284,7 +294,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
     serviceClient.executeStatement(sessHandle, "SHOW GRANT USER hive_test_user ON ALL", confOverlay);
     serviceClient.closeSession(sessHandle);
 
-    SchemaToolTestUtil.executeCommand(
+    SchemaToolTestUtil.executeCommand(taskFactory, System.getProperty("test.tmp.dir", "target/tmp"),
         miniHS2.getHiveConf(),
         new String[] { "-initSchema", "-dbType", "hive", "-metaDbType", "derby", "-userName", "hive_test_user"}
     );
