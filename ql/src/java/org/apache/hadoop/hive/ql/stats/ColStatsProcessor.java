@@ -26,10 +26,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
@@ -37,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -230,6 +233,51 @@ public class ColStatsProcessor implements IStatsProcessor {
 
   @Override
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
+  }
+  
+  private boolean isExistsNewerCommittedWriteId(){
+    return false;
+  }
+
+  public static boolean canSkipStatsGeneration(String dbName, String tblName, String partName,
+                                               long statsWriteId, String queryValidWriteIdList) {
+    if (queryValidWriteIdList != null) { // Can be null if its not an ACID table.
+      ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(queryValidWriteIdList);
+      // Check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
+      // that means it cannot possibly be a concurrent write. As stats optimization is enabled
+      // only in case auto gather is enabled. Thus the stats must be updated by a valid committed
+      // transaction and stats generation can be skipped.
+      if (validWriteIdList.isWriteIdValid(statsWriteId)) {
+        // Check if the statsWriteId is not the newest write ID for the table/partition.
+        if (statsWriteId < validWriteIdList.getHighWatermark()){
+          LOG.info("Stats generation is not skipped as statsWriteId " + statsWriteId +
+                  " is not the newest writeId as per " + queryValidWriteIdList);
+          return false;
+        }
+        else{
+          LOG.info("Stats generation is skipped as statsWriteId " + statsWriteId +
+                  " is the newest writeId as per " + queryValidWriteIdList);
+          return true;
+        }
+      }
+
+      // If stats write id is not valid (we are not allowed to see it), that means it's either concurrent or aborted.
+      // In case of concurrent, there is no point updating the stats as the stats updater does not have the full
+      // view of the system.
+      if (!validWriteIdList.isWriteIdAborted(statsWriteId)) {
+        LOG.info("Stats generation is skipped as statsWriteId " + statsWriteId +
+                " is concurrent as per " + queryValidWriteIdList);
+        return true;
+      }
+
+      LOG.info("Stats generation is not skipped as statsWriteId " + statsWriteId +
+              " is aborted as per " + queryValidWriteIdList);
+      // If it is aborted, then we should generate the stats again.
+      return false;
+    }
+
+    LOG.info("Stats generation is not skipped as queryValidWriteIdList is null");
+    return false;
   }
 
   /**

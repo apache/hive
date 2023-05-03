@@ -2775,6 +2775,9 @@ public class HiveConf extends Configuration {
         "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
     HIVESTATSCOLAUTOGATHER("hive.stats.column.autogather", true,
         "A flag to gather column statistics automatically."),
+    HIVE_STATS_TASK_OPTIMIZE("hive.stats.task.optimize", true,
+        "A flag to control if the stats task skip generating stats for partitions/tables already having " +
+        " updated stats."),
     HIVESTATSDBCLASS("hive.stats.dbclass", "fs", new PatternSet("custom", "fs"),
         "The storage that stores temporary Hive statistics. In filesystem based statistics collection ('fs'), \n" +
         "each task writes statistics it has collected in a file on the filesystem, which will be aggregated \n" +
@@ -5953,6 +5956,7 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + " of parameters that can't be modified at runtime or is prefixed by a restricted variable");
     }
+
     String oldValue = name != null ? get(name) : null;
     if (name == null || value == null || !value.equals(oldValue)) {
       // When either name or value is null, the set method below will fail,

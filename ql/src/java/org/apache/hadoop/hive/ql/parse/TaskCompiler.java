@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections.*;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
@@ -78,6 +79,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
+import org.apache.hadoop.hive.ql.stats.ColStatsProcessor;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -359,6 +361,11 @@ public abstract class TaskCompiler {
           Task<?> root = rootTasks.iterator().next();
           StatsTask tsk = (StatsTask) genTableStats(pCtx, pCtx.getTopOps().values()
               .iterator().next(), root, outputs);
+          if (tsk == null) {
+            LOG.debug("Skipping stats task as it seems to be already accurate.");
+            rootTasks.clear();
+            return;
+          }
           root.addDependentTask(tsk);
           map.put(extractTableFullName(tsk), tsk);
         } catch (HiveException e) {
@@ -461,12 +468,27 @@ public abstract class TaskCompiler {
         .getInputFormatClass();
     Table table = tableScan.getConf().getTableMetadata();
     List<Partition> partitions = new ArrayList<>();
+    AcidUtils.TableSnapshot tableSnapshot = null;
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_TASK_OPTIMIZE)) {
+      tableSnapshot = AcidUtils.getTableSnapshot(conf, table, true);
+    }
     if (table.isPartitioned()) {
-      partitions.addAll(parseContext.getPrunedPartitions(tableScan).getPartitions());
-      for (Partition partn : partitions) {
+      for (Partition partn : parseContext.getPrunedPartitions(tableScan).getPartitions()) {
         LOG.trace("adding part: " + partn);
+        if (tableSnapshot != null && ColStatsProcessor.canSkipStatsGeneration(table.getDbName(), table.getTableName(),
+                FileUtils.makePartName(table.getPartColNames(), partn.getTPartition().getValues()),
+                partn.getTPartition().getWriteId(), tableSnapshot.getValidWriteIdList())) {
+          continue;
+        }
+        partitions.add(partn);
         outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
       }
+      if (partitions.isEmpty()) {
+        return null;
+      }
+    } else if (tableSnapshot != null && ColStatsProcessor.canSkipStatsGeneration(table.getDbName(),
+            table.getTableName(), null, table.getTTable().getWriteId(), tableSnapshot.getValidWriteIdList())) {
+      return null;
     }
     TableSpec tableSpec = new TableSpec(table, partitions);
     tableScan.getConf().getTableMetadata().setTableSpec(tableSpec);
