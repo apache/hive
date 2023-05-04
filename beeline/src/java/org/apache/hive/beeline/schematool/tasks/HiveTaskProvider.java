@@ -51,8 +51,9 @@ public class HiveTaskProvider implements SchemaToolTaskProvider {
     taskSuppliers.put("upgradeSchema", () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
     taskSuppliers.put("upgradeSchemaFrom", () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
     taskSuppliers.put("initOrUpgradeSchema", () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
+    taskSuppliers.put("dropAllDatabases", () -> new HiveContextTask().addChild(new SchemaToolTaskDrop()));
 
-    for(String command : new String[] {"info", "alterCatalog", "createCatalog", "dropAllDatabases", "mergeCatalog",
+    for(String command : new String[] {"info", "alterCatalog", "createCatalog", "mergeCatalog",
         "moveDatabase", "moveTable", "createLogsTable", "createUser", "validate"}) {
       taskSuppliers.put(command, () -> new HiveContextTask().addChild(embeddedHmsTaskProvider.getTask(command)));
     }

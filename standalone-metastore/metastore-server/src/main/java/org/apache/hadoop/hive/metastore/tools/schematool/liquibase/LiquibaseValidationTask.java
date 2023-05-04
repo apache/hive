@@ -25,6 +25,7 @@ import liquibase.exception.LiquibaseException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.SchemaInfo;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.SchemaToolTask;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.TaskContext;
@@ -55,10 +56,17 @@ class LiquibaseValidationTask extends SchemaToolTask {
         ChangeSetStatus status = statuses.get(i);
         Labels version = status.getChangeSet().getLabels();
         if (version == null || version.isEmpty()) {
-          throw new HiveMetaException("In order to be able to sync liquibase with the old schema versioning, all" +
-              "version scripts must have a label containing the version! The following script does not contain any " +
-              "label:" + status.getChangeSet().getFilePath());
+          throw new HiveMetaException("All version scripts must have a label containing one or more valid version(s)! " +
+              "The following script does not have any label: " + status.getChangeSet().getFilePath());
         }
+        
+        if (version.getLabels().stream().anyMatch(s -> !SchemaInfo.isValidVersion(version.toString()))) {
+          throw new HiveMetaException("All version scripts must have a label containing one or more valid version(s)! " +
+              "Valid versions are consist of major, minor, incremental version numbers and optionally can have qualifiers. " +
+              "The label ( " + version + ") of the following script does not conform the required format: " +
+              status.getChangeSet().getFilePath());
+        }
+        
         if (!isInteger(status.getChangeSet().getId())) {
           throw new HiveMetaException("All changesets must have a vaild and unique integer id! The following changeset " +
               "does not have a valid integer id: " + status.getChangeSet().getFilePath());

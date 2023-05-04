@@ -59,7 +59,7 @@ public class LiquibaseTaskProvider implements SchemaToolTaskProvider {
     taskSuppliers.put("initOrUpgradeSchema", () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseSyncTask(true).addChild(new LiquibaseUpdateTask()))));
     taskSuppliers.put("validate", () -> new LiquibaseContextTask().addChild(new LiquibaseValidationTask()).addChild(new MetastoreValidationTask(new ScriptScannerFactory())));
-    for(String command : new String[] {"info", "alterCatalog", "createCatalog", "dropAllDatabases", "mergeCatalog",
+    for(String command : new String[] {"info", "alterCatalog", "createCatalog", "mergeCatalog",
         "moveDatabase", "moveTable", "createLogsTable", "createUser"}) {
       taskSuppliers.put(command, () -> new LiquibaseContextTask().addChild(embeddedHmsTaskProvider.getTask(command)));
     }

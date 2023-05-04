@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.tools.schematool.liquibase;
 
+import com.google.common.collect.Sets;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.exception.LiquibaseException;
@@ -27,11 +28,15 @@ import org.apache.hadoop.hive.metastore.tools.schematool.task.TaskContext;
 import java.io.PrintWriter;
 import java.util.Set;
 
+/**
+ * This task utilizes {@link Liquibase} to init or upgrade the HMS schema. From Liquibase perspective both operations are 
+ * the same.
+ */
 class LiquibaseUpdateTask extends SchemaToolTask {
 
   @Override
   protected Set<String> usedCommandLineArguments() {
-    return null;
+    return Sets.newHashSet("dryRun");
   }
 
   @Override

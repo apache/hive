@@ -118,6 +118,25 @@ public abstract class SchemaInfo {
   }
 
   /**
+   * Checks if the given string is a valid Hive version: have exactlu 3 version number parts (major, minor, incremental) 
+   * and optionally can have qualifiers (like -alpha)
+   * @param version The version string to check
+   * @return returns true if the string is a valid Hive version, false otherwise.
+   */
+  public static boolean isValidVersion(String version) {
+    String[] verParts = version.split("\\.|-");
+    if (verParts.length < 3) {
+      return false;
+    }
+    for(int i = 0; i < 3; i++) {
+      if (!StringUtils.isNumeric(verParts[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Checks if the minimum version and the DB versions are compatible. The versions are compatible if they are differing only 
    * in the incremental version, and the DB version is higer or equal as the minimum version, or the minimum version has more or equal 
    * version parts (4.0.1-alpha-1 has the following parts:4,0,1,alpha,1) than the DB version. Some examples:

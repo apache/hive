@@ -43,10 +43,13 @@ class HiveSchemaInfo extends SchemaInfo {
   protected static final String VERSION_UPGRADE_LIST = "upgrade.order";
   protected static final String INITIAL_VERSION = "0.0.0";
 
-  String[] hiveSchemaVersions;
+  String[] hiveSchemaVersions = null;
 
   @Override
   public List<String> getUnappliedScripts() throws HiveMetaException {
+    if (hiveSchemaVersions == null) {
+      loadAllUpgradeScripts();
+    }
     String schemaVersion = INITIAL_VERSION;
     try {
       schemaVersion = getSchemaVersion();
@@ -82,6 +85,9 @@ class HiveSchemaInfo extends SchemaInfo {
 
   @Override
   public List<String> getAppliedScripts() throws HiveMetaException {
+    if (hiveSchemaVersions == null) {
+      loadAllUpgradeScripts();
+    }    
     List <String> upgradeScriptList = new ArrayList<>();
     String schemaVersion;
     try {
@@ -160,6 +166,5 @@ class HiveSchemaInfo extends SchemaInfo {
 
   public HiveSchemaInfo(String metastoreHome, HiveSchemaHelper.MetaStoreConnectionInfo connectionInfo, Configuration conf) throws HiveMetaException {
     super(metastoreHome, connectionInfo, conf);
-    loadAllUpgradeScripts();
   }
 }

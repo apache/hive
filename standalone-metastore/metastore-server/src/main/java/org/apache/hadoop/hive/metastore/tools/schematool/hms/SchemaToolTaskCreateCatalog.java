@@ -52,7 +52,7 @@ class SchemaToolTaskCreateCatalog extends MetaStoreTask {
 
   @Override
   public Set<String> usedCommandLineArguments() {
-    return Sets.newHashSet(CATALOG_LOCATION, CATALOG_DESCRIPTION, "ifNotExists");
+    return Sets.newHashSet(CATALOG_LOCATION, CATALOG_DESCRIPTION, "createCatalog", "ifNotExists");
   }
 
   @Override

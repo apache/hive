@@ -49,7 +49,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Print Hive version and schema version.
+ * Performs various validations on the HMS schema to check if it matches the scripts.
  */
 class MetastoreValidationTask extends SchemaToolTask {
 

@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.tools.schematool;
+package org.apache.hive.beeline.schematool.tasks;
 
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.tools.schematool.SchemaToolCommandLine;
 import org.apache.hadoop.hive.metastore.tools.schematool.hms.EmbeddedTaskProvider;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.SchemaToolTask;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.TaskContext;
@@ -53,7 +54,7 @@ public class TestSchemaToolTaskDrop {
 
   @Before
   public void setUp() throws Exception {
-    uut = new EmbeddedTaskProvider().getTask("dropAllDatabases");
+    uut = new HiveTaskProvider(new EmbeddedTaskProvider()).getTask("dropAllDatabases");
   }
 
   @After

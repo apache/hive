@@ -48,7 +48,7 @@ class SchemaToolTaskMoveTable extends MetaStoreTask {
 
   @Override
   public Set<String> usedCommandLineArguments() {
-    return Sets.newHashSet(FROM_CATALOG, TO_CATALOG, FROM_DATABASE, TO_DATABASE);
+    return Sets.newHashSet(FROM_CATALOG, TO_CATALOG, FROM_DATABASE, TO_DATABASE, "moveTable");
   }
 
   @Override

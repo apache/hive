@@ -17,6 +17,7 @@
  */
 package org.apache.hive.beeline.schematool.tasks;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -49,7 +50,7 @@ class HiveUpdateTask extends SchemaToolTask {
 
   @Override
   protected Set<String> usedCommandLineArguments() {
-    return null;
+    return Sets.newHashSet("initSchemaTo", "dryRun");
   }
 
   @Override

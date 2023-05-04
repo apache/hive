@@ -43,7 +43,6 @@ public class EmbeddedTaskProvider implements SchemaToolTaskProvider {
     TASK_SUPPLIERS.put("info", SchemaToolTaskInfo::new);
     TASK_SUPPLIERS.put("alterCatalog", SchemaToolTaskAlterCatalog::new);
     TASK_SUPPLIERS.put("createCatalog", SchemaToolTaskCreateCatalog::new);
-    TASK_SUPPLIERS.put("dropAllDatabases", SchemaToolTaskDrop::new);
     TASK_SUPPLIERS.put("mergeCatalog", SchemaToolTaskMergeCatalog::new);
     TASK_SUPPLIERS.put("moveDatabase", SchemaToolTaskMoveDatabase::new);
     TASK_SUPPLIERS.put("moveTable", SchemaToolTaskMoveTable::new);

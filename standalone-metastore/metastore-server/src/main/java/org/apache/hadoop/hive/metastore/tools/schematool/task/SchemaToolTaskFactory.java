@@ -66,7 +66,7 @@ public class SchemaToolTaskFactory {
           return rootTask;
         }
       }
-      throw new HiveMetaException("No task defined for the given command!");
+      throw new HiveMetaException("No task defined for the given command and database type pair!");
     }
     throw new HiveMetaException("No SchemaToolTaskProvider found for database type: " + cmdLine.getDbType());
   }

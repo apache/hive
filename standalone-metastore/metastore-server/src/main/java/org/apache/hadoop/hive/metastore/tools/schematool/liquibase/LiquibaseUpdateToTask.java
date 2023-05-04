@@ -33,11 +33,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * This task utilizes {@link Liquibase} to init or upgrade the HMS schema up to a specific version. Since Liquibase 
+ * doesn't maintain a database version, it is not possible to do this migration out of the box. In order to be able to
+ * run only a part of the migration scripts, labels are used. Each script has a version label, and the labels having 
+ * less or equal version than 'initSchemaTo' are passed to {@link Liquibase#update(Contexts, LabelExpression)} as inlcusive
+ * filters. This requires that labels must be a parseable valid version 
+ * (verified by {@link org.apache.hadoop.hive.metastore.SchemaInfo#isValidVersion(String)}).
+ */
 class LiquibaseUpdateToTask extends SchemaToolTask {
 
   @Override
   protected Set<String> usedCommandLineArguments() {
-    return Sets.newHashSet("initSchemaTo");
+    return Sets.newHashSet("initSchemaTo", "dryRun");
   }
 
   @Override

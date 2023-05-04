@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.tools.schematool.hms;
+package org.apache.hive.beeline.schematool.tasks;
 
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -43,15 +43,12 @@ class SchemaToolTaskDrop extends SchemaToolTask {
 
   @Override
   public Set<String> usedCommandLineArguments() {
-    return Sets.newHashSet("yes");
+    return Sets.newHashSet("yes", "dryRun", "verbose");
   }
 
   @Override
   public void execute(TaskContext context) throws HiveMetaException {
     SchemaToolCommandLine commandLine = context.getCommandLine();
-    if (!HiveSchemaHelper.DB_HIVE.equals(commandLine.getDbType())) {
-      throw new HiveMetaException("dropAllDatabases can only be used with dbType=hive");
-    }
     boolean yes = commandLine.hasOption("yes");
     boolean dryRun = commandLine.hasOption("dryRun");
     boolean verbose = commandLine.hasOption("verbose");
