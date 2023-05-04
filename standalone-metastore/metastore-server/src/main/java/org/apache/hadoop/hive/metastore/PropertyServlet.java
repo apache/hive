@@ -28,9 +28,14 @@ import org.apache.hadoop.hive.metastore.properties.PropertyException;
 import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyMap;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlet.Source;
@@ -274,9 +279,23 @@ public class PropertyServlet extends HttpServlet {
    * @throws Exception if servlet initialization fails
    */
   public static Server startServer(Configuration conf, String cli, RawStore store) throws Exception {
-    ServletSecurity.loginServerPincipal(conf);
-    SslContextFactory contextFactory = ServletSecurity.createSslContextFactory(conf);
-    Server server = new Server(0);
+    // no port, no server
+    int port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT);
+    if (port < 0) {
+      return null;
+    }
+    // HTTP Server
+    Server server = new Server();
+    server.setStopAtShutdown(true);
+
+    // Optional SSL
+    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
+    final ServerConnector connector = new ServerConnector(server, sslContextFactory);
+    connector.setPort(port);
+    connector.setReuseAddress(true);
+    server.addConnector(connector);
+
+    // Hook the servlet
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
     ServletHolder holder = handler.newServletHolder(Source.EMBEDDED);

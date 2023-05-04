@@ -103,6 +103,7 @@ public abstract class HMSTestBase {
     NS = "hms" + RND.nextInt(100);
     DB = "dbtest" + RND.nextInt(100);
     conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT, 0);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     // Events that get cleaned happen in batches of 1 to exercise batching code
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
