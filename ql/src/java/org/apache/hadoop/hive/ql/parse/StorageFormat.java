@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class StorageFormat {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageFormat.class);
-  private static final StorageFormatFactory storageFormatFactory = new StorageFormatFactory();
+  public static final StorageFormatFactory storageFormatFactory = new StorageFormatFactory();
 
   private final Configuration conf;
   private String inputFormat;
