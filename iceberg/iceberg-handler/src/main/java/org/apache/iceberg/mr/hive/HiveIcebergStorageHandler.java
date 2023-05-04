@@ -1297,8 +1297,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
-    boolean foundSince = false;
-    for (Snapshot snapshot : table.snapshots()) {
+    return hasAppendsOnly(table.snapshots(), since);
+  }
+
+  @VisibleForTesting
+  Boolean hasAppendsOnly(Iterable<Snapshot> snapshots, SnapshotContext since) {
+    boolean foundSince = since == null;
+    for (Snapshot snapshot : snapshots) {
       if (!foundSince) {
         if (snapshot.snapshotId() == since.getSnapshotId()) {
           foundSince = true;
