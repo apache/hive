@@ -23,14 +23,20 @@ import com.google.gson.JsonSyntaxException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.properties.PropertyException;
 import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyMap;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
+import org.apache.hadoop.security.SecurityUtil;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlet.Source;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -49,18 +55,18 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 /**
  * The property  cli servlet.
  */
 public class PropertyServlet extends HttpServlet {
+  /** The logger. */
+  public static final Logger LOGGER = LoggerFactory.getLogger(PropertyServlet.class);
   /** The object store. */
   private final RawStore objectStore;
   /** The security. */
@@ -268,6 +274,8 @@ public class PropertyServlet extends HttpServlet {
    * @throws Exception if servlet initialization fails
    */
   public static Server startServer(Configuration conf, String cli, RawStore store) throws Exception {
+    ServletSecurity.loginServerPincipal(conf);
+    SslContextFactory contextFactory = ServletSecurity.createSslContextFactory(conf);
     Server server = new Server(0);
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
