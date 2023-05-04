@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -35,14 +36,20 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -112,6 +119,12 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.puffin.Blob;
+import org.apache.iceberg.puffin.BlobMetadata;
+import org.apache.iceberg.puffin.Puffin;
+import org.apache.iceberg.puffin.PuffinCompressionCodec;
+import org.apache.iceberg.puffin.PuffinReader;
+import org.apache.iceberg.puffin.PuffinWriter;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
@@ -121,7 +134,10 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
+import org.apache.iceberg.relocated.com.google.common.collect.Streams;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ByteBuffers;
+import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,6 +152,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String PUFFIN = "puffin";
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
+  public static final String STATS = "/stats/";
   /**
    * Function template for producing a custom sort expression function:
    * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
@@ -318,7 +335,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Table table = getTable(hmsTable);
-    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM).toLowerCase();
+    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE).toLowerCase();
     Map<String, String> stats = Maps.newHashMap();
     switch (statsSource) {
       case ICEBERG:
@@ -359,6 +376,90 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     }
     return table;
+  }
+
+  @Override
+  public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    return table.currentSnapshot() != null ? getStatsSource().equals(ICEBERG) : false;
+  }
+
+  @Override
+  public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      List<ColumnStatistics> colStats) {
+    Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    String snapshotId = String.format("%s-STATS-%d", tbl.name(), tbl.currentSnapshot().snapshotId());
+    invalidateStats(getStatsPath(tbl));
+    byte[] serializeColStats = SerializationUtils.serialize((Serializable) colStats);
+    try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(getStatsPath(tbl).toString()))
+        .createdBy(Constants.HIVE_ENGINE).build()) {
+      writer.add(
+          new Blob(
+              tbl.name() + "-" + snapshotId,
+              ImmutableList.of(1),
+              tbl.currentSnapshot().snapshotId(),
+              tbl.currentSnapshot().sequenceNumber(),
+              ByteBuffer.wrap(serializeColStats),
+              PuffinCompressionCodec.NONE,
+              ImmutableMap.of()));
+      writer.finish();
+    } catch (IOException e) {
+      LOG.error(String.valueOf(e));
+    }
+    return false;
+  }
+
+  @Override
+  public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    if (canSetColStatistics(hmsTable)) {
+      Path statsPath = getStatsPath(table);
+      try (FileSystem fs = statsPath.getFileSystem(conf)) {
+        if (fs.exists(statsPath)) {
+          return true;
+        }
+      } catch (IOException e) {
+        LOG.warn("Exception when trying to find Iceberg column stats for table:{} , snapshot:{} , " +
+            "statsPath: {} , stack trace: {}", table.name(), table.currentSnapshot(), statsPath, e);
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    String statsPath = getStatsPath(table).toString();
+    LOG.info("Using stats from puffin file at: {}", statsPath);
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
+      List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
+      Map<BlobMetadata, List<ColumnStatistics>> collect =
+          Streams.stream(reader.readAll(blobMetadata)).collect(Collectors.toMap(Pair::first,
+              blobMetadataByteBufferPair -> SerializationUtils.deserialize(
+                  ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
+      return collect.get(blobMetadata.get(0)).get(0).getStatsObj();
+    } catch (IOException e) {
+      LOG.error("Error when trying to read iceberg col stats from puffin files: {}", e);
+    }
+    return null;
+  }
+
+  private String getStatsSource() {
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, ICEBERG).toLowerCase();
+  }
+
+  private Path getStatsPath(Table table) {
+    return new Path(table.location() + STATS + table.name() + table.currentSnapshot().snapshotId());
+  }
+
+  private void invalidateStats(Path statsPath) {
+    try (FileSystem fs = statsPath.getFileSystem(conf)) {
+      if (fs.exists(statsPath)) {
+        fs.delete(statsPath, true);
+      }
+    } catch (IOException e) {
+      LOG.error("Failed to invalidate stale column stats: {}", e);
+    }
   }
 
   /**
@@ -1196,8 +1297,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
-    boolean foundSince = false;
-    for (Snapshot snapshot : table.snapshots()) {
+    return hasAppendsOnly(table.snapshots(), since);
+  }
+
+  @VisibleForTesting
+  Boolean hasAppendsOnly(Iterable<Snapshot> snapshots, SnapshotContext since) {
+    boolean foundSince = since == null;
+    for (Snapshot snapshot : snapshots) {
       if (!foundSince) {
         if (snapshot.snapshotId() == since.getSnapshotId()) {
           foundSince = true;

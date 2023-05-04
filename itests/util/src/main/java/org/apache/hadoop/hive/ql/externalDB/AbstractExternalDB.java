@@ -83,14 +83,12 @@ public abstract class AbstractExternalDB {
         return new String[] { "docker", "logs", getDockerContainerName() };
     }
 
-
     private ProcessResults runCmd(String[] cmd, long secondsToWait)
             throws IOException, InterruptedException {
         LOG.info("Going to run: " + String.join(" ", cmd));
         Process proc = Runtime.getRuntime().exec(cmd);
-        if (!proc.waitFor(secondsToWait, TimeUnit.SECONDS)) {
-            throw new RuntimeException(
-                    "Process " + cmd[0] + " failed to run in " + secondsToWait + " seconds");
+        if (!proc.waitFor(Math.abs(secondsToWait), TimeUnit.SECONDS)) {
+          throw new RuntimeException("Process " + cmd[0] + " failed to run in " + secondsToWait + " seconds");
         }
         BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         final StringBuilder lines = new StringBuilder();
@@ -99,41 +97,54 @@ public abstract class AbstractExternalDB {
         reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
         final StringBuilder errLines = new StringBuilder();
         reader.lines().forEach(s -> errLines.append(s).append('\n'));
-        LOG.info("Result size: " + lines.length() + ";" + errLines.length());
+        LOG.info("Result lines#: {}(stdout);{}(stderr)",lines.length(), errLines.length());
         return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
     }
 
-    private int runCmdAndPrintStreams(String[] cmd, long secondsToWait)
+    private ProcessResults runCmdAndPrintStreams(String[] cmd, long secondsToWait)
             throws InterruptedException, IOException {
         ProcessResults results = runCmd(cmd, secondsToWait);
         LOG.info("Stdout from proc: " + results.stdout);
         LOG.info("Stderr from proc: " + results.stderr);
-        return results.rc;
+        return results;
     }
 
 
     public void launchDockerContainer() throws Exception {
         runCmdAndPrintStreams(buildRmCmd(), 600);
-        if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
-            throw new RuntimeException("Unable to start docker container");
+        if (runCmdAndPrintStreams(buildRunCmd(), 600).rc != 0) {
+          printDockerEvents();
+          throw new RuntimeException("Unable to start docker container");
         }
         long startTime = System.currentTimeMillis();
         ProcessResults pr;
         do {
             Thread.sleep(1000);
-            pr = runCmd(buildLogCmd(), 30);
+            pr = runCmdAndPrintStreams(buildLogCmd(), 30);
             if (pr.rc != 0) {
-                throw new RuntimeException("Failed to get docker logs");
+              printDockerEvents();
+              throw new RuntimeException("Failed to get docker logs");
             }
         } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
         if (startTime + MAX_STARTUP_WAIT < System.currentTimeMillis()) {
-            throw new RuntimeException("Container failed to be ready in " + MAX_STARTUP_WAIT/1000 +
-                    " seconds");
+          printDockerEvents();
+          throw new RuntimeException(
+              String.format("Container initialization failed within %d seconds. Please check the hive logs.",
+                  MAX_STARTUP_WAIT / 1000));
         }
+      }
+
+    protected void printDockerEvents() {
+      try {
+        runCmdAndPrintStreams(new String[] { "docker", "events", "--since", "24h", "--until", "0s" }, 3);
+      } catch (Exception e) {
+        LOG.warn("A problem was encountered while attempting to retrieve Docker events (the system made an analytical"
+            + " best effort to list the events to reveal the root cause). No further actions are necessary.", e);
+      }
     }
 
     public void cleanupDockerContainer() throws IOException, InterruptedException {
-        if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
+        if (runCmdAndPrintStreams(buildRmCmd(), 600).rc != 0) {
             throw new RuntimeException("Unable to remove docker container");
         }
     }

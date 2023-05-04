@@ -123,6 +123,31 @@ final class HMSBenchmarks {
         null);
   }
 
+  static DescriptiveStatistics benchmarkDeleteMetaOnlyWithPartitions(@NotNull MicroBenchmark bench,
+                                                                        @NotNull BenchData data,
+                                                                        int howMany,
+                                                                        int nparams) {
+    final HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableName = data.tableName;
+
+    // Create many parameters
+    Map<String, String> parameters = new HashMap<>(nparams);
+    for (int i = 0; i < nparams; i++) {
+      parameters.put(PARAM_KEY + i, PARAM_VALUE + i);
+    }
+
+    return bench.measure(
+            () -> throwingSupplierWrapper(() -> {
+              BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
+              addManyPartitions(client, dbName, tableName, parameters,
+                      Collections.singletonList("d"), howMany);
+              return true;
+            }),
+            () -> throwingSupplierWrapper(() -> client.dropTable(dbName, tableName, false)),
+            null);
+  }
+
   static DescriptiveStatistics benchmarkGetTable(@NotNull MicroBenchmark bench,
                                                  @NotNull BenchData data) {
     final HMSClient client = data.getClient();
@@ -246,26 +271,24 @@ final class HMSBenchmarks {
   }
 
   static DescriptiveStatistics benchmarkDropPartition(@NotNull MicroBenchmark bench,
-                                                      @NotNull BenchData data) {
+                                                      @NotNull BenchData data,
+                                                      int count) {
     final HMSClient client = data.getClient();
     String dbName = data.dbName;
     String tableName = data.tableName;
 
     BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
-    final List<String> values = Collections.singletonList("d1");
     try {
-      Table t = client.getTable(dbName, tableName);
-      Partition partition = new Util.PartitionBuilder(t)
-          .withValues(values)
-          .build();
-
       return bench.measure(
-          () -> throwingSupplierWrapper(() -> client.addPartition(partition)),
-          () -> throwingSupplierWrapper(() -> client.dropPartition(dbName, tableName, values)),
+          () -> addManyPartitionsNoException(client, dbName, tableName, null,
+                  Collections.singletonList("d"), count),
+          () -> throwingSupplierWrapper(() -> {
+            List<String> partNames = client.getPartitionNames(dbName, tableName);
+            partNames.forEach(partName ->
+                throwingSupplierWrapper(() -> client.dropPartition(dbName, tableName, partName)));
+            return null;
+          }),
           null);
-    } catch (TException e) {
-      e.printStackTrace();
-      return new DescriptiveStatistics();
     } finally {
       throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
     }

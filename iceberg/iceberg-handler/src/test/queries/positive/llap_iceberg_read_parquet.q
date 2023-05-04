@@ -111,7 +111,7 @@ SELECT i.name, i.description, SUM(o.quantity) FROM llap_items_parquet i JOIN lla
 
 CREATE EXTERNAL TABLE mig_source_parquet (id int) partitioned by (region string) stored AS PARQUET;
 INSERT INTO mig_source_parquet VALUES (1, 'EU'), (1, 'US'), (2, 'EU'), (3, 'EU'), (2, 'US');
-ALTER TABLE mig_source_parquet SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler');
+ALTER TABLE mig_source_parquet convert to iceberg;
 
 -- Should miss, but fill cache
 SELECT region, SUM(id) from mig_source_parquet GROUP BY region;
