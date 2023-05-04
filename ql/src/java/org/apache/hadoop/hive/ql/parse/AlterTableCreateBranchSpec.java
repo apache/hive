@@ -24,6 +24,7 @@ public class AlterTableCreateBranchSpec {
 
   private final String branchName;
   private final Long snapshotId;
+  private final Long asOfTime;
   private final Long maxRefAgeMs;
   private final Integer minSnapshotsToKeep;
   private final Long maxSnapshotAgeMs;
@@ -34,6 +35,10 @@ public class AlterTableCreateBranchSpec {
 
   public Long getSnapshotId() {
     return snapshotId;
+  }
+
+  public Long getAsOfTime() {
+    return asOfTime;
   }
 
   public Long getMaxRefAgeMs() {
@@ -48,16 +53,19 @@ public class AlterTableCreateBranchSpec {
     return maxSnapshotAgeMs;
   }
 
-  public AlterTableCreateBranchSpec(String branchName, Long snapShotId, Long maxRefAgeMs, Integer minSnapshotsToKeep, Long maxSnapshotAgeMs) {
+  public AlterTableCreateBranchSpec(String branchName, Long snapShotId, Long asOfTime, Long maxRefAgeMs,
+      Integer minSnapshotsToKeep, Long maxSnapshotAgeMs) {
     this.branchName = branchName;
     this.snapshotId = snapShotId;
+    this.asOfTime = asOfTime;
     this.maxRefAgeMs = maxRefAgeMs;
     this.minSnapshotsToKeep = minSnapshotsToKeep;
     this.maxSnapshotAgeMs = maxSnapshotAgeMs;
   }
 
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("branchName", branchName).add("snapshotId", snapshotId).add("maxRefAgeMs", maxRefAgeMs)
-        .add("minSnapshotsToKeep", minSnapshotsToKeep).add("maxSnapshotAgeMs", maxSnapshotAgeMs).toString();
+    return MoreObjects.toStringHelper(this).add("branchName", branchName).add("snapshotId", snapshotId)
+        .add("asOfTime", asOfTime).add("maxRefAgeMs", maxRefAgeMs).add("minSnapshotsToKeep", minSnapshotsToKeep)
+        .add("maxSnapshotAgeMs", maxSnapshotAgeMs).toString();
   }
 }

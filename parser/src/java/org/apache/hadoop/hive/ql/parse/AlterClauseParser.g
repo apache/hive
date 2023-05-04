@@ -488,8 +488,11 @@ alterStatementSuffixCreateBranch
 snapshotIdOfBranch
 @init { gParent.pushMsg("alter table create branch as of version", state); }
 @after { gParent.popMsg(state); }
-    : KW_AS KW_OF KW_VERSION snapshotId=Number
-    -> ^(TOK_AS_OF_VERSION_BRANCH $snapshotId)
+    : KW_FOR KW_SYSTEM_VERSION KW_AS KW_OF snapshotId=Number
+    -> ^(TOK_AS_OF_VERSION $snapshotId)
+    |
+    (KW_FOR KW_SYSTEM_TIME KW_AS KW_OF asOfTime=StringLiteral)
+    -> ^(TOK_AS_OF_TIME $asOfTime)
     ;
 
 branchRetain

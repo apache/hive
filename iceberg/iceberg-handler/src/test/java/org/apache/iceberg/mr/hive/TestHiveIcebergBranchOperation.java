@@ -26,6 +26,8 @@ import org.apache.iceberg.Table;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.apache.iceberg.mr.hive.HiveIcebergTestUtils.timestampAfterSnapshot;
+
 public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
@@ -62,7 +64,7 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
 
     String branchName = "test_branch_1";
     Long snapshotId = table.history().get(0).snapshotId();
-    shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s AS OF VERSION %d",
+    shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s FOR SYSTEM_VERSION AS OF %d",
         branchName, snapshotId));
     table.refresh();
     SnapshotRef ref = table.refs().get(branchName);
@@ -70,6 +72,22 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     Assert.assertNull(ref.minSnapshotsToKeep());
     Assert.assertNull(ref.maxSnapshotAgeMs());
     Assert.assertNull(ref.maxRefAgeMs());
+  }
+
+  @Test
+  public void testCreateBranchWithTimeStamp() throws InterruptedException, IOException {
+    Table table =
+        testTables.createTableWithVersions(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    String branchName = "test_branch_1";
+    Long snapshotId = table.history().get(0).snapshotId();
+
+    shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s FOR SYSTEM_TIME AS OF '%s'",
+        branchName, timestampAfterSnapshot(table, 0)));
+    table.refresh();
+    SnapshotRef ref = table.refs().get(branchName);
+    Assert.assertEquals(snapshotId.longValue(), ref.snapshotId());
   }
 
   @Test
@@ -128,7 +146,7 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
   }
 
   @Test
-  public void testCreateBranchWithAllCustomConfig() throws InterruptedException, IOException {
+  public void testCreateBranchWithAllCustomConfig() throws IOException, InterruptedException {
     Table table =
         testTables.createTableWithVersions(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
@@ -138,8 +156,8 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     Integer minSnapshotsToKeep = 2;
     long maxSnapshotAge = 2L;
     long maxRefAge = 5L;
-    shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s AS OF VERSION %d RETAIN %d DAYS WITH" +
-            " SNAPSHOT RETENTION %d SNAPSHOTS %d days",
+    shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s FOR SYSTEM_VERSION AS OF %d RETAIN" +
+            " %d DAYS WITH SNAPSHOT RETENTION %d SNAPSHOTS %d days",
         branchName, snapshotId, maxRefAge, minSnapshotsToKeep, maxSnapshotAge));
     table.refresh();
     SnapshotRef ref = table.refs().get(branchName);

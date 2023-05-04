@@ -34,7 +34,7 @@ public class AlterTableCreateBranchDesc extends AbstractAlterTableDesc {
 
   public AlterTableCreateBranchDesc(TableName tableName, AlterTableCreateBranchSpec createBranchSpec)
       throws SemanticException {
-    super(AlterTableType.CREATEBRANCH, tableName, null, null, false, false, null);
+    super(AlterTableType.CREATE_BRANCH, tableName, null, null, false, false, null);
     this.createBranchSpec = createBranchSpec;
   }
 

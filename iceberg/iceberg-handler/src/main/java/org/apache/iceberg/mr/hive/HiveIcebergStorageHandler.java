@@ -147,6 +147,7 @@ import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
+import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -725,13 +726,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
 
     String branchName = createBranchSpec.getBranchName();
-    Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() -> new UnsupportedOperationException(
-        String.format("Cannot create branch %s on iceberg table %s.%s which has no snapshot",
-            branchName, hmsTable.getDbName(), hmsTable.getTableName())));
-    Long snapshotId = Optional.ofNullable(createBranchSpec.getSnapshotId())
-        .orElse(icebergTable.currentSnapshot().snapshotId());
-    LOG.info("Creating branch {} on iceberg table {}.{}", branchName, hmsTable.getDbName(),
-        hmsTable.getTableName());
+    Snapshot currentSnapshot = Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() ->
+        new UnsupportedOperationException(String.format("Cannot create branch %s on iceberg table" +
+                " %s.%s which has no snapshot", branchName, hmsTable.getDbName(), hmsTable.getTableName())));
+    Long snapshotId = null;
+    if (createBranchSpec.getSnapshotId() != null) {
+      snapshotId = createBranchSpec.getSnapshotId();
+    } else if (createBranchSpec.getAsOfTime() != null) {
+      snapshotId = SnapshotUtil.snapshotIdAsOfTime(icebergTable, createBranchSpec.getAsOfTime());
+    } else {
+      snapshotId = currentSnapshot.snapshotId();
+    }
+    LOG.info("Creating branch {} on iceberg table {}.{} with snapshotId {}", branchName, hmsTable.getDbName(),
+        hmsTable.getTableName(), snapshotId);
     ManageSnapshots manageSnapshots = icebergTable.manageSnapshots();
     manageSnapshots.createBranch(branchName, snapshotId);
     if (createBranchSpec.getMaxRefAgeMs() != null) {
