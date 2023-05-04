@@ -142,10 +142,13 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<
       // Note: If both are null, we will fall into branch    WHEN leftNull THEN rightRef
       RexNode leftNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, leftRef);
       RexNode rightNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, rightRef);
-      projExprs.add(rexBuilder.makeCall(SqlStdOperatorTable.CASE,
+      RexNode caseExpression = rexBuilder.makeCall(SqlStdOperatorTable.CASE,
               leftNull, rightRef,
               rightNull, leftRef,
-              elseReturn));
+              elseReturn);
+      RexNode cast = rexBuilder.makeCast(
+              call.rel(0).getRowType().getFieldList().get(projExprs.size()).getType(), caseExpression);
+      projExprs.add(cast);
     }
 
     int flagIndex = joinLeftInput.getRowType().getFieldCount() - 1;
