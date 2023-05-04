@@ -230,6 +230,7 @@ public class HiveVectorizedReader {
     ParquetMetadata parquetMetadata = footerData != null ?
         ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER) :
         ParquetFileReader.readFooter(job, path);
+    inputFormat.setMetadata(parquetMetadata);
 
     MessageType fileSchema = parquetMetadata.getFileMetaData().getSchema();
     MessageType typeWithIds = null;
