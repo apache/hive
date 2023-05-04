@@ -29,7 +29,6 @@ import org.apache.commons.jexl3.ObjectContext;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.yarn.webapp.hamlet2.Hamlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

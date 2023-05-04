@@ -1701,6 +1701,8 @@ public class MetastoreConf {
           "metastore.use.custom.database.product is set to true."),
     HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "hive.blobstore.supported.schemes", "s3,s3a,s3n",
             "Comma-separated list of supported blobstore schemes."),
+
+    // Property-maps
     PROPERTIES_CACHE_CAPACITY("hive.metastore.properties.cache.capacity",
         "hive.metastore.properties.cache.maxsize", 64,
         "Maximum number of property-maps (collection of properties for one entity) held in cache per store."
@@ -1708,6 +1710,10 @@ public class MetastoreConf {
     PROPERTIES_CACHE_LOADFACTOR("hive.metastore.properties.cache.loadfactor",
         "hive.metastore.properties.cache.maxsize", 0.75d,
         "Property-maps cache map initial fill factor."
+    ),
+    PROPERTIES_SERVLET_PORT("hive.metastore.properties.servlet.port",
+        "hive.metastore.properties.servlet.port", -1,
+        "Property-maps servlet port."
     ),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.

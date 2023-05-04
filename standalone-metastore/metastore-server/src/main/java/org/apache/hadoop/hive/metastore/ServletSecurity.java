@@ -21,8 +21,11 @@ import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.auth.HttpAuthenticationException;
 import org.apache.hadoop.hive.metastore.auth.jwt.JWTValidator;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.pac4j.core.context.JEEContext;
 import org.pac4j.core.credentials.TokenCredentials;
 import org.pac4j.core.credentials.extractor.BearerAuthExtractor;
@@ -34,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Optional;
 
@@ -164,5 +168,61 @@ public class ServletSecurity {
     Optional<TokenCredentials> tokenCredentials = extractor.extract(new JEEContext(
         request, response));
     return tokenCredentials.map(TokenCredentials::getToken).orElse(null);
+  }
+
+  /**
+   * Login the server principal using KRB Keytab file if security is enabled.
+   * @param conf the configuration
+   * @throws IOException if getting the server principal fails
+   */
+  static void loginServerPincipal(Configuration conf) throws IOException {
+    // This check is likely pointless, especially with the current state of the http
+    // servlet which respects whatever comes in. Putting this in place for the moment
+    // only to enable testing on an otherwise secure cluster.
+    LOG.info(" Checking if security is enabled");
+    if (UserGroupInformation.isSecurityEnabled()) {
+      LOG.info("Logging in via keytab while starting HTTP metastore");
+      // Handle renewal
+      String kerberosName = SecurityUtil.getServerPrincipal(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.KERBEROS_PRINCIPAL), "0.0.0.0");
+      String keyTabFile = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.KERBEROS_KEYTAB_FILE);
+      UserGroupInformation.loginUserFromKeytab(kerberosName, keyTabFile);
+    } else {
+      LOG.info("Security is not enabled. Not logging in via keytab");
+    }
+  }
+  /**
+   * Creates an SSL context factory if configuration states so.
+   * @param conf the configuration
+   * @return null if no ssl in config, an instance otherwise
+   * @throws IOException if getting password fails
+   */
+  static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
+    final boolean useSsl  = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
+    if (!useSsl) {
+      return null;
+    }
+    String keyStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH).trim();
+    if (keyStorePath.isEmpty()) {
+      throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_KEYSTORE_PATH.toString()
+          + " Not configured for SSL connection");
+    }
+    String keyStorePassword =
+        MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
+    String keyStoreType =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE).trim();
+    String keyStoreAlgorithm =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
+
+    SslContextFactory factory = new SslContextFactory.Server();
+    String[] excludedProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
+    LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
+    factory.addExcludeProtocols(excludedProtocols);
+    LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = "
+        + Arrays.toString(factory.getExcludeProtocols()));
+    factory.setKeyStorePath(keyStorePath);
+    factory.setKeyStorePassword(keyStorePassword);
+    factory.setKeyStoreType(keyStoreType);
+    factory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm);
+    return factory;
   }
 }
