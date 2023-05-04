@@ -14,11 +14,11 @@ stored by iceberg
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_parquet
-PREHOOK: query: explain LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
-POSTHOOK: query: explain LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
@@ -60,11 +60,11 @@ Stage-3
                           Output:["strcol","intcol","pcol"]
                            Please refer to the previous Select Operator [SEL_12]
 
-PREHOOK: query: LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
-POSTHOOK: query: LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
@@ -98,11 +98,11 @@ STORED AS AVRO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_avro
-PREHOOK: query: explain LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_avro__temp_table_for_load_data__
 PREHOOK: Output: default@ice_avro
-POSTHOOK: query: explain LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_avro__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_avro
@@ -137,11 +137,11 @@ Stage-3
                           Output:["number","first_name"]
                            Please refer to the previous Select Operator [SEL_1]
 
-PREHOOK: query: LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_avro__temp_table_for_load_data__
 PREHOOK: Output: default@ice_avro
-POSTHOOK: query: LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_avro__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_avro
@@ -196,11 +196,11 @@ STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_orc
-PREHOOK: query: explain LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc__temp_table_for_load_data__
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: explain LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_orc
@@ -235,11 +235,11 @@ Stage-3
                           Output:["p_partkey","p_name","p_mfgr","p_brand","p_type","p_size","p_container","p_retailprice","p_comment"]
                            Please refer to the previous Select Operator [SEL_10]
 
-PREHOOK: query: LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' INTO TABLE ice_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc__temp_table_for_load_data__
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: LOAD DATA LOCAL INPATH '/Users/ayushsaxena/code/hive-os/hive/itests/qtest-iceberg/../..//data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' INTO TABLE ice_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_orc

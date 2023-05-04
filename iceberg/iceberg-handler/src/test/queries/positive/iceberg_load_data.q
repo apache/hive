@@ -4,9 +4,9 @@ create external table ice_parquet(
 ) partitioned by (pcol int)
 stored by iceberg;
 
-explain LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/parquet_partition' OVERWRITE INTO TABLE ice_parquet;
+explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet;
 
-LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/parquet_partition' OVERWRITE INTO TABLE ice_parquet;
+LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet;
 
 select * from ice_parquet order by intcol;
 
@@ -16,9 +16,9 @@ CREATE TABLE ice_avro (
 stored by iceberg
 STORED AS AVRO;
 
-explain LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/doctors.avro' OVERWRITE INTO TABLE ice_avro;
+explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 
-LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/doctors.avro' OVERWRITE INTO TABLE ice_avro;
+LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 
 select * from ice_avro order by number;
 
@@ -36,8 +36,8 @@ CREATE TABLE ice_orc (
 stored by iceberg
 STORED AS ORC;
 
-explain LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/part.orc' OVERWRITE INTO TABLE ice_orc;
+explain LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc;
 
-LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/part.orc' INTO TABLE ice_orc;
+LOAD DATA LOCAL INPATH '../../data/files/part.orc' INTO TABLE ice_orc;
 
 select * from ice_orc order by p_partkey;
