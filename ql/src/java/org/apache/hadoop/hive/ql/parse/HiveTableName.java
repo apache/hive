@@ -106,6 +106,18 @@ public final class HiveTableName extends TableName {
     }
   }
 
+  public static TableName ofNullable(String dbTableName, String defaultDb, String branchName) throws SemanticException {
+    if (dbTableName == null) {
+      return new TableName(null, null, null);
+    } else {
+      try {
+        return fromString(dbTableName, SessionState.get().getCurrentCatalog(), defaultDb, branchName);
+      } catch (IllegalArgumentException e) {
+        throw new SemanticException(e);
+      }
+    }
+  }
+
   /**
    * Accepts qualified name which is in the form of table, dbname.tablename or catalog.dbname.tablename and returns a
    * {@link TableName}. This method won't try to find the default db/catalog based on the session state.

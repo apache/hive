@@ -558,6 +558,10 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  default boolean isValidBranch(org.apache.hadoop.hive.metastore.api.Table hmsTable, String branchName) {
+    return false;
+  }
+
   /**
    * Constructs a URI for authorization purposes using the HMS table object
    * @param table The HMS table object

@@ -763,6 +763,9 @@ public final class Utilities {
     if (tbl.getMetaTable() != null) {
       props.put("metaTable", tbl.getMetaTable());
     }
+    if (tbl.getBranchName() != null) {
+      props.put("branch_name", tbl.getBranchName());
+    }
     return (new TableDesc(tbl.getInputFormatClass(), tbl
         .getOutputFormatClass(), props));
   }

@@ -1589,7 +1589,7 @@ public class Hive {
    */
   public Table getTable(TableName tableName) throws HiveException {
     return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
-        tableName.getTable(), null, true);
+        tableName.getTable(), tableName.getMetaTable(), true);
   }
 
   /**
@@ -1755,11 +1755,18 @@ public class Hive {
       if (t.getStorageHandler() == null || !t.getStorageHandler().isMetadataTableSupported()) {
         throw new SemanticException(ErrorMsg.METADATA_TABLE_NOT_SUPPORTED, t.getTableName());
       }
-      if (!t.getStorageHandler().isValidMetadataTable(metaTableName)) {
-        throw new SemanticException(ErrorMsg.INVALID_METADATA_TABLE_NAME, metaTableName);
+      if (metaTableName.startsWith("branch_")) {
+        if (!t.getStorageHandler().isValidBranch(tTable, metaTableName.substring(7))) {
+          throw new SemanticException(String.format("Cannot use branch (does not exist): %s", metaTableName.substring(7)));
+        }
+        t.setBranchName(metaTableName);
+      } else {
+        if (!t.getStorageHandler().isValidMetadataTable(metaTableName)) {
+          throw new SemanticException(ErrorMsg.INVALID_METADATA_TABLE_NAME, metaTableName);
+        }
+        t.setMetaTable(metaTableName);
       }
     }
-    t.setMetaTable(metaTableName);
     return t;
   }
 

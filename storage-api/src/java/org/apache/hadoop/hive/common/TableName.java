@@ -90,7 +90,11 @@ public class TableName implements Serializable {
       if (names.length == 2) {
         return new TableName(defaultCatalog, names[0], names[1], null);
       } else if (names.length == 3) {
-        return new TableName(names[0], names[1], names[2], null);
+        if (names[2].startsWith("branch_")) {
+          return new TableName(defaultCatalog, names[0], names[1], names[2]);
+        } else {
+          return new TableName(names[0], names[1], names[2], null);
+        }
       } else {
         throw new IllegalArgumentException(ILL_ARG_EXCEPTION_MSG);
       }

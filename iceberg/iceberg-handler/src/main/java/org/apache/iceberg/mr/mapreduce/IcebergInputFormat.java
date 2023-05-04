@@ -126,6 +126,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       }
       snapshotId = ref.snapshotId();
     }
+    String branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_BRANCH);
+    if (branchName != null) {
+      scan = scan.useRef(branchName.substring(7));
+    }
     if (snapshotId != -1) {
       scan = scan.useSnapshot(snapshotId);
     }
