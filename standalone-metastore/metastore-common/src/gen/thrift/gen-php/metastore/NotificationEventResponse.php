@@ -69,14 +69,14 @@ class NotificationEventResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->events = array();
-                        $_size814 = 0;
-                        $_etype817 = 0;
-                        $xfer += $input->readListBegin($_etype817, $_size814);
-                        for ($_i818 = 0; $_i818 < $_size814; ++$_i818) {
-                            $elem819 = null;
-                            $elem819 = new \metastore\NotificationEvent();
-                            $xfer += $elem819->read($input);
-                            $this->events []= $elem819;
+                        $_size848 = 0;
+                        $_etype851 = 0;
+                        $xfer += $input->readListBegin($_etype851, $_size848);
+                        for ($_i852 = 0; $_i852 < $_size848; ++$_i852) {
+                            $elem853 = null;
+                            $elem853 = new \metastore\NotificationEvent();
+                            $xfer += $elem853->read($input);
+                            $this->events []= $elem853;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class NotificationEventResponse
             }
             $xfer += $output->writeFieldBegin('events', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->events));
-            foreach ($this->events as $iter820) {
-                $xfer += $iter820->write($output);
+            foreach ($this->events as $iter854) {
+                $xfer += $iter854->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

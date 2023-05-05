@@ -533,13 +533,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // SKEWED_COL_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list188 = iprot.readListBegin();
-                struct.skewedColNames = new java.util.ArrayList<java.lang.String>(_list188.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem189;
-                for (int _i190 = 0; _i190 < _list188.size; ++_i190)
+                org.apache.thrift.protocol.TList _list226 = iprot.readListBegin();
+                struct.skewedColNames = new java.util.ArrayList<java.lang.String>(_list226.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem227;
+                for (int _i228 = 0; _i228 < _list226.size; ++_i228)
                 {
-                  _elem189 = iprot.readString();
-                  struct.skewedColNames.add(_elem189);
+                  _elem227 = iprot.readString();
+                  struct.skewedColNames.add(_elem227);
                 }
                 iprot.readListEnd();
               }
@@ -551,23 +551,23 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // SKEWED_COL_VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list191 = iprot.readListBegin();
-                struct.skewedColValues = new java.util.ArrayList<java.util.List<java.lang.String>>(_list191.size);
-                @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> _elem192;
-                for (int _i193 = 0; _i193 < _list191.size; ++_i193)
+                org.apache.thrift.protocol.TList _list229 = iprot.readListBegin();
+                struct.skewedColValues = new java.util.ArrayList<java.util.List<java.lang.String>>(_list229.size);
+                @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> _elem230;
+                for (int _i231 = 0; _i231 < _list229.size; ++_i231)
                 {
                   {
-                    org.apache.thrift.protocol.TList _list194 = iprot.readListBegin();
-                    _elem192 = new java.util.ArrayList<java.lang.String>(_list194.size);
-                    @org.apache.thrift.annotation.Nullable java.lang.String _elem195;
-                    for (int _i196 = 0; _i196 < _list194.size; ++_i196)
+                    org.apache.thrift.protocol.TList _list232 = iprot.readListBegin();
+                    _elem230 = new java.util.ArrayList<java.lang.String>(_list232.size);
+                    @org.apache.thrift.annotation.Nullable java.lang.String _elem233;
+                    for (int _i234 = 0; _i234 < _list232.size; ++_i234)
                     {
-                      _elem195 = iprot.readString();
-                      _elem192.add(_elem195);
+                      _elem233 = iprot.readString();
+                      _elem230.add(_elem233);
                     }
                     iprot.readListEnd();
                   }
-                  struct.skewedColValues.add(_elem192);
+                  struct.skewedColValues.add(_elem230);
                 }
                 iprot.readListEnd();
               }
@@ -579,25 +579,25 @@ package org.apache.hadoop.hive.metastore.api;
           case 3: // SKEWED_COL_VALUE_LOCATION_MAPS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map197 = iprot.readMapBegin();
-                struct.skewedColValueLocationMaps = new java.util.HashMap<java.util.List<java.lang.String>,java.lang.String>(2*_map197.size);
-                @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> _key198;
-                @org.apache.thrift.annotation.Nullable java.lang.String _val199;
-                for (int _i200 = 0; _i200 < _map197.size; ++_i200)
+                org.apache.thrift.protocol.TMap _map235 = iprot.readMapBegin();
+                struct.skewedColValueLocationMaps = new java.util.HashMap<java.util.List<java.lang.String>,java.lang.String>(2*_map235.size);
+                @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> _key236;
+                @org.apache.thrift.annotation.Nullable java.lang.String _val237;
+                for (int _i238 = 0; _i238 < _map235.size; ++_i238)
                 {
                   {
-                    org.apache.thrift.protocol.TList _list201 = iprot.readListBegin();
-                    _key198 = new java.util.ArrayList<java.lang.String>(_list201.size);
-                    @org.apache.thrift.annotation.Nullable java.lang.String _elem202;
-                    for (int _i203 = 0; _i203 < _list201.size; ++_i203)
+                    org.apache.thrift.protocol.TList _list239 = iprot.readListBegin();
+                    _key236 = new java.util.ArrayList<java.lang.String>(_list239.size);
+                    @org.apache.thrift.annotation.Nullable java.lang.String _elem240;
+                    for (int _i241 = 0; _i241 < _list239.size; ++_i241)
                     {
-                      _elem202 = iprot.readString();
-                      _key198.add(_elem202);
+                      _elem240 = iprot.readString();
+                      _key236.add(_elem240);
                     }
                     iprot.readListEnd();
                   }
-                  _val199 = iprot.readString();
-                  struct.skewedColValueLocationMaps.put(_key198, _val199);
+                  _val237 = iprot.readString();
+                  struct.skewedColValueLocationMaps.put(_key236, _val237);
                 }
                 iprot.readMapEnd();
               }
@@ -623,9 +623,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(SKEWED_COL_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.skewedColNames.size()));
-          for (java.lang.String _iter204 : struct.skewedColNames)
+          for (java.lang.String _iter242 : struct.skewedColNames)
           {
-            oprot.writeString(_iter204);
+            oprot.writeString(_iter242);
           }
           oprot.writeListEnd();
         }
@@ -635,13 +635,13 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(SKEWED_COL_VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.LIST, struct.skewedColValues.size()));
-          for (java.util.List<java.lang.String> _iter205 : struct.skewedColValues)
+          for (java.util.List<java.lang.String> _iter243 : struct.skewedColValues)
           {
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter205.size()));
-              for (java.lang.String _iter206 : _iter205)
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter243.size()));
+              for (java.lang.String _iter244 : _iter243)
               {
-                oprot.writeString(_iter206);
+                oprot.writeString(_iter244);
               }
               oprot.writeListEnd();
             }
@@ -654,17 +654,17 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(SKEWED_COL_VALUE_LOCATION_MAPS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.LIST, org.apache.thrift.protocol.TType.STRING, struct.skewedColValueLocationMaps.size()));
-          for (java.util.Map.Entry<java.util.List<java.lang.String>, java.lang.String> _iter207 : struct.skewedColValueLocationMaps.entrySet())
+          for (java.util.Map.Entry<java.util.List<java.lang.String>, java.lang.String> _iter245 : struct.skewedColValueLocationMaps.entrySet())
           {
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter207.getKey().size()));
-              for (java.lang.String _iter208 : _iter207.getKey())
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter245.getKey().size()));
+              for (java.lang.String _iter246 : _iter245.getKey())
               {
-                oprot.writeString(_iter208);
+                oprot.writeString(_iter246);
               }
               oprot.writeListEnd();
             }
-            oprot.writeString(_iter207.getValue());
+            oprot.writeString(_iter245.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -701,22 +701,22 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetSkewedColNames()) {
         {
           oprot.writeI32(struct.skewedColNames.size());
-          for (java.lang.String _iter209 : struct.skewedColNames)
+          for (java.lang.String _iter247 : struct.skewedColNames)
           {
-            oprot.writeString(_iter209);
+            oprot.writeString(_iter247);
           }
         }
       }
       if (struct.isSetSkewedColValues()) {
         {
           oprot.writeI32(struct.skewedColValues.size());
-          for (java.util.List<java.lang.String> _iter210 : struct.skewedColValues)
+          for (java.util.List<java.lang.String> _iter248 : struct.skewedColValues)
           {
             {
-              oprot.writeI32(_iter210.size());
-              for (java.lang.String _iter211 : _iter210)
+              oprot.writeI32(_iter248.size());
+              for (java.lang.String _iter249 : _iter248)
               {
-                oprot.writeString(_iter211);
+                oprot.writeString(_iter249);
               }
             }
           }
@@ -725,16 +725,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetSkewedColValueLocationMaps()) {
         {
           oprot.writeI32(struct.skewedColValueLocationMaps.size());
-          for (java.util.Map.Entry<java.util.List<java.lang.String>, java.lang.String> _iter212 : struct.skewedColValueLocationMaps.entrySet())
+          for (java.util.Map.Entry<java.util.List<java.lang.String>, java.lang.String> _iter250 : struct.skewedColValueLocationMaps.entrySet())
           {
             {
-              oprot.writeI32(_iter212.getKey().size());
-              for (java.lang.String _iter213 : _iter212.getKey())
+              oprot.writeI32(_iter250.getKey().size());
+              for (java.lang.String _iter251 : _iter250.getKey())
               {
-                oprot.writeString(_iter213);
+                oprot.writeString(_iter251);
               }
             }
-            oprot.writeString(_iter212.getValue());
+            oprot.writeString(_iter250.getValue());
           }
         }
       }
@@ -746,59 +746,59 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list214 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.skewedColNames = new java.util.ArrayList<java.lang.String>(_list214.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem215;
-          for (int _i216 = 0; _i216 < _list214.size; ++_i216)
+          org.apache.thrift.protocol.TList _list252 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.skewedColNames = new java.util.ArrayList<java.lang.String>(_list252.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem253;
+          for (int _i254 = 0; _i254 < _list252.size; ++_i254)
           {
-            _elem215 = iprot.readString();
-            struct.skewedColNames.add(_elem215);
+            _elem253 = iprot.readString();
+            struct.skewedColNames.add(_elem253);
           }
         }
         struct.setSkewedColNamesIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list217 = iprot.readListBegin(org.apache.thrift.protocol.TType.LIST);
-          struct.skewedColValues = new java.util.ArrayList<java.util.List<java.lang.String>>(_list217.size);
-          @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> _elem218;
-          for (int _i219 = 0; _i219 < _list217.size; ++_i219)
+          org.apache.thrift.protocol.TList _list255 = iprot.readListBegin(org.apache.thrift.protocol.TType.LIST);
+          struct.skewedColValues = new java.util.ArrayList<java.util.List<java.lang.String>>(_list255.size);
+          @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> _elem256;
+          for (int _i257 = 0; _i257 < _list255.size; ++_i257)
           {
             {
-              org.apache.thrift.protocol.TList _list220 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-              _elem218 = new java.util.ArrayList<java.lang.String>(_list220.size);
-              @org.apache.thrift.annotation.Nullable java.lang.String _elem221;
-              for (int _i222 = 0; _i222 < _list220.size; ++_i222)
+              org.apache.thrift.protocol.TList _list258 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+              _elem256 = new java.util.ArrayList<java.lang.String>(_list258.size);
+              @org.apache.thrift.annotation.Nullable java.lang.String _elem259;
+              for (int _i260 = 0; _i260 < _list258.size; ++_i260)
               {
-                _elem221 = iprot.readString();
-                _elem218.add(_elem221);
+                _elem259 = iprot.readString();
+                _elem256.add(_elem259);
               }
             }
-            struct.skewedColValues.add(_elem218);
+            struct.skewedColValues.add(_elem256);
           }
         }
         struct.setSkewedColValuesIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TMap _map223 = iprot.readMapBegin(org.apache.thrift.protocol.TType.LIST, org.apache.thrift.protocol.TType.STRING); 
-          struct.skewedColValueLocationMaps = new java.util.HashMap<java.util.List<java.lang.String>,java.lang.String>(2*_map223.size);
-          @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> _key224;
-          @org.apache.thrift.annotation.Nullable java.lang.String _val225;
-          for (int _i226 = 0; _i226 < _map223.size; ++_i226)
+          org.apache.thrift.protocol.TMap _map261 = iprot.readMapBegin(org.apache.thrift.protocol.TType.LIST, org.apache.thrift.protocol.TType.STRING); 
+          struct.skewedColValueLocationMaps = new java.util.HashMap<java.util.List<java.lang.String>,java.lang.String>(2*_map261.size);
+          @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> _key262;
+          @org.apache.thrift.annotation.Nullable java.lang.String _val263;
+          for (int _i264 = 0; _i264 < _map261.size; ++_i264)
           {
             {
-              org.apache.thrift.protocol.TList _list227 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-              _key224 = new java.util.ArrayList<java.lang.String>(_list227.size);
-              @org.apache.thrift.annotation.Nullable java.lang.String _elem228;
-              for (int _i229 = 0; _i229 < _list227.size; ++_i229)
+              org.apache.thrift.protocol.TList _list265 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+              _key262 = new java.util.ArrayList<java.lang.String>(_list265.size);
+              @org.apache.thrift.annotation.Nullable java.lang.String _elem266;
+              for (int _i267 = 0; _i267 < _list265.size; ++_i267)
               {
-                _elem228 = iprot.readString();
-                _key224.add(_elem228);
+                _elem266 = iprot.readString();
+                _key262.add(_elem266);
               }
             }
-            _val225 = iprot.readString();
-            struct.skewedColValueLocationMaps.put(_key224, _val225);
+            _val263 = iprot.readString();
+            struct.skewedColValueLocationMaps.put(_key262, _val263);
           }
         }
         struct.setSkewedColValueLocationMapsIsSet(true);

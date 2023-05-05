@@ -108,14 +108,14 @@ class ThriftHiveMetastore_get_fields_with_environment_context_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1314 = 0;
-                        $_etype1317 = 0;
-                        $xfer += $input->readListBegin($_etype1317, $_size1314);
-                        for ($_i1318 = 0; $_i1318 < $_size1314; ++$_i1318) {
-                            $elem1319 = null;
-                            $elem1319 = new \metastore\FieldSchema();
-                            $xfer += $elem1319->read($input);
-                            $this->success []= $elem1319;
+                        $_size1348 = 0;
+                        $_etype1351 = 0;
+                        $xfer += $input->readListBegin($_etype1351, $_size1348);
+                        for ($_i1352 = 0; $_i1352 < $_size1348; ++$_i1352) {
+                            $elem1353 = null;
+                            $elem1353 = new \metastore\FieldSchema();
+                            $xfer += $elem1353->read($input);
+                            $this->success []= $elem1353;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -166,8 +166,8 @@ class ThriftHiveMetastore_get_fields_with_environment_context_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRUCT, count($this->success));
-            foreach ($this->success as $iter1320) {
-                $xfer += $iter1320->write($output);
+            foreach ($this->success as $iter1354) {
+                $xfer += $iter1354->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
