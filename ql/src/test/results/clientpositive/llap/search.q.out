@@ -178,3 +178,115 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               ListSink
 
+PREHOOK: query: explain
+select * from t1 where a between 1 and 5 or a between 10 and 15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from t1 where a between 1 and 5 or a between 10 and 15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1
+          filterExpr: (((a >= 1) and (a <= 5)) or ((a >= 10) and (a <= 15))) (type: boolean)
+          Filter Operator
+            predicate: (((a >= 1) and (a <= 5)) or ((a >= 10) and (a <= 15))) (type: boolean)
+            Select Operator
+              expressions: a (type: int), b (type: int)
+              outputColumnNames: a, b
+              ListSink
+
+PREHOOK: query: explain
+select * from t1 where a between 1 and 5 or a in (10, 12, 15) or a > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from t1 where a between 1 and 5 or a in (10, 12, 15) or a > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1
+          filterExpr: (((a >= 1) and (a <= 5)) or (a = 10) or (a = 12) or (a = 15) or (a > 100)) (type: boolean)
+          Filter Operator
+            predicate: (((a >= 1) and (a <= 5)) or (a = 10) or (a = 12) or (a = 15) or (a > 100)) (type: boolean)
+            Select Operator
+              expressions: a (type: int), b (type: int)
+              outputColumnNames: a, b
+              ListSink
+
+PREHOOK: query: explain
+select * from t1 where a in (1, 2, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from t1 where a in (1, 2, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1
+          filterExpr: (a) IN (1, 2, 3) (type: boolean)
+          Filter Operator
+            predicate: (a) IN (1, 2, 3) (type: boolean)
+            Select Operator
+              expressions: a (type: int), b (type: int)
+              outputColumnNames: a, b
+              ListSink
+
+PREHOOK: query: explain
+select * from t1 where a in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from t1 where a in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1
+          filterExpr: (a) IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22) (type: boolean)
+          Filter Operator
+            predicate: (a) IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22) (type: boolean)
+            Select Operator
+              expressions: a (type: int), b (type: int)
+              outputColumnNames: a, b
+              ListSink
+
