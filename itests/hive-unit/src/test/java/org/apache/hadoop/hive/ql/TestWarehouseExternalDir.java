@@ -54,19 +54,15 @@ public class TestWarehouseExternalDir {
 
   private static MiniHS2 miniHS2;
   private static Hive db;
+
   private static HiveConf conf;
   private  static Connection conn;
-
   private  static String whRootExternal = "/wh_ext";
   private  static String dbName = "twed_db1";
   private  static Path whRootExternalPath;
   private  static Path whRootManagedPath;
 
   private Statement stmt;
-
-
-
-
 
   @BeforeClass
   public static void beforeTest() throws Exception {
@@ -84,7 +80,6 @@ public class TestWarehouseExternalDir {
     whRootExternalPath = fs.makeQualified(new Path(whRootExternal));
     whRootManagedPath = fs.makeQualified(new Path(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE)));
 
-
     LOG.info("fs: {}", miniHS2.getDfs().getFileSystem().getUri());
     LOG.info("warehouse location: {}", whRootManagedPath);
     LOG.info("whRootExternalPath: {}", whRootExternalPath);
@@ -93,8 +88,8 @@ public class TestWarehouseExternalDir {
     conn = DriverManager.getConnection(miniHS2.getJdbcURL(),
             System.getProperty("user.name"), "bar");
     createDb();
-
   }
+
   @AfterClass
   public  static void afterTest() throws Exception {
 
@@ -112,7 +107,6 @@ public class TestWarehouseExternalDir {
 
   }
 
-
   @After
   public void tearDown() throws Exception {
     if (conn != null) {
@@ -120,17 +114,11 @@ public class TestWarehouseExternalDir {
     }
   }
 
-
-
-
   @Before
   public  void setUp() throws Exception {
-
     conn = DriverManager.getConnection(miniHS2.getJdbcURL(dbName),
             System.getProperty("user.name"), "bar");
     assertNotNull(conn);
-
-
   }
 
   private  static void createDb() throws Exception {
@@ -152,10 +140,6 @@ public class TestWarehouseExternalDir {
   @Test
   public void testManagedPaths() throws Exception {
     try (Statement stmt = conn.createStatement()) {
-
-
-
-
       // Confirm default managed table paths
       stmt.execute("create table IF NOT EXISTS default.twed_1(c1 string)");
 
@@ -171,8 +155,6 @@ public class TestWarehouseExternalDir {
   @Test
   public void testExternalDefaultPaths() throws Exception {
     try (Statement stmt = conn.createStatement()) {
-
-
       stmt.execute("create external table IF NOT EXISTS default.twed_ext1(c1 string)");
       Table tab = db.getTable("default","twed_ext1");
       checkTableLocation(tab, new Path(whRootExternalPath, "twed_ext1"));
