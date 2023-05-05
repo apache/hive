@@ -165,13 +165,13 @@ class WriteNotificationLogRequest
                 case 6:
                     if ($ftype == TType::LST) {
                         $this->partitionVals = array();
-                        $_size913 = 0;
-                        $_etype916 = 0;
-                        $xfer += $input->readListBegin($_etype916, $_size913);
-                        for ($_i917 = 0; $_i917 < $_size913; ++$_i917) {
-                            $elem918 = null;
-                            $xfer += $input->readString($elem918);
-                            $this->partitionVals []= $elem918;
+                        $_size879 = 0;
+                        $_etype882 = 0;
+                        $xfer += $input->readListBegin($_etype882, $_size879);
+                        for ($_i883 = 0; $_i883 < $_size879; ++$_i883) {
+                            $elem884 = null;
+                            $xfer += $input->readString($elem884);
+                            $this->partitionVals []= $elem884;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -226,8 +226,8 @@ class WriteNotificationLogRequest
             }
             $xfer += $output->writeFieldBegin('partitionVals', TType::LST, 6);
             $output->writeListBegin(TType::STRING, count($this->partitionVals));
-            foreach ($this->partitionVals as $iter919) {
-                $xfer += $output->writeString($iter919);
+            foreach ($this->partitionVals as $iter885) {
+                $xfer += $output->writeString($iter885);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

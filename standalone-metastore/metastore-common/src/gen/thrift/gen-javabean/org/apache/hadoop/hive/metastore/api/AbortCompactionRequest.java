@@ -489,13 +489,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // COMPACTION_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list910 = iprot.readListBegin();
-                struct.compactionIds = new java.util.ArrayList<java.lang.Long>(_list910.size);
-                long _elem911;
-                for (int _i912 = 0; _i912 < _list910.size; ++_i912)
+                org.apache.thrift.protocol.TList _list872 = iprot.readListBegin();
+                struct.compactionIds = new java.util.ArrayList<java.lang.Long>(_list872.size);
+                long _elem873;
+                for (int _i874 = 0; _i874 < _list872.size; ++_i874)
                 {
-                  _elem911 = iprot.readI64();
-                  struct.compactionIds.add(_elem911);
+                  _elem873 = iprot.readI64();
+                  struct.compactionIds.add(_elem873);
                 }
                 iprot.readListEnd();
               }
@@ -537,9 +537,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(COMPACTION_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.compactionIds.size()));
-          for (long _iter913 : struct.compactionIds)
+          for (long _iter875 : struct.compactionIds)
           {
-            oprot.writeI64(_iter913);
+            oprot.writeI64(_iter875);
           }
           oprot.writeListEnd();
         }
@@ -578,9 +578,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.compactionIds.size());
-        for (long _iter914 : struct.compactionIds)
+        for (long _iter876 : struct.compactionIds)
         {
-          oprot.writeI64(_iter914);
+          oprot.writeI64(_iter876);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -603,13 +603,13 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, AbortCompactionRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list915 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
-        struct.compactionIds = new java.util.ArrayList<java.lang.Long>(_list915.size);
-        long _elem916;
-        for (int _i917 = 0; _i917 < _list915.size; ++_i917)
+        org.apache.thrift.protocol.TList _list877 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
+        struct.compactionIds = new java.util.ArrayList<java.lang.Long>(_list877.size);
+        long _elem878;
+        for (int _i879 = 0; _i879 < _list877.size; ++_i879)
         {
-          _elem916 = iprot.readI64();
-          struct.compactionIds.add(_elem916);
+          _elem878 = iprot.readI64();
+          struct.compactionIds.add(_elem878);
         }
       }
       struct.setCompactionIdsIsSet(true);

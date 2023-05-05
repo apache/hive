@@ -26,11 +26,6 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-jexl3</artifactId>
-      <version>${jexl.version}</version>
-    </dependency>
-    <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-netty-shaded</artifactId>
       <version>${io.grpc.version}</version>

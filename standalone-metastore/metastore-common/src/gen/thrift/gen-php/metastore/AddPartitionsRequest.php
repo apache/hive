@@ -155,14 +155,14 @@ class AddPartitionsRequest
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->parts = array();
-                        $_size567 = 0;
-                        $_etype570 = 0;
-                        $xfer += $input->readListBegin($_etype570, $_size567);
-                        for ($_i571 = 0; $_i571 < $_size567; ++$_i571) {
-                            $elem572 = null;
-                            $elem572 = new \metastore\Partition();
-                            $xfer += $elem572->read($input);
-                            $this->parts []= $elem572;
+                        $_size533 = 0;
+                        $_etype536 = 0;
+                        $xfer += $input->readListBegin($_etype536, $_size533);
+                        for ($_i537 = 0; $_i537 < $_size533; ++$_i537) {
+                            $elem538 = null;
+                            $elem538 = new \metastore\Partition();
+                            $xfer += $elem538->read($input);
+                            $this->parts []= $elem538;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -227,8 +227,8 @@ class AddPartitionsRequest
             }
             $xfer += $output->writeFieldBegin('parts', TType::LST, 3);
             $output->writeListBegin(TType::STRUCT, count($this->parts));
-            foreach ($this->parts as $iter573) {
-                $xfer += $iter573->write($output);
+            foreach ($this->parts as $iter539) {
+                $xfer += $iter539->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

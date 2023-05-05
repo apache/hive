@@ -55,9 +55,6 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.properties.PropertyManager;
-import org.apache.hadoop.hive.metastore.properties.PropertyMap;
-import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.txn.*;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
@@ -78,7 +75,22 @@ import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -7524,41 +7536,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return ret;
   }
 
-  /**
-   * Creates an instance of property manager based on the (declared) namespace.
-   * @param ns the namespace
-   * @return the manager instance
-   * @throws TException
-   */
-  private PropertyManager getPropertyManager(String ns) throws MetaException, NoSuchObjectException {
-    PropertyStore propertyStore = getMS().getPropertyStore();
-    PropertyManager mgr = PropertyManager.create(ns, propertyStore);
-    return mgr;
-  }
-  @Override
-  public PropertyGetResponse get_properties(PropertyGetRequest req) throws MetaException, NoSuchObjectException, TException {
-    PropertyManager mgr = getPropertyManager(req.getNameSpace());
-    Map<String, PropertyMap> selected = mgr.selectProperties(req.getMapPrefix(), req.getMapPredicate(), req.getMapSelection());
-    PropertyGetResponse response = new PropertyGetResponse();
-    Map<String, Map<String, String>> returned = new TreeMap<>();
-    selected.forEach((k, v)->{
-      returned.put(k, v.export());
-    });
-    response.setProperties(returned);
-    return response;
-  }
-
-  @Override
-  public boolean set_properties(PropertySetRequest req) throws TException {
-    PropertyManager mgr = getPropertyManager(req.getNameSpace());
-    mgr.setProperties((Map<String, Object>) (Map<?, ?>) req.getPropertyMap());
-    mgr.commit();
-    return true;
-  }
-
   @Override
   public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject, String userName,
-                                                 List<String> groupNames) throws MetaException, NoSuchObjectException, TException {
+                                                 List<String> groupNames) throws TException {
     firePreEvent(new PreAuthorizationCallEvent(this));
     String catName = hiveObject.isSetCatName() ? hiveObject.getCatName() : getDefaultCatalog(conf);
     HiveObjectType debug = hiveObject.getObjectType();

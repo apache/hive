@@ -50,7 +50,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -249,8 +248,6 @@ import org.apache.hadoop.hive.metastore.model.MReplicationMetrics;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.properties.CachingPropertyStore;
-import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -340,7 +337,6 @@ public class ObjectStore implements RawStore, Configurable {
   private Pattern partitionValidationPattern;
   private Counter directSqlErrors;
   private boolean areTxnStatsSupported = false;
-  private PropertyStore propertyStore;
 
   private static Striped<Lock> tablelocks;
 
@@ -435,17 +431,6 @@ public class ObjectStore implements RawStore, Configurable {
         directSql = new MetaStoreDirectSql(pm, conf, schema);
       }
     }
-    if (propertyStore == null) {
-      propertyStore = new CachingPropertyStore(new JdoPropertyStore(this), conf);
-    }
-  }
-
-  /**
-   * @return the property store instance
-   */
-  @Override
-  public PropertyStore getPropertyStore() {
-    return propertyStore;
   }
 
   private DatabaseProduct determineDatabaseProduct() {
@@ -4214,7 +4199,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Gets partition names from the table via ORM (JDOQL) filter pushdown.
-   * @param tblName The table.
+   * @param table The table.
    * @param tree The expression tree from which JDOQL filter will be made.
    * @param maxParts Maximum number of partitions to return.
    * @param isValidatedFilter Whether the filter was pre-validated for JDOQL pushdown by a client
@@ -5699,209 +5684,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
     LOG.warn("Guid for metastore db not found");
     return null;
-  }
-
-  public boolean runInTransaction(Runnable exec) throws MetaException {
-    boolean success = false;
-    Transaction tx = null;
-    try {
-      if (openTransaction()) {
-        exec.run();
-        success = commitTransaction();
-      }
-    } catch (Exception e) {
-      LOG.warn("Metastore operation failed", e);
-    } finally {
-      rollbackAndCleanup(success, null);
-    }
-    return success;
-  }
-
-  public boolean dropProperties(String key) throws MetaException {
-    boolean success = false;
-    Transaction tx = null;
-    Query query = null;
-    try {
-      if (openTransaction()) {
-        query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
-        query.declareParameters("java.lang.String key");
-        Collection<MMetastoreDBProperties> properties = (Collection<MMetastoreDBProperties>) query.execute(key);
-        if (!properties.isEmpty()) {
-          pm.deletePersistentAll(properties);
-        }
-        success = commitTransaction();
-      }
-    } catch (Exception e) {
-      LOG.warn("Metastore property drop failed", e);
-    } finally {
-      rollbackAndCleanup(success, query);
-    }
-    return success;
-  }
-
-
-  public MMetastoreDBProperties putProperties(String key, String value, String description,  byte[] content) throws MetaException {
-    boolean success = false;
-    try {
-      if (openTransaction()) {
-        //pm.currentTransaction().setOptimistic(false);
-        // fetch first to determine new vs update
-        MMetastoreDBProperties properties = doFetchProperties(key, null);
-        final boolean newInstance;
-        if (properties == null) {
-          newInstance = true;
-          properties = new MMetastoreDBProperties();
-          properties.setPropertykey(key);
-        } else {
-          newInstance = false;
-        }
-        properties.setDescription(description);
-        properties.setPropertyValue(value);
-        properties.setPropertyContent(content);
-        LOG.debug("Attempting to add property {} for the metastore db", key);
-        properties.setDescription("Metastore property "
-            + (newInstance ? "created" : "updated")
-            + " " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
-        if (newInstance) {
-          pm.makePersistent(properties);
-        }
-        success = commitTransaction();
-        if (success) {
-          LOG.info("Metastore property {} created successfully", key);
-          return properties;
-        }
-      }
-    } catch (Exception e) {
-      LOG.warn("Metastore property save failed", e);
-    } finally {
-      rollbackAndCleanup(success, null);
-    }
-    return null;
-  }
-
-
-  public boolean renameProperties(String mapKey, String newKey) throws MetaException {
-    boolean success = false;
-    Transaction tx = null;
-    Query query = null;
-    try {
-      LOG.debug("Attempting to rename property {} to {} for the metastore db", mapKey, newKey);
-      if (openTransaction()) {
-        // ensure the target is clear;
-        // query is cleaned up in finally block
-        query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
-        query.declareParameters("java.lang.String key");
-        query.setUnique(true);
-        MMetastoreDBProperties properties = (MMetastoreDBProperties) query.execute(newKey);
-        if (properties != null) {
-          return false;
-        }
-        // ensure we got a source
-        properties = (MMetastoreDBProperties) query.execute(mapKey);
-        if (properties == null) {
-          return false;
-        }
-        byte[] content = properties.getPropertyContent();
-        String value = properties.getPropertyValue();
-        // remove source from persistent storage
-        pm.deletePersistent(properties);
-        // make it persist with new key
-        MMetastoreDBProperties newProperties = new MMetastoreDBProperties();
-        // update description
-        newProperties.setDescription("Metastore property renamed from " + mapKey + " to " + newKey
-            + " " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
-        // change key
-        newProperties.setPropertykey(newKey);
-        newProperties.setPropertyValue(value);
-        newProperties.setPropertyContent(content);
-        pm.makePersistent(newProperties);
-        // commit
-        success = commitTransaction();
-        if (success) {
-          LOG.info("Metastore property {} renamed {} successfully", mapKey, newKey);
-          return true;
-        }
-      }
-    } finally {
-      rollbackAndCleanup(success, query);
-    }
-    return false;
-  }
-
-  private <T> T doFetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
-    Query query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
-    query.declareParameters("java.lang.String key");
-    query.setUnique(true);
-    try {
-      MMetastoreDBProperties properties = (MMetastoreDBProperties) query.execute(key);
-      if (properties != null) {
-        return (T) (transform != null? transform.apply(properties) : properties);
-      }
-    } finally {
-      query.closeAll();
-    }
-    return null;
-  }
-
-  public <T> T fetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
-    boolean success = false;
-    T properties = null;
-    try {
-      if (openTransaction()) {
-        properties = doFetchProperties(key, transform);
-        success = commitTransaction();
-      }
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
-    return properties;
-  }
-  private <T> Map<String, T> doSelectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
-    final boolean all = key == null || key.isEmpty();
-    final Query query;
-    if (all) {
-      query = pm.newQuery(MMetastoreDBProperties.class);
-    } else {
-      query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey.startsWith(key)");
-      query.declareParameters("java.lang.String key");
-    }
-    try {
-      @SuppressWarnings("unchecked")
-      Collection<MMetastoreDBProperties> properties = (Collection<MMetastoreDBProperties>)
-          (all? query.execute() :query.execute(key));
-      pm.retrieveAll(properties);
-      if (!properties.isEmpty()) {
-        Map<String, T> results = new TreeMap<String, T>();
-        for(MMetastoreDBProperties ptys : properties) {
-          T t = (T) (transform != null? transform.apply(ptys) : ptys);
-          if (t != null) {
-            results.put(ptys.getPropertykey(), t);
-          }
-        }
-        return results;
-      }
-    } finally {
-      query.closeAll();
-    }
-    return null;
-  }
-
-  public <T> Map<String, T> selectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
-    boolean success = false;
-    Map<String, T> properties = null;
-    try {
-      if (openTransaction()) {
-        properties = doSelectProperties(key, transform);
-        success = commitTransaction();
-      }
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
-    return properties;
   }
 
   //TODO: clean up this method
