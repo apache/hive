@@ -109,7 +109,7 @@
     <arrow.version>2.0.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.11.1</avro.version>
-    <bcprov-jdk15on.version>1.64</bcprov-jdk15on.version>
+    <bcprov-jdk15on.version>1.68</bcprov-jdk15on.version>
     <calcite.version>1.25.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
     <datanucleus-core.version>5.2.10</datanucleus-core.version>
@@ -155,7 +155,7 @@
     <javax-servlet.version>3.1.0</javax-servlet.version>
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.4</jettison.version>
-    <jetty.version>9.4.48.v20220622</jetty.version>
+    <jetty.version>9.4.45.v20220203</jetty.version>
     <jersey.version>1.19</jersey.version>
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
