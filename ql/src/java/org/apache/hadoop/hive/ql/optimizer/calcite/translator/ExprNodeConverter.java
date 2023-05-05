@@ -22,8 +22,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
+import com.google.common.collect.Range;
 import org.apache.calcite.avatica.util.ByteString;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.type.RelDataType;
@@ -46,6 +48,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
+import org.apache.calcite.util.Sarg;
 import org.apache.calcite.util.TimeString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.Date;
@@ -61,6 +64,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -108,7 +112,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private final RelDataTypeFactory dTFactory;
   protected final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
   private static long uniqueCounter = 0;
-  private RexBuilder rexBuilder = null;
+  private final RexBuilder rexBuilder;
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
       Set<Integer> vCols, RelDataTypeFactory dTFactory) {
@@ -126,12 +130,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   }
 
   public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
-                           RelDataType outputRowType, Set<Integer> inputVCols, RexBuilder rexBuilder) {
-    this(tabAlias, columnAlias, inputRowType, outputRowType, inputVCols, rexBuilder.getTypeFactory(), false);
-    this.rexBuilder = rexBuilder;
-  }
-
-  public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
           RelDataType outputRowType, Set<Integer> inputVCols, RelDataTypeFactory dTFactory,
           boolean foldExpr) {
     super(true);
@@ -140,6 +138,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     this.inputVCols = ImmutableSet.copyOf(inputVCols);
     this.dTFactory = dTFactory;
     this.foldExpr = foldExpr;
+    this.rexBuilder = new RexBuilder(dTFactory);
   }
 
   public List<WindowFunctionSpec> getWindowFunctionSpec() {
@@ -202,6 +201,26 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       call = (RexCall) RexUtil.not(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, call.operands));
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));
+      }
+    } else if (call.getKind() == SqlKind.SEARCH) {
+      RexInputRef ref = (RexInputRef)call.operands.get(0);
+      args.add(ref.accept(this));
+      RexLiteral literal = (RexLiteral)call.operands.get(1);
+      Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+      if (sarg.isPoints()) {
+        for (Range<?> range : sarg.rangeSet.asRanges()) {
+          args.add(visitLiteral((RexLiteral) rexBuilder.makeLiteral(
+                  range.lowerEndpoint(), literal.getType(), true, true)));
+        }
+        GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(HiveIn.INSTANCE, call.getType(), args.size());
+        try {
+          return ExprNodeGenericFuncDesc.newInstance(hiveUdf, args);
+        } catch (UDFArgumentException e) {
+          LOG.error("Failed to instantiate udf: ", e);
+          throw new RuntimeException(e);
+        }
+      } else {
+        return visitCall((RexCall) call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)));
       }
     } else {
       for (RexNode operand : call.operands) {
