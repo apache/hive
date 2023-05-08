@@ -109,7 +109,7 @@ public final class LdapSearch implements DirSearch {
    * {@inheritDoc}
    */
   @Override
-  public String findUserDnBySearch(String user, final String userSearchFilter, final String baseDn) throws NamingException {
+  public String findUserDn(String user, final String userSearchFilter, final String baseDn) throws NamingException {
     List<String> allLdapNames;
     String userRdn = user;
     if (LdapUtils.isDn(user)) {

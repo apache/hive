@@ -15,14 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.service.auth.ldap;
+package org.apache.hadoop.hive.metastore.ldap;
 
 import com.google.common.base.Strings;
 
 import java.util.List;
 import javax.naming.NamingException;
 import javax.security.sasl.AuthenticationException;
-import org.apache.hadoop.hive.conf.HiveConf;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,13 +32,13 @@ import org.slf4j.LoggerFactory;
  * A factory for a {@link Filter} based on user and group search filters.
  * <br>
  * The produced filter object filters out all users that are not found in the search result
- * of the query provided in Hive configuration.
+ * of the query provided in Metastore configuration.
  * Atleast one search criteria is REQUIRED.
  * Configuration could have Usersearch filter or Groupsearch filter or both.
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN
+ * @see MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_USERSEARCHFILTER
+ * @see MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_BASEDN
+ * @see MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_GROUPSEARCHFILTER
+ * @see MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_GROUPBASEDN
  */
 public class UserGroupSearchFilterFactory implements FilterFactory {
 
@@ -44,11 +46,11 @@ public class UserGroupSearchFilterFactory implements FilterFactory {
    * {@inheritDoc}
    */
   @Override
-  public Filter getInstance(HiveConf conf) {
-    String userSearchFilter = conf.get(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER.varname);
-    String userSearchBaseDN = conf.get(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN.varname);
-    String groupSearchFilter = conf.get(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER.varname);
-    String groupSearchBaseDN = conf.get(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN.varname);
+  public Filter getInstance(Configuration conf) {
+    String userSearchFilter = conf.get(MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_USERSEARCHFILTER.getVarname());
+    String userSearchBaseDN = conf.get(MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_BASEDN.getVarname());
+    String groupSearchFilter = conf.get(MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_GROUPSEARCHFILTER.getVarname());
+    String groupSearchBaseDN = conf.get(MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_GROUPBASEDN.getVarname());
 
     // Both UserSearch and GroupSearch cannot be null or empty.
     if (Strings.isNullOrEmpty(userSearchFilter) &&
@@ -103,3 +105,4 @@ public class UserGroupSearchFilterFactory implements FilterFactory {
     }
   }
 }
+

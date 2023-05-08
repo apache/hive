@@ -42,7 +42,7 @@ public interface DirSearch extends Closeable {
    * @return DN for the specific user if exists, null otherwise
    * @throws NamingException
    */
-  String findUserDnBySearch(String user, String userSearchFilter, String baseDn) throws NamingException;
+  String findUserDn(String user, String userSearchFilter, String baseDn) throws NamingException;
 
   /**
    * Finds group's distinguished name.
