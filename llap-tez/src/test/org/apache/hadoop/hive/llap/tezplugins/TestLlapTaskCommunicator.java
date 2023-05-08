@@ -364,6 +364,7 @@ public class TestLlapTaskCommunicator {
       TezTaskAttemptID taskAttemptId = TezTaskAttemptID.getInstance(
           TezTaskID.getInstance(vertexId, taskIdx), 0);
       doReturn(taskAttemptId).when(taskSpec).getTaskAttemptID();
+      doReturn(taskAttemptId.getDAGID()).when(taskSpec).getDAGID();
       doReturn(DAG_NAME).when(taskSpec).getDAGName();
       doReturn(vertexName).when(taskSpec).getVertexName();
       ProcessorDescriptor processorDescriptor = ProcessorDescriptor.create("fakeClassName").setUserPayload(userPayload);

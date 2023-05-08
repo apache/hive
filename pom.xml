@@ -196,7 +196,7 @@
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>2.7.0</storage-api.version>
-    <tez.version>0.9.1</tez.version>
+    <tez.version>0.10.2</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.3.0</spark.version>
     <scala.binary.version>2.11</scala.binary.version>
