@@ -937,7 +937,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
             tbl.getTTable().getDictionary() : new ObjectDictionary();
         List<ByteBuffer> buffers = new ArrayList<>();
         String statsSetup = StatsSetupConst.ColumnStatsSetup.getStatsSetupAsString(true,
-            tbl.isIcebergTable() ? "metadata" : null, // Skip metadata directory for Iceberg table
+            storageHandler != null && storageHandler.isMetadataTableSupported() ? "metadata" : null, // Skip metadata directory for Iceberg table
             MetaStoreUtils.getColumnNames(tbl.getCols()));
         buffers.add(ByteBuffer.wrap(statsSetup.getBytes(StandardCharsets.UTF_8)));
         dictionary.putToValues(StatsSetupConst.STATS_FOR_CREATE_TABLE, buffers);

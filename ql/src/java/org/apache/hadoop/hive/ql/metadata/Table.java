@@ -1015,15 +1015,6 @@ public class Table implements Serializable {
     return TableType.MATERIALIZED_VIEW.equals(getTableType());
   }
 
-  public boolean isIcebergTable() {
-    HiveStorageHandler storageHandler = getStorageHandler();
-    if (storageHandler == null) {
-      return false;
-    }
-    return "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler".
-        equals(storageHandler.getClass().getName());
-  }
-
   /**
    * Creates a partition name -&gt; value spec map object
    *
