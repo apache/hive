@@ -438,7 +438,7 @@ public class SerializationProxy<T extends Serializable> implements Externalizabl
           }
           dist = formal.getName().compareTo(actual.getName());
           if (dist != 0) {
-            return cmp * (length - p);
+            return dist * (length - p);
           }
         }
       }

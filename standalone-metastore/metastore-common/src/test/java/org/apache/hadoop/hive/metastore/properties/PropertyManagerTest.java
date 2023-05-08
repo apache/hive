@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.properties;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.BooleanSupplier;
 
@@ -67,6 +68,21 @@ public class PropertyManagerTest {
               "true;");
     });
   }
+  @Test
+  public void testSelectDirty() {
+    Object result = manager.runScript(
+          "setProperty('framework', 'llap');" +
+              "setProperty('ser.store', 'Parquet');" +
+              "setProperty('ser.der.id', 42);" +
+              "setProperty('ser.der.name', 'serder');" +
+              "setProperty('ser.der.project', 'Metastore');" +
+              "selectProperties('ser.der', 'true');");
+    Assert.assertNotNull(result);
+    Assert.assertTrue(result instanceof Map<?,?>);
+    Assert.assertEquals(1, ((Map<?,?>) result).size());
+    manager.commit();
+  }
+
 
   @Test
   public void testSerDer() {

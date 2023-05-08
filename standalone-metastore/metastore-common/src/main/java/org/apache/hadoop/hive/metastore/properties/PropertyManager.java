@@ -43,6 +43,8 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * A property manager.
@@ -560,6 +562,16 @@ public abstract class PropertyManager {
       final PropertyMap map = transform.apply(dirtyMap == null ? p.copy() : dirtyMap.copy());
       if (map != null && !map.isEmpty()) {
         maps.put(mapName(k), map);
+      }
+    });
+    // apply to new (dirty) maps
+    dirtyMaps.forEach((k, p) -> {
+      // exclude selected (updated) maps that were handled above
+      if (k.startsWith(mapKey) && !selected.containsKey(k)) {
+        final PropertyMap map = transform.apply(p.copy());
+        if (map != null && !map.isEmpty()) {
+          maps.put(mapName(k), map);
+        }
       }
     });
     return maps;

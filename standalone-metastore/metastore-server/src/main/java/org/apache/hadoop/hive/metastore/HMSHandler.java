@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Striped;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.jexl3.JexlException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -56,6 +57,7 @@ import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.properties.PropertyException;
 import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyMap;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
@@ -7536,24 +7538,32 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return mgr;
   }
   @Override
-  public PropertyGetResponse get_properties(PropertyGetRequest req) throws MetaException, NoSuchObjectException, TException {
-    PropertyManager mgr = getPropertyManager(req.getNameSpace());
-    Map<String, PropertyMap> selected = mgr.selectProperties(req.getMapPrefix(), req.getMapPredicate(), req.getMapSelection());
-    PropertyGetResponse response = new PropertyGetResponse();
-    Map<String, Map<String, String>> returned = new TreeMap<>();
-    selected.forEach((k, v)->{
-      returned.put(k, v.export());
-    });
-    response.setProperties(returned);
-    return response;
+  public PropertyGetResponse get_properties(PropertyGetRequest req) throws TException {
+    try {
+      PropertyManager mgr = getPropertyManager(req.getNameSpace());
+      Map<String, PropertyMap> selected = mgr.selectProperties(req.getMapPrefix(), req.getMapPredicate(), req.getMapSelection());
+      PropertyGetResponse response = new PropertyGetResponse();
+      Map<String, Map<String, String>> returned = new TreeMap<>();
+      selected.forEach((k, v) -> {
+        returned.put(k, v.export());
+      });
+      response.setProperties(returned);
+      return response;
+    } catch(JexlException | PropertyException | NoSuchObjectException exception) {
+      throw ExceptionHandler.newMetaException(exception);
+    }
   }
 
   @Override
   public boolean set_properties(PropertySetRequest req) throws TException {
-    PropertyManager mgr = getPropertyManager(req.getNameSpace());
-    mgr.setProperties((Map<String, Object>) (Map<?, ?>) req.getPropertyMap());
-    mgr.commit();
-    return true;
+    try {
+      PropertyManager mgr = getPropertyManager(req.getNameSpace());
+      mgr.setProperties((Map<String, Object>) (Map<?, ?>) req.getPropertyMap());
+      mgr.commit();
+      return true;
+    } catch(JexlException | PropertyException | NoSuchObjectException exception) {
+      throw ExceptionHandler.newMetaException(exception);
+    }
   }
 
   @Override

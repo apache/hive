@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.metastore.properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.PROPERTIES_CACHE_CAPACITY;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.PROPERTIES_CACHE_LOADFACTOR;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -40,7 +42,7 @@ public class CachingPropertyStore extends PropertyStore {
   protected final SoftCache<String, PropertyMap> maps;
   protected final PropertyStore store;
   public CachingPropertyStore(PropertyStore wrap) {
-    this(wrap, null);
+    this(wrap, new Configuration());
   }
 
   public CachingPropertyStore(PropertyStore wrap, Configuration conf) {
