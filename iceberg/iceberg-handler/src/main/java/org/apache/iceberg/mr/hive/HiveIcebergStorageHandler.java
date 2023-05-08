@@ -346,7 +346,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
               stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
             }
             if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
-              stats.put(StatsSetupConst.ROW_COUNT, summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
+              long totalRecords = Long.parseLong(summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
+              if (summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
+                  summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
+                Long actualRecords =
+                    totalRecords - (Long.parseLong(summary.get(SnapshotSummary.TOTAL_EQ_DELETES_PROP)) >
+                    0 ? 0 : Long.parseLong(summary.get(SnapshotSummary.TOTAL_POS_DELETES_PROP)));
+                totalRecords = actualRecords > 0 ? actualRecords : totalRecords;
+                // actualRecords maybe -ve in edge cases
+              }
+              stats.put(StatsSetupConst.ROW_COUNT, String.valueOf(totalRecords));
             }
             if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
               stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
