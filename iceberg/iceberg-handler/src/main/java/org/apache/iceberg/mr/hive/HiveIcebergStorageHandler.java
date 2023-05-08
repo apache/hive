@@ -32,6 +32,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -661,7 +664,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             hmsTable.getTableName());
         AlterTableExecuteSpec.ExpireSnapshotsSpec expireSnapshotsSpec =
             (AlterTableExecuteSpec.ExpireSnapshotsSpec) executeSpec.getOperationParams();
-        icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
+        int numThreads = conf.getInt(HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.varname,
+            HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.defaultIntVal);
+        if (numThreads > 0) {
+          LOG.info("Executing expire snapshots on iceberg table {} with {} threads", hmsTable.getCompleteName(),
+              numThreads);
+          icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis())
+              .executeDeleteWith(getDeleteExecutorService(hmsTable.getCompleteName(), numThreads)).commit();
+        } else {
+          icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
+        }
         break;
       case SET_CURRENT_SNAPSHOT:
         AlterTableExecuteSpec.SetCurrentSnapshotSpec setSnapshotVersionSpec =
@@ -674,6 +686,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         throw new UnsupportedOperationException(
             String.format("Operation type %s is not supported", executeSpec.getOperationType().name()));
     }
+  }
+
+  private static ExecutorService getDeleteExecutorService(String completeName, int numThreads) {
+    AtomicInteger deleteThreadsIndex = new AtomicInteger(0);
+    return Executors.newFixedThreadPool(numThreads, runnable -> {
+      Thread thread = new Thread(runnable);
+      thread.setName("remove-snapshot-" + completeName + "-" + deleteThreadsIndex.getAndIncrement());
+      return thread;
+    });
   }
 
   @Override
