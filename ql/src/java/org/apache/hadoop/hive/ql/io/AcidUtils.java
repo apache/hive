@@ -3096,6 +3096,8 @@ public class AcidUtils {
         assert t != null;
         if (AcidUtils.isTransactionalTable(t) && sharedWrite) {
           compBuilder.setSharedWrite();
+        } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
+          compBuilder.setLock(getLockTypeFromStorageHandler(output, t));
         } else {
           compBuilder.setExclWrite();
         }

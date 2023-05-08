@@ -2,6 +2,11 @@
 -- SORT_QUERY_RESULTS
 --! qt:replace:/(.*fromVersion=\[)\S+(\].*)/$1#Masked#$2/
 
+set hive.explain.user=false;
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+
+
 drop table if exists tbl_ice;
 
 create external table tbl_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='1');

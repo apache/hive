@@ -1,6 +1,11 @@
 -- MV source tables are iceberg and MV has aggregate.
 -- SORT_QUERY_RESULTS
 --! qt:replace:/(.*fromVersion=\[)\S+(\].*)/$1#Masked#$2/
+--! qt:replace:/(\s+Version\sinterval\sfrom\:\s+)\d+(\s*)/$1#Masked#/
+
+set hive.explain.user=false;
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 set hive.stats.column.autogather=false;
 
