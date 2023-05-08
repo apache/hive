@@ -933,6 +933,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     List<org.apache.hadoop.hive.ql.metadata.Partition> partitions = hive.getPartitions(hiveTable);
     Assert.assertNotNull(partitions);
     // prevent tear down failure
+    d.close();
     d = null;
   }
 }
