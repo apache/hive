@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class StorageFormat {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageFormat.class);
-  public static final StorageFormatFactory storageFormatFactory = new StorageFormatFactory();
+  private static final StorageFormatFactory storageFormatFactory = new StorageFormatFactory();
 
   private final Configuration conf;
   private String inputFormat;
@@ -244,5 +244,9 @@ public class StorageFormat {
 
   public void setStorageHandler(String storageHandlerClass) throws SemanticException {
     storageHandler = ensureClassExists(storageHandlerClass);
+  }
+
+  public static StorageFormatFactory getStorageFormatFactory() {
+    return storageFormatFactory;
   }
 }

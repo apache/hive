@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetProperti
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
@@ -336,7 +337,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public StorageFormatDescriptor supportsLoadData(org.apache.hadoop.hive.metastore.api.Table tbl) {
     if (tbl.getParameters() != null) {
       String format = tbl.getParameters().get("write.format.default");
-      return StorageFormat.storageFormatFactory.get(format == null ? "Parquet" : format);
+      return StorageFormat.getStorageFormatFactory().get(format == null ? IOConstants.PARQUET : format);
     }
     return null;
   }
