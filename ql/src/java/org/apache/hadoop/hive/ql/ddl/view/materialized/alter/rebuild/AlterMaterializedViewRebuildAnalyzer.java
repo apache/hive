@@ -536,16 +536,17 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
   private void fixUpASTAggregateIncrementalRebuild(
           ASTNode subqueryNodeInputROJ,
-          ASTNode updateNode,
+          ASTNode updateInsertNode,
           Map<Context.DestClausePrefix, ASTNode> disjuncts,
           MaterializedViewASTBuilder astBuilder)
           throws SemanticException {
-    // Replace INSERT OVERWRITE by MERGE equivalent rewriting.
+    // Replace INSERT OVERWRITE by MERGE equivalent rewriting. The update branch is
+    // split to a delete (updateDeleteNode) and an insert (updateInsertNode) branch
     // Here we need to do this complex AST rewriting that generates the same plan
     // that a MERGE clause would generate because CBO does not support MERGE yet.
     // TODO: Support MERGE as first class member in CBO to simplify this logic.
     // 1) Replace INSERT OVERWRITE by INSERT
-    ASTNode destinationNode = (ASTNode) updateNode.getChild(0);
+    ASTNode destinationNode = (ASTNode) updateInsertNode.getChild(0);
     ASTNode newInsertInto = (ASTNode) ParseDriver.adaptor.create(
             HiveParser.TOK_INSERT_INTO, "TOK_INSERT_INTO");
     newInsertInto.addChildren(destinationNode.getChildren());
@@ -560,10 +561,10 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     // 2) Copy INSERT branch and duplicate it, the first branch will be the UPDATE
     // for the MERGE statement while the new branch will be the INSERT for the
     // MERGE statement
-    ASTNode updateParent = (ASTNode) updateNode.getParent();
-    ASTNode insertNode = (ASTNode) ParseDriver.adaptor.dupTree(updateNode);
+    ASTNode updateParent = (ASTNode) updateInsertNode.getParent();
+    ASTNode insertNode = (ASTNode) ParseDriver.adaptor.dupTree(updateInsertNode);
     insertNode.setParent(updateParent);
-    // 3) Create ROW_ID column in select clause from left input for the RIGHT OUTER JOIN.
+    // 3) Add sort columns (ROW_ID in case of native) to select clause from left input for the RIGHT OUTER JOIN.
     // This is needed for the UPDATE clause. Hence, we find the following node:
     // TOK_QUERY
     //   TOK_FROM
@@ -589,14 +590,14 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
             .forEach(astNode -> ParseDriver.adaptor.addChild(selectNodeInputROJ, astNode));
     // 4) Transform first INSERT branch into an UPDATE
     // 4.1) Modifying filter condition.
-    ASTNode whereClauseInUpdate = findWhereClause(updateNode);
+    ASTNode whereClauseInUpdate = findWhereClause(updateInsertNode);
     if (whereClauseInUpdate.getChild(0).getType() != HiveParser.KW_OR) {
       throw new SemanticException("OR clause expected below TOK_WHERE in incremental rewriting");
     }
     // We bypass the OR clause and select the first disjunct for the Update branch
     ParseDriver.adaptor.setChild(whereClauseInUpdate, 0, disjuncts.get(Context.DestClausePrefix.UPDATE));
-    ASTNode updateDeleteNode = (ASTNode) ParseDriver.adaptor.dupTree(updateNode);
-    // 4.2) Adding ROW__ID field
+    ASTNode updateDeleteNode = (ASTNode) ParseDriver.adaptor.dupTree(updateInsertNode);
+    // 4.2) Adding acid sort columns (ROW__ID in case of native acid query StorageHandler otherwise)
     ASTNode selectNodeInUpdateDelete = (ASTNode) updateDeleteNode.getChild(1);
     if (selectNodeInUpdateDelete.getType() != HiveParser.TOK_SELECT) {
       throw new SemanticException("TOK_SELECT expected in incremental rewriting got "
