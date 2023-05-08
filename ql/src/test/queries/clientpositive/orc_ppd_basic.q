@@ -1,4 +1,6 @@
 --! qt:dataset:alltypesorc
+--! qt:replace:/(\s+HDFS_BYTES_WRITTEN:\s+)\S+(\s*)/$1#Masked#/
+--! qt:replace:/(\s+HDFS_BYTES_READ:\s+)\S+(\s*)/$1#Masked#/
 SET hive.vectorized.execution.enabled=false;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
