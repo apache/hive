@@ -35,10 +35,10 @@ import org.slf4j.LoggerFactory;
  * of the query provided in Metastore configuration.
  * Atleast one search criteria is REQUIRED.
  * Configuration could have Usersearch filter or Groupsearch filter or both.
- * @see MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_USERSEARCHFILTER
- * @see MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_BASEDN
- * @see MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_GROUPSEARCHFILTER
- * @see MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_GROUPBASEDN
+ * @see MetastoreConf.ConfVars#METASTORE_PLAIN_LDAP_USERSEARCHFILTER
+ * @see MetastoreConf.ConfVars#METASTORE_PLAIN_LDAP_BASEDN
+ * @see MetastoreConf.ConfVars#METASTORE_PLAIN_LDAP_GROUPSEARCHFILTER
+ * @see MetastoreConf.ConfVars#METASTORE_PLAIN_LDAP_GROUPBASEDN
  */
 public class UserGroupSearchFilterFactory implements FilterFactory {
 
