@@ -221,8 +221,10 @@ public final class DDLUtils {
 
   public static void validateTableIsIceberg(org.apache.hadoop.hive.ql.metadata.Table table)
       throws SemanticException {
-    if (!HiveMetaHook.ICEBERG.equalsIgnoreCase(table.getParameters().get(HiveMetaHook.TABLE_TYPE))) {
-      throw new SemanticException("Table " + table.getFullTableName() + " is not an Iceberg table");
+    String tableType = table.getParameters().get(HiveMetaHook.TABLE_TYPE);
+    if (!HiveMetaHook.ICEBERG.equalsIgnoreCase(tableType)) {
+      throw new SemanticException(String.format("Not an iceberg table: %s (type=%s)",
+          table.getFullTableName(), tableType));
     }
   }
 }
