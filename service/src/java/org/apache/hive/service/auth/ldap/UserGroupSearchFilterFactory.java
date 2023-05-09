@@ -33,10 +33,10 @@ import org.slf4j.LoggerFactory;
  * of the query provided in Hive configuration.
  * Atleast one search criteria is REQUIRED.
  * Configuration could have Usersearch filter or Groupsearch filter or both.
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN
+ * @see HiveConf.ConfVars#HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER
+ * @see HiveConf.ConfVars#HIVE_SERVER2_PLAIN_LDAP_BASEDN
+ * @see HiveConf.ConfVars#HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER
+ * @see HiveConf.ConfVars#HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN
  */
 public class UserGroupSearchFilterFactory implements FilterFactory {
 
