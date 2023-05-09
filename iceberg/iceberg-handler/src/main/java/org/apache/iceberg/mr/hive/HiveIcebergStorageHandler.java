@@ -334,10 +334,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public StorageFormatDescriptor supportsLoadData(org.apache.hadoop.hive.metastore.api.Table tbl) {
+  public StorageFormatDescriptor getLoadDataStorageFormatDescriptor(org.apache.hadoop.hive.metastore.api.Table tbl)
+      throws SemanticException {
     if (tbl.getParameters() != null) {
-      String format = tbl.getParameters().get("write.format.default");
-      return StorageFormat.getStorageFormatFactory().get(format == null ? IOConstants.PARQUET : format);
+      String format = tbl.getParameters().getOrDefault(TableProperties.DEFAULT_FILE_FORMAT, IOConstants.PARQUET);
+      return StorageFormat.getStorageFormatDescriptor(format, TableProperties.DEFAULT_FILE_FORMAT);
     }
     return null;
   }

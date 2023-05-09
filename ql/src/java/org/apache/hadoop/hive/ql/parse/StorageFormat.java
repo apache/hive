@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.ql.parse.ParseUtils.ensureClassExists;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -165,14 +164,7 @@ public class StorageFormat {
   }
 
   protected void processStorageFormat(String name) throws SemanticException {
-    if (name.isEmpty()) {
-      throw new SemanticException("File format in STORED AS clause cannot be empty");
-    }
-    StorageFormatDescriptor descriptor = storageFormatFactory.get(name);
-    if (descriptor == null) {
-      throw new SemanticException("Unrecognized file format in STORED AS clause:" +
-          " '" + name + "'");
-    }
+    StorageFormatDescriptor descriptor = getStorageFormatDescriptor(name, "STORED AS clause");
     inputFormat = ensureClassExists(descriptor.getInputFormat());
     outputFormat = ensureClassExists(descriptor.getOutputFormat());
     if (serde == null) {
@@ -246,7 +238,15 @@ public class StorageFormat {
     storageHandler = ensureClassExists(storageHandlerClass);
   }
 
-  public static StorageFormatFactory getStorageFormatFactory() {
-    return storageFormatFactory;
+  public static StorageFormatDescriptor getStorageFormatDescriptor(String format, String clause)
+      throws SemanticException {
+    if (format.isEmpty()) {
+      throw new SemanticException("File format in " + clause + " cannot be empty");
+    }
+    StorageFormatDescriptor descriptor = storageFormatFactory.get(format);
+    if (descriptor == null) {
+      throw new SemanticException("Unrecognized file format in " + clause + ":" + " '" + format + "'");
+    }
+    return descriptor;
   }
 }
