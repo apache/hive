@@ -669,8 +669,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         if (numThreads > 0) {
           LOG.info("Executing expire snapshots on iceberg table {} with {} threads", hmsTable.getCompleteName(),
               numThreads);
-          icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis())
-              .executeDeleteWith(getDeleteExecutorService(hmsTable.getCompleteName(), numThreads)).commit();
+          final ExecutorService deleteExecutorService =
+              getDeleteExecutorService(hmsTable.getCompleteName(), numThreads);
+          try {
+            icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis())
+                .executeDeleteWith(deleteExecutorService).commit();
+          } finally {
+            deleteExecutorService.shutdown();
+          }
         } else {
           icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
         }
