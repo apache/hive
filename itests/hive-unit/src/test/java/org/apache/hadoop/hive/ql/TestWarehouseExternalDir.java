@@ -84,9 +84,6 @@ public class TestWarehouseExternalDir {
     LOG.info("warehouse location: {}", whRootManagedPath);
     LOG.info("whRootExternalPath: {}", whRootExternalPath);
     db = Hive.get(conf);
-
-    conn = DriverManager.getConnection(miniHS2.getJdbcURL(),
-            System.getProperty("user.name"), "bar");
     createDb();
   }
 
@@ -104,7 +101,9 @@ public class TestWarehouseExternalDir {
     }
     MiniHS2.cleanupLocalDir();
     Hive.closeCurrent();
-
+    if (conn != null) {
+      conn.close();
+    }
   }
 
   @After
@@ -128,7 +127,6 @@ public class TestWarehouseExternalDir {
     stmt2.execute("DROP DATABASE IF EXISTS " + dbName + " CASCADE");
     stmt2.execute("CREATE DATABASE " + dbName);
     stmt2.close();
-
   }
 
   void checkTableLocation(Table table, Path expectedPath) throws Exception {
@@ -159,15 +157,15 @@ public class TestWarehouseExternalDir {
       Table tab = db.getTable("default","twed_ext1");
       checkTableLocation(tab, new Path(whRootExternalPath, "twed_ext1"));
 
-      stmt.execute("create external table IF NOT EXISTS twed_db1.twed_ext2(c1 string)  ");
+      stmt.execute("create external table twed_db1.twed_ext2(c1 string)  ");
       tab = db.getTable("twed_db1", "twed_ext2");
       checkTableLocation(tab, new Path(new Path(whRootExternalPath, "twed_db1.db"), "twed_ext2"));
 
-      stmt.execute("create external table IF NOT EXISTS default.twed_ext3 like default.twed_ext1 ");
+      stmt.execute("create external table default.twed_ext3 like default.twed_ext1 ");
       tab = db.getTable("default", "twed_ext3");
       checkTableLocation(tab, new Path(whRootExternalPath, "twed_ext3"));
 
-      stmt.execute("create external table IF NOT EXISTS twed_db1.twed_ext4 like default.twed_ext1  ");
+      stmt.execute("create external table twed_db1.twed_ext4 like default.twed_ext1  ");
       tab = db.getTable("twed_db1", "twed_ext4");
       checkTableLocation(tab, new Path(new Path(whRootExternalPath, "twed_db1.db"), "twed_ext4"));
     }
