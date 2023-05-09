@@ -1773,9 +1773,14 @@ public class Hive {
    */
   private ValidWriteIdList getValidWriteIdList(String dbName, String tableName) throws LockException {
     ValidWriteIdList validWriteIdList = null;
-    long txnId = SessionState.get() != null && SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
+    SessionState sessionState = SessionState.get();
+    HiveTxnManager txnMgr = sessionState != null? sessionState.getTxnMgr() : null;
+    long txnId = txnMgr != null ? txnMgr.getCurrentTxnId() : 0;
     if (txnId > 0) {
       validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
+    } else {
+      String fullTableName = getFullTableName(dbName, tableName);
+      validWriteIdList = new ValidReaderWriteIdList(fullTableName, new long[0], new BitSet(), Long.MAX_VALUE);
     }
     return validWriteIdList;
   }

@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -908,6 +909,32 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     rs = runStatementOnDriver("select a, b from T order by a, b");
     Assert.assertEquals(stringifyValues(data), rs);
 
+  }
+
+  /**
+   * HIVE-27268
+   */
+  @Test
+  public void testGetPartitionsNoSession() throws Exception {
+    hiveConf.setIntVar(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, -1);
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("create table T(a int, b int) partitioned by (p int, q int) " +
+        "stored as orc TBLPROPERTIES ('transactional'='true')");
+
+    int[][] targetVals = {{4, 1, 1}, {4, 2, 2}, {4, 3, 1}, {4, 4, 2}};
+    //we only recompute stats after major compact if they existed before
+    runStatementOnDriver("insert into T partition(p=1,q) " + makeValuesClause(targetVals));
+    runStatementOnDriver("analyze table T  partition(p=1) compute statistics for columns");
+
+    Hive hive = Hive.get();
+    org.apache.hadoop.hive.ql.metadata.Table hiveTable = hive.getTable("T");
+    // this will ensure the getValidWriteIdList has no session to work with (thru getPartitions)
+    SessionState.detachSession();
+    List<org.apache.hadoop.hive.ql.metadata.Partition> partitions = hive.getPartitions(hiveTable);
+    Assert.assertNotNull(partitions);
+    // prevent tear down failure
+    d.close();
+    d = null;
   }
 }
 
