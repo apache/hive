@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -128,7 +127,7 @@ public final class ExceptionHandler {
    */
   public static void rethrowException(Exception e) throws TException {
     throw handleException(e)
-        .throwIfInstance(MetaException.class, NoSuchObjectException.class, InvalidObjectException.class)
+        .throwIfInstance(MetaException.class, NoSuchObjectException.class)
         .throwIfInstance(TException.class)
         .defaultMetaException();
   }
