@@ -297,7 +297,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     if (ts.tableHandle.isNonNative()) {
       // launch a tez job
       StorageFormatDescriptor ss =
-          ts.tableHandle.getStorageHandler().getLoadDataStorageFormatDescriptor(ts.tableHandle.getTTable());
+          ts.tableHandle.getStorageHandler().getStorageFormatDescriptor(ts.tableHandle.getTTable());
       if (ss != null) {
         inputFormatClassName = ss.getInputFormat();
         serDeClassName = ss.getSerde();

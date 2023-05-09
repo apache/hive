@@ -289,10 +289,10 @@ public interface HiveStorageHandler extends Configurable {
   /**
    *
    * Gets the storage format descriptor to be used for temp table for LOAD data.
-   * @param parameters table properties
+   * @param table table object
    * @return StorageFormatDescriptor if the storage handler can support load data
    */
-  default StorageFormatDescriptor getLoadDataStorageFormatDescriptor(Table parameters) throws SemanticException {
+  default StorageFormatDescriptor getStorageFormatDescriptor(Table table) throws SemanticException {
     return null;
   }
   /**

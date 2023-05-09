@@ -164,7 +164,7 @@ public class StorageFormat {
   }
 
   protected void processStorageFormat(String name) throws SemanticException {
-    StorageFormatDescriptor descriptor = getStorageFormatDescriptor(name, "STORED AS clause");
+    StorageFormatDescriptor descriptor = getDescriptor(name, "STORED AS clause");
     inputFormat = ensureClassExists(descriptor.getInputFormat());
     outputFormat = ensureClassExists(descriptor.getOutputFormat());
     if (serde == null) {
@@ -238,8 +238,7 @@ public class StorageFormat {
     storageHandler = ensureClassExists(storageHandlerClass);
   }
 
-  public static StorageFormatDescriptor getStorageFormatDescriptor(String format, String clause)
-      throws SemanticException {
+  public static StorageFormatDescriptor getDescriptor(String format, String clause) throws SemanticException {
     if (format.isEmpty()) {
       throw new SemanticException("File format in " + clause + " cannot be empty");
     }
