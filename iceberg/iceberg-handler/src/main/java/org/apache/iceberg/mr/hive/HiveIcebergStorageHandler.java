@@ -76,7 +76,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.parse.AlterTableCreateBranchSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -107,7 +107,6 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
-import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpec;
@@ -147,7 +146,6 @@ import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
-import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -720,38 +718,25 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public void createBranchOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      AlterTableCreateBranchSpec createBranchSpec) {
+  public void alterTableBranchOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      AlterTableBranchSpec alterBranchSpec) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() ->
+        new UnsupportedOperationException(String.format("Cannot alter branch on iceberg table" +
+            " %s.%s which has no snapshot", hmsTable.getDbName(), hmsTable.getTableName())));
 
-    String branchName = createBranchSpec.getBranchName();
-    Snapshot currentSnapshot = Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() ->
-        new UnsupportedOperationException(String.format("Cannot create branch %s on iceberg table" +
-                " %s.%s which has no snapshot", branchName, hmsTable.getDbName(), hmsTable.getTableName())));
-    Long snapshotId = null;
-    if (createBranchSpec.getSnapshotId() != null) {
-      snapshotId = createBranchSpec.getSnapshotId();
-    } else if (createBranchSpec.getAsOfTime() != null) {
-      snapshotId = SnapshotUtil.snapshotIdAsOfTime(icebergTable, createBranchSpec.getAsOfTime());
-    } else {
-      snapshotId = currentSnapshot.snapshotId();
-    }
-    LOG.info("Creating branch {} on iceberg table {}.{} with snapshotId {}", branchName, hmsTable.getDbName(),
-        hmsTable.getTableName(), snapshotId);
-    ManageSnapshots manageSnapshots = icebergTable.manageSnapshots();
-    manageSnapshots.createBranch(branchName, snapshotId);
-    if (createBranchSpec.getMaxRefAgeMs() != null) {
-      manageSnapshots.setMaxRefAgeMs(branchName, createBranchSpec.getMaxRefAgeMs());
-    }
-    if (createBranchSpec.getMinSnapshotsToKeep() != null) {
-      manageSnapshots.setMinSnapshotsToKeep(branchName, createBranchSpec.getMinSnapshotsToKeep());
-    }
-    if (createBranchSpec.getMaxSnapshotAgeMs() != null) {
-      manageSnapshots.setMaxSnapshotAgeMs(branchName, createBranchSpec.getMaxSnapshotAgeMs());
+    switch (alterBranchSpec.getOperationType()) {
+      case CREATE_BRANCH:
+        AlterTableBranchSpec.CreateBranchSpec createBranchSpec =
+            (AlterTableBranchSpec.CreateBranchSpec) alterBranchSpec.getOperationParams();
+        IcebergBranchExec.createBranch(icebergTable, createBranchSpec);
+        break;
+      default:
+        throw new UnsupportedOperationException(
+            String.format("Operation type %s is not supported", alterBranchSpec.getOperationType().name()));
     }
 
-    manageSnapshots.commit();
   }
 
   @Override

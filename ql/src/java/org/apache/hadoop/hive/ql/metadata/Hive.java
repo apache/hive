@@ -219,7 +219,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.AlterTableCreateBranchSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -6715,10 +6715,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public void alterTableCreateBranchOperation(Table table, AlterTableCreateBranchSpec createBranchSpec) throws HiveException {
+  public void alterTableBranchOperation(Table table, AlterTableBranchSpec createBranchSpec) throws HiveException {
     try {
       HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
-      storageHandler.createBranchOperation(table, createBranchSpec);
+      storageHandler.alterTableBranchOperation(table, createBranchSpec);
     } catch (Exception e) {
       throw new HiveException(e);
     }

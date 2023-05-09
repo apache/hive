@@ -178,7 +178,7 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
       while (e.getCause() != null) {
         e = e.getCause();
       }
-      Assert.assertTrue(e.getMessage().contains("Cannot perform ALTER CREATE BRANCH statement on non-iceberg table"));
+      Assert.assertTrue(e.getMessage().contains("is not an Iceberg table"));
     }
   }
 }

@@ -27,9 +27,9 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -37,10 +37,12 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.AlterTableCreateBranchSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import static org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec.AlterBranchOperationType.CREATE_BRANCH;
 
 @DDLSemanticAnalyzerFactory.DDLType(types = HiveParser.TOK_ALTERTABLE_CREATE_BRANCH)
 public class AlterTableCreateBranchAnalyzer extends AbstractAlterTableAnalyzer {
@@ -54,9 +56,7 @@ public class AlterTableCreateBranchAnalyzer extends AbstractAlterTableAnalyzer {
       throws SemanticException {
     Table table = getTable(tableName);
     validateAlterTableType(table, AlterTableType.CREATE_BRANCH, false);
-    if (!HiveMetaHook.ICEBERG.equalsIgnoreCase(table.getParameters().get(HiveMetaHook.TABLE_TYPE))) {
-      throw new SemanticException("Cannot perform ALTER CREATE BRANCH statement on non-iceberg table.");
-    }
+    DDLUtils.validateTableIsIceberg(table);
     inputs.add(new ReadEntity(table));
 
     String branchName = command.getChild(0).getText();
@@ -97,9 +97,11 @@ public class AlterTableCreateBranchAnalyzer extends AbstractAlterTableAnalyzer {
       }
     }
 
-    AlterTableCreateBranchSpec spec = new AlterTableCreateBranchSpec(branchName, snapshotId, asOfTime,
+    AlterTableBranchSpec.CreateBranchSpec
+        createBranchspec = new AlterTableBranchSpec.CreateBranchSpec(branchName, snapshotId, asOfTime,
         maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs);
-    AlterTableCreateBranchDesc desc = new AlterTableCreateBranchDesc(tableName, spec);
+    AlterTableBranchSpec alterTableBranchSpec = new AlterTableBranchSpec(CREATE_BRANCH, createBranchspec);
+    AlterTableCreateBranchDesc desc = new AlterTableCreateBranchDesc(tableName, alterTableBranchSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

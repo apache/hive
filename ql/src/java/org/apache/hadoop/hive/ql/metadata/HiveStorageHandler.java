@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.parse.AlterTableCreateBranchSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -577,7 +578,8 @@ public interface HiveStorageHandler extends Configurable {
   default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
   }
 
-  default void createBranchOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableCreateBranchSpec createBranchSpec) {
+  default void alterTableBranchOperation(org.apache.hadoop.hive.ql.metadata.Table table,
+      AlterTableBranchSpec alterBranchSpec) {
   }
 
   /**

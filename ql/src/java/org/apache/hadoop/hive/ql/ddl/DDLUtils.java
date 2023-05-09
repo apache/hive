@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -215,6 +216,13 @@ public final class DDLUtils {
     } else {
       cols.ifPresent(tbl::setFields);
       partCols.ifPresent(tbl::setPartCols);
+    }
+  }
+
+  public static void validateTableIsIceberg(org.apache.hadoop.hive.ql.metadata.Table table)
+      throws SemanticException {
+    if (!HiveMetaHook.ICEBERG.equalsIgnoreCase(table.getParameters().get(HiveMetaHook.TABLE_TYPE))) {
+      throw new SemanticException("Table " + table.getFullTableName() + " is not an Iceberg table");
     }
   }
 }
