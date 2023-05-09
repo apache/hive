@@ -2207,6 +2207,9 @@ public class HiveConf extends Configuration {
         "Whether to use codec pool in ORC. Disable if there are bugs with codec reuse."),
     HIVE_ICEBERG_STATS_SOURCE("hive.iceberg.stats.source", "iceberg",
         "Use stats from iceberg table snapshot for query planning. This has two values metastore and iceberg"),
+    HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS("hive.iceberg.expire.snapshot.numthreads", 4,
+        "The number of threads to be used for deleting files during expire snapshot. If set to 0 or below it uses the" +
+            " defult DirectExecutorService"),
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +
