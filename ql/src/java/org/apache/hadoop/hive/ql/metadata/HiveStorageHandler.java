@@ -41,10 +41,10 @@ import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -286,6 +286,15 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  /**
+   *
+   * Gets the storage format descriptor to be used for temp table for LOAD data.
+   * @param table table object
+   * @return StorageFormatDescriptor if the storage handler can support load data
+   */
+  default StorageFormatDescriptor getStorageFormatDescriptor(Table table) throws SemanticException {
+    return null;
+  }
   /**
    * Check if CTAS and CMV operations should behave in a direct-insert manner (i.e. no move task).
    * <p>
