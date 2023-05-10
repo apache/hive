@@ -346,6 +346,8 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       case "longblob":
       case "bytea":
       case "binary":
+      case "varbinary":
+      case "binary varying":
         return ColumnType.BINARY_TYPE_NAME;
       case "tinyint":
         return ColumnType.TINYINT_TYPE_NAME;
@@ -380,6 +382,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       case "timestampz":
       case "timez":
         return ColumnType.TIMESTAMPTZ_TYPE_NAME;
+      case "bool":
       case "boolean":
         return ColumnType.BOOLEAN_TYPE_NAME;
       default:
