@@ -7528,7 +7528,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ex = e;
       throw handleException(e)
           .throwIfInstance(MetaException.class, NoSuchObjectException.class, InvalidObjectException.class)
-          .throwIfInstance(TException.class)
           .defaultMetaException();
     } finally {
       if (!success) {
