@@ -69,10 +69,23 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
     switch (dbDataType.toLowerCase())
     {
     case "bpchar":
+    case "character":
       mappedType = ColumnType.CHAR_TYPE_NAME + wrapSize(size);
+      break;
+    case "int2":
+      mappedType = ColumnType.SMALLINT_TYPE_NAME;
+      break;
+    case "int4":
+      mappedType = ColumnType.INT_TYPE_NAME;
       break;
     case "int8":
       mappedType = ColumnType.BIGINT_TYPE_NAME;
+      break;
+    case "float4":
+      mappedType = ColumnType.FLOAT_TYPE_NAME;
+      break;
+    case "float8":
+      mappedType = ColumnType.DOUBLE_TYPE_NAME;
       break;
     default:
       mappedType = ColumnType.VOID_TYPE_NAME;
