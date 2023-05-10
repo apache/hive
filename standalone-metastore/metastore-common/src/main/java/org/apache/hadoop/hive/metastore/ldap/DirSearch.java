@@ -37,7 +37,7 @@ public interface DirSearch extends Closeable {
   /**
    * Finds user's distinguished name.
    * @param user username
-   * @param userSearchFilter Generic LDAP Search filter for ex: (&amp(uid={0})(objectClass=person))
+   * @param userSearchFilter Generic LDAP Search filter for ex: (&amp;(uid={0})(objectClass=person))
    * @param baseDn LDAP BaseDN for user searches for ex: dc=apache,dc=org
    * @return DN for the specific user if exists, null otherwise
    * @throws NamingException
@@ -81,7 +81,7 @@ public interface DirSearch extends Closeable {
    * Executes an arbitrary query.
    * @param user user RDN or username. This will be substituted for {0} in group search
    * @param userDn userDn DN for the username. This will be substituted for {1} in group search
-   * @param filter filter is the group filter query ex: (&amp(memberUid={0})(&amp(CN=group1)(objectClass=posixGroup)))
+   * @param filter filter is the group filter query ex: (&amp;(memberUid={0})(&amp;(CN=group1)(objectClass=posixGroup)))
    * @param groupBaseDn BaseDN for group searches. ex: "ou=groups,dc=apache,dc=org"
    * @return list of names that match the group filter aka groups that the user belongs to, if any.
    * @throws NamingException
