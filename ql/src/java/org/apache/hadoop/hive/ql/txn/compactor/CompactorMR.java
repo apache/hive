@@ -1181,15 +1181,14 @@ public class CompactorMR {
       //name is that we want to rename; leave it for another day
       // TODO: if we expect one dir why don't we enforce it?
       for (FileStatus fileStatus : contents) {
+        Path tmpPath = fileStatus.getPath();
         //newPath is the base/delta dir
-        Path newPath = new Path(finalLocation, fileStatus.getPath().getName());
-        /*rename(A, B) has "interesting" behavior if A and B are directories. If  B doesn't exist,
-        * it does the expected operation and everything that was in A is now in B.  If B exists,
-        * it will make A a child of B...  thus make sure the rename() is done before creating the
-        * meta files which will create base_x/ (i.e. B)...*/
-        fs.rename(fileStatus.getPath(), newPath);
-        AcidUtils.OrcAcidVersion.writeVersionFile(newPath, fs);
-        createCompactorMarker(conf, newPath, fs);
+        Path newPath = new Path(finalLocation, tmpPath.getName());
+        /* Create the markers in the tmp location and rename everything in the end to prevent race condition between
+         * marker creation and split read. */
+        AcidUtils.OrcAcidVersion.writeVersionFile(tmpPath, fs);
+        createCompactorMarker(conf, tmpPath, fs);
+        fs.rename(tmpPath, newPath);
       }
       fs.delete(tmpLocation, true);
     }
@@ -1235,9 +1234,9 @@ public class CompactorMR {
     if (children.length != 1) {
       throw new IOException("Unexpected files in the source: " + Arrays.toString(children));
     }
-    FileStatus dirPath = children[0];
-    fs.rename(dirPath.getPath(), newBaseDir);
-    AcidUtils.MetaDataFile.createCompactorMarker(newBaseDir, fs);
+    Path tmpPath = children[0].getPath();
+    AcidUtils.MetaDataFile.createCompactorMarker(tmpPath, fs);
+    fs.rename(tmpPath, newBaseDir);
     fs.delete(fromPath, true);
   }
 }

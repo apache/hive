@@ -115,14 +115,13 @@
 
     <!-- Library Dependency Versions -->
     <accumulo.version>1.7.3</accumulo.version>
-    <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.11.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
-    <avro.version>1.7.7</avro.version>
+    <avro.version>1.8.2</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.17.0</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
@@ -184,7 +183,7 @@
     <log4j2.version>2.17.1</log4j2.version>
     <postgres.version>42.5.1</postgres.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.6</orc.version>
+    <orc.version>1.5.8</orc.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <powermock.version>1.7.4</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -424,22 +423,6 @@
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-trace</artifactId>
         <version>${accumulo.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-core</artifactId>
-        <version>${activemq.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>kahadb</artifactId>
-        <version>${activemq.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.avro</groupId>

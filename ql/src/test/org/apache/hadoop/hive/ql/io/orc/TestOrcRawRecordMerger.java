@@ -23,9 +23,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.orc.CompressionKind;
-import org.apache.orc.MemoryManager;
+import org.apache.orc.OrcConf;
 import org.apache.orc.StripeInformation;
-import org.apache.orc.impl.MemoryManagerImpl;
 import org.apache.orc.impl.OrcAcidUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -1064,6 +1063,7 @@ public class TestOrcRawRecordMerger {
   public void testRecordReaderOldBaseAndDelta() throws Exception {
     final int BUCKET = 10;
     Configuration conf = new Configuration();
+    OrcConf.ROWS_BETWEEN_CHECKS.setLong(conf, 2);
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf);
     Path root = new Path(tmpDir, "testOldBaseAndDelta").makeQualified(fs);
@@ -1073,25 +1073,11 @@ public class TestOrcRawRecordMerger {
       inspector = ObjectInspectorFactory.getReflectionObjectInspector
           (BigRow.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-
-    // write the base
-    MemoryManager mgr = new MemoryManagerImpl(conf){
-      int rowsAddedSinceCheck = 0;
-
-      @Override
-      public synchronized void addedRow(int rows) throws IOException {
-        rowsAddedSinceCheck += rows;
-        if (rowsAddedSinceCheck >= 2) {
-          notifyWriters();
-          rowsAddedSinceCheck = 0;
-        }
-      }
-    };
     // make 5 stripes with 2 rows each
     Writer writer = OrcFile.createWriter(new Path(root, "0000010_0"),
         OrcFile.writerOptions(conf).inspector(inspector).fileSystem(fs)
         .blockPadding(false).bufferSize(10000).compress(CompressionKind.NONE)
-        .stripeSize(1).memory(mgr).batchSize(2).version(OrcFile.Version.V_0_11));
+        .stripeSize(1).batchSize(2).version(OrcFile.Version.V_0_11));
     String[] values= new String[]{"ignore.1", "0.1", "ignore.2", "ignore.3",
        "2.0", "2.1", "3.0", "ignore.4", "ignore.5", "ignore.6"};
     for(int i=0; i < values.length; ++i) {
@@ -1195,6 +1181,7 @@ public class TestOrcRawRecordMerger {
   public void testRecordReaderNewBaseAndDelta() throws Exception {
     final int BUCKET = 11;
     Configuration conf = new Configuration();
+    OrcConf.ROWS_BETWEEN_CHECKS.setLong(conf, 2);
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf);
     Path root = new Path(tmpDir, "testRecordReaderNewBaseAndDelta").makeQualified(fs);
@@ -1205,20 +1192,6 @@ public class TestOrcRawRecordMerger {
           (BigRow.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
 
-    // write the base
-    MemoryManager mgr = new MemoryManagerImpl(conf){
-      int rowsAddedSinceCheck = 0;
-
-      @Override
-      public synchronized void addedRow(int rows) throws IOException {
-        rowsAddedSinceCheck += rows;
-        if (rowsAddedSinceCheck >= 2) {
-          notifyWriters();
-          rowsAddedSinceCheck = 0;
-        }
-      }
-    };
-
     // make 5 stripes with 2 rows each
     OrcRecordUpdater.OrcOptions options = (OrcRecordUpdater.OrcOptions)
         new OrcRecordUpdater.OrcOptions(conf)
@@ -1228,8 +1201,9 @@ public class TestOrcRawRecordMerger {
     final int BUCKET_PROPERTY = BucketCodec.V1.encode(options);
 
     options.orcOptions(OrcFile.writerOptions(conf)
-      .stripeSize(1).blockPadding(false).compress(CompressionKind.NONE)
-      .memory(mgr).batchSize(2));
+        .stripeSize(1).blockPadding(false)
+        .compress(CompressionKind.NONE)
+        .batchSize(2));
     options.finalDestination(root);
     RecordUpdater ru = of.getRecordUpdater(root, options);
     String[] values= new String[]{"ignore.1", "0.1", "ignore.2", "ignore.3",
