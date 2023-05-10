@@ -5702,7 +5702,7 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  public boolean runInTransaction(Runnable exec) throws MetaException {
+  public boolean runInTransaction(Runnable exec) {
     boolean success = false;
     Transaction tx = null;
     try {
@@ -5718,7 +5718,7 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
-  public boolean dropProperties(String key) throws MetaException {
+  public boolean dropProperties(String key) {
     boolean success = false;
     Transaction tx = null;
     Query query = null;
@@ -5741,7 +5741,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
 
-  public MMetastoreDBProperties putProperties(String key, String value, String description,  byte[] content) throws MetaException {
+  public MMetastoreDBProperties putProperties(String key, String value, String description,  byte[] content) {
     boolean success = false;
     try {
       if (openTransaction()) {
@@ -5772,8 +5772,6 @@ public class ObjectStore implements RawStore, Configurable {
           return properties;
         }
       }
-    } catch (Exception e) {
-      LOG.warn("Metastore property save failed", e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -5781,7 +5779,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
 
-  public boolean renameProperties(String mapKey, String newKey) throws MetaException {
+  public boolean renameProperties(String mapKey, String newKey) {
     boolean success = false;
     Transaction tx = null;
     Query query = null;
@@ -5829,7 +5827,7 @@ public class ObjectStore implements RawStore, Configurable {
     return false;
   }
 
-  private <T> T doFetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
+  private <T> T doFetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
     Query query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
     query.declareParameters("java.lang.String key");
     query.setUnique(true);
@@ -5844,7 +5842,7 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  public <T> T fetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
+  public <T> T fetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
     boolean success = false;
     T properties = null;
     try {
@@ -5859,7 +5857,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return properties;
   }
-  private <T> Map<String, T> doSelectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
+  private <T> Map<String, T> doSelectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
     final boolean all = key == null || key.isEmpty();
     final Query query;
     if (all) {
@@ -5889,7 +5887,7 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  public <T> Map<String, T> selectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) throws MetaException {
+  public <T> Map<String, T> selectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
     boolean success = false;
     Map<String, T> properties = null;
     try {

@@ -48,83 +48,52 @@ public class JdoPropertyStore extends PropertyStore {
 
   @Override
   public PropertyMap fetchProperties(final String mapKey, Function<String, PropertySchema> getSchema) {
-    try {
       return objectStore.fetchProperties(mapKey, getPropertyMapFunction(null, getSchema));
-    } catch (MetaException | JexlException e) {
-      throw new PropertyException(e);
-    }
   }
 
   @Override
   public Map<String, PropertyMap> selectProperties(final String keyPrefix, Predicate<String> keyFilter, Function<String, PropertySchema> getSchema) {
-    try {
       return objectStore.selectProperties(keyPrefix, getPropertyMapFunction(keyFilter, getSchema));
-    } catch (MetaException | JexlException e) {
-      throw new PropertyException(e);
-    }
   }
 
   @Override
   public UUID fetchDigest(String mapKey) {
-    try {
       return objectStore.fetchProperties(mapKey, (mm) -> UUID.fromString(mm.getPropertyValue()));
-    } catch (MetaException | JexlException e) {
-      throw new PropertyException(e);
-    }
   }
 
   @Override
   public Map<String, UUID> selectDigest(String keyPrefix, Predicate<String> keyFilter) {
-    try {
       return objectStore.selectProperties(keyPrefix, (mm) -> {
         if (keyFilter == null || keyFilter.test(mm.getPropertykey())) {
           return UUID.fromString(mm.getPropertyValue());
         }
         return null;
       });
-    } catch (MetaException | JexlException e) {
-      throw new PropertyException(e);
-    }
   }
 
   @Override
   public void saveProperties(Iterator<Map.Entry<String, PropertyMap>> save) {
     // will run the super method in a transaction
-    try {
-      objectStore.runInTransaction(()-> super.saveProperties(save));
-    } catch (MetaException e) {
-      throw new PropertyException(e);
-    }
+    objectStore.runInTransaction(()-> super.saveProperties(save));
   }
 
   @Override
   protected void saveProperties(String mapKey, PropertyMap map) {
-    try {
-      if (map.isDropped()) {
-        objectStore.dropProperties(mapKey);
-      } else {
-        objectStore.putProperties(mapKey, map.getDigest().toString(), null, serialize(map));
-      }
-    } catch (MetaException e) {
-      throw new PropertyException(e);
+    if (map.isDropped()) {
+      objectStore.dropProperties(mapKey);
+    } else {
+      objectStore.putProperties(mapKey, map.getDigest().toString(), null, serialize(map));
     }
   }
 
   @Override public boolean dropProperties(String mapKey) {
-   try {
      return objectStore.dropProperties(mapKey);
-   } catch (MetaException e) {
-     throw new PropertyException(e);
-   }
   }
 
   @Override public boolean renameProperties(String mapKey, String newKey) {
-    try {
       return objectStore.renameProperties(mapKey, newKey);
-    } catch (MetaException e) {
-      throw new PropertyException(e);
-    }
   }
+
   /**
    * Creates a function that transforms an MMetastoreDBProperties into a PropertyMap.
    * @param keyFilter a map key filtering predicate that will make the function return null if test fails

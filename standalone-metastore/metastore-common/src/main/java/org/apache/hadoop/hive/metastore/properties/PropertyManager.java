@@ -588,12 +588,37 @@ public abstract class PropertyManager {
     final JexlExpression predicate;
     try {
       predicate = JEXL.createExpression(predicateStr);
-    } catch(JexlException.Parsing xparse) {
+    } catch (JexlException.Parsing xparse) {
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug(predicateStr, xparse);
       }
-      throw xparse;
+      throw new PropertyException(xparse);
     }
+    return selectProperties(namePrefix, predicate, projectStr);
+  }
+
+
+  /**
+   * Selects a set of properties.
+   * @param namePrefix the map name prefix
+   * @param predicate the condition selecting maps
+   * @param projectStr the projection property names or script
+   * @return the map of property maps keyed by their name
+   */
+  public Map<String, PropertyMap> selectProperties(String namePrefix, JexlExpression predicate, String... projectStr) {
+    return selectProperties(namePrefix, predicate, projectStr == null
+          ? Collections.emptyList()
+          : Arrays.asList(projectStr));
+  }
+
+    /**
+     * Selects a set of properties.
+     * @param namePrefix the map name prefix
+     * @param predicate the condition selecting maps
+     * @param projectStr the projection property names or script
+     * @return the map of property maps keyed by their name
+     */
+    public Map<String, PropertyMap> selectProperties(String namePrefix, JexlExpression predicate, List<String> projectStr) {
     final Function<PropertyMap, PropertyMap> transform = (map)->{
       MapWrapper wrapped = new MapWrapper(map);
       Object result;
@@ -601,9 +626,9 @@ public abstract class PropertyManager {
         result = predicate.evaluate(wrapped);
       } catch(JexlException xany) {
         if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug(predicateStr, xany);
+          LOGGER.debug(predicate.getSourceText(), xany);
         }
-        throw xany;
+        throw new PropertyException(xany);
       }
       if (Boolean.TRUE.equals(result)) {
         if (projectStr == null || projectStr.isEmpty()) {
@@ -611,12 +636,14 @@ public abstract class PropertyManager {
         }
         Map<String, Object> projected = new TreeMap<>();
         for(String projectName : projectStr) {
+          // if this looks like the name of a property, use it
           if (map.getTypeOf(projectName)!= null) {
             Object value = map.getPropertyValue(projectName);
             if (value != null) {
               projected.put(projectName, value);
             }
           } else {
+            // try to use it as the source of a JEXL expression
             try {
               JexlExpression projector = JEXL.createExpression(projectName);
               Object evaluated = projector.evaluate(wrapped);

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.properties;
 
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -76,7 +77,7 @@ public class PropertyManagerTest {
               "setProperty('ser.der.id', 42);" +
               "setProperty('ser.der.name', 'serder');" +
               "setProperty('ser.der.project', 'Metastore');" +
-              "selectProperties('ser.der', 'true');");
+              "selectProperties('ser.der', ()->true);");
     Assert.assertNotNull(result);
     Assert.assertTrue(result instanceof Map<?,?>);
     Assert.assertEquals(1, ((Map<?,?>) result).size());

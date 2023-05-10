@@ -7549,7 +7549,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       });
       response.setProperties(returned);
       return response;
-    } catch(JexlException | PropertyException | NoSuchObjectException exception) {
+    } catch(PropertyException exception) {
       throw ExceptionHandler.newMetaException(exception);
     }
   }
@@ -7561,7 +7561,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       mgr.setProperties((Map<String, Object>) (Map<?, ?>) req.getPropertyMap());
       mgr.commit();
       return true;
-    } catch(JexlException | PropertyException | NoSuchObjectException exception) {
+    } catch(PropertyException exception) {
       throw ExceptionHandler.newMetaException(exception);
     }
   }
