@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -294,6 +295,15 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
       throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
     }
     if (ts.tableHandle.isNonNative()) {
+      // launch a tez job
+      StorageFormatDescriptor ss =
+          ts.tableHandle.getStorageHandler().getStorageFormatDescriptor(ts.tableHandle.getTTable());
+      if (ss != null) {
+        inputFormatClassName = ss.getInputFormat();
+        serDeClassName = ss.getSerde();
+        reparseAndSuperAnalyze(ts.tableHandle, fromURI);
+        return;
+      }
       throw new SemanticException(ErrorMsg.LOAD_INTO_NON_NATIVE.getMsg());
     }
 
