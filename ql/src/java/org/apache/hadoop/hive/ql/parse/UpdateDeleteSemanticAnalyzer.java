@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 
 /**
  * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
@@ -62,6 +63,8 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     switch (tree.getToken().getType()) {
     case HiveParser.TOK_DELETE_FROM:
       operation = Context.Operation.DELETE;
+      HiveCustomStorageHandlerUtils.setFileScanOperationType(ctx.getConf(), table.getFullTableName().toString(),
+          operation);
       reparseAndSuperAnalyze(tree, table, tabNameNode);
       break;
     case HiveParser.TOK_UPDATE_TABLE:
@@ -70,6 +73,8 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
       }
       operation = Context.Operation.UPDATE;
+      HiveCustomStorageHandlerUtils.setFileScanOperationType(ctx.getConf(), table.getFullTableName().toString(),
+          operation);
       reparseAndSuperAnalyze(tree, table, tabNameNode);
       break;
     default:

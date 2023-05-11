@@ -10,6 +10,42 @@ PREHOOK: query: DROP TABLE IF EXISTS mig_source PURGE
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS mig_source PURGE
 POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS target_ice PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS target_ice PURGE
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE target_ice(a int, b string, c int)  STORED BY ICEBERG STORED AS ORC tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@target_ice
+POSTHOOK: query: CREATE EXTERNAL TABLE target_ice(a int, b string, c int)  STORED BY ICEBERG STORED AS ORC tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@target_ice
+PREHOOK: query: INSERT INTO target_ice values (1, 'one', 50)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@target_ice
+POSTHOOK: query: INSERT INTO target_ice values (1, 'one', 50)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@target_ice
+PREHOOK: query: DELETE FROM target_ice WHERE a = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target_ice
+PREHOOK: Output: default@target_ice
+POSTHOOK: query: DELETE FROM target_ice WHERE a = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target_ice
+POSTHOOK: Output: default@target_ice
+PREHOOK: query: SELECT * FROM target_ice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target_ice
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM target_ice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target_ice
+#### A masked pattern was here ####
 PREHOOK: query: CREATE EXTERNAL TABLE llap_items (itemid INT, price INT, category STRING, name STRING, description STRING) STORED BY ICEBERG STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

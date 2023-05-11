@@ -28,12 +28,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.VectorizedParquetInputFormat;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -195,7 +197,8 @@ public class HiveVectorizedReader {
     // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases
     // TODO: add support for reading files with positional deletes with LLAP (LLAP would need to provide file row num)
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
-        LlapProxy.getIo() != null && task.deletes().isEmpty()) {
+        LlapProxy.getIo() != null && task.deletes().isEmpty() &&
+        !HiveCustomStorageHandlerUtils.isWriteOperation(job, tableName)) {
       boolean isDisableVectorization =
           job.getBoolean(HiveIcebergInputFormat.getVectorizationConfName(tableName), false);
       if (isDisableVectorization) {

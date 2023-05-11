@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 public class HiveCustomStorageHandlerUtils {
 
     public static final String WRITE_OPERATION_CONFIG_PREFIX = "file.sink.write.operation.";
+    public static final String FILESCAN_WRITE_OPERATION_CONFIG_PREFIX = "file.scan.write.operation.";
 
 
     public static String getTablePropsForCustomStorageHandler(Map<String, String> tableProperties) {
@@ -70,5 +72,27 @@ public class HiveCustomStorageHandlerUtils {
         }
 
         conf.set(WRITE_OPERATION_CONFIG_PREFIX + tableName, operation.name());
+    }
+
+    public static boolean isWriteOperation(Configuration conf, String tableName) {
+        if (conf == null || tableName == null) {
+            return false;
+        }
+        String operation = conf.get(FILESCAN_WRITE_OPERATION_CONFIG_PREFIX + getTableName(tableName));
+        return Context.Operation.DELETE.name().equalsIgnoreCase(operation) ||
+            Context.Operation.UPDATE.name().equalsIgnoreCase(operation);
+    }
+
+    public static void setFileScanOperationType(Configuration conf, String tableName, Context.Operation operation) {
+        if (conf == null || tableName == null) {
+            return;
+        }
+        conf.set(
+            FILESCAN_WRITE_OPERATION_CONFIG_PREFIX + getTableName(tableName),
+            operation.name());
+    }
+
+    private static String getTableName(String tableName) {
+        return TableName.fromString(tableName, null, null).getNotEmptyDbTable();
     }
 }

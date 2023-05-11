@@ -5,6 +5,15 @@ set hive.vectorized.execution.enabled=true;
 DROP TABLE IF EXISTS llap_orders PURGE;
 DROP TABLE IF EXISTS llap_items PURGE;
 DROP TABLE IF EXISTS mig_source PURGE;
+DROP TABLE IF EXISTS target_ice PURGE;
+
+
+CREATE EXTERNAL TABLE target_ice(a int, b string, c int)  STORED BY ICEBERG STORED AS ORC tblproperties ('format-version'='2');
+INSERT INTO target_ice values (1, 'one', 50);
+
+DELETE FROM target_ice WHERE a = 1;
+
+SELECT * FROM target_ice;
 
 
 CREATE EXTERNAL TABLE llap_items (itemid INT, price INT, category STRING, name STRING, description STRING) STORED BY ICEBERG STORED AS ORC;
