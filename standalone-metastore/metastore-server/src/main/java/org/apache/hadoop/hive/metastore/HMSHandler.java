@@ -7526,7 +7526,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       success = getMS().commitTransaction();
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw handleException(e)
+          .throwIfInstance(MetaException.class, NoSuchObjectException.class, InvalidObjectException.class)
+          .defaultMetaException();
     } finally {
       if (!success) {
         getMS().rollbackTransaction();
