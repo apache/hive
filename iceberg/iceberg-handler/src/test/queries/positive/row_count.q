@@ -10,6 +10,8 @@
 --! qt:replace:/(\S\"added-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
 -- Mask total file size
 --! qt:replace:/(\S\"total-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
+-- Mask width
+--! qt:replace:/(width=15)\d+/$1###/
 
 drop table if exists llap_orders;
 
