@@ -239,8 +239,8 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_9]
             Group By Operator [GBY_8] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Select Operator [SEL_7] (rows=11 width=15430)
-                TableScan [TS_0] (rows=11 width=15430)
+              Select Operator [SEL_7] (rows=11 width=15461)
+                TableScan [TS_0] (rows=11 width=15461)
                   default@llap_orders,llap_orders,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain insert into  llap_orders select * from llap_orders limit 100000
