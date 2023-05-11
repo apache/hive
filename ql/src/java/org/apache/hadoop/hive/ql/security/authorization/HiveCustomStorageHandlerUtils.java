@@ -78,7 +78,8 @@ public class HiveCustomStorageHandlerUtils {
         if (conf == null || tableName == null) {
             return false;
         }
-        String operation = conf.get(FILESCAN_WRITE_OPERATION_CONFIG_PREFIX + getTableName(tableName));
+        String dbAndTableName = TableName.fromString(tableName, null, null).getNotEmptyDbTable();
+        String operation = conf.get(FILESCAN_WRITE_OPERATION_CONFIG_PREFIX + dbAndTableName);
         return Context.Operation.DELETE.name().equalsIgnoreCase(operation) ||
             Context.Operation.UPDATE.name().equalsIgnoreCase(operation);
     }
@@ -87,12 +88,7 @@ public class HiveCustomStorageHandlerUtils {
         if (conf == null || tableName == null) {
             return;
         }
-        conf.set(
-            FILESCAN_WRITE_OPERATION_CONFIG_PREFIX + getTableName(tableName),
-            operation.name());
-    }
-
-    private static String getTableName(String tableName) {
-        return TableName.fromString(tableName, null, null).getNotEmptyDbTable();
+        String dbAndTableName = TableName.fromString(tableName, null, null).getNotEmptyDbTable();
+        conf.set(FILESCAN_WRITE_OPERATION_CONFIG_PREFIX + dbAndTableName, operation.name());
     }
 }
