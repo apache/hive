@@ -849,6 +849,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @return \metastore\Partition[]
      * @throws \metastore\MetaException
      * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\InvalidObjectException
      */
     public function get_partitions_by_names($db_name, $tbl_name, array $names);
     /**
@@ -856,6 +857,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @return \metastore\GetPartitionsByNamesResult
      * @throws \metastore\MetaException
      * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\InvalidObjectException
      */
     public function get_partitions_by_names_req(\metastore\GetPartitionsByNamesRequest $req);
     /**

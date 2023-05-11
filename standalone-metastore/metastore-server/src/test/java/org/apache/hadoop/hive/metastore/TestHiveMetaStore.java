@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
@@ -105,6 +106,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -1133,6 +1135,52 @@ public abstract class TestHiveMetaStore {
       System.err.println("testRenamePartition() failed.");
       throw e;
     }
+  }
+
+  @Test(expected = InvalidObjectException.class)
+  public void testDropTableFetchPartitions() throws Throwable {
+    String dbName = "fetchPartitionsDb";
+    String tblName = "fetchPartitionsTbl";
+    List<String> vals = new ArrayList<>(2);
+    vals.add("2011-07-11");
+    vals.add("8");
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+            .setName(dbName)
+            .setDescription("Drop table Fetch partition Test database")
+            .create(client, conf);
+
+    Table tbl = new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName)
+            .addCol("name", ColumnType.STRING_TYPE_NAME)
+            .addCol("income", ColumnType.INT_TYPE_NAME)
+            .addPartCol("ds", ColumnType.STRING_TYPE_NAME)
+            .addPartCol("hr", ColumnType.INT_TYPE_NAME)
+            .create(client, conf);
+
+    if (isThriftClient) {
+      // the createTable() above does not update the location in the 'tbl'
+      // object when the client is a thrift client and the code below relies
+      // on the location being present in the 'tbl' object - so get the table
+      // from the metastore
+      tbl = client.getTable(dbName, tblName);
+    }
+
+    Partition part = new Partition();
+    part.setDbName(dbName);
+    part.setTableName(tblName);
+    part.setValues(vals);
+    part.setParameters(new HashMap<>());
+    part.setSd(tbl.getSd().deepCopy());
+    part.getSd().setLocation(tbl.getSd().getLocation() + "/part1");
+
+    client.add_partition(part);
+
+    GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(dbName, tblName, vals);
+    client.dropTable(dbName, tblName, true, false);
+    List<Partition> partitionsList = client.getPartitionsByNames(req).getPartitions();
   }
 
   @Test

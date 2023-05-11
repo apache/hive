@@ -43,6 +43,12 @@ class ThriftHiveMetastore_get_partitions_by_names_result
             'type' => TType::STRUCT,
             'class' => '\metastore\NoSuchObjectException',
         ),
+        3 => array(
+            'var' => 'o3',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\InvalidObjectException',
+        ),
     );
 
     /**
@@ -57,6 +63,10 @@ class ThriftHiveMetastore_get_partitions_by_names_result
      * @var \metastore\NoSuchObjectException
      */
     public $o2 = null;
+    /**
+     * @var \metastore\InvalidObjectException
+     */
+    public $o3 = null;
 
     public function __construct($vals = null)
     {
@@ -69,6 +79,9 @@ class ThriftHiveMetastore_get_partitions_by_names_result
             }
             if (isset($vals['o2'])) {
                 $this->o2 = $vals['o2'];
+            }
+            if (isset($vals['o3'])) {
+                $this->o3 = $vals['o3'];
             }
         }
     }
@@ -125,6 +138,14 @@ class ThriftHiveMetastore_get_partitions_by_names_result
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 3:
+                    if ($ftype == TType::STRUCT) {
+                        $this->o3 = new \metastore\InvalidObjectException();
+                        $xfer += $this->o3->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -159,6 +180,11 @@ class ThriftHiveMetastore_get_partitions_by_names_result
         if ($this->o2 !== null) {
             $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
             $xfer += $this->o2->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->o3 !== null) {
+            $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
+            $xfer += $this->o3->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
