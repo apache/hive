@@ -244,7 +244,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
 
     Table mTable;
     try {
-      mTable = db.getTable(tableName.getDb(), tableName.getTable(), tableName.getMetaTable(), throwException);
+      mTable = db.getTable(tableName.getDb(), tableName.getTable(), tableName.getTableIdentifier(), throwException);
     } catch (InvalidTableException e) {
       LOG.error("Failed to find table " + tableName.getNotEmptyDbTable() + " got exception " + e.getMessage());
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName.getNotEmptyDbTable()), e);

@@ -1859,7 +1859,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected Table getTable(TableName tn, boolean throwException) throws SemanticException {
-    return getTable(tn.getDb(), tn.getTable(), tn.getMetaTable(), throwException);
+    return getTable(tn.getDb(), tn.getTable(), tn.getTableIdentifier(), throwException);
   }
 
   protected Table getTable(String tblName) throws SemanticException {
@@ -1874,13 +1874,13 @@ public abstract class BaseSemanticAnalyzer {
     return getTable(database, tblName, null, throwException);
   }
 
-  protected Table getTable(String database, String tblName, String metaTableName, boolean throwException)
+  protected Table getTable(String database, String tblName, String tableIdentifier, boolean throwException)
       throws SemanticException {
     Table tab;
     try {
-      String tableName = metaTableName == null ? tblName : tblName + "." + metaTableName;
+      String tableName = tableIdentifier == null ? tblName : tblName + "." + tableIdentifier;
       tab = database == null ? db.getTable(tableName, false)
-          : db.getTable(database, tblName, metaTableName, false);
+          : db.getTable(database, tblName, tableIdentifier, false);
     }
     catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);

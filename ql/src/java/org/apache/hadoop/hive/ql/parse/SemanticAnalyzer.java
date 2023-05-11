@@ -15676,7 +15676,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_TABNAME:
       TableName tableName = getQualifiedTableName(n);
       return HiveTableName.ofNullable(HiveUtils.unparseIdentifier(tableName.getTable(), this.conf),
-          HiveUtils.unparseIdentifier(tableName.getDb(), this.conf), tableName.getMetaTable()).getNotEmptyDbTable();
+          HiveUtils.unparseIdentifier(tableName.getDb(), this.conf), tableName.getTableIdentifier()).getNotEmptyDbTable();
     case HiveParser.TOK_TABREF:
       return getFullTableNameForSQL((ASTNode) n.getChild(0));
     default:

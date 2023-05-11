@@ -117,7 +117,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private Table getTable() throws HiveException {
     Table table = context.getDb().getTable(desc.getTableName().getDb(), desc.getTableName().getTable(),
-        desc.getTableName().getMetaTable(), false, false, false);
+        desc.getTableName().getTableIdentifier(), false, false, false);
     if (table == null) {
       throw new HiveException(ErrorMsg.INVALID_TABLE, desc.getDbTableName());
     }

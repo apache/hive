@@ -683,7 +683,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean isMetadataTableSupported() {
+  public boolean isTableIdentifierSupported() {
     return true;
   }
 

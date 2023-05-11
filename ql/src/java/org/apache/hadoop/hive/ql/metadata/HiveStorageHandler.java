@@ -550,7 +550,7 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
-  default boolean isMetadataTableSupported() {
+  default boolean isTableIdentifierSupported() {
     return false;
   }
 

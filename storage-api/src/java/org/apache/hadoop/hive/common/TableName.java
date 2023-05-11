@@ -36,7 +36,7 @@ public class TableName implements Serializable {
   private final String cat;
   private final String db;
   private final String table;
-  private final String metaTable;
+  private final String tableIdentifier;
 
   /**
    *
@@ -47,14 +47,14 @@ public class TableName implements Serializable {
    * @param dbName database name.  Cannot be null.  If you do not now it you can get it from
    *           SessionState.getCurrentDatabase() or use Warehouse.DEFAULT_DATABASE_NAME.
    * @param tableName  table name, cannot be null
-   * @param metaTable name
+   * @param tableIdentifier name
    *           Use this to query Iceberg metadata tables.
    */
-  public TableName(final String catName, final String dbName, final String tableName, String metaTable) {
+  public TableName(final String catName, final String dbName, final String tableName, String tableIdentifier) {
     this.cat = catName;
     this.db = dbName;
     this.table = tableName;
-    this.metaTable = metaTable;
+    this.tableIdentifier = tableIdentifier;
   }
 
   public TableName(final String catName, final String dbName, final String tableName) {
@@ -116,8 +116,8 @@ public class TableName implements Serializable {
     return table;
   }
 
-  public String getMetaTable() {
-    return metaTable;
+  public String getTableIdentifier() {
+    return tableIdentifier;
   }
 
   /**
@@ -143,7 +143,7 @@ public class TableName implements Serializable {
    * Get the name in db.table format, if db is not empty, otherwise pass only the table name.
    */
   public String getNotEmptyDbTable() {
-    String metaTableName = metaTable == null ? "" : "." + metaTable;
+    String metaTableName = tableIdentifier == null ? "" : "." + tableIdentifier;
     return db == null || db.trim().isEmpty() ? table : db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table + metaTableName;
   }
 
