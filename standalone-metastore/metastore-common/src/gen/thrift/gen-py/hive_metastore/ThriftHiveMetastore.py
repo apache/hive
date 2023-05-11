@@ -6245,6 +6245,8 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o1
         if result.o2 is not None:
             raise result.o2
+        if result.o3 is not None:
+            raise result.o3
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions_by_names failed: unknown result")
 
     def get_partitions_by_names_req(self, req):
@@ -6281,6 +6283,8 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o1
         if result.o2 is not None:
             raise result.o2
+        if result.o3 is not None:
+            raise result.o3
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions_by_names_req failed: unknown result")
 
     def alter_partition(self, db_name, tbl_name, new_part):
@@ -15540,6 +15544,9 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         except NoSuchObjectException as o2:
             msg_type = TMessageType.REPLY
             result.o2 = o2
+        except InvalidObjectException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
         except TApplicationException as ex:
             logging.exception('TApplication exception in handler')
             msg_type = TMessageType.EXCEPTION
@@ -15569,6 +15576,9 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         except NoSuchObjectException as o2:
             msg_type = TMessageType.REPLY
             result.o2 = o2
+        except InvalidObjectException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
         except TApplicationException as ex:
             logging.exception('TApplication exception in handler')
             msg_type = TMessageType.EXCEPTION
@@ -37192,14 +37202,16 @@ class get_partitions_by_names_result(object):
      - success
      - o1
      - o2
+     - o3
 
     """
 
 
-    def __init__(self, success=None, o1=None, o2=None,):
+    def __init__(self, success=None, o1=None, o2=None, o3=None,):
         self.success = success
         self.o1 = o1
         self.o2 = o2
+        self.o3 = o3
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -37231,6 +37243,11 @@ class get_partitions_by_names_result(object):
                     self.o2 = NoSuchObjectException.read(iprot)
                 else:
                     iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.o3 = InvalidObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -37256,6 +37273,10 @@ class get_partitions_by_names_result(object):
             oprot.writeFieldBegin('o2', TType.STRUCT, 2)
             self.o2.write(oprot)
             oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -37277,6 +37298,7 @@ get_partitions_by_names_result.thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRUCT, [Partition, None], False), None, ),  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
     (2, TType.STRUCT, 'o2', [NoSuchObjectException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [InvalidObjectException, None], None, ),  # 3
 )
 
 
@@ -37349,14 +37371,16 @@ class get_partitions_by_names_req_result(object):
      - success
      - o1
      - o2
+     - o3
 
     """
 
 
-    def __init__(self, success=None, o1=None, o2=None,):
+    def __init__(self, success=None, o1=None, o2=None, o3=None,):
         self.success = success
         self.o1 = o1
         self.o2 = o2
+        self.o3 = o3
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -37383,6 +37407,11 @@ class get_partitions_by_names_req_result(object):
                     self.o2 = NoSuchObjectException.read(iprot)
                 else:
                     iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.o3 = InvalidObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -37405,6 +37434,10 @@ class get_partitions_by_names_req_result(object):
             oprot.writeFieldBegin('o2', TType.STRUCT, 2)
             self.o2.write(oprot)
             oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -37426,6 +37459,7 @@ get_partitions_by_names_req_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [GetPartitionsByNamesResult, None], None, ),  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
     (2, TType.STRUCT, 'o2', [NoSuchObjectException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [InvalidObjectException, None], None, ),  # 3
 )
 
 

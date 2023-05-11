@@ -14350,10 +14350,11 @@ class ThriftHiveMetastore_get_partitions_by_names_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_get_partitions_by_names_result__isset {
-  _ThriftHiveMetastore_get_partitions_by_names_result__isset() : success(false), o1(false), o2(false) {}
+  _ThriftHiveMetastore_get_partitions_by_names_result__isset() : success(false), o1(false), o2(false), o3(false) {}
   bool success :1;
   bool o1 :1;
   bool o2 :1;
+  bool o3 :1;
 } _ThriftHiveMetastore_get_partitions_by_names_result__isset;
 
 class ThriftHiveMetastore_get_partitions_by_names_result {
@@ -14368,6 +14369,7 @@ class ThriftHiveMetastore_get_partitions_by_names_result {
   std::vector<Partition>  success;
   MetaException o1;
   NoSuchObjectException o2;
+  InvalidObjectException o3;
 
   _ThriftHiveMetastore_get_partitions_by_names_result__isset __isset;
 
@@ -14377,6 +14379,8 @@ class ThriftHiveMetastore_get_partitions_by_names_result {
 
   void __set_o2(const NoSuchObjectException& val);
 
+  void __set_o3(const InvalidObjectException& val);
+
   bool operator == (const ThriftHiveMetastore_get_partitions_by_names_result & rhs) const
   {
     if (!(success == rhs.success))
@@ -14384,6 +14388,8 @@ class ThriftHiveMetastore_get_partitions_by_names_result {
     if (!(o1 == rhs.o1))
       return false;
     if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
       return false;
     return true;
   }
@@ -14399,10 +14405,11 @@ class ThriftHiveMetastore_get_partitions_by_names_result {
 };
 
 typedef struct _ThriftHiveMetastore_get_partitions_by_names_presult__isset {
-  _ThriftHiveMetastore_get_partitions_by_names_presult__isset() : success(false), o1(false), o2(false) {}
+  _ThriftHiveMetastore_get_partitions_by_names_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
   bool success :1;
   bool o1 :1;
   bool o2 :1;
+  bool o3 :1;
 } _ThriftHiveMetastore_get_partitions_by_names_presult__isset;
 
 class ThriftHiveMetastore_get_partitions_by_names_presult {
@@ -14413,6 +14420,7 @@ class ThriftHiveMetastore_get_partitions_by_names_presult {
   std::vector<Partition> * success;
   MetaException o1;
   NoSuchObjectException o2;
+  InvalidObjectException o3;
 
   _ThriftHiveMetastore_get_partitions_by_names_presult__isset __isset;
 
@@ -14470,10 +14478,11 @@ class ThriftHiveMetastore_get_partitions_by_names_req_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_get_partitions_by_names_req_result__isset {
-  _ThriftHiveMetastore_get_partitions_by_names_req_result__isset() : success(false), o1(false), o2(false) {}
+  _ThriftHiveMetastore_get_partitions_by_names_req_result__isset() : success(false), o1(false), o2(false), o3(false) {}
   bool success :1;
   bool o1 :1;
   bool o2 :1;
+  bool o3 :1;
 } _ThriftHiveMetastore_get_partitions_by_names_req_result__isset;
 
 class ThriftHiveMetastore_get_partitions_by_names_req_result {
@@ -14488,6 +14497,7 @@ class ThriftHiveMetastore_get_partitions_by_names_req_result {
   GetPartitionsByNamesResult success;
   MetaException o1;
   NoSuchObjectException o2;
+  InvalidObjectException o3;
 
   _ThriftHiveMetastore_get_partitions_by_names_req_result__isset __isset;
 
@@ -14497,6 +14507,8 @@ class ThriftHiveMetastore_get_partitions_by_names_req_result {
 
   void __set_o2(const NoSuchObjectException& val);
 
+  void __set_o3(const InvalidObjectException& val);
+
   bool operator == (const ThriftHiveMetastore_get_partitions_by_names_req_result & rhs) const
   {
     if (!(success == rhs.success))
@@ -14504,6 +14516,8 @@ class ThriftHiveMetastore_get_partitions_by_names_req_result {
     if (!(o1 == rhs.o1))
       return false;
     if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
       return false;
     return true;
   }
@@ -14519,10 +14533,11 @@ class ThriftHiveMetastore_get_partitions_by_names_req_result {
 };
 
 typedef struct _ThriftHiveMetastore_get_partitions_by_names_req_presult__isset {
-  _ThriftHiveMetastore_get_partitions_by_names_req_presult__isset() : success(false), o1(false), o2(false) {}
+  _ThriftHiveMetastore_get_partitions_by_names_req_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
   bool success :1;
   bool o1 :1;
   bool o2 :1;
+  bool o3 :1;
 } _ThriftHiveMetastore_get_partitions_by_names_req_presult__isset;
 
 class ThriftHiveMetastore_get_partitions_by_names_req_presult {
@@ -14533,6 +14548,7 @@ class ThriftHiveMetastore_get_partitions_by_names_req_presult {
   GetPartitionsByNamesResult* success;
   MetaException o1;
   NoSuchObjectException o2;
+  InvalidObjectException o3;
 
   _ThriftHiveMetastore_get_partitions_by_names_req_presult__isset __isset;
 

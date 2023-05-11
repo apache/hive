@@ -2770,9 +2770,9 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
 
   // get partitions give a list of partition names
   list<Partition> get_partitions_by_names(1:string db_name 2:string tbl_name 3:list<string> names)
-                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+      throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3)
   GetPartitionsByNamesResult get_partitions_by_names_req(1:GetPartitionsByNamesRequest req)
-                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+      throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3)
 
   // changes the partition to the new partition object. partition is identified from the part values
   // in the new_part
