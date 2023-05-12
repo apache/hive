@@ -27,6 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -34,7 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -65,9 +66,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.ExceptionHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -508,6 +511,52 @@ public class MetaStoreServerUtils {
     params.remove(StatsSetupConst.NUM_FILES);
     params.remove(StatsSetupConst.TOTAL_SIZE);
     params.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
+  }
+
+  public static void updateTableStatsForCreateTable(Warehouse wh, Database db, Table tbl,
+      EnvironmentContext envContext, Configuration conf, Path tblPath, boolean newDir)
+      throws MetaException {
+    // If the created table is a view, skip generating the stats
+    if (MetaStoreUtils.isView(tbl)) {
+      return;
+    }
+    assert tblPath != null;
+    if (tbl.isSetDictionary() && tbl.getDictionary().getValues() != null) {
+      List<ByteBuffer> values = tbl.getDictionary().getValues().
+          remove(StatsSetupConst.STATS_FOR_CREATE_TABLE);
+      ByteBuffer buffer;
+      if (values != null && values.size() > 0 && (buffer = values.get(0)).hasArray()) {
+        String val = new String(buffer.array(), StandardCharsets.UTF_8);
+        StatsSetupConst.ColumnStatsSetup statsSetup = StatsSetupConst.ColumnStatsSetup.parseStatsSetup(val);
+        if (statsSetup.enabled) {
+          try {
+            PathFilter pathFilter = FileUtils.HIDDEN_FILES_PATH_FILTER;
+            if (StringUtils.isNotEmpty(statsSetup.fileToEscape)) {
+              final Set<String> filesToEscape = new HashSet<>();
+              for (String fileName : statsSetup.fileToEscape.split(",")) {
+                filesToEscape.add(fileName.trim());
+              }
+              pathFilter = p -> !filesToEscape.contains(p.getName());
+            }
+            // Set the column stats true in order to make it merge-able
+            if (newDir || wh.isEmptyDir(tblPath, pathFilter)) {
+              List<String> columns = statsSetup.columnNames;
+              if (columns == null || columns.isEmpty()) {
+                columns = getColumnNames(tbl.getSd().getCols());
+              }
+              StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(), columns, StatsSetupConst.TRUE);
+            }
+          } catch (IOException e) {
+            LOG.error("Error while checking the table directory: " + tblPath + " is empty or not", e);
+            throw ExceptionHandler.newMetaException(e);
+          }
+        }
+      }
+    }
+
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_AUTO_GATHER)) {
+      updateTableStatsSlow(db, tbl, wh, newDir, false, envContext);
+    }
   }
 
   /**

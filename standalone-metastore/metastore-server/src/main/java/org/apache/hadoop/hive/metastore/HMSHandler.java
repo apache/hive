@@ -2361,10 +2361,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           madeDir = true;
         }
       }
-      if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
-          !MetaStoreUtils.isView(tbl)) {
-        MetaStoreServerUtils.updateTableStatsSlow(db, tbl, wh, madeDir, false, envContext);
-      }
+
+      MetaStoreServerUtils.updateTableStatsForCreateTable(wh, db, tbl, envContext, conf, tblPath, madeDir);
 
       // set create time
       long time = System.currentTimeMillis() / 1000;
