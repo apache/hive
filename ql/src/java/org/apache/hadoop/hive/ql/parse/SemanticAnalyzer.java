@@ -12458,7 +12458,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           queryState.getLineageState()
               .mapDirToOp(new Path(createVwDesc.getViewName()), sinkOp);
         }
-        return;
+        if (getColumnAccessInfo() != null) {
+          return;
+        }
       }
     }
 
@@ -12493,6 +12495,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
       // view column access info is carried by this.getColumnAccessInfo().
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+    }
+
+    if (getQB().isView()) {
+      return;
     }
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
