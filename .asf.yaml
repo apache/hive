@@ -39,4 +39,4 @@ notifications:
   commits:      commits@hive.apache.org
   issues:       gitbox@hive.apache.org
   pullrequests: gitbox@hive.apache.org
-  jira_options: link label worklog
+  jira_options: link label
