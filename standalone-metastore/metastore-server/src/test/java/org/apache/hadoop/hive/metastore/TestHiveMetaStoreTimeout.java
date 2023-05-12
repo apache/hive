@@ -117,11 +117,11 @@ public class TestHiveMetaStoreTimeout {
 
   @Test
   public void testResetTimeout() throws Exception {
-    HMSHandler.testTimeoutValue = 250;
     String dbName = "db";
 
     // no timeout before reset
     client.dropDatabase(dbName, true, true);
+    HMSHandler.testTimeoutValue = 250;
     Database db = new DatabaseBuilder()
         .setName(dbName)
         .build(conf);
@@ -130,6 +130,7 @@ public class TestHiveMetaStoreTimeout {
     } catch (Exception e) {
       Assert.fail("should not throw timeout exception: " + e.getMessage());
     }
+    HMSHandler.testTimeoutValue = -1;
     client.dropDatabase(dbName, true, true);
 
     // reset
