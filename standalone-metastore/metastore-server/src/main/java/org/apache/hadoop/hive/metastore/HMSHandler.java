@@ -2276,6 +2276,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           + " already exists");
     }
 
+    tbl.setDbName(tbl.getDbName().trim());
+    tbl.setTableName(tbl.getTableName().trim());
+
     if (transformer != null) {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }
