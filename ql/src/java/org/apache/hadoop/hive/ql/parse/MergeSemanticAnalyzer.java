@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 
@@ -199,6 +200,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         if (numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
           extraPredicate = s; //i.e. it's the 1st WHEN MATCHED
         }
+        HiveCustomStorageHandlerUtils.setFileScanOperationType(conf, targetTable.getFullTableName().toString(),
+            Context.Operation.UPDATE);
         break;
       case HiveParser.TOK_DELETE:
         numWhenMatchedDeleteClauses++;
@@ -208,6 +211,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         if (numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
           extraPredicate = s1; //i.e. it's the 1st WHEN MATCHED
         }
+        HiveCustomStorageHandlerUtils.setFileScanOperationType(conf, targetTable.getFullTableName().toString(),
+            Context.Operation.DELETE);
         break;
       default:
         throw new IllegalStateException("Unexpected WHEN clause type: " + whenClause.getType() +
