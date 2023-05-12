@@ -222,6 +222,13 @@
       </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
+        <artifactId>hive-druid-handler</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>runtime</scope> <!-- test-runtime does not exist in maven -->
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
         <artifactId>hive-it-druid</artifactId>
         <version>${project.version}</version>
       </dependency>
