@@ -2058,7 +2058,7 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      catName = normalizeIdentifier(catName);
+      catName = normalizeIdentifier(Optional.ofNullable(catName).orElse(getDefaultCatalog(conf)));
       db = normalizeIdentifier(db);
       table = normalizeIdentifier(table);
       query = pm.newQuery(MTable.class,
@@ -4868,7 +4868,8 @@ public class ObjectStore implements RawStore, Configurable {
    * @param tblName Table name.
    * @return Table object.
    */
-  private MTable ensureGetMTable(String catName, String dbName, String tblName)
+  @Override
+  public MTable ensureGetMTable(String catName, String dbName, String tblName)
       throws NoSuchObjectException {
     MTable mtable = getMTable(catName, dbName, tblName);
     if (mtable == null) {
@@ -9918,7 +9919,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats,
+  public Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable, ColumnStatistics colStats,
       List<String> partVals, String validWriteIds, long writeId)
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
@@ -9928,8 +9929,6 @@ public class ObjectStore implements RawStore, Configurable {
       List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
-      Table table = convertToTable(mTable);
       Partition partition = convertToPart(getMPartition(
           catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), false);
       List<String> colNames = new ArrayList<>();
@@ -9986,6 +9985,16 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  @Override
+  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats,
+      List<String> partVals, String validWriteIds, long writeId)
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+    Table table = getTable(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName());
+    MTable mTable = ensureGetMTable(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName());
+    return updatePartitionColumnStatistics(table, mTable, colStats, partVals, validWriteIds, writeId);
   }
 
   @Override

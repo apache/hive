@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.*;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -4109,7 +4110,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             + TableName.getQualified(catName, dbName, tblName) +
             " does not exist");
       }
-
+      MTable mTable = getMS().ensureGetMTable(catName, dbName, tblName);
       db = ms.getDatabase(catName, dbName);
 
       if (!parts.isEmpty()) {
@@ -4190,7 +4191,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                   new long[0], new BitSet(), writeId);
           validWriteIds = validWriteIdList.toString();
         }
-        updatePartitonColStatsInternal(tbl, partColStats, validWriteIds, writeId);
+        updatePartitonColStatsInternal(tbl, mTable, partColStats, validWriteIds, writeId);
       }
 
       success = ms.commitTransaction();
@@ -7024,7 +7025,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     colStats.setStatsObj(colStats.getStatsObj());
   }
 
-  private boolean updatePartitonColStatsInternal(Table tbl, ColumnStatistics colStats,
+  private boolean updatePartitonColStatsInternal(Table tbl, MTable mTable, ColumnStatistics colStats,
                                                  String validWriteIds, long writeId)
       throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     normalizeColStatsInput(colStats);
@@ -7040,13 +7041,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<String> partVals;
     boolean committed = false;
     getMS().openTransaction();
-
+    
     try {
-      if (tbl == null) {
-        tbl = getTable(catName, dbName, tableName);
-      }
+      tbl = Optional.ofNullable(tbl).orElse(getTable(catName, dbName, tableName));
+      mTable = Optional.ofNullable(mTable).orElse(getMS().ensureGetMTable(catName, dbName, tableName));
       partVals = getPartValsFromName(tbl, csd.getPartName());
-      parameters = getMS().updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
+      parameters = getMS().updatePartitionColumnStatistics(tbl, mTable, colStats, partVals, validWriteIds, writeId);
       if (parameters != null) {
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
@@ -7142,7 +7142,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public boolean update_partition_column_statistics(ColumnStatistics colStats) throws TException {
     // Deprecated API.
-    return updatePartitonColStatsInternal(null, colStats, null, -1);
+    return updatePartitonColStatsInternal(null, null, colStats, null, -1);
   }
 
 
@@ -7158,7 +7158,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw new InvalidInputException("Merge is not supported for non-aggregate stats");
     }
     ColumnStatistics colStats = req.getColStatsIterator().next();
-    boolean ret = updatePartitonColStatsInternal(null, colStats,
+    boolean ret = updatePartitonColStatsInternal(null, null, colStats,
         req.getValidWriteIdList(), req.getWriteId());
     return new SetPartitionsStatsResponse(ret);
   }
@@ -9170,6 +9170,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             colNames, newStatsMap, request);
       } else { // No merge.
         Table t = getTable(catName, dbName, tableName);
+        MTable mTable = getMS().ensureGetMTable(catName, dbName, tableName);
         // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
         if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
           ret = updatePartitionColStatsInBatch(t, newStatsMap,
@@ -9177,7 +9178,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         } else {
           for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
             // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-            ret = updatePartitonColStatsInternal(t, entry.getValue(),
+            ret = updatePartitonColStatsInternal(t, mTable, entry.getValue(),
                     request.getValidWriteIdList(), request.getWriteId()) && ret;
           }
         }
@@ -9215,6 +9216,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       Table t = getTable(catName, dbName, tableName);
+      MTable mTable = getMS().ensureGetMTable(catName, dbName, tableName);
       Map<String, ColumnStatistics> statsMap =  new HashMap<>();
       boolean useDirectSql = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL);
       for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
@@ -9240,7 +9242,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           if (useDirectSql) {
             statsMap.put(csNew.getStatsDesc().getPartName(), csNew);
           } else {
-            result = updatePartitonColStatsInternal(t, csNew,
+            result = updatePartitonColStatsInternal(t, mTable, csNew,
                     request.getValidWriteIdList(), request.getWriteId()) && result;
           }
         } else if (isInvalidTxnStats) {
