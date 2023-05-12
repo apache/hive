@@ -813,7 +813,7 @@ public class Utils {
    * @param key alias name
    * @return password
    */
-  public static String getPasswordFromCredentialProvider(String providerPath, String key) {
+  private static String getPasswordFromCredentialProvider(String providerPath, String key) {
     try {
       if (providerPath != null) {
         Configuration conf = new Configuration();
@@ -829,4 +829,17 @@ public class Utils {
     return null;
   }
 
+  /**
+   * Method to get the password from the configuration map if available. Otherwise, get it from the credential provider
+   * @param confMap configuration map
+   * @param key param
+   * @return password
+   */
+  public static String getPassword(Map<String, String> confMap, String key) {
+    String password = confMap.get(key);
+    if (password == null) {
+      password = getPasswordFromCredentialProvider(confMap.get(JdbcConnectionParams.SSL_STORE_PASSWORD_PATH), key);
+    }
+    return password;
+  }
 }
