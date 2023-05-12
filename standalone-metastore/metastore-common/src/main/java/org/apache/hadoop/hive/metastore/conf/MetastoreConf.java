@@ -985,6 +985,19 @@ public class MetastoreConf {
             "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
             "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
             "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
+    METASTORE_PLAIN_LDAP_USERSEARCHFILTER("metastore.authentication.ldap.userSearchFilter",
+        "hive.metastore.authentication.ldap.userSearchFilter", "",
+        "User search filter to be used with baseDN to search for users\n" +
+            "For example: (&(uid={0})(objectClass=person))"),
+    METASTORE_PLAIN_LDAP_GROUPBASEDN("metastore.authentication.ldap.groupBaseDN",
+        "hive.metastore.authentication.ldap.groupBaseDN", "",
+        "BaseDN for Group Search. This is used in conjunction with metastore.authentication.ldap.baseDN\n" +
+            "and \n" +
+            "request, succeeds if the group is part of the resultset."),
+    METASTORE_PLAIN_LDAP_GROUPSEARCHFILTER("metastore.authentication.ldap.groupSearchFilter",
+        "hive.metastore.authentication.ldap.groupSearchFilter", "",
+        "Group search filter to be used with baseDN, userSearchFilter, groupBaseDN to search for users in groups\n" +
+            "For example: (&(|(memberUid={0})(memberUid={1}))(objectClass=posixGroup))\n"),
     METASTORE_PLAIN_LDAP_BIND_USER("metastore.authentication.ldap.binddn",
             "hive.metastore.authentication.ldap.binddn", "",
 "The user with which to bind to the LDAP server, and search for the full domain name " +

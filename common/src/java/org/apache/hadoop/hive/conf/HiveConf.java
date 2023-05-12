@@ -4252,6 +4252,16 @@ public class HiveConf extends Configuration {
         "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
         "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
         "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
+    HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER("hive.server2.authentication.ldap.userSearchFilter", null,
+        "User search filter to be used with baseDN to search for users\n" +
+            "For example: (&(uid={0})(objectClass=person))"),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN("hive.server2.authentication.ldap.groupBaseDN", null,
+        "BaseDN for Group Search. This is used in conjunction with hive.server2.authentication.ldap.baseDN\n" +
+            "and \n" +
+            "request, succeeds if the group is part of the resultset."),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER("hive.server2.authentication.ldap.groupSearchFilter", null,
+        "Group search filter to be used with baseDN, userSearchFilter, groupBaseDN to search for users in groups\n" +
+            "For example: (&(|(memberUid={0})(memberUid={1}))(objectClass=posixGroup))\n"),
     HIVE_SERVER2_PLAIN_LDAP_BIND_USER("hive.server2.authentication.ldap.binddn", null,
         "The user with which to bind to the LDAP server, and search for the full domain name " +
         "of the user being authenticated.\n" +
