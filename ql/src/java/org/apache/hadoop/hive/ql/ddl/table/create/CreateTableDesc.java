@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -937,7 +936,8 @@ public class CreateTableDesc implements DDLDesc, Serializable {
             tbl.getTTable().getDictionary() : new ObjectDictionary();
         List<ByteBuffer> buffers = new ArrayList<>();
         String statsSetup = StatsSetupConst.ColumnStatsSetup.getStatsSetupAsString(true,
-            storageHandler != null && storageHandler.isMetadataTableSupported() ? "metadata" : null, // Skip metadata directory for Iceberg table
+            // Is it an Iceberg table? ignore all leftover files
+            storageHandler != null && storageHandler.isMetadataTableSupported(),
             MetaStoreUtils.getColumnNames(tbl.getCols()));
         buffers.add(ByteBuffer.wrap(statsSetup.getBytes(StandardCharsets.UTF_8)));
         dictionary.putToValues(StatsSetupConst.STATS_FOR_CREATE_TABLE, buffers);
