@@ -21,6 +21,7 @@ package org.apache.hive.service.cli.thrift;
 import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
@@ -94,7 +95,13 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       String threadPoolName = "HiveServer2-HttpHandler-Pool";
       ThreadPoolExecutor executorService = new ThreadPoolExecutor(minWorkerThreads,
           maxWorkerThreads,workerKeepAliveTime, TimeUnit.SECONDS,
-          new SynchronousQueue<Runnable>(), new ThreadFactoryWithGarbageCleanup(threadPoolName));
+          new SynchronousQueue<Runnable>(), new ThreadFactoryWithGarbageCleanup(threadPoolName)) {
+        @Override
+        public void setThreadFactory(ThreadFactory threadFactory) {
+          // ExecutorThreadPool will override the ThreadFactoryWithGarbageCleanup with his own ThreadFactory,
+          // Override this method to ignore the action.
+        }
+      };
 
       ExecutorThreadPool threadPool = new ExecutorThreadPool(executorService);
 
