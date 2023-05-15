@@ -77,7 +77,7 @@ POSTHOOK: query: select count(*) from ice01
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-5
+3
 PREHOOK: query: drop table ice01
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice01
