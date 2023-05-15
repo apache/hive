@@ -319,7 +319,6 @@
     <dependency>
       <groupId>org.apache.derby</groupId>
       <artifactId>derby</artifactId>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.mariadb.jdbc</groupId>
