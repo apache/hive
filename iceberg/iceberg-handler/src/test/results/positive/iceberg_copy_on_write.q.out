@@ -78,11 +78,11 @@ Stage-3
               Map 1 vectorized
               File Output Operator [FS_7]
                 table:{"name:":"default.ice01"}
-                Select Operator [SEL_6] (rows=7 width=78)
+                Select Operator [SEL_6] (rows=5 width=91)
                   Output:["_col0","_col1"]
-                  Filter Operator [FIL_5] (rows=7 width=78)
+                  Filter Operator [FIL_5] (rows=5 width=91)
                     predicate:(((id <= 4) and (id <> 2)) or ((id > 4) or (id = 2)) is null)
-                    TableScan [TS_0] (rows=9 width=81)
+                    TableScan [TS_0] (rows=7 width=78)
                       default@ice01,ice01,Tbl:COMPLETE,Col:COMPLETE,Output:["id","name"]
 
 PREHOOK: query: delete from ice01 where id>4 OR id=2
