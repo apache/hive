@@ -28,14 +28,8 @@ import org.apache.hadoop.hive.metastore.properties.PropertyException;
 import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyMap;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.security.SecurityUtil;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlet.Source;
@@ -49,16 +43,11 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,7 +67,8 @@ public class PropertyServlet extends HttpServlet {
   private final ServletSecurity security;
 
   PropertyServlet(Configuration configuration, RawStore store) {
-    this.security = new ServletSecurity(configuration, false);
+    boolean jwt = "JWT".equals(MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH));
+    this.security = new ServletSecurity(configuration, jwt);
     this.objectStore = store;
   }
 
@@ -240,35 +230,6 @@ public class PropertyServlet extends HttpServlet {
     security.execute(request, response, PropertyServlet.this::runGet);
   }
 
-  /**
-   * Performs a Json client call.
-   * @param url the url
-   * @param method the http method
-   * @param arg the argument that will be transported as JSon
-   * @return the result the was returned through Json
-   * @throws IOException if marshalling the request/response fail
-   */
-   public static Object clientCall(URL url, String method, Object arg) throws IOException {
-    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-    con.setRequestMethod(method);
-    con.setRequestProperty(ServletSecurity.X_USER, url.getUserInfo());
-    con.setRequestProperty("Content-Type", "application/json");
-    con.setRequestProperty("Accept", "application/json");
-    con.setDoOutput(true);
-    con.setDoInput(true);
-    DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-    wr.writeBytes(new Gson().toJson(arg));
-    wr.flush();
-    wr.close();
-    int responseCode = con.getResponseCode();
-    if (responseCode == HttpServletResponse.SC_OK) {
-      try (Reader reader = new BufferedReader(
-          new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
-        return new Gson().fromJson(reader, Object.class);
-      }
-    }
-    return null;
-  }
 
   /**
    * Convenience method to start a http server that only serves this servlet.

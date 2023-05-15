@@ -5828,10 +5828,10 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private <T> T doFetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
-    Query query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
-    query.declareParameters("java.lang.String key");
-    query.setUnique(true);
+    Query<MMetastoreDBProperties> query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
     try {
+      query.declareParameters("java.lang.String key");
+      query.setUnique(true);
       MMetastoreDBProperties properties = (MMetastoreDBProperties) query.execute(key);
       if (properties != null) {
         return (T) (transform != null? transform.apply(properties) : properties);
@@ -5859,7 +5859,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
   private <T> Map<String, T> doSelectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
     final boolean all = key == null || key.isEmpty();
-    final Query query;
+    final Query<MMetastoreDBProperties> query;
     if (all) {
       query = pm.newQuery(MMetastoreDBProperties.class);
     } else {

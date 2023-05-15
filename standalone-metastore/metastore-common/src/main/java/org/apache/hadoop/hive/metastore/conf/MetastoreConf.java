@@ -1730,6 +1730,10 @@ public class MetastoreConf {
         "hive.metastore.properties.servlet.port", -1,
         "Property-maps servlet port."
     ),
+    PROPERTIES_SERVLET_AUTH("hive.metastore.properties.servlet.auth",
+        "hive.metastore.properties.servlet.auth", "jwt",
+        "Property-maps servlet authentication method (simple or jwt)."
+    ),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

@@ -105,7 +105,7 @@ public class ServletSecurity {
       UserGroupInformation clientUgi;
       // Temporary, and useless for now. Here only to allow this to work on an otherwise kerberized
       // server.
-      if (isSecurityEnabled) {
+      if (isSecurityEnabled || jwtAuthEnabled) {
         LOG.info("Creating proxy user for: {}", userFromHeader);
         clientUgi = UserGroupInformation.createProxyUser(userFromHeader, UserGroupInformation.getLoginUser());
       } else {
@@ -118,7 +118,10 @@ public class ServletSecurity {
       };
       try {
         clientUgi.doAs(action);
-      } catch (InterruptedException | RuntimeException e) {
+      } catch (InterruptedException e) {
+        LOG.error("Exception when executing http request as user: " + clientUgi.getUserName(), e);
+        Thread.currentThread().interrupt();
+      } catch (RuntimeException e) {
         LOG.error("Exception when executing http request as user: " + clientUgi.getUserName(),
             e);
         throw new ServletException(e);
