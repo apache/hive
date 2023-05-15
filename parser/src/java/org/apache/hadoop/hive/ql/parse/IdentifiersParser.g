@@ -408,6 +408,13 @@ timeQualifiers
     | KW_SECOND -> Identifier["second"]
     ;
 
+timeUnitQualifiers
+    :
+    KW_DAY -> Identifier["days"]
+    | KW_HOUR -> Identifier["hours"]
+    | KW_MINUTE -> Identifier["minutes"]
+    ;
+
 constant
 @init { gParent.pushMsg("constant", state); }
 @after { gParent.popMsg(state); }
@@ -977,6 +984,7 @@ nonReserved
     | KW_SYSTEM_TIME | KW_SYSTEM_VERSION
     | KW_EXPIRE_SNAPSHOTS
     | KW_SET_CURRENT_SNAPSHOT
+    | KW_BRANCH | KW_SNAPSHOTS | KW_RETAIN | KW_RETENTION
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -721,6 +722,28 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       thread.setName("remove-snapshot-" + completeName + "-" + deleteThreadsIndex.getAndIncrement());
       return thread;
     });
+  }
+
+  @Override
+  public void alterTableBranchOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      AlterTableBranchSpec alterBranchSpec) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() ->
+        new UnsupportedOperationException(String.format("Cannot alter branch on iceberg table" +
+            " %s.%s which has no snapshot", hmsTable.getDbName(), hmsTable.getTableName())));
+
+    switch (alterBranchSpec.getOperationType()) {
+      case CREATE_BRANCH:
+        AlterTableBranchSpec.CreateBranchSpec createBranchSpec =
+            (AlterTableBranchSpec.CreateBranchSpec) alterBranchSpec.getOperationParams();
+        IcebergBranchExec.createBranch(icebergTable, createBranchSpec);
+        break;
+      default:
+        throw new UnsupportedOperationException(
+            String.format("Operation type %s is not supported", alterBranchSpec.getOperationType().name()));
+    }
+
   }
 
   @Override
