@@ -353,32 +353,39 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table table = getTable(hmsTable);
     String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE).toLowerCase();
     Map<String, String> stats = Maps.newHashMap();
-    switch (statsSource) {
-      case ICEBERG:
-        if (table.currentSnapshot() != null) {
-          Map<String, String> summary = table.currentSnapshot().summary();
-          if (summary != null) {
-            if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
-              stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
-            }
-            if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
-              stats.put(StatsSetupConst.ROW_COUNT, summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
-            }
-            if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
-              stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
-            }
+    if (statsSource.equals(ICEBERG)) {
+      if (table.currentSnapshot() != null) {
+        Map<String, String> summary = table.currentSnapshot().summary();
+        if (summary != null) {
+
+          if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
+            stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
           }
-        } else {
-          stats.put(StatsSetupConst.NUM_FILES, "0");
-          stats.put(StatsSetupConst.ROW_COUNT, "0");
-          stats.put(StatsSetupConst.TOTAL_SIZE, "0");
+
+          if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
+            long totalRecords = Long.parseLong(summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
+            if (summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
+                summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
+
+              long totalEqDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_EQ_DELETES_PROP));
+              long totalPosDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_POS_DELETES_PROP));
+
+              long actualRecords = totalRecords - (totalEqDeletes > 0 ? 0 : totalPosDeletes);
+              totalRecords = actualRecords > 0 ? actualRecords : totalRecords;
+              // actualRecords maybe -ve in edge cases
+            }
+            stats.put(StatsSetupConst.ROW_COUNT, String.valueOf(totalRecords));
+          }
+
+          if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
+            stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
+          }
         }
-        break;
-      case PUFFIN:
-        // place holder for puffin
-        break;
-      default:
-        // fall back to metastore
+      } else {
+        stats.put(StatsSetupConst.NUM_FILES, "0");
+        stats.put(StatsSetupConst.ROW_COUNT, "0");
+        stats.put(StatsSetupConst.TOTAL_SIZE, "0");
+      }
     }
     return stats;
   }
