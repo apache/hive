@@ -106,8 +106,8 @@ public class HiveAlterHandler implements AlterHandler {
       IHMSHandler handler, String writeIdList)
           throws InvalidOperationException, MetaException {
     catName = normalizeIdentifier(catName);
-    name = name.trim().toLowerCase();
-    dbname = dbname.trim().toLowerCase();
+    name = normalizeIdentifier(name);
+    dbname = normalizeIdentifier(dbname);
 
     final boolean cascade;
     final boolean replDataLocationChanged;

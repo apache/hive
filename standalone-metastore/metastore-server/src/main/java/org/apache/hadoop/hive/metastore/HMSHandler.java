@@ -128,6 +128,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependNotNullCatToDbName;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 /**
  * Default handler for all Hive Metastore methods. Implements methods defined in hive_metastore.thrift.
@@ -2276,8 +2277,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           + " already exists");
     }
 
-    tbl.setDbName(tbl.getDbName().trim());
-    tbl.setTableName(tbl.getTableName().trim());
+    tbl.setDbName(normalizeIdentifier(tbl.getDbName()));
+    tbl.setTableName(normalizeIdentifier(tbl.getTableName()));
 
     if (transformer != null) {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
@@ -3792,7 +3793,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if (distinctTableNames.size() > tableBatchSize) {
           List<String> lowercaseTableNames = new ArrayList<>();
           for (String tableName : tableNames) {
-            lowercaseTableNames.add(org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier(tableName));
+            lowercaseTableNames.add(normalizeIdentifier(tableName));
           }
           distinctTableNames = new ArrayList<>(new HashSet<>(lowercaseTableNames));
         }
