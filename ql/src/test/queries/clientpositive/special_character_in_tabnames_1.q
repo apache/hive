@@ -8,8 +8,8 @@ set hive.strict.checks.cartesian.product=false;
 
 -- SORT_QUERY_RESULTS
 
-create database `db~!@#$%^&*(),<>`;
-use `db~!@#$%^&*(),<>`;
+create database `db"% &()*+,-/:;<=>?[]_|{}$^!~#``@`;
+use `db"% &()*+,-/:;<=>?[]_|{}$^!~#``@`;
 
 create table `c/b/o_t1`(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
 create table `//cbo_t2`(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
@@ -610,4 +610,4 @@ insert into `t//` values(null);
 analyze table `t//` compute statistics;
 explain select * from `t//`;
 
-drop database `db~!@#$%^&*(),<>` cascade;
+drop database `db"% &()*+,-/:;<=>?[]_|{}$^!~#``@` cascade;
