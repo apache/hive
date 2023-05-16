@@ -415,6 +415,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       @Override
       public void setThreadFactory(ThreadFactory threadFactory) {
         // Avoid ExecutorThreadPool overriding the ThreadFactory
+        LOG.warn("Ignore setting the thread factory as the pool has already provided his own: {}", getThreadFactory());
       }
     };
     ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);

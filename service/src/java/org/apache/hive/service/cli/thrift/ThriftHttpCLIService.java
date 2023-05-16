@@ -100,6 +100,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         public void setThreadFactory(ThreadFactory threadFactory) {
           // ExecutorThreadPool will override the ThreadFactoryWithGarbageCleanup with his own ThreadFactory,
           // Override this method to ignore the action.
+          LOG.warn("Ignore setting the thread factory as the pool has already provided his own: {}", getThreadFactory());
         }
       };
 
