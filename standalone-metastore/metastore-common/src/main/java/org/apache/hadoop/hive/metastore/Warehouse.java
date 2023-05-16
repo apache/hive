@@ -330,7 +330,7 @@ public class Warehouse {
       if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
         return getWhRootExternal();
       }
-      return new Path(getWhRootExternal(), dbDirFromDbName(dbName);
+      return new Path(getWhRootExternal(), dbDirFromDbName(dbName));
     } else {
       if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
         return getWhRoot();
