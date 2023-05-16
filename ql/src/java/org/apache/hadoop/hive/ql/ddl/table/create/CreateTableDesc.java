@@ -936,7 +936,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
             tbl.getTTable().getDictionary() : new ObjectDictionary();
         List<ByteBuffer> buffers = new ArrayList<>();
         String statsSetup = StatsSetupConst.ColumnStatsSetup.getStatsSetupAsString(true,
-            // Ignore all Iceberg leftover files when storageHandler.isMetadataTableSupported() is true,
+            // Ignore all Iceberg leftover files when storageHandler.isTableIdentifierSupported() is true,
             // as the method is only enabled in Iceberg currently.
             storageHandler != null && storageHandler.isTableIdentifierSupported(),
             MetaStoreUtils.getColumnNames(tbl.getCols()));
