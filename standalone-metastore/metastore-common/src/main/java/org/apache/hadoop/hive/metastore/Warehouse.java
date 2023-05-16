@@ -240,15 +240,15 @@ public class Warehouse {
       if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
         return getWhRootExternal();
       } else {
-        return new Path(getWhRootExternal(), dbDirFromDbName(db));
+        return new Path(getWhRootExternal(), dbDirFromDbName(db.getName()));
       }
     } else {
-      return new Path(getDnsPath(new Path(cat.getLocationUri())), dbDirFromDbName(db));
+      return new Path(getDnsPath(new Path(cat.getLocationUri())), dbDirFromDbName(db.getName()));
     }
   }
 
-  private String dbDirFromDbName(Database db) throws MetaException {
-    return db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX;
+  private String dbDirFromDbName(final String dbName) {
+    return MetaStoreUtils.encodeTableName(dbName.toLowerCase()) + DATABASE_WAREHOUSE_SUFFIX;
   }
 
   /**
@@ -307,7 +307,7 @@ public class Warehouse {
       return getWhRoot();
     }
 
-    return new Path(getWhRoot(), db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    return new Path(getWhRoot(), dbDirFromDbName(db.getName()));
   }
 
   public Path getDefaultDatabasePath(String dbName) throws MetaException {
@@ -329,12 +329,12 @@ public class Warehouse {
       if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
         return getWhRootExternal();
       }
-      return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+      return new Path(getWhRootExternal(), dbDirFromDbName(dbName);
     } else {
       if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
         return getWhRoot();
       }
-      return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+      return new Path(getWhRoot(), dbDirFromDbName(dbName));
     }
   }
 
