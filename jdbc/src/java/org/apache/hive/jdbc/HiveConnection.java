@@ -778,8 +778,7 @@ public class HiveConnection implements java.sql.Connection {
     if (useSsl) {
       String useTwoWaySSL = sessConfMap.get(JdbcConnectionParams.USE_TWO_WAY_SSL);
       String sslTrustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
-      String sslTrustStorePassword = sessConfMap.get(
-        JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+      String sslTrustStorePassword = Utils.getPassword(sessConfMap, JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
       KeyStore sslTrustStore;
       SSLConnectionSocketFactory socketFactory;
       SSLContext sslContext;
@@ -893,8 +892,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isSslConnection()) {
       // get SSL socket
       String sslTrustStore = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
-      String sslTrustStorePassword = sessConfMap.get(
-        JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+      String sslTrustStorePassword = Utils.getPassword(sessConfMap, JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
 
       if (sslTrustStore == null || sslTrustStore.isEmpty()) {
         transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout, maxMessageSize);
@@ -1007,7 +1005,7 @@ public class HiveConnection implements java.sql.Connection {
         JdbcConnectionParams.SUNX509_ALGORITHM_STRING,
         JdbcConnectionParams.SUNJSSE_ALGORITHM_STRING);
       String keyStorePath = sessConfMap.get(JdbcConnectionParams.SSL_KEY_STORE);
-      String keyStorePassword = sessConfMap.get(JdbcConnectionParams.SSL_KEY_STORE_PASSWORD);
+      String keyStorePassword = Utils.getPassword(sessConfMap, JdbcConnectionParams.SSL_KEY_STORE_PASSWORD);
       KeyStore sslKeyStore = KeyStore.getInstance(JdbcConnectionParams.SSL_KEY_STORE_TYPE);
 
       if (keyStorePath == null || keyStorePath.isEmpty()) {
@@ -1022,8 +1020,7 @@ public class HiveConnection implements java.sql.Connection {
       TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
         JdbcConnectionParams.SUNX509_ALGORITHM_STRING);
       String trustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
-      String trustStorePassword = sessConfMap.get(
-        JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+      String trustStorePassword = Utils.getPassword(sessConfMap, JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
       String trustStoreType = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
       if (trustStoreType == null || trustStoreType.isEmpty()) {
         trustStoreType = KeyStore.getDefaultType();
