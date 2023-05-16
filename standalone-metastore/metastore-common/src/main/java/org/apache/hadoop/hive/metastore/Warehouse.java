@@ -60,6 +60,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 /**
  * This class represents a warehouse where data of Hive tables is stored
@@ -248,7 +249,7 @@ public class Warehouse {
   }
 
   private String dbDirFromDbName(final String dbName) {
-    return MetaStoreUtils.encodeTableName(dbName.toLowerCase()) + DATABASE_WAREHOUSE_SUFFIX;
+    return MetaStoreUtils.encodeTableName(normalizeIdentifier(dbName)) + DATABASE_WAREHOUSE_SUFFIX;
   }
 
   /**
