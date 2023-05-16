@@ -2162,7 +2162,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       StringBuilder filterBuilder = new StringBuilder();
       List<String> parameterVals = new ArrayList<>();
-      appendSimpleCondition(filterBuilder, "database.name", new String[] {db}, parameterVals);
+      appendPatternCondition(filterBuilder, "database.name", new String[] {db}, parameterVals);
       appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
       if(tbl_names != null){
         appendSimpleCondition(filterBuilder, "tableName", lowered_tbl_names.toArray(new String[0]), parameterVals);
