@@ -18,6 +18,7 @@
 
 package org.apache.hive.jdbc;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -31,6 +32,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.rpc.thrift.TStatus;
@@ -187,6 +189,8 @@ public class Utils {
     static final String SUNX509_ALGORITHM_STRING = "SunX509";
     static final String SUNJSSE_ALGORITHM_STRING = "SunJSSE";
    // --------------- End 2 way ssl options ----------------------------
+
+    static final String SSL_STORE_PASSWORD_PATH = "storePasswordPath";
 
     private static final String HIVE_VAR_PREFIX = "hivevar:";
     public static final String HIVE_CONF_PREFIX = "hiveconf:";
@@ -803,4 +807,39 @@ public class Utils {
     }
   }
 
+  /**
+   * Method to get the password from the credential provider
+   * @param providerPath provider path
+   * @param key alias name
+   * @return password
+   */
+  private static String getPasswordFromCredentialProvider(String providerPath, String key) {
+    try {
+      if (providerPath != null) {
+        Configuration conf = new Configuration();
+        conf.set("hadoop.security.credential.provider.path", providerPath);
+        char[] password = conf.getPassword(key);
+        if (password != null) {
+          return new String(password);
+        }
+      }
+    } catch(IOException exception) {
+      LOG.warn("Could not retrieve password for " + key, exception);
+    }
+    return null;
+  }
+
+  /**
+   * Method to get the password from the configuration map if available. Otherwise, get it from the credential provider
+   * @param confMap configuration map
+   * @param key param
+   * @return password
+   */
+  public static String getPassword(Map<String, String> confMap, String key) {
+    String password = confMap.get(key);
+    if (password == null) {
+      password = getPasswordFromCredentialProvider(confMap.get(JdbcConnectionParams.SSL_STORE_PASSWORD_PATH), key);
+    }
+    return password;
+  }
 }

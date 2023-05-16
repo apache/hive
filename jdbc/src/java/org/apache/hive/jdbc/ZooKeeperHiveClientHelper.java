@@ -101,11 +101,13 @@ class ZooKeeperHiveClientHelper {
       connParams.setZookeeperKeyStoreLocation(
           StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_KEYSTORE_LOCATION), ""));
       connParams.setZookeeperKeyStorePassword(
-          StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_KEYSTORE_PASSWORD), ""));
+          StringUtils.defaultString(Utils.getPassword(sessionConf, JdbcConnectionParams.ZOOKEEPER_KEYSTORE_PASSWORD),
+              ""));
       connParams.setZookeeperTrustStoreLocation(
           StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_LOCATION), ""));
       connParams.setZookeeperTrustStorePassword(
-          StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_PASSWORD), ""));
+          StringUtils.defaultString(Utils.getPassword(sessionConf, JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_PASSWORD),
+              ""));
     }
   }
 
