@@ -107,6 +107,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -1348,7 +1349,6 @@ public abstract class TestHiveMetaStore {
     }
   }
 
-
   @Test
   public void testDatabaseLocationOnDrop() throws Throwable {
     try {
@@ -1393,6 +1393,23 @@ public abstract class TestHiveMetaStore {
       System.err.println("testDatabaseLocationOnDrop() failed.");
       throw e;
     }
+  }
+
+  @Test
+  public void testCreateDatabaseDefaultLocationSpecialChars() throws Exception {
+    final String dbName = "db\"% &()*+,-/:;<=>?[]_|{}$^!~#``@";
+    silentDropDatabase(dbName);
+
+    Database database = new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    Database createdDatabase = client.getDatabase(database.getName());
+
+    Assert.assertEquals("Comparing database name", dbName, createdDatabase.getName());
+    Assert.assertEquals("Comparing location", 
+        warehouse.getWhRootExternal() + "/" + encodeTableName(createdDatabase.getName()) + ".db",
+        createdDatabase.getLocationUri());
   }
 
   @Test
