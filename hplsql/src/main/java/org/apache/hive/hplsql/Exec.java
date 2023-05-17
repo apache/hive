@@ -1878,9 +1878,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
         sql.append(", ");
       }
     }
-    sql.append(", '");
+    sql.append(", \"");
     sql.append(getStoredProcedure(name.toUpperCase()));
-    sql.append("')");
+    sql.append("\")");
     exec.stackPush(sql);
     exec.registerUdf();
     return true;
