@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.runtime.api.TaskFailureType;
 import org.apache.tez.runtime.api.events.CustomProcessorEvent;
 import org.slf4j.Logger;
@@ -266,7 +267,6 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       rproc.init(mrReporter, inputs, outputs);
       rproc.run();
 
-      //done - output does not need to be committed as hive does not use outputcommitter
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
     } catch (Throwable t) {
       originalThrowable = t;
@@ -288,8 +288,34 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
           originalThrowable = t;
         }
       }
+
+      // commit the output tasks
+      try {
+        for (LogicalOutput output : outputs.values()) {
+          if (output instanceof MROutput) {
+            MROutput mrOutput = (MROutput) output;
+            if (mrOutput.isCommitRequired()) {
+              mrOutput.commit();
+            }
+          }
+        }
+      } catch (Throwable t) {
+        if (originalThrowable == null) {
+          originalThrowable = t;
+        }
+      }
+
       if (originalThrowable != null) {
-        LOG.error(StringUtils.stringifyException(originalThrowable));
+        LOG.error("Failed initializeAndRunProcessor", originalThrowable);
+        // abort the output tasks
+        for (LogicalOutput output : outputs.values()) {
+          if (output instanceof MROutput) {
+            MROutput mrOutput = (MROutput) output;
+            if (mrOutput.isCommitRequired()) {
+              mrOutput.abort();
+            }
+          }
+        }
         if (originalThrowable instanceof InterruptedException) {
           throw (InterruptedException) originalThrowable;
         } else {

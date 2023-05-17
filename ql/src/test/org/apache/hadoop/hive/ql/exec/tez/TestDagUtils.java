@@ -19,10 +19,14 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -65,5 +69,28 @@ public class TestDagUtils {
     Token<? extends TokenIdentifier> actualToken = dag.getCredentials().getToken(testTokenAlias);
     assertEquals(testToken, actualToken);
   }
-  
+
+  @Test
+  public void outputCommitterSetToDefaultIfNotPresent() throws IOException {
+    DagUtils dagUtils = DagUtils.getInstance();
+    HiveConf conf = new HiveConf();
+
+    JobConf configuration = dagUtils.createConfiguration(conf);
+
+    assertEquals(HiveFileFormatUtils.NullOutputCommitter.class.getName(),
+            configuration.get("mapred.output.committer.class"));
+  }
+
+  @Test
+  public void outputCommitterNotOverriddenIfPresent() throws IOException {
+    DagUtils dagUtils = DagUtils.getInstance();
+    HiveConf conf = new HiveConf();
+    conf.set("mapred.output.committer.class", TestTezOutputCommitter.CountingOutputCommitter.class.getName());
+
+    JobConf configuration = dagUtils.createConfiguration(conf);
+
+    assertEquals(TestTezOutputCommitter.CountingOutputCommitter.class.getName(),
+            configuration.get("mapred.output.committer.class"));
+  }
+
 }

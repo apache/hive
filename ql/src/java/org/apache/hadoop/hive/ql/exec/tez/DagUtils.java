@@ -47,6 +47,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tez.dag.api.OutputCommitterDescriptor;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos;
@@ -1243,7 +1244,9 @@ public class DagUtils {
 
     JobConf conf = new JobConf(new TezConfiguration(hiveConf));
 
-    conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
+    if (conf.get("mapred.output.committer.class") == null) {
+      conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
+    }
 
     conf.setBoolean("mapred.committer.job.setup.cleanup.needed", false);
     conf.setBoolean("mapred.committer.job.task.cleanup.needed", false);
@@ -1361,9 +1364,13 @@ public class DagUtils {
 
     // final vertices need to have at least one output
     if (!hasChildren) {
+      OutputCommitterDescriptor ocd = null;
+      if (HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER) != null) {
+        ocd = OutputCommitterDescriptor.create(HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER));
+      }
       v.addDataSink("out_"+work.getName(), new DataSinkDescriptor(
           OutputDescriptor.create(MROutput.class.getName())
-          .setUserPayload(TezUtils.createUserPayloadFromConf(conf)), null, null));
+          .setUserPayload(TezUtils.createUserPayloadFromConf(conf)), ocd, null));
     }
 
     return v;
