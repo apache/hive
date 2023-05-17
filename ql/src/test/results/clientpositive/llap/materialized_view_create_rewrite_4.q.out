@@ -323,9 +323,9 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	0/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:1:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -567,9 +567,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	Yes                 	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	1/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:1:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1126,9 +1126,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	0/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:2:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1442,9 +1442,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	0/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:3:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1752,9 +1752,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	0/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:4:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -2238,9 +2238,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	0/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:5:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)

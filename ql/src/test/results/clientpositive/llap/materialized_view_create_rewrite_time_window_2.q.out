@@ -121,9 +121,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n100	0/0/0               	 
-hive.default.cmv_basetable_n100	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n100	:1:9223372036854775807::	 
+default.cmv_basetable_n100	:1:9223372036854775807::	 
 PREHOOK: query: insert into cmv_basetable_2_n100 values
  (3, 'charlie', 15.8, 1)
 PREHOOK: type: QUERY
@@ -185,9 +185,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	Yes                 	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n100	1/0/0               	 
-hive.default.cmv_basetable_n100	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n100	:1:9223372036854775807::	 
+default.cmv_basetable_n100	:1:9223372036854775807::	 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n300 REBUILD
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable_2_n100
@@ -249,9 +249,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n100	0/0/0               	 
-hive.default.cmv_basetable_n100	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n100	:2:9223372036854775807::	 
+default.cmv_basetable_n100	:1:9223372036854775807::	 
 PREHOOK: query: drop materialized view cmv_mat_view_n300
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_mat_view_n300

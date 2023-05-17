@@ -418,9 +418,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n3	0/0/0               	 
-hive.default.cmv_basetable_n6	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n3	:2:9223372036854775807::	 
+default.cmv_basetable_n6	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)

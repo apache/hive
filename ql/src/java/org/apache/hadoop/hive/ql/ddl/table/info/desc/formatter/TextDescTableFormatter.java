@@ -21,8 +21,11 @@ package org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -253,22 +256,39 @@ class TextDescTableFormatter extends DescTableFormatter {
           : table.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
       tableInfo.append(LINE_DELIM).append("# Materialized View Source table information").append(LINE_DELIM);
       TextMetaDataTable metaDataTable = new TextMetaDataTable();
-      metaDataTable.addRow("Table name", "I/U/D since last rebuild");
+      metaDataTable.addRow("Table name", "Snapshot");
       List<SourceTable> sourceTableList = new ArrayList<>(table.getMVMetadata().getSourceTables());
 
       sourceTableList.sort(Comparator.<SourceTable, String>comparing(sourceTable -> sourceTable.getTable().getDbName())
               .thenComparing(sourceTable -> sourceTable.getTable().getTableName()));
+
+      MaterializationSnapshotFormatter snapshotFormatter;
+      MaterializationSnapshot snapshot = table.getMVMetadata().getSnapshot();
+      if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
+        snapshotFormatter = (qualifiedTableName) -> snapshot.getTableSnapshots().get(qualifiedTableName).toString();
+      } else if (snapshot != null && snapshot.getValidTxnList() != null) {
+        ValidTxnWriteIdList validReaderWriteIdList = new ValidTxnWriteIdList(snapshot.getValidTxnList());
+        snapshotFormatter = (qualifiedTableName) -> {
+          ValidWriteIdList writeIdList = validReaderWriteIdList.getTableValidWriteIdList(qualifiedTableName);
+          return writeIdList != null ? writeIdList.toString().replace(qualifiedTableName, "") : "Unknown";
+        };
+      } else {
+        snapshotFormatter = (qualifiedTableName) -> "N/A";
+      }
+
       for (SourceTable sourceTable : sourceTableList) {
-        String qualifiedTableName = TableName.getQualified(
-                sourceTable.getTable().getCatName(),
+        String qualifiedTableName = TableName.getDbTable(
                 sourceTable.getTable().getDbName(),
                 sourceTable.getTable().getTableName());
         metaDataTable.addRow(qualifiedTableName,
-                String.format("%d/%d/%d",
-                        sourceTable.getInsertedCount(), sourceTable.getUpdatedCount(), sourceTable.getDeletedCount()));
+                snapshotFormatter.getSnapshotOf(qualifiedTableName));
       }
       tableInfo.append(metaDataTable.renderTable(isOutputPadded));
     }
+  }
+
+  private interface MaterializationSnapshotFormatter {
+    String getSnapshotOf(String qualifiedTableName);
   }
 
   private void getStorageDescriptorInfo(StringBuilder tableInfo, Table table, StorageDescriptor storageDesc) {
