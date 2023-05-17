@@ -258,6 +258,7 @@ class CompactionTxnHandler extends TxnHandler {
           sb.append("\"CQ_POOL_NAME\" IS NULL OR  \"CQ_ENQUEUE_TIME\" < (")
             .append(getEpochFn(dbProduct)).append(" - ").append(poolTimeout).append(")");
         }
+        sb.append(" ORDER BY \"CQ_ID\" ASC");
         String query = sb.toString();
         stmt = dbConn.prepareStatement(query);
         if (hasPoolName) {
