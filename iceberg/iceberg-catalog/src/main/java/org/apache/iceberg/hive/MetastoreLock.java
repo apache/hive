@@ -332,7 +332,8 @@ public class MetastoreLock implements HiveLock {
                     Thread.currentThread().interrupt();
                     interrupted.set(true);
                     LOG.warn("Interrupted while creating lock on table {}.{}", databaseName, tableName, e);
-                    throw new LockException("Interrupted while creating lock", e);
+                    throw new LockException(
+                            e, "Interrupted while creating lock on table %s.%s", databaseName, tableName);
                   }
                 },
                 LockException.class);
