@@ -770,7 +770,7 @@ public class ThriftHttpServlet extends TServlet {
     String authMechs = request.getHeader(AUTH_TYPE);
 
     if (authType.getAuthName().equalsIgnoreCase(authMechs) && this.authType.isEnabled(authType) ||
-        ("UIDPWD".equalsIgnoreCase(authMechs) && this.authType.isPasswordBasedAuth(authType))) {
+        "UIDPWD".equalsIgnoreCase(authMechs) && this.authType.isPasswordBasedAuth(authType)) {
       return true;
     } else if (authMechs == null) {
       // Kerberos -> JWT -> SAML -> Password(fall through if there is no match)
