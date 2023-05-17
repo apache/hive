@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -66,7 +65,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
@@ -530,16 +528,10 @@ public class MetaStoreServerUtils {
         StatsSetupConst.ColumnStatsSetup statsSetup = StatsSetupConst.ColumnStatsSetup.parseStatsSetup(val);
         if (statsSetup.enabled) {
           try {
-            PathFilter pathFilter = FileUtils.HIDDEN_FILES_PATH_FILTER;
-            if (StringUtils.isNotEmpty(statsSetup.fileToEscape)) {
-              final Set<String> filesToEscape = new HashSet<>();
-              for (String fileName : statsSetup.fileToEscape.split(",")) {
-                filesToEscape.add(fileName.trim());
-              }
-              pathFilter = p -> !filesToEscape.contains(p.getName());
-            }
+            // For an Iceberg table, a new snapshot is generated, so any leftover files would be ignored
             // Set the column stats true in order to make it merge-able
-            if (newDir || wh.isEmptyDir(tblPath, pathFilter)) {
+            if (newDir || statsSetup.isIcebergTable ||
+                wh.isEmptyDir(tblPath, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
               List<String> columns = statsSetup.columnNames;
               if (columns == null || columns.isEmpty()) {
                 columns = getColumnNames(tbl.getSd().getCols());
@@ -547,7 +539,7 @@ public class MetaStoreServerUtils {
               StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(), columns, StatsSetupConst.TRUE);
             }
           } catch (IOException e) {
-            LOG.error("Error while checking the table directory: " + tblPath + " is empty or not", e);
+            LOG.error("Error while checking the table directory: " + tblPath, e);
             throw ExceptionHandler.newMetaException(e);
           }
         }

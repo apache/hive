@@ -244,14 +244,14 @@ Stage-0
     Stage-1
       Reducer 2 vectorized
       File Output Operator [FS_8]
-        Select Operator [SEL_7] (rows=9 width=192)
+        Select Operator [SEL_7] (rows=9 width=95)
           Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE] vectorized
           SHUFFLE [RS_6]
-            Select Operator [SEL_5] (rows=9 width=192)
+            Select Operator [SEL_5] (rows=9 width=95)
               Output:["_col0","_col1","_col2"]
-              TableScan [TS_0] (rows=9 width=192)
-                default@tbl_ice_puffin,tbl_ice_puffin,Tbl:COMPLETE,Col:NONE,Output:["a","b","c"]
+              TableScan [TS_0] (rows=9 width=95)
+                default@tbl_ice_puffin,tbl_ice_puffin,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
 
 PREHOOK: query: drop table if exists tbl_ice_puffin
 PREHOOK: type: DROPTABLE
@@ -339,16 +339,17 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_ice_puffin
 col_name            	a                   
 data_type           	int                 
-min                 	                    
-max                 	                    
-num_nulls           	                    
-distinct_count      	                    
+min                 	1                   
+max                 	333                 
+num_nulls           	0                   
+distinct_count      	7                   
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    
 num_falses          	                    
-bit_vector          	                    
+bit_vector          	HL                  
 comment             	                    
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists tbl_ice

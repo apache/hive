@@ -236,7 +236,7 @@ public class StatsSetupConst {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     public boolean enabled;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    public String fileToEscape;
+    public boolean isIcebergTable;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public List<String> columnNames = new ArrayList<>();
 
@@ -255,13 +255,13 @@ public class StatsSetupConst {
      * Get json representation of the ColumnStatsSetup
      */
     public static String getStatsSetupAsString(boolean enabled,
-        String fileToEscape,
+        boolean isIcebergTable,
         List<String> columns) {
       try {
         ColumnStatsSetup statsSetup = new ColumnStatsSetup();
         statsSetup.enabled = enabled;
+        statsSetup.isIcebergTable = isIcebergTable;
         statsSetup.columnNames = new ArrayList<>(columns);
-        statsSetup.fileToEscape = fileToEscape;
         return objectWriter.writeValueAsString(statsSetup);
       } catch (Exception e) {
         // this should not happen
