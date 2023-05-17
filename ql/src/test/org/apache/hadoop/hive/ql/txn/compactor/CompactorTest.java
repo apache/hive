@@ -128,7 +128,7 @@ public abstract class CompactorTest {
   private final AtomicBoolean stop = new AtomicBoolean();
   private Path tmpdir;
   FileSystem fs;
-  
+
   @Before
   @BeforeEach
   public void setup() throws Exception {

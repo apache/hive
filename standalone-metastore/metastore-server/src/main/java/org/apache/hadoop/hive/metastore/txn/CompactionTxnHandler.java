@@ -40,6 +40,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -808,7 +809,7 @@ class CompactionTxnHandler extends TxnHandler {
   private void removeRetryQueueEntries(Connection dbConn, CompactionInfo info) throws MetaException, RetryException {
     PreparedStatement pStmt = null;
     String query = "DELETE FROM \"TXN_CLEANUP_QUEUE\" WHERE \"TCQ_DATABASE\" = ? " +
-            "AND \"TCQ_TABLE\" = ? AND \"TCQ_PARTITION\" " + (info.partName != null ? "= ?" : "IS NULL");
+            "AND \"TCQ_TABLE\" = ? AND (\"TCQ_PARTITION\" = ? OR \"TCQ_PARTITION\" IS NULL)";
     try {
       LOG.debug("Going to execute update <{}>", query);
       pStmt = dbConn.prepareStatement(query);
@@ -816,6 +817,10 @@ class CompactionTxnHandler extends TxnHandler {
       pStmt.setString(2, info.tableName);
       if (info.partName != null) {
         pStmt.setString(3, info.partName);
+      } else {
+        // Since the type of 'TCQ_PARTITION' column is varchar.
+        // Hence, setting null for VARCHAR type.
+        pStmt.setNull(3, Types.VARCHAR);
       }
       int rc = pStmt.executeUpdate();
       LOG.debug("Removed {} records in txn_cleanup_queue", rc);
@@ -1593,16 +1598,11 @@ class CompactionTxnHandler extends TxnHandler {
         if (isAbort) {
           // Check whether we need to do an insert to the TXN_CLEANUP_QUEUE or an update to TXN_CLEANUP_QUEUE.
           if (!info.hasOldAbort) {
-            if (info.partName != null) {
-              query = "INSERT INTO \"TXN_CLEANUP_QUEUE\" (\"TCQ_RETRY_RETENTION\", \"TCQ_ERROR_MESSAGE\", " +
-                      "\"TCQ_DATABASE\", \"TCQ_TABLE\", \"TCQ_PARTITION\", \"TCQ_RETRY_TIME\") VALUES (?, ?, ?, ?, ?, " + getEpochFn(dbProduct) + ")";
-            } else {
-              query = "INSERT INTO \"TXN_CLEANUP_QUEUE\" (\"TCQ_RETRY_RETENTION\", \"TCQ_ERROR_MESSAGE\", " +
-                      "\"TCQ_DATABASE\", \"TCQ_TABLE\", \"TCQ_RETRY_TIME\") VALUES (?, ?, ?, ?, " + getEpochFn(dbProduct) + ")";
-            }
+            query = "INSERT INTO \"TXN_CLEANUP_QUEUE\" (\"TCQ_RETRY_RETENTION\", \"TCQ_ERROR_MESSAGE\", " +
+                    "\"TCQ_DATABASE\", \"TCQ_TABLE\", \"TCQ_PARTITION\", \"TCQ_RETRY_TIME\") VALUES (?, ?, ?, ?, ?, " + getEpochFn(dbProduct) + ")";
           } else {
             query = "UPDATE \"TXN_CLEANUP_QUEUE\" SET \"TCQ_RETRY_RETENTION\" = ?, \"TCQ_ERROR_MESSAGE\" = ? " +
-                    "WHERE \"TCQ_DATABASE\" = ? AND \"TCQ_TABLE\" = ? AND \"TCQ_PARTITION\" " + (info.partName != null ? "= ?" : "IS NULL");
+                    "WHERE \"TCQ_DATABASE\" = ? AND \"TCQ_TABLE\" = ? AND (\"TCQ_PARTITION\" = ? OR \"TCQ_PARTITION\" IS NULL)";
           }
         } else {
           query = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_RETRY_RETENTION\" = ?, \"CQ_ERROR_MESSAGE\"= ? WHERE \"CQ_ID\" = ?";
@@ -1615,6 +1615,10 @@ class CompactionTxnHandler extends TxnHandler {
             stmt.setString(4, info.tableName);
             if (info.partName != null) {
               stmt.setString(5, info.partName);
+            } else {
+              // Since the type of 'TCQ_PARTITION' column is varchar.
+              // Hence, setting null for VARCHAR type.
+              stmt.setNull(5, Types.VARCHAR);
             }
           } else {
             stmt.setLong(3, info.id);
