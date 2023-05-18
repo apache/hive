@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 @UDFType(deterministic = false)
 public class Udf extends GenericUDF {
   public static String NAME = "hplsql";
-  private transient final Exec exec = new Exec();
+  private final transient Exec exec = new Exec();
   private StringObjectInspector queryOI;
   private ObjectInspector[] argumentsOI;
   private StringObjectInspector funcDefOI;
@@ -79,7 +79,9 @@ public class Udf extends GenericUDF {
       int idx = arguments.length-1;
       setParameterForPrimitiveTypeArgument(":" + idx, arguments[idx].get(), funcDefOI);
       functionDefinition = funcDefOI.getPrimitiveJavaObject(arguments[idx].get());
-      LOG.info("functionDefinition: {}", functionDefinition);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("functionDefinition: {}", functionDefinition);
+      }
       exec.parseAndEval(Arguments.script(functionDefinition));
     }
     exec.enterScope(Scope.Type.ROUTINE);

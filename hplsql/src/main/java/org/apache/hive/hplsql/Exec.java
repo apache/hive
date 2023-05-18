@@ -1831,7 +1831,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
         return;
       }
     } catch (TException e) {
-      throw new HplValidationException(ctx, ExceptionUtils.getStackTrace(e));
+      throw new HplValidationException(ctx, e);
     }
     StringBuilder sql = new StringBuilder();
     sql.append(name);
