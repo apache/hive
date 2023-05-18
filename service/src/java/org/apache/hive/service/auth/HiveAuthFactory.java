@@ -143,8 +143,6 @@ public class HiveAuthFactory {
         } catch (AuthenticationException e) {
           throw new LoginException ("Error setting callback handler" + e);
         }
-      } else {
-        throw new LoginException("Unsupported authentication type " + authType.getAuthTypes());
       }
       transportFactory = saslServer.wrapTransportFactory(serverTransportFactory);
     } else if (authType.isPasswordBasedAuthEnabled()) {

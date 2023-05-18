@@ -767,21 +767,20 @@ public class ThriftHttpServlet extends TServlet {
 
   private boolean isAuthTypeEnabled(HttpServletRequest request,
       HiveAuthConstants.AuthTypes authType) {
-    String authMechs = request.getHeader(AUTH_TYPE);
+    String authMethod = request.getHeader(AUTH_TYPE);
 
-    if (authType.getAuthName().equalsIgnoreCase(authMechs) && this.authType.isEnabled(authType) ||
-        "UIDPWD".equalsIgnoreCase(authMechs) && this.authType.isPasswordBasedAuth(authType)) {
+    if (authType.getAuthName().equalsIgnoreCase(authMethod) && this.authType.isEnabled(authType) ||
+        "UIDPWD".equalsIgnoreCase(authMethod) && this.authType.isPasswordBasedAuth(authType)) {
+      // Request has already set the "auth" header
       return true;
-    } else if (authMechs == null) {
+    } else if (authMethod == null) {
       // Kerberos -> JWT -> SAML -> Password(fall through if there is no match)
       // If the auth header is missing, the request must come from the old running client.
       // We support mixing JWT and SAML or LDAP auth methods in old client,
       // the way to tell them is whether there is JWT token in request header.
       if (this.authType.isEnabled(HiveAuthConstants.AuthTypes.JWT)) {
         if (authType == HiveAuthConstants.AuthTypes.JWT) {
-          if (hasJWT(request)) {
-            return true;
-          }
+          return hasJWT(request);
         } else if (authType != HiveAuthConstants.AuthTypes.KERBEROS) {
           // If you wish to try JWT,KERBEROS with the old client,
           // append the property http.header.auth=kerberos to the URL.
