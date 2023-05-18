@@ -77,4 +77,4 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.cmv_basetable_n4	default.cmv_basetable_n4:1:9223372036854775807::	 
+default.cmv_basetable_n4	:1:9223372036854775807::	 
