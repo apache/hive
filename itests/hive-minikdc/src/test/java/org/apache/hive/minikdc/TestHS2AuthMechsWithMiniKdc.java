@@ -18,79 +18,101 @@
 
 package org.apache.hive.minikdc;
 
-import com.google.common.collect.ImmutableMap;
-
-import javax.security.sasl.AuthenticationException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.directory.server.annotations.CreateLdapServer;
+import org.apache.directory.server.annotations.CreateTransport;
+import org.apache.directory.server.core.annotations.ApplyLdifFiles;
+import org.apache.directory.server.core.annotations.ContextEntry;
+import org.apache.directory.server.core.annotations.CreateDS;
+import org.apache.directory.server.core.annotations.CreateIndex;
+import org.apache.directory.server.core.annotations.CreatePartition;
+import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
+import org.apache.directory.server.core.integ.FrameworkRunner;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.auth.AuthenticationProviderFactory;
 import org.apache.hive.service.auth.HiveAuthConstants;
-import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.fail;
 
-public class TestHS2AuthMechsWithMiniKdc {
+/**
+ * TestSuite to test Hive's LDAP Authentication provider with an
+ * in-process LDAP Server (Apache Directory Server instance).
+ */
+@RunWith(FrameworkRunner.class)
+@CreateLdapServer(transports = {
+    @CreateTransport(protocol = "LDAP", port = 10390 ),
+    @CreateTransport(protocol = "LDAPS", port = 10640 )
+})
+
+@CreateDS(partitions = {
+    @CreatePartition(
+        name = "example",
+        suffix = "dc=example,dc=com",
+        contextEntry = @ContextEntry(entryLdif =
+            "dn: dc=example,dc=com\n" +
+                "dc: example\n" +
+                "objectClass: top\n" +
+                "objectClass: domain\n\n"
+        ),
+        indexes = {
+            @CreateIndex(attribute = "objectClass"),
+            @CreateIndex(attribute = "cn"),
+            @CreateIndex(attribute = "uid")
+        }
+    )
+})
+
+@ApplyLdifFiles({
+    "ldap/example.com.ldif",
+    "ldap/microsoft.schema.ldif",
+    "ldap/ad.example.com.ldif"
+})
+// Test HS2 with Kerberos + LDAP auth methods
+public class TestHS2AuthMechsWithMiniKdc extends AbstractLdapTestUnit {
   private static MiniHS2 miniHS2 = null;
   private static MiniHiveKdc miniHiveKdc = null;
 
-  public static class CustomAuthForTest implements PasswdAuthenticationProvider {
-    private static List<String> authentications = new ArrayList<>();
-    private static Map<String, String> validUsers =
-        ImmutableMap.of("user1", "password1", "user2", "password2", "user3", "password3");
-    static String error_message = "Error validating the user: %s";
-    @Override
-    public void Authenticate(String user, String password) throws AuthenticationException {
-      authentications.add(user);
-      if (validUsers.containsKey(user) && validUsers.get(user).equals(password)) {
-        // noop
-      } else {
-        throw new AuthenticationException(String.format(error_message, user));
-      }
-    }
-    public static String getLastAuthenticateUser() {
-      return authentications.get(authentications.size() - 1);
-    }
-    public static int getAuthenticationSize() {
-      return authentications.size();
-    }
-    public static void clear() {
-      authentications.clear();
-    }
-  }
+  @Before
+  public void setUpBefore() throws Exception {
+    if (miniHS2 == null) {
+      Class.forName(MiniHS2.getJdbcDriverName());
+      miniHiveKdc = new MiniHiveKdc();
+      HiveConf hiveConf = new HiveConf();
+      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+      hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_URL,
+          "ldap://localhost:" + ldapServer.getPort());
+      hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN,
+          "uid=%s,ou=People,dc=example,dc=com");
 
-  @BeforeClass
-  public static void setUpBeforeClass() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
-    miniHiveKdc = new MiniHiveKdc();
-    HiveConf hiveConf = new HiveConf();
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS, CustomAuthForTest.class.getName());
-
-    AuthenticationProviderFactory.AuthMethods.CUSTOM.getConf().set(HiveConf.ConfVars.HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS.varname,
-        CustomAuthForTest.class.getName());
-    miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf,
-        HiveAuthConstants.AuthTypes.KERBEROS.getAuthName() + "," + HiveAuthConstants.AuthTypes.CUSTOM.getAuthName());
-    miniHS2.getHiveConf().setVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE, MiniHS2.HS2_ALL_MODE);
-    miniHS2.start(new HashMap<>());
+      AuthenticationProviderFactory.AuthMethods.LDAP.getConf().setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_URL,
+          "ldap://localhost:" + ldapServer.getPort());
+      AuthenticationProviderFactory.AuthMethods.LDAP.getConf().setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN,
+          "uid=%s,ou=People,dc=example,dc=com");
+      miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf,
+          HiveAuthConstants.AuthTypes.KERBEROS.getAuthName() + "," + HiveAuthConstants.AuthTypes.LDAP.getAuthName());
+      miniHS2.getHiveConf().setVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE, MiniHS2.HS2_ALL_MODE);
+      miniHS2.start(new HashMap<>());
+    }
   }
 
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
+    if (ldapServer.isStarted()) {
+      ldapServer.stop();
+    }
     miniHS2.stop();
   }
 
@@ -125,9 +147,9 @@ public class TestHS2AuthMechsWithMiniKdc {
       }
     }
 
-    // Next, test logging through user/password
+    // Next, test logging through LDAP
     try {
-      DriverManager.getConnection(baseJdbc + "user=user1;password=password2");
+      DriverManager.getConnection(baseJdbc + "user=user1;password=password");
       fail("Should fail to establish the connection as password is wrong");
     } catch (Exception e) {
       if (!httpMode) {
@@ -135,25 +157,22 @@ public class TestHS2AuthMechsWithMiniKdc {
       } else {
         Assert.assertTrue(e.getMessage().contains("HTTP Response code: 401"));
       }
-      Assert.assertTrue(CustomAuthForTest.getAuthenticationSize() == 1);
-      Assert.assertEquals("user1", CustomAuthForTest.getLastAuthenticateUser());
     }
 
-    try (Connection hs2Conn = DriverManager.getConnection(baseJdbc + "user=user2;password=password2")) {
+    try (Connection hs2Conn = DriverManager.getConnection(baseJdbc + "user=user2;password=user2")) {
       try (Statement statement = hs2Conn.createStatement()) {
         statement.execute("set hive.support.concurrency");
         validateResult(statement.getResultSet(), 1);
       }
     }
-
-    Assert.assertEquals("user2", CustomAuthForTest.getLastAuthenticateUser());
-    CustomAuthForTest.clear();
   }
 
   @Test
   public void testKrbPasswordAuth() throws Exception {
-    testKrbPasswordAuth(false); // Test the binary mode
-    testKrbPasswordAuth(true);  // Test the http mode
+    // Test the binary mode
+    testKrbPasswordAuth(false);
+    // Test the http mode
+    testKrbPasswordAuth(true);
   }
 
   private void validateResult(ResultSet rs, int expectedSize) throws Exception {
@@ -163,4 +182,5 @@ public class TestHS2AuthMechsWithMiniKdc {
     }
     Assert.assertEquals(expectedSize, actualSize);
   }
+
 }
