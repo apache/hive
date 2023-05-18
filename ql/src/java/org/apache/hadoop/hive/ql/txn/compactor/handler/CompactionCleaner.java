@@ -86,7 +86,7 @@ class CompactionCleaner extends TaskHandler {
             : 0;
     List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, retentionTime);
     if (!readyToClean.isEmpty()) {
-      long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
+      long minTxnIdSeenOpen = Math.min(minOpenTxnId, txnHandler.findMinTxnIdSeenOpen());
       // For checking which compaction can be cleaned we can use the minOpenTxnId
       // However findReadyToClean will return all records that were compacted with old version of HMS
       // where the CQ_NEXT_TXN_ID is not set. For these compactions we need to provide minTxnIdSeenOpen
