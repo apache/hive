@@ -251,39 +251,47 @@ class TextDescTableFormatter extends DescTableFormatter {
     formatOutput("Original Query:", table.getViewOriginalText(), tableInfo);
     formatOutput("Expanded Query:", table.getViewExpandedText(), tableInfo);
     if (table.isMaterializedView()) {
-      formatOutput("Rewrite Enabled:", table.isRewriteEnabled() ? "Yes" : "No", tableInfo);
-      formatOutput("Outdated for Rewriting:", table.isOutdatedForRewriting() == null ? "Unknown"
-          : table.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
-      tableInfo.append(LINE_DELIM).append("# Materialized View Source table information").append(LINE_DELIM);
-      TextMetaDataTable metaDataTable = new TextMetaDataTable();
-      metaDataTable.addRow("Table name", "Snapshot");
-      List<SourceTable> sourceTableList = new ArrayList<>(table.getMVMetadata().getSourceTables());
+      getMaterializedViewInfo(tableInfo, table, isOutputPadded);
+    }
+  }
 
-      sourceTableList.sort(Comparator.<SourceTable, String>comparing(sourceTable -> sourceTable.getTable().getDbName())
-              .thenComparing(sourceTable -> sourceTable.getTable().getTableName()));
+  private static void getMaterializedViewInfo(StringBuilder tableInfo, Table table, boolean isOutputPadded) {
+    formatOutput("Rewrite Enabled:", table.isRewriteEnabled() ? "Yes" : "No", tableInfo);
+    formatOutput("Outdated for Rewriting:", table.isOutdatedForRewriting() == null ? "Unknown"
+        : table.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
+    tableInfo.append(LINE_DELIM).append("# Materialized View Source table information").append(LINE_DELIM);
+    TextMetaDataTable metaDataTable = new TextMetaDataTable();
+    metaDataTable.addRow("Table name", "Snapshot");
+    List<SourceTable> sourceTableList = new ArrayList<>(table.getMVMetadata().getSourceTables());
 
-      MaterializationSnapshotFormatter snapshotFormatter;
-      MaterializationSnapshot snapshot = table.getMVMetadata().getSnapshot();
-      if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
-        snapshotFormatter = (qualifiedTableName) -> snapshot.getTableSnapshots().get(qualifiedTableName).toString();
-      } else if (snapshot != null && snapshot.getValidTxnList() != null) {
-        ValidTxnWriteIdList validReaderWriteIdList = new ValidTxnWriteIdList(snapshot.getValidTxnList());
-        snapshotFormatter = (qualifiedTableName) -> {
-          ValidWriteIdList writeIdList = validReaderWriteIdList.getTableValidWriteIdList(qualifiedTableName);
-          return writeIdList != null ? writeIdList.toString().replace(qualifiedTableName, "") : "Unknown";
-        };
-      } else {
-        snapshotFormatter = (qualifiedTableName) -> "N/A";
-      }
+    sourceTableList.sort(Comparator.<SourceTable, String>comparing(sourceTable -> sourceTable.getTable().getDbName())
+            .thenComparing(sourceTable -> sourceTable.getTable().getTableName()));
 
-      for (SourceTable sourceTable : sourceTableList) {
-        String qualifiedTableName = TableName.getDbTable(
-                sourceTable.getTable().getDbName(),
-                sourceTable.getTable().getTableName());
-        metaDataTable.addRow(qualifiedTableName,
-                snapshotFormatter.getSnapshotOf(qualifiedTableName));
-      }
-      tableInfo.append(metaDataTable.renderTable(isOutputPadded));
+    MaterializationSnapshotFormatter snapshotFormatter =
+            createMaterializationSnapshotFormatter(table.getMVMetadata().getSnapshot());
+
+    for (SourceTable sourceTable : sourceTableList) {
+      String qualifiedTableName = TableName.getDbTable(
+              sourceTable.getTable().getDbName(),
+              sourceTable.getTable().getTableName());
+      metaDataTable.addRow(qualifiedTableName,
+              snapshotFormatter.getSnapshotOf(qualifiedTableName));
+    }
+    tableInfo.append(metaDataTable.renderTable(isOutputPadded));
+  }
+
+  private static MaterializationSnapshotFormatter createMaterializationSnapshotFormatter(
+          MaterializationSnapshot snapshot) {
+    if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
+      return qualifiedTableName -> snapshot.getTableSnapshots().get(qualifiedTableName).toString();
+    } else if (snapshot != null && snapshot.getValidTxnList() != null) {
+      ValidTxnWriteIdList validReaderWriteIdList = new ValidTxnWriteIdList(snapshot.getValidTxnList());
+      return qualifiedTableName -> {
+        ValidWriteIdList writeIdList = validReaderWriteIdList.getTableValidWriteIdList(qualifiedTableName);
+        return writeIdList != null ? writeIdList.toString().replace(qualifiedTableName, "") : "Unknown";
+      };
+    } else {
+      return qualifiedTableName -> "N/A";
     }
   }
 
