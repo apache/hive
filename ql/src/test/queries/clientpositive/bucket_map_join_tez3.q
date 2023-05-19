@@ -3,20 +3,8 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
-drop table if exists test_external_source;
-create external table test_external_source (date_col date, string_col string, decimal_col decimal(38,0)) stored as orc tblproperties ('external.table.purge'='true');
-insert into table test_external_source values
-('2022-08-30', 'pipeline', '50000000000000000005905545593'),
-('2022-08-16', 'pipeline', '50000000000000000005905545593'),
-('2022-09-01', 'pipeline', '50000000000000000006008686831'),
-('2022-08-30', 'pipeline', '50000000000000000005992620837'),
-('2022-09-01', 'pipeline', '50000000000000000005992620837'),
-('2022-09-01', 'pipeline', '50000000000000000005992621067'),
-('2022-08-30', 'pipeline', '50000000000000000005992621067');
-
-drop table if exists test_external_target;
-create external table test_external_target (date_col date, string_col string, decimal_col decimal(38,0)) stored as orc tblproperties ('external.table.purge'='true');
-insert into table test_external_target values
+create table target_table(date_col date, string_col string, decimal_col decimal(38,0)) clustered by (decimal_col) into 7 buckets stored as orc tblproperties ('bucketing_version'='2', 'transactional'='true', 'transactional_properties'='default');
+insert into table target_table values
 ('2017-05-17', 'pipeline', '50000000000000000000441610525'),
 ('2018-12-20', 'pipeline', '50000000000000000001048981030'),
 ('2020-06-30', 'pipeline', '50000000000000000002332575516'),
@@ -38,13 +26,15 @@ insert into table test_external_target values
 ('2020-08-21', 'pipeline', '50000000000000000002529168758'),
 ('2021-02-17', 'pipeline', '50000000000000000003158511687');
 
-drop table if exists target_table;
-drop table if exists source_table;
-create table target_table(date_col date, string_col string, decimal_col decimal(38,0)) clustered by (decimal_col) into 7 buckets stored as orc tblproperties ('bucketing_version'='2', 'transactional'='true', 'transactional_properties'='default');
 create table source_table(date_col date, string_col string, decimal_col decimal(38,0)) clustered by (decimal_col) into 7 buckets stored as orc tblproperties ('bucketing_version'='2', 'transactional'='true', 'transactional_properties'='default');
-
-insert into table target_table select * from test_external_target;
-insert into table source_table select * from test_external_source;
+insert into table source_table values
+('2022-08-30', 'pipeline', '50000000000000000005905545593'),
+('2022-08-16', 'pipeline', '50000000000000000005905545593'),
+('2022-09-01', 'pipeline', '50000000000000000006008686831'),
+('2022-08-30', 'pipeline', '50000000000000000005992620837'),
+('2022-09-01', 'pipeline', '50000000000000000005992620837'),
+('2022-09-01', 'pipeline', '50000000000000000005992621067'),
+('2022-08-30', 'pipeline', '50000000000000000005992621067');
 
 
 -- Test 2 queries in 4 configs.
@@ -62,7 +52,7 @@ set hive.optimize.dynamic.partition.hashjoin=false;
 set hive.convert.join.bucket.mapjoin.tez=true;
 set hive.vectorized.execution.enabled=false;
 
-explain
+explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
@@ -70,7 +60,7 @@ select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
-explain
+explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
@@ -82,7 +72,7 @@ on s.date_col = target_table.date_col AND s.string_col = target_table.string_col
 set hive.convert.join.bucket.mapjoin.tez=false;
 set hive.vectorized.execution.enabled=false;
 
-explain
+explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
@@ -90,7 +80,7 @@ select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
-explain
+explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
@@ -102,7 +92,7 @@ on s.date_col = target_table.date_col AND s.string_col = target_table.string_col
 set hive.convert.join.bucket.mapjoin.tez=true;
 set hive.vectorized.execution.enabled=true;
 
-explain
+explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
@@ -110,7 +100,7 @@ select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
-explain
+explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
@@ -122,7 +112,7 @@ on s.date_col = target_table.date_col AND s.string_col = target_table.string_col
 set hive.convert.join.bucket.mapjoin.tez=false;
 set hive.vectorized.execution.enabled=true;
 
-explain
+explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
@@ -130,7 +120,7 @@ select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
-explain
+explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
