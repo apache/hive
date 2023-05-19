@@ -659,15 +659,16 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       // Prepare updated partition columns for small table(s).
       // Get the positions of bucketed columns
 
-      int i = 0;
+      int bigTableExprPos = 0;
       Map<String, ExprNodeDesc> colExprMap = bigTableRS.getColumnExprMap();
       for (ExprNodeDesc bigTableExpr : bigTablePartitionCols) {
         // It is guaranteed there is only 1 list within listBucketCols.
         for (String colName : listBucketCols.get(0)) {
           if (colExprMap.get(colName).isSame(bigTableExpr)) {
-            positions.add(i++);
+            positions.add(bigTableExprPos);
           }
         }
+        bigTableExprPos = bigTableExprPos + 1;
       }
     }
 
