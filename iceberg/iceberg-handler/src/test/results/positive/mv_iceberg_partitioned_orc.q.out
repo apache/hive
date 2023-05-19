@@ -96,7 +96,7 @@ Outdated for Rewriting:	Unknown
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=6604871607751762574}	 
+default.tbl_ice     	SnapshotContext{snapshotId=#SnapshotId#}	 
 PREHOOK: query: select * from mat1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
@@ -184,4 +184,4 @@ Outdated for Rewriting:	Unknown
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=6604871607751762574}	 
+default.tbl_ice     	SnapshotContext{snapshotId=#SnapshotId#}	 
