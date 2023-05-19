@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -200,6 +201,10 @@ public interface HiveStorageHandler extends Configurable {
   public default StorageHandlerInfo getStorageHandlerInfo(Table table) throws MetaException
   {
     return null;
+  }
+  
+  default StorageHandlerTypes getType() {
+    return StorageHandlerTypes.DEFAULT;
   }
 
   default LockType getLockType(WriteEntity writeEntity){
