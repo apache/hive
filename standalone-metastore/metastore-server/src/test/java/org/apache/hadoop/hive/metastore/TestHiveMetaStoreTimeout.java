@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -49,13 +50,14 @@ public class TestHiveMetaStoreTimeout {
   protected static Warehouse warehouse;
   protected static int port;
 
+  private final String dbName = "db";
+  
   @BeforeClass
   public static void startMetaStoreServer() throws Exception {
-    HMSHandler.testTimeoutEnabled = true;
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
         MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
-    MetastoreConf.setTimeVar(conf, ConfVars.CLIENT_SOCKET_TIMEOUT, 1000,
+    MetastoreConf.setTimeVar(conf, ConfVars.CLIENT_SOCKET_TIMEOUT, 2000,
         TimeUnit.MILLISECONDS);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     warehouse = new Warehouse(conf);
@@ -64,29 +66,21 @@ public class TestHiveMetaStoreTimeout {
     MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
   }
 
-  @AfterClass
-  public static void tearDown() {
-    HMSHandler.testTimeoutEnabled = false;
-  }
-
   @Before
   public void setup() throws MetaException {
+    HMSHandler.testTimeoutEnabled = false;
+    HMSHandler.testTimeoutValue = -1;
     client = new HiveMetaStoreClient(conf);
   }
 
   @After
-  public void cleanup() {
+  public void cleanup() throws TException {
     client.close();
-    client = null;
+    client = null;    
   }
 
   @Test
   public void testNoTimeout() throws Exception {
-    HMSHandler.testTimeoutValue = 250;
-
-    String dbName = "db";
-    client.dropDatabase(dbName, true, true);
-
     new DatabaseBuilder()
         .setName(dbName)
         .create(client, conf);
@@ -96,10 +90,8 @@ public class TestHiveMetaStoreTimeout {
 
   @Test
   public void testTimeout() throws Exception {
-    HMSHandler.testTimeoutValue = 2 * 1000;
-
-    String dbName = "db";
-    client.dropDatabase(dbName, true, true);
+    HMSHandler.testTimeoutEnabled = true;
+    HMSHandler.testTimeoutValue = 4000;
 
     Database db = new DatabaseBuilder()
         .setName(dbName)
@@ -110,18 +102,10 @@ public class TestHiveMetaStoreTimeout {
     } catch (TTransportException e) {
       Assert.assertTrue("unexpected Exception", e.getMessage().contains("Read timed out"));
     }
-
-    // restore
-    HMSHandler.testTimeoutValue = 1;
   }
 
   @Test
   public void testResetTimeout() throws Exception {
-    HMSHandler.testTimeoutValue = 250;
-    String dbName = "db";
-
-    // no timeout before reset
-    client.dropDatabase(dbName, true, true);
     Database db = new DatabaseBuilder()
         .setName(dbName)
         .build(conf);
@@ -133,8 +117,8 @@ public class TestHiveMetaStoreTimeout {
     client.dropDatabase(dbName, true, true);
 
     // reset
-    HMSHandler.testTimeoutValue = 2000;
-    client.setMetaConf(ConfVars.CLIENT_SOCKET_TIMEOUT.getVarname(), "1s");
+    HMSHandler.testTimeoutEnabled = true;
+    HMSHandler.testTimeoutValue = 4000;
 
     // timeout after reset
     try {
