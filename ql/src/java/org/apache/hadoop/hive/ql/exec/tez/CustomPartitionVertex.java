@@ -566,7 +566,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
       if (bucketId >= inputBucketSize) {
         int newBucketId = bucketId % inputBucketSize;
-        LOG.info("The bucketID" + bucketId + " for file " + entry.getKey() + " is not acceptable. " +
+        LOG.info("The bucketID " + bucketId + " for file " + entry.getKey() + " is not acceptable. " +
             "The bucket size of input " + inputName + " is " + inputBucketSize + ". " +
             "Use " + newBucketId + " instead.");
         bucketId = newBucketId;
@@ -580,16 +580,13 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     if (fallback) {
       // This is the old logic which assumes that the filenames are sorted in
       // alphanumeric order and mapped to appropriate bucket number.
-      int bucketNum = 0;
+      int curSplitIndex = 0;
       for (Map.Entry<String, Set<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
+        int bucketId = curSplitIndex % inputBucketSize;
         for (FileSplit fsplit : entry.getValue()) {
-          bucketToSplitMap.put(bucketNum, fsplit);
+          bucketToSplitMap.put(bucketId, fsplit);
         }
-        bucketNum = bucketNum + 1;
-
-        if (bucketNum == inputBucketSize) {
-          bucketNum = 0;
-        }
+        curSplitIndex = curSplitIndex + 1;
       }
     }
 
