@@ -14,4 +14,8 @@ delete from ice01 where id in (2,4);
 explain select count(*) from ice01;
 select count(*) from ice01;
 
+-- iow
+insert overwrite table ice01 select * from ice01;
+explain select count(*) from ice01;
+
 drop table ice01;
