@@ -1,5 +1,5 @@
 --! qt:dataset:src
-
+--! qt:replace:/(Data size: )\d+/$1#MASKED#/
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
