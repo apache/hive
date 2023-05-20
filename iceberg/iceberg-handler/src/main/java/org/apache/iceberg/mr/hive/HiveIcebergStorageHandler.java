@@ -61,10 +61,12 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -97,15 +99,22 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.FetchFormatter;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
@@ -159,9 +168,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String TABLE_NAME_SEPARATOR = "..";
   private static final String ICEBERG = "iceberg";
   private static final String PUFFIN = "puffin";
+  private static final int SPEC_IDX = 3;
+  private static final int PART_IDX = 0;
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
   public static final String STATS = "/stats/";
+
   /**
    * Function template for producing a custom sort expression function:
    * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
@@ -1447,4 +1459,64 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
     return null;
   }
+
+  @Override
+  public List<String> showPartitions(DDLOperationContext context, org.apache.hadoop.hive.ql.metadata.Table hmstbl) {
+    Configuration confs = context.getConf();
+    Path path = new Path(hmstbl.getParameters().get("metadata_location"));
+    List<String> parts = Lists.newArrayList();
+    JobConf job = HiveTableUtil.getJobConf(confs, path, hmstbl);
+    Class<? extends InputFormat> formatter = hmstbl.getInputFormatClass();
+
+    try {
+      InputFormat inputFormat = FetchOperator.getInputFormatFromCache(formatter, job);
+      InputSplit[] splits = inputFormat.getSplits(job, 1);
+      try (RecordReader<WritableComparable, Writable> reader = inputFormat.getRecordReader(splits[0], job,
+          Reporter.NULL)) {
+        parts = getParts(context, job, reader, hmstbl);
+      }
+      return parts;
+    } catch (Exception e) {
+      LOG.warn("Warn:", e);
+    }
+    return parts;
+  }
+
+  @Override
+  public String tableType() {
+    return ICEBERG;
+  }
+
+  private List<String> getParts(DDLOperationContext context, Configuration job,
+      RecordReader<WritableComparable, Writable> reader, org.apache.hadoop.hive.ql.metadata.Table hmstbl)
+      throws Exception {
+
+    List<String> parts = Lists.newArrayList();
+    Writable value = reader.createValue();
+    WritableComparable key = reader.createKey();
+    boolean notEoF = true;
+    String prevRow = "";
+
+    try (FetchFormatter fetcher = new DefaultFetchFormatter()) {
+      fetcher.initialize(job, HiveTableUtil.getProps());
+      org.apache.hadoop.hive.ql.metadata.Table metaDataPartTable =
+          context.getDb().getTable(hmstbl.getDbName(), hmstbl.getTableName(), "partitions", true);
+
+      while (notEoF) {
+        reader.next(key, value);
+        Deserializer currSerDe = metaDataPartTable.getDeserializer();
+        String[] row =
+            fetcher.convert(currSerDe.deserialize(value), currSerDe.getObjectInspector()).toString().split("\t");
+        if (prevRow.equalsIgnoreCase(row[PART_IDX])) {
+          notEoF = false;
+        } else {
+          prevRow = row[0];
+          parts.add(HiveTableUtil.getParseData(row[PART_IDX], row[SPEC_IDX]));
+        }
+      }
+    }
+    Collections.sort(parts);
+    return parts;
+  }
+
 }

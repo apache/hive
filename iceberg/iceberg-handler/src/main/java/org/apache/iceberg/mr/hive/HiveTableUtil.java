@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -44,6 +46,10 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -256,4 +262,33 @@ public class HiveTableUtil {
     return Boolean.parseBoolean(properties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS));
   }
 
+  protected static Properties getProps() {
+    Properties props = new Properties();
+    props.put(serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
+    props.put(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
+    return props;
+  }
+
+  protected static String getParseData(String parseData, String specId) throws JsonProcessingException {
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, String> map = mapper.readValue(parseData, Map.class);
+    String partString = "";
+    for (Map.Entry<String, String> entry : map.entrySet()) {
+      if (entry.getValue() != null) {
+        String partition = String.format("%s=%s", String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+        partString = partString.length() > 0 ? partString + "/" + partition : partition;
+      }
+    }
+    return String.format("Spec-id=%s/%s", specId, partString);
+  }
+
+  protected static JobConf getJobConf(Configuration confs, Path path, org.apache.hadoop.hive.ql.metadata.Table tbl) {
+    JobConf job = new JobConf(confs);
+    job.set("mapred.input.dir", path.toString());
+    job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, "partition,record_count,file_count,spec_id");
+    job.set("iceberg.mr.table.location", tbl.getPath().toString());
+    job.set("iceberg.mr.table.identifier", tbl.getFullyQualifiedName() + ".partitions");
+    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    return job;
+  }
 }

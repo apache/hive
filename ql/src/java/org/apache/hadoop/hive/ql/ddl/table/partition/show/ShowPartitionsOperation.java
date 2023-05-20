@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -54,12 +55,17 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
   @Override
   public int execute() throws HiveException {
     Table tbl = context.getDb().getTable(desc.getTabName());
-    if (!tbl.isPartitioned()) {
-      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, desc.getTabName());
+    boolean isIcebergTable = isIcebergTable(tbl);
+    if (!(tbl.isPartitioned() || isIcebergTable)) {
+        throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, desc.getTabName());
     }
 
+    // may not be always present tbl.tTable.parameters.get("table_type")
     List<String> parts;
-    if (desc.getCond() != null || desc.getOrder() != null) {
+    if (isIcebergTable) {
+      parts = tbl.getStorageHandler().showPartitions( context, tbl);
+    }
+    else if (desc.getCond() != null || desc.getOrder() != null) {
       parts = getPartitionNames(tbl);
     } else if (desc.getPartSpec() != null) {
       parts = context.getDb().getPartitionNames(tbl.getDbName(), tbl.getTableName(),
@@ -116,4 +122,9 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
         desc.getOrder(), desc.getLimit());
     return partNames;
   }
+
+  private boolean isIcebergTable(Table tbl) {
+    return tbl != null && tbl.isNonNative() && tbl.getStorageHandler().tableType().equals(Constants.ICEBERG);
+  }
+
 }

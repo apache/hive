@@ -106,4 +106,6 @@ public class Constants {
 
   public static final String HTTP_HEADER_REQUEST_TRACK = "X-Request-ID";
   public static final String TIME_POSTFIX_REQUEST_TRACK = "_TIME";
+
+  public static final String ICEBERG = "iceberg";
 }
