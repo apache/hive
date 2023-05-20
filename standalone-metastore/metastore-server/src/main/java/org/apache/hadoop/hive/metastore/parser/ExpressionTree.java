@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 
 /**
@@ -571,8 +570,7 @@ public class ExpressionTree {
     return this.root;
   }
 
-  @VisibleForTesting
-  public void setRootForTest(TreeNode tn) {
+  public void setRoot(TreeNode tn) {
     this.root = tn;
   }
 
