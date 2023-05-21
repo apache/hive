@@ -1,7 +1,8 @@
-name: Build and Publish docker images for Hive GA
+name: Build and Publish docker images for Hive SNAPSHOT images
 
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * 1"
 
 jobs:
   build:
@@ -22,7 +23,6 @@ jobs:
         name: Hive version
         run: echo "HIVE_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)" >> $GITHUB_ENV
 
-
       - name: Tag
         run: echo "tag=${{ env.HIVE_VERSION }}" | awk '{print tolower($0)}' >> $GITHUB_ENV
 
@@ -33,6 +33,20 @@ jobs:
         name: Tez version
         run: echo "TEZ_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=tez.version -DforceStdout)" >> $GITHUB_ENV
 
+      - name: Build project
+        run: mvn clean install -DskipTests -Pitests,iceberg -Pdist
+
+      - name: Temporarily save jar artifact
+        uses: actions/upload-artifact@v2
+        with:
+            name: jar-artifact
+            path: ./packaging/target/apache-hive-${{ env.HIVE_VERSION }}-bin.tar.gz
+            retention-days: 1
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: jar-artifact
+          path: ./packaging/target/
       -
         name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -56,4 +70,4 @@ jobs:
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
             TEZ_VERSION=${{ env.TEZ_VERSION }}
-            BUILD_ENV=archive
+            BUILD_ENV=snapshot
