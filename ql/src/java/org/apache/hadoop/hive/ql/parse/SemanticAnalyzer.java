@@ -7322,7 +7322,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
         }
       }
-      isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp);
+      isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp) || isNonNativeTable;
       acidOperation = acidOp;
       queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath, dpCtx);
       moveTaskId = getMoveTaskId();
@@ -7474,7 +7474,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
         }
       }
-      isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp);
+      isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp) || isNonNativeTable;
       acidOperation = acidOp;
       queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath, null);
       moveTaskId = getMoveTaskId();
