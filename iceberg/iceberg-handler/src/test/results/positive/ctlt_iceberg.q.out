@@ -110,7 +110,7 @@ PREHOOK: Input: default@emp_iceberg
 POSTHOOK: query: show create table emp_iceberg
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@emp_iceberg
-CREATE TABLE `emp_iceberg`(
+CREATE EXTERNAL TABLE `emp_iceberg`(
   `id` int, 
   `company` string)
 PARTITIONED BY SPEC ( 
@@ -127,6 +127,7 @@ TBLPROPERTIES (
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
   'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company","transform":"identity","source-id":2,"field-id":1000}]}', 
   'engine.hive.enabled'='true', 
+  'external.table.purge'='TRUE', 
   'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
   'serialization.format'='1', 

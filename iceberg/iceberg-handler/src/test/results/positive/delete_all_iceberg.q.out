@@ -106,15 +106,17 @@ Database:           	default
 #### A masked pattern was here ####
 Retention:          	0                   	 
 #### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
+Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"key\",\"required\":false,\"type\":\"int\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"deleted-data-files\":\"5\",\"deleted-records\":\"20\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"0\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"0\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	engine.hive.enabled 	true                
+	external.table.purge	TRUE                
 	format-version      	2                   
 	iceberg.delete.skiprowdata	false               
 	iceberg.orc.files.only	true                
