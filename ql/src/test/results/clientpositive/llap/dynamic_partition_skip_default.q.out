@@ -182,13 +182,11 @@ PREHOOK: query: explain extended select intcol from dynamic_part_table where (pa
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dynamic_part_table
 PREHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=1
-PREHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select intcol from dynamic_part_table where (partcol1='1' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dynamic_part_table
 POSTHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=1
-POSTHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `intcol`
 FROM `default`.`dynamic_part_table`
@@ -207,41 +205,6 @@ STAGE PLANS:
             partition values:
               partcol1 1
               partcol2 1
-            properties:
-              column.name.delimiter ,
-              columns intcol
-              columns.types string
-#### A masked pattern was here ####
-              name default.dynamic_part_table
-              partition_columns partcol1/partcol2
-              partition_columns.types string:string
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucketing_version 2
-                column.name.delimiter ,
-                columns intcol
-                columns.comments 
-                columns.types string
-#### A masked pattern was here ####
-                name default.dynamic_part_table
-                partition_columns partcol1/partcol2
-                partition_columns.types string:string
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dynamic_part_table
-            name: default.dynamic_part_table
-          Partition
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            partition values:
-              partcol1 1
-              partcol2 __HIVE_DEFAULT_PARTITION__
             properties:
               column.name.delimiter ,
               columns intcol

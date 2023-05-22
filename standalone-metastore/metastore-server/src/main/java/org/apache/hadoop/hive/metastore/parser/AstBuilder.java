@@ -19,8 +19,7 @@ package org.apache.hadoop.hive.metastore.parser;
 
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -39,19 +38,12 @@ import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 
 public class AstBuilder extends PartitionFilterBaseVisitor<Object> {
-  private static final ThreadLocal<SimpleDateFormat> dateFormat =
-          ThreadLocal.withInitial(() -> {
-            SimpleDateFormat val = new SimpleDateFormat("yyyy-MM-dd");
-            val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
-            val.setTimeZone(TimeZone.getTimeZone("UTC"));
-            return val;
-          });
-  private static final ThreadLocal<DateTimeFormatter> timestampFormat =
-          ThreadLocal.withInitial(() -> {
-            DateTimeFormatter val = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                    .withZone(TimeZone.getTimeZone("UTC").toZoneId());
-            return val;
-          });
+  private final DateTimeFormatter dateFormat =
+          DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                  .withZone(TimeZone.getTimeZone("UTC").toZoneId());
+  private final DateTimeFormatter timestampFormat =
+          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                  .withZone(TimeZone.getTimeZone("UTC").toZoneId());
 
   /**
    * Override the default behavior for all visit methods. This will only return a non-null result
@@ -253,8 +245,9 @@ public class AstBuilder extends PartitionFilterBaseVisitor<Object> {
     PartitionFilterParser.DateContext date = ctx.date();
     String dateValue = unquoteString(date.value.getText());
     try {
-      return new Date(dateFormat.get().parse(dateValue).getTime());
-    } catch (ParseException e) {
+      LocalDate localDate = LocalDate.parse(dateValue, dateFormat);
+      return Date.valueOf(localDate);
+    } catch (DateTimeParseException e) {
       throw new ParseCancellationException(e.getMessage());
     }
   }
@@ -264,7 +257,7 @@ public class AstBuilder extends PartitionFilterBaseVisitor<Object> {
     PartitionFilterParser.TimestampContext timestamp = ctx.timestamp();
     String timestampValue = unquoteString(timestamp.value.getText());
     try {
-      LocalDateTime val = LocalDateTime.from(timestampFormat.get().parse(timestampValue));
+      LocalDateTime val = LocalDateTime.from(timestampFormat.parse(timestampValue));
       return Timestamp.valueOf(val);
     } catch (DateTimeParseException e) {
       throw new ParseCancellationException(e.getMessage());
