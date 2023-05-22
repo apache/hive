@@ -29,7 +29,6 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Striped;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.jexl3.JexlException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -7568,7 +7567,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject, String userName,
-                                                 List<String> groupNames) throws MetaException, NoSuchObjectException, TException {
+                                                 List<String> groupNames) throws TException {
     firePreEvent(new PreAuthorizationCallEvent(this));
     String catName = hiveObject.isSetCatName() ? hiveObject.getCatName() : getDefaultCatalog(conf);
     HiveObjectType debug = hiveObject.getObjectType();
