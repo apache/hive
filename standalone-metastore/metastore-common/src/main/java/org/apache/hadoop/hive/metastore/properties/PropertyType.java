@@ -42,25 +42,15 @@ import java.util.TimeZone;
 public abstract class PropertyType<T> {
   /** The set of known types; can be extended by calling register. */
   private static final Map<String, PropertyType<?>> TYPES = new HashMap<>();
-  /** ISO8601 datetime format. */
-  private static final SimpleDateFormat SDTF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'");
   /** The UTC time zone. */
   public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
-  static {
-    SDTF.setTimeZone(UTC);
-  }
 
   /**
-   * This should be coded simply but Sonar insists...
-   * <code>
-   *     return (SimpleDateFormat) SDTF.clone();
-   * </code>
-   * @return a clone of the ISO8601, TZ=UTC
+   * @return an ISO8601 format, TZ=UTC
    */
   private static SimpleDateFormat getDateFormat() {
-    Format fool = SDTF;
-    @SuppressFBWarnings("STCAL_INVOKE_ON_STATIC_CALENDAR_INSTANCE")
-    SimpleDateFormat sdtf =  (SimpleDateFormat) fool.clone();
+    SimpleDateFormat sdtf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'");
+    sdtf.setTimeZone(UTC);
     return sdtf;
   }
 

@@ -295,7 +295,7 @@ public class ObjectStore implements RawStore, Configurable {
   /**
   * Verify the schema only once per JVM since the db connection info is static
   */
-  private final static AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
+  private static final AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
   private static final Logger LOG = LoggerFactory.getLogger(ObjectStore.class);
   private int RM_PROGRESS_COL_WIDTH = 10000;
   private int RM_METADATA_COL_WIDTH = 4000;
@@ -326,6 +326,11 @@ public class ObjectStore implements RawStore, Configurable {
     String user = System.getenv("USER");
     USER = org.apache.commons.lang3.StringUtils.defaultString(user, "UNKNOWN");
   }
+
+  /** Constant declaring a query parameter of type string and name key. */
+  private static final String PTYPARAM_STR_KEY = "java.lang.String key";
+  /** Constant declaring a property query predicate using equality. */
+  private static final String PTYARG_EQ_KEY = "this.propertyKey == key";
 
   private boolean isInitialized = false;
   private PersistenceManager pm = null;
@@ -5678,8 +5683,8 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
-      query.declareParameters("java.lang.String key");
+      query = pm.newQuery(MMetastoreDBProperties.class, PTYARG_EQ_KEY);
+      query.declareParameters(PTYPARAM_STR_KEY);
       Collection<MMetastoreDBProperties> names = (Collection<MMetastoreDBProperties>) query.execute("guid");
       List<String> uuids = new ArrayList<>();
       for (Iterator<MMetastoreDBProperties> i = names.iterator(); i.hasNext();) {
@@ -5704,7 +5709,6 @@ public class ObjectStore implements RawStore, Configurable {
 
   public boolean runInTransaction(Runnable exec) {
     boolean success = false;
-    Transaction tx = null;
     try {
       if (openTransaction()) {
         exec.run();
@@ -5720,12 +5724,12 @@ public class ObjectStore implements RawStore, Configurable {
 
   public boolean dropProperties(String key) {
     boolean success = false;
-    Transaction tx = null;
-    Query query = null;
+    Query<MMetastoreDBProperties> query = null;
     try {
       if (openTransaction()) {
-        query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
-        query.declareParameters("java.lang.String key");
+        query = pm.newQuery(MMetastoreDBProperties.class, PTYARG_EQ_KEY);
+        query.declareParameters(PTYPARAM_STR_KEY);
+        @SuppressWarnings("unchecked")
         Collection<MMetastoreDBProperties> properties = (Collection<MMetastoreDBProperties>) query.execute(key);
         if (!properties.isEmpty()) {
           pm.deletePersistentAll(properties);
@@ -5781,15 +5785,14 @@ public class ObjectStore implements RawStore, Configurable {
 
   public boolean renameProperties(String mapKey, String newKey) {
     boolean success = false;
-    Transaction tx = null;
-    Query query = null;
+    Query<MMetastoreDBProperties> query = null;
     try {
       LOG.debug("Attempting to rename property {} to {} for the metastore db", mapKey, newKey);
       if (openTransaction()) {
         // ensure the target is clear;
         // query is cleaned up in finally block
-        query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
-        query.declareParameters("java.lang.String key");
+        query = pm.newQuery(MMetastoreDBProperties.class, PTYARG_EQ_KEY);
+        query.declareParameters(PTYPARAM_STR_KEY);
         query.setUnique(true);
         MMetastoreDBProperties properties = (MMetastoreDBProperties) query.execute(newKey);
         if (properties != null) {
@@ -5828,16 +5831,19 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private <T> T doFetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
-    Query<MMetastoreDBProperties> query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
+    Query<MMetastoreDBProperties> query = null;
     try {
-      query.declareParameters("java.lang.String key");
+      query = pm.newQuery(MMetastoreDBProperties.class, PTYARG_EQ_KEY);
+      query.declareParameters(PTYPARAM_STR_KEY);
       query.setUnique(true);
       MMetastoreDBProperties properties = (MMetastoreDBProperties) query.execute(key);
       if (properties != null) {
         return (T) (transform != null? transform.apply(properties) : properties);
       }
     } finally {
-      query.closeAll();
+      if (query != null) {
+        query.closeAll();
+      }
     }
     return null;
   }
@@ -5858,18 +5864,18 @@ public class ObjectStore implements RawStore, Configurable {
     return properties;
   }
   private <T> Map<String, T> doSelectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
-    final boolean all = key == null || key.isEmpty();
-    final Query<MMetastoreDBProperties> query;
-    if (all) {
-      query = pm.newQuery(MMetastoreDBProperties.class);
-    } else {
-      query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey.startsWith(key)");
-      query.declareParameters("java.lang.String key");
-    }
+    Query<MMetastoreDBProperties> query = null;
     try {
       @SuppressWarnings("unchecked")
-      Collection<MMetastoreDBProperties> properties = (Collection<MMetastoreDBProperties>)
-          (all? query.execute() :query.execute(key));
+      Collection<MMetastoreDBProperties> properties;
+      if (key == null || key.isEmpty()) {
+        query = pm.newQuery(MMetastoreDBProperties.class);
+        properties = (Collection<MMetastoreDBProperties>) query.execute();
+      } else {
+        query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey.startsWith(key)");
+        query.declareParameters(PTYPARAM_STR_KEY);
+        properties = (Collection<MMetastoreDBProperties>) query.execute(key);
+      }
       pm.retrieveAll(properties);
       if (!properties.isEmpty()) {
         Map<String, T> results = new TreeMap<String, T>();
@@ -5882,7 +5888,9 @@ public class ObjectStore implements RawStore, Configurable {
         return results;
       }
     } finally {
-      query.closeAll();
+      if (query != null) {
+        query.closeAll();
+      }
     }
     return null;
   }
