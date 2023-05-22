@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
@@ -118,7 +119,7 @@ public interface AlterHandler extends Configurable {
   Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
     final String name, final List<String> part_vals, final Partition new_part,
     EnvironmentContext environmentContext)
-      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException, NoSuchObjectException;
 
   /**
    * handles alter partition
@@ -147,7 +148,7 @@ public interface AlterHandler extends Configurable {
                            final String dbname, final String name, final List<String> part_vals,
                            final Partition new_part, EnvironmentContext environmentContext,
                            IHMSHandler handler,  String validWriteIds)
-      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException, NoSuchObjectException;
 
   /**
    * @deprecated As of release 3.0.0. Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
