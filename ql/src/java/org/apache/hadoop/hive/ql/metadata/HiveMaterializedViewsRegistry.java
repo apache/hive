@@ -248,7 +248,7 @@ public final class HiveMaterializedViewsRegistry {
     if (!visitor.isRewritingAllowed()) {
       return HiveRelOptMaterialization.IncrementalRebuildMode.NOT_AVAILABLE;
     }
-    if (visitor.isContainsAggregate() && !visitor.hasCountStar()) {
+    if (visitor.isContainsAggregate() && !visitor.hasCountStar() || visitor.isInsertAllowedOnly()) {
       return HiveRelOptMaterialization.IncrementalRebuildMode.INSERT_ONLY;
     }
     return HiveRelOptMaterialization.IncrementalRebuildMode.AVAILABLE;

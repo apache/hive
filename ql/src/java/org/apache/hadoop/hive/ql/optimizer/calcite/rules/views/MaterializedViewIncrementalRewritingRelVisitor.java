@@ -29,6 +29,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.ControlFlowException;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,11 +48,13 @@ public class MaterializedViewIncrementalRewritingRelVisitor extends RelVisitor {
   private boolean containsAggregate;
   private boolean rewritingAllowed;
   private boolean hasCountStar;
+  private boolean insertAllowedOnly;
 
   public MaterializedViewIncrementalRewritingRelVisitor() {
     this.containsAggregate = false;
     this.rewritingAllowed = true;
     this.hasCountStar = false;
+    this.insertAllowedOnly = false;
   }
 
   @Override
@@ -60,11 +63,18 @@ public class MaterializedViewIncrementalRewritingRelVisitor extends RelVisitor {
       this.containsAggregate = true;
       check((Aggregate) node);
       super.visit(node, ordinal, parent);
-    } else if (node instanceof TableScan ||
+    } else if (
             node instanceof Filter ||
             node instanceof Project ||
             node instanceof Join) {
       super.visit(node, ordinal, parent);
+    } else if (node instanceof TableScan) {
+      HiveTableScan scan = (HiveTableScan) node;
+      RelOptHiveTable hiveTable = (RelOptHiveTable) scan.getTable();
+      if (hiveTable.getHiveTableMD().getStorageHandler() != null &&
+              hiveTable.getHiveTableMD().getStorageHandler().areSnapshotsSupported()) {
+        insertAllowedOnly = true;
+      }
     } else {
       rewritingAllowed = false;
     }
@@ -94,6 +104,10 @@ public class MaterializedViewIncrementalRewritingRelVisitor extends RelVisitor {
 
   public boolean isRewritingAllowed() {
     return rewritingAllowed;
+  }
+
+  public boolean isInsertAllowedOnly() {
+    return insertAllowedOnly;
   }
 
   public boolean hasCountStar() {
