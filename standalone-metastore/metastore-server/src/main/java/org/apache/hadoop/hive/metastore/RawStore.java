@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
@@ -1151,8 +1152,13 @@ public interface RawStore extends Configurable {
    * @throws InvalidInputException unable to record the stats for the table
    */
   Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
-     List<String> partVals, String validWriteIds, long writeId)
-     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+      List<String> partVals, String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+
+  Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable, 
+      ColumnStatistics statsObj, List<String> partVals, 
+      String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
   /**
    * Returns the relevant column statistics for a given column in a given table in a given database
@@ -2201,4 +2207,5 @@ public interface RawStore extends Configurable {
   Package findPackage(GetPackageRequest request);
   List<String> listPackages(ListPackageRequest request);
   void dropPackage(DropPackageRequest request);
+  public MTable ensureGetMTable(String catName, String dbName, String tblName) throws NoSuchObjectException;
 }

@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.junit.After;
 import org.junit.Assert;
@@ -148,6 +149,7 @@ public class TestOldSchema {
     Table table = new Table(tableName, dbName, "me", (int) now, (int) now, 0, sd, partCols,
         Collections.emptyMap(), null, null, null);
     store.createTable(table);
+    MTable mTable = store.ensureGetMTable(table.getCatName(), table.getDbName(), table.getTableName());
 
     Deadline.startTimer("getPartition");
     for (int i = 0; i < 10; i++) {
@@ -178,7 +180,7 @@ public class TestOldSchema {
       obj.setStatsData(data);
       cs.addToStatsObj(obj);
       cs.setEngine(ENGINE);
-      store.updatePartitionColumnStatistics(cs, partVal, null, -1);
+      store.updatePartitionColumnStatistics(table, mTable, cs, partVal, null, -1);
 
     }
 

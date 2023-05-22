@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.junit.Assert;
@@ -825,6 +826,7 @@ public class TestObjectStore {
     try (AutoCloseable c = deadline()) {
       objectStore.createTable(tbl1);
     }
+    MTable mTable1 = objectStore.ensureGetMTable(tbl1.getCatName(), tbl1.getDbName(), tbl1.getTableName());
     PrivilegeBag privilegeBag = new PrivilegeBag();
     // Create partitions for the partitioned table
     for(int i=0; i < 3; i++) {
@@ -883,7 +885,7 @@ public class TestObjectStore {
         statsObjList.add(partStats);
 
         try (AutoCloseable c = deadline()) {
-          objectStore.updatePartitionColumnStatistics(stats, part.getValues(), null, -1);
+          objectStore.updatePartitionColumnStatistics(tbl1, mTable1, stats, part.getValues(), null, -1);
         }
       }
     }
