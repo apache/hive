@@ -1,3 +1,5 @@
+--! qt:replace:/(\s+Statistics\: Num rows\: \d+ Data size\:\s+)\S+(\s+Basic stats\: \S+ Column stats\: \S+)/$1#Masked#$2/
+
 set hive.compute.query.using.stats=true;
 set hive.explain.user=false;
 
