@@ -58,6 +58,10 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getIntVar;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
 import static java.util.Objects.isNull;
 
 /**
@@ -168,7 +172,7 @@ class CompactionCleaner extends TaskHandler {
       if (metricsEnabled) {
         Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER).inc();
       }
-      handleCleanerAttemptFailure(ci, false);
+      handleCleanerAttemptFailure(ci);
     }  finally {
       if (metricsEnabled) {
         perfLogger.perfLogEnd(CompactionCleaner.class.getName(), cleanerMetric);
@@ -296,6 +300,22 @@ class CompactionCleaner extends TaskHandler {
       validWriteIdList = validWriteIdList.updateHighWatermark(ci.highestWriteId);
     }
     return validWriteIdList;
+  }
+
+  private void handleCleanerAttemptFailure(CompactionInfo ci) throws MetaException {
+    long defaultRetention = getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS);
+    int cleanAttempts = 0;
+    if (ci.retryRetention > 0) {
+      cleanAttempts = (int)(Math.log(ci.retryRetention / defaultRetention) / Math.log(2)) + 1;
+    }
+    if (cleanAttempts >= getIntVar(conf, HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS)) {
+      //Mark it as failed if the max attempt threshold is reached.
+      txnHandler.markFailed(ci);
+    } else {
+      //Calculate retry retention time and update record.
+      ci.retryRetention = (long)Math.pow(2, cleanAttempts) * defaultRetention;
+      txnHandler.setCleanerRetryRetentionTimeOnError(ci);
+    }
   }
 
   private CleanupRequest getCleaningRequestBasedOnLocation(CompactionInfo ci, String location) {

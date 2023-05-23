@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchCompactionException;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionAbortedException;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
@@ -523,12 +522,11 @@ public interface TxnStore extends Configurable {
    *                            or partition that will trigger cleanup.
    * @param abortedThreshold Number of aborted transactions involving a given table or partition
    *                         that will trigger cleanup.
-   * @param retentionTime Milliseconds to delay the cleaner
    * @return Information of potential abort items that needs to be cleaned.
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  List<CompactionInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold, long retentionTime) throws MetaException;
+  List<AbortTxnRequestInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
 
   /**
    * Sets the cleaning start time for a particular compaction
@@ -578,11 +576,19 @@ public interface TxnStore extends Configurable {
    * Stores the value of {@link CompactionInfo#retryRetention} and {@link CompactionInfo#errorMessage} fields
    * of the CompactionInfo in the HMS database.
    * @param info The {@link CompactionInfo} object holding the values.
-   * @param isAbort Whether the entry is associated to compaction/abort cleanup.
    * @throws MetaException
    */
   @RetrySemantics.CannotRetry
-  void setCleanerRetryRetentionTimeOnError(CompactionInfo info, boolean isAbort) throws MetaException;
+  void setCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException;
+
+  /**
+   * Stores the value of {@link AbortTxnRequestInfo#retryRetention} and {@link AbortTxnRequestInfo#errorMessage} fields
+   * of the AbortTxnRequestInfo in the HMS database (specifically in TXN_CLEANUP_QUEUE table).
+   * @param info
+   * @throws MetaException
+   */
+  @RetrySemantics.CannotRetry
+  void setAbortCleanerRetryRetentionTimeOnError(AbortTxnRequestInfo info) throws MetaException;
 
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
