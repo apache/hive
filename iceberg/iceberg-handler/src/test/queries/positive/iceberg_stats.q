@@ -1,3 +1,5 @@
+--! qt:replace:/(\s+Statistics\: Num rows\: \d+ Data size\:\s+)\S+(\s+Basic stats\: \S+ Column stats\: \S+)/$1#Masked#$2/
+
 set hive.compute.query.using.stats=true;
 set hive.explain.user=false;
 
@@ -13,5 +15,9 @@ delete from ice01 where id in (2,4);
 
 explain select count(*) from ice01;
 select count(*) from ice01;
+
+-- iow
+insert overwrite table ice01 select * from ice01;
+explain select count(*) from ice01;
 
 drop table ice01;

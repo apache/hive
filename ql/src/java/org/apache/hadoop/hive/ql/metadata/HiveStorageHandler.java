@@ -288,6 +288,14 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Check if the storage handler answer a few queries like count(1) purely using stats.
+   * @return true if the storage handler can answer query using statistics
+   */
+  default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+    return false;
+  }
+
+  /**
    *
    * Gets the storage format descriptor to be used for temp table for LOAD data.
    * @param table table object
