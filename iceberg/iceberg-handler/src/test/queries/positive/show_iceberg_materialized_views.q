@@ -1,4 +1,4 @@
---! qt:dataset::ONLY
+--! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
