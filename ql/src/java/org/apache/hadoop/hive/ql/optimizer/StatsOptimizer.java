@@ -300,7 +300,7 @@ public class StatsOptimizer extends Transform {
           return null;
         }
         if (MetaStoreUtils.isNonNativeTable(tbl.getTTable())
-            && !tbl.getStorageHandler().canProvideBasicStatistics() ) {
+            && !tbl.getStorageHandler().canComputeQueryUsingStats(tbl)) {
           Logger.info("Table " + tbl.getTableName() + " is non Native table. Skip StatsOptimizer.");
           return null;
         }
