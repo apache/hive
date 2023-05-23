@@ -1,0 +1,729 @@
+PREHOOK: query: create temporary table foo (id bigint, code string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create temporary table foo (id bigint, code string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+PREHOOK: query: create temporary table bar (id bigint, code string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bar
+POSTHOOK: query: create temporary table bar (id bigint, code string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bar
+PREHOOK: query: create temporary table baz (id bigint) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@baz
+POSTHOOK: query: create temporary table baz (id bigint) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@baz
+PREHOOK: query: INSERT INTO foo values
+  (29999000052073, '01'),
+  (29999000052107, '01'),
+  (29999000052111, '01'),
+  (29999000052112, '01'),
+  (29999000052113, '01'),
+  (29999000052114, '01'),
+  (29999000052071, '01A'),
+  (29999000052072, '01A'),
+  (29999000052116, '01A'),
+  (29999000052117, '01A'),
+  (29999000052118, '01A'),
+  (29999000052119, '01A'),
+  (29999000052120, '01A'),
+  (29999000052076, '06'),
+  (29999000052074, '06A'),
+  (29999000052075, '06A')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@foo
+POSTHOOK: query: INSERT INTO foo values
+  (29999000052073, '01'),
+  (29999000052107, '01'),
+  (29999000052111, '01'),
+  (29999000052112, '01'),
+  (29999000052113, '01'),
+  (29999000052114, '01'),
+  (29999000052071, '01A'),
+  (29999000052072, '01A'),
+  (29999000052116, '01A'),
+  (29999000052117, '01A'),
+  (29999000052118, '01A'),
+  (29999000052119, '01A'),
+  (29999000052120, '01A'),
+  (29999000052076, '06'),
+  (29999000052074, '06A'),
+  (29999000052075, '06A')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@foo
+POSTHOOK: Lineage: foo.code SCRIPT []
+POSTHOOK: Lineage: foo.id SCRIPT []
+PREHOOK: query: INSERT INTO bar values
+  (29999000052071, '01'),
+  (29999000052072, '01'),
+  (29999000052073, '01'),
+  (29999000052116, '01'),
+  (29999000052117, '01'),
+  (29999000052071, '01A'),
+  (29999000052072, '01A'),
+  (29999000052073, '01A'),
+  (29999000052116, '01AS'),
+  (29999000052117, '01AS'),
+  (29999000052071, '01B'),
+  (29999000052072, '01B'),
+  (29999000052073, '01B'),
+  (29999000052116, '01BS'),
+  (29999000052117, '01BS'),
+  (29999000052071, '01C'),
+  (29999000052072, '01C'),
+  (29999000052073, '01C7'),
+  (29999000052116, '01CS'),
+  (29999000052117, '01CS'),
+  (29999000052071, '01D'),
+  (29999000052072, '01D'),
+  (29999000052073, '01D'),
+  (29999000052116, '01DS'),
+  (29999000052117, '01DS')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@bar
+POSTHOOK: query: INSERT INTO bar values
+  (29999000052071, '01'),
+  (29999000052072, '01'),
+  (29999000052073, '01'),
+  (29999000052116, '01'),
+  (29999000052117, '01'),
+  (29999000052071, '01A'),
+  (29999000052072, '01A'),
+  (29999000052073, '01A'),
+  (29999000052116, '01AS'),
+  (29999000052117, '01AS'),
+  (29999000052071, '01B'),
+  (29999000052072, '01B'),
+  (29999000052073, '01B'),
+  (29999000052116, '01BS'),
+  (29999000052117, '01BS'),
+  (29999000052071, '01C'),
+  (29999000052072, '01C'),
+  (29999000052073, '01C7'),
+  (29999000052116, '01CS'),
+  (29999000052117, '01CS'),
+  (29999000052071, '01D'),
+  (29999000052072, '01D'),
+  (29999000052073, '01D'),
+  (29999000052116, '01DS'),
+  (29999000052117, '01DS')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@bar
+POSTHOOK: Lineage: bar.code SCRIPT []
+POSTHOOK: Lineage: bar.id SCRIPT []
+PREHOOK: query: INSERT INTO baz values
+  (29999000052071),
+  (29999000052072),
+  (29999000052073),
+  (29999000052074),
+  (29999000052075),
+  (29999000052076),
+  (29999000052107),
+  (29999000052111),
+  (29999000052112),
+  (29999000052113),
+  (29999000052114),
+  (29999000052116),
+  (29999000052117),
+  (29999000052118),
+  (29999000052119),
+  (29999000052120)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@baz
+POSTHOOK: query: INSERT INTO baz values
+  (29999000052071),
+  (29999000052072),
+  (29999000052073),
+  (29999000052074),
+  (29999000052075),
+  (29999000052076),
+  (29999000052107),
+  (29999000052111),
+  (29999000052112),
+  (29999000052113),
+  (29999000052114),
+  (29999000052116),
+  (29999000052117),
+  (29999000052118),
+  (29999000052119),
+  (29999000052120)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@baz
+POSTHOOK: Lineage: baz.id SCRIPT []
+PREHOOK: query: explain select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@baz
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: explain select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@baz
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE), Map 3 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: id (type: bigint), (code = '01AS') (type: boolean)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join 0 to 1
+                      keys:
+                        0 _col0 (type: bigint)
+                        1 _col0 (type: bigint)
+                      outputColumnNames: _col0, _col1, _col3, _col4
+                      input vertices:
+                        1 Map 2
+                      residual filter predicates: {(_col1 or _col4)}
+                      Statistics: Num rows: 26 Data size: 5068 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Left Outer Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col0, _col3, _col5
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col0 (type: bigint), _col3 (type: string), _col5 (type: bigint)
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 25 Data size: 4800 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 24 Data size: 4608 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint), code (type: string), (code = '01BS') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 24 Data size: 4608 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 24 Data size: 4608 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string), _col2 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@baz
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: explain select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@baz
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE), Map 3 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: id (type: bigint), (code = '01AS') (type: boolean)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join 0 to 1
+                      keys:
+                        0 _col0 (type: bigint)
+                        1 _col0 (type: bigint)
+                      outputColumnNames: _col0, _col1, _col3, _col4
+                      input vertices:
+                        1 Map 2
+                      residual filter predicates: {(_col1 or _col4)}
+                      Statistics: Num rows: 26 Data size: 5068 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Left Outer Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col0, _col3, _col5
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col0 (type: bigint), _col3 (type: string), _col5 (type: bigint)
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 25 Data size: 4800 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 24 Data size: 4608 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint), code (type: string), (code = '01BS') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 24 Data size: 4608 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 24 Data size: 4608 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string), _col2 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@baz
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@baz
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+29999000052071	NULL	29999000052071
+29999000052072	NULL	29999000052072
+29999000052073	NULL	29999000052073
+29999000052074	NULL	29999000052074
+29999000052075	NULL	29999000052075
+29999000052076	NULL	29999000052076
+29999000052107	NULL	29999000052107
+29999000052111	NULL	29999000052111
+29999000052112	NULL	29999000052112
+29999000052113	NULL	29999000052113
+29999000052114	NULL	29999000052114
+29999000052116	01BS	29999000052116
+29999000052117	01BS	29999000052117
+29999000052118	NULL	29999000052118
+29999000052119	NULL	29999000052119
+29999000052120	NULL	29999000052120
+PREHOOK: query: select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@baz
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@baz
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+29999000052071	NULL	29999000052071
+29999000052072	NULL	29999000052072
+29999000052073	NULL	29999000052073
+29999000052074	NULL	29999000052074
+29999000052075	NULL	29999000052075
+29999000052076	NULL	29999000052076
+29999000052107	NULL	29999000052107
+29999000052111	NULL	29999000052111
+29999000052112	NULL	29999000052112
+29999000052113	NULL	29999000052113
+29999000052114	NULL	29999000052114
+29999000052116	01BS	29999000052116
+29999000052117	01BS	29999000052117
+29999000052118	NULL	29999000052118
+29999000052119	NULL	29999000052119
+29999000052120	NULL	29999000052120
+PREHOOK: query: explain select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@baz
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: explain select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@baz
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE), Map 3 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: id is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_38_container, bigKeyColName:id, smallTablePos:1, keyRatio:1.04
+                  Statistics: Num rows: 25 Data size: 4800 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 24 Data size: 4608 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint), code (type: string), (code = '01BS') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 24 Data size: 4608 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col1, _col2, _col3, _col4
+                        input vertices:
+                          1 Map 2
+                        residual filter predicates: {(_col4 or _col2)}
+                        Statistics: Num rows: 26 Data size: 5068 Basic stats: COMPLETE Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Left Outer Join 0 to 1
+                          keys:
+                            0 _col3 (type: bigint)
+                            1 _col0 (type: bigint)
+                          outputColumnNames: _col1, _col3, _col5
+                          input vertices:
+                            1 Map 3
+                          Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col3 (type: bigint), _col1 (type: string), _col5 (type: bigint)
+                            outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint), (code = '01AS') (type: boolean)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@baz
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: explain select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@baz
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE), Map 3 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: id is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_38_container, bigKeyColName:id, smallTablePos:1, keyRatio:1.04
+                  Statistics: Num rows: 25 Data size: 4800 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 24 Data size: 4608 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint), code (type: string), (code = '01BS') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 24 Data size: 4608 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col1, _col2, _col3, _col4
+                        input vertices:
+                          1 Map 2
+                        residual filter predicates: {(_col4 or _col2)}
+                        Statistics: Num rows: 26 Data size: 5068 Basic stats: COMPLETE Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Left Outer Join 0 to 1
+                          keys:
+                            0 _col3 (type: bigint)
+                            1 _col0 (type: bigint)
+                          outputColumnNames: _col1, _col3, _col5
+                          input vertices:
+                            1 Map 3
+                          Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col3 (type: bigint), _col1 (type: string), _col5 (type: bigint)
+                            outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 28 Data size: 5574 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint), (code = '01AS') (type: boolean)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 16 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@baz
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@baz
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+29999000052116	01BS	29999000052116
+29999000052117	01BS	29999000052117
+PREHOOK: query: select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@baz
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@baz
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+29999000052116	01BS	29999000052116
+29999000052117	01BS	29999000052117
