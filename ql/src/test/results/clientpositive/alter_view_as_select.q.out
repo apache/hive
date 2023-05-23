@@ -49,19 +49,17 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-Original Query:     	SELECT * FROM srcpart
-Expanded Query:     	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart`
+Original Query:     	SELECT * FROM srcpart	 
+Expanded Query:     	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart`	 
 PREHOOK: query: ALTER VIEW tv.testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: ALTERVIEW_AS
 PREHOOK: Input: default@src
 PREHOOK: Output: database:tv
-#### A masked pattern was here ####
 PREHOOK: Output: tv@testView
 POSTHOOK: query: ALTER VIEW tv.testView AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: ALTERVIEW_AS
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:tv
-#### A masked pattern was here ####
 POSTHOOK: Output: tv@testView
 PREHOOK: query: DESCRIBE FORMATTED tv.testView
 PREHOOK: type: DESCTABLE
@@ -91,8 +89,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-Original Query:     	SELECT value FROM src WHERE key=86
-Expanded Query : 	SELECT `value` AS `value` FROM (SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86) `tv.testView`
+Original Query:     	SELECT value FROM src WHERE key=86	 
+Expanded Query:     	SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86	 
 PREHOOK: query: ALTER VIEW tv.testView AS
 SELECT * FROM src
 WHERE key > 80 AND key < 100
@@ -101,7 +99,6 @@ LIMIT 10
 PREHOOK: type: ALTERVIEW_AS
 PREHOOK: Input: default@src
 PREHOOK: Output: database:tv
-#### A masked pattern was here ####
 PREHOOK: Output: tv@testView
 POSTHOOK: query: ALTER VIEW tv.testView AS
 SELECT * FROM src
@@ -111,7 +108,6 @@ LIMIT 10
 POSTHOOK: type: ALTERVIEW_AS
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:tv
-#### A masked pattern was here ####
 POSTHOOK: Output: tv@testView
 PREHOOK: query: DESCRIBE FORMATTED tv.testView
 PREHOOK: type: DESCTABLE
@@ -142,15 +138,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-Original Query:     	SELECT * FROM src
+Original Query:     	SELECT * FROM src   	 
 	                    	WHERE key > 80 AND key < 100
 	                    	ORDER BY key, value 
 	                    	LIMIT 10            
-View Expanded Text: 	SELECT `key` AS `key`, `value` AS `value` FROM (SELECT `src`.`key`, `src`.`value` FROM `default`.`src`
+Expanded Query:     	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`	 
 	                    	WHERE `src`.`key` > 80 AND `src`.`key` < 100
 	                    	ORDER BY `src`.`key`, `src`.`value`
-	                    	LIMIT 10) `tv.testView`
-View Rewrite Enabled:	No                  	 
+	                    	LIMIT 10            
 PREHOOK: query: DROP VIEW tv.testView
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: tv@testview
