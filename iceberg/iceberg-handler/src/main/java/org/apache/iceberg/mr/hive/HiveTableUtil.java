@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -42,11 +43,13 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.SerializableTable;
+import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.TableMigrationUtil;
@@ -146,8 +149,21 @@ public class HiveTableUtil {
       if (fileName.startsWith(".") || fileName.startsWith("_") || fileName.endsWith("metadata.json")) {
         continue;
       }
-      dataFiles.addAll(TableMigrationUtil.listPartition(partitionKeys, fileStatus.getPath().toString(), format, spec,
-          conf, metricsConfig, nameMapping));
+      partitionKeys.replaceAll((key, value) -> FileUtils.escapePathName(value));
+
+      int[] stringFields = IntStream.range(0, spec.javaClasses().length)
+        .filter(i -> spec.javaClasses()[i].isAssignableFrom(String.class)).toArray();
+
+      dataFiles.addAll(Lists.transform(
+          TableMigrationUtil.listPartition(partitionKeys, fileStatus.getPath().toString(), format, spec,
+            conf, metricsConfig, nameMapping),
+          dataFile -> {
+            StructLike structLike = dataFile.partition();
+            for (int pos : stringFields) {
+              structLike.set(pos, FileUtils.unescapePathName(structLike.get(pos, String.class)));
+            }
+            return dataFile;
+          }));
     }
     return dataFiles;
   }
