@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -288,6 +289,7 @@ public class HiveTableUtil {
     job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, "partition,record_count,file_count,spec_id");
     job.set("iceberg.mr.table.location", tbl.getPath().toString());
     job.set("iceberg.mr.table.identifier", tbl.getFullyQualifiedName() + ".partitions");
+    job.set(HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE.varname, "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe");
     HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     return job;
   }

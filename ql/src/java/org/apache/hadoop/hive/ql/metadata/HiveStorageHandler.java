@@ -663,8 +663,8 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support show partitions command");
   }
 
-  default String tableType(){
-    return "";
+  default boolean supportsPartitions(){
+    return false;
   }
 
 }

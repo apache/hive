@@ -1477,14 +1477,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
       return parts;
     } catch (Exception e) {
-      LOG.warn("Warn:", e);
+      LOG.warn("Warn: Unable to show partitions for iceberg table - ", e);
     }
     return parts;
   }
 
   @Override
-  public String tableType() {
-    return ICEBERG;
+  public boolean supportsPartitions() {
+    return true;
   }
 
   private List<String> getParts(DDLOperationContext context, Configuration job,

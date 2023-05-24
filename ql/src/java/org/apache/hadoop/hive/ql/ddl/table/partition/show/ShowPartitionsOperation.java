@@ -55,14 +55,14 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
   @Override
   public int execute() throws HiveException {
     Table tbl = context.getDb().getTable(desc.getTabName());
-    boolean isIcebergTable = isIcebergTable(tbl);
-    if (!(tbl.isPartitioned() || isIcebergTable)) {
+    boolean partitionSupport = nonNativeTableSupportsPartitions(tbl);
+    if (!(tbl.isPartitioned() || partitionSupport)) {
         throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, desc.getTabName());
     }
 
     // may not be always present tbl.tTable.parameters.get("table_type")
     List<String> parts;
-    if (isIcebergTable) {
+    if (partitionSupport) {
       parts = tbl.getStorageHandler().showPartitions( context, tbl);
     }
     else if (desc.getCond() != null || desc.getOrder() != null) {
@@ -123,8 +123,8 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
     return partNames;
   }
 
-  private boolean isIcebergTable(Table tbl) {
-    return tbl != null && tbl.isNonNative() && tbl.getStorageHandler().tableType().equals(Constants.ICEBERG);
+  private boolean nonNativeTableSupportsPartitions(Table tbl) {
+    return tbl != null && tbl.isNonNative() && tbl.getStorageHandler().supportsPartitions();
   }
 
 }
