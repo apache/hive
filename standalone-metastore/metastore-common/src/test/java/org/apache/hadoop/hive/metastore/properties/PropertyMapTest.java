@@ -52,7 +52,7 @@ public class PropertyMapTest {
     table.declareProperty("uuid", STRING);
     table.declareProperty("project", STRING, "Hive");
     table.declareProperty("policy", JSON);
-    store = new PropertyStore.Transient();
+    store = new TransientPropertyStore();
   }
 
   private static PropertyMap fetchProperties(PropertyStore store, String name, Function<String, PropertySchema> getSchema) {

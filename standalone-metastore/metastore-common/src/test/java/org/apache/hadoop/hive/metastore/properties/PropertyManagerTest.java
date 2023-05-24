@@ -48,7 +48,7 @@ public class PropertyManagerTest {
     JavaTestManager.declareClazzProperty("project", STRING, "Hive");
 
 
-    store = new PropertyStore.Transient();
+    store = new TransientPropertyStore();
     manager = new JavaTestManager(store);
 
     Properties jutilp = new Properties();

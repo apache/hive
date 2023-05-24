@@ -5830,6 +5830,16 @@ public class ObjectStore implements RawStore, Configurable {
     return false;
   }
 
+  private void closeQuery(Query<?> query) {
+    try {
+      if (query != null) {
+        query.close();
+      }
+    } catch(Exception exception) {
+      LOG.error("erro closing query", exception);
+    }
+  }
+
   private <T> T doFetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
     Query<MMetastoreDBProperties> query = null;
     try {
@@ -5841,9 +5851,7 @@ public class ObjectStore implements RawStore, Configurable {
         return (T) (transform != null? transform.apply(properties) : properties);
       }
     } finally {
-      if (query != null) {
-        query.closeAll();
-      }
+      closeQuery(query);
     }
     return null;
   }
@@ -5863,6 +5871,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return properties;
   }
+
   private <T> Map<String, T> doSelectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
     Query<MMetastoreDBProperties> query = null;
     try {
@@ -5888,9 +5897,7 @@ public class ObjectStore implements RawStore, Configurable {
         return results;
       }
     } finally {
-      if (query != null) {
-        query.closeAll();
-      }
+      closeQuery(query);
     }
     return null;
   }
