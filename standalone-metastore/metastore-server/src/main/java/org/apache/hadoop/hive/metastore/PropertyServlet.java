@@ -61,15 +61,15 @@ import java.util.TreeMap;
 public class PropertyServlet extends HttpServlet {
   /** The logger. */
   public static final Logger LOGGER = LoggerFactory.getLogger(PropertyServlet.class);
-  /** The object store. */
-  private final RawStore objectStore;
+  /** The configuration. */
+  private final Configuration configuration;
   /** The security. */
   private final ServletSecurity security;
 
-  PropertyServlet(Configuration configuration, RawStore store) {
+  PropertyServlet(Configuration configuration) {
     boolean jwt = "JWT".equals(MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH));
     this.security = new ServletSecurity(configuration, jwt);
-    this.objectStore = store;
+    this.configuration = configuration;
   }
 
   private String getNamespace(String ruri) {
@@ -79,10 +79,24 @@ public class PropertyServlet extends HttpServlet {
     }
     return "";
   }
+  private RawStore getMS() throws ServletException {
+      Configuration newConf = new Configuration(configuration);
+      String rawStoreClassName = MetastoreConf.getVar(newConf, MetastoreConf.ConfVars.RAW_STORE_IMPL);
+      LOGGER.info("Opening raw store with implementation class: {}", rawStoreClassName);
+      try {
+        return RawStoreProxy.getProxy(newConf, configuration, rawStoreClassName);
+      } catch(MetaException exception) {
+        throw new ServletException(exception);
+      }
+  }
 
-  private PropertyManager getPropertyManager(String ns) throws MetaException, NoSuchObjectException {
-    PropertyStore propertyStore = objectStore.getPropertyStore();
-    return PropertyManager.create(ns, propertyStore);
+  private PropertyManager getPropertyManager(RawStore store, String ns) throws ServletException {
+    try {
+      PropertyStore propertyStore = store.getPropertyStore();
+      return PropertyManager.create(ns, propertyStore);
+    } catch (MetaException | NoSuchObjectException exception) {
+      throw new ServletException(exception);
+    }
   }
 
   private Object readJson(HttpServletRequest request) throws ServletException, IOException {
@@ -117,23 +131,21 @@ public class PropertyServlet extends HttpServlet {
 
   private void runPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-    String ns = getNamespace(request.getRequestURI());
-    PropertyManager mgr;
-    try {
-      mgr = getPropertyManager(ns);
-    } catch (MetaException | NoSuchObjectException exception) {
-      throw new ServletException(exception);
-    }
-    Object json = readJson(request);
+    final RawStore ms =  getMS();
+    final String ns = getNamespace(request.getRequestURI());
+    final PropertyManager mgr = getPropertyManager(ms, ns);
+    // decode the request
+    final Object json = readJson(request);
     // one or many actions imply...
     Iterable<?> actions = json instanceof List<?> ? (List<?>) json : Collections.singletonList(json);
     // ...one or many reactions
     List<Object> reactions = new ArrayList<>();
+    String method = null;
     try {
       for (Object action : actions) {
         if (action instanceof Map<?,?>) {
           @SuppressWarnings("unchecked")  Map<String, Object> call = (Map<String, Object>) action;
-          String method = (String) call.get("method");
+          method = (String) call.get("method");
           if (method == null) {
             method = "selectProperties";
           }
@@ -144,10 +156,17 @@ public class PropertyServlet extends HttpServlet {
                 throw new IllegalArgumentException("null prefix");
               }
               String predicate = (String) call.get("predicate");
-              @SuppressWarnings("unchecked") List<String> project = (List<String>) call.get("selection");
+              // selection may be null, a sole property or a list
+              Object selection = call.get("selection");
+              @SuppressWarnings("unchecked") List<String> project =
+                  selection == null
+                  ? null
+                  : selection instanceof List<?>
+                  ? (List<String>) (List<?>) selection
+                  : Collections.singletonList(selection.toString());
               Map<String, PropertyMap> selected = mgr.selectProperties(prefix, predicate, project);
               Map<String, Map<String, String>> returned = new TreeMap<>();
-              selected.forEach((k, v) -> returned.put(k, v.export()));
+              selected.forEach((k, v) -> returned.put(k, v.export(project == null)));
               reactions.add(returned);
               break;
             }
@@ -172,10 +191,14 @@ public class PropertyServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_OK);
     } catch (PropertyException any) {
       mgr.rollback();
+      LOGGER.error("servlet property "+(method != null? method : "?")+ " fail", any);
       response.sendError(HttpServletResponse.SC_BAD_REQUEST, "servlet fail, property error " + any);
     } catch (Exception any) {
       mgr.rollback();
+      LOGGER.error("servlet property "+(method != null? method : "?")+ " fail", any);
       response.sendError(HttpServletResponse.SC_BAD_REQUEST, "servlet fail " + any);
+    } finally {
+      ms.shutdown();
     }
   }
 
@@ -194,34 +217,34 @@ public class PropertyServlet extends HttpServlet {
 
   @Override
   protected void doPut(HttpServletRequest request,
-                        HttpServletResponse response) throws ServletException, IOException {
+                       HttpServletResponse response) throws ServletException, IOException {
     security.execute(request, response, PropertyServlet.this::runGet);
   }
   private void runGet(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-
-    String ns = getNamespace(request.getRequestURI());
-    PropertyManager mgr;
+    final RawStore ms =  getMS();
+    final String ns = getNamespace(request.getRequestURI());
+    final PropertyManager mgr = getPropertyManager(ms, ns);
     try {
-      mgr = getPropertyManager(ns);
-    } catch (MetaException | NoSuchObjectException exception) {
-      throw new ServletException(exception);
-    }
-    Object json = readJson(request);
-    if (json instanceof Map) {
-      try {
-        @SuppressWarnings("unchecked")
-        Map<String, ?> cast = (Map<String, ?>) json;
-        mgr.setProperties(cast);
-        mgr.commit();
-        response.setStatus(HttpServletResponse.SC_OK);
-        return;
-      } catch (Exception any) {
-        mgr.rollback();
-        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "select fail " + any);
+      Object json = readJson(request);
+      if (json instanceof Map) {
+        try {
+          @SuppressWarnings("unchecked")
+          Map<String, ?> cast = (Map<String, ?>) json;
+          mgr.setProperties(cast);
+          mgr.commit();
+          response.setStatus(HttpServletResponse.SC_OK);
+          return;
+        } catch (Exception any) {
+          mgr.rollback();
+          LOGGER.error("select fail", any);
+          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "select fail " + any);
+        }
       }
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "bad argument type " + json.getClass());
+    } finally {
+      ms.shutdown();
     }
-    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "bad argument type " + json.getClass());
   }
 
   @Override
@@ -235,11 +258,10 @@ public class PropertyServlet extends HttpServlet {
    * Convenience method to start a http server that only serves this servlet.
    * @param conf the configuration
    * @param cli the url part
-   * @param store the store
    * @return the server instance
    * @throws Exception if servlet initialization fails
    */
-  public static Server startServer(Configuration conf, String cli, RawStore store) throws Exception {
+  public static Server startServer(Configuration conf, String cli) throws Exception {
     // no port, no server
     int port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT);
     if (port < 0) {
@@ -260,7 +282,7 @@ public class PropertyServlet extends HttpServlet {
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
     ServletHolder holder = handler.newServletHolder(Source.EMBEDDED);
-    holder.setServlet(new PropertyServlet(conf, store)); //
+    holder.setServlet(new PropertyServlet(conf)); //
     handler.addServletWithMapping(holder, "/"+cli+"/*");
     server.start();
     return server;

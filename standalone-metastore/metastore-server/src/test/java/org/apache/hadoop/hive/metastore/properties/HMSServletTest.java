@@ -29,15 +29,9 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.PropertyServlet;
-import org.apache.hadoop.hive.metastore.ServletSecurity;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.eclipse.jetty.server.Server;
@@ -45,7 +39,6 @@ import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -70,7 +63,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 
 public class HMSServletTest extends HMSTestBase {
 
-  private static String baseDir = System.getProperty("basedir");
+  private static final String baseDir = System.getProperty("basedir");
   private static final File jwtAuthorizedKeyFile =
       new File(baseDir,"src/test/resources/auth/jwt/jwt-authorized-key.json");
   private static final File jwtUnauthorizedKeyFile =
@@ -102,8 +95,8 @@ public class HMSServletTest extends HMSTestBase {
       LOG.info("MetaStore store initialization " + (inited ? "successful" : "failed"));
     }
     if (servletServer == null) {
-      servletServer = PropertyServlet.startServer(conf, CLI, objectStore);
-      if (!servletServer.isStarted()) {
+      servletServer = PropertyServlet.startServer(conf, CLI);
+      if (servletServer == null || !servletServer.isStarted()) {
         Assert.fail("http server did not start");
       }
       sport = servletServer.getURI().getPort();
@@ -164,7 +157,7 @@ public class HMSServletTest extends HMSTestBase {
    */
   public static class JSonClient implements PropertyClient {
     private final URL url;
-    private String jwt = null;
+    private final String jwt;
     JSonClient(String token, URL url) {
       this.jwt = token;
       this.url = url;
@@ -198,14 +191,15 @@ public class HMSServletTest extends HMSTestBase {
   }
 
   @Test
-  public void testJSONServlet() throws Exception {
+  public void testServletEchoA() throws Exception {
     URL url = new URL("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
     Map<String, String> json = Collections.singletonMap("method", "echo");
     String jwt = generateJWT();
+    // succeed
     Object response = clientCall(jwt, url, "POST", json);
     Assert.assertNotNull(response);
     Assert.assertEquals(json, response);
-
+    // fail (null jwt)
     response = clientCall(null, url, "POST", json);
     Assert.assertNull(response);
   }
@@ -213,7 +207,6 @@ public class HMSServletTest extends HMSTestBase {
   @Test
   public void testProperties1() throws Exception {
       runOtherProperties1(client);
-
   }
 
   @Test
@@ -222,24 +215,60 @@ public class HMSServletTest extends HMSTestBase {
   }
 
   @Test
-  public void testPropertiesOtherClient() throws Exception {
-    HttpClient client = new HttpClient();
-    HttpMethod method = new PostMethod("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
+  public void testPropertiesOtherClient01() throws Exception {
+    // create data the easy way
+    Map<String, String> ptyMap = createProperties1();
+    boolean commit = client.setProperties(ptyMap);
+    Assert.assertTrue(commit);
 
+    HttpClient httpc = new HttpClient();
     String jwt = generateJWT();
-    method.addRequestHeader("Authorization","Bearer " + jwt);
-    method.addRequestHeader("Content-Type", "application/json");
-    method.addRequestHeader("Accept", "application/json");
 
-    String msgBody = "{\"method\":\"echo\"}";
-    StringRequestEntity sre = new StringRequestEntity(msgBody, "application/json", "utf-8");
-    ((PostMethod) method).setRequestEntity(sre);
+    // query selectProperties with no projection
+    Map<String, Object> args = new TreeMap<>();
+    args.put("method", "selectProperties");
+    args.put("prefix", "db0.table");
+    args.put("predicate", "someb && fillFactor < 95");
+    String msgBody = new Gson().toJson(args);
+    PostMethod method = createPost(jwt, msgBody);
 
-    int httpStatus = client.executeMethod(method);
-
+    int httpStatus = httpc.executeMethod(method);
+    Assert.assertEquals(HttpServletResponse.SC_OK, httpStatus);
     String resp = method.getResponseBodyAsString();
     Assert.assertNotNull(resp);
-    LOG.debug("response: " + resp);
+    Map<String, Object> resultMap0 = new Gson().fromJson(resp, Map.class);
+    Assert.assertNotNull(resultMap0);
+    Assert.assertEquals(5, resultMap0.size());
+
+    // query selectProperties with projection
+    args.put("method", "selectProperties");
+    args.put("prefix", "db0.tabl");
+    args.put("predicate", "fillFactor > 92");
+    args.put("selection", "fillFactor");
+    msgBody = new Gson().toJson(args);
+    method = createPost(jwt, msgBody);
+
+    httpStatus = httpc.executeMethod(method);
+    Assert.assertEquals(HttpServletResponse.SC_OK, httpStatus);
+    resp = method.getResponseBodyAsString();
+    Assert.assertNotNull(resp);
+    Map<String, Object> resultMap1 = new Gson().fromJson(resp, Map.class);
+    Assert.assertNotNull(resultMap1);
+    Assert.assertEquals(8, resultMap1.size());
+  }
+
+  @Test
+  public void testServletEchoB() throws Exception {
+    HttpClient client = new HttpClient();
+    String jwt = generateJWT();
+    String msgBody = "{\"method\":\"echo\"}";
+    PostMethod method = createPost(jwt, msgBody);
+
+    int httpStatus = client.executeMethod(method);
+    Assert.assertEquals(HttpServletResponse.SC_OK, httpStatus);
+    String resp = method.getResponseBodyAsString();
+    Assert.assertNotNull(resp);
+    Assert.assertEquals(msgBody, resp);
   }
 
   /**
@@ -275,4 +304,24 @@ public class HMSServletTest extends HMSTestBase {
     }
     return null;
   }
+
+  /**
+   * Create a PostMethod populated with the expected attributes.
+   * @param jwt the security token
+   * @param msgBody the actual (json) payload
+   * @return the method to be executed by an Http client
+   * @throws Exception
+   */
+  private PostMethod createPost(String jwt, String msgBody) throws Exception {
+    PostMethod method = new PostMethod("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
+
+    method.addRequestHeader("Authorization","Bearer " + jwt);
+    method.addRequestHeader("Content-Type", "application/json");
+    method.addRequestHeader("Accept", "application/json");
+
+    StringRequestEntity sre = new StringRequestEntity(msgBody, "application/json", "utf-8");
+    method.setRequestEntity(sre);
+    return method;
+  }
+
 }

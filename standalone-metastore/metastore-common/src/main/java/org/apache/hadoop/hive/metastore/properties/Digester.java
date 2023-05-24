@@ -432,6 +432,7 @@ public class Digester {
            for(int i = 0; i < sz; ++i) {
                digest(java.lang.reflect.Array.get(obj, i));
            }
+           return this;
         }
         // worst case
         digest(md, obj);

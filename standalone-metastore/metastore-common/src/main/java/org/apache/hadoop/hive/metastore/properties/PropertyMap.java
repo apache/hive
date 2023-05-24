@@ -449,13 +449,24 @@ public class PropertyMap implements Serializable {
    * @return a string.string map
    */
   public Map<String,String> export() {
+    return export(true);
+  }
+
+  /**
+   * Exports this property map as a key/value as string map.
+   * @param withDefaults whether default values should be exported as well
+   * @return a string.string map
+   */
+  public Map<String,String> export(boolean withDefaults) {
     Map<String, String> map = new TreeMap<>();
     final Map<String, PropertyType<?>> schemaMap = schema.properties;
     final Map<String, Object> valueMap = this.properties;
     synchronized (valueMap) {
       for (Map.Entry<String, PropertyType<?>> entry : schemaMap.entrySet()) {
         String pname = entry.getKey();
-        Object value = valueMap.getOrDefault(pname, schema.getDefaultValue(pname));
+        Object value = withDefaults
+            ? valueMap.getOrDefault(pname, schema.getDefaultValue(pname))
+            : valueMap.get(pname);
         if (value != null) {
           map.put(pname, entry.getValue().format(value));
         }
