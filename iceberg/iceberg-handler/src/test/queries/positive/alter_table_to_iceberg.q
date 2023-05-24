@@ -45,3 +45,15 @@ alter table tbl_avro convert to iceberg;
 describe formatted tbl_avro;
 select * from tbl_avro order by a;
 drop table tbl_avro;
+
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+drop table if exists part_tbl_parquet;
+create external table part_tbl_parquet (a int) partitioned by (s string) stored as parquet;
+insert into part_tbl_parquet partition (s) values (1, '2023/05/18');
+select * from part_tbl_parquet;
+
+alter table part_tbl_parquet convert to iceberg;
+select * from part_tbl_parquet;
+drop table part_tbl_parquet;
