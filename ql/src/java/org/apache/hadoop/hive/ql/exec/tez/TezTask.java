@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
@@ -185,6 +186,8 @@ public class TezTask extends Task<TezWork> {
           sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
 
+      final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+
       try {
         ss.setTezSession(session);
         LOG.info("Subscribed to counters: {} for queryId: {}", wmContext.getSubscribedCounters(),
@@ -228,6 +231,11 @@ public class TezTask extends Task<TezWork> {
           throw new HiveException("Operation cancelled");
         }
 
+        // Log all the info required to find the various logs for this query
+        String dagId = this.dagClient.getDagIdentifierString();
+        LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG Session ID: [{}]", ServerUtils.hostname(), queryId,
+                dagId, this.dagClient.getSessionIdentifierString());
+
         // finally monitor will print progress until the job is done
         TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx);
         rc = monitor.monitorExecution();
@@ -242,7 +250,7 @@ public class TezTask extends Task<TezWork> {
           counters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
         } catch (Exception err) {
           // Don't fail execution due to counters - just don't print summary info
-          LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete. " + err, err);
+          LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete.", err);
           counters = null;
         }
       } finally {
@@ -395,7 +403,7 @@ public class TezTask extends Task<TezWork> {
     // the name of the dag is what is displayed in the AM/Job UI
     String dagName = utils.createDagName(conf, queryPlan);
 
-    LOG.info("Dag name: " + dagName);
+    LOG.info("Dag name: {}", dagName);
     DAG dag = DAG.create(dagName);
 
     // set some info for the query
@@ -403,9 +411,8 @@ public class TezTask extends Task<TezWork> {
         .put("description", ctx.getCmd());
     String dagInfo = json.toString();
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("DagInfo: " + dagInfo);
-    }
+    LOG.debug("DagInfo: {}", dagInfo);
+
     dag.setDAGInfo(dagInfo);
 
     dag.setCredentials(conf.getCredentials());
@@ -510,10 +517,8 @@ public class TezTask extends Task<TezWork> {
     String modifyStr = Utilities.getAclStringWithHiveModification(conf,
             TezConfiguration.TEZ_AM_MODIFY_ACLS, addHs2User, user, loginUser);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Setting Tez DAG access for queryId={} with viewAclString={}, modifyStr={}",
-          queryId, viewStr, modifyStr);
-    }
+    LOG.debug("Setting Tez DAG access for queryId={} with viewAclString={}, modifyStr={}", queryId, viewStr, modifyStr);
+
     // set permissions for current user on DAG
     DAGAccessControls ac = new DAGAccessControls(viewStr, modifyStr);
     dag.setAccessControls(ac);
@@ -695,13 +700,11 @@ public class TezTask extends Task<TezWork> {
     }
 
     public String getDagIdentifierString() {
-      // TODO: Implement this when tez is upgraded. TEZ-3550
-      return null;
+      return dagClient.getDagIdentifierString();
     }
 
     public String getSessionIdentifierString() {
-      // TODO: Implement this when tez is upgraded. TEZ-3550
-      return null;
+      return dagClient.getSessionIdentifierString();
     }
 
 
