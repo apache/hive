@@ -1755,9 +1755,10 @@ public class Hive {
       if (t.getStorageHandler() == null || !t.getStorageHandler().isTableIdentifierSupported()) {
         throw new SemanticException(ErrorMsg.TABLE_IDENTIFIER_NOT_SUPPORTED, t.getTableName());
       }
-      if (tableIdentifier.startsWith("branch_")) {
-        if (!t.getStorageHandler().isValidBranch(tTable, tableIdentifier.substring(7))) {
-          throw new SemanticException(String.format("Cannot use branch (does not exist): %s", tableIdentifier.substring(7)));
+      String branch = HiveUtils.getTableBranch(tableIdentifier);
+      if (branch != null) {
+        if (!t.getStorageHandler().isValidBranch(tTable, branch)) {
+          throw new SemanticException(String.format("Cannot use branch (does not exist): %s", branch));
         }
         t.setBranchName(tableIdentifier);
       } else {

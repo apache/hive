@@ -7414,14 +7414,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // We need to set stats as inaccurate.
         setStatsForNonNativeTable(destinationTable.getDbName(), destinationTable.getTableName());
         // true if it is insert overwrite.
-        boolean overwrite = false;
-        if (destinationTable.getBranchName() != null) {
-          overwrite = !qb.getParseInfo().isInsertIntoTable(
-              String.format("%s.%s.%s", destinationTable.getDbName(), destinationTable.getTableName(), destinationTable.getBranchName()));
-        } else {
-          overwrite = !qb.getParseInfo().isInsertIntoTable(
-              String.format("%s.%s", destinationTable.getDbName(), destinationTable.getTableName()));
-        }
+        boolean overwrite = !qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
+            destinationTable.getBranchName());
         createPreInsertDesc(destinationTable, overwrite);
 
         ltd = new LoadTableDesc(queryTmpdir, tableDescriptor, partSpec == null ? ImmutableMap.of() : partSpec);
@@ -8013,11 +8007,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (destType == QBMetaData.DEST_TABLE) {
         genAutoColumnStatsGatheringPipeline(destinationTable, partSpec, input,
             qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
-                destinationTable.getBranchName()),false);
+                destinationTable.getBranchName()), false);
       } else if (destType == QBMetaData.DEST_PARTITION) {
         genAutoColumnStatsGatheringPipeline(destinationTable, destinationPartition.getSpec(), input,
             qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
-                destinationTable.getBranchName()),false);
+                destinationTable.getBranchName()), false);
       } else if (destType == QBMetaData.DEST_LOCAL_FILE || destType == QBMetaData.DEST_DFS_FILE) {
         // CTAS or CMV statement
         genAutoColumnStatsGatheringPipeline(destinationTable, null, input,

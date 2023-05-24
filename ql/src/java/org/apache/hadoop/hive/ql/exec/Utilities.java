@@ -257,6 +257,7 @@ public final class Utilities {
   public static final String MAPNAME = "Map ";
   public static final String REDUCENAME = "Reducer ";
   public static final String ENSURE_OPERATORS_EXECUTED = "ENSURE_OPERATORS_EXECUTED";
+  public static final String BRANCH_NAME = "branch_name";
 
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
@@ -764,7 +765,7 @@ public final class Utilities {
       props.put("metaTable", tbl.getMetaTable());
     }
     if (tbl.getBranchName() != null) {
-      props.put("branch_name", tbl.getBranchName());
+      props.put(BRANCH_NAME, tbl.getBranchName());
     }
     return (new TableDesc(tbl.getInputFormatClass(), tbl
         .getOutputFormatClass(), props));

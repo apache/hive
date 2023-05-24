@@ -276,10 +276,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
       tables = tables == null ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
       jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
-      // todo remove
-//      if (tableDesc.getProperties().getProperty("branch_name") != null) {
-//        jobConf.set(InputFormatConfig.OUTPUT_TABLE_BRANCH, tableDesc.getProperties().getProperty("branch_name"));
-//      }
 
       String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
       if (catalogName != null) {

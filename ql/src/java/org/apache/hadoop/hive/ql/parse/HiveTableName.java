@@ -95,15 +95,7 @@ public final class HiveTableName extends TableName {
    */
   // to be @Deprecated
   public static TableName ofNullable(String dbTableName, String defaultDb) throws SemanticException {
-    if (dbTableName == null) {
-      return new TableName(null, null, null);
-    } else {
-      try {
-        return fromString(dbTableName, SessionState.get().getCurrentCatalog(), defaultDb);
-      } catch (IllegalArgumentException e) {
-        throw new SemanticException(e);
-      }
-    }
+    return ofNullable(dbTableName, defaultDb, null);
   }
 
   public static TableName ofNullable(String dbTableName, String defaultDb, String branchName) throws SemanticException {

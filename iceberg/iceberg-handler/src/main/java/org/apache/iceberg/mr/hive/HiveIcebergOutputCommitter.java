@@ -36,11 +36,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.JobConf;
@@ -456,16 +458,16 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     if (results.deleteFiles().isEmpty()) {
       AppendFiles write = table.newAppend();
       results.dataFiles().forEach(write::appendFile);
-      if (branchName != null) {
-        write.toBranch(branchName.substring(7));
+      if (StringUtils.isNotEmpty(branchName)) {
+        write.toBranch(HiveUtils.getTableBranch(branchName));
       }
       write.commit();
     } else {
       RowDelta write = table.newRowDelta();
       results.dataFiles().forEach(write::addRows);
       results.deleteFiles().forEach(write::addDeletes);
-      if (branchName != null) {
-        write.toBranch(branchName.substring(7));
+      if (StringUtils.isNotEmpty(branchName)) {
+        write.toBranch(HiveUtils.getTableBranch(branchName));
       }
       write.commit();
     }
@@ -490,8 +492,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     if (!results.dataFiles().isEmpty()) {
       ReplacePartitions overwrite = table.newReplacePartitions();
       results.dataFiles().forEach(overwrite::addFile);
-      if (branchName != null) {
-        overwrite.toBranch(branchName.substring(7));
+      if (StringUtils.isNotEmpty(branchName)) {
+        overwrite.toBranch(HiveUtils.getTableBranch(branchName));
       }
       overwrite.commit();
       LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
@@ -499,8 +501,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     } else if (table.spec().isUnpartitioned()) {
       DeleteFiles deleteFiles = table.newDelete();
       deleteFiles.deleteFromRowFilter(Expressions.alwaysTrue());
-      if (branchName != null) {
-        deleteFiles.toBranch(branchName.substring(7));
+      if (StringUtils.isNotEmpty(branchName)) {
+        deleteFiles.toBranch(HiveUtils.getTableBranch(branchName));
       }
       deleteFiles.commit();
       LOG.info("Cleared table contents as part of empty overwrite for unpartitioned table. " +

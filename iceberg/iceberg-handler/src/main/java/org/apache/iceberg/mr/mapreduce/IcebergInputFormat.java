@@ -30,10 +30,12 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -127,8 +129,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       snapshotId = ref.snapshotId();
     }
     String branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_BRANCH);
-    if (branchName != null) {
-      scan = scan.useRef(branchName.substring(7));
+    if (StringUtils.isNotEmpty(branchName)) {
+      scan = scan.useRef(HiveUtils.getTableBranch(branchName));
     }
     if (snapshotId != -1) {
       scan = scan.useSnapshot(snapshotId);

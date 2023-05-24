@@ -31,6 +31,7 @@ public class TableName implements Serializable {
   /** Exception message thrown. */
   private static final String ILL_ARG_EXCEPTION_MSG =
       "Table name must be either <tablename>, <dbname>.<tablename> " + "or <catname>.<dbname>.<tablename>";
+  public static final String BRANCH_NAME_PREFIX = "branch_";
 
   /** Names of the related DB objects. */
   private final String cat;
@@ -90,7 +91,7 @@ public class TableName implements Serializable {
       if (names.length == 2) {
         return new TableName(defaultCatalog, names[0], names[1], null);
       } else if (names.length == 3) {
-        if (names[2].startsWith("branch_")) {
+        if (names[2].startsWith(BRANCH_NAME_PREFIX)) {
           return new TableName(defaultCatalog, names[0], names[1], names[2]);
         } else {
           return new TableName(names[0], names[1], names[2], null);
