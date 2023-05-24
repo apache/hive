@@ -255,8 +255,8 @@ public class SessionState implements ISessionAuthState{
 
   private String currentCatalog;
 
-  private final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
-      "hive.internal.ss.authz.settings.applied.marker";
+  private static final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
+      "_hive.ss.authz.settings.applied.marker";
 
   private String userIpAddress;
 
