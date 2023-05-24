@@ -352,9 +352,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Table table = getTable(hmsTable);
-    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE).toLowerCase();
     Map<String, String> stats = Maps.newHashMap();
-    if (statsSource.equals(ICEBERG)) {
+    if (getStatsSource().equals(ICEBERG)) {
       if (table.currentSnapshot() != null) {
         Map<String, String> summary = table.currentSnapshot().summary();
         if (summary != null) {
@@ -405,7 +404,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return table.currentSnapshot() != null ? getStatsSource().equals(ICEBERG) : false;
+    return table.currentSnapshot() != null && getStatsSource().equals(ICEBERG);
   }
 
   @Override
@@ -463,9 +462,27 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
                   ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
       return collect.get(blobMetadata.get(0)).get(0).getStatsObj();
     } catch (IOException e) {
-      LOG.error("Error when trying to read iceberg col stats from puffin files: {}", e);
+      LOG.error("Error when trying to read iceberg col stats from puffin files: ", e);
     }
     return null;
+  }
+
+  @Override
+  public boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    if (getStatsSource().equals(ICEBERG)) {
+      Table table = getTable(hmsTable);
+      if (table.currentSnapshot() != null) {
+        Map<String, String> summary = table.currentSnapshot().summary();
+        if (summary != null && summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
+            summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
+
+          long totalEqDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_EQ_DELETES_PROP));
+          long totalPosDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_POS_DELETES_PROP));
+          return totalEqDeletes + totalPosDeletes == 0;
+        }
+      }
+    }
+    return false;
   }
 
   private String getStatsSource() {
