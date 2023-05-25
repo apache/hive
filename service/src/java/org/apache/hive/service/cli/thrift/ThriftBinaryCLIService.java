@@ -73,7 +73,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
           new ThreadFactoryWithGarbageCleanup(threadPoolName));
 
       // Thrift configs
-      hiveAuthFactory = new HiveAuthFactory(hiveConf);
+      hiveAuthFactory = new HiveAuthFactory(hiveConf, false);
       TTransportFactory transportFactory = hiveAuthFactory.getAuthTransFactory();
       TProcessorFactory processorFactory = hiveAuthFactory.getAuthProcFactory(this);
       TServerSocket serverSocket = null;

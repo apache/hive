@@ -118,11 +118,11 @@ public class ThriftHttpServlet extends TServlet {
   private JWTValidator jwtValidator;
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
-      String authType, UserGroupInformation serviceUGI, UserGroupInformation httpUGI,
+      UserGroupInformation serviceUGI, UserGroupInformation httpUGI,
       HiveAuthFactory hiveAuthFactory, HiveConf hiveConf) throws Exception {
     super(processor, protocolFactory);
     this.hiveConf = hiveConf;
-    this.authType = new AuthType(authType, HiveServer2TransportMode.http);
+    this.authType = AuthType.authTypeFromConf(hiveConf, true);
     this.serviceUGI = serviceUGI;
     this.httpUGI = httpUGI;
     this.hiveAuthFactory = hiveAuthFactory;

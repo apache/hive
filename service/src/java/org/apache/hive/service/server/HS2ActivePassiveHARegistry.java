@@ -45,6 +45,7 @@ import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.auth.AuthType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -360,7 +361,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     // Auth specific confs
     confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION.varname,
       conf.get(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION.varname));
-    if (HiveServer2.isKerberosAuthMode(conf)) {
+    if (AuthType.isKerberosAuthMode(conf)) {
       confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname,
         conf.get(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname));
     }

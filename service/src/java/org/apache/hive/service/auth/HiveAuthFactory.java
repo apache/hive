@@ -29,7 +29,6 @@ import javax.security.sasl.Sasl;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
@@ -58,28 +57,17 @@ public class HiveAuthFactory {
   private static final Logger LOG = LoggerFactory.getLogger(HiveAuthFactory.class);
 
   private HadoopThriftAuthBridge.Server saslServer;
-  private final String transportMode;
   private final HiveConf conf;
   private final AuthType authType;
   private String hadoopAuth;
   private MetastoreDelegationTokenManager delegationTokenManager = null;
 
-  public HiveAuthFactory(HiveConf conf) throws TTransportException {
+  public HiveAuthFactory(HiveConf conf, boolean isHttpMode) throws TTransportException {
     this.conf = conf;
-    transportMode = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
-    String authTypeStr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
     // ShimLoader.getHadoopShims().isSecurityEnabled() will only check that
     // hadoopAuth is not simple, it does not guarantee it is kerberos
     hadoopAuth = conf.get(HADOOP_SECURITY_AUTHENTICATION, "simple");
-    // In http mode we use NOSASL as the default auth type
-    if (authTypeStr == null) {
-      if ("http".equalsIgnoreCase(transportMode)) {
-        authTypeStr = HiveAuthConstants.AuthTypes.NOSASL.getAuthName();
-      } else {
-        authTypeStr = HiveAuthConstants.AuthTypes.NONE.getAuthName();
-      }
-    }
-    authType = new AuthType(authTypeStr, HiveServer2TransportMode.valueOf(transportMode.toLowerCase()));
+    authType = AuthType.authTypeFromConf(conf, isHttpMode);
     if (isSASLWithKerberizedHadoop()) {
       saslServer =
           HadoopThriftAuthBridge.getBridge().createServer(

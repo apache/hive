@@ -137,7 +137,7 @@ public class TestAuthType {
         new EntryForTest("KERBEROS,SAML,LDAP", HiveServer2TransportMode.http, false),
         new EntryForTest("KERBEROS,LDAP", HiveServer2TransportMode.all, false),
         new EntryForTest("NONE,SAML", HiveServer2TransportMode.all, true),
-        new EntryForTest("NONE,SAML", HiveServer2TransportMode.http, false),
+        new EntryForTest("NONE,SAML", HiveServer2TransportMode.http, true),
         new EntryForTest("NOSASL,SAML", HiveServer2TransportMode.all, true),
         new EntryForTest("SAML,LDAP,PAM,CUSTOM", HiveServer2TransportMode.http, true),
         new EntryForTest("SAML,OTHER", HiveServer2TransportMode.all, true),
@@ -170,4 +170,5 @@ public class TestAuthType {
       this.shouldThrowException = shouldThrowException;
     }
   }
+
 }

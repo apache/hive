@@ -18,9 +18,13 @@
 
 package org.apache.hive.service.auth;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import org.apache.commons.lang3.EnumUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 
 import java.util.ArrayList;
@@ -37,14 +41,13 @@ import java.util.stream.Collectors;
  * Throws an exception if the config value is not allowed.
  */
 public class AuthType {
-  static final Set<HiveAuthConstants.AuthTypes> PASSWORD_BASED_TYPES = ImmutableSet.of(
-      HiveAuthConstants.AuthTypes.LDAP, HiveAuthConstants.AuthTypes.CUSTOM,
-      HiveAuthConstants.AuthTypes.PAM, HiveAuthConstants.AuthTypes.NONE
-  );
+  static final Set<HiveAuthConstants.AuthTypes> PASSWORD_BASED_TYPES = ImmutableSet.of(HiveAuthConstants.AuthTypes.LDAP,
+      HiveAuthConstants.AuthTypes.CUSTOM, HiveAuthConstants.AuthTypes.PAM, HiveAuthConstants.AuthTypes.NONE);
   private final BitSet typeBits;
   private final List<HiveAuthConstants.AuthTypes> authTypes;
   private final HiveServer2TransportMode mode;
 
+  @VisibleForTesting
   public AuthType(String authTypes, HiveServer2TransportMode mode) {
     this.authTypes = new ArrayList<>();
     this.mode = mode;
@@ -74,14 +77,18 @@ public class AuthType {
       throw new UnsupportedOperationException("NOSASL can't be along with other auth methods: " + authTypes);
     }
 
+    if (typeBits.get(HiveAuthConstants.AuthTypes.NONE.ordinal())) {
+      throw new UnsupportedOperationException("None can't be along with other auth methods: " + authTypes);
+    }
+
     if (areAnyEnabled(PASSWORD_BASED_TYPES) && !isExactlyOneEnabled(PASSWORD_BASED_TYPES)) {
       throw new RuntimeException("Multiple password based auth methods found: " + authTypes);
     }
 
-    if ((typeBits.get(HiveAuthConstants.AuthTypes.SAML.ordinal()) || typeBits.get(HiveAuthConstants.AuthTypes.JWT.ordinal())) &&
-        (mode == HiveServer2TransportMode.all || mode == HiveServer2TransportMode.binary)) {
-      throw new UnsupportedOperationException("HiveServer2 binary mode doesn't support JWT and SAML," +
-          " please consider using http mode only");
+    if ((typeBits.get(HiveAuthConstants.AuthTypes.SAML.ordinal()) || typeBits.get(
+        HiveAuthConstants.AuthTypes.JWT.ordinal())) && (mode == HiveServer2TransportMode.all || mode == HiveServer2TransportMode.binary)) {
+      throw new UnsupportedOperationException(
+          "HiveServer2 binary mode doesn't support JWT and SAML," + " please consider using http mode only");
     }
   }
 
@@ -140,4 +147,41 @@ public class AuthType {
   public boolean isPasswordBasedAuth(HiveAuthConstants.AuthTypes type) {
     return PASSWORD_BASED_TYPES.contains(type);
   }
+
+  /**
+   * Refer from configuration to see if Kerberos auth method is enabled
+   * @return true if kerberos is enabled, otherwise false.
+   */
+  public static boolean isKerberosAuthMode(Configuration conf) {
+    AuthType authType = authTypeFromConf(conf, true);
+    return authType.isEnabled(HiveAuthConstants.AuthTypes.KERBEROS);
+  }
+
+  /**
+   * Refer from configuration to see if SAML auth method is enabled
+   * @return true if SAML is enabled, otherwise false.
+   */
+  public static boolean isSamlAuthMode(Configuration conf) {
+    AuthType authType = authTypeFromConf(conf, true);
+    return authType.isEnabled(HiveAuthConstants.AuthTypes.SAML);
+  }
+
+  public static AuthType authTypeFromConf(Configuration conf, boolean isHttpMode) {
+    String authTypeStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
+    boolean isAuthTypeEmpty = StringUtils.isEmpty(authTypeStr);
+    final HiveServer2TransportMode transportMode;
+    if (isHttpMode) {
+      transportMode = HiveServer2TransportMode.http;
+      if (isAuthTypeEmpty) {
+        authTypeStr = HiveAuthConstants.AuthTypes.NOSASL.getAuthName();
+      }
+    } else {
+      transportMode = HiveServer2TransportMode.binary;
+      if (isAuthTypeEmpty) {
+        authTypeStr = HiveAuthConstants.AuthTypes.NONE.getAuthName();
+      }
+    }
+    return new AuthType(authTypeStr, transportMode);
+  }
+
 }
