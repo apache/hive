@@ -214,6 +214,21 @@ jobWrappers {
         }
       }
     }
+
+    branches['nightly-check'] = {
+        executorNode {
+          stage('Prepare') {
+              loadWS();
+          }
+          stage('Build') {
+              sh '''#!/bin/bash
+  set -e
+  dev-support/nightly
+  '''
+              buildHive("install -Dtest=noMatches -Pdist -pl packaging -am")
+          }
+        }
+    }
     parallel branches
   }
 }
