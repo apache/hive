@@ -549,7 +549,6 @@ DateLiteral
 TimestampLiteral
     :
     KW_TIMESTAMP '\'' TimestampString '\'' { extractTimestamp(getText()) != null }?
-    | TimestampString { extractTimestamp(getText()) != null }?
     ;
 
 StringLiteral

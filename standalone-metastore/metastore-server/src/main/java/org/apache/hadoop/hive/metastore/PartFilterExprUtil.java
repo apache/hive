@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -102,7 +103,8 @@ public class PartFilterExprUtil {
    * @param filter Filter.
    * @return Expression tree. Null if there was an error.
    */
-  private static ExpressionTree makeExpressionTree(String filter) throws MetaException {
+  @VisibleForTesting
+  static ExpressionTree makeExpressionTree(String filter) throws MetaException {
     // TODO: ExprNodeDesc is an expression tree, we could just use that and be rid of Filter.g.
     if (filter == null || filter.isEmpty()) {
       return ExpressionTree.EMPTY_TREE;
