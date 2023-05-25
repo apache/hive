@@ -54,7 +54,9 @@ public abstract class PreEventContext {
     CREATE_CATALOG,
     DROP_CATALOG,
     READ_CATALOG,
-    ALTER_CATALOG
+    ALTER_CATALOG,
+    CREATE_FUNCTION,
+    DROP_FUNCTION
   }
 
   private final PreEventType eventType;
