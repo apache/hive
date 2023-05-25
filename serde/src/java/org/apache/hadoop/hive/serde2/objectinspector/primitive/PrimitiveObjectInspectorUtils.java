@@ -1410,7 +1410,7 @@ public final class PrimitiveObjectInspectorUtils {
    * Provide a general grouping for each primitive data type.
    */
   public static enum PrimitiveGrouping {
-    NUMERIC_GROUP, STRING_GROUP, BOOLEAN_GROUP, DATE_GROUP, INTERVAL_GROUP, BINARY_GROUP,
+    NUMERIC_GROUP, STRING_GROUP, BOOLEAN_GROUP, DATE_GROUP, INTERVAL_GROUP,  BINARY_GROUP,
     VOID_GROUP, UNKNOWN_GROUP
   };
 

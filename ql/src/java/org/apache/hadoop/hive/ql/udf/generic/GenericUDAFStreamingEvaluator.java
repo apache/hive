@@ -41,12 +41,12 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
     this.mode = wrappedEval.mode;
   }
 
-  class StreamingState extends AbstractAggregationBuffer {
-    final AggregationBuffer wrappedBuf;
-    final List<T1> results; // Hold the aggregation results for each row in the partition
-    int numRows;  // Number of rows processed in the partition.
+  public class StreamingState extends AbstractAggregationBuffer {
+    public final AggregationBuffer wrappedBuf;
+    public final List<T1> results; // Hold the aggregation results for each row in the partition
+    public int numRows;  // Number of rows processed in the partition.
 
-    StreamingState(AggregationBuffer buf) {
+    protected StreamingState(AggregationBuffer buf) {
       this.wrappedBuf = buf;
       results = new ArrayList<T1>();
       numRows = 0;

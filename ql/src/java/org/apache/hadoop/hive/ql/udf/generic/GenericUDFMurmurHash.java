@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 
 /**
  * GenericUDF Class for computing murmurhash values.
@@ -54,6 +55,7 @@ public class GenericUDFMurmurHash extends GenericUDF {
     for (int i = 0; i < arguments.length; i++) {
       fieldValues[i] = arguments[i].get();
     }
+
     int r = ObjectInspectorUtils.getBucketHashCode(fieldValues, argumentOIs);
     result.set(r);
     return result;

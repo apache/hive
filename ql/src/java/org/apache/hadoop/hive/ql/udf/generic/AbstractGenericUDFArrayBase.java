@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 
 public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
 
-    static final int ARRAY_IDX = 0;
+    protected static final int ARRAY_IDX = 0;
 
     private final int minArgCount;
     private final int maxArgCount;
@@ -42,9 +42,9 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
     private final String functionName;
 
     transient ListObjectInspector arrayOI;
-    transient ObjectInspector[] argumentOIs;
+    protected transient ObjectInspector[] argumentOIs;
 
-    transient Converter converter;
+    protected transient Converter converter;
 
     protected AbstractGenericUDFArrayBase(String functionName, int minArgCount, int maxArgCount, ObjectInspector.Category outputCategory) {
         this.functionName = functionName;
@@ -91,7 +91,7 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         }
     }
 
-    void checkArgIntPrimitiveCategory(PrimitiveObjectInspector objectInspector, String functionName, int idx)
+    protected void checkArgIntPrimitiveCategory(PrimitiveObjectInspector objectInspector, String functionName, int idx)
         throws UDFArgumentTypeException {
       switch (objectInspector.getPrimitiveCategory()) {
       case SHORT:

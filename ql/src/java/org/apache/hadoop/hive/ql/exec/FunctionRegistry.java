@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.hadoop.hive.ql.udf.bitmap.*;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Aggr_ConvexHull;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Aggr_Union;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Area;
@@ -769,13 +770,42 @@ public final class FunctionRegistry {
     system.registerFunction("ST_Y", ST_Y.class);
     system.registerFunction("ST_Z", ST_Z.class);
 
-
     try {
       system.registerGenericUDF("iceberg_bucket",
           (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.GenericUDFIcebergBucket"));
     } catch (ClassNotFoundException e) {
       LOG.warn("iceberg_bucket function could not be registered");
     }
+
+    //bitmap functions
+    system.registerFunction(UDAFToBitmap.FUNC_NAME, UDAFToBitmap.class);
+    system.registerFunction(UDAFBitmapIntersect.FUNC_NAME, UDAFBitmapIntersect.class);
+    system.registerFunction(UDAFBitmapUnion.FUNC_NAME, UDAFBitmapUnion.class);
+    system.registerFunction(UDFBitmap.FUNC_NAME, UDFBitmap.class);
+    system.registerFunction(UDFBitmapAnd.FUNC_NAME, UDFBitmapAnd.class);
+    system.registerFunction(UDFBitmapAndCount.FUNC_NAME, UDFBitmapAndCount.class);
+    system.registerFunction(UDFBitmapAndNot.FUNC_NAME, UDFBitmapAndNot.class);
+    system.registerFunction(UDFBitmapAndNotCount.FUNC_NAME, UDFBitmapAndNotCount.class);
+    system.registerFunction(UDFBitmapContains.FUNC_NAME, UDFBitmapContains.class);
+    system.registerFunction(UDFBitmapCount.FUNC_NAME, UDFBitmapCount.class);
+    system.registerFunction(UDFBitmapEmpty.FUNC_NAME, UDFBitmapEmpty.class);
+    system.registerFunction(UDFBitmapFromArray.FUNC_NAME, UDFBitmapFromArray.class);
+    system.registerFunction(UDFBitmapFromString.FUNC_NAME, UDFBitmapFromString.class);
+    system.registerFunction(UDFBitmapHasAll.FUNC_NAME, UDFBitmapHasAll.class);
+    system.registerFunction(UDFBitmapHasAny.FUNC_NAME, UDFBitmapHasAny.class);
+    system.registerFunction(UDFBitmapHash.FUNC_NAME, UDFBitmapHash.class);
+    system.registerFunction(UDFBitmapMax.FUNC_NAME, UDFBitmapMax.class);
+    system.registerFunction(UDFBitmapMin.FUNC_NAME, UDFBitmapMin.class);
+    system.registerFunction(UDFBitmapOrNot.FUNC_NAME, UDFBitmapOrNot.class);
+    system.registerFunction(UDFBitmapOrNotCount.FUNC_NAME, UDFBitmapOrNotCount.class);
+    system.registerFunction(UDFBitmapOr.FUNC_NAME, UDFBitmapOr.class);
+    system.registerFunction(UDFBitmapOrCount.FUNC_NAME, UDFBitmapOrCount.class);
+    system.registerFunction(UDFBitmapSub.FUNC_NAME, UDFBitmapSub.class);
+    system.registerFunction(UDFBitmapToArray.FUNC_NAME, UDFBitmapToArray.class);
+    system.registerFunction(UDFBitmapToString.FUNC_NAME, UDFBitmapToString.class);
+    system.registerFunction(UDFBitmapXor.FUNC_NAME, UDFBitmapXor.class);
+    system.registerFunction(UDFBitmapXorCount.FUNC_NAME, UDFBitmapXorCount.class);
+
   }
 
   public static String getNormalizedFunctionName(String fn) throws SemanticException {
