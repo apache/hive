@@ -217,25 +217,22 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
-      // Try to reuse cache for broadcast side in mapjoin operators that
-      // share same input.
-      // First we group together all the mapjoin operators that share same
-      // reduce sink operator.
-      final Multimap<Operator<?>, MapJoinOperator> parentToMapJoinOperators =
-          ArrayListMultimap.create();
+      // Try to reuse cache for broadcast side in mapjoin operators that share same input.
+      // First we group together all the mapjoin operators whose first broadcast input is the same.
+      final Multimap<Operator<?>, MapJoinOperator> parentToMapJoinOperators = ArrayListMultimap.create();
       for (Set<Operator<?>> workOperators : optimizerCache.getWorkGroups()) {
         for (Operator<?> op : workOperators) {
           if (op instanceof MapJoinOperator) {
             MapJoinOperator mapJoinOp = (MapJoinOperator) op;
             // Only allowed for mapjoin operator
-            if (!mapJoinOp.getConf().isBucketMapJoin() &&
-                !mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
+            if (!mapJoinOp.getConf().isBucketMapJoin() && !mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
               parentToMapJoinOperators.put(
                   obtainFirstBroadcastInput(mapJoinOp).getParentOperators().get(0), mapJoinOp);
             }
           }
         }
       }
+
       // For each group, set the cache key accordingly if there is more than one operator
       // and input RS operator are equal
       for (Collection<MapJoinOperator> c : parentToMapJoinOperators.asMap().values()) {
@@ -243,18 +240,19 @@ public class SharedWorkOptimizer extends Transform {
         for (MapJoinOperator mapJoinOp : c) {
           String cacheKey = null;
           for (Entry<MapJoinOperator, String> e: mapJoinOpToCacheKey.entrySet()) {
-            if (isAllBroadcastInputSame(pctx, mapJoinOp, e.getKey())) {
+            if (canShareBroadcastInputs(pctx, mapJoinOp, e.getKey())) {
               cacheKey = e.getValue();
               break;
             }
           }
+
           if (cacheKey == null) {
-            // Either it is the first map join operator or there was no equivalent RS,
+            // Either it is the first map join operator or there was no equivalent broadcast input,
             // hence generate cache key
             cacheKey = MapJoinDesc.generateCacheKey(mapJoinOp.getOperatorId());
             mapJoinOpToCacheKey.put(mapJoinOp, cacheKey);
           }
-          // Set in the conf of the map join operator
+
           mapJoinOp.getConf().setCacheKey(cacheKey);
         }
       }
@@ -990,7 +988,7 @@ public class SharedWorkOptimizer extends Transform {
         (ReduceSinkOperator) mapJoinOp.getParentOperators().get(1);
   }
 
-  private static boolean isAllBroadcastInputSame(
+  private static boolean canShareBroadcastInputs(
       ParseContext pctx, MapJoinOperator mapJoinOp1, MapJoinOperator mapJoinOp2) throws SemanticException {
     if (mapJoinOp1.getNumParent() != mapJoinOp2.getNumParent()) {
       return false;
