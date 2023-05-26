@@ -85,8 +85,9 @@ public class AuthType {
       throw new RuntimeException("Multiple password based auth methods found: " + authTypes);
     }
 
-    if ((typeBits.get(HiveAuthConstants.AuthTypes.SAML.ordinal()) || typeBits.get(
-        HiveAuthConstants.AuthTypes.JWT.ordinal())) && (mode == HiveServer2TransportMode.all || mode == HiveServer2TransportMode.binary)) {
+    if ((typeBits.get(HiveAuthConstants.AuthTypes.SAML.ordinal()) ||
+        typeBits.get(HiveAuthConstants.AuthTypes.JWT.ordinal())) &&
+        (mode == HiveServer2TransportMode.all || mode == HiveServer2TransportMode.binary)) {
       throw new UnsupportedOperationException(
           "HiveServer2 binary mode doesn't support JWT and SAML," + " please consider using http mode only");
     }

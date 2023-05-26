@@ -90,7 +90,6 @@ public class TestHS2AuthMechsWithMiniKdc extends AbstractLdapTestUnit {
       Class.forName(MiniHS2.getJdbcDriverName());
       miniHiveKdc = new MiniHiveKdc();
       HiveConf hiveConf = new HiveConf();
-      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
       hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_URL,
           "ldap://localhost:" + ldapServer.getPort());

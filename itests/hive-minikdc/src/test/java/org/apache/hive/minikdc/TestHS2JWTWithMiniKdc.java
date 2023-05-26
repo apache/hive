@@ -79,7 +79,6 @@ public class TestHS2JWTWithMiniKdc {
             .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
     miniHiveKdc = new MiniHiveKdc();
     HiveConf hiveConf = new HiveConf();
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HiveServer2TransportMode.http.name());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL, "http://localhost:" +
