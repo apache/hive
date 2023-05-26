@@ -23,39 +23,38 @@ import java.util.Arrays;
 
 public class NameCaseUtil {
 
-    private static final String SEPARATOR = "_";
+  private static final String SEPARATOR = "_";
 
-    private NameCaseUtil() {
+  private NameCaseUtil() {
+  }
+
+  public static String camelToUnderScoreName(String s) {
+    if (StringUtils.isEmpty(s)) {
+      return s;
+    }
+    String[] partName = s.replaceAll("[A-Z]", "_$0").split(SEPARATOR);
+    System.out.println(Arrays.toString(partName));
+    return String.join(SEPARATOR, partName).toLowerCase().replaceAll("^_", "");
+  }
+
+  public static String underScoreToCamelName(String s) {
+    if (StringUtils.isEmpty(s)) {
+      return s;
     }
 
-    public static String camelToUnderScoreName(String s){
-        if (StringUtils.isEmpty(s)) {
-            return s;
-        }
-        String[] partName = s.replaceAll("[A-Z]", "_$0").split(SEPARATOR);
-        System.out.println(Arrays.toString(partName)) ;
-        return String.join(SEPARATOR, partName).toLowerCase().replaceAll("^_","");
+    String[] partName = s.split(SEPARATOR);
+    for (int i = 0; i < partName.length; i++) {
+      partName[i] = capitalize(partName[i]);
     }
+    return String.join("", partName);
+  }
 
-    public static String underScoreToCamelName(String s) {
-        if (StringUtils.isEmpty(s)) {
-            return s;
-        }
-
-        String[] partName = s.split(SEPARATOR);
-        for (int i = 0; i < partName.length; i++) {
-             partName[i] = capitalize(partName[i]);
-        }
-        return String.join("",partName);
+  public static String capitalize(String str) {
+    int strLen;
+    if (str == null || (strLen = str.length()) == 0) {
+      return str;
     }
-    public static String capitalize(String str) {
-        int strLen;
-        if (str == null || (strLen = str.length()) == 0) {
-            return str;
-        }
-        return new StringBuilder(strLen)
-                .append(Character.toTitleCase(str.charAt(0)))
-                .append(str.substring(1).toLowerCase())
-                .toString();
-    }
+    return new StringBuilder(strLen).append(Character.toTitleCase(str.charAt(0))).append(str.substring(1).toLowerCase())
+        .toString();
+  }
 }

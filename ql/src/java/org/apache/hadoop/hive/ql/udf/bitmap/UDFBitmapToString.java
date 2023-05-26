@@ -36,14 +36,14 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory.writableStringObjectInspector;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.BINARY_GROUP;
 
-@Description(name = "bitmap_from_string", value = "_FUNC_(x) - Convert a input BITMAP to a string by comma separated.",
+@Description(name = "bitmap_to_string", value = "_FUNC_(x) - Convert a input BITMAP to a string by comma separated.",
   extended = "Example:\n"
     + "  > SELECT _FUNC_(bitmap_from_string('1,2,3')) FROM src LIMIT 1;\n"
     + "  '1,2,3'\n"
 )
 public class UDFBitmapToString extends GenericUDF {
 
-    public final static String FUNC_NAME = "bitmap_from_string";
+    public final static String FUNC_NAME = "bitmap_to_string";
     private static final Logger LOG = LoggerFactory.getLogger(UDFBitmapToString.class.getName());
     private transient ObjectInspectorConverters.Converter[] converters = new ObjectInspectorConverters.Converter[1];
     private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes = new PrimitiveObjectInspector.PrimitiveCategory[1];

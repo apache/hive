@@ -798,6 +798,9 @@ public final class FunctionRegistry {
     system.registerFunction(UDFBitmapMin.FUNC_NAME, UDFBitmapMin.class);
     system.registerFunction(UDFBitmapOrNot.FUNC_NAME, UDFBitmapOrNot.class);
     system.registerFunction(UDFBitmapOrNotCount.FUNC_NAME, UDFBitmapOrNotCount.class);
+    system.registerFunction(UDFBitmapRange.FUNC_NAME, UDFBitmapRange.class);
+    system.registerFunction(UDFBitmapRank.FUNC_NAME, UDFBitmapRank.class);
+    system.registerFunction(UDFBitmapSelect.FUNC_NAME, UDFBitmapSelect.class);
     system.registerFunction(UDFBitmapOr.FUNC_NAME, UDFBitmapOr.class);
     system.registerFunction(UDFBitmapOrCount.FUNC_NAME, UDFBitmapOrCount.class);
     system.registerFunction(UDFBitmapSub.FUNC_NAME, UDFBitmapSub.class);
