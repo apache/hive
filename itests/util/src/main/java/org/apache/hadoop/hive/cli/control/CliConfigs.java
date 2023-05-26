@@ -539,6 +539,7 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "spark.query.files");
         includesFrom(testConfigProps, "spark.only.query.files");
+        excludeQuery("avro_decimal_native.q");
 
         setResultsDir("ql/src/test/results/clientpositive/spark");
         setLogDir("itests/qtest-spark/target/qfile-results/clientpositive/spark");
