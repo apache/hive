@@ -93,6 +93,7 @@ public class TestHS2AuthMechsWithMiniKdc extends AbstractLdapTestUnit {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
       hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_URL,
           "ldap://localhost:" + ldapServer.getPort());
+      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
       hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN,
           "uid=%s,ou=People,dc=example,dc=com");
 
