@@ -1589,7 +1589,7 @@ public class Hive {
    */
   public Table getTable(TableName tableName) throws HiveException {
     return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
-        tableName.getTable(), tableName.getTableIdentifier(), true);
+        tableName.getTable(), tableName.getTableMetaRef(), true);
   }
 
   /**
@@ -1599,16 +1599,16 @@ public class Hive {
    *          the name of the database
    * @param tableName
    *          the name of the table
-   * @param tableIdentifier
-   *          the name of the table identifier
+   * @param tableMetaRef
+   *          the name of the table meta ref, e.g. iceberg metadata table or branch
    * @param throwException
    *          controls whether an exception is thrown or a returns a null
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
   public Table getTable(final String dbName, final String tableName,
-                        final String tableIdentifier, boolean throwException) throws HiveException {
-    return this.getTable(dbName, tableName, tableIdentifier, throwException, false);
+                        final String tableMetaRef, boolean throwException) throws HiveException {
+    return this.getTable(dbName, tableName, tableMetaRef, throwException, false);
   }
 
   /**
@@ -1654,8 +1654,8 @@ public class Hive {
    *          the name of the database
    * @param tableName
    *          the name of the table
-   * @param tableIdentifier
-   *          the name of the table identifier
+   * @param tableMetaRef
+   *          the name of the table meta ref, e.g. iceberg metadata table or branch
    * @param throwException
    *          controls whether an exception is thrown or a returns a null
    * @param checkTransactional
@@ -1664,9 +1664,9 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, String tableIdentifier, boolean throwException,
+  public Table getTable(final String dbName, final String tableName, String tableMetaRef, boolean throwException,
                         boolean checkTransactional) throws HiveException {
-    return getTable(dbName, tableName, tableIdentifier, throwException, checkTransactional, false);
+    return getTable(dbName, tableName, tableMetaRef, throwException, checkTransactional, false);
   }
 
   /**
@@ -1676,8 +1676,8 @@ public class Hive {
    *          the name of the database
    * @param tableName
    *          the name of the table
-   * @param tableIdentifier
-   *          the name of the table identifier
+   * @param tableMetaRef
+   *          the name of the table meta ref, e.g. iceberg metadata table or branch
    * @param throwException
    *          controls whether an exception is thrown or a returns a null
    * @param checkTransactional
@@ -1688,7 +1688,7 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, String tableIdentifier, boolean throwException,
+  public Table getTable(final String dbName, final String tableName, String tableMetaRef, boolean throwException,
                         boolean checkTransactional, boolean getColumnStats) throws HiveException {
 
     if (tableName == null || tableName.equals("")) {
@@ -1751,22 +1751,11 @@ public class Hive {
     }
 
     Table t = new Table(tTable);
-    if (tableIdentifier != null) {
-      if (t.getStorageHandler() == null || !t.getStorageHandler().isTableIdentifierSupported()) {
-        throw new SemanticException(ErrorMsg.TABLE_IDENTIFIER_NOT_SUPPORTED, t.getTableName());
+    if (tableMetaRef != null) {
+      if (t.getStorageHandler() == null || !t.getStorageHandler().isTableMetaRefSupported()) {
+        throw new SemanticException(ErrorMsg.TABLE_META_REF_NOT_SUPPORTED, t.getTableName());
       }
-      String branch = HiveUtils.getTableBranch(tableIdentifier);
-      if (branch != null) {
-        if (!t.getStorageHandler().isValidBranch(tTable, branch)) {
-          throw new SemanticException(String.format("Cannot use branch (does not exist): %s", branch));
-        }
-        t.setBranchName(tableIdentifier);
-      } else {
-        if (!t.getStorageHandler().isValidMetadataTable(tableIdentifier)) {
-          throw new SemanticException(ErrorMsg.INVALID_METADATA_TABLE_NAME, tableIdentifier);
-        }
-        t.setMetaTable(tableIdentifier);
-      }
+      t = t.getStorageHandler().checkAndSetTableMetaRef(t, tableMetaRef);
     }
     return t;
   }

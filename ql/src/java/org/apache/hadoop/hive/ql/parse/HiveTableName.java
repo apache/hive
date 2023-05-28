@@ -98,12 +98,12 @@ public final class HiveTableName extends TableName {
     return ofNullable(dbTableName, defaultDb, null);
   }
 
-  public static TableName ofNullable(String dbTableName, String defaultDb, String branchName) throws SemanticException {
+  public static TableName ofNullable(String dbTableName, String defaultDb, String tableMetaRef) throws SemanticException {
     if (dbTableName == null) {
       return new TableName(null, null, null);
     } else {
       try {
-        return fromString(dbTableName, SessionState.get().getCurrentCatalog(), defaultDb, branchName);
+        return fromString(dbTableName, SessionState.get().getCurrentCatalog(), defaultDb, tableMetaRef);
       } catch (IllegalArgumentException e) {
         throw new SemanticException(e);
       }

@@ -478,7 +478,7 @@ public enum ErrorMsg {
   DATACONNECTOR_NOT_EXISTS(10428, "Dataconnector does not exist:"),
   TIME_TRAVEL_NOT_ALLOWED(10429, "Time travel is not allowed for {0}. Please choose a storage format which supports the feature.", true),
   INVALID_METADATA_TABLE_NAME(10430, "Invalid metadata table name {0}.", true),
-  TABLE_IDENTIFIER_NOT_SUPPORTED(10431, "Table identifier is not supported for table {0}.", true),
+  TABLE_META_REF_NOT_SUPPORTED(10431, "Table Meta Ref extension is not supported for table {0}.", true),
   COMPACTION_REFUSED(10432, "Compaction request for {0}.{1}{2} is refused, details: {3}.", true),
   CBO_IS_REQUIRED(10433,
           "The following functionality requires CBO (" + HiveConf.ConfVars.HIVE_CBO_ENABLED.varname + "): {0}", true),

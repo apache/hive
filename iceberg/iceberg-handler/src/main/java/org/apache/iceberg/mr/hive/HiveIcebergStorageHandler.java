@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -75,6 +76,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
@@ -679,7 +681,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean isTableIdentifierSupported() {
+  public boolean isTableMetaRefSupported() {
     return true;
   }
 
@@ -770,9 +772,22 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean isValidBranch(org.apache.hadoop.hive.metastore.api.Table hmsTable, String branchName) {
-    Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
-    return tbl.snapshot(branchName) != null;
+  public org.apache.hadoop.hive.ql.metadata.Table checkAndSetTableMetaRef(
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, String tableMetaRef) throws SemanticException {
+    String branch = HiveUtils.getTableBranch(tableMetaRef);
+    if (branch != null) {
+      Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+      if (tbl.snapshot(branch) != null) {
+        hmsTable.setBranchName(tableMetaRef);
+        return hmsTable;
+      }
+      throw new SemanticException(String.format("Cannot use branch (does not exist): %s", branch));
+    }
+    if (IcebergMetadataTables.isValidMetaTable(tableMetaRef)) {
+      hmsTable.setMetaTable(tableMetaRef);
+      return hmsTable;
+    }
+    throw new SemanticException(ErrorMsg.INVALID_METADATA_TABLE_NAME, tableMetaRef);
   }
 
   @Override

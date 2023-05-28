@@ -5406,16 +5406,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
     String[] names = Utilities.getDbTableName(tabName);
     final String  tableName = names[1];
     final String  dbName = names[0];
-    String tableIdentifier = null;
+    String tableMetaRef = null;
     if (names.length == 3) {
-      tableIdentifier = names[2];
+      tableMetaRef = names[2];
     }
     String fullyQualName = dbName + "." + tableName;
-    if (tableIdentifier != null) {
-      fullyQualName = fullyQualName + "." + tableIdentifier;
+    if (tableMetaRef != null) {
+      fullyQualName += "." + tableMetaRef;
     }
     if (!tabNameToTabObject.containsKey(fullyQualName)) {
-      Table table = db.getTable(dbName, tableName, tableIdentifier, throwException, true, false);
+      Table table = db.getTable(dbName, tableName, tableMetaRef, throwException, true, false);
       if (table != null) {
         tabNameToTabObject.put(fullyQualName, table);
       }

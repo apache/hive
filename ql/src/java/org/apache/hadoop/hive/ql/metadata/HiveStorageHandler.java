@@ -550,7 +550,7 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
-  default boolean isTableIdentifierSupported() {
+  default boolean isTableMetaRefSupported() {
     return false;
   }
 
@@ -558,8 +558,9 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
-  default boolean isValidBranch(org.apache.hadoop.hive.metastore.api.Table hmsTable, String branchName) {
-    return false;
+  default org.apache.hadoop.hive.ql.metadata.Table checkAndSetTableMetaRef(
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, String tableMetaRef) throws SemanticException {
+    return null;
   }
 
   /**
