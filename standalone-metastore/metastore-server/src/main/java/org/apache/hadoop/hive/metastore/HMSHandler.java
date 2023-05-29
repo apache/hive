@@ -182,8 +182,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       HMSHandlerContext.getHMSHandler().ifPresent(handler -> {
         handler.notifyMetaListenersOnShutDown();
       });
-      HMSHandlerContext.clear();
-      logAndAudit("Done cleaning up thread local RawStore");
+      HMSHandlerContext.getRawStore().ifPresent(rs -> {
+        logAndAudit("Done cleaning up thread local RawStore");
+        // Remove context at last, otherwise the ip in audit log will be unknown.
+        HMSHandlerContext.clear();
+      });
     }
   }
 
