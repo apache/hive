@@ -277,7 +277,7 @@ public class MetastoreLock implements HiveLock {
     }
 
     LockComponent lockComponent =
-            new LockComponent(LockType.EXCLUSIVE, LockLevel.TABLE, databaseName);
+            new LockComponent(LockType.EXCL_WRITE, LockLevel.TABLE, databaseName);
     lockComponent.setTablename(tableName);
     LockRequest lockRequest =
             new LockRequest(
