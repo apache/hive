@@ -5830,28 +5830,14 @@ public class ObjectStore implements RawStore, Configurable {
     return false;
   }
 
-  private void closeQuery(Query<?> query) {
-    try {
-      if (query != null) {
-        query.close();
-      }
-    } catch(Exception exception) {
-      LOG.error("erro closing query", exception);
-    }
-  }
-
   private <T> T doFetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
-    Query<MMetastoreDBProperties> query = null;
-    try {
-      query = pm.newQuery(MMetastoreDBProperties.class, PTYARG_EQ_KEY);
+    try(QueryWrapper query = new QueryWrapper(pm.newQuery(MMetastoreDBProperties.class, PTYARG_EQ_KEY))) {
       query.declareParameters(PTYPARAM_STR_KEY);
       query.setUnique(true);
       MMetastoreDBProperties properties = (MMetastoreDBProperties) query.execute(key);
       if (properties != null) {
         return (T) (transform != null? transform.apply(properties) : properties);
       }
-    } finally {
-      closeQuery(query);
     }
     return null;
   }
@@ -5872,50 +5858,37 @@ public class ObjectStore implements RawStore, Configurable {
     return properties;
   }
 
-  private <T> Map<String, T> doSelectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
-    Query<MMetastoreDBProperties> query = null;
-    try {
-      @SuppressWarnings("unchecked")
-      Collection<MMetastoreDBProperties> properties;
-      if (key == null || key.isEmpty()) {
-        query = pm.newQuery(MMetastoreDBProperties.class);
-        properties = (Collection<MMetastoreDBProperties>) query.execute();
-      } else {
-        query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey.startsWith(key)");
-        query.declareParameters(PTYPARAM_STR_KEY);
-        properties = (Collection<MMetastoreDBProperties>) query.execute(key);
-      }
-      pm.retrieveAll(properties);
-      if (!properties.isEmpty()) {
-        Map<String, T> results = new TreeMap<String, T>();
-        for(MMetastoreDBProperties ptys : properties) {
-          T t = (T) (transform != null? transform.apply(ptys) : ptys);
-          if (t != null) {
-            results.put(ptys.getPropertykey(), t);
-          }
-        }
-        return results;
-      }
-    } finally {
-      closeQuery(query);
-    }
-    return null;
-  }
-
   public <T> Map<String, T> selectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
     boolean success = false;
-    Map<String, T> properties = null;
+    Query<MMetastoreDBProperties> query = null;
+    Map<String, T> results = null;
     try {
       if (openTransaction()) {
-        properties = doSelectProperties(key, transform);
+        Collection<MMetastoreDBProperties> properties;
+        if (key == null || key.isEmpty()) {
+          query = pm.newQuery(MMetastoreDBProperties.class);
+          properties = (Collection<MMetastoreDBProperties>) query.execute();
+        } else {
+          query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey.startsWith(key)");
+          query.declareParameters(PTYPARAM_STR_KEY);
+          properties = (Collection<MMetastoreDBProperties>) query.execute(key);
+        }
+        pm.retrieveAll(properties);
+        if (!properties.isEmpty()) {
+          results = new TreeMap<String, T>();
+          for(MMetastoreDBProperties ptys : properties) {
+            T t = (T) (transform != null? transform.apply(ptys) : ptys);
+            if (t != null) {
+              results.put(ptys.getPropertykey(), t);
+            }
+          }
+        }
         success = commitTransaction();
       }
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, query);
     }
-    return properties;
+    return results;
   }
 
   //TODO: clean up this method

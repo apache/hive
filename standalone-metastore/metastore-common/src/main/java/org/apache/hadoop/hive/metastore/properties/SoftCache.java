@@ -46,7 +46,7 @@ public class SoftCache<K, V> {
     /** The cache capacity. */
     private final int capacity;
     /** The cache load factor. */
-    private final double loadFactor;
+    private final float loadFactor;
     /** The soft reference to the cache map. */
     private SoftReference<Map<K, V>> ref = null;
 
@@ -71,7 +71,7 @@ public class SoftCache<K, V> {
      * @param theLoadFactor the cache load actor
      * @param synchronizd whether it is synchronized or not
      */
-    public SoftCache(int theCapacity, double theLoadFactor, boolean synchronizd) {
+    public SoftCache(int theCapacity, float theLoadFactor, boolean synchronizd) {
         capacity = theCapacity;
         loadFactor = theLoadFactor;
         synchro = synchronizd;
@@ -140,7 +140,7 @@ public class SoftCache<K, V> {
             synchronized(this) {
                 map = ref != null ? ref.get() : null;
                 if (map == null) {
-                    map = createCache(capacity, synchro);
+                    map = createCache(capacity, loadFactor, synchro);
                     ref = new SoftReference<>(map);
                 }
             }
@@ -207,11 +207,12 @@ public class SoftCache<K, V> {
     /**
      * Creates the underlying cache map.
      * @param capacity the cache size, must be &gt; 0
+     * @param loadFactor the cache load factor
      * @param synchro whether the cache is synchronized or not
      * @return a Map usable as a cache bounded to the given size
      */
-    protected Map<K, V> createCache(final int capacity, boolean synchro) {
-        Map<K, V> cache = new CacheMap<>(capacity);
+    protected Map<K, V> createCache(final int capacity, final float loadFactor, boolean synchro) {
+        Map<K, V> cache = new CacheMap<>(capacity, loadFactor);
         if (synchro) {
             return Collections.synchronizedMap(cache);
         } else {
@@ -230,8 +231,8 @@ public class SoftCache<K, V> {
         /** The cache capacity, ie max number of elements. */
         private final int capacity;
 
-        public CacheMap(int capacity) {
-            super(capacity, SoftCache.LOAD_FACTOR, true);
+        public CacheMap(int capacity, float loadFactor) {
+            super(capacity, loadFactor, true);
             this.capacity = capacity;
         }
 

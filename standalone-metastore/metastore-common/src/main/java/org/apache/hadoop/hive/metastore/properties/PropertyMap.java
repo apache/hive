@@ -57,10 +57,6 @@ public class PropertyMap implements Serializable {
    */
   private static final long serialVersionUID = 202212291759L;
   /**
-   * The owning store.
-   */
-  protected final transient PropertyStore store;
-  /**
    * The schema for this map, describes allowed properties and their types.
    */
   protected final transient PropertySchema schema;
@@ -85,11 +81,9 @@ public class PropertyMap implements Serializable {
   /**
    * The main ctor.
    *
-   * @param store  the store this map belongs to
    * @param schema the schema this map adheres to
    */
-  PropertyMap(PropertyStore store, PropertySchema schema) {
-    this.store = store;
+  PropertyMap(PropertySchema schema) {
     this.schema = schema == null ? PropertySchema.NONE : schema;
     this.properties = Collections.emptyMap();
     this.dirty = false;
@@ -101,7 +95,6 @@ public class PropertyMap implements Serializable {
    * @param src the instance to copy
    */
   private PropertyMap(PropertyMap src) {
-    this.store = src.store;
     this.schema = src.schema;
     this.properties = src.properties;
     this.digest = src.digest;
@@ -117,7 +110,6 @@ public class PropertyMap implements Serializable {
    * @param input the pairs to set
    */
   public PropertyMap(PropertyMap src, Map<String, Object> input) {
-    this.store = src.store;
     this.schema = src.schema;
     this.properties = Collections.emptyMap();
     input.forEach((k, v) -> {
@@ -133,28 +125,26 @@ public class PropertyMap implements Serializable {
   /**
    * An empty alias of a map, used in drop.
    *
-   * @param store  the store
    * @param schema the schema
    * @param digest the initial digest
    */
-  PropertyMap(PropertyStore store, PropertySchema schema, UUID digest) {
-    this(store, schema);
+  PropertyMap(PropertySchema schema, UUID digest) {
+    this(schema);
     this.digest = digest;
   }
 
   /**
    * Deserialization ctor.
-   *
+   * <p>Used through deserializtion through reflection by the serialization proxy.</p>
    * @param input the input stream
    * @throws IOException if IO fail
    */
-  public PropertyMap(DataInput input, PropertyStore store, Function<String, PropertySchema> getSchema) throws IOException {
+  public PropertyMap(DataInput input, Function<String, PropertySchema> getSchema) throws IOException {
     // serial
     long serial = input.readLong();
     if (serial != serialVersionUID) {
       throw new InvalidObjectException("serial mismatch");
     }
-    this.store = store;
     // schema as string
     String schemaName = input.readUTF();
     // schema version number
@@ -206,6 +196,7 @@ public class PropertyMap implements Serializable {
    * @param out the output stream
    * @throws IOException if IO fail
    */
+  @SuppressWarnings("unchecked")
   public void write(DataOutput out) throws IOException {
     // serial
     out.writeLong(serialVersionUID);
@@ -221,7 +212,7 @@ public class PropertyMap implements Serializable {
       String name = entry.getKey();
       // key as string
       out.writeUTF(name);
-      @SuppressWarnings("unchecked") PropertyType type = schema.getPropertyType(name);
+      PropertyType type = schema.getPropertyType(name);
       // value
       type.write(out, entry.getValue());
     }

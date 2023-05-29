@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.properties;
 
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.junit.Assert;
 import org.junit.Test;
 

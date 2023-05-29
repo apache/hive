@@ -254,6 +254,7 @@ public class SerializationProxy<T extends Serializable> implements Externalizabl
    * @return the object
    * @throws ProxyException on any underlying error
    */
+  @SuppressWarnings("unchecked")
   public static <T extends Serializable> T fromBytes(byte[] bytes, Object... args) {
     ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
     final Object[] stack = SerializationProxy.swapExtraArguments(args);

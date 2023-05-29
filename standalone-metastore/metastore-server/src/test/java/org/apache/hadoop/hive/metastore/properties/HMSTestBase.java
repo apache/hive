@@ -21,7 +21,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.jexl3.JxltEngine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HMSHandler;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TestObjectStore;
@@ -33,8 +32,6 @@ import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.Mai
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,6 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -64,6 +63,12 @@ public abstract class HMSTestBase {
   interface PropertyClient {
     boolean setProperties(Map<String, String> properties);
     Map<String, Map<String, String>> getProperties(String mapPrefix, String mapPredicate, String... selection) throws IOException;
+  }
+
+  interface HttpPropertyClient extends PropertyClient {
+    default Map<String, String> getProperties(List<String> selection) throws IOException {
+      throw new UnsupportedOperationException("not implemented in " + this.getClass());
+    }
   }
 
   protected ObjectStore objectStore = null;
@@ -127,19 +132,25 @@ public abstract class HMSTestBase {
 
   @After
   public void tearDown() throws Exception {
-    if (objectStore != null) {
-      objectStore.flushCache();
-      objectStore.dropDatabase("hive", DB);
+    try {
+      if (objectStore != null) {
+        objectStore.flushCache();
+        objectStore.dropDatabase("hive", DB);
+      }
+      if (port >= 0) {
+        stopServer(port);
+        port = -1;
+      }
+      // Clear the SSL system properties before each test.
+      System.clearProperty(ObjectStore.TRUSTSTORE_PATH_KEY);
+      System.clearProperty(ObjectStore.TRUSTSTORE_PASSWORD_KEY);
+      System.clearProperty(ObjectStore.TRUSTSTORE_TYPE_KEY);
+      //
+    } finally {
       objectStore = null;
+      client = null;
+      conf = null;
     }
-    if (port >= 0) {
-      stopServer(port);
-      port = -1;
-    }
-    // Clear the SSL system properties before each test.
-    System.clearProperty(ObjectStore.TRUSTSTORE_PATH_KEY);
-    System.clearProperty(ObjectStore.TRUSTSTORE_PASSWORD_KEY);
-    System.clearProperty(ObjectStore.TRUSTSTORE_TYPE_KEY);
   }
 
   /**
@@ -230,8 +241,29 @@ public abstract class HMSTestBase {
     boolean commit = client.setProperties(ptyMap);
     Assert.assertTrue(commit);
     // go get some
-    Map<String, Map<String, String>> maps = client.getProperties("db0.table", "someb && fillFactor < 95");
+    Map<String, Map<String, String>> maps = client.getProperties("db1.table", "someb && fillFactor < 95");
     Assert.assertNotNull(maps);
+    Assert.assertEquals(5, maps.size());
+
+    if (client instanceof HttpPropertyClient) {
+      HttpPropertyClient httpClient = (HttpPropertyClient) client;
+      // get fillfactors using getProperties, create args array from previous result
+      List<String> keys = new ArrayList<>(maps.keySet());
+      for (int k = 0; k < keys.size(); ++k) {
+        keys.set(k, keys.get(k) + ".fillFactor");
+      }
+      Object values = httpClient.getProperties(keys);
+      Assert.assertTrue(values instanceof Map);
+      Map<String, String> getm = (Map<String, String>) values;
+      for (Map.Entry<String, Map<String, String>> entry : maps.entrySet()) {
+        Map<String, String> map0v = entry.getValue();
+        Assert.assertEquals(map0v.get("fillFactor"), getm.get(entry.getKey() + ".fillFactor"));
+      }
+    }
+
+    maps = client.getProperties("db1.table", "fillFactor > 92", "fillFactor");
+    Assert.assertNotNull(maps);
+    Assert.assertEquals(8, maps.size());
   }
 
   static Map<String, String> createProperties1() {
@@ -249,7 +281,7 @@ public abstract class HMSTestBase {
     // use properties to init
     Map<String, String> ptys = new TreeMap<>();
     for (int i = 0; i < 16; ++i) {
-      String tb = "db0.table" + Integer.toHexString(i) + ".";
+      String tb = "db1.table" + String.format("%1$02o", i) + ".";
       ptys.put(tb + "id", Integer.toString(1000 + i));
       ptys.put(tb + "name", "TABLE_" + i);
       ptys.put(tb + "fillFactor", Integer.toString(100 - i));

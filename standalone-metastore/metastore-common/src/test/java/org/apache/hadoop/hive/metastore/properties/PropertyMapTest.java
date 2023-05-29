@@ -15,13 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.properties;
 
-import org.apache.hadoop.hive.metastore.properties.CachingPropertyStore;
-import org.apache.hadoop.hive.metastore.properties.PropertyMap;
-import org.apache.hadoop.hive.metastore.properties.PropertySchema;
-import org.apache.hadoop.hive.metastore.properties.PropertyStore;
-import org.apache.hadoop.hive.metastore.properties.SerializationProxy;
+package org.apache.hadoop.hive.metastore.properties;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -57,7 +52,7 @@ public class PropertyMapTest {
 
   private static PropertyMap fetchProperties(PropertyStore store, String name, Function<String, PropertySchema> getSchema) {
     PropertyMap map = store.fetchProperties(name, getSchema);
-    return map != null? map : new PropertyMap(store, getSchema.apply(name));
+    return map != null? map : new PropertyMap(getSchema.apply(name));
   }
   private static Map<String,PropertyMap> selectProperties(PropertyStore store, String mapPrefix, Predicate<String> nameFilter, Function<String, PropertySchema> getSchema) {
     return store.selectProperties(mapPrefix, nameFilter, getSchema);
@@ -67,7 +62,7 @@ public class PropertyMapTest {
   }
 
   @Test public void testBasics() {
-    PropertyMap map = new PropertyMap(store, table);
+    PropertyMap map = new PropertyMap(table);
     map.setClean();
     try {
       map.putProperty("nosuchproperty", 32);
@@ -183,7 +178,7 @@ public class PropertyMapTest {
     byte[] data = baos.toByteArray();
     ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data));
     Function<String, PropertySchema> getSchema  = this::fetchSchema;
-    PropertyMap copy = SerializationProxy.read(in,  store, getSchema);
+    PropertyMap copy = SerializationProxy.read(in,  getSchema);
     Assert.assertEquals(42, copy.getProperty("id"));
     Assert.assertEquals("serder", copy.getProperty("name"));
     Assert.assertEquals(map.getProperty("id"), copy.getProperty("id"));
@@ -214,10 +209,10 @@ public class PropertyMapTest {
     ptys.setProperty("name", "serder");
     ptys.setProperty("project", "Metastore");
     // create map from properties
-    PropertyMap map = new PropertyMap(store, table);
+    PropertyMap map = new PropertyMap(table);
     map.importFromProperties(ptys);
     // create control map
-    PropertyMap ctl = new PropertyMap(store, table);
+    PropertyMap ctl = new PropertyMap(table);
     ctl.putProperty("id", 42);
     ctl.putProperty("name", "serder");
     ctl.putProperty("project", "Metastore");

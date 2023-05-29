@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutput;
@@ -30,7 +32,7 @@ import java.util.UUID;
 
 /**
  * Helper class that creates a type 5 uuid.
- * <p>This is computed from a set of updates using a SHA-1 message digest massaged into an UUID.
+ * <p>This is computed from a set of updates using an SHA-1 message digest massaged into a UUID.
  * see <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">...</a>
  */
 public class Digester {
@@ -190,7 +192,7 @@ public class Digester {
     }
 
     /**
-     * A type 5 uuid is namespace + sha1; namespace in our case is a uuid.
+     * A type 5 uuid is namespace + sha1; namespace in our case is an uuid.
      * Two instances of digesters built with the same namespace will produce the same UUIDs from the
      * same inputs.
      * @param namespace the uuid namespace
@@ -343,7 +345,7 @@ public class Digester {
     }
 
     /**
-     * Updates the digest with a uuid.
+     * Updates the digest with an uuid.
      * @param uid the uuid
      * @return this digester
      */
@@ -353,7 +355,7 @@ public class Digester {
     }
 
     /**
-     * Updates the digest with a uuid.
+     * Updates the digest with an uuid.
      * @param uri the uri
      * @return this digester
      */

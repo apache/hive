@@ -28,7 +28,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class HMSThriftTest extends HMSTestBase {
   /**
@@ -59,6 +61,10 @@ public class HMSThriftTest extends HMSTestBase {
         return null;
       }
     }
+//    @Override
+//    public Map<String, String> getProperties(List<String> keys) throws IOException {
+//
+//    }
   }
 
   @Override protected int createServer(Configuration conf) throws Exception {

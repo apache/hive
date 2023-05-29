@@ -21,7 +21,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-import org.apache.hive.common.util.SuppressFBWarnings;
 
 import javax.annotation.Nullable;
 import java.io.DataInput;
@@ -29,7 +28,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -133,7 +131,7 @@ public abstract class PropertyType<T> {
    * Writes a value according to this type.
    * @param out a data output
    * @param value a value
-   * @throws IOException
+   * @throws IOException if write fails
    */
   public void write(DataOutput out, T value) throws IOException {
     out.writeUTF(format(value));

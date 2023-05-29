@@ -19,10 +19,14 @@ package org.apache.hadoop.hive.metastore.properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.RawStore;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -31,11 +35,15 @@ import static org.apache.hadoop.hive.metastore.properties.PropertyType.DOUBLE;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.INTEGER;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.STRING;
 
+/**
+ * In-process property manager test.
+ */
 public class HMSDirectTest extends HMSTestBase {
+
   /**
    * An embedded property client.
    */
-  static class DirectPropertyClient implements PropertyClient {
+  static class DirectPropertyClient implements HttpPropertyClient {
     private final HMSPropertyManager hms;
     DirectPropertyClient(HMSPropertyManager hms) {
       this.hms = hms;
@@ -45,7 +53,7 @@ public class HMSDirectTest extends HMSTestBase {
     public boolean setProperties(Map<String, String> properties) {
       try {
         hms.setProperties(properties);
-        hms.commit();;
+        hms.commit();
         return true;
       } catch(Exception tex) {
         hms.rollback();
@@ -56,11 +64,30 @@ public class HMSDirectTest extends HMSTestBase {
     @Override
     public Map<String, Map<String, String>> getProperties(String mapPrefix, String mapPredicate, String... selection) throws IOException {
       try {
-        Map<String, PropertyMap> selected  = hms.selectProperties(mapPrefix, mapPredicate, selection);
+        List<String> project = selection == null || selection.length == 0? null : Arrays.asList(selection);
+        Map<String, PropertyMap> selected  = hms.selectProperties(mapPrefix, mapPredicate, project);
         Map<String, Map<String, String>> returned = new TreeMap<>();
         selected.forEach((k, v)->{
-          returned.put(k, v.export());
+          returned.put(k, v.export(project == null));
         });
+        hms.commit();
+        return returned;
+      } catch(Exception tex) {
+        hms.rollback();
+        return null;
+      }
+    }
+
+    @Override
+    public Map<String, String> getProperties(List<String> keys) throws IOException {
+      Map<String, String> returned = new TreeMap<>();
+      try {
+        for(String key : keys) {
+          String value  = hms.exportPropertyValue(key);
+          if (value != null) {
+            returned.put(key, value);
+          }
+        }
         hms.commit();
         return returned;
       } catch(Exception tex) {

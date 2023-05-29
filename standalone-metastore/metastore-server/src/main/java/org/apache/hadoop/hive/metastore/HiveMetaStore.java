@@ -119,6 +119,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static ZooKeeperHiveHelper zooKeeperHelper = null;
   private static String msHost = null;
   private static ThriftServer thriftServer;
+  private static Server propertyServer = null;
+
+
+  public static Server getPropertyServer() {
+    return propertyServer;
+  }
 
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
     if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
@@ -733,6 +739,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       }
     }
+    // optionally create and start the property server and servlet
+    propertyServer = PropertyServlet.startServer(conf);
 
     thriftServer.start();
   }

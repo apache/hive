@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
-import org.apache.hadoop.hive.metastore.properties.Digester;
 import org.junit.Assert;
 import org.junit.Test;
 

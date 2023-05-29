@@ -1724,11 +1724,17 @@ public class MetastoreConf {
     ),
     PROPERTIES_CACHE_LOADFACTOR("hive.metastore.properties.cache.loadfactor",
         "hive.metastore.properties.cache.maxsize", 0.75d,
-        "Property-maps cache map initial fill factor."
+        "Property-maps cache map initial fill factor (> 0.0, < 1.0)."
+    ),
+    PROPERTIES_SERVLET_PATH("hive.metastore.properties.servlet.path",
+        "hive.metastore.properties.servlet.path", "hmscli",
+        "Property-maps servlet path component of URL endpoint."
     ),
     PROPERTIES_SERVLET_PORT("hive.metastore.properties.servlet.port",
         "hive.metastore.properties.servlet.port", -1,
-        "Property-maps servlet port."
+        "Property-maps servlet server port. Negative value disables the servlet," +
+            " 0 will let the system determine the servlet server port," +
+            " positive value will be used as-is."
     ),
     PROPERTIES_SERVLET_AUTH("hive.metastore.properties.servlet.auth",
         "hive.metastore.properties.servlet.auth", "jwt",

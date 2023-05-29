@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
-import org.apache.hive.common.util.SuppressFBWarnings;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;

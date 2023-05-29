@@ -78,7 +78,7 @@ public class HMSPropertyManager extends PropertyManager {
     IN_PROGRESS,
     DONE,
     CLEANUP_NEEDED,
-    FAILED;
+    FAILED
   }
   /** The map form ordinal to OpStatus. */
   private static final Map<Integer, MaintenanceOpStatus> MOS;

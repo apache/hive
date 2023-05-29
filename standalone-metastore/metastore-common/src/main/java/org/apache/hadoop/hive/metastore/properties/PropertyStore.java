@@ -111,10 +111,10 @@ public abstract class PropertyStore {
   /**
    * Deserializes a map from a byte array.
    * @param bytes the byte array
-   * @return the (nonnull) oroperty map
+   * @return the (nonnull) property map
    */
   public PropertyMap deserialize(byte[] bytes, Function<String, PropertySchema> getSchema) {
-    return SerializationProxy.fromBytes(bytes, this, getSchema);
+    return SerializationProxy.fromBytes(bytes, getSchema);
   }
 
   /**

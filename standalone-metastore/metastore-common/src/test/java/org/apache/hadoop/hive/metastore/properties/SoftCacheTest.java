@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
-import org.apache.hadoop.hive.metastore.properties.SoftCache;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -46,7 +45,7 @@ public class SoftCacheTest {
 
     @Test
     public void testCacheSync2() {
-        SoftCache<Long, String> cache = new SoftCache<>(32, 0.75d, true);
+        SoftCache<Long, String> cache = new SoftCache<>(32, 0.75f, true);
         Assert.assertEquals(32, cache.capacity());
         Assert.assertEquals(0, cache.size());
         runCacheTest(cache);

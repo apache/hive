@@ -277,6 +277,15 @@ public abstract class PropertyManager {
   }
 
   /**
+   * Fetches and formats a property value.
+   * @param key the property key
+   * @return the formatted property value (or the default value) or null if not assigned
+   */
+  public String exportPropertyValue(String key) {
+    return Objects.toString(fetchPropertyValue(splitKey(key), true));
+  }
+
+  /**
    * Gets a property value.
    * @param key the property key
    * @return property value or the schema default value if not assigned
@@ -434,6 +443,9 @@ public abstract class PropertyManager {
    * @return the value or the default schema value if not assigned
    */
   public Object getPropertyValue(String[] keys) {
+    return fetchPropertyValue(keys, false);
+  }
+  private Object fetchPropertyValue(String[] keys, boolean format) {
     final String mapKey = mapKey(keys);
     PropertyMap map;
     final Map<String, PropertyMap> dirtyMaps = this.dirtyMaps;
@@ -445,13 +457,19 @@ public abstract class PropertyManager {
       map = store.fetchProperties(mapKey, s->schema);
     }
     String propertyName = propertyName(keys);
+    Object value = null;
     if (map != null) {
-      return map.getPropertyValue(propertyName);
+      value = map.getPropertyValue(propertyName);
+    } else if (schema != null) {
+      value = schema.getDefaultValue(propertyName);
     }
-    if (schema != null) {
-      return schema.getDefaultValue(propertyName);
+    if (format && value != null && schema != null) {
+      PropertyType<?> type = schema.getPropertyType(propertyName);
+      if (type != null) {
+        return type.format(value);
+      }
     }
-    return null;
+    return value;
   }
 
   /**
@@ -477,7 +495,7 @@ public abstract class PropertyManager {
       if (digest == null) {
         return false;
       }
-      map = new PropertyMap(store, schemaOf(splitKey(mapName + ".*")), PropertyMap.DROPPED);
+      map = new PropertyMap(schemaOf(splitKey(mapName + ".*")), PropertyMap.DROPPED);
       synchronized (dirtyMaps) {
         dirtyMaps.put(mapName, map);
       }
@@ -514,7 +532,7 @@ public abstract class PropertyManager {
         if (value == null) {
           return;
         }
-        map = new PropertyMap(store, schema);
+        map = new PropertyMap(schema);
       }
     }
     // map is not null
@@ -650,10 +668,7 @@ public abstract class PropertyManager {
                 projected.putAll(cast);
               }
             } catch(JexlException xany) {
-              // if (LOGGER.isDebugEnabled()) {
               LOGGER.warn(projectName, xany);
-              //}
-              //throw xany;
             }
           }
         }

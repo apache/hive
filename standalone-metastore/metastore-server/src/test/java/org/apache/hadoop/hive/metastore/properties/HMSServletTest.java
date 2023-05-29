@@ -26,6 +26,8 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.PropertyServlet;
@@ -51,8 +53,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -63,21 +67,21 @@ import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 
 public class HMSServletTest extends HMSTestBase {
 
-  private static final String baseDir = System.getProperty("basedir");
+  protected static final String baseDir = System.getProperty("basedir");
   private static final File jwtAuthorizedKeyFile =
       new File(baseDir,"src/test/resources/auth/jwt/jwt-authorized-key.json");
   private static final File jwtUnauthorizedKeyFile =
       new File(baseDir,"src/test/resources/auth/jwt/jwt-unauthorized-key.json");
-  private static final File jwtVerificationJWKSFile =
+  protected static final File jwtVerificationJWKSFile =
       new File(baseDir,"src/test/resources/auth/jwt/jwt-verification-jwks.json");
 
   public static final String USER_1 = "USER_1";
 
-  private static final int MOCK_JWKS_SERVER_PORT = 8089;
+  protected static final int MOCK_JWKS_SERVER_PORT = 8089;
   @ClassRule
   public static final WireMockRule MOCK_JWKS_SERVER = new WireMockRule(MOCK_JWKS_SERVER_PORT);
   // the url part
-  private static final String CLI = "hmscli";
+  protected static final String CLI = "hmscli";
   Server servletServer = null;
   int sport = -1;
 
@@ -95,7 +99,7 @@ public class HMSServletTest extends HMSTestBase {
       LOG.info("MetaStore store initialization " + (inited ? "successful" : "failed"));
     }
     if (servletServer == null) {
-      servletServer = PropertyServlet.startServer(conf, CLI);
+      servletServer = PropertyServlet.startServer(conf);
       if (servletServer == null || !servletServer.isStarted()) {
         Assert.fail("http server did not start");
       }
@@ -117,13 +121,13 @@ public class HMSServletTest extends HMSTestBase {
   }
 
   @Override
-  protected JSonClient createClient(Configuration conf, int sport) throws Exception {
+  protected PropertyClient createClient(Configuration conf, int sport) throws Exception {
     URL url = new URL("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
     String jwt = generateJWT();
     return new JSonClient(jwt, url);
   }
 
-  private String generateJWT()  throws Exception {
+  protected String generateJWT()  throws Exception {
     return generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(), TimeUnit.MINUTES.toMillis(5));
   }
 
@@ -155,7 +159,7 @@ public class HMSServletTest extends HMSTestBase {
   /**
    * A property client that uses http as transport.
    */
-  public static class JSonClient implements PropertyClient {
+  public static class JSonClient implements HttpPropertyClient {
     private final URL url;
     private final String jwt;
     JSonClient(String token, URL url) {
@@ -172,7 +176,8 @@ public class HMSServletTest extends HMSTestBase {
       }
     }
 
-    public Map<String, Map<String, String>> getProperties(String mapPrefix, String mapPredicate, String... selection) throws IOException {
+    @Override
+    public Map<String, Map<String, String>> getProperties(String mapPrefix, String mapPredicate, String... selection)  {
       Map<String, Object> args = new TreeMap<>();
       args.put("prefix", mapPrefix);
       if (mapPredicate != null) {
@@ -188,7 +193,21 @@ public class HMSServletTest extends HMSTestBase {
         return null;
       }
     }
+
+    @Override
+    public Map<String, String> getProperties(List<String> selection) {
+      try {
+        Map<String, Object> args = new TreeMap<>();
+        args.put("method", "fetchProperties");
+        args.put("keys", selection);
+        Object result = clientCall(jwt, url, "POST", args);
+        return result instanceof Map? (Map<String, String>) result : null ;
+      } catch(IOException xio) {
+        return null;
+      }
+    }
   }
+
 
   @Test
   public void testServletEchoA() throws Exception {
@@ -212,49 +231,26 @@ public class HMSServletTest extends HMSTestBase {
   @Test
   public void testProperties0() throws Exception {
       runOtherProperties0(client);
-  }
 
-  @Test
-  public void testPropertiesOtherClient01() throws Exception {
-    // create data the easy way
-    Map<String, String> ptyMap = createProperties1();
-    boolean commit = client.setProperties(ptyMap);
-    Assert.assertTrue(commit);
-
-    HttpClient httpc = new HttpClient();
+    HttpClient client = new HttpClient();
     String jwt = generateJWT();
+    GetMethod method = new GetMethod("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
+    method.addRequestHeader("Authorization", "Bearer " + jwt);
+    method.addRequestHeader("Content-Type", "application/json");
+    method.addRequestHeader("Accept", "application/json");
+    method.addRequestHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, "hive");
 
-    // query selectProperties with no projection
-    Map<String, Object> args = new TreeMap<>();
-    args.put("method", "selectProperties");
-    args.put("prefix", "db0.table");
-    args.put("predicate", "someb && fillFactor < 95");
-    String msgBody = new Gson().toJson(args);
-    PostMethod method = createPost(jwt, msgBody);
+    NameValuePair[] nvps = new NameValuePair[]{
+        new NameValuePair("key", "db0.table01.fillFactor"),
+        new NameValuePair("key", "db0.table04.fillFactor")
+    };
+    method.setQueryString(nvps);
 
-    int httpStatus = httpc.executeMethod(method);
+    int httpStatus = client.executeMethod(method);
     Assert.assertEquals(HttpServletResponse.SC_OK, httpStatus);
     String resp = method.getResponseBodyAsString();
-    Assert.assertNotNull(resp);
-    Map<String, Object> resultMap0 = new Gson().fromJson(resp, Map.class);
-    Assert.assertNotNull(resultMap0);
-    Assert.assertEquals(5, resultMap0.size());
-
-    // query selectProperties with projection
-    args.put("method", "selectProperties");
-    args.put("prefix", "db0.tabl");
-    args.put("predicate", "fillFactor > 92");
-    args.put("selection", "fillFactor");
-    msgBody = new Gson().toJson(args);
-    method = createPost(jwt, msgBody);
-
-    httpStatus = httpc.executeMethod(method);
-    Assert.assertEquals(HttpServletResponse.SC_OK, httpStatus);
-    resp = method.getResponseBodyAsString();
-    Assert.assertNotNull(resp);
-    Map<String, Object> resultMap1 = new Gson().fromJson(resp, Map.class);
-    Assert.assertNotNull(resultMap1);
-    Assert.assertEquals(8, resultMap1.size());
+    Map<String,String> result = ( Map<String,String>) new Gson().fromJson(resp, Map.class);
+    Assert.assertEquals(2, result.size());
   }
 
   @Test
