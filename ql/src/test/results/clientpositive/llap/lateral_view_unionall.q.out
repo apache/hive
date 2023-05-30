@@ -99,49 +99,26 @@ STAGE PLANS:
                 TableScan
                   alias: tez_test_t5
                   Statistics: Num rows: 1 Data size: 35 Basic stats: COMPLETE Column stats: COMPLETE
-                  Lateral View Forward
-                    Statistics: Num rows: 1 Data size: 35 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Lateral View Join Operator
-                        outputColumnNames: _col6
-                        Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: null (type: string)
-                            outputColumnNames: _col0
-                            Statistics: Num rows: 2 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
-                            File Output Operator
-                              compressed: false
-                              Statistics: Num rows: 3 Data size: 183 Basic stats: COMPLETE Column stats: COMPLETE
-                              table:
-                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    Select Operator
-                      expressions: split('0,6', ',') (type: array<string>)
-                      outputColumnNames: _col0
+                  Select Operator
+                    expressions: split('0,6', ',') (type: array<string>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
                       Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
-                      UDTF Operator
-                        Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
-                        function name: explode
-                        Lateral View Join Operator
-                          outputColumnNames: _col6
-                          Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            Select Operator
-                              expressions: null (type: string)
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 2 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
-                              File Output Operator
-                                compressed: false
-                                Statistics: Num rows: 3 Data size: 183 Basic stats: COMPLETE Column stats: COMPLETE
-                                table:
-                                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      function name: explode
+                      Select Operator
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: null (type: string)
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 2 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 3 Data size: 183 Basic stats: COMPLETE Column stats: COMPLETE
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
             LLAP IO: all inputs
         Map 3 

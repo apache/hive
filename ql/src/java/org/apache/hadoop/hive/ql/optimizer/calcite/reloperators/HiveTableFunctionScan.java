@@ -67,4 +67,7 @@ public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelN
         elementType, rowType, columnMappings);
   }
 
+  public int getStartUdtfField() {
+    return getRowType().getFieldCount() - getCall().getType().getFieldCount();
+  }
 }

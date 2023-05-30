@@ -52,6 +52,8 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lv_table_n1
+          properties:
+            insideView TRUE
           Select Operator
             Lateral View Forward
               Select Operator

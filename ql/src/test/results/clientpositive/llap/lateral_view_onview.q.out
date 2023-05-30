@@ -175,30 +175,19 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lv_table_n0
+          properties:
+            insideView TRUE
           Select Operator
-            Lateral View Forward
-              Select Operator
-                Lateral View Join Operator
-                  outputColumnNames: _col4
-                  Limit
-                    Number of rows: 3
-                    Select Operator
-                      expressions: _col4 (type: int)
-                      outputColumnNames: _col0
-                      ListSink
-              Select Operator
-                expressions: array(1,2,3) (type: array<int>)
-                outputColumnNames: _col0
-                UDTF Operator
-                  function name: explode
-                  Lateral View Join Operator
-                    outputColumnNames: _col4
-                    Limit
-                      Number of rows: 3
-                      Select Operator
-                        expressions: _col4 (type: int)
-                        outputColumnNames: _col0
-                        ListSink
+            expressions: array(1,2,3) (type: array<int>)
+            outputColumnNames: _col0
+            UDTF Operator
+              function name: explode
+              Limit
+                Number of rows: 3
+                Select Operator
+                  expressions: col (type: int)
+                  outputColumnNames: _col0
+                  ListSink
 
 PREHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 PREHOOK: type: QUERY
@@ -220,6 +209,8 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lv_table_n0
+          properties:
+            insideView TRUE
           Select Operator
             Lateral View Forward
               Select Operator
@@ -303,34 +294,24 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lv_table_n0
+          properties:
+            insideView TRUE
           Select Operator
             Lateral View Forward
               Select Operator
                 Lateral View Join Operator
                   outputColumnNames: _col4
-                  Lateral View Forward
-                    Select Operator
-                      Lateral View Join Operator
-                        outputColumnNames: _col5
-                        Limit
-                          Number of rows: 3
-                          Select Operator
-                            expressions: _col5 (type: int)
-                            outputColumnNames: _col0
-                            ListSink
-                    Select Operator
-                      expressions: _col4 (type: array<int>)
-                      outputColumnNames: _col0
-                      UDTF Operator
-                        function name: explode
-                        Lateral View Join Operator
-                          outputColumnNames: _col5
-                          Limit
-                            Number of rows: 3
-                            Select Operator
-                              expressions: _col5 (type: int)
-                              outputColumnNames: _col0
-                              ListSink
+                  Select Operator
+                    expressions: _col4 (type: array<int>)
+                    outputColumnNames: _col0
+                    UDTF Operator
+                      function name: explode
+                      Limit
+                        Number of rows: 3
+                        Select Operator
+                          expressions: col (type: int)
+                          outputColumnNames: _col0
+                          ListSink
               Select Operator
                 expressions: array(array(1,2,3)) (type: array<array<int>>)
                 outputColumnNames: _col0
@@ -338,29 +319,17 @@ STAGE PLANS:
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col4
-                    Lateral View Forward
-                      Select Operator
-                        Lateral View Join Operator
-                          outputColumnNames: _col5
-                          Limit
-                            Number of rows: 3
-                            Select Operator
-                              expressions: _col5 (type: int)
-                              outputColumnNames: _col0
-                              ListSink
-                      Select Operator
-                        expressions: _col4 (type: array<int>)
-                        outputColumnNames: _col0
-                        UDTF Operator
-                          function name: explode
-                          Lateral View Join Operator
-                            outputColumnNames: _col5
-                            Limit
-                              Number of rows: 3
-                              Select Operator
-                                expressions: _col5 (type: int)
-                                outputColumnNames: _col0
-                                ListSink
+                    Select Operator
+                      expressions: _col4 (type: array<int>)
+                      outputColumnNames: _col0
+                      UDTF Operator
+                        function name: explode
+                        Limit
+                          Number of rows: 3
+                          Select Operator
+                            expressions: col (type: int)
+                            outputColumnNames: _col0
+                            ListSink
 
 PREHOOK: query: SELECT * FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY c1 ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
@@ -440,6 +409,8 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lv_table_n0
+          properties:
+            insideView TRUE
           Select Operator
             expressions: c1 (type: string), c2 (type: array<int>), c3 (type: int), c4 (type: char(1))
             outputColumnNames: _col0, _col1, _col2, _col3

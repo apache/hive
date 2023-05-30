@@ -71,9 +71,11 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
@@ -383,8 +385,17 @@ public class ASTConverter {
       ASTBuilder sel = ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
       ASTNode function = buildUDTFAST(call.getOperator().getName(), children);
       sel.add(function);
-      for (String alias : udtf.getRowType().getFieldNames()) {
-        sel.add(HiveParser.Identifier, alias);
+
+      // When we are treating a UDTF as a 'select', it means that all the
+      // fields are coming from the udtf (expanded table) layer and not the
+      // row level. So the select expression only needs to contain the udtf
+      // fields. The HiveTableFunctionScan always has the rows from the input
+      // RelNode first and the generated UDTF columns after that. So we skip
+      // all the input fields.
+      List<String> fields = udtf.getRowType().getFieldNames();
+      int startUdtfField = udtf.getStartUdtfField();
+      for (int i = startUdtfField; i < udtf.getRowType().getFieldCount(); ++i) {
+        sel.add(HiveParser.Identifier, fields.get(i));
       }
       b.add(sel);
       hiveAST.select = b.node();
@@ -577,6 +588,45 @@ public class ASTConverter {
         ast = ASTBuilder.subQuery(left, sqAlias);
         s = new Schema((Union) r, sqAlias);
       }
+    } else if (r instanceof HiveTableFunctionScan &&
+        !canOptimizeOutLateralView((HiveTableFunctionScan) r)) {
+      TableFunctionScan tfs = ((TableFunctionScan) r);
+
+      QueryBlockInfo tableFunctionSource = convertSource(tfs.getInput(0));
+      String sqAlias = tableFunctionSource.schema.get(0).table;
+      s = new Schema(tfs, sqAlias);
+
+      List<ASTNode> children = new ArrayList<>();
+      RexCall call = (RexCall) tfs.getCall();
+      for (RexNode rn : call.getOperands()) {
+        ASTNode expr = rn.accept(new RexVisitor(s, r instanceof RexLiteral,
+            select.getCluster().getRexBuilder()));
+        children.add(expr);
+      }
+      ASTNode function = buildUDTFAST(call.getOperator().getName(), children);
+      ASTBuilder selexpr = ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+      selexpr.add(function);
+      int i = 0;
+      for (ColumnInfo c : s) {
+        if (i++ < tableFunctionSource.schema.size()) {
+          continue;
+        }
+        selexpr.add(HiveParser.Identifier, c.column);
+      }
+      ASTBuilder tabAlias = ASTBuilder.construct(HiveParser.TOK_TABALIAS, "TOK_TABALIAS");
+      tabAlias.add(HiveParser.Identifier, sqAlias);
+      selexpr.add(tabAlias.node());
+
+      ASTBuilder sel = ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELECT");
+      sel.add(selexpr.node());
+
+      ASTBuilder lateralview = ASTBuilder.construct(HiveParser.TOK_LATERAL_VIEW, "TOK_LATERAL_VIEW");
+      lateralview.add(sel.node());
+
+      lateralview.add(tableFunctionSource.ast);
+
+      ast = lateralview.node();
+
     } else {
       ASTConverter src = new ASTConverter(r, this.derivedTableCount, planMapper);
       ASTNode srcAST = src.convert();
@@ -619,6 +669,27 @@ public class ASTConverter {
     } catch (ParseException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Check to see if we can optimize out the lateral view operators
+   * We do not need to use the lateral view syntax if all of the fields
+   * selected out of the table scan come from the UDTF call.  No join
+   * is needed because all the fields come from the table level rather
+   * than the row level.
+   */
+  private boolean canOptimizeOutLateralView(HiveTableFunctionScan htfs) {
+    if (!(this.select instanceof HiveProject)) {
+      return false;
+    }
+    Set<Integer> inputRefs = HiveCalciteUtil.getInputRefs(((HiveProject)this.select).getProjects());
+    int startUdtfField = htfs.getStartUdtfField();
+    for (Integer field : inputRefs) {
+      if (field < startUdtfField) {
+        return false;
+      }
+    }
+    return true;
   }
 
   class QBVisitor extends RelVisitor {
