@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutput;
