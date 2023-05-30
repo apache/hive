@@ -1394,6 +1394,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       db.setCatalogName(createDatabaseRequest.getCatalogName());
       if (createDatabaseRequest.isSetCreateTime()) {
         db.setCreateTime(createDatabaseRequest.getCreateTime());
+      } else {
+        db.setCreateTime((int)(System.currentTimeMillis() / 1000));
       }
       if (createDatabaseRequest.isSetManagedLocationUri()) {
         db.setManagedLocationUri(createDatabaseRequest.getManagedLocationUri());
