@@ -103,8 +103,7 @@ public class PartFilterExprUtil {
    * @param filter Filter.
    * @return Expression tree. Null if there was an error.
    */
-  @VisibleForTesting
-  static ExpressionTree makeExpressionTree(String filter) throws MetaException {
+  private static ExpressionTree makeExpressionTree(String filter) throws MetaException {
     // TODO: ExprNodeDesc is an expression tree, we could just use that and be rid of Filter.g.
     if (filter == null || filter.isEmpty()) {
       return ExpressionTree.EMPTY_TREE;
