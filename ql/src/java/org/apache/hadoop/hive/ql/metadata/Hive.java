@@ -224,6 +224,7 @@ import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrun
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableTagSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -6727,6 +6728,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
       storageHandler.alterTableBranchOperation(table, createBranchSpec);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void alterTableTagOperation(Table table, AlterTableTagSpec createTagSpec) throws HiveException {
+    try {
+      HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
+      storageHandler.alterTableTagOperation(table, createTagSpec);
     } catch (Exception e) {
       throw new HiveException(e);
     }

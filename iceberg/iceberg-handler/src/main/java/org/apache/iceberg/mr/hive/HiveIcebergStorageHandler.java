@@ -83,6 +83,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableTagSpec;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
@@ -808,6 +809,27 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             String.format("Operation type %s is not supported", alterBranchSpec.getOperationType().name()));
     }
 
+  }
+
+  @Override
+  public void alterTableTagOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      AlterTableTagSpec alterTagSpec) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() ->
+        new UnsupportedOperationException(String.format("Cannot alter tag on iceberg table" +
+            " %s.%s which has no snapshot", hmsTable.getDbName(), hmsTable.getTableName())));
+
+    switch (alterTagSpec.getOperationType()) {
+      case CREATE_TAG:
+        AlterTableTagSpec.CreateTagSpec createTagSpec =
+            (AlterTableTagSpec.CreateTagSpec) alterTagSpec.getOperationParams();
+        IcebergTagExec.createTag(icebergTable, createTagSpec);
+        break;
+      default:
+        throw new UnsupportedOperationException(
+            String.format("Operation type %s is not supported", alterTagSpec.getOperationType().name()));
+    }
   }
 
   @Override
