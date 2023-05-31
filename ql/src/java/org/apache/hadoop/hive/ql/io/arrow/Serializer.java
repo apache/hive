@@ -326,7 +326,7 @@ public class Serializer {
       if (hiveVector.isNull[selectedIndex]) {
         BitVectorHelper.setValidityBit(arrowVector.getValidityBuffer(), rowIndex, 0);
       } else {
-        BitVectorHelper.setBit(arrowVector.getValidityBuffer(), rowIndex);
+        BitVectorHelper.setValidityBitToOne(arrowVector.getValidityBuffer(), rowIndex);
       }
     }
   }
@@ -385,7 +385,7 @@ public class Serializer {
       if (hiveVector == null || hiveVector.isNull[rowIndex]) {
         BitVectorHelper.setValidityBit(arrowVector.getValidityBuffer(), rowIndex, 0);
       } else {
-        BitVectorHelper.setBit(arrowVector.getValidityBuffer(), rowIndex);
+        BitVectorHelper.setValidityBitToOne(arrowVector.getValidityBuffer(), rowIndex);
       }
     }
   }
