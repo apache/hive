@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
