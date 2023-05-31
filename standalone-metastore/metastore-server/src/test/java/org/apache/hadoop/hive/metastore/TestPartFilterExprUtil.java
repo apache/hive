@@ -276,50 +276,177 @@ public class TestPartFilterExprUtil {
   }
 
   @Test
-  public void testGetFilterParserWhenDateLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
-    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j = 1990-11-10 or j = 1990-11-11 or j = 1990-11-12)").tree;
+  public void testGetFilterParserSingleColInExpressionWhenDateLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j) in (1990-11-10)").tree;
+    assertThat(expressionTree.getRoot().toString(), is("LeafNode{keyName='j', operator='=', value=1990-11-10}"));
+  }
+
+  @Test
+  public void testGetFilterParserSingleColInExpressionWhenDateLiteralIsQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j) in ('1990-11-10')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("LeafNode{keyName='j', operator='=', value=1990-11-10}"));
+  }
+
+  @Test
+  public void testGetFilterParserSingleColInExpressionWhenDateLiteralTypeIsSpecified() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j) IN (DATE'1990-11-10')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("LeafNode{keyName='j', operator='=', value=1990-11-10}"));
+  }
+
+  @Test
+  public void testGetFilterParserSingleColInExpressionWhenTimestampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(dt) IN (2000-01-01 01:00:00)").tree;
+    assertThat(expressionTree.getRoot().toString(), is("LeafNode{keyName='dt', operator='=', value=2000-01-01 01:00:00.0}"));
+  }
+
+  @Test
+  public void testGetFilterParserSingleColInExpressionWhenTimestampLiteralIsQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(dt) IN ('2000-01-01 01:00:00')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("LeafNode{keyName='dt', operator='=', value=2000-01-01 01:00:00.0}"));
+  }
+
+  @Test
+  public void testGetFilterParserSingleColInExpressionWhenTimestampLiteralTypeIsSpecified() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j) IN (TIMESTAMP'2000-01-01 01:00:00')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("LeafNode{keyName='j', operator='=', value=2000-01-01 01:00:00.0}"));
+  }
+
+  @Test
+  public void testGetFilterParserMultiColInExpressionWhenDateLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j) in (1990-11-10, 1990-11-11, 1990-11-12)").tree;
     assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=1990-11-11}}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}"));
   }
 
   @Test
-  public void testGetFilterParserWhenDateLiteralIsQuoted() throws MetaException {
-    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j = '1990-11-10' or j = '1990-11-11' or j = '1990-11-12')").tree;
+  public void testGetFilterParserMultiColInExpressionWhenDateLiteralIsQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j) in ('1990-11-10', '1990-11-11', '1990-11-12')").tree;
     assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=1990-11-11}}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}"));
   }
 
   @Test
-  public void testGetFilterParserWhenDateLiteralTypeIsSpecified() throws MetaException {
+  public void testGetFilterParserMultiColInExpressionWhenDateLiteralTypeIsSpecified() throws MetaException {
     ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j) IN (DATE'1990-11-10', DATE'1990-11-11', DATE'1990-11-12')").tree;
     assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=1990-11-11}}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}"));
   }
 
   @Test
-  public void testGetFilterParserWhenTimestampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
+  public void testGetFilterParserMultiColInExpressionWhenTimestampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(dt) IN (2000-01-01 01:00:00, 2000-01-01 01:42:00)").tree;
     assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=2000-01-01 01:00:00.0}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=2000-01-01 01:42:00.0}}"));
   }
 
   @Test
-  public void testGetFilterParserWhenTimestampLiteralIsQuoted() throws MetaException {
+  public void testGetFilterParserMultiColInExpressionWhenTimestampLiteralIsQuoted() throws MetaException {
     ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(dt) IN ('2000-01-01 01:00:00', '2000-01-01 01:42:00')").tree;
     assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=2000-01-01 01:00:00.0}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=2000-01-01 01:42:00.0}}"));
   }
 
   @Test
-  public void testGetFilterParserWhenTimestampLiteralTypeIsSpecified() throws MetaException {
+  public void testGetFilterParserMultiColInExpressionWhenTimestampLiteralTypeIsSpecified() throws MetaException {
     ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j) IN (TIMESTAMP'2000-01-01 01:00:00', TIMESTAMP'2000-01-01 01:42:00')").tree;
     assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='=', value=2000-01-01 01:00:00.0}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=2000-01-01 01:42:00.0}}"));
   }
 
   @Test
-  public void testGetFilterParserWithIntLiteral() throws MetaException {
+  public void testGetFilterParserBetweenExpressionWhenDateLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j BETWEEN 1990-11-10 AND 1990-11-11)").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='>=', value=1990-11-10}, andOr='AND', rhs=LeafNode{keyName='j', operator='<=', value=1990-11-11}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBetweenExpressionWhenDateLiteralIsQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j BETWEEN '1990-11-10' AND '1990-11-11')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='>=', value=1990-11-10}, andOr='AND', rhs=LeafNode{keyName='j', operator='<=', value=1990-11-11}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBetweenExpressionWhenDateLiteralTypeIsSpecified() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j BETWEEN DATE'1990-11-10' AND DATE'1990-11-11')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='>=', value=1990-11-10}, andOr='AND', rhs=LeafNode{keyName='j', operator='<=', value=1990-11-11}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBetweenExpressionWhenTimestampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("dt BETWEEN 2000-01-01 01:00:00 AND 2000-01-01 01:42:00)").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00.0}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00.0}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBetweenExpressionWhenTimestampLiteralTypeIsQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("dt BETWEEN '2000-01-01 01:00:00' AND '2000-01-01 01:42:00')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00.0}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00.0}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBetweenExpressionWhenTimestampLiteralTypeIsSpecified() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("dt BETWEEN TIMESTAMP'2000-01-01 01:00:00' AND TIMESTAMP'2000-01-01 01:42:00')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00.0}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00.0}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBinaryExpressionWhenDateLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j = 1990-11-10 or j = 1990-11-11 and j = 1990-11-12)").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBinaryExpressionWhenDateLiteralIsQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j = '1990-11-10' or j = '1990-11-11' and j = '1990-11-12')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBinaryExpressionWhenDateLiteralTypeIsSpecified() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j = DATE'1990-11-10' or j = DATE'1990-11-11' and j = DATE'1990-11-12')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBinaryExpressionWhenTimeStampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j = 1990-11-10 01:00:00 or j = 1990-11-11 01:00:24 and j = 1990-11-12 01:42:00)").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00.0}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24.0}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00.0}}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBinaryExpressionWhenTimeStampLiteralTypeIsQuoted() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j = '1990-11-10 01:00:00' or j = '1990-11-11 01:00:24' and j = '1990-11-12 01:42:00')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00.0}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24.0}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00.0}}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBinaryExpressionWhenTimeStampLiteralTypeIsSpecified() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j = TIMESTAMP'1990-11-10 01:00:00' or j = TIMESTAMP'1990-11-11 01:00:24' and j = TIMESTAMP'1990-11-12 01:42:00')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00.0}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24.0}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00.0}}}"));
+  }
+
+
+  @Test
+  public void testGetFilterParserMultiColInExpressionWithIntLiteral() throws MetaException {
     ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(dt) IN (10, 20)").tree;
     assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}"));
   }
 
   @Test
-  public void testGetFilterParserWithStringLiteral() throws MetaException {
+  public void testGetFilterParserBetweenExpressionWithIntLiteral() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("dt between 10 and 20").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=10}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=20}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBinaryExpressionWithIntLiteral() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("dt = 10 or dt = 20").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}"));
+  }
+
+  @Test
+  public void testGetFilterParserMultiColInExpressionWithStringLiteral() throws MetaException {
     ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(dt) IN ('foo', 'bar')").tree;
+    assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=foo}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=bar}}"));
+  }
+
+  @Test
+  public void testGetFilterParserBinaryExpressionWithStringLiteral() throws MetaException {
+    ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("dt = 'foo' or dt = 'bar'").tree;
     assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=foo}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=bar}}"));
   }
 }
