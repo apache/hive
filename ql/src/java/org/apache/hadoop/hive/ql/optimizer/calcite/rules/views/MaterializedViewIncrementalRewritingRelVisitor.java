@@ -24,14 +24,9 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.util.ControlFlowException;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is a helper to check whether a materialized view rebuild
@@ -46,13 +41,13 @@ import org.slf4j.LoggerFactory;
 public class MaterializedViewIncrementalRewritingRelVisitor extends RelVisitor {
 
   private boolean containsAggregate;
-  private boolean rewritingAllowed;
+  private boolean hasAllowedOperatorsOnly;
   private boolean hasCountStar;
   private boolean insertAllowedOnly;
 
   public MaterializedViewIncrementalRewritingRelVisitor() {
     this.containsAggregate = false;
-    this.rewritingAllowed = true;
+    this.hasAllowedOperatorsOnly = true;
     this.hasCountStar = false;
     this.insertAllowedOnly = false;
   }
@@ -73,10 +68,12 @@ public class MaterializedViewIncrementalRewritingRelVisitor extends RelVisitor {
       RelOptHiveTable hiveTable = (RelOptHiveTable) scan.getTable();
       if (hiveTable.getHiveTableMD().getStorageHandler() != null &&
               hiveTable.getHiveTableMD().getStorageHandler().areSnapshotsSupported()) {
+        // Incremental rebuild of materialized views with non-native source tables are not implemented
+        // when any of the source tables has delete/update operation since the last rebuild
         insertAllowedOnly = true;
       }
     } else {
-      rewritingAllowed = false;
+      hasAllowedOperatorsOnly = false;
     }
   }
 
@@ -102,8 +99,8 @@ public class MaterializedViewIncrementalRewritingRelVisitor extends RelVisitor {
     return containsAggregate;
   }
 
-  public boolean isRewritingAllowed() {
-    return rewritingAllowed;
+  public boolean hasAllowedOperatorsOnly() {
+    return hasAllowedOperatorsOnly;
   }
 
   public boolean isInsertAllowedOnly() {
