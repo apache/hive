@@ -49,7 +49,7 @@ import java.util.List;
  *
  * The optimization is to put the "col1" value within the inline array, resulting in
  * in the new structure:
- * inline(array(struct1<col1, col2, col3>, struct2<col1, col2, col3>, ...)
+ * inline(array(struct1(col1, col2, col3), struct2(col1, col2, col3), ...)
  * By doing this, we avoid creating a lateral view join operator and a lateral view forward
  * operator at runtime.
  */
@@ -78,10 +78,10 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
       return false;
     }
     RexCall firstOperand = (RexCall) operand;
-    if (!firstOperand.getOperator().getName().toLowerCase().equals("array")) {
+    if (!firstOperand.getOperator().getName().equalsIgnoreCase("array")) {
       return false;
     }
-    Preconditions.checkState(firstOperand.getOperands().size() > 0);
+    Preconditions.checkState(!firstOperand.getOperands().isEmpty());
     int numStructParams = firstOperand.getOperands().get(0).getType().getFieldCount();
 
     if (tableFunctionScanRel.getRowType().getFieldCount() == numStructParams) {
