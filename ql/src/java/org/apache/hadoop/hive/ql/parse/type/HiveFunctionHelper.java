@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.type;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
@@ -457,6 +458,7 @@ public class HiveFunctionHelper implements FunctionHelper {
 
     FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(functionName);
     GenericUDTF genericUDTF = functionInfo.getGenericUDTF();
+    Preconditions.checkNotNull(genericUDTF);
 
     RelDataType udtfRetType = getReturnType(functionInfo, operands);
 
