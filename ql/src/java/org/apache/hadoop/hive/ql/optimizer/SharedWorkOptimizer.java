@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -217,45 +218,8 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
-      // Try to reuse cache for broadcast side in mapjoin operators that share same input.
-      // First we group together all the mapjoin operators whose first broadcast input is the same.
-      final Multimap<Operator<?>, MapJoinOperator> parentToMapJoinOperators = ArrayListMultimap.create();
-      for (Set<Operator<?>> workOperators : optimizerCache.getWorkGroups()) {
-        for (Operator<?> op : workOperators) {
-          if (op instanceof MapJoinOperator) {
-            MapJoinOperator mapJoinOp = (MapJoinOperator) op;
-            // Only allowed for mapjoin operator
-            if (!mapJoinOp.getConf().isBucketMapJoin() && !mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
-              parentToMapJoinOperators.put(
-                  obtainFirstBroadcastInput(mapJoinOp).getParentOperators().get(0), mapJoinOp);
-            }
-          }
-        }
-      }
-
-      // For each group, set the cache key accordingly if there is more than one operator
-      // and input RS operator are equal
-      for (Collection<MapJoinOperator> c : parentToMapJoinOperators.asMap().values()) {
-        Map<MapJoinOperator, String> mapJoinOpToCacheKey = new HashMap<>();
-        for (MapJoinOperator mapJoinOp : c) {
-          String cacheKey = null;
-          for (Entry<MapJoinOperator, String> e: mapJoinOpToCacheKey.entrySet()) {
-            if (canShareBroadcastInputs(pctx, mapJoinOp, e.getKey())) {
-              cacheKey = e.getValue();
-              break;
-            }
-          }
-
-          if (cacheKey == null) {
-            // Either it is the first map join operator or there was no equivalent broadcast input,
-            // hence generate cache key
-            cacheKey = MapJoinDesc.generateCacheKey(mapJoinOp.getOperatorId());
-            mapJoinOpToCacheKey.put(mapJoinOp, cacheKey);
-          }
-
-          mapJoinOp.getConf().setCacheKey(cacheKey);
-        }
-      }
+      // Try to reuse cache for broadcast side in mapjoin operators that share the same input.
+      runMapJoinCacheReuseOptimization(pctx, optimizerCache);
     }
 
     // If we are running tests, we are going to verify that the contents of the cache
@@ -979,16 +943,56 @@ public class SharedWorkOptimizer extends Transform {
         (Entry<String, TableScanOperator> e) -> e.getValue().getNumChild() == 0);
   }
 
-  /**
-   * Obtain the RS input for a mapjoin operator.
-   */
-  private static ReduceSinkOperator obtainFirstBroadcastInput(MapJoinOperator mapJoinOp) {
+  @VisibleForTesting
+  public void runMapJoinCacheReuseOptimization(
+      ParseContext pctx, SharedWorkOptimizerCache optimizerCache) throws SemanticException {
+    // First we group together all the mapjoin operators whose first broadcast input is the same.
+    final Multimap<Operator<?>, MapJoinOperator> parentToMapJoinOperators = ArrayListMultimap.create();
+    for (Set<Operator<?>> workOperators : optimizerCache.getWorkGroups()) {
+      for (Operator<?> op : workOperators) {
+        if (op instanceof MapJoinOperator) {
+          MapJoinOperator mapJoinOp = (MapJoinOperator) op;
+          // Only allowed for mapjoin operator
+          if (!mapJoinOp.getConf().isBucketMapJoin() && !mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
+            parentToMapJoinOperators.put(
+                obtainFirstBroadcastInput(mapJoinOp).getParentOperators().get(0), mapJoinOp);
+          }
+        }
+      }
+    }
+
+    // For each group, set the cache key accordingly if there is more than one operator
+    // and input RS operator are equal
+    for (Collection<MapJoinOperator> c : parentToMapJoinOperators.asMap().values()) {
+      Map<MapJoinOperator, String> mapJoinOpToCacheKey = new HashMap<>();
+      for (MapJoinOperator mapJoinOp : c) {
+        String cacheKey = null;
+        for (Entry<MapJoinOperator, String> e: mapJoinOpToCacheKey.entrySet()) {
+          if (canShareBroadcastInputs(pctx, mapJoinOp, e.getKey())) {
+            cacheKey = e.getValue();
+            break;
+          }
+        }
+
+        if (cacheKey == null) {
+          // Either it is the first map join operator or there was no equivalent broadcast input,
+          // hence generate cache key
+          cacheKey = MapJoinDesc.generateCacheKey(mapJoinOp.getOperatorId());
+          mapJoinOpToCacheKey.put(mapJoinOp, cacheKey);
+        }
+
+        mapJoinOp.getConf().setCacheKey(cacheKey);
+      }
+    }
+  }
+
+  private ReduceSinkOperator obtainFirstBroadcastInput(MapJoinOperator mapJoinOp) {
     return mapJoinOp.getParentOperators().get(0) instanceof ReduceSinkOperator ?
         (ReduceSinkOperator) mapJoinOp.getParentOperators().get(0) :
         (ReduceSinkOperator) mapJoinOp.getParentOperators().get(1);
   }
 
-  private static boolean canShareBroadcastInputs(
+  private boolean canShareBroadcastInputs(
       ParseContext pctx, MapJoinOperator mapJoinOp1, MapJoinOperator mapJoinOp2) throws SemanticException {
     if (mapJoinOp1.getNumParent() != mapJoinOp2.getNumParent()) {
       return false;
