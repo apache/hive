@@ -858,17 +858,6 @@
       <version>${jersey.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.kafka</groupId>
-      <artifactId>kafka-clients</artifactId>
-      <version>${kafka.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.shiro</groupId>
-          <artifactId>shiro-crypto-cipher</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>com.esri.geometry</groupId>
       <artifactId>esri-geometry-api</artifactId>
       <scope>compile</scope>
