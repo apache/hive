@@ -58,11 +58,14 @@ public class Udf extends GenericUDF {
    */
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length == 0) {
-      throw new UDFArgumentLengthException("At least one argument must be specified");
+    if (arguments.length < 2) {
+      throw new UDFArgumentLengthException("At least two arguments must be specified");
     }
     if (!(arguments[0] instanceof StringObjectInspector)) {
       throw new UDFArgumentException("First argument must be a string");
+    }
+    if (!(arguments[arguments.length-1] instanceof StringObjectInspector)) {
+      throw new UDFArgumentException("Last argument (stored procedure) must be a string");
     }
     queryOI = (StringObjectInspector)arguments[0];
     funcDefOI = (StringObjectInspector)arguments[arguments.length-1];
