@@ -68,7 +68,8 @@ public class PropertyServlet extends HttpServlet {
   private final ServletSecurity security;
 
   PropertyServlet(Configuration configuration) {
-    boolean jwt = "JWT".equals(MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH));
+    String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
+    boolean jwt = auth != null && "jwt".equals(auth.toLowerCase());
     this.security = new ServletSecurity(configuration, jwt);
     this.configuration = configuration;
   }
@@ -100,11 +101,8 @@ public class PropertyServlet extends HttpServlet {
     return "";
   }
   private RawStore getMS() throws ServletException {
-      Configuration newConf = new Configuration(configuration);
-      String rawStoreClassName = MetastoreConf.getVar(newConf, MetastoreConf.ConfVars.RAW_STORE_IMPL);
-      LOGGER.info("Opening raw store with implementation class: {}", rawStoreClassName);
       try {
-        return RawStoreProxy.getProxy(newConf, configuration, rawStoreClassName);
+        return HMSHandler.newRawStoreForConf(configuration);
       } catch(MetaException exception) {
         throw new ServletException(exception);
       }

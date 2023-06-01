@@ -17,10 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.commons.jexl3.JexlException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
-import org.apache.hadoop.hive.metastore.properties.PropertyException;
 import org.apache.hadoop.hive.metastore.properties.PropertyMap;
 import org.apache.hadoop.hive.metastore.properties.PropertySchema;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;

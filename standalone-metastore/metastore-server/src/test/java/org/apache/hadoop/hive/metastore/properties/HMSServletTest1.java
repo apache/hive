@@ -24,8 +24,6 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.junit.Assert;
-import org.junit.Test;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -33,9 +31,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 
 public class HMSServletTest1 extends HMSServletTest {
 
@@ -73,10 +68,7 @@ public class HMSServletTest1 extends HMSServletTest {
     private boolean clientPut(Object args) throws IOException {
       PutMethod method = prepareMethod(new PutMethod(uri), new Gson().toJson(args));
       int httpStatus = client.executeMethod(method);
-      if (HttpServletResponse.SC_OK == httpStatus) {
-        return true;
-      }
-      return false;
+      return HttpServletResponse.SC_OK == httpStatus;
     }
 
     private Object clientPost(Object args) throws IOException {

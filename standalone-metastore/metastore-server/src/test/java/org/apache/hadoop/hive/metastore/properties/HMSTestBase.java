@@ -17,34 +17,47 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jexl3.JxltEngine;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TestObjectStore;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpStatus;
 import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpType;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.JEXL;
 import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MAINTENANCE_OPERATION;
@@ -57,6 +70,20 @@ import static org.apache.hadoop.hive.metastore.properties.PropertyType.JSON;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.STRING;
 
 public abstract class HMSTestBase {
+  protected static final String baseDir = System.getProperty("basedir");
+  private static final File jwtAuthorizedKeyFile =
+      new File(baseDir,"src/test/resources/auth/jwt/jwt-authorized-key.json");
+  protected static final File jwtUnauthorizedKeyFile =
+      new File(baseDir,"src/test/resources/auth/jwt/jwt-unauthorized-key.json");
+  protected static final File jwtVerificationJWKSFile =
+      new File(baseDir,"src/test/resources/auth/jwt/jwt-verification-jwks.json");
+
+  public static final String USER_1 = "USER_1";
+
+  protected static final int MOCK_JWKS_SERVER_PORT = 8089;
+  @ClassRule
+  public static final WireMockRule MOCK_JWKS_SERVER = new WireMockRule(MOCK_JWKS_SERVER_PORT);
+  // the url part
   /**
    * Abstract the property client access on a given namespace.
    */
@@ -71,58 +98,33 @@ public abstract class HMSTestBase {
     }
   }
 
-  protected ObjectStore objectStore = null;
-  protected Warehouse warehouse = null;
   protected Configuration conf = null;
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestObjectStore.class.getName());
   static Random RND = new Random(20230424);
   protected String NS;// = "hms" + RND.nextInt(100);
-  protected String DB;// = "dbtest" + RND.nextInt(100);
   protected PropertyClient client;
   protected int port = -1;
-
-  boolean createStore(Configuration conf) {
-    try {
-      MetaStoreTestUtils.setConfForStandloneMode(conf);
-      objectStore = new ObjectStore();
-      objectStore.setConf(conf);
-      //TestObjectStore.dropAllStoreObjects(objectStore);
-      warehouse = new Warehouse(conf);
-      HMSHandler.createDefaultCatalog(objectStore, warehouse);
-      // configure object store
-      objectStore.createDatabase(new DatabaseBuilder()
-          .setCatalogName("hive")
-          .setName(DB)
-          .setDescription("description")
-          .setLocation("locationurl")
-          .build(conf));
-    } catch (InvalidObjectException | MetaException | InvalidOperationException xmeta) {
-      throw new PropertyException("unable to initialize store", xmeta);
-    }
-    return true;
-  }
 
   @Before
   public void setUp() throws Exception {
     NS = "hms" + RND.nextInt(100);
-    DB = "dbtest" + RND.nextInt(100);
     conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT, 0);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     // Events that get cleaned happen in batches of 1 to exercise batching code
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL, "jwt");
-    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT, 0);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH, "JWT");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL,
+        "http://localhost:" + MOCK_JWKS_SERVER_PORT + "/jwks");
+    MOCK_JWKS_SERVER.stubFor(get("/jwks")
+        .willReturn(ok()
+            .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
     // The server
     port = createServer(conf);
     System.out.println("Starting MetaStore Server on port " + port);
-    // The store
-    if (objectStore == null) {
-      // The store
-      boolean inited = createStore(conf);
-      LOG.info("MetaStore store initialization " + (inited ? "successful" : "failed"));
-    }
     // The manager decl
     PropertyManager.declare(NS, HMSPropertyManager.class);
     // The client
@@ -131,12 +133,8 @@ public abstract class HMSTestBase {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public synchronized void tearDown() throws Exception {
     try {
-      if (objectStore != null) {
-        objectStore.flushCache();
-        objectStore.dropDatabase("hive", DB);
-      }
       if (port >= 0) {
         stopServer(port);
         port = -1;
@@ -147,11 +145,42 @@ public abstract class HMSTestBase {
       System.clearProperty(ObjectStore.TRUSTSTORE_TYPE_KEY);
       //
     } finally {
-      objectStore = null;
       client = null;
       conf = null;
     }
   }
+
+  protected String generateJWT()  throws Exception {
+    return generateJWT(jwtAuthorizedKeyFile.toPath());
+  }
+  protected String generateJWT(Path path)  throws Exception {
+    return generateJWT(USER_1, path, TimeUnit.MINUTES.toMillis(5));
+  }
+
+  private static String generateJWT(String user, Path keyFile, long lifeTimeMillis) throws Exception {
+    RSAKey rsaKeyPair = RSAKey.parse(new String(java.nio.file.Files.readAllBytes(keyFile), StandardCharsets.UTF_8));
+    // Create RSA-signer with the private key
+    JWSSigner signer = new RSASSASigner(rsaKeyPair);
+    JWSHeader header = new JWSHeader
+        .Builder(JWSAlgorithm.RS256)
+        .keyID(rsaKeyPair.getKeyID())
+        .build();
+    Date now = new Date();
+    Date expirationTime = new Date(now.getTime() + lifeTimeMillis);
+    JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+        .jwtID(UUID.randomUUID().toString())
+        .issueTime(now)
+        .issuer("auth-server")
+        .subject(user)
+        .expirationTime(expirationTime)
+        .claim("custom-claim-or-payload", "custom-claim-or-payload")
+        .build();
+    SignedJWT signedJWT = new SignedJWT(header, claimsSet);
+    // Compute the RSA signature
+    signedJWT.sign(signer);
+    return signedJWT.serialize();
+  }
+
 
   /**
    * Creates and starts the server.

@@ -17,87 +17,40 @@
 package org.apache.hadoop.hive.metastore.properties;
 
 import com.google.gson.Gson;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
-
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.PropertyServlet;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.eclipse.jetty.server.Server;
 import org.junit.Assert;
-import org.junit.ClassRule;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 
 public class HMSServletTest extends HMSTestBase {
-
-  protected static final String baseDir = System.getProperty("basedir");
-  private static final File jwtAuthorizedKeyFile =
-      new File(baseDir,"src/test/resources/auth/jwt/jwt-authorized-key.json");
-  private static final File jwtUnauthorizedKeyFile =
-      new File(baseDir,"src/test/resources/auth/jwt/jwt-unauthorized-key.json");
-  protected static final File jwtVerificationJWKSFile =
-      new File(baseDir,"src/test/resources/auth/jwt/jwt-verification-jwks.json");
-
-  public static final String USER_1 = "USER_1";
-
-  protected static final int MOCK_JWKS_SERVER_PORT = 8089;
-  @ClassRule
-  public static final WireMockRule MOCK_JWKS_SERVER = new WireMockRule(MOCK_JWKS_SERVER_PORT);
-  // the url part
   protected static final String CLI = "hmscli";
   Server servletServer = null;
   int sport = -1;
 
 
   @Override protected int createServer(Configuration conf) throws Exception {
-    // need store before server for servlet
-    if (objectStore == null) {
-      MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH, "JWT");
-      MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL,
-          "http://localhost:" + MOCK_JWKS_SERVER_PORT + "/jwks");
-      MOCK_JWKS_SERVER.stubFor(get("/jwks")
-          .willReturn(ok()
-              .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
-      boolean inited = createStore(conf);
-      LOG.info("MetaStore store initialization " + (inited ? "successful" : "failed"));
-    }
     if (servletServer == null) {
       servletServer = PropertyServlet.startServer(conf);
       if (servletServer == null || !servletServer.isStarted()) {
@@ -127,38 +80,10 @@ public class HMSServletTest extends HMSTestBase {
     return new JSonClient(jwt, url);
   }
 
-  protected String generateJWT()  throws Exception {
-    return generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(), TimeUnit.MINUTES.toMillis(5));
-  }
-
-  private static String generateJWT(String user, Path keyFile, long lifeTimeMillis) throws Exception {
-    RSAKey rsaKeyPair = RSAKey.parse(new String(java.nio.file.Files.readAllBytes(keyFile), StandardCharsets.UTF_8));
-    // Create RSA-signer with the private key
-    JWSSigner signer = new RSASSASigner(rsaKeyPair);
-    JWSHeader header = new JWSHeader
-        .Builder(JWSAlgorithm.RS256)
-        .keyID(rsaKeyPair.getKeyID())
-        .build();
-    Date now = new Date();
-    Date expirationTime = new Date(now.getTime() + lifeTimeMillis);
-    JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-        .jwtID(UUID.randomUUID().toString())
-        .issueTime(now)
-        .issuer("auth-server")
-        .subject(user)
-        .expirationTime(expirationTime)
-        .claim("custom-claim-or-payload", "custom-claim-or-payload")
-        .build();
-    SignedJWT signedJWT = new SignedJWT(header, claimsSet);
-    // Compute the RSA signature
-    signedJWT.sign(signer);
-    return signedJWT.serialize();
-  }
-
-
   /**
    * A property client that uses http as transport.
    */
+  @SuppressWarnings("unchecked")
   public static class JSonClient implements HttpPropertyClient {
     private final URL url;
     private final String jwt;
@@ -208,7 +133,6 @@ public class HMSServletTest extends HMSTestBase {
     }
   }
 
-
   @Test
   public void testServletEchoA() throws Exception {
     URL url = new URL("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
@@ -218,8 +142,9 @@ public class HMSServletTest extends HMSTestBase {
     Object response = clientCall(jwt, url, "POST", json);
     Assert.assertNotNull(response);
     Assert.assertEquals(json, response);
-    // fail (null jwt)
-    response = clientCall(null, url, "POST", json);
+    // fail (bad jwt)
+    String badJwt = generateJWT(jwtUnauthorizedKeyFile.toPath());
+    response = clientCall(badJwt, url, "POST", json);
     Assert.assertNull(response);
   }
 
@@ -305,7 +230,7 @@ public class HMSServletTest extends HMSTestBase {
    * Create a PostMethod populated with the expected attributes.
    * @param jwt the security token
    * @param msgBody the actual (json) payload
-   * @return the method to be executed by an Http client
+   * @return the method to be executed by a Http client
    * @throws Exception
    */
   private PostMethod createPost(String jwt, String msgBody) throws Exception {

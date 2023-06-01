@@ -18,16 +18,21 @@
 package org.apache.hadoop.hive.metastore.properties;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.RawStore;
-import org.junit.After;
+import org.apache.hadoop.hive.metastore.HMSHandler;
+import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.TreeMap;
 
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.DATETIME;
@@ -39,6 +44,40 @@ import static org.apache.hadoop.hive.metastore.properties.PropertyType.STRING;
  * In-process property manager test.
  */
 public class HMSDirectTest extends HMSTestBase {
+  protected ObjectStore objectStore = null;
+  static Random RND = new Random(20230424);
+  protected String DB;// = "dbtest" + RND.nextInt(100);
+  @Override protected int createServer(Configuration conf) {
+    // The store
+    if (objectStore == null) {
+      // The store
+      try {
+        DB = "dbtest" + RND.nextInt(100);
+        objectStore = new ObjectStore();
+        objectStore.setConf(conf);
+        Warehouse warehouse = new Warehouse(conf);
+        HMSHandler.createDefaultCatalog(objectStore, warehouse);
+        // configure object store
+        objectStore.createDatabase(new DatabaseBuilder()
+            .setCatalogName("hive")
+            .setName(DB)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+      } catch (InvalidObjectException | MetaException | InvalidOperationException xmeta) {
+        throw new PropertyException("unable to initialize store", xmeta);
+      }
+    }
+    return 0;
+  }
+
+  @Override public void tearDown() throws Exception {
+    super.tearDown();
+    if (objectStore != null) {
+      objectStore.flushCache();
+      objectStore.dropDatabase("hive", DB);
+    }
+  }
 
   /**
    * An embedded property client.
@@ -67,9 +106,7 @@ public class HMSDirectTest extends HMSTestBase {
         List<String> project = selection == null || selection.length == 0? null : Arrays.asList(selection);
         Map<String, PropertyMap> selected  = hms.selectProperties(mapPrefix, mapPredicate, project);
         Map<String, Map<String, String>> returned = new TreeMap<>();
-        selected.forEach((k, v)->{
-          returned.put(k, v.export(project == null));
-        });
+        selected.forEach((k, v)-> returned.put(k, v.export(project == null)));
         hms.commit();
         return returned;
       } catch(Exception tex) {
@@ -98,13 +135,12 @@ public class HMSDirectTest extends HMSTestBase {
   }
 
   @Override protected PropertyClient createClient(Configuration conf, int port) throws Exception {
-    RawStore store = objectStore;
-    HMSPropertyManager mgr = new HMSPropertyManager(store.getPropertyStore());
+    HMSPropertyManager mgr = new HMSPropertyManager(objectStore.getPropertyStore());
     return new DirectPropertyClient(mgr);
   }
 
   @Test
-  public void testDirectProperties() throws Exception {
+  public void testDirectProperties() {
     // configure hms
     HMSPropertyManager.declareClusterProperty("clstrp0", STRING, "Spark");
     HMSPropertyManager.declareDatabaseProperty("store", STRING, "ORC");
