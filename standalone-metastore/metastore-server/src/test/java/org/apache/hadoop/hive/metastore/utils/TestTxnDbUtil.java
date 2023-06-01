@@ -223,7 +223,6 @@ public final class TestTxnDbUtil {
       success &= truncateTable(conn, conf, stmt, "HIVE_LOCKS");
       success &= truncateTable(conn, conf, stmt, "NEXT_LOCK_ID");
       success &= truncateTable(conn, conf, stmt, "COMPACTION_QUEUE");
-      success &= truncateTable(conn, conf, stmt, "TXN_CLEANUP_QUEUE");
       success &= truncateTable(conn, conf, stmt, "NEXT_COMPACTION_QUEUE_ID");
       success &= truncateTable(conn, conf, stmt, "COMPLETED_COMPACTIONS");
       success &= truncateTable(conn, conf, stmt, "AUX_TABLE");

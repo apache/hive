@@ -202,6 +202,7 @@ enum CompactionType {
     MINOR = 1,
     MAJOR = 2,
     REBALANCE = 3,
+    ABORT_CLEANUP = 4,
 }
 
 enum GrantRevokeType {

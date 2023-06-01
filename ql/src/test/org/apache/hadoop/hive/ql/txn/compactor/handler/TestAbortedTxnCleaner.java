@@ -332,7 +332,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
 
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  public void testAbortCleanupNotUpdatingCompactionTables(boolean isPartitioned) throws Exception {
+  public void testAbortCleanupNotUpdatingSpecificCompactionTables(boolean isPartitioned) throws Exception {
     String dbName = "default", tableName = "abort_cleanup_not_populating_compaction_tables_test", partName = "today";
     Table t = newTable(dbName, tableName, isPartitioned);
     Partition p = isPartitioned ? newPartition(t, partName) : null;
@@ -351,6 +351,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
             false, mockedFSRemover));
 
     runInitiator(conf);
+    // Initiator must not add anything to compaction_queue
     String compactionQueuePresence = "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " +
             " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
@@ -409,15 +410,15 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     Mockito.verify(mockedTxnHandler, Mockito.times(1)).setAbortCleanerRetryRetentionTimeOnError(any(AbortTxnRequestInfo.class));
-    String whereClause = " WHERE \"TCQ_DATABASE\" = '" + dbName+ "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
-            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
-    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
             TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
     // Cast clob to varchar to get the string output
-    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String retryErrorMsgQuery = "SELECT cast(\"CQ_ERROR_MESSAGE\" as varchar(100)) FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
             .replace("\n", "").trim().contains("Testing retry"));
   }
@@ -455,14 +456,14 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
     cleaner.run();
 
-    String whereClause = " WHERE \"TCQ_DATABASE\" = '" + dbName+ "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
-            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
-    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
     // Cast clob to varchar to get the string output
-    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String retryErrorMsgQuery = "SELECT cast(\"CQ_ERROR_MESSAGE\" as varchar(100)) FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
             .replace("\n", "").trim().contains("Testing retry"));
 
@@ -477,7 +478,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
     cleaner.run();
 
-    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
   }
 
   @ParameterizedTest
@@ -509,15 +510,15 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
     cleaner.run();
 
-    String whereClause = " WHERE \"TCQ_DATABASE\" = '" + dbName+ "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
-            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
-    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
             TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
     // Cast clob to varchar to get the string output
-    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String retryErrorMsgQuery = "SELECT cast(\"CQ_ERROR_MESSAGE\" as varchar(100)) FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
             .replace("\n", "").trim().contains("Testing retry"));
 
@@ -530,7 +531,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     // The retry entry is not removed since retry conditions are not achieved hence its not picked for cleanup.
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
     Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
             TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
@@ -572,14 +573,14 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
     cleaner.run();
 
-    String whereClause = " WHERE \"TCQ_DATABASE\" = '" + dbName + "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
-            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
-    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
     // Cast clob to varchar to get the string output
-    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String retryErrorMsgQuery = "SELECT cast(\"CQ_ERROR_MESSAGE\" as varchar(100)) FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
             .replace("\n", "").trim().contains("Testing retry"));
 
@@ -593,7 +594,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     // The retry entry is not removed since retry has failed.
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
     // The retry entry must reflect double the retention time now.
     Assert.assertEquals(Long.toString(2 * retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
@@ -635,14 +636,14 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
     cleaner.run();
 
-    String whereClause = " WHERE \"TCQ_DATABASE\" = '" + dbName + "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
-            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
-    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
     // Cast clob to varchar to get the string output
-    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String retryErrorMsgQuery = "SELECT cast(\"CQ_ERROR_MESSAGE\" as varchar(100)) FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery)
             .replace("\n", "").trim().contains("Testing first retry"));
 
@@ -660,7 +661,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     // The retry entry is not removed since retry has failed.
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
     // The retry entry must reflect double the retention time now.
     Assert.assertEquals(Long.toString(2 * retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
@@ -699,14 +700,14 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
     cleaner.run();
 
-    String whereClause = " WHERE \"TCQ_DATABASE\" = '" + dbName+ "' AND \"TCQ_TABLE\" = '" + tableName + "' AND \"TCQ_PARTITION\"" +
-            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
-    String retryRetentionQuery = "SELECT \"TCQ_RETRY_RETENTION\" FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertEquals(Integer.toString(0), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
     // Cast clob to varchar to get the string output
-    String retryErrorMsgQuery = "SELECT cast(\"TCQ_ERROR_MESSAGE\" as varchar(100)) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause;
+    String retryErrorMsgQuery = "SELECT cast(\"CQ_ERROR_MESSAGE\" as varchar(100)) FROM \"COMPACTION_QUEUE\" " + whereClause;
     Assert.assertTrue(TestTxnDbUtil.queryToString(conf, retryErrorMsgQuery, false)
             .replace("\n", "").trim().contains("Testing retry"));
 
@@ -719,6 +720,6 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     // The retry entry should be removed since retry conditions are achieved because retry retention time is 0.
-    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXN_CLEANUP_QUEUE\" " + whereClause));
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " + whereClause));
   }
 }

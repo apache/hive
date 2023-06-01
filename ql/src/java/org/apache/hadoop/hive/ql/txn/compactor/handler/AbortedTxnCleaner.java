@@ -82,7 +82,7 @@ class AbortedTxnCleaner extends TaskHandler {
 
     if (!readyToCleanAborts.isEmpty()) {
       return readyToCleanAborts.stream().map(info -> ThrowingRunnable.unchecked(() ->
-                      clean(info, info.minOpenWriteTxnId > 0 ? info.minOpenWriteTxnId : Long.MAX_VALUE, metricsEnabled)))
+                      clean(info, info.minOpenWriteTxnId, metricsEnabled)))
               .collect(Collectors.toList());
     }
     return Collections.emptyList();
