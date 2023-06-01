@@ -37,6 +37,7 @@ package org.apache.hadoop.hive.metastore.parser;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.text.ParseException;
@@ -52,25 +53,20 @@ import java.util.regex.Pattern;
   private static final Pattern datePattern = Pattern.compile(".*(\\d\\d\\d\\d-\\d\\d-\\d\\d).*");
   private static final Pattern timestampPattern =
       Pattern.compile(".*(\\d\\d\\d\\d-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d).*");
-  private static final ThreadLocal<SimpleDateFormat> dateFormat =
-       new ThreadLocal<SimpleDateFormat>() {
-    @Override
-    protected SimpleDateFormat initialValue() {
-      SimpleDateFormat val = new SimpleDateFormat("yyyy-MM-dd");
-      val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
-      val.setTimeZone(TimeZone.getTimeZone("UTC"));
-      return val;
-    };
-  };
-  private static final ThreadLocal<DateTimeFormatter> timestampFormat =
-       new ThreadLocal<DateTimeFormatter>() {
-    @Override
-    protected DateTimeFormatter initialValue() {
-      DateTimeFormatter val = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-          .withZone(TimeZone.getTimeZone("UTC").toZoneId());
-      return val;
-    };
-  };
+
+  private static final ThreadLocal<DateTimeFormatter> dateFormat = createDateTimeFormatter("yyyy-MM-dd");
+  private static final ThreadLocal<DateTimeFormatter> timestampFormat = createDateTimeFormatter("yyyy-MM-dd HH:mm:ss");
+
+  private static ThreadLocal<DateTimeFormatter> createDateTimeFormatter(String format) {
+    return new ThreadLocal<DateTimeFormatter>() {
+               @Override
+               protected DateTimeFormatter initialValue() {
+                 DateTimeFormatter val = DateTimeFormatter.ofPattern(format)
+                     .withZone(TimeZone.getTimeZone("UTC").toZoneId());
+                 return val;
+               };
+             };
+  }
 
   public static Object extractDate(String input) {
     // Date literal is a suffix of timestamp. Try to parse it as a timestamp first
@@ -84,8 +80,9 @@ import java.util.regex.Pattern;
       return null;
     }
     try {
-      return new java.sql.Date(dateFormat.get().parse(m.group(1)).getTime());
-    } catch (ParseException pe) {
+       LocalDate val = LocalDate.from(dateFormat.get().parse(m.group(1)));
+       return java.sql.Date.valueOf(val);
+    } catch (Exception ex) {
       return null;
     }
   }
