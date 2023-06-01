@@ -245,10 +245,10 @@ public final class HiveMaterializedViewsRegistry {
   private HiveRelOptMaterialization.IncrementalRebuildMode determineIncrementalRebuildMode(RelNode definitionPlan) {
     MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
     visitor.go(definitionPlan);
-    if (!visitor.isRewritingAllowed()) {
+    if (!visitor.hasAllowedOperatorsOnly()) {
       return HiveRelOptMaterialization.IncrementalRebuildMode.NOT_AVAILABLE;
     }
-    if (visitor.isContainsAggregate() && !visitor.hasCountStar()) {
+    if (visitor.isContainsAggregate() && !visitor.hasCountStar() || visitor.isInsertAllowedOnly()) {
       return HiveRelOptMaterialization.IncrementalRebuildMode.INSERT_ONLY;
     }
     return HiveRelOptMaterialization.IncrementalRebuildMode.AVAILABLE;
