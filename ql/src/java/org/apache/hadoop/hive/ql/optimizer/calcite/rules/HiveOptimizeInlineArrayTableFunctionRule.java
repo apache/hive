@@ -42,7 +42,7 @@ import java.util.List;
  * the input references as the first elements in the return type followed by
  * the udtf return value which represents the items in the generated table. Take the
  * case where the base (input) table has col1, and the inline function is represented by:
- * inline(array( struct1<col2, col3>, struct2<col2, col3>, struct3<col2, col3>, etc...)),
+ * inline(array( struct1(col2, col3), struct2(col2, col3), struct3(col2, col3), etc...)),
  * ...and the return value for the table scan node is (col1, col2, col3). In this case,
  * the same col1 value is joined with the structures within the inline array for the
  * col2 and col3 values.
