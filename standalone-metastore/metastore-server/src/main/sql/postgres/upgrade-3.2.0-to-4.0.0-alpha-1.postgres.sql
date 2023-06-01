@@ -369,10 +369,6 @@ ALTER TABLE "COMPACTION_METRICS_CACHE" ALTER "CMC_TABLE" TYPE varchar(256);
 ALTER TABLE "WRITE_SET" ALTER "WS_TABLE" TYPE varchar(256);
 ALTER TABLE "TXN_WRITE_NOTIFICATION_LOG" ALTER "WNL_TABLE" TYPE varchar(256);
 
--- HIVE-24815: Remove "IDXS" Table from Metastore Schema
-DROP TABLE IF EXISTS "INDEX_PARAMS";
-DROP TABLE IF EXISTS "IDXS";
-
 -- These lines need to be last. Insert any changes above.
 UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0-alpha-1', "VERSION_COMMENT"='Hive release version 4.0.0-alpha-1' where "VER_ID"=1;
 SELECT 'Finished upgrading MetaStore schema from 3.2.0 to 4.0.0-alpha-1';

@@ -142,6 +142,35 @@ CREATE TABLE "GLOBAL_PRIVS" (
     "AUTHORIZER" character varying(128) DEFAULT NULL::character varying
 );
 
+
+--
+-- Name: IDXS; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE TABLE "IDXS" (
+    "INDEX_ID" bigint NOT NULL,
+    "CREATE_TIME" bigint NOT NULL,
+    "DEFERRED_REBUILD" boolean NOT NULL,
+    "INDEX_HANDLER_CLASS" character varying(4000) DEFAULT NULL::character varying,
+    "INDEX_NAME" character varying(128) DEFAULT NULL::character varying,
+    "INDEX_TBL_ID" bigint,
+    "LAST_ACCESS_TIME" bigint NOT NULL,
+    "ORIG_TBL_ID" bigint,
+    "SD_ID" bigint
+);
+
+
+--
+-- Name: INDEX_PARAMS; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE TABLE "INDEX_PARAMS" (
+    "INDEX_ID" bigint NOT NULL,
+    "PARAM_KEY" character varying(256) NOT NULL,
+    "PARAM_VALUE" character varying(4000) DEFAULT NULL::character varying
+);
+
+
 --
 -- Name: NUCLEUS_TABLES; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
 --
@@ -802,6 +831,22 @@ ALTER TABLE ONLY "GLOBAL_PRIVS"
 
 
 --
+-- Name: IDXS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+ALTER TABLE ONLY "IDXS"
+    ADD CONSTRAINT "IDXS_pkey" PRIMARY KEY ("INDEX_ID");
+
+
+--
+-- Name: INDEX_PARAMS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+ALTER TABLE ONLY "INDEX_PARAMS"
+    ADD CONSTRAINT "INDEX_PARAMS_pkey" PRIMARY KEY ("INDEX_ID", "PARAM_KEY");
+
+
+--
 -- Name: ONE_ROW_CONSTRAINT; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
 --
 
@@ -1018,6 +1063,13 @@ ALTER TABLE ONLY "TAB_COL_STATS" ADD CONSTRAINT "TAB_COL_STATS_pkey" PRIMARY KEY
 --
 ALTER TABLE ONLY "PART_COL_STATS" ADD CONSTRAINT "PART_COL_STATS_pkey" PRIMARY KEY("CS_ID");
 
+--
+-- Name: UNIQUEINDEX; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+ALTER TABLE ONLY "IDXS"
+    ADD CONSTRAINT "UNIQUEINDEX" UNIQUE ("INDEX_NAME", "ORIG_TBL_ID");
+
 
 --
 -- Name: UNIQUEPARTITION; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
@@ -1116,6 +1168,35 @@ CREATE INDEX "DB_PRIVS_N49" ON "DB_PRIVS" USING btree ("DB_ID");
 --
 
 CREATE INDEX "DC_PRIVS_N49" ON "DC_PRIVS" USING btree ("NAME");
+
+
+--
+-- Name: IDXS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE INDEX "IDXS_N49" ON "IDXS" USING btree ("ORIG_TBL_ID");
+
+
+--
+-- Name: IDXS_N50; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE INDEX "IDXS_N50" ON "IDXS" USING btree ("INDEX_TBL_ID");
+
+
+--
+-- Name: IDXS_N51; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE INDEX "IDXS_N51" ON "IDXS" USING btree ("SD_ID");
+
+
+--
+-- Name: INDEX_PARAMS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE INDEX "INDEX_PARAMS_N49" ON "INDEX_PARAMS" USING btree ("INDEX_ID");
+
 
 --
 -- Name: PARTITIONCOLUMNPRIVILEGEINDEX; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
@@ -1379,6 +1460,39 @@ ALTER TABLE ONLY "DATABASE_PARAMS"
 
 ALTER TABLE ONLY "DB_PRIVS"
     ADD CONSTRAINT "DB_PRIVS_DB_ID_fkey" FOREIGN KEY ("DB_ID") REFERENCES "DBS"("DB_ID") DEFERRABLE;
+
+
+--
+-- Name: IDXS_INDEX_TBL_ID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
+--
+
+ALTER TABLE ONLY "IDXS"
+    ADD CONSTRAINT "IDXS_INDEX_TBL_ID_fkey" FOREIGN KEY ("INDEX_TBL_ID") REFERENCES "TBLS"("TBL_ID") DEFERRABLE;
+
+
+--
+-- Name: IDXS_ORIG_TBL_ID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
+--
+
+ALTER TABLE ONLY "IDXS"
+    ADD CONSTRAINT "IDXS_ORIG_TBL_ID_fkey" FOREIGN KEY ("ORIG_TBL_ID") REFERENCES "TBLS"("TBL_ID") DEFERRABLE;
+
+
+--
+-- Name: IDXS_SD_ID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
+--
+
+ALTER TABLE ONLY "IDXS"
+    ADD CONSTRAINT "IDXS_SD_ID_fkey" FOREIGN KEY ("SD_ID") REFERENCES "SDS"("SD_ID") DEFERRABLE;
+
+
+--
+-- Name: INDEX_PARAMS_INDEX_ID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
+--
+
+ALTER TABLE ONLY "INDEX_PARAMS"
+    ADD CONSTRAINT "INDEX_PARAMS_INDEX_ID_fkey" FOREIGN KEY ("INDEX_ID") REFERENCES "IDXS"("INDEX_ID") DEFERRABLE;
+
 
 --
 -- Name: PARTITIONS_SD_ID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
