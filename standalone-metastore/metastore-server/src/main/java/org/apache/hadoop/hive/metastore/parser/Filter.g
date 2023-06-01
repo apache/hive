@@ -503,8 +503,8 @@ to parse the string in metastore code from StringLiteral. */
 DateTimeLiteral
     :
     (TimestampString) => (TimestampString { extractTimestamp(getText()) != null }?)
-    | KW_TIMESTAMP? '\'' TimestampString '\'' { extractTimestamp(getText()) != null }?
-    | KW_DATE? '\'' DateString '\'' { extractDate(getText()) != null }?
+    | KW_TIMESTAMP '\'' TimestampString '\'' { extractTimestamp(getText()) != null }?
+    | KW_DATE '\'' DateString '\'' { extractDate(getText()) != null }?
     | DateString { extractDate(getText()) != null }?
     ;
 
