@@ -75,6 +75,7 @@ final class KafkaUtils {
   private static final String JAAS_TEMPLATE_SCRAM =
       "org.apache.kafka.common.security.scram.ScramLoginModule required "
           + "username=\"%s\" password=\"%s\" serviceName=\"%s\" tokenauth=true;";
+  static final Text KAFKA_DELEGATION_TOKEN_KEY = new Text("KAFKA_DELEGATION_TOKEN");
 
   private KafkaUtils() {
   }
@@ -383,7 +384,7 @@ final class KafkaUtils {
 
     if (configuration instanceof JobConf) {
       Credentials creds = ((JobConf) configuration).getCredentials();
-      Token<?> token = creds.getToken(new Text("KAFKA_DELEGATION_TOKEN"));
+      Token<?> token = creds.getToken(KAFKA_DELEGATION_TOKEN_KEY);
 
       if (token != null) {
         log.info("Kafka delegation token has been found: {}", token);
