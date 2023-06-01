@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
@@ -502,11 +504,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     return storageDescriptor;
   }
 
-  @VisibleForTesting
-  HiveLock lockObject() {
-    return new MetastoreLock(conf, metaClients, catalogName, database, tableName);
-  }
-
   private void cleanupMetadataAndUnlock(CommitStatus commitStatus, String metadataLocation,
       HiveLock lock) {
     try {
@@ -591,7 +588,17 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
   @VisibleForTesting
   HiveLock lockObject(TableMetadata metadata) {
     if (hiveLockEnabled(metadata, conf)) {
-      return new MetastoreLock(conf, metaClients, catalogName, database, tableName);
+      Optional<Long> txnId = Optional.empty();
+
+      SessionState sessionState = SessionState.get();
+      if (sessionState != null) {
+        HiveTxnManager txnMgr = sessionState.getTxnMgr();
+        if (txnMgr != null) {
+          txnId = Optional.of(txnMgr.getCurrentTxnId());
+        }
+      }
+
+      return new MetastoreLock(conf, metaClients, catalogName, database, tableName,   txnId);
     } else {
       return new NoLock();
     }
