@@ -138,11 +138,11 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
 
     Object transactionManager = getValue(kafkaProducer, "transactionManager");
 
-    Object topicPartitionBookkeeper = getValue(transactionManager, "topicPartitionBookkeeper");
+    Object txnPartitionMap = getValue(transactionManager, "txnPartitionMap");
     invoke(transactionManager,
         "transitionTo",
         getEnum("org.apache.kafka.clients.producer.internals.TransactionManager$State.INITIALIZING"));
-    invoke(topicPartitionBookkeeper, "reset");
+    invoke(txnPartitionMap, "reset");
     Object producerIdAndEpoch = getValue(transactionManager, "producerIdAndEpoch");
     setValue(producerIdAndEpoch, "producerId", producerId);
     setValue(producerIdAndEpoch, "epoch", epoch);
