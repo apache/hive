@@ -449,4 +449,36 @@ public class TestPartFilterExprUtil {
     ExpressionTree expressionTree = PartFilterExprUtil.getFilterParser("(j = '1990-11-10 01:00:00' or j = '1990-11-11 01:00:24' and j = '1990-11-12 01:42:00')").tree;
     assertThat(expressionTree.getRoot().toString(), is("TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00}}}"));
   }
+
+  @Test
+  public void testGetFilterParserWithInvalidDateWithType() {
+    MetaException exception = assertThrows(MetaException.class,
+            () -> PartFilterExprUtil.getFilterParser("(j = DATE'2023-06-32')"));
+
+    assertTrue(exception.getMessage().contains("rule DateTimeLiteral failed"));
+  }
+
+  @Test
+  public void testGetFilterParserWithInvalidDateWithoutTypeNorQuoted() {
+    MetaException exception = assertThrows(MetaException.class,
+            () -> PartFilterExprUtil.getFilterParser("(j = 2023-06-32)"));
+
+    assertTrue(exception.getMessage().contains("rule DateTimeLiteral failed"));
+  }
+
+  @Test
+  public void testGetFilterParserWithInvalidTimestampWithType() {
+    MetaException exception = assertThrows(MetaException.class,
+            () -> PartFilterExprUtil.getFilterParser("(j = TIMESTAMP'2023-06-02 99:35:00')"));
+
+    assertTrue(exception.getMessage().contains("rule DateTimeLiteral failed"));
+  }
+
+  @Test
+  public void testGetFilterParserWithInvalidTimeStampWithoutTypeNorQuoted() {
+    MetaException exception = assertThrows(MetaException.class,
+            () -> PartFilterExprUtil.getFilterParser("(j = 2023-06-02 99:35:00)"));
+
+    assertTrue(exception.getMessage().contains("rule DateTimeLiteral failed"));
+  }
 }

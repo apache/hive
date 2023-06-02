@@ -40,6 +40,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
@@ -54,18 +55,13 @@ import java.util.regex.Pattern;
   private static final Pattern timestampPattern =
       Pattern.compile(".*(\\d\\d\\d\\d-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d).*");
 
-  private static final ThreadLocal<DateTimeFormatter> dateFormat = createDateTimeFormatter("yyyy-MM-dd");
-  private static final ThreadLocal<DateTimeFormatter> timestampFormat = createDateTimeFormatter("yyyy-MM-dd HH:mm:ss");
+  private static final DateTimeFormatter dateFormat = createDateTimeFormatter("uuuu-MM-dd");
+  private static final DateTimeFormatter timestampFormat = createDateTimeFormatter("uuuu-MM-dd HH:mm:ss");
 
-  private static ThreadLocal<DateTimeFormatter> createDateTimeFormatter(String format) {
-    return new ThreadLocal<DateTimeFormatter>() {
-               @Override
-               protected DateTimeFormatter initialValue() {
-                 DateTimeFormatter val = DateTimeFormatter.ofPattern(format)
-                     .withZone(TimeZone.getTimeZone("UTC").toZoneId());
-                 return val;
-               };
-             };
+  public static DateTimeFormatter createDateTimeFormatter(String format) {
+    return DateTimeFormatter.ofPattern(format)
+                     .withZone(TimeZone.getTimeZone("UTC").toZoneId())
+                     .withResolverStyle(ResolverStyle.STRICT);
   }
 
   public static Object extractDate(String input) {
@@ -80,7 +76,7 @@ import java.util.regex.Pattern;
       return null;
     }
     try {
-       LocalDate val = LocalDate.from(dateFormat.get().parse(m.group(1)));
+       LocalDate val = LocalDate.parse(m.group(1), dateFormat);
        return java.sql.Date.valueOf(val);
     } catch (Exception ex) {
       return null;
@@ -93,7 +89,7 @@ import java.util.regex.Pattern;
       return null;
     }
     try {
-       LocalDateTime val = LocalDateTime.from(timestampFormat.get().parse(m.group(1)));
+       LocalDateTime val = LocalDateTime.from(timestampFormat.parse(m.group(1)));
        return Timestamp.valueOf(val);
     } catch (Exception ex) {
       return null;
