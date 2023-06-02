@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import com.google.common.base.Splitter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -53,6 +55,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -147,7 +150,7 @@ public class TxnUtils {
     try {
       TxnStore handler = JavaUtils.getClass(className, TxnStore.class).newInstance();
       handler.setConf(conf);
-      handler = ProxyTxnHandler.getProxy(handler, handler.getRetryHandler(), handler.getJdbcResourceHolder());
+      handler = TransactionalRetryProxy.getProxy(handler, handler.getRetryHandler(), handler.getJdbcResourceHolder());
       return handler;
     } catch (Exception e) {
       LOG.error("Unable to instantiate raw store directly in fastpath mode", e);
@@ -666,4 +669,21 @@ public class TxnUtils {
   public static String nvl(String input) {
     return input != null ? " = ? " : " IS NULL ";
   }
+
+  public static String normalizePartitionCase(String s) {
+    if (s == null) {
+      return null;
+    }
+    Map<String, String> map = Splitter.on(Path.SEPARATOR).withKeyValueSeparator('=').split(s);
+    return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()));
+  }
+
+  public static long generateTemporaryId() {
+    return -1 * ThreadLocalRandom.current().nextLong();
+  }
+
+  public static boolean isValidTxn(long txnId) {
+    return txnId != 0;
+  }
+
 }

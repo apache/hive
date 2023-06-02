@@ -19,9 +19,10 @@ package org.apache.hadoop.hive.metastore.txn.jdbc;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.ContextNode;
+import org.apache.hadoop.hive.metastore.txn.StackThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -33,9 +34,15 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 
 /**
  * Holds multiple {@link DataSource}s as a single object and offers JDBC related resources. 
@@ -46,7 +53,7 @@ public class MultiDataSourceJdbcResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(MultiDataSourceJdbcResource.class);
 
-  private final ThreadLocal<ContextNode<String>> threadLocal = new ThreadLocal<>();
+  private final StackThreadLocal<String> threadLocal = new StackThreadLocal<>();
 
   private final Map<String, DataSource> dataSources = new HashMap<>();
   private final Map<String, TransactionContextManager> transactionManagers = new HashMap<>();
@@ -81,11 +88,11 @@ public class MultiDataSourceJdbcResource {
    * @param dataSourceName The name of the {@link DataSource} bind to the current {@link Thread}.
    */
   public void bindDataSource(String dataSourceName) {
-    threadLocal.set(new ContextNode<>(threadLocal.get(), dataSourceName));
+    threadLocal.set(dataSourceName);
   }
   
   public void bindDataSource(Transactional transactional) {
-    threadLocal.set(new ContextNode<>(threadLocal.get(), transactional.value()));
+    threadLocal.set(transactional.value());
   }
 
   /**
@@ -96,12 +103,7 @@ public class MultiDataSourceJdbcResource {
    * {@link DataSource} the JDBC resources should be returned.
    */
   public void unbindDataSource() {
-    ContextNode<String> node = threadLocal.get();
-    if (node != null && node.getParent() != null) {
-      threadLocal.set(node.getParent());
-    } else {
-      threadLocal.remove();
-    }
+    threadLocal.unset();
   }
   
   /**
@@ -142,12 +144,7 @@ public class MultiDataSourceJdbcResource {
   }
 
   private String getDataSourceName() {
-    ContextNode<String> node = threadLocal.get();
-    if (node == null) {
-      throw new IllegalStateException("In order to access the JDBC resources, first you need to obtain a transaction " +
-          "using getTransaction(int propagation, String dataSourceName)!");
-    }
-    return node.getValue();
+    return threadLocal.get();
   }
 
   /**
@@ -162,10 +159,80 @@ public class MultiDataSourceJdbcResource {
    *                       thrown if the update count was rejected by the {@link ParameterizedCommand#resultPolicy()} method
    */
   public Integer execute(ParameterizedCommand command) throws MetaException {
-    return execute(command.getParameterizedQueryString(getDatabaseProduct()),
-        command.getQueryParameters(), command.resultPolicy());
+    if (!shouldExecute(command)) {
+      return null;
+    }
+     try {
+       return execute(command.getParameterizedQueryString(getDatabaseProduct()),
+           command.getQueryParameters(), command.resultPolicy());
+     } catch (Exception e) {
+       handleError(command, e);
+       throw e;
+     }
   }
 
+  /**
+   * Executes a {@link org.springframework.jdbc.core.JdbcTemplate#batchUpdate(String, List)} call using the query string
+   * and parameters obtained from {@link ParameterizedBatchCommand#getParameterizedQueryString(DatabaseProduct)} and
+   * {@link ParameterizedBatchCommand#getQueryParameters()} methods. Validates the resulted number of affected rows using the
+   * {@link ParameterizedBatchCommand#resultPolicy()} function for each element in the batch.
+   *
+   * @param command The {@link ParameterizedBatchCommand} to execute.
+   * @param maxBatchSize The maximum size of the batch. If the size of the passed command exceeds it, the command will be
+   *                     executed in multiple batches.
+   * @return Returns an integer array,containing the number of affected rows for each element in the batch.
+   */
+  public int[] execute(ParameterizedBatchCommand command, int maxBatchSize) throws MetaException {
+    if (!shouldExecute(command)) {
+      return null;
+    }
+    try {
+      String query = command.getParameterizedQueryString(databaseProduct);
+      Function<Integer, Boolean> resultPolicy = command.resultPolicy();
+      List<Object[]> batchParams = command.getQueryParameters();
+      int start = 0;
+      int end = Math.min(maxBatchSize, batchParams.size());
+      int[] result = new int[batchParams.size()];
+      do {
+        LOG.debug("Going to execute batch command <{}> with batc size {}.", query, end - start);
+        int[] counts;
+        if (command.getParameterTypes() == null) {
+          counts = getJdbcTemplate().getJdbcTemplate().batchUpdate(query, batchParams.subList(start, end));
+        } else {
+          counts = getJdbcTemplate().getJdbcTemplate().batchUpdate(query, batchParams.subList(start, end), command.getParameterTypes());
+        }
+        if (resultPolicy != null && !Arrays.stream(counts).allMatch(resultPolicy::apply)) {
+          LOG.error("The update count was rejected in at least one of the result array. Rolling back.");
+          throw new MetaException("The update count was rejected in at least one of the result array. Rolling back.");
+        }
+        System.arraycopy(counts, 0, result, start, counts.length);
+        start = end;
+        end = Math.min(start + maxBatchSize, batchParams.size());
+      } while (end < batchParams.size());
+      return result;
+    } catch (Exception e) {
+      handleError(command, e);
+      throw e;
+    }
+  }
+  
+  public void execute(BatchCommand command, int maxBatchSize) {
+    if (!shouldExecute(command)) {
+      return;
+    }
+    try (Statement stmt = getConnection().createStatement()) {
+      List<String> queries = command.getQueryStrings(databaseProduct);
+      LOG.debug("Going to execute non-parameterized batch commands with batch size {}.", queries.size());
+      executeQueriesInBatchNoCount(databaseProduct, stmt, queries, maxBatchSize);
+    } catch (SQLException e) {
+      handleError(command, e);
+      throw new UncategorizedSQLException(null, null, e);
+    } catch (Exception e) {
+      handleError(command, e);
+      throw e;
+    }
+  }
+  
   /**
    * Executes a {@link NamedParameterJdbcTemplate#update(String, org.springframework.jdbc.core.namedparam.SqlParameterSource)}
    * calls using the query string and {@link SqlParameterSource}. Validates the resulted number of affected rows using the
@@ -208,6 +275,16 @@ public class MultiDataSourceJdbcResource {
       return getJdbcTemplate().query(queryStr, params, queryHandler);
     } else {
       return getJdbcTemplate().query(queryStr, queryHandler);
+    }
+  }
+  
+  private boolean shouldExecute(Object command) {
+    return !(command instanceof ConditionalCommand) || ((ConditionalCommand)command).shouldUse(databaseProduct);
+  }
+  
+  private void handleError(Object command, Exception e) {
+    if (command instanceof ConditionalCommand) {
+      ((ConditionalCommand)command).onError(databaseProduct, e);
     }
   }
 

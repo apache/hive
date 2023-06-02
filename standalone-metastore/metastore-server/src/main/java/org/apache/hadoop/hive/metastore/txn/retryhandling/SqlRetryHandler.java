@@ -22,8 +22,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.ContextNode;
 import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
+import org.apache.hadoop.hive.metastore.txn.StackThreadLocal;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -45,7 +46,7 @@ public class SqlRetryHandler {
   private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final String MANUAL_RETRY = "ManualRetry";
 
-  private final ThreadLocal<ContextNode<Object>> threadLocal = new ThreadLocal<>();
+  private final StackThreadLocal<Object> threadLocal = new StackThreadLocal<>();
 
   /**
    * Derby specific concurrency control
@@ -89,11 +90,11 @@ public class SqlRetryHandler {
    * @param <Result> Type of the result
    * @throws MetaException Thrown in case of execution error.
    */
-  public <Result> Result executeWithRetry(SqlRetryCallProperties properties, SqlRetryFunction<Result> function) throws MetaException {
+  public <Result> Result executeWithRetry(SqlRetryCallProperties properties, SqlRetryFunction<Result> function) throws TException {
     Objects.requireNonNull(function, "RetryFunction<Result> cannot be null!");
     Objects.requireNonNull(properties, "RetryCallProperties cannot be null!");
 
-    if (threadLocal.get() != null && properties.getRetryPropagation().canJoinContext()) {
+    if (threadLocal.isSet() && properties.getRetryPropagation().canJoinContext()) {
       /*
         If there is a context in the ThreadLocal and we are allowed to join it, we can skip establishing a nested retry-call.
       */
@@ -123,15 +124,10 @@ public class SqlRetryHandler {
       if (properties.isLockInternally()) {
         lockInternal();
       }
-      threadLocal.set(new ContextNode<>(threadLocal.get(), new Object()));
+      threadLocal.set(new Object());
       return executeWithRetryInternal(properties, function);
     } finally {
-      ContextNode<Object> node = threadLocal.get();
-      if (node != null && node.getParent() != null) {
-        threadLocal.set(node.getParent());
-      } else {
-        threadLocal.remove();
-      }
+      threadLocal.unset();
       if (properties.isLockInternally()) {
         unlockInternal();
       }
@@ -139,16 +135,18 @@ public class SqlRetryHandler {
   }
 
   private <Result> Result executeWithRetryInternal(SqlRetryCallProperties properties, SqlRetryFunction<Result> function) 
-      throws MetaException {
+      throws TException {
     LOG.debug("Running retry function:" + properties);
 
     try {
       return function.execute();
-    } catch (DataAccessException e) {
+    } catch (DataAccessException | SQLException e) {
       SQLException sqlEx = null;
       if (e.getCause() instanceof SQLException) {
         sqlEx = (SQLException) e.getCause();
-      }
+      } else if (e instanceof SQLException) {
+        sqlEx = (SQLException) e;
+      }      
       if (sqlEx != null) {
         if (checkDeadlock(sqlEx, properties)) {
           properties.setDeadlockCount(properties.getDeadlockCount() - 1); 
@@ -165,9 +163,6 @@ public class SqlRetryHandler {
       //unwrap and re-throw
       LOG.error("Execution failed for caller {}", properties, e.getCause());
       throw (MetaException) e.getCause();
-    } catch (Exception e) {
-      LOG.error("Execution failed for caller {}", properties, e);
-      throw new MetaException("Failed to execute function: " + properties.getCaller() + ", details:" + e.getMessage());
     }
   }
   

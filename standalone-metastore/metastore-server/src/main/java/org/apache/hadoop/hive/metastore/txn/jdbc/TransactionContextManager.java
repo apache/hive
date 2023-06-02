@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -29,6 +31,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class TransactionContextManager {
 
+  private static final Logger LOG = LoggerFactory.getLogger(TransactionContextManager.class);
+  
   private final PlatformTransactionManager realTransactionManager;
 
   TransactionContextManager(PlatformTransactionManager realTransactionManager) {
@@ -38,26 +42,28 @@ public class TransactionContextManager {
   /**
    * Begins a new transaction or returns an existing, depending on the passed Transaction Propagation.
    * The created transaction is wrapped into a {@link TransactionContext} which is {@link AutoCloseable} and allows using
-   * the wrapper inside a try-with-resources block. 
+   * the wrapper inside a try-with-resources block.
+   *
    * @param propagation The transaction propagation to use.
    */
   public TransactionContext getTransaction(int propagation) {
-      return new TransactionContext(realTransactionManager.getTransaction(new DefaultTransactionDefinition(propagation)), this);
+    return new TransactionContext(realTransactionManager.getTransaction(new DefaultTransactionDefinition(propagation)), this);
   }
-
+  
   public void commit(TransactionContext context) {
-      realTransactionManager.commit(context.getTransactionStatus());
+    realTransactionManager.commit(context.getTransactionStatus());
   }
 
   public void rollback(TransactionContext context) {
-      realTransactionManager.rollback(context.getTransactionStatus());
+    realTransactionManager.rollback(context.getTransactionStatus());
   }
 
   void rollbackIfNotCommitted(TransactionContext context) {
     TransactionStatus status = context.getTransactionStatus();
-      if (!status.isCompleted()) {
-        realTransactionManager.rollback(status);
-      }
+    if (!status.isCompleted()) {
+      LOG.debug("The transaction is not committed and we are leaving the try-with-resources block. Going to rollback: {}", status);
+      realTransactionManager.rollback(status);
+    }
   }
 
 }

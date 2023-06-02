@@ -157,23 +157,29 @@ public interface TxnStore extends Configurable {
    * @return information about open transactions
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   GetOpenTxnsInfoResponse getOpenTxnsInfo() throws MetaException;
 
   /**
    * Get list of valid transactions.  This gives just the list of transactions that are open.
-   * @return list of open transactions, as well as a high water mark.
+   * @return list of open transactions, as well as a high watermark.
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   GetOpenTxnsResponse getOpenTxns() throws MetaException;
 
   /**
    * Get list of valid transactions.  This gives just the list of transactions that are open.
    * @param excludeTxnTypes : excludes this type of txns while getting the open txns
-   * @return list of open transactions, as well as a high water mark.
+   * @return list of open transactions, as well as a high watermark.
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException;
 
@@ -181,6 +187,8 @@ public interface TxnStore extends Configurable {
    * Get the count for open transactions.
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   void countOpenTxns() throws MetaException;
 
@@ -193,6 +201,8 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException;
 
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   long getTargetTxnId(String replPolicy, long sourceTxnId) throws MetaException;
 
@@ -202,6 +212,8 @@ public interface TxnStore extends Configurable {
    * @throws NoSuchTxnException
    * @throws MetaException
    */
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException;
 
@@ -211,6 +223,8 @@ public interface TxnStore extends Configurable {
    * @throws NoSuchTxnException
    * @throws MetaException
    */
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void abortTxns(AbortTxnsRequest rqst) throws NoSuchTxnException, MetaException;
 
@@ -230,9 +244,12 @@ public interface TxnStore extends Configurable {
    * @param rqst info on table/partitions and writeid snapshot to replicate.
    * @throws MetaException in case of failure
    */
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException;
 
+  @Transactional(POOL_TX)
   void updateTransactionStatistics(UpdateTransactionalStatsRequest req) throws MetaException;
 
   /**
@@ -243,6 +260,7 @@ public interface TxnStore extends Configurable {
    * @param validTxnList valid transaction list for snapshot taken for current query
    * @throws MetaException
    */
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   Materialization getMaterializationInvalidationInfo(
           final CreationMetadata cm, final String validTxnList)
@@ -252,27 +270,36 @@ public interface TxnStore extends Configurable {
   long getTxnIdForWriteId(String dbName, String tblName, long writeId)
       throws MetaException;
 
+  @SqlRetry
+  @Transactional(POOL_TX)
+  @RetrySemantics.ReadOnly
   long getLatestTxnIdInConflict(long txnid) throws MetaException;
 
   LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId)
       throws MetaException;
 
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId)
       throws MetaException;
 
   long cleanupMaterializationRebuildLocks(ValidTxnList validTxnList, long timeout)
       throws MetaException;
 
-    /**
-     * Gets the list of valid write ids for the given table wrt to current txn
-     * @param rqst info on transaction and list of table names associated with given transaction
-     * @throws NoSuchTxnException
-     * @throws MetaException
-     */
+  /**
+   * Gets the list of valid write ids for the given table wrt to current txn
+   * @param rqst info on transaction and list of table names associated with given transaction
+   * @throws NoSuchTxnException
+   * @throws MetaException
+   */
+  @SqlRetry  
+  @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst)
           throws NoSuchTxnException,  MetaException;
 
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.SafeToRetry
   void addWriteIdsToMinHistory(long txnId, Map<String, Long> minOpenWriteIds) throws MetaException;
 
@@ -298,6 +325,8 @@ public interface TxnStore extends Configurable {
    * Called on conversion of existing table to full acid.  Sets initial write ID to a high
    * enough value so that we can assign unique ROW__IDs to data in existing files.
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   void seedWriteId(SeedTableWriteIdsRequest rqst) throws MetaException;
 
   /**
@@ -305,6 +334,8 @@ public interface TxnStore extends Configurable {
    * If the actual txnId is greater it will throw an exception.
    * @param rqst
    */
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   void seedTxnId(SeedTxnIdRequest rqst) throws MetaException;
 
   /**
@@ -316,6 +347,7 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
+  @Transactional(POOL_TX)
   @RetrySemantics.CannotRetry
   LockResponse lock(LockRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException;
@@ -330,6 +362,7 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
+  @Transactional(POOL_TX)
   @RetrySemantics.SafeToRetry
   LockResponse checkLock(CheckLockRequest rqst)
     throws NoSuchTxnException, NoSuchLockException, TxnAbortedException, MetaException;
@@ -343,6 +376,7 @@ public interface TxnStore extends Configurable {
    * @throws TxnOpenException
    * @throws MetaException
    */
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void unlock(UnlockRequest rqst)
     throws NoSuchLockException, TxnOpenException, MetaException;
@@ -353,6 +387,7 @@ public interface TxnStore extends Configurable {
    * @return lock information.
    * @throws MetaException
    */
+  @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   ShowLocksResponse showLocks(ShowLocksRequest rqst) throws MetaException;
 
@@ -364,6 +399,8 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.SafeToRetry
   void heartbeat(HeartbeatRequest ids)
     throws NoSuchTxnException,  NoSuchLockException, TxnAbortedException, MetaException;
@@ -374,6 +411,8 @@ public interface TxnStore extends Configurable {
    * @return info on txns that were heartbeated
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.SafeToRetry
   HeartbeatTxnRangeResponse heartbeatTxnRange(HeartbeatTxnRangeRequest rqst)
     throws MetaException;
@@ -385,6 +424,8 @@ public interface TxnStore extends Configurable {
    * @return id of the compaction that has been started or existing id if this resource is already scheduled
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
@@ -397,6 +438,8 @@ public interface TxnStore extends Configurable {
    * @return compaction information
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException;
 
@@ -433,6 +476,8 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   @RetrySemantics.SafeToRetry
   void addDynamicPartitions(AddDynamicPartitions rqst)
       throws NoSuchTxnException,  TxnAbortedException, MetaException;
@@ -445,20 +490,28 @@ public interface TxnStore extends Configurable {
    * @param partitionIterator partition iterator
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   default void cleanupRecords(HiveObjectType type, Database db, Table table, 
       Iterator<Partition> partitionIterator) throws MetaException {
     cleanupRecords(type, db, table, partitionIterator, false);
   }
 
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void cleanupRecords(HiveObjectType type, Database db, Table table, 
       Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
 
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void cleanupRecords(HiveObjectType type, Database db, Table table,
       Iterator<Partition> partitionIterator, long txnId) throws MetaException;
 
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,
       String newCatName, String newDbName, String newTabName, String newPartName)
@@ -467,6 +520,7 @@ public interface TxnStore extends Configurable {
   /**
    * Timeout transactions and/or locks.  This should only be called by the compactor.
    */
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void performTimeOuts();
 
@@ -712,6 +766,7 @@ public interface TxnStore extends Configurable {
    * WriteSet tracking is used to ensure proper transaction isolation.  This method deletes the
    * transaction metadata once it becomes unnecessary.
    */
+  @Transactional(POOL_TX)
   @RetrySemantics.SafeToRetry
   void performWriteSetGC() throws MetaException;
 
@@ -729,6 +784,7 @@ public interface TxnStore extends Configurable {
   boolean checkFailedCompactions(CompactionInfo ci) throws MetaException;
 
   @VisibleForTesting
+  @Transactional(POOL_TX)
   int numLocksInLockTable() throws SQLException, MetaException;
 
   @VisibleForTesting
@@ -755,6 +811,7 @@ public interface TxnStore extends Configurable {
      * The {@code key} is name of the lock. Will acquire an exclusive lock or block.  It returns
      * a handle which must be used to release the lock.  Each invocation returns a new handle.
      */
+    @SqlRetry(lockInternally = true)
     LockHandle acquireLock(String key) throws MetaException;
 
     /**
@@ -838,6 +895,8 @@ public interface TxnStore extends Configurable {
    * Returns ACID metadata related metrics info.
    * @return metrics info object
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   MetricsInfo getMetricsInfo() throws MetaException;
 

@@ -34,8 +34,9 @@ import static org.apache.hadoop.hive.metastore.txn.TxnStatus.OPEN;
  * Class for the getOpenTxnList calculation.
  */
 public class OpenTxnList {
-  private long hwm;
-  private List<OpenTxn> openTxnList;
+  
+  private final long hwm;
+  private final List<OpenTxn> openTxnList;
 
   public OpenTxnList(long hwm, List<OpenTxn> openTxnList) {
     this.hwm = hwm;

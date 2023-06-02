@@ -107,6 +107,7 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
+import static org.apache.hadoop.hive.metastore.txn.entities.LockInfo.LOCK_WAITING;
 import static org.apache.hadoop.hive.metastore.utils.LockTypeUtil.getEncoding;
 
 /**
@@ -1472,14 +1473,14 @@ public class TestTxnHandler {
       Connection conn = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       try {
         Statement stmt = conn.createStatement();
-        long now = tHndlr.getDbTime(conn);
+        long now = tHndlr.getDbTime().getTime();
         stmt.executeUpdate("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\", " +
                 "txn_user, txn_host) values (1, 'o', " + now + ", " + now + ", 'shagy', " +
                 "'scooby.com')");
         stmt.executeUpdate("INSERT INTO \"HIVE_LOCKS\" (\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", " +
                 "\"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", " +
                 "\"HL_USER\", \"HL_HOST\") VALUES (1, 1, 1, 'MYDB', 'MYTABLE', 'MYPARTITION', '" +
-                tHndlr.LOCK_WAITING + "', '" + getEncoding(LockType.EXCLUSIVE) + "', " + now + ", 'fred', " +
+                LOCK_WAITING + "', '" + getEncoding(LockType.EXCLUSIVE) + "', " + now + ", 'fred', " +
                 "'scooby.com')");
         conn.commit();
       } finally {

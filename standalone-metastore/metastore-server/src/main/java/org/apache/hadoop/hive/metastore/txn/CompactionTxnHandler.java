@@ -29,28 +29,29 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
-import org.apache.hadoop.hive.metastore.txn.impl.CleanTxnToWriteIdTableFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.FindPotentialCompactionsFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.NextCompactionFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.ReadyToCleanAbortHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.CheckFailedCompactionsHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.CompactionMetricsDataHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.FindColumnsWithStatsHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.GetCompactionInfoHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.InsertCompactionInfoCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.MarkCleanedFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.PurgeCompactionHistoryFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.ReadyToCleanHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.RemoveCompactionMetricsDataCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.RemoveDuplicateCompleteTxnComponentsCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.TopCompactionMetricsDataPerTypeFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.UpdateCompactionMetricsDataFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.CleanTxnToWriteIdTableFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.FindPotentialCompactionsFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.MinOpenTxnIdWaterMarkFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.NextCompactionFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.OpenTxnTimeoutLowBoundaryTxnIdHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.ReadyToCleanAbortHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.CheckFailedCompactionsHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.CompactionMetricsDataHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.FindColumnsWithStatsHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.GetCompactionInfoHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompactionInfoCommand;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.MarkCleanedFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.PurgeCompactionHistoryFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.ReadyToCleanHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveCompactionMetricsDataCommand;
+import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveDuplicateCompleteTxnComponentsCommand;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.TopCompactionMetricsDataPerTypeFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.UpdateCompactionMetricsDataFunction;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import java.sql.Connection;
@@ -172,7 +173,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException {
-    return jdbcResource.execute(new ReadyToCleanHandler(conf, useMinHistoryWriteId, minOpenTxnWaterMark, retentionTime));
+    return jdbcResource.execute(new ReadyToCleanHandler(conf, minOpenTxnWaterMark, retentionTime));
   }
 
   @Override
@@ -237,7 +238,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.SafeToRetry
   public void cleanTxnToWriteIdTable() throws MetaException {
-    new CleanTxnToWriteIdTableFunction(useMinHistoryLevel, findMinTxnIdSeenOpen()).execute(jdbcResource);
+    new CleanTxnToWriteIdTableFunction(findMinTxnIdSeenOpen()).execute(jdbcResource);
   }
 
   @Override
@@ -264,7 +265,7 @@ class CompactionTxnHandler extends TxnHandler {
      * 2. never deletes the maximum txnId even if it is before the TXN_OPENTXN_TIMEOUT window
      */
     try {
-      long lowWaterMark = getOpenTxnTimeoutLowBoundaryTxnId(jdbcResource.getConnection());
+      long lowWaterMark = jdbcResource.execute(new OpenTxnTimeoutLowBoundaryTxnIdHandler(openTxnTimeOutMillis));
       jdbcResource.execute(
           "DELETE FROM \"TXNS\" WHERE \"TXN_ID\" NOT IN (SELECT \"TC_TXNID\" FROM \"TXN_COMPONENTS\") " +
               "AND (\"TXN_STATE\" = :abortedState OR \"TXN_STATE\" = :committedState) AND \"TXN_ID\" < :txnId",
@@ -273,7 +274,7 @@ class CompactionTxnHandler extends TxnHandler {
               .addValue("abortedState", TxnStatus.ABORTED.getSqlConst(), Types.CHAR)
               .addValue("committedState", TxnStatus.COMMITTED.getSqlConst(), Types.CHAR),
           null);
-    } catch (SQLException e) {
+    } catch (DataAccessException e) {
       throw new MetaException("Unable to get the txn id: " + SqlRetryHandler.getMessage(e));
     }
   }
@@ -527,14 +528,10 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.Idempotent
   public long findMinOpenTxnIdForCleaner() throws MetaException {
-    if (useMinHistoryWriteId) {
+    if (TxnHandlingFeatures.useMinHistoryWriteId()) {
       return Long.MAX_VALUE;
     }
-    try {
-      return getMinOpenTxnIdWaterMark(jdbcResource.getConnection());      
-    } catch (SQLException e) {
-      throw new UncategorizedSQLException(null, null, e);
-    }
+    return new MinOpenTxnIdWaterMarkFunction(openTxnTimeOutMillis).execute(jdbcResource);      
   }
 
   /**
@@ -546,7 +543,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.Idempotent
   @Deprecated
   public long findMinTxnIdSeenOpen() {
-    if (!useMinHistoryLevel || useMinHistoryWriteId) {
+    if (!TxnHandlingFeatures.useMinHistoryLevel() || TxnHandlingFeatures.useMinHistoryWriteId()) {
       return Long.MAX_VALUE;
     }
     try {
@@ -554,11 +551,9 @@ class CompactionTxnHandler extends TxnHandler {
           new MapSqlParameterSource(), Long.class);
       return minId == null ? Long.MAX_VALUE : minId;
     } catch (DataAccessException e) {
-      if (e.getCause() instanceof SQLException) {
-        if (dbProduct.isTableNotExistsError((SQLException) e.getCause())) {
-          useMinHistoryLevel = false;
-          return Long.MAX_VALUE;
-        }
+      if (dbProduct.isTableNotExistsError(e)) {
+        TxnHandlingFeatures.setUseMinHistoryLevel(false);
+        return Long.MAX_VALUE;
       }
       LOG.error("Unable to execute findMinTxnIdSeenOpen", e);
       throw e;

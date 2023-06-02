@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn.retryhandling;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.thrift.TException;
 import org.springframework.dao.DataAccessException;
 
 import java.sql.SQLException;
@@ -31,6 +32,6 @@ import java.sql.SQLException;
 @FunctionalInterface
 public interface SqlRetryFunction<T> {
   
-  T execute() throws SQLException, DataAccessException, MetaException;
+  T execute() throws SQLException, DataAccessException, TException;
   
 }

@@ -25,12 +25,6 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
  */
 public class OpenTxn {
 
-  public static final String OPEN_TXNS_QUERY = "SELECT \"TXN_ID\", \"TXN_STATE\", \"TXN_TYPE\", "
-      + "(%s - \"TXN_STARTED\") FROM \"TXNS\" ORDER BY \"TXN_ID\"";
-  public static final String OPEN_TXNS_INFO_QUERY = "SELECT \"TXN_ID\", \"TXN_STATE\", \"TXN_TYPE\", "
-      + "(%s - \"TXN_STARTED\"), \"TXN_USER\", \"TXN_HOST\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\" "
-      + "FROM \"TXNS\" ORDER BY \"TXN_ID\"";
-
   private long txnId;
   private TxnStatus status;
   private TxnType type;
