@@ -27,11 +27,11 @@ filterExpression
     ;
 
 conditionExpression
-    : key=identifier comparisonOperator value=constant              #comparison
-    | value=constant comparisonOperator key=identifier              #reverseComparison
-    | key=identifier NOT? BETWEEN lower=constant AND upper=constant #betweenCondition
-    | key=identifier NOT? IN LPAREN values=constantSeq RPAREN       #inCondition
-    | LPAREN STRUCT identifierList RPAREN NOT? IN constStructList   #multiColInExpression
+    : key=identifier comparisonOperator value=constant                      #comparison
+    | value=constant comparisonOperator key=identifier                      #reverseComparison
+    | key=identifier NOT? BETWEEN lower=constant AND upper=constant         #betweenCondition
+    | LPAREN key=identifier RPAREN NOT? IN LPAREN values=constantSeq RPAREN #inCondition
+    | LPAREN STRUCT identifierList RPAREN NOT? IN constStructList           #multiColInExpression
     ;
 
 logicOperator
@@ -62,7 +62,7 @@ constantSeq
     ;
 
 constStruct
-    : CONST STRUCT LPAREN constantSeq RPAREN
+    : CONST? STRUCT LPAREN constantSeq RPAREN
     ;
 
 constStructList

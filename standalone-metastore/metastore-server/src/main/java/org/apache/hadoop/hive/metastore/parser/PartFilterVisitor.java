@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -37,13 +38,15 @@ import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOper
 import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 
-public class AstBuilder extends PartitionFilterBaseVisitor<Object> {
-  private final DateTimeFormatter dateFormat =
-          DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                  .withZone(TimeZone.getTimeZone("UTC").toZoneId());
-  private final DateTimeFormatter timestampFormat =
-          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                  .withZone(TimeZone.getTimeZone("UTC").toZoneId());
+public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
+  private final DateTimeFormatter dateFormat = createDateTimeFormatter("uuuu-MM-dd");
+  private final DateTimeFormatter timestampFormat = createDateTimeFormatter("uuuu-MM-dd HH:mm:ss");
+
+  private DateTimeFormatter createDateTimeFormatter(String format) {
+    return DateTimeFormatter.ofPattern(format)
+            .withZone(TimeZone.getTimeZone("UTC").toZoneId())
+            .withResolverStyle(ResolverStyle.STRICT);
+  }
 
   /**
    * Override the default behavior for all visit methods. This will only return a non-null result
@@ -73,7 +76,9 @@ public class AstBuilder extends PartitionFilterBaseVisitor<Object> {
 
   @Override
   public TreeNode visitParenedFilter(PartitionFilterParser.ParenedFilterContext ctx) {
-    return (TreeNode) visit(ctx.filterExpression());
+    TreeNode node = (TreeNode) visit(ctx.filterExpression());
+    node.setParened(true);
+    return node;
   }
 
   @Override
@@ -81,6 +86,12 @@ public class AstBuilder extends PartitionFilterBaseVisitor<Object> {
     TreeNode left = (TreeNode) visit(ctx.left);
     TreeNode right = (TreeNode) visit(ctx.right);
     LogicalOperator operator = visitLogicOperator(ctx.logicOperator());
+    if (!left.isParened() &&  left.getAndOr() == LogicalOperator.OR && operator == LogicalOperator.AND) {
+      // Refactor the TreeNode because AND precedence > OR
+      TreeNode realRight = new TreeNode(left.getRhs(), LogicalOperator.AND, right);
+      left.setRhs(realRight);
+      return left;
+    }
     return new TreeNode(left, operator, right);
   }
 
@@ -151,7 +162,7 @@ public class AstBuilder extends PartitionFilterBaseVisitor<Object> {
     for (int i = 0; i < structs.size(); ++i) {
       List<Object> struct = structs.get(i);
       if (keyNames.size() != struct.size()) {
-        throw new ParseCancellationException("Struct key " + keyNames + " does not match value " + struct);
+        throw new ParseCancellationException("Struct key " + keyNames + " and value " + struct + " sizes do not match.");
       }
       TreeNode node = new TreeNode();
       for (int j = 0; j < struct.size(); ++j) {
@@ -180,7 +191,8 @@ public class AstBuilder extends PartitionFilterBaseVisitor<Object> {
     switch (ctx.getText().toUpperCase(Locale.ROOT)) {
       case "AND": return LogicalOperator.AND;
       case "OR": return LogicalOperator.OR;
-      default: return null;
+      default:
+        throw new ParseCancellationException("Unsupported logic operator: " + ctx.getText());
     }
   }
 
@@ -196,8 +208,9 @@ public class AstBuilder extends PartitionFilterBaseVisitor<Object> {
       case PartitionFilterParser.GT: return Operator.GREATERTHAN;
       case PartitionFilterParser.GTE: return Operator.GREATERTHANOREQUALTO;
       case PartitionFilterParser.LIKE: return Operator.LIKE;
+      default:
+        throw new ParseCancellationException("Unsupported comparison operator: " + node.getSymbol().getText());
     }
-    return null;
   }
 
   @Override

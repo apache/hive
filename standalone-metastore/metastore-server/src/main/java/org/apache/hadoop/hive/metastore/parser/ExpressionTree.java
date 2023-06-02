@@ -194,6 +194,7 @@ public class ExpressionTree {
     private TreeNode lhs;
     private LogicalOperator andOr;
     private TreeNode rhs;
+    private boolean parened;
 
     public TreeNode() {
     }
@@ -214,6 +215,18 @@ public class ExpressionTree {
 
     public TreeNode getRhs() {
       return rhs;
+    }
+
+    public void setRhs(TreeNode rhs) {
+      this.rhs = rhs;
+    }
+
+    public boolean isParened() {
+      return parened;
+    }
+
+    public void setParened(boolean parened) {
+      this.parened = parened;
     }
 
     /** Double dispatch for TreeVisitor. */
@@ -247,6 +260,15 @@ public class ExpressionTree {
         }
         filterBuffer.append (") ");
       }
+    }
+
+    @Override
+    public String toString() {
+      return "TreeNode{" +
+              "lhs=" + lhs +
+              ", andOr='" + andOr + '\'' +
+              ", rhs=" + rhs +
+              '}';
     }
   }
 
@@ -491,6 +513,16 @@ public class ExpressionTree {
       }
 
       return isStringValue ? (String)val : Long.toString((Long)val);
+    }
+
+    @Override
+    public String toString() {
+      return "LeafNode{" +
+              "keyName='" + keyName + '\'' +
+              ", operator='" + operator + '\'' +
+              ", value=" + value +
+              (isReverseOrder ? ", isReverseOrder=true" : "") +
+              '}';
     }
   }
 
