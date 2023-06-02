@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfoBase;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.thrift.TException;
@@ -102,7 +103,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @return metastore table
    * @throws org.apache.hadoop.hive.metastore.api.MetaException if the table cannot be found.
    */
-  abstract Table resolveTable(CompactionInfo ci) throws MetaException;
+  abstract Table resolveTable(CompactionInfoBase ci) throws MetaException;
 
   abstract boolean replIsCompactionDisabledForDatabase(String dbName) throws TException;
 
@@ -112,7 +113,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @return list of partitions
    * @throws MetaException if an error occurs.
    */
-  abstract List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException;
+  abstract List<Partition> getPartitionsByNames(CompactionInfoBase ci) throws MetaException;
 
   /**
    * Get the partition being compacted.
@@ -121,7 +122,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @throws MetaException if underlying calls throw, or if the partition name resolves to more than
    * one partition.
    */
-  protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
+  protected Partition resolvePartition(CompactionInfoBase ci) throws MetaException {
     if (ci.partName != null) {
       List<Partition> parts;
       try {
@@ -164,8 +165,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
 
   /**
    * Get the storage descriptor for a compaction.
-   * @param t table from {@link #resolveTable(org.apache.hadoop.hive.metastore.txn.CompactionInfo)}
-   * @param p table from {@link #resolvePartition(org.apache.hadoop.hive.metastore.txn.CompactionInfo)}
+   * @param t table from {@link #resolveTable(org.apache.hadoop.hive.metastore.txn.entities.CompactionInfoBase)}
+   * @param p table from {@link #resolvePartition(org.apache.hadoop.hive.metastore.txn.entities.CompactionInfoBase)}
    * @return metastore storage descriptor.
    */
   protected StorageDescriptor resolveStorageDescriptor(Table t, Partition p) {

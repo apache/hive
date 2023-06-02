@@ -578,7 +578,7 @@ public class TxnUtils {
     throw new IOException("Unable to stat file: " + p);
   }
 
-  public static CompactionType dbCompactionType2ThriftType(char dbValue) throws MetaException {
+  public static CompactionType dbCompactionType2ThriftType(char dbValue) throws SQLException {
     switch (dbValue) {
       case TxnStore.MAJOR_TYPE:
         return CompactionType.MAJOR;
@@ -589,7 +589,7 @@ public class TxnUtils {
       case TxnStore.ABORT_TXN_CLEANUP_TYPE:
         return CompactionType.ABORT_TXN_CLEANUP;
       default:
-        throw new MetaException("Unexpected compaction type " + dbValue);
+        throw new SQLException("Unexpected compaction type " + dbValue);
     }
   }
 

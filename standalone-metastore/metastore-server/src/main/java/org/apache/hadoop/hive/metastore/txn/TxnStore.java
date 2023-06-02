@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionCandidate;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -462,10 +463,10 @@ public interface TxnStore extends Configurable {
    * or runAs set since these are only potential compactions not actual ones.
    */
   @RetrySemantics.ReadOnly
-  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold) throws MetaException;
+  Set<CompactionCandidate> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold) throws MetaException;
 
   @RetrySemantics.ReadOnly
-  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold, long lastChecked)
+  Set<CompactionCandidate> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold, long lastChecked)
       throws MetaException;
 
   /**
@@ -701,7 +702,7 @@ public interface TxnStore extends Configurable {
      * @param handle not NULL
      */
     void acquireLock(String key, LockHandle handle) throws MetaException;
-    interface LockHandle {
+    interface LockHandle extends AutoCloseable {
       /**
        * Releases all locks associated with this handle.
        */
@@ -725,7 +726,7 @@ public interface TxnStore extends Configurable {
    * @param id {@link CompactionInfo#id}
    */
   @RetrySemantics.Idempotent
-  void setHadoopJobId(String hadoopJobId, long id);
+  void setHadoopJobId(String hadoopJobId, long id) throws MetaException;
 
   /**
    * Add the ACID write event information to writeNotificationLog table.

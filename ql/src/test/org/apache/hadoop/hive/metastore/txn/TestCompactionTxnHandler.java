@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionCandidate;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.junit.After;
@@ -463,7 +464,7 @@ public class TestCompactionTxnHandler {
       txnHandler.markFailed(ci);
       fail("The first call to markFailed() must have failed as this call did "
           + "not throw the expected exception");
-    } catch (IllegalStateException e) {
+    } catch (MetaException e) {
       // This is expected
       assertTrue(e.getMessage().contains("No record with CQ_ID="));
     }
@@ -755,10 +756,10 @@ public class TestCompactionTxnHandler {
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
     assertEquals(0, txnHandler.numLocksInLockTable());
 
-    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
+    Set<CompactionCandidate> potentials = txnHandler.findPotentialCompactions(100, -1L);
     assertEquals(2, potentials.size());
     boolean sawMyTable = false, sawYourTable = false;
-    for (CompactionInfo ci : potentials) {
+    for (CompactionCandidate ci : potentials) {
       sawMyTable |= (ci.dbname.equals("mydb") && ci.tableName.equals("mytable") &&
           ci.partName ==  null);
       sawYourTable |= (ci.dbname.equals("mydb") && ci.tableName.equals("yourtable") &&
@@ -931,12 +932,12 @@ public class TestCompactionTxnHandler {
     txnHandler.addDynamicPartitions(adp);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
 
-    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(1000, -1L);
+    Set<CompactionCandidate> potentials = txnHandler.findPotentialCompactions(1000, -1L);
     assertEquals(2, potentials.size());
-    SortedSet<CompactionInfo> sorted = new TreeSet<CompactionInfo>(potentials);
+    SortedSet<CompactionCandidate> sorted = new TreeSet<>(potentials);
 
     int i = 0;
-    for (CompactionInfo ci : sorted) {
+    for (CompactionCandidate ci : sorted) {
       assertEquals(dbName, ci.dbname);
       assertEquals(tableName, ci.tableName);
       switch (i++) {

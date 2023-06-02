@@ -102,7 +102,7 @@ class AbortedTxnCleaner extends TaskHandler {
       if (isNull(t)) {
         // The table was dropped before we got around to cleaning it.
         LOG.info("Unable to find table {}, assuming it was dropped.", info.getFullTableName());
-        txnHandler.markCleaned(info);
+        txnHandler.markCleaned((CompactionInfo) info);
         return;
       }
       if (!isNull(info.partName)) {
@@ -111,7 +111,7 @@ class AbortedTxnCleaner extends TaskHandler {
           // The partition was dropped before we got around to cleaning it.
           LOG.info("Unable to find partition {}, assuming it was dropped.",
                   info.getFullPartitionName());
-          txnHandler.markCleaned(info);
+          txnHandler.markCleaned((CompactionInfo) info);
           return;
         }
       }
@@ -156,7 +156,7 @@ class AbortedTxnCleaner extends TaskHandler {
 
     boolean success = cleanAndVerifyObsoleteDirectories(info, location, validWriteIdList, table);
     if (success || CompactorUtil.isDynPartAbort(table, info.partName)) {
-      txnHandler.markCleaned(info);
+      txnHandler.markCleaned((CompactionInfo) info);
     } else {
       LOG.warn("Leaving aborted entry {} in TXN_COMPONENTS table.", info);
     }

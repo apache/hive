@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfoBase;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.thrift.TException;
 
@@ -60,7 +61,7 @@ public class RemoteCompactorThread extends CompactorThread {
     this.msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
   }
 
-  @Override Table resolveTable(CompactionInfo ci) throws MetaException {
+  @Override Table resolveTable(CompactionInfoBase ci) throws MetaException {
     try {
       return msc.getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
     } catch (TException e) {
@@ -80,7 +81,7 @@ public class RemoteCompactorThread extends CompactorThread {
     }
   }
 
-  @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
+  @Override List<Partition> getPartitionsByNames(CompactionInfoBase ci) throws MetaException {
     try {
       GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(ci.dbname, ci.tableName,
           Collections.singletonList(ci.partName));

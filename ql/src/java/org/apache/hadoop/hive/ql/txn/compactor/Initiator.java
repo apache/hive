@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
@@ -49,10 +48,11 @@ import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionCandidate;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfoBase;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -152,7 +152,7 @@ public class Initiator extends MetaStoreCompactorThread {
           Set<String> skipDBs = Sets.newConcurrentHashSet();
           Set<String> skipTables = Sets.newConcurrentHashSet();
 
-          Set<CompactionInfo> potentials = compactionExecutor.submit(() ->
+          Set<CompactionCandidate> potentials = compactionExecutor.submit(() ->
             txnHandler.findPotentialCompactions(abortedThreshold, abortedTimeThreshold, prevStart)
               .parallelStream()
               .filter(ci -> isEligibleForCompaction(ci, currentCompactions, skipDBs, skipTables))
@@ -170,7 +170,7 @@ public class Initiator extends MetaStoreCompactorThread {
             conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
           }
 
-          for (CompactionInfo ci : potentials) {
+          for (CompactionCandidate ci : potentials) {
             try {
               //Check for interruption before scheduling each compactionInfo and return if necessary
               if (Thread.currentThread().isInterrupted()) {
@@ -203,8 +203,7 @@ public class Initiator extends MetaStoreCompactorThread {
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact {}. " +
                   "Marking failed to avoid repeated failures, {}", ci, t);
-              ci.errorMessage = t.getMessage();
-              txnHandler.markFailed(ci);
+              txnHandler.markFailed(ci.toFailedCompacion(t.getMessage()));
             }
           }
 
@@ -250,7 +249,7 @@ public class Initiator extends MetaStoreCompactorThread {
             MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
   }
 
-  private void scheduleCompactionIfRequired(CompactionInfo ci, Table t, Partition p, String poolName,
+  private void scheduleCompactionIfRequired(CompactionCandidate ci, Table t, Partition p, String poolName,
                                             String runAs, boolean metricsEnabled)
       throws MetaException {
     StorageDescriptor sd = resolveStorageDescriptor(t, p);
@@ -259,11 +258,12 @@ public class Initiator extends MetaStoreCompactorThread {
 
       checkInterrupt();
 
-      CompactionType type = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs);
-      if (type != null) {
-        ci.type = type;
-        ci.poolName = poolName;
-        requestCompaction(ci, runAs);
+      CompactionRequest request = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs);
+      if (request != null) {
+        request.setPoolName(poolName);
+        request.setRunas(runAs);
+        LOG.info("Requesting compaction: " + request);
+        txnHandler.compact(request);
       }
     } catch (InterruptedException e) {
       //Handle InterruptedException separately so the compactioninfo won't be marked as failed.
@@ -272,15 +272,14 @@ public class Initiator extends MetaStoreCompactorThread {
       String errorMessage = "Caught exception while trying to determine if we should compact " + ci + ". Marking "
           + "failed to avoid repeated failures, " + ex;
       LOG.error(errorMessage);
-      ci.errorMessage = errorMessage;
       if (metricsEnabled) {
         Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER).inc();
       }
-      txnHandler.markFailed(ci);
+      txnHandler.markFailed(ci.toFailedCompacion(errorMessage));
     }
   }
 
-  private String getPoolName(CompactionInfo ci, Table t) throws Exception {
+  private String getPoolName(CompactionInfoBase ci, Table t) throws Exception {
     Map<String, String> params = t.getParameters();
     String poolName = params == null ? null : params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
     if (StringUtils.isBlank(poolName)) {
@@ -290,7 +289,7 @@ public class Initiator extends MetaStoreCompactorThread {
     return poolName;
   }
 
-  private Database resolveDatabase(CompactionInfo ci) throws MetaException, NoSuchObjectException {
+  private Database resolveDatabase(CompactionInfoBase ci) throws MetaException, NoSuchObjectException {
     return CompactorUtil.resolveDatabase(conf, ci.dbname);
   }
 
@@ -337,7 +336,7 @@ public class Initiator extends MetaStoreCompactorThread {
         HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS));
   }
 
-  private boolean foundCurrentOrFailedCompactions(ShowCompactResponse compactions, CompactionInfo ci) throws MetaException {
+  private boolean foundCurrentOrFailedCompactions(ShowCompactResponse compactions, CompactionCandidate ci) throws MetaException {
     if (compactions.getCompacts() == null) {
       return false;
     }
@@ -385,16 +384,14 @@ public class Initiator extends MetaStoreCompactorThread {
       LOG.warn("Will not initiate compaction for " + ci.getFullPartitionName() + " since last " +
         MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " attempts to compact it failed.");
 
-      ci.errorMessage = "Compaction is not initiated since last " +
-        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " consecutive compaction attempts failed)";
-
-      txnHandler.markFailed(ci);
+      txnHandler.markFailed(ci.toFailedCompacion("Compaction is not initiated since last " +
+          MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " consecutive compaction attempts failed)"));
       return true;
     }
     return false;
   }
 
-  private CompactionType checkForCompaction(final CompactionInfo ci,
+  private CompactionRequest checkForCompaction(final CompactionCandidate ci,
                                             final ValidWriteIdList writeIds,
                                             final StorageDescriptor sd,
                                             final Map<String, String> tblproperties,
@@ -404,7 +401,7 @@ public class Initiator extends MetaStoreCompactorThread {
     if (ci.tooManyAborts) {
       LOG.debug("Found too many aborted transactions for " + ci.getFullPartitionName() + ", " +
           "initiating major compaction");
-      return CompactionType.MAJOR;
+      return createCompactionRequest(ci, CompactionType.MAJOR);
     }
 
     if (ci.hasOldAbort) {
@@ -414,8 +411,9 @@ public class Initiator extends MetaStoreCompactorThread {
           + " with age older than threshold " + oldAbortedTimeoutProp + ": " + conf
           .getTimeVar(oldAbortedTimeoutProp, TimeUnit.HOURS) + " hours. "
           + "Initiating minor compaction.");
-      return CompactionType.MINOR;
+      return createCompactionRequest(ci, CompactionType.MINOR);
     }
+    
     AcidDirectory acidDirectory = getAcidDirectory(sd, writeIds);
     long baseSize = getBaseSize(acidDirectory);
     FileSystem fs = acidDirectory.getFs();
@@ -427,13 +425,13 @@ public class Initiator extends MetaStoreCompactorThread {
     AcidMetricService.updateMetricsFromInitiator(ci.dbname, ci.tableName, ci.partName, conf, txnHandler,
         baseSize, deltaSizes, acidDirectory.getObsolete());
 
+    CompactionType compactionType;
     if (runJobAsSelf(runAs)) {
-      return determineCompactionType(ci, acidDirectory, tblproperties, baseSize, deltaSize);
+      compactionType = determineCompactionType(ci, acidDirectory, tblproperties, baseSize, deltaSize);
     } else {
       LOG.info("Going to initiate as user " + runAs + " for " + ci.getFullPartitionName());
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(runAs,
         UserGroupInformation.getLoginUser());
-      CompactionType compactionType;
       try {
         compactionType = ugi.doAs(
             (PrivilegedExceptionAction<CompactionType>) () -> determineCompactionType(ci, acidDirectory, tblproperties, baseSize, deltaSize));
@@ -445,8 +443,25 @@ public class Initiator extends MetaStoreCompactorThread {
               ci.getFullPartitionName(), exception);
         }
       }
-      return compactionType;
     }
+    if (compactionType != null) {
+      return createCompactionRequest(ci, compactionType);
+    } else {
+      return null;
+    }
+  }
+  
+  private CompactionRequest createCompactionRequest(CompactionCandidate ci, CompactionType type) {
+    CompactionRequest request = new CompactionRequest();
+    request.setDbname(ci.dbname);
+    request.setTablename(ci.tableName);
+    if (ci.partName != null) {
+      request.setPartitionname(ci.partName);
+    }    
+    request.setType(type);
+    request.setInitiatorId(getInitiatorId(Thread.currentThread().getId()));
+    request.setInitiatorVersion(this.runtimeVersion);    
+    return request;    
   }
 
   private AcidDirectory getAcidDirectory(StorageDescriptor sd, ValidWriteIdList writeIds) throws IOException {
@@ -455,7 +470,7 @@ public class Initiator extends MetaStoreCompactorThread {
     return AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
   }
 
-  private CompactionType determineCompactionType(CompactionInfo ci, AcidDirectory dir, Map<String,
+  private CompactionType determineCompactionType(CompactionCandidate ci, AcidDirectory dir, Map<String,
       String> tblproperties, long baseSize, long deltaSize) {
     boolean noBase = false;
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
@@ -534,22 +549,8 @@ public class Initiator extends MetaStoreCompactorThread {
         .sum();
   }
 
-  private void requestCompaction(CompactionInfo ci, String runAs) throws MetaException {
-    CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, ci.type);
-    if (ci.partName != null) rqst.setPartitionname(ci.partName);
-    rqst.setRunas(runAs);
-    rqst.setInitiatorId(getInitiatorId(Thread.currentThread().getId()));
-    rqst.setInitiatorVersion(this.runtimeVersion);
-    rqst.setPoolName(ci.poolName);
-    LOG.info("Requesting compaction: " + rqst);
-    CompactionResponse resp = txnHandler.compact(rqst);
-    if(resp.isAccepted()) {
-      ci.id = resp.getId();
-    }
-  }
-
   // Check if it's a dynamic partitioning case. If so, do not initiate compaction for streaming ingest, only for aborts.
-  private static boolean isDynPartIngest(Table t, CompactionInfo ci){
+  private static boolean isDynPartIngest(Table t, CompactionCandidate ci){
     if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
             ci.partName  == null && !ci.hasOldAbort) {
       LOG.info("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
@@ -559,7 +560,7 @@ public class Initiator extends MetaStoreCompactorThread {
     return false;
   }
 
-  private boolean isEligibleForCompaction(CompactionInfo ci,
+  private boolean isEligibleForCompaction(CompactionCandidate ci,
       ShowCompactResponse currentCompactions, Set<String> skipDBs, Set<String> skipTables) {
     try {
       if (skipDBs.contains(ci.dbname)) {
@@ -627,8 +628,7 @@ public class Initiator extends MetaStoreCompactorThread {
     } catch (Throwable e) {
       LOG.error("Caught exception while checking compaction eligibility.", e);
       try {
-        ci.errorMessage = e.getMessage();
-        txnHandler.markFailed(ci);
+        txnHandler.markFailed(ci.toFailedCompacion(e.getMessage()));
       } catch (MetaException ex) {
         LOG.error("Caught exception while marking compaction as failed.", e);
       }
