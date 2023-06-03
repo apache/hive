@@ -127,7 +127,9 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
     right.operator = isPositive ? Operator.LESSTHANOREQUALTO : Operator.GREATERTHAN;
     LogicalOperator rootOperator = isPositive ? LogicalOperator.AND : LogicalOperator.OR;
 
-    return new TreeNode(left, rootOperator, right);
+    TreeNode treeNode = new TreeNode(left, rootOperator, right);
+    treeNode.setParened(true);
+    return treeNode;
   }
 
   @Override
@@ -149,7 +151,7 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
         root = new TreeNode(root, isPositive ? LogicalOperator.OR : LogicalOperator.AND, leafNode);
       }
     }
-
+    root.setParened(true);
     return root;
   }
 
@@ -182,7 +184,7 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
         root = new TreeNode(root, isPositive ? LogicalOperator.OR : LogicalOperator.AND, node);
       }
     }
-
+    root.setParened(true);
     return root;
   }
 

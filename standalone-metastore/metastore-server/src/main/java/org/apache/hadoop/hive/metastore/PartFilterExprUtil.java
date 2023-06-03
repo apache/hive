@@ -123,7 +123,7 @@ public class PartFilterExprUtil {
   }
 
   /**
-   * @Deprecated Use {@link PartFilterParser#parseFilter(String)} instead.
+   * @deprecated Use {@link PartFilterParser#parseFilter(String)} instead.
    */
   @Deprecated
   public static FilterParser getFilterParser(String filter) throws MetaException {

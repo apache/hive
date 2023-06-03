@@ -50,6 +50,19 @@ public class TestPartFilterExprUtil {
     checkFilter("dt=10 or (dt=20 and dt=30 and (dt=40 or dt=50) or dt=60) and dt=70",
             "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}");
   }
+
+  @Test
+  public void testExpressionCombination() throws MetaException {
+    checkFilter("(a) in (10, 20) and a != 30",
+            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='a', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='=', value=20}}, andOr='AND', rhs=LeafNode{keyName='a', operator='!=', value=30}}");
+    checkFilter("(a) in (10, 20) and a between 10 and 15",
+            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='a', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='a', operator='>=', value=10}, andOr='AND', rhs=LeafNode{keyName='a', operator='<=', value=15}}}");
+    checkFilter("(a) in (10, 20) and a not between 10 and 15",
+            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='a', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='a', operator='<', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='>', value=15}}}");
+    checkFilter("(a) in (10, 20) and a not between 10 and 15 and b < 10",
+            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='a', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='a', operator='<', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='>', value=15}}}, andOr='AND', rhs=LeafNode{keyName='b', operator='<', value=10}}");
+  }
+
   @Test
   public void testSingleColInExpressionWhenDateLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("(j) in (1990-11-10, 1990-11-11, 1990-11-12)",
