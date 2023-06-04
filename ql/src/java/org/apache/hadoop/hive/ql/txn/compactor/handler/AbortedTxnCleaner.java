@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
-import org.apache.hadoop.hive.metastore.txn.AbortTxnRequestInfo;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
@@ -41,8 +41,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
 
 /**
  * Abort-cleanup based implementation of TaskHandler.
@@ -78,17 +76,17 @@ class AbortedTxnCleaner extends TaskHandler {
     long abortedTimeThreshold = HiveConf
               .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
                       TimeUnit.MILLISECONDS);
-    List<AbortTxnRequestInfo> readyToCleanAborts = txnHandler.findReadyToCleanAborts(abortedTimeThreshold, abortedThreshold);
+    List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanAborts(abortedTimeThreshold, abortedThreshold);
 
     if (!readyToCleanAborts.isEmpty()) {
       return readyToCleanAborts.stream().map(info -> ThrowingRunnable.unchecked(() ->
-                      clean(info, info.minOpenWriteTxnId, metricsEnabled)))
+                      clean(info, info.txnId, metricsEnabled)))
               .collect(Collectors.toList());
     }
     return Collections.emptyList();
   }
 
-  private void clean(AbortTxnRequestInfo info, long minOpenWriteTxn, boolean metricsEnabled) throws MetaException, InterruptedException {
+  private void clean(CompactionInfo info, long minOpenWriteTxn, boolean metricsEnabled) throws MetaException, InterruptedException {
     LOG.info("Starting cleaning for {}", info);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_";
@@ -101,7 +99,7 @@ class AbortedTxnCleaner extends TaskHandler {
       if (isNull(t)) {
         // The table was dropped before we got around to cleaning it.
         LOG.info("Unable to find table {}, assuming it was dropped.", info.getFullTableName());
-        txnHandler.markCleaned(info, true);
+        txnHandler.markCleaned(info);
         return;
       }
       if (!isNull(info.partName)) {
@@ -110,7 +108,7 @@ class AbortedTxnCleaner extends TaskHandler {
           // The partition was dropped before we got around to cleaning it.
           LOG.info("Unable to find partition {}, assuming it was dropped.",
                   info.getFullPartitionName());
-          txnHandler.markCleaned(info, true);
+          txnHandler.markCleaned(info);
           return;
         }
       }
@@ -122,14 +120,12 @@ class AbortedTxnCleaner extends TaskHandler {
     } catch (InterruptedException e) {
       LOG.error("Caught an interrupted exception when cleaning, unable to complete cleaning of {} due to {}", info,
               e.getMessage());
-      info.errorMessage = e.getMessage();
-      handleCleanerAttemptFailure(info);
+      handleCleanerAttemptFailure(info, e.getMessage());
       throw e;
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", info,
               e.getMessage());
-      info.errorMessage = e.getMessage();
-      handleCleanerAttemptFailure(info);
+      handleCleanerAttemptFailure(info, e.getMessage());
       throw new MetaException(e.getMessage());
     } finally {
       if (metricsEnabled) {
@@ -138,7 +134,7 @@ class AbortedTxnCleaner extends TaskHandler {
     }
   }
 
-  private void abortCleanUsingAcidDir(AbortTxnRequestInfo info, String location, long minOpenWriteTxn) throws Exception {
+  private void abortCleanUsingAcidDir(CompactionInfo info, String location, long minOpenWriteTxn) throws Exception {
     ValidTxnList validTxnList =
             TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenWriteTxn, true);
     //save it so that getAcidState() sees it
@@ -157,20 +153,10 @@ class AbortedTxnCleaner extends TaskHandler {
 
     boolean success = cleanAndVerifyObsoleteDirectories(info, location, validWriteIdList, table);
     if (success || CompactorUtil.isDynPartAbort(table, info.partName)) {
-      txnHandler.markCleaned(info, true);
+      txnHandler.markCleaned(info);
     } else {
       LOG.warn("Leaving aborted entry {} in TXN_COMPONENTS table.", info);
     }
 
-  }
-
-  private void handleCleanerAttemptFailure(AbortTxnRequestInfo info) throws MetaException {
-    long defaultRetention = getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS);
-    int cleanAttempts = 0;
-    if (info.retryRetention > 0) {
-      cleanAttempts = (int)(Math.log(info.retryRetention / defaultRetention) / Math.log(2)) + 1;
-    }
-    info.retryRetention = (long)Math.pow(2, cleanAttempts) * defaultRetention;
-    txnHandler.setAbortCleanerRetryRetentionTimeOnError(info);
   }
 }

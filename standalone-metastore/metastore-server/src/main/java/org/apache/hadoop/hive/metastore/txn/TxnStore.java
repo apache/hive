@@ -124,7 +124,7 @@ public interface TxnStore extends Configurable {
   char MAJOR_TYPE = 'a';
   char MINOR_TYPE = 'i';
   char REBALANCE_TYPE = 'r';
-  char ABORT_CLEANUP_TYPE = 'c';
+  char ABORT_TXN_CLEANUP_TYPE = 'c';
 
   String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
       SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE, REFUSED_RESPONSE };
@@ -527,7 +527,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  List<AbortTxnRequestInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
+  List<CompactionInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
 
   /**
    * Sets the cleaning start time for a particular compaction
@@ -550,10 +550,9 @@ public interface TxnStore extends Configurable {
    * it has been compacted.
    *
    * @param info info on the compaction entry to remove
-   * @param isAbortOnly whether to cleanup only abort related cleanup information
    */
   @RetrySemantics.CannotRetry
-  void markCleaned(CompactionInfo info, boolean isAbortOnly) throws MetaException;
+  void markCleaned(CompactionInfo info) throws MetaException;
 
   /**
    * Mark a compaction entry as failed.  This will move it to the compaction history queue with a
@@ -575,21 +574,12 @@ public interface TxnStore extends Configurable {
 
   /**
    * Stores the value of {@link CompactionInfo#retryRetention} and {@link CompactionInfo#errorMessage} fields
-   * of the CompactionInfo in the HMS database.
+   * of the CompactionInfo either by inserting or updating the fields in the HMS database.
    * @param info The {@link CompactionInfo} object holding the values.
    * @throws MetaException
    */
   @RetrySemantics.CannotRetry
-  void setCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException;
-
-  /**
-   * Stores the value of {@link AbortTxnRequestInfo#retryRetention} and {@link AbortTxnRequestInfo#errorMessage} fields
-   * of the AbortTxnRequestInfo in the HMS database (specifically in TXN_CLEANUP_QUEUE table).
-   * @param info
-   * @throws MetaException
-   */
-  @RetrySemantics.CannotRetry
-  void setAbortCleanerRetryRetentionTimeOnError(AbortTxnRequestInfo info) throws MetaException;
+  void insertOrSetCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException;
 
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
@@ -607,7 +597,7 @@ public interface TxnStore extends Configurable {
   /**
    * Clean up aborted or committed transactions from txns that have no components in txn_components.  The reason such
    * txns exist can be that no work was done in this txn (e.g. Streaming opened TransactionBatch and
-   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo, boolean)} being called,
+   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called,
    * or the delete from the txns was delayed because of TXN_OPENTXN_TIMEOUT window.
    */
   @RetrySemantics.SafeToRetry

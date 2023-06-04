@@ -67,7 +67,6 @@ import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.addVisibilitySuffix;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -108,7 +107,7 @@ public class TestCleaner extends CompactorTest {
     FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
     List<TaskHandler> taskHandlers = TaskHandlerFactory.getInstance()
             .getHandlers(conf, mockedHandler, metadataCache, false, fsRemover);
-    doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class), eq(false));
+    doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     Table t = newTable("default", "retry_test", false);
 
@@ -196,7 +195,7 @@ public class TestCleaner extends CompactorTest {
     FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
     List<TaskHandler> taskHandlers = TaskHandlerFactory.getInstance()
             .getHandlers(conf, mockedHandler, metadataCache, false, fsRemover);
-    doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class), eq(false));
+    doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     //Do a run to fail the clean and set the retention time
     Cleaner cleaner = new Cleaner();

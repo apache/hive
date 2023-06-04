@@ -49,8 +49,13 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.collections.ListUtils.subtract;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getIntVar;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
 
 /**
  * An abstract class which defines the list of utility methods for performing cleanup activities.
@@ -63,6 +68,7 @@ public abstract class TaskHandler {
   protected final boolean metricsEnabled;
   protected final MetadataCache metadataCache;
   protected final FSRemover fsRemover;
+  protected final long defaultRetention;
 
   TaskHandler(HiveConf conf, TxnStore txnHandler, MetadataCache metadataCache,
                          boolean metricsEnabled, FSRemover fsRemover) {
@@ -71,6 +77,7 @@ public abstract class TaskHandler {
     this.metadataCache = metadataCache;
     this.metricsEnabled = metricsEnabled;
     this.fsRemover = fsRemover;
+    this.defaultRetention = getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS);
   }
 
   public abstract List<Runnable> getTasks() throws MetaException;
@@ -160,5 +167,27 @@ public abstract class TaskHandler {
     }
 
     return success;
+  }
+
+  protected void handleCleanerAttemptFailure(CompactionInfo info, String errorMessage) throws MetaException {
+    int cleanAttempts = 0;
+    info.errorMessage = errorMessage;
+    if (info.isAbortedTxnCleanup()) {
+      info.retryRetention = info.retryRetention > 0 ? info.retryRetention * 2 : defaultRetention;
+      info.errorMessage = errorMessage;
+      txnHandler.insertOrSetCleanerRetryRetentionTimeOnError(info);
+    } else {
+      if (info.retryRetention > 0) {
+        cleanAttempts = (int) (Math.log(info.retryRetention / defaultRetention) / Math.log(2)) + 1;
+      }
+      if (cleanAttempts >= getIntVar(conf, HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS)) {
+        //Mark it as failed if the max attempt threshold is reached.
+        txnHandler.markFailed(info);
+      } else {
+        //Calculate retry retention time and update record.
+        info.retryRetention = (long) Math.pow(2, cleanAttempts) * defaultRetention;
+        txnHandler.insertOrSetCleanerRetryRetentionTimeOnError(info);
+      }
+    }
   }
 }

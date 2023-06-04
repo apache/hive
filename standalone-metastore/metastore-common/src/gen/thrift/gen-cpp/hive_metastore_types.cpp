@@ -240,13 +240,13 @@ int _kCompactionTypeValues[] = {
   CompactionType::MINOR,
   CompactionType::MAJOR,
   CompactionType::REBALANCE,
-  CompactionType::ABORT_CLEANUP
+  CompactionType::ABORT_TXN_CLEANUP
 };
 const char* _kCompactionTypeNames[] = {
   "MINOR",
   "MAJOR",
   "REBALANCE",
-  "ABORT_CLEANUP"
+  "ABORT_TXN_CLEANUP"
 };
 const std::map<int, const char*> _CompactionType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kCompactionTypeValues, _kCompactionTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 

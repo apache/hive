@@ -351,4 +351,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     this.hasUncompactedAborts = hasUncompactedAborts;
     this.writeIds = writeIds;
   }
+
+  public boolean isAbortedTxnCleanup() {
+    return type == CompactionType.ABORT_TXN_CLEANUP;
+  }
 }
