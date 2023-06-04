@@ -17,15 +17,21 @@
 package org.apache.hadoop.hive.metastore.properties;
 
 import com.google.gson.Gson;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
+import com.google.gson.GsonBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.PropertyServlet;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.eclipse.jetty.server.Server;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,7 +43,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -157,39 +165,89 @@ public class HMSServletTest extends HMSTestBase {
   public void testProperties0() throws Exception {
       runOtherProperties0(client);
 
-    HttpClient client = new HttpClient();
+    HttpClient client = HttpClients.createDefault();
     String jwt = generateJWT();
-    GetMethod method = new GetMethod("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
-    method.addRequestHeader("Authorization", "Bearer " + jwt);
-    method.addRequestHeader("Content-Type", "application/json");
-    method.addRequestHeader("Accept", "application/json");
-    method.addRequestHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, "hive");
-
-    NameValuePair[] nvps = new NameValuePair[]{
-        new NameValuePair("key", "db0.table01.fillFactor"),
-        new NameValuePair("key", "db0.table04.fillFactor")
+    NameValuePair[] nvp = new NameValuePair[]{
+        new BasicNameValuePair("key", "db0.table01.fillFactor"),
+        new BasicNameValuePair("key", "db0.table04.fillFactor")
     };
-    method.setQueryString(nvps);
+    URI uri = new URIBuilder()
+        .setScheme("http")
+        .setUserInfo("hive")
+        .setHost("localhost")
+        .setPort(sport)
+        .setPath("/" + CLI + "/" + NS)
+        .setParameters(nvp)
+        .build();
+    HttpGet get = new HttpGet(uri);
+    get.addHeader("Authorization", "Bearer " + jwt);
+    get.addHeader("Content-Type", "application/json");
+    get.addHeader("Accept", "application/json");
+    get.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, "hive");
 
-    int httpStatus = client.executeMethod(method);
-    Assert.assertEquals(HttpServletResponse.SC_OK, httpStatus);
-    String resp = method.getResponseBodyAsString();
-    Map<String,String> result = ( Map<String,String>) new Gson().fromJson(resp, Map.class);
-    Assert.assertEquals(2, result.size());
+    Map<String,String> result = null;
+    HttpResponse response = client.execute(get);
+    try {
+      Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        Gson gson = new GsonBuilder().create();
+        ContentType contentType = ContentType.getOrDefault(entity);
+        Charset charset = contentType.getCharset();
+        Reader reader = new InputStreamReader(entity.getContent(), charset);
+        result = (Map<String, String>) gson.fromJson(reader, Object.class);
+      }
+      Assert.assertNotNull(result);
+      Assert.assertEquals(2, result.size());
+    } finally {
+      if (response instanceof AutoCloseable) {
+        ((AutoCloseable) response).close();
+      }
+      if (client instanceof AutoCloseable) {
+        ((AutoCloseable) client).close();
+      }
+    }
+  }
+
+  private String readString(Reader reader) throws IOException {
+    BufferedReader in = new BufferedReader(reader);
+    String line = null;
+    StringBuilder rslt = new StringBuilder();
+    while ((line = in.readLine()) != null) {
+      rslt.append(line);
+    }
+    return rslt.toString();
   }
 
   @Test
   public void testServletEchoB() throws Exception {
-    HttpClient client = new HttpClient();
-    String jwt = generateJWT();
-    String msgBody = "{\"method\":\"echo\"}";
-    PostMethod method = createPost(jwt, msgBody);
+    HttpClient client = HttpClients.createDefault();
+    HttpResponse response = null;
+    try {
+      String jwt = generateJWT();
+      String msgBody = "{\"method\":\"echo\"}";
+      HttpPost post = createPost(jwt, msgBody);
 
-    int httpStatus = client.executeMethod(method);
-    Assert.assertEquals(HttpServletResponse.SC_OK, httpStatus);
-    String resp = method.getResponseBodyAsString();
-    Assert.assertNotNull(resp);
-    Assert.assertEquals(msgBody, resp);
+      response = client.execute(post);
+      Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+      String resp = null;
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        ContentType contentType = ContentType.getOrDefault(entity);
+        Charset charset = contentType.getCharset();
+        Reader reader = new InputStreamReader(entity.getContent(), charset);
+        resp = readString(reader);
+      }
+      Assert.assertNotNull(resp);
+      Assert.assertEquals(msgBody, resp);
+    } finally {
+      if (response instanceof AutoCloseable) {
+        ((AutoCloseable) response).close();
+      }
+      if (client instanceof AutoCloseable) {
+        ((AutoCloseable) client).close();
+      }
+    }
   }
 
   /**
@@ -233,15 +291,14 @@ public class HMSServletTest extends HMSTestBase {
    * @return the method to be executed by a Http client
    * @throws Exception
    */
-  private PostMethod createPost(String jwt, String msgBody) throws Exception {
-    PostMethod method = new PostMethod("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
+  private HttpPost createPost(String jwt, String msgBody) {
+    HttpPost method = new HttpPost("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
+    method.addHeader("Authorization", "Bearer " + jwt);
+    method.addHeader("Content-Type", "application/json");
+    method.addHeader("Accept", "application/json");
 
-    method.addRequestHeader("Authorization","Bearer " + jwt);
-    method.addRequestHeader("Content-Type", "application/json");
-    method.addRequestHeader("Accept", "application/json");
-
-    StringRequestEntity sre = new StringRequestEntity(msgBody, "application/json", "utf-8");
-    method.setRequestEntity(sre);
+    StringEntity sre = new StringEntity(msgBody, ContentType.APPLICATION_JSON);
+    method.setEntity(sre);
     return method;
   }
 

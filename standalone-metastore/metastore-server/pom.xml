@@ -37,9 +37,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>${httpcomponents.client.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
