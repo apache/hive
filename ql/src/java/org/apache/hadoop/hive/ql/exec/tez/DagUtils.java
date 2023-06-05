@@ -309,8 +309,8 @@ public class DagUtils {
     for (String s : supplierClassNames) {
       try {
         Class<? extends DagCredentialSupplier> c = Class.forName(s).asSubclass(DagCredentialSupplier.class);
-        dagSuppliers.add(c.newInstance());
-      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        dagSuppliers.add(c.getConstructor().newInstance());
+      } catch (ReflectiveOperationException e) {
         LOG.error("Failed to add credential supplier", e);
       }
     }
