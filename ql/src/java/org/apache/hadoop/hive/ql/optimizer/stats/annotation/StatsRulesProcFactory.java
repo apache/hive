@@ -3066,19 +3066,15 @@ public class StatsRulesProcFactory {
       if (parentStats != null) {
         Statistics st = parentStats.clone();
 
-        float udtfFactor=HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_UDTF_FACTOR);
-        long numRows = (long) (parentStats.getNumRows() * udtfFactor);
+        float udtfFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_UDTF_FACTOR);
+        long numRows = Math.max(StatsUtils.safeMult(parentStats.getNumRows(), udtfFactor), 1);
         long dataSize = StatsUtils.safeMult(parentStats.getDataSize(), udtfFactor);
         st.setNumRows(numRows);
         st.setDataSize(dataSize);
 
         List<ColStatistics> colStatsList = st.getColumnStats();
         if(colStatsList != null) {
-          for (ColStatistics colStats : colStatsList) {
-            colStats.setNumFalses((long) (colStats.getNumFalses() * udtfFactor));
-            colStats.setNumTrues((long) (colStats.getNumTrues() * udtfFactor));
-            colStats.setNumNulls((long) (colStats.getNumNulls() * udtfFactor));
-          }
+          StatsUtils.scaleColStatistics(colStatsList, udtfFactor);
           st.setColumnStats(colStatsList);
         }
 
@@ -3086,7 +3082,7 @@ public class StatsRulesProcFactory {
           LOG.debug("[0] STATS-" + uop.toString() + ": " + st.extendedToString());
         }
 
-        uop.setStatistics(st);
+        uop.setStatistics(applyRuntimeStats(aspCtx.getParseContext().getContext(), st, uop));
       }
       return null;
     }
