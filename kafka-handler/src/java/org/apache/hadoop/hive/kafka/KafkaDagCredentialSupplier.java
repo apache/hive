@@ -58,14 +58,14 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
     PartitionDesc partition = partitions.values().stream().findFirst().orElse(null);
     if (partition != null) {
       TableDesc tableDesc = partition.getTableDesc();
-      if (collectKafkaDelegationTokenForTableDesc(tableDesc)) {
+      if (isTokenRequired(tableDesc)) {
         // don't collect delegation token again, if it was already successful
         return getKafkaDelegationTokenForBrokers(conf, tableDesc);
       }
     }
 
     for (TableDesc tableDesc : fileSinkTableDescs) {
-      if (collectKafkaDelegationTokenForTableDesc(tableDesc)) {
+      if (isTokenRequired(tableDesc)) {
         // don't collect delegation token again, if it was already successful
         return getKafkaDelegationTokenForBrokers(conf, tableDesc);
       }
@@ -79,12 +79,12 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
   }
 
   /**
-   * Returns whether we should collect delegation tokens for kafka in the scope of a TableDesc.
+   * Returns whether a Kafka token is required for performing operations on the specified table.
    * If "security.protocol" is set to "PLAINTEXT", we don't need to collect delegation token at all.
-   * @param tableDesc
-   * @return true if we should collect a token for the specified table and false otherwise.
+   * 
+   * @return true if a Kafka token is required for performing operations on the specified table and false otherwise.
    */
-  private boolean collectKafkaDelegationTokenForTableDesc(TableDesc tableDesc) {
+  private boolean isTokenRequired(TableDesc tableDesc) {
     String kafkaBrokers = (String) tableDesc.getProperties().get("kafka.bootstrap.servers"); //FIXME: KafkaTableProperties
     String consumerSecurityProtocol = (String) tableDesc.getProperties().get(
         "kafka.consumer." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
