@@ -1365,8 +1365,9 @@ public class DagUtils {
     // final vertices need to have at least one output
     if (!hasChildren) {
       OutputCommitterDescriptor ocd = null;
-      if (HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER) != null) {
-        ocd = OutputCommitterDescriptor.create(HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER));
+      String committer = HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER);
+      if (committer != null && !committer.isEmpty()) {
+        ocd = OutputCommitterDescriptor.create(committer);
       }
       v.addDataSink("out_"+work.getName(), new DataSinkDescriptor(
           OutputDescriptor.create(MROutput.class.getName())

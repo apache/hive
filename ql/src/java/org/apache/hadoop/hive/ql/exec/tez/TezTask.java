@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.hadoop.hive.common.ServerUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -96,6 +99,8 @@ import com.google.common.annotations.VisibleForTesting;
 @SuppressWarnings({"serial"})
 public class TezTask extends Task<TezWork> {
 
+  public static final String HIVE_TEZ_COMMIT_JOB_ID_PREFIX = "hive.tez.commit.job.id.";
+  public static final String HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX = "hive.tez.commit.task.count.";
   private static final String CLASS_NAME = TezTask.class.getName();
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
@@ -253,6 +258,11 @@ public class TezTask extends Task<TezWork> {
           LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete.", err);
           counters = null;
         }
+
+        // save useful commit information into session conf, e.g. for custom commit hooks, like Iceberg
+        if (rc == 0) {
+          collectCommitInformation(work);
+        }
       } finally {
         // Note: due to TEZ-3846, the session may actually be invalid in case of some errors.
         //       Currently, reopen on an attempted reuse will take care of that; we cannot tell
@@ -325,6 +335,59 @@ public class TezTask extends Task<TezWork> {
       }
     }
     return rc;
+  }
+
+  private void collectCommitInformation(TezWork work) throws IOException, TezException {
+    HiveConf sessionConf = SessionState.get().getConf();
+    for (BaseWork w : work.getAllWork()) {
+      JobConf jobConf = workToConf.get(w);
+      Vertex vertex = workToVertex.get(w);
+      String jobIdPrefix = dagClient.getDagIdentifierString().split("_")[1];
+      boolean hasIcebergCommitter = Optional.ofNullable(jobConf).map(JobConf::getOutputCommitter)
+              .map(Object::getClass).map(Class::getName)
+              .filter(name -> name.endsWith("HiveIcebergNoJobCommitter")).isPresent();
+      // we should only consider jobs with Iceberg output committer and a data sink
+      if (hasIcebergCommitter && !vertex.getDataSinks().isEmpty()) {
+        String tableLocationRoot = jobConf.get("location");
+        if (tableLocationRoot != null) {
+          VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
+          Path path = new Path(tableLocationRoot + "/temp");
+          LOG.debug("Table temp directory path is: " + path);
+          // list the directories inside the temp directory
+          // TODO: this is temporary, refactor when new Tez version has been released
+          FileStatus[] children = path.getFileSystem(jobConf).listStatus(path);
+          LOG.debug("Listing the table temp directory yielded these files: " + Arrays.toString(children));
+          for (FileStatus child : children) {
+            // pick only directories that contain the correct jobID prefix
+            if (child.isDirectory() && child.getPath().getName().contains(jobIdPrefix)) {
+              // folder name pattern is queryID-jobID, we're removing the queryID part to get the jobID
+              String jobIdStr = child.getPath().getName().substring(jobConf.get("hive.query.id").length() + 1);
+              // get all target tables this vertex wrote to
+              List<String> tables = new ArrayList<>();
+              for (Map.Entry<String, String> entry : jobConf) {
+                if (entry.getKey().startsWith("iceberg.mr.serialized.table.")) {
+                  tables.add(entry.getKey().substring("iceberg.mr.serialized.table.".length()));
+                }
+              }
+              // save information for each target table (jobID, task num, query state)
+              for (String table : tables) {
+                sessionConf.set(HIVE_TEZ_COMMIT_JOB_ID_PREFIX + table, jobIdStr);
+                sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + table,
+                        status.getProgress().getSucceededTaskCount());
+              }
+            }
+          }
+          // save iceberg mr props as they can be needed during job commit (e.g. serialized table)
+          jobConf.forEach(e -> {
+            if (e.getKey().startsWith("iceberg.mr.")) {
+              sessionConf.set(e.getKey(), e.getValue());
+            }
+          });
+        } else {
+          LOG.warn("Table location not found in config for base work: " + w.getName());
+        }
+      }
+    }
   }
 
   private String getUserNameForGroups(SessionState ss) {
