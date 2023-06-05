@@ -104,6 +104,7 @@ import org.apache.hive.http.LlapServlet;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.auth.AuthType;
 import org.apache.hive.service.auth.saml.HiveSaml2Client;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
 import org.apache.hive.service.cli.CLIService;
@@ -501,14 +502,6 @@ public class HiveServer2 extends CompositeService {
     return false;
   }
 
-  public static boolean isKerberosAuthMode(Configuration hiveConf) {
-    String authMode = hiveConf.get(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname);
-    if (authMode != null && (authMode.equalsIgnoreCase("KERBEROS"))) {
-      return true;
-    }
-    return false;
-  }
-
   /**
    * ACLProvider for providing appropriate ACLs to CuratorFrameworkFactory
    */
@@ -573,7 +566,7 @@ public class HiveServer2 extends CompositeService {
     // Auth specific confs
     confsToPublish.put(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname,
         hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION));
-    if (isKerberosAuthMode(hiveConf)) {
+    if (AuthType.isKerberosAuthMode(hiveConf)) {
       confsToPublish.put(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname,
           hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
     }
@@ -1018,8 +1011,7 @@ public class HiveServer2 extends CompositeService {
     if (zKClientForPrivSync != null) {
       zKClientForPrivSync.close();
     }
-    if (hiveConf != null && HiveSamlUtils
-        .isSamlAuthMode(hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION))) {
+    if (hiveConf != null && AuthType.isSamlAuthMode(hiveConf)) {
       // this is mostly for testing purposes to make sure that SAML client is
       // reinitialized after a HS2 is restarted.
       HiveSaml2Client.shutdown();

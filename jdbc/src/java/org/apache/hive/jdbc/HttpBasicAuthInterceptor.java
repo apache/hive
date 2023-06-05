@@ -53,4 +53,10 @@ public class HttpBasicAuthInterceptor extends HttpRequestInterceptorBase {
     Header basicAuthHeader = authScheme.authenticate(credentials, httpRequest, httpContext);
     httpRequest.addHeader(basicAuthHeader);
   }
+
+  @Override
+  protected String getAuthType() {
+    // Let the server determine which particular password based method is using.
+    return "UIDPWD";
+  }
 }

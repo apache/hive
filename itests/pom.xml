@@ -25,6 +25,7 @@
   <name>Hive Integration - Parent</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+    <wiremock-jre8.version>2.32.0</wiremock-jre8.version>
   </properties>
   <modules>
     <module>custom-serde</module>

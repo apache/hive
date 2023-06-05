@@ -64,4 +64,9 @@ public class HttpSamlAuthRequestInterceptor extends HttpRequestInterceptorBase {
       httpRequest.addHeader(HiveSamlUtils.SSO_TOKEN_RESPONSE_PORT, port);
     }
   }
+
+  @Override
+  protected String getAuthType() {
+    return "SAML";
+  }
 }
