@@ -9,12 +9,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice01
 PREHOOK: query: create external table ice02 (id int, key int) Stored by Iceberg stored as ORC
-    TBLPROPERTIES('format-version'='2')
+  TBLPROPERTIES('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice02
 POSTHOOK: query: create external table ice02 (id int, key int) Stored by Iceberg stored as ORC
-    TBLPROPERTIES('format-version'='2')
+  TBLPROPERTIES('format-version'='2')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice02

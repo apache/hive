@@ -295,7 +295,7 @@ public class StatsOptimizer extends Transform {
           tbl = hive.getTable(tbl.getDbName(), tbl.getTableName(), true, true);
         }
 
-        if (MetaStoreUtils.isExternalTable(tbl.getTTable()) && !tbl.getStorageHandler().canProvideBasicStatistics()) {
+        if (!StatsUtils.checkCanProvideStats(tbl)) {
           Logger.info("Table " + tbl.getTableName() + " is external and also could not provide statistics. " +
               "Skip StatsOptimizer.");
           return null;
@@ -942,8 +942,7 @@ public class StatsOptimizer extends Transform {
           rowCnt += partRowCnt;
         }
       } else { // unpartitioned table
-        if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters()) &&
-            !tbl.getStorageHandler().canProvideBasicStatistics()) {
+        if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters())) {
           return null;
         }
         rowCnt = Long.valueOf(tbl.getProperty(StatsSetupConst.ROW_COUNT));
