@@ -23,6 +23,22 @@ import java.util.Set;
  * Responsible for creating the necessary {@link SchemaToolTask} instances
  */
 public interface SchemaToolTaskProvider {
+  
+  String INIT_SCHEMA_COMMAND = "initSchema";
+  String INIT_SCHEMA_TO_COMMAND = "initSchemaTo";
+  String UPGRADE_SCHEMA_COMMAND = "upgradeSchema";
+  String UPGRADE_SCHEMA_FROM_COMMAND = "upgradeSchemaFrom";
+  String INIT_OR_UPGRADE_SCHEMA_COMMAND = "initOrUpgradeSchema";
+  String VALIDATE_COMMAND = "validate";
+  String INFO_COMMAND = "info";
+  String ALTER_CATALOG_COMMAND = "alterCatalog";
+  String CREATE_CATALOG_COMMAND = "createCatalog";
+  String MERGE_CATALOG_COMMAND = "mergeCatalog";
+  String MOVE_DATABASE_COMMAND = "moveDatabase";
+  String MOVE_TABLE_COMMAND = "moveTable";
+  String CREATE_LOGS_TABLE_COMMAND = "createLogsTable";
+  String CREATE_USER_COMMAND = "createUser";
+  String DROP_ALL_DATABASES_COMMAND = "dropAllDatabases";
 
   /**
    * Creates a new {@link SchemaToolTask} instance associated with the given command

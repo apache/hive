@@ -47,11 +47,7 @@ abstract class AbstractCommandParser implements NestedScriptParser {
       throw new IllegalArgumentException("invalid command line " + dbCommand);
     }
     dbCommand = dbCommand.trim();
-    if (dbCommand.endsWith(getDelimiter()) || isNonExecCommand(dbCommand)) {
-      return false;
-    } else {
-      return true;
-    }
+    return !(dbCommand.endsWith(getDelimiter()) || isNonExecCommand(dbCommand));
   }
 
   @Override

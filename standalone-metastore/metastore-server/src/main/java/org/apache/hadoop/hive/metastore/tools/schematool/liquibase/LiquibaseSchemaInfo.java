@@ -42,7 +42,7 @@ public class LiquibaseSchemaInfo extends SchemaInfo {
   private static final Map<String, String[]> VERSION_QUERIES = new HashMap<>(5);
 
   static {
-    VERSION_QUERIES.put(HiveSchemaHelper.DB_POSTGRACE, new String[]{
+    VERSION_QUERIES.put(HiveSchemaHelper.DB_POSTGRES, new String[]{
         "select t.\"labels\" from \"databasechangelog\" t where CAST(t.\"id\" AS INTEGER) = (select MAX(CAST(t2.\"id\" as INTEGER)) from \"databasechangelog\" t2)",
         "select t.\"SCHEMA_VERSION\" from \"VERSION\" t" });
     VERSION_QUERIES.put(HiveSchemaHelper.DB_DERBY, new String[] {

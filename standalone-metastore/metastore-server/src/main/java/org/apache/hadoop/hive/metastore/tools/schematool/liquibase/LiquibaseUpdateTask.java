@@ -55,7 +55,7 @@ class LiquibaseUpdateTask extends SchemaToolTask {
 
       liquibase.getLog().info("Metastore schema upgraded to latest version");
     } catch (LiquibaseException e) {
-      throw new HiveMetaException("Schema upgrade FAILED! Metastore state would be inconsistent!", e);
+      throw new HiveMetaException(TASK_FAIL_ERROR_MESSAGE, e);
     }
   }
 

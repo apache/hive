@@ -164,7 +164,7 @@ class HiveSchemaInfo extends SchemaInfo {
   }
 
 
-  public HiveSchemaInfo(String metastoreHome, HiveSchemaHelper.MetaStoreConnectionInfo connectionInfo, Configuration conf) throws HiveMetaException {
+  public HiveSchemaInfo(String metastoreHome, HiveSchemaHelper.MetaStoreConnectionInfo connectionInfo, Configuration conf) {
     super(metastoreHome, connectionInfo, conf);
   }
 }

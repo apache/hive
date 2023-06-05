@@ -75,11 +75,11 @@ class BeelineScriptExecutor implements ScriptExecutor {
     // run the script using Beeline
     try (BeeLine beeLine = new BeeLine()) {
       if (!commandBuilder.isVerbose()) {
-        beeLine.setOutputStream(new PrintStream(new NullOutputStream()));
+        beeLine.setOutputStream(new PrintStream(NullOutputStream.NULL_OUTPUT_STREAM));
         beeLine.getOpts().setSilent(true);
       }
       beeLine.getOpts().setAllowMultiLineCommand(false);
-      beeLine.getOpts().setIsolation("TRANSACTION_READ_COMMITTED");
+      beeLine.getOpts().setIsolation(TRANSACTION_READ_COMMITTED);
       // We can be pretty sure that an entire line can be processed as a single command since
       // we always add a line separator at the end while calling dbCommandParser.buildCommand.
       beeLine.getOpts().setEntireLineAsCommand(true);

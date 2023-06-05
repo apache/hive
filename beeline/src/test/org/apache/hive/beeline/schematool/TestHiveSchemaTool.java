@@ -48,7 +48,7 @@ public class TestHiveSchemaTool {
   private HiveConf hiveConf;
   private MockedStatic<HiveSchemaHelper> hiveSchemaHelperMockedStatic;
   private CommandBuilder builder;
-  private final String pasword = "reallySimplePassword";
+  private final String password = "reallySimplePassword";
 
   @Before
   public void setup() throws IOException {
@@ -65,7 +65,7 @@ public class TestHiveSchemaTool {
       file.createNewFile();
     }
     HiveSchemaHelper.MetaStoreConnectionInfo info = new HiveSchemaHelper.MetaStoreConnectionInfo(
-        "testUser", pasword, null, null, false, null
+        "testUser", password, null, null, false, null
     );
     builder = new CommandBuilder(info, new String[]{"--isolation=TRANSACTION_READ_COMMITTED"});
   }
@@ -81,12 +81,12 @@ public class TestHiveSchemaTool {
 
   @Test
   public void shouldReturnStrippedPassword() throws IOException {
-    assertFalse(builder.buildToLog(scriptFile).contains(pasword));
+    assertFalse(builder.buildToLog(scriptFile).contains(password));
   }
 
   @Test
   public void shouldReturnActualPassword() {
     String[] strings = builder.buildToRun(scriptFile);
-    assertTrue(Arrays.asList(strings).contains(pasword));
+    assertTrue(Arrays.asList(strings).contains(password));
   }
 }

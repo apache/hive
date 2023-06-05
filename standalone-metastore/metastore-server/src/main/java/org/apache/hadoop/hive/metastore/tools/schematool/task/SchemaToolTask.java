@@ -33,6 +33,8 @@ import java.util.Set;
  * This allows to create task execution chains.
  */
 public abstract class SchemaToolTask {
+  
+  protected static final String TASK_FAIL_ERROR_MESSAGE = "Schema upgrade FAILED! Metastore state would be inconsistent!"; 
 
   protected static final Logger LOG = LoggerFactory.getLogger(SchemaToolTask.class);
 

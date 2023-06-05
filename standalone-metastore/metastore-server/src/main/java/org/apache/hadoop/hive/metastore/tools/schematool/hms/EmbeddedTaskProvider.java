@@ -58,7 +58,7 @@ public class EmbeddedTaskProvider implements SchemaToolTaskProvider {
   @Override
   public Set<String> getSupportedDatabases() {
     return new HashSet<>(Arrays.asList(HiveSchemaHelper.DB_DERBY, HiveSchemaHelper.DB_MSSQL, HiveSchemaHelper.DB_MYSQL,
-        HiveSchemaHelper.DB_ORACLE, HiveSchemaHelper.DB_POSTGRACE, HiveSchemaHelper.DB_HIVE));
+        HiveSchemaHelper.DB_ORACLE, HiveSchemaHelper.DB_POSTGRES, HiveSchemaHelper.DB_HIVE));
   }
 
 }

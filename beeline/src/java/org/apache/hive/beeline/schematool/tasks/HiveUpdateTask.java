@@ -88,7 +88,7 @@ class HiveUpdateTask extends SchemaToolTask {
       }
       
       //Update schema version
-      File scriptFile = File.createTempFile("hiveVesionScript", "sql");
+      File scriptFile = File.createTempFile("hiveVersionScript", "sql");
       scriptFile.deleteOnExit();
       
       String script = String.format(

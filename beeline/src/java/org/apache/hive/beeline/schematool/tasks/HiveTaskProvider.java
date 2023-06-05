@@ -46,15 +46,15 @@ public class HiveTaskProvider implements SchemaToolTaskProvider {
   }
 
   public HiveTaskProvider(SchemaToolTaskProvider embeddedHmsTaskProvider) {
-    taskSuppliers.put("initSchema", () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
-    taskSuppliers.put("initSchemaTo", () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
-    taskSuppliers.put("upgradeSchema", () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
-    taskSuppliers.put("upgradeSchemaFrom", () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
-    taskSuppliers.put("initOrUpgradeSchema", () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
-    taskSuppliers.put("dropAllDatabases", () -> new HiveContextTask().addChild(new SchemaToolTaskDrop()));
+    taskSuppliers.put(INIT_SCHEMA_COMMAND, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
+    taskSuppliers.put(INIT_SCHEMA_TO_COMMAND, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
+    taskSuppliers.put(UPGRADE_SCHEMA_COMMAND, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
+    taskSuppliers.put(UPGRADE_SCHEMA_FROM_COMMAND, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
+    taskSuppliers.put(INIT_OR_UPGRADE_SCHEMA_COMMAND, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
+    taskSuppliers.put(DROP_ALL_DATABASES_COMMAND, () -> new HiveContextTask().addChild(new SchemaToolTaskDrop()));
 
-    for(String command : new String[] {"info", "alterCatalog", "createCatalog", "mergeCatalog",
-        "moveDatabase", "moveTable", "createLogsTable", "createUser", "validate"}) {
+    for(String command : new String[] {INFO_COMMAND, ALTER_CATALOG_COMMAND, CREATE_CATALOG_COMMAND, MERGE_CATALOG_COMMAND,
+        MOVE_DATABASE_COMMAND, MOVE_TABLE_COMMAND, CREATE_LOGS_TABLE_COMMAND, CREATE_USER_COMMAND}) {
       taskSuppliers.put(command, () -> new HiveContextTask().addChild(embeddedHmsTaskProvider.getTask(command)));
     }
   }

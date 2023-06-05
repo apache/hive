@@ -38,10 +38,10 @@ public class RootTask extends SchemaToolTask {
 
   private static final Set<String> VALID_DB_TYPES = ImmutableSet.of(HiveSchemaHelper.DB_DERBY,
       HiveSchemaHelper.DB_HIVE, HiveSchemaHelper.DB_MSSQL, HiveSchemaHelper.DB_MYSQL,
-      HiveSchemaHelper.DB_POSTGRACE, HiveSchemaHelper.DB_ORACLE);
+      HiveSchemaHelper.DB_POSTGRES, HiveSchemaHelper.DB_ORACLE);
 
   private static final Set<String> VALID_META_DB_TYPES = ImmutableSet.of(HiveSchemaHelper.DB_DERBY,
-      HiveSchemaHelper.DB_MSSQL, HiveSchemaHelper.DB_MYSQL, HiveSchemaHelper.DB_POSTGRACE,
+      HiveSchemaHelper.DB_MSSQL, HiveSchemaHelper.DB_MYSQL, HiveSchemaHelper.DB_POSTGRES,
       HiveSchemaHelper.DB_ORACLE);
   private static final String USER_NAME = "userName";
   private static final String PASS_WORD = "passWord";

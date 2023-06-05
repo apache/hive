@@ -23,6 +23,8 @@ import java.io.IOException;
  * Implementations must be able to execute the scripts found at the given paths.
  */
 public interface ScriptExecutor {
+  
+  String TRANSACTION_READ_COMMITTED = "TRANSACTION_READ_COMMITTED";
 
   void execSql(String scriptPath) throws IOException;
 

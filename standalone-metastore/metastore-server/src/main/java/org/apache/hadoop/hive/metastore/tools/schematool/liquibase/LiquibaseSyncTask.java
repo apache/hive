@@ -85,8 +85,8 @@ class LiquibaseSyncTask extends SchemaToolTask {
     }
   }
 
-  private void syncSchema(Liquibase liquibase, Contexts liquibaseContexts,
-                          List<ChangeSetStatus> statuses, String currentVerison, boolean dryrun) throws LiquibaseException {
+  private void syncSchema(Liquibase liquibase, Contexts liquibaseContexts, List<ChangeSetStatus> statuses, 
+                          String currentVerison, boolean dryrun) throws LiquibaseException {
     liquibase.getLog().info("Current metastore version: " + currentVerison);
     StringBuilder logEntry = new StringBuilder();
     StringBuilder labelFilter = new StringBuilder();

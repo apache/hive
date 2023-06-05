@@ -43,24 +43,24 @@ public class LiquibaseTaskProvider implements SchemaToolTaskProvider {
   @Override
   public Set<String> getSupportedDatabases() {
     return new HashSet<>(Arrays.asList(HiveSchemaHelper.DB_DERBY, HiveSchemaHelper.DB_MSSQL, HiveSchemaHelper.DB_MYSQL,
-        HiveSchemaHelper.DB_ORACLE, HiveSchemaHelper.DB_POSTGRACE));
+        HiveSchemaHelper.DB_ORACLE, HiveSchemaHelper.DB_POSTGRES));
   }
 
   public LiquibaseTaskProvider(SchemaToolTaskProvider embeddedHmsTaskProvider) {
-    taskSuppliers.put("initSchema", () -> new LiquibaseContextTask()
+    taskSuppliers.put(INIT_SCHEMA_COMMAND, () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseUpdateTask())));
-    taskSuppliers.put("initSchemaTo", () -> new LiquibaseContextTask()
+    taskSuppliers.put(INIT_SCHEMA_TO_COMMAND, () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseUpdateToTask())));
-    taskSuppliers.put("upgradeSchema", () -> new LiquibaseContextTask()
+    taskSuppliers.put(UPGRADE_SCHEMA_COMMAND, () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseSyncTask(false).addChild(new LiquibaseUpdateTask()))));
     // added only for limited backward-compatiblity. Will behave the same as 'upgradeSchema'
-    taskSuppliers.put("upgradeSchemaFrom", () -> new LiquibaseContextTask()
+    taskSuppliers.put(UPGRADE_SCHEMA_FROM_COMMAND, () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseSyncTask(false).addChild(new LiquibaseUpdateTask()))));
-    taskSuppliers.put("initOrUpgradeSchema", () -> new LiquibaseContextTask()
+    taskSuppliers.put(INIT_OR_UPGRADE_SCHEMA_COMMAND, () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseSyncTask(true).addChild(new LiquibaseUpdateTask()))));
-    taskSuppliers.put("validate", () -> new LiquibaseContextTask().addChild(new LiquibaseValidationTask()).addChild(new MetastoreValidationTask(new ScriptScannerFactory())));
-    for(String command : new String[] {"info", "alterCatalog", "createCatalog", "mergeCatalog",
-        "moveDatabase", "moveTable", "createLogsTable", "createUser"}) {
+    taskSuppliers.put(VALIDATE_COMMAND, () -> new LiquibaseContextTask().addChild(new LiquibaseValidationTask()).addChild(new MetastoreValidationTask(new ScriptScannerFactory())));
+    for(String command : new String[] {INFO_COMMAND, ALTER_CATALOG_COMMAND, CREATE_CATALOG_COMMAND, MERGE_CATALOG_COMMAND,
+        MOVE_DATABASE_COMMAND, MOVE_TABLE_COMMAND, CREATE_LOGS_TABLE_COMMAND, CREATE_USER_COMMAND}) {
       taskSuppliers.put(command, () -> new LiquibaseContextTask().addChild(embeddedHmsTaskProvider.getTask(command)));
     }
   }

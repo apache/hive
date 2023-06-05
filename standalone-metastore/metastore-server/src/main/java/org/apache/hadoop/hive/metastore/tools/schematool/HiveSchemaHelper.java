@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -40,7 +39,7 @@ public class HiveSchemaHelper {
   public static final String DB_HIVE = "hive";
   public static final String DB_MSSQL = "mssql";
   public static final String DB_MYSQL = "mysql";
-  public static final String DB_POSTGRACE = "postgres";
+  public static final String DB_POSTGRES = "postgres";
   public static final String DB_ORACLE = "oracle";
   public static final String EMBEDDED_HS2_URL =
       "jdbc:hive2://?hive.conf.restricted.list=;hive.security.authorization.sqlstd.confwhitelist=.*;"

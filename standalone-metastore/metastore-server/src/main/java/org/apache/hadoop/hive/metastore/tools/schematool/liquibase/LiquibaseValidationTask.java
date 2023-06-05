@@ -24,6 +24,7 @@ import liquibase.changelog.ChangeSetStatus;
 import liquibase.exception.LiquibaseException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.SchemaInfo;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
@@ -67,7 +68,7 @@ class LiquibaseValidationTask extends SchemaToolTask {
               status.getChangeSet().getFilePath());
         }
         
-        if (!isInteger(status.getChangeSet().getId())) {
+        if (!NumberUtils.isParsable(status.getChangeSet().getId())) {
           throw new HiveMetaException("All changesets must have a vaild and unique integer id! The following changeset " +
               "does not have a valid integer id: " + status.getChangeSet().getFilePath());
         }
@@ -77,7 +78,7 @@ class LiquibaseValidationTask extends SchemaToolTask {
         }
       }
       //No need to check the result, Collectors.toMap will fail with IllegalStateException in case of duplicate key(s).
-      String dbType = HiveSchemaHelper.DB_POSTGRACE.equals(context.getCommandLine().getDbType())
+      String dbType = HiveSchemaHelper.DB_POSTGRES.equals(context.getCommandLine().getDbType())
           ? "postgresql"
           : context.getCommandLine().getDbType();
       statuses.stream()
@@ -94,15 +95,4 @@ class LiquibaseValidationTask extends SchemaToolTask {
     liquibase.getLog().info("Validation of Liquibase changesets successfull.");
   }
 
-  private boolean isInteger(String strNum) {
-    if (StringUtils.isBlank(strNum)) {
-      return false;
-    }
-    try {
-      Integer.parseInt(strNum);
-    } catch (NumberFormatException nfe) {
-      return false;
-    }
-    return true;
-  }
 }

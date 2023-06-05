@@ -90,7 +90,7 @@ public class CommandBuilder {
 
   private void logScript(String sqlScriptFile) throws IOException {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Going to invoke file that contains:");
+      LOG.debug("Going to invoke " + sqlScriptFile + " containing:");
       try (BufferedReader reader = new BufferedReader(new FileReader(sqlScriptFile))) {
         String line;
         while ((line = reader.readLine()) != null) {

@@ -57,8 +57,7 @@ public class SqlLineScriptExecutor implements ScriptExecutor {
     LOG.info("Going to run command <" + builder.buildToLog(scriptPath) + ">");
     SqlLine.Status status = sqlLine.begin(builder.buildToRun(scriptPath), null, false);
     if (LOG.isDebugEnabled() && outputForLog != null) {
-      LOG.debug("Received following output from Sqlline:");
-      LOG.debug(outputForLog.toString("UTF-8"));
+      LOG.debug("Received following output from Sqlline:\n" + outputForLog.toString("UTF-8"));
     }
     if (status != SqlLine.Status.OK) {
       throw new IOException("Schema script failed, errorcode " + status);

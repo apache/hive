@@ -24,7 +24,7 @@ import static org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper
 import static org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.DB_MSSQL;
 import static org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.DB_MYSQL;
 import static org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.DB_ORACLE;
-import static org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.DB_POSTGRACE;
+import static org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.DB_POSTGRES;
 
 /**
  * Factpry class for creating and returning the proper {@link NestedScriptParser} implementations for the given
@@ -44,7 +44,7 @@ public class NestedScriptParserFactory {
       return new MSSQLCommandParser(dbOpts, false);
     } else if (dbName.equalsIgnoreCase(DB_MYSQL)) {
       return new MySqlCommandParser(dbOpts, false);
-    } else if (dbName.equalsIgnoreCase(DB_POSTGRACE)) {
+    } else if (dbName.equalsIgnoreCase(DB_POSTGRES)) {
       return new PostgresCommandParser(dbOpts, false);
     } else if (dbName.equalsIgnoreCase(DB_ORACLE)) {
       return new OracleCommandParser(dbOpts, false);
@@ -63,7 +63,7 @@ public class NestedScriptParserFactory {
       return new MSSQLCommandParser(dbOpts, true);
     } else if (dbName.equalsIgnoreCase(DB_MYSQL)) {
       return new MySqlCommandParser(dbOpts, true);
-    } else if (dbName.equalsIgnoreCase(DB_POSTGRACE)) {
+    } else if (dbName.equalsIgnoreCase(DB_POSTGRES)) {
       return new PostgresCommandParser(dbOpts, true);
     } else if (dbName.equalsIgnoreCase(DB_ORACLE)) {
       return new OracleCommandParser(dbOpts, true);

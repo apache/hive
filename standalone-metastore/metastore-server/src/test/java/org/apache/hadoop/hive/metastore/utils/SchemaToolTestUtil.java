@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.tools.schematool.SchemaToolCommandLine;
 import org.apache.hadoop.hive.metastore.tools.schematool.commandparser.NestedScriptParserFactory;
 import org.apache.hadoop.hive.metastore.tools.schematool.hms.EmbeddedTaskProvider;
 import org.apache.hadoop.hive.metastore.tools.schematool.liquibase.LiquibaseTaskProvider;
+import org.apache.hadoop.hive.metastore.tools.schematool.scriptexecution.ScriptExecutor;
 import org.apache.hadoop.hive.metastore.tools.schematool.scriptexecution.SqlLineScriptExecutor;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.SchemaToolTask;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.SchemaToolTaskFactory;
@@ -57,7 +58,7 @@ public class SchemaToolTestUtil {
     File scriptFile = File.createTempFile("schemaToolTmpScript", "sql");
     scriptFile.deleteOnExit();
     FileUtils.copyToFile(scriptStream, scriptFile);
-    new SqlLineScriptExecutor(new CommandBuilder(connectionInfo, new String[]{ "--isolation=TRANSACTION_READ_COMMITTED" })).execSql(scriptFile.getAbsolutePath());
+    new SqlLineScriptExecutor(new CommandBuilder(connectionInfo, new String[]{ "--isolation=" + ScriptExecutor.TRANSACTION_READ_COMMITTED })).execSql(scriptFile.getAbsolutePath());
   }
 
   public static void executeCommand(Configuration conf,
