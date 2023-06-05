@@ -28,11 +28,9 @@ import org.slf4j.LoggerFactory;
 
 public class PartFilterParser {
   private static final Logger LOG = LoggerFactory.getLogger(PartFilterParser.class);
-  private static final ThreadLocal<PartFilterVisitor> filterVisitor =
-          ThreadLocal.withInitial(PartFilterVisitor::new);
 
   public static ExpressionTree parseFilter(String filter) throws MetaException {
-    return parse(filter, parser -> filterVisitor.get().visitFilter(parser.filter()));
+    return parse(filter, parser -> new PartFilterVisitor().visitFilter(parser.filter()));
   }
 
   private static <T> T parse(String filter, Function<PartitionFilterParser, T> toResult)
