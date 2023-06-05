@@ -43,9 +43,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import static org.apache.hadoop.hive.kafka.KafkaUtils.KAFKA_DELEGATION_TOKEN_KEY;
+
 public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaDagCredentialSupplier.class);
-  private static final Text KAFKA_DELEGATION_TOKEN_KEY = new Text("KAFKA_DELEGATION_TOKEN");
 
   @Override
   public Token<?> obtainToken(BaseWork work, Set<TableDesc> fileSinkTableDescs, Configuration conf) {
