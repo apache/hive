@@ -38,7 +38,7 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.UUID;
 
-public class TestKafkaDagCredentialSupplier {
+public class KafkaDagCredentialSupplierTest {
   private static final java.nio.file.Path KEYSTORE_DIR =
       Paths.get(System.getProperty("test.tmp.dir"), "kdc_root_dir" + UUID.randomUUID());
   private static final String HIVE_USER_NAME = "hive";
