@@ -807,6 +807,12 @@ public class VectorMapOperator extends AbstractMapOperator {
       }
     }
     oneRootOperator.process(value, 0);
+
+    if (value != null) {
+      VectorizedRowBatch batch = (VectorizedRowBatch) value;
+      resetVectorizedRowBatch(batch);
+    }
+
     if (oneRootOperator.getDone()) {
       setDone(true);
       return false;
@@ -821,30 +827,30 @@ public class VectorMapOperator extends AbstractMapOperator {
    *
    * See {@link #setupPartitionContextVars(Path)}
    */
-  private void resetVectorizedRowBatchForDeserialize() {
+  private void resetVectorizedRowBatch(VectorizedRowBatch rowBatch) {
     /**
      * Reset existing input columns
      */
     for (int c = 0; c < currentDataColumnCount; c++) {
-      resetColumnVector(deserializerBatch.cols[c]);
+      resetColumnVector(rowBatch.cols[c]);
     }
 
     /**
      * Reset output and scratch columns
      */
-    for (int c = dataColumnCount + partitionColumnCount; c < deserializerBatch.cols.length; c++) {
+    for (int c = dataColumnCount + partitionColumnCount; c < rowBatch.cols.length; c++) {
       if (c == rowIdentifierColumnNum) {
         continue;
       }
-      resetColumnVector(deserializerBatch.cols[c]);
+      resetColumnVector(rowBatch.cols[c]);
     }
-    deserializerBatch.selectedInUse = false;
-    deserializerBatch.size = 0;
-    deserializerBatch.endOfFile = false;
+    rowBatch.selectedInUse = false;
+    rowBatch.size = 0;
+    rowBatch.endOfFile = false;
   }
 
   private void resetColumnVector(ColumnVector columnVector) {
-    if (columnVector != null) {
+    if (columnVector != null && columnVector.getRef() == 0) {
       columnVector.reset();
       columnVector.init();
     }
@@ -921,7 +927,7 @@ public class VectorMapOperator extends AbstractMapOperator {
             batchCounter++;
             oneRootOperator.process(deserializerBatch, 0);
 
-            resetVectorizedRowBatchForDeserialize();
+            resetVectorizedRowBatch(deserializerBatch);
 
             if (oneRootOperator.getDone()) {
               setDone(true);
