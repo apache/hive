@@ -66,8 +66,8 @@ POSTHOOK: Input: default@smt_sysdb_scr_txn
 POSTHOOK: Input: default@smt_sysdb_src_buck
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smt_sysdb_view
-POSTHOOK: Lineage: smt_sysdb_view.key SIMPLE [(smt_sysdb_src_buck)smt_sysdb_src_buck.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smt_sysdb_view.value SIMPLE [(smt_sysdb_scr_txn)smt_sysdb_scr_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smt_sysdb_view.key EXPRESSION [(smt_sysdb_src_buck)smt_sysdb_src_buck.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smt_sysdb_view.value EXPRESSION [(smt_sysdb_scr_txn)smt_sysdb_scr_txn.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: show grant user hive_test_user
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user
@@ -2531,9 +2531,9 @@ POSTHOOK: Lineage: SCHEMATA.catalog_name SIMPLE []
 POSTHOOK: Lineage: SCHEMATA.default_character_set_catalog EXPRESSION []
 POSTHOOK: Lineage: SCHEMATA.default_character_set_name EXPRESSION []
 POSTHOOK: Lineage: SCHEMATA.default_character_set_schema EXPRESSION []
-POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEMATA.schema_name EXPRESSION [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 #### A masked pattern was here ####
-POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)d.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEMATA.sql_path EXPRESSION [(dbs)d.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
 PREHOOK: query: CREATE OR REPLACE VIEW `TABLES`
 (
   `TABLE_CATALOG`,
@@ -2624,8 +2624,8 @@ POSTHOOK: Lineage: TABLES.is_typed SIMPLE []
 POSTHOOK: Lineage: TABLES.reference_generation EXPRESSION []
 POSTHOOK: Lineage: TABLES.self_referencing_column_name EXPRESSION []
 POSTHOOK: Lineage: TABLES.table_catalog SIMPLE []
-POSTHOOK: Lineage: TABLES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: TABLES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLES.table_name EXPRESSION [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLES.table_schema EXPRESSION [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.table_type EXPRESSION [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.user_defined_type_catalog EXPRESSION []
 POSTHOOK: Lineage: TABLES.user_defined_type_name EXPRESSION []
@@ -2702,13 +2702,13 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@TABLE_PRIVILEGES
 POSTHOOK: Output: database:information_schema
-POSTHOOK: Lineage: TABLE_PRIVILEGES.grantee SIMPLE [(tbl_privs)p.FieldSchema(name:principal_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: TABLE_PRIVILEGES.grantor SIMPLE [(tbl_privs)p.FieldSchema(name:grantor, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.grantee EXPRESSION [(tbl_privs)p.FieldSchema(name:principal_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.grantor EXPRESSION [(tbl_privs)p.FieldSchema(name:grantor, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.is_grantable EXPRESSION [(tbl_privs)p.FieldSchema(name:grant_option, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: TABLE_PRIVILEGES.privilege_type SIMPLE [(tbl_privs)p.FieldSchema(name:tbl_priv, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.privilege_type EXPRESSION [(tbl_privs)p.FieldSchema(name:tbl_priv, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.table_catalog SIMPLE []
-POSTHOOK: Lineage: TABLE_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: TABLE_PRIVILEGES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.table_name EXPRESSION [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.table_schema EXPRESSION [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.with_hierarchy SIMPLE []
 PREHOOK: query: CREATE OR REPLACE VIEW `COLUMNS`
 (
@@ -3033,13 +3033,13 @@ POSTHOOK: Lineage: COLUMNS.collation_catalog EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.collation_name EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.collation_schema EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.column_default EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.column_name SIMPLE [(columns_v2)c.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.data_type SIMPLE [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.column_name EXPRESSION [(columns_v2)c.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.data_type EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.datetime_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.declared_data_type SIMPLE [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.declared_data_type EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.declared_numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.declared_numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.dtd_identifier SIMPLE [(columns_v2)c.FieldSchema(name:cd_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.dtd_identifier EXPRESSION [(columns_v2)c.FieldSchema(name:cd_id, type:bigint, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.generation_expression EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.identity_cycle EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.identity_generation EXPRESSION []
@@ -3060,14 +3060,14 @@ POSTHOOK: Lineage: COLUMNS.maximum_cardinality EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.numeric_precision_radix EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.ordinal_position SIMPLE [(columns_v2)c.FieldSchema(name:integer_idx, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.ordinal_position EXPRESSION [(columns_v2)c.FieldSchema(name:integer_idx, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.scope_catalog EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.scope_name EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.scope_schema EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.system_time_period_timestamp_generation EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.table_catalog SIMPLE []
-POSTHOOK: Lineage: COLUMNS.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.table_name EXPRESSION [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.table_schema EXPRESSION [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.udt_catalog EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.udt_name EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.udt_schema EXPRESSION []
@@ -3149,14 +3149,14 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@COLUMN_PRIVILEGES
 POSTHOOK: Output: database:information_schema
-POSTHOOK: Lineage: COLUMN_PRIVILEGES.column_name SIMPLE [(tbl_col_privs)p.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantee SIMPLE [(tbl_col_privs)p.FieldSchema(name:principal_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantor SIMPLE [(tbl_col_privs)p.FieldSchema(name:grantor, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.column_name EXPRESSION [(tbl_col_privs)p.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantee EXPRESSION [(tbl_col_privs)p.FieldSchema(name:principal_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantor EXPRESSION [(tbl_col_privs)p.FieldSchema(name:grantor, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.is_grantable EXPRESSION [(tbl_col_privs)p.FieldSchema(name:grant_option, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMN_PRIVILEGES.privilege_type SIMPLE [(tbl_col_privs)p.FieldSchema(name:tbl_col_priv, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.privilege_type EXPRESSION [(tbl_col_privs)p.FieldSchema(name:tbl_col_priv, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_catalog SIMPLE []
-POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_name EXPRESSION [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_schema EXPRESSION [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 PREHOOK: query: CREATE OR REPLACE VIEW `VIEWS`
 (
   `TABLE_CATALOG`,
@@ -3242,9 +3242,9 @@ POSTHOOK: Lineage: VIEWS.is_trigger_insertable_into SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_trigger_updatable SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_updatable SIMPLE []
 POSTHOOK: Lineage: VIEWS.table_catalog SIMPLE []
-POSTHOOK: Lineage: VIEWS.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: VIEWS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: VIEWS.view_definition SIMPLE [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: VIEWS.table_name EXPRESSION [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: VIEWS.table_schema EXPRESSION [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: VIEWS.view_definition EXPRESSION [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
 PREHOOK: query: use sys
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:sys
