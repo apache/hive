@@ -66,6 +66,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
@@ -283,7 +284,7 @@ class TextDescTableFormatter extends DescTableFormatter {
   private static MaterializationSnapshotFormatter createMaterializationSnapshotFormatter(
           MaterializationSnapshot snapshot) {
     if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
-      return qualifiedTableName -> snapshot.getTableSnapshots().get(qualifiedTableName).toString();
+      return qualifiedTableName -> Objects.toString(snapshot.getTableSnapshots().get(qualifiedTableName), "Unknown");
     } else if (snapshot != null && snapshot.getValidTxnList() != null) {
       ValidTxnWriteIdList validReaderWriteIdList = new ValidTxnWriteIdList(snapshot.getValidTxnList());
       return qualifiedTableName -> {
