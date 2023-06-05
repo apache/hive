@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.ServiceUtils;
+import org.apache.hive.service.auth.AuthType;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.saml.HiveSamlHttpServlet;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
@@ -183,7 +184,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       server.addConnector(connector);
 
       // Thrift configs
-      hiveAuthFactory = new HiveAuthFactory(hiveConf);
+      hiveAuthFactory = new HiveAuthFactory(hiveConf, true);
       TProcessor processor = new TCLIService.Processor<Iface>(this);
       TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
       // Set during the init phase of HiveServer2 if auth mode is kerberos
@@ -191,8 +192,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       UserGroupInformation serviceUGI = cliService.getServiceUGI();
       // UGI for the http/_HOST (SPNego) principal
       UserGroupInformation httpUGI = cliService.getHttpUGI();
-      String authType = hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION);
-      TServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory, authType, serviceUGI, httpUGI,
+      TServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory, serviceUGI, httpUGI,
           hiveAuthFactory, hiveConf);
 
       // Context handler
@@ -219,7 +219,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         server.setHandler(context);
       }
       context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
-      if (HiveSamlUtils.isSamlAuthMode(authType)) {
+      if (AuthType.isSamlAuthMode(hiveConf)) {
         String ssoPath = HiveSamlUtils.getCallBackPath(hiveConf);
         context.addServlet(new ServletHolder(new HiveSamlHttpServlet(hiveConf)), ssoPath);
       }

@@ -21,6 +21,7 @@ package org.apache.hive.jdbc;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import org.apache.hadoop.hive.conf.Constants;
@@ -50,6 +51,13 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
   // Abstract function to add HttpAuth Header
   protected abstract void addHttpAuthHeader(HttpRequest httpRequest, HttpContext httpContext)
     throws Exception;
+
+  /**
+   * The auth method to tell the server to choose right auth mechanism to
+   * validate the request, especially when the server supports multiple auth methods in parallel.
+   * @return the auth method the client is using, should not be null or empty
+   */
+  protected abstract String getAuthType();
 
   public HttpRequestInterceptorBase(CookieStore cs, String cn, boolean isSSL,
       Map<String, String> additionalHeaders, Map<String, String> customCookies) {
@@ -103,6 +111,7 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
           httpRequest.addHeader(entry.getKey(), entry.getValue());
         }
       }
+      httpRequest.addHeader(Utils.JdbcConnectionParams.AUTH_TYPE, Objects.requireNonNull(getAuthType()));
       // Add custom cookies if passed to the jdbc driver
       if (customCookies != null) {
         String cookieHeaderKeyValues = "";
