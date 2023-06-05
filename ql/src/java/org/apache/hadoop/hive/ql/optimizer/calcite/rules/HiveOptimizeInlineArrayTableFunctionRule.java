@@ -78,7 +78,7 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
       return false;
     }
     RexCall firstOperand = (RexCall) operand;
-    if (!firstOperand.getOperator().getName().equalsIgnoreCase("array") {
+    if (!firstOperand.getOperator().getName().equalsIgnoreCase("array")) {
       return false;
     }
     Preconditions.checkState(!firstOperand.getOperands().isEmpty());

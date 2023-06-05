@@ -106,7 +106,7 @@ public class LateralViewPlan {
     RexCall udtfCall = getUDTFFunction(functionAST, inputRR);
 
     // Column aliases provided by the query.
-    List<String> columnAliases = getColumnAliasesFromASTNode(selExprAST, udtfCall);
+    List<String> columnAliases = getColumnAliasesFromASTNode(selExprAST, inputRel, udtfCall);
 
     this.outputRR = getOutputRR(inputRR, udtfCall, columnAliases, this.lateralTableAlias);
 
@@ -154,9 +154,10 @@ public class LateralViewPlan {
     throw new SemanticException("Alias should be specified LVJ");
   }
 
-  private List<String> getColumnAliasesFromASTNode(ASTNode selExprClause,
+  private List<String> getColumnAliasesFromASTNode(ASTNode selExprClause, RelNode inputRel,
       RexCall udtfCall) throws SemanticException {
-    Set<String> uniqueNames = new HashSet<>();
+    Set<String> uniqueNames= new HashSet<>(
+        Lists.transform(inputRel.getRowType().getFieldList(), RelDataTypeField::getName));
     List<String> colAliases = new ArrayList<>();
     for (Node obj : selExprClause.getChildren()) {
       ASTNode child = (ASTNode) obj;
@@ -171,14 +172,25 @@ public class LateralViewPlan {
         throw new SemanticException(ErrorMsg.COLUMN_ALIAS_ALREADY_EXISTS.getMsg(colAlias));
       }
       uniqueNames.add(colAlias);
+      LOG.info("SJC: FOUND COLUMN ALIAS " + colAlias);
       colAliases.add(colAlias);
     }
 
     // if no column aliases were provided, just retrieve them from the return type
     // of the udtf RexCall
     if (colAliases.isEmpty()) {
-      colAliases.addAll(
-          Lists.transform(udtfCall.getType().getFieldList(), RelDataTypeField::getName));
+      for (int i = 0, j = 1; i <  udtfCall.getType().getFieldList().size(); ++i) {
+        while (true) {
+          String colName = "col" + j;
+          if (!uniqueNames.contains(colName)) {
+            LOG.info("SJC: FOUND UNIQUE COLUMN ALIAS " + colName);
+            uniqueNames.add(colName);
+            colAliases.add(colName);
+            break;
+          }
+          j++;
+        }
+      }
     }
 
     // Verify that there is an alias for all the columns returned by the udtf call.
@@ -258,6 +270,9 @@ public class LateralViewPlan {
     // Add the type names and values from the udtf into the lists that will make up the
     // return type.
     allDataTypes.addAll(Lists.transform(retType.getFieldList(), RelDataTypeField::getType));
+    for (String s : columnAliases) {
+      LOG.info("SJC: ADDING COLUMN ALIAS: " + s);
+    }
     allDataTypeNames.addAll(columnAliases);
 
     return cluster.getTypeFactory().createStructType(allDataTypes, allDataTypeNames);

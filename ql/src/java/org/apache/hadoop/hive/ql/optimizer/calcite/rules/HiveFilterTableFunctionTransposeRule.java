@@ -24,6 +24,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.rules.FilterAggregateTransposeRule;
+import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilderFactory;
@@ -59,6 +60,21 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
 
     RexNode condition = filterRel.getCondition();
     if (!HiveCalciteUtil.isDeterministic(condition)) {
+      return false;
+    }
+
+    // If the HiveTableFunctionScan is a special inline(array(...))
+    // udtf, the table is generated from this node. The underlying
+    // RelNode will be a dummy table so no filter condition should
+    // pass through the HiveTableFunctionScan.
+    if (isInlineArray(tableFunctionScanRel)) {
+      return false;
+    }
+
+    // If the HiveTableFunctionScan is not a lateral view, the return type
+    // for the RelNode only contains the output of the udtf so no filter
+    // condition can be passed through.
+    if (!tableFunctionScanRel.isLateralView()) {
       return false;
     }
 
@@ -147,5 +163,22 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
         : filter.copy(filter.getTraitSet(), tableFunctionScanNode, unpushedFilCondAboveProj);
 
     call.transformTo(topLevelNode);
+  }
+
+  private boolean isInlineArray(HiveTableFunctionScan tableFunctionScanRel) {
+    RexCall udtfCall = (RexCall) tableFunctionScanRel.getCall();
+    if (!udtfCall.getOperator().getName().equalsIgnoreCase("inline")) {
+      return false;
+    }
+    Preconditions.checkState(!udtfCall.getOperands().isEmpty());
+    RexNode operand = udtfCall.getOperands().get(0);
+    if (!(operand instanceof RexCall)) {
+      return false;
+    }
+    RexCall firstOperand = (RexCall) operand;
+    if (!firstOperand.getOperator().getName().equalsIgnoreCase("array")) {
+      return false;
+    }
+    return true;
   }
 }

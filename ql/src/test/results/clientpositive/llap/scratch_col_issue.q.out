@@ -230,18 +230,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: _dummy_table
+                  filterExpr: BLOCK__OFFSET__INSIDE__FILE is not null (type: boolean)
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: split('8800', ',') (type: array<string>)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: explode
-                      Filter Operator
-                        predicate: col is not null (type: boolean)
-                        Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: BLOCK__OFFSET__INSIDE__FILE is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: split('8800', ',') (type: array<string>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
+                      UDTF Operator
+                        Statistics: Num rows: 1 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
+                        function name: explode
                         Select Operator
                           expressions: col (type: string)
                           outputColumnNames: _col0
