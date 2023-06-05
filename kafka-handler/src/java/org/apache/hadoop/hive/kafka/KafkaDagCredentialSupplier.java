@@ -118,19 +118,18 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
     config.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
 
     LOG.debug("Jaas config for requesting kafka credentials: {}", jaasConfig);
-    AdminClient admin = AdminClient.create(config);
-
     CreateDelegationTokenOptions createDelegationTokenOptions = new CreateDelegationTokenOptions();
-    CreateDelegationTokenResult createResult =
-        admin.createDelegationToken(createDelegationTokenOptions);
-    DelegationToken token;
-    try {
-      token = createResult.delegationToken().get();
-    } catch (InterruptedException | ExecutionException e) {
-      throw new RuntimeException("Exception while getting kafka delegation tokens", e);
+    try (AdminClient admin = AdminClient.create(config)) {
+      CreateDelegationTokenResult createResult = admin.createDelegationToken(createDelegationTokenOptions);
+      DelegationToken token = createResult.delegationToken().get();
+      LOG.info("Got kafka delegation token: {}", token);
+      return new Token<>(token.tokenInfo().tokenId().getBytes(), token.hmac(), null, new Text("kafka"));
+    } catch (ExecutionException e) {
+      throw new RuntimeException("Exception while getting Kafka token", e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException("Interrupted while getting Kafka token", e);
     }
-    LOG.info("Got kafka delegation token: {}", token);
-    return new Token<>(token.tokenInfo().tokenId().getBytes(), token.hmac(), null, new Text("kafka"));
   }
 
 }
