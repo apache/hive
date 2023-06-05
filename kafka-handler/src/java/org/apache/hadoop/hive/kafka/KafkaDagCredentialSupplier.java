@@ -32,6 +32,7 @@ import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.CreateDelegationTokenOptions;
 import org.apache.kafka.clients.admin.CreateDelegationTokenResult;
 import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.security.token.delegation.DelegationToken;
 
 import org.slf4j.Logger;
@@ -43,7 +44,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import static org.apache.hadoop.hive.kafka.KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS;
+import static org.apache.hadoop.hive.kafka.KafkaUtils.CONSUMER_CONFIGURATION_PREFIX;
 import static org.apache.hadoop.hive.kafka.KafkaUtils.KAFKA_DELEGATION_TOKEN_KEY;
+import static org.apache.hadoop.hive.kafka.KafkaUtils.PRODUCER_CONFIGURATION_PREFIX;
 
 public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaDagCredentialSupplier.class);
@@ -86,18 +90,18 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
    * @return true if a Kafka token is required for performing operations on the specified table and false otherwise.
    */
   private boolean isTokenRequired(TableDesc tableDesc) {
-    String kafkaBrokers = (String) tableDesc.getProperties().get("kafka.bootstrap.servers"); //FIXME: KafkaTableProperties
+    String kafkaBrokers = (String) tableDesc.getProperties().get(HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
     String consumerSecurityProtocol = (String) tableDesc.getProperties().get(
-        "kafka.consumer." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
+        CONSUMER_CONFIGURATION_PREFIX + "." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
     String producerSecurityProtocol = (String) tableDesc.getProperties().get(
-        "kafka.producer." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
+        PRODUCER_CONFIGURATION_PREFIX + "." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
     return kafkaBrokers != null && !kafkaBrokers.isEmpty()
         && !CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL.equalsIgnoreCase(consumerSecurityProtocol)
         && !CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL.equalsIgnoreCase(producerSecurityProtocol);
   }
 
   private Token<?> getKafkaDelegationTokenForBrokers(Configuration conf, TableDesc tableDesc) {
-    String kafkaBrokers = (String) tableDesc.getProperties().get("kafka.bootstrap.servers");
+    String kafkaBrokers = (String) tableDesc.getProperties().get(HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
     LOG.info("Getting kafka credentials for brokers: {}", kafkaBrokers);
 
     String keytab = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
@@ -110,7 +114,7 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
 
     Properties config = new Properties();
     config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
-    config.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+    config.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_PLAINTEXT.name);
 
     String jaasConfig =
         String.format("%s %s %s %s serviceName=\"%s\" keyTab=\"%s\" principal=\"%s\";",
