@@ -999,7 +999,7 @@ public class DDLPlanUtils {
       return "";
     }
 
-    String buckets = "CLUSTERED BY ( \n  " + StringUtils.join(bucketCols, ", \n  ") + ") \n";
+    String buckets = "CLUSTERED BY ( \n  `" + StringUtils.join(bucketCols, "`, \n  `") + "`) \n";
 
     List<Order> sortColumns = table.getSortCols();
     if (!sortColumns.isEmpty()) {
