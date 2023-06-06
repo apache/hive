@@ -17,13 +17,20 @@
 grammar PartitionFilter;
 
 filter
-    : filterExpression
+    : orExpression
     ;
 
-filterExpression
-    : conditionExpression                                        #singleCondition
-    | LPAREN filterExpression RPAREN                             #parenedFilter
-    | left=filterExpression logicOperator right=filterExpression #binaryFilter
+orExpression
+    : andExprs+=andExpression (OR andExprs+=andExpression)*
+    ;
+
+andExpression
+    : exprs+=expression (AND exprs+=expression)*
+    ;
+
+expression
+    : LPAREN orExpression RPAREN
+    | conditionExpression
     ;
 
 conditionExpression
@@ -32,10 +39,6 @@ conditionExpression
     | key=identifier NOT? BETWEEN lower=constant AND upper=constant         #betweenCondition
     | LPAREN key=identifier RPAREN NOT? IN LPAREN values=constantSeq RPAREN #inCondition
     | LPAREN STRUCT identifierList RPAREN NOT? IN constStructList           #multiColInExpression
-    ;
-
-logicOperator
-    : AND | OR
     ;
 
 comparisonOperator

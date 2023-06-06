@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.parser;
 
-import java.util.function.Function;
-
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -30,11 +28,6 @@ public class PartFilterParser {
   private static final Logger LOG = LoggerFactory.getLogger(PartFilterParser.class);
 
   public static ExpressionTree parseFilter(String filter) throws MetaException {
-    return parse(filter, parser -> new PartFilterVisitor().visitFilter(parser.filter()));
-  }
-
-  private static <T> T parse(String filter, Function<PartitionFilterParser, T> toResult)
-      throws MetaException {
     LOG.debug("Parsing filter: " + filter);
     CharStream upperCaseCharStream = new UpperCaseCharStream(CharStreams.fromString(filter));
     PartitionFilterLexer lexer = new PartitionFilterLexer(upperCaseCharStream);
@@ -46,8 +39,9 @@ public class PartFilterParser {
     parser.removeErrorListeners();
     parser.addErrorListener(ParseErrorListener.INSTANCE);
 
+    PartFilterVisitor visitor = new PartFilterVisitor();
     try {
-      return toResult.apply(parser);
+      return visitor.visitFilter(parser.filter());
     } catch (ParseCancellationException e) {
       throw new MetaException("Error parsing partition filter: " + e.getMessage());
     }

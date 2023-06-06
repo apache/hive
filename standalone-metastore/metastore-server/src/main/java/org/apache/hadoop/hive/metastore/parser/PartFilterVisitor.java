@@ -24,8 +24,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
@@ -64,35 +64,47 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
   @Override
   public ExpressionTree visitFilter(PartitionFilterParser.FilterContext ctx) {
     ExpressionTree tree = new ExpressionTree();
-    TreeNode treeNode = (TreeNode) visit(ctx.filterExpression());
+    TreeNode treeNode = (TreeNode) visit(ctx.orExpression());
     tree.setRoot(treeNode);
     return tree;
   }
 
   @Override
-  public TreeNode visitSingleCondition(PartitionFilterParser.SingleConditionContext ctx) {
-    return (TreeNode) visit(ctx.conditionExpression());
+  public TreeNode visitOrExpression(PartitionFilterParser.OrExpressionContext ctx) {
+    List<TreeNode> nodes = ctx.andExprs.stream()
+        .map(this::visitAndExpression)
+        .collect(Collectors.toList());
+    return buildTreeFromNodes(nodes, LogicalOperator.OR);
   }
 
   @Override
-  public TreeNode visitParenedFilter(PartitionFilterParser.ParenedFilterContext ctx) {
-    TreeNode node = (TreeNode) visit(ctx.filterExpression());
-    node.setParened(true);
-    return node;
+  public TreeNode visitAndExpression(PartitionFilterParser.AndExpressionContext ctx) {
+    List<TreeNode> nodes = ctx.exprs.stream()
+        .map(this::visitExpression)
+        .collect(Collectors.toList());
+    return buildTreeFromNodes(nodes, LogicalOperator.AND);
   }
 
-  @Override
-  public TreeNode visitBinaryFilter(PartitionFilterParser.BinaryFilterContext ctx) {
-    TreeNode left = (TreeNode) visit(ctx.left);
-    TreeNode right = (TreeNode) visit(ctx.right);
-    LogicalOperator operator = visitLogicOperator(ctx.logicOperator());
-    if (!left.isParened() &&  left.getAndOr() == LogicalOperator.OR && operator == LogicalOperator.AND) {
-      // Refactor the TreeNode because AND precedence > OR
-      TreeNode realRight = new TreeNode(left.getRhs(), LogicalOperator.AND, right);
-      left.setRhs(realRight);
-      return left;
+  private TreeNode buildTreeFromNodes(List<? extends TreeNode> nodes, LogicalOperator operator) {
+    // The 'nodes' list is expected to have at least one element.
+    // If the list if empty, the lexer parse would have failed.
+    if (nodes.size() == 1) {
+      return nodes.get(0);
     }
-    return new TreeNode(left, operator, right);
+    TreeNode root = new TreeNode(nodes.get(0), operator, nodes.get(1));
+    for (int i = 2; i < nodes.size(); ++i) {
+      TreeNode tmp = new TreeNode(root, operator, nodes.get(i));
+      root = tmp;
+    }
+    return root;
+  }
+
+  @Override
+  public TreeNode visitExpression(PartitionFilterParser.ExpressionContext ctx) {
+    if (ctx.orExpression() != null) {
+      return visitOrExpression(ctx.orExpression());
+    }
+    return (TreeNode) visit(ctx.conditionExpression());
   }
 
   @Override
@@ -128,7 +140,6 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
     LogicalOperator rootOperator = isPositive ? LogicalOperator.AND : LogicalOperator.OR;
 
     TreeNode treeNode = new TreeNode(left, rootOperator, right);
-    treeNode.setParened(true);
     return treeNode;
   }
 
@@ -137,65 +148,40 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
     List<Object> values = visitConstantSeq(ctx.constantSeq());
     boolean isPositive = ctx.NOT() == null;
     String keyName = ctx.key.getText();
-
-    TreeNode root = null;
-    for (int i = 0; i < values.size(); ++i) {
-      LeafNode leafNode = new LeafNode();
-      leafNode.keyName = keyName;
-      leafNode.value = values.get(i);
-      leafNode.operator = isPositive ? Operator.EQUALS : Operator.NOTEQUALS2;
-
-      if (i == 0) {
-        root = leafNode;
-      } else {
-        root = new TreeNode(root, isPositive ? LogicalOperator.OR : LogicalOperator.AND, leafNode);
-      }
-    }
-    root.setParened(true);
-    return root;
+    List<LeafNode> nodes = values.stream()
+        .map(value -> {
+          LeafNode leafNode = new LeafNode();
+          leafNode.keyName = keyName;
+          leafNode.value = value;
+          leafNode.operator = isPositive ? Operator.EQUALS : Operator.NOTEQUALS2;
+          return leafNode; })
+        .collect(Collectors.toList());
+    return buildTreeFromNodes(nodes, isPositive ? LogicalOperator.OR : LogicalOperator.AND);
   }
 
   @Override
   public TreeNode visitMultiColInExpression(PartitionFilterParser.MultiColInExpressionContext ctx) {
-    TreeNode root = new TreeNode();
     List<String> keyNames = visitIdentifierList(ctx.identifierList());
     List<List<Object>> structs = visitConstStructList(ctx.constStructList());
     boolean isPositive = ctx.NOT() == null;
+
+    List<TreeNode> treeNodes = new ArrayList<>(structs.size());
     for (int i = 0; i < structs.size(); ++i) {
       List<Object> struct = structs.get(i);
       if (keyNames.size() != struct.size()) {
         throw new ParseCancellationException("Struct key " + keyNames + " and value " + struct + " sizes do not match.");
       }
-      TreeNode node = new TreeNode();
+      List<LeafNode> nodes = new ArrayList<>(struct.size());
       for (int j = 0; j < struct.size(); ++j) {
         LeafNode leafNode = new LeafNode();
         leafNode.keyName = keyNames.get(j);
         leafNode.value = struct.get(j);
         leafNode.operator = isPositive ? Operator.EQUALS : Operator.NOTEQUALS2;
-        if (j == 0) {
-          node = leafNode;
-        } else {
-          node = new TreeNode(node, isPositive ? LogicalOperator.AND : LogicalOperator.OR, leafNode);
-        }
+        nodes.add(leafNode);
       }
-      if (i == 0) {
-        root = node;
-      } else {
-        root = new TreeNode(root, isPositive ? LogicalOperator.OR : LogicalOperator.AND, node);
-      }
+      treeNodes.add(buildTreeFromNodes(nodes, isPositive ? LogicalOperator.AND : LogicalOperator.OR));
     }
-    root.setParened(true);
-    return root;
-  }
-
-  @Override
-  public LogicalOperator visitLogicOperator(PartitionFilterParser.LogicOperatorContext ctx) {
-    switch (ctx.getText().toUpperCase(Locale.ROOT)) {
-      case "AND": return LogicalOperator.AND;
-      case "OR": return LogicalOperator.OR;
-      default:
-        throw new ParseCancellationException("Unsupported logic operator: " + ctx.getText());
-    }
+    return buildTreeFromNodes(treeNodes, isPositive ? LogicalOperator.OR : LogicalOperator.AND);
   }
 
   @Override

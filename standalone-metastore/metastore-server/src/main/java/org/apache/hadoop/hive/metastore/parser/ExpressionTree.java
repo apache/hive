@@ -194,7 +194,6 @@ public class ExpressionTree {
     private TreeNode lhs;
     private LogicalOperator andOr;
     private TreeNode rhs;
-    private boolean parened;
 
     public TreeNode() {
     }
@@ -219,14 +218,6 @@ public class ExpressionTree {
 
     public void setRhs(TreeNode rhs) {
       this.rhs = rhs;
-    }
-
-    public boolean isParened() {
-      return parened;
-    }
-
-    public void setParened(boolean parened) {
-      this.parened = parened;
     }
 
     /** Double dispatch for TreeVisitor. */
