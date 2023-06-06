@@ -140,13 +140,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function alter_database_req(\metastore\AlterDatabaseRequest $alterDbReq);
     /**
-     * @param \metastore\DataConnector $connector
-     * @throws \metastore\AlreadyExistsException
-     * @throws \metastore\InvalidObjectException
-     * @throws \metastore\MetaException
-     */
-    public function create_dataconnector(\metastore\DataConnector $connector);
-    /**
      * @param \metastore\CreateDataConnectorRequest $connectorReq
      * @throws \metastore\AlreadyExistsException
      * @throws \metastore\InvalidObjectException
@@ -161,15 +154,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_dataconnector_req(\metastore\GetDataConnectorRequest $request);
     /**
-     * @param string $name
-     * @param bool $ifNotExists
-     * @param bool $checkReferences
-     * @throws \metastore\NoSuchObjectException
-     * @throws \metastore\InvalidOperationException
-     * @throws \metastore\MetaException
-     */
-    public function drop_dataconnector($name, $ifNotExists, $checkReferences);
-    /**
      * @param \metastore\DropDataConnectorRequest $dropDcReq
      * @throws \metastore\NoSuchObjectException
      * @throws \metastore\InvalidOperationException
@@ -181,13 +165,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function get_dataconnectors();
-    /**
-     * @param string $name
-     * @param \metastore\DataConnector $connector
-     * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
-     */
-    public function alter_dataconnector($name, \metastore\DataConnector $connector);
     /**
      * @param \metastore\AlterDataConnectorRequest $alterReq
      * @throws \metastore\MetaException
@@ -442,20 +419,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function get_all_tables($db_name);
-    /**
-     * @param string $dbname
-     * @param string $tbl_name
-     * @return \metastore\Table
-     * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
-     */
-    public function get_table($dbname, $tbl_name);
-    /**
-     * @param string $dbname
-     * @param string[] $tbl_names
-     * @return \metastore\Table[]
-     */
-    public function get_table_objects_by_name($dbname, array $tbl_names);
     /**
      * @param \metastore\GetTablesExtRequest $req
      * @return \metastore\ExtendedTableInfo[]
