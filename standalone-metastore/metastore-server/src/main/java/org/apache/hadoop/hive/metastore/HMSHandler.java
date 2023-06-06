@@ -1947,14 +1947,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  @Deprecated
-  @Override
-  public void create_dataconnector(final DataConnector connector)
-      throws AlreadyExistsException, InvalidObjectException, MetaException {
-    CreateDataConnectorRequest connectorReq = new CreateDataConnectorRequest(connector);
-    create_dataconnector_req(connectorReq);
-  }
-
   @Override
   public void create_dataconnector_req(final CreateDataConnectorRequest connectorReq)
           throws AlreadyExistsException, InvalidObjectException, MetaException {
@@ -2012,13 +2004,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       endFunction("get_dataconnector", connector != null, ex);
     }
     return connector;
-  }
-
-  @Deprecated
-  @Override
-  public void alter_dataconnector(final String dcName, final DataConnector newDC) throws TException {
-    AlterDataConnectorRequest alterReq = new AlterDataConnectorRequest(dcName, newDC);
-    alter_dataconnector_req(alterReq);
   }
 
   @Override
@@ -2089,15 +2074,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       endFunction("get_dataconnectors", ret != null, ex);
     }
     return ret;
-  }
-
-  @Deprecated
-  @Override
-  public void drop_dataconnector(final String dcName, boolean ifNotExists, boolean checkReferences) throws NoSuchObjectException, InvalidOperationException, MetaException {
-    DropDataConnectorRequest dropDcReq = new DropDataConnectorRequest(dcName);
-    dropDcReq.setIfNotExists(ifNotExists);
-    dropDcReq.setCheckReferences(checkReferences);
-    drop_dataconnector_req(dropDcReq);
   }
 
   @Override
@@ -3586,16 +3562,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  @Deprecated
-  public Table get_table(final String dbname, final String name) throws MetaException,
-      NoSuchObjectException {
-    String[] parsedDbName = parseDbName(dbname, conf);
-    GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME],name);
-    getTableRequest.setCatName(parsedDbName[CAT_NAME]);
-    return getTableInternal(getTableRequest);
-  }
-
-  @Override
   public List<ExtendedTableInfo> get_tables_ext(final GetTablesExtRequest req) throws MetaException {
     List<String> tables = new ArrayList<String>();
     List<ExtendedTableInfo> ret = new ArrayList<ExtendedTableInfo>();
@@ -3820,11 +3786,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   /**
    * Gets multiple tables from the hive metastore.
    *
-   * @param dbName
-   *          The name of the database in which the tables reside
-   * @param tableNames
-   *          The names of the tables to get.
-   *
+   * @param req
+   *          The GetTablesRequest object.
    * @return A list of tables whose names are in the the list "names" and
    *         are retrievable from the database specified by "dbnames."
    *         There is no guarantee of the order of the returned tables.
@@ -3833,13 +3796,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * @throws InvalidOperationException
    * @throws UnknownDBException
    */
-  @Override
-  @Deprecated
-  public List<Table> get_table_objects_by_name(final String dbName, final List<String> tableNames)
-      throws MetaException, InvalidOperationException, UnknownDBException {
-    String[] parsedDbName = parseDbName(dbName, conf);
-    return getTableObjectsInternal(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableNames, null, null, null);
-  }
 
   @Override
   public GetTablesResult get_table_objects_by_name_req(GetTablesRequest req) throws TException {

@@ -110,11 +110,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_database_req\n");
   }
 
-  void create_dataconnector(const DataConnector& connector) {
-    // Your implementation goes here
-    printf("create_dataconnector\n");
-  }
-
   void create_dataconnector_req(const CreateDataConnectorRequest& connectorReq) {
     // Your implementation goes here
     printf("create_dataconnector_req\n");
@@ -125,11 +120,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_dataconnector_req\n");
   }
 
-  void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences) {
-    // Your implementation goes here
-    printf("drop_dataconnector\n");
-  }
-
   void drop_dataconnector_req(const DropDataConnectorRequest& dropDcReq) {
     // Your implementation goes here
     printf("drop_dataconnector_req\n");
@@ -138,11 +128,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_dataconnectors(std::vector<std::string> & _return) {
     // Your implementation goes here
     printf("get_dataconnectors\n");
-  }
-
-  void alter_dataconnector(const std::string& name, const DataConnector& connector) {
-    // Your implementation goes here
-    printf("alter_dataconnector\n");
   }
 
   void alter_dataconnector_req(const AlterDataConnectorRequest& alterReq) {
@@ -313,16 +298,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_all_tables(std::vector<std::string> & _return, const std::string& db_name) {
     // Your implementation goes here
     printf("get_all_tables\n");
-  }
-
-  void get_table(Table& _return, const std::string& dbname, const std::string& tbl_name) {
-    // Your implementation goes here
-    printf("get_table\n");
-  }
-
-  void get_table_objects_by_name(std::vector<Table> & _return, const std::string& dbname, const std::vector<std::string> & tbl_names) {
-    // Your implementation goes here
-    printf("get_table_objects_by_name\n");
   }
 
   void get_tables_ext(std::vector<ExtendedTableInfo> & _return, const GetTablesExtRequest& req) {

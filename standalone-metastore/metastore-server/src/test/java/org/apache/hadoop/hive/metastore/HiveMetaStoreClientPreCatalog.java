@@ -782,7 +782,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public void createDataConnector(DataConnector connector) throws TException {
-    client.create_dataconnector(connector);
+    CreateDataConnectorRequest connectorReq = new CreateDataConnectorRequest(connector);
+    client.create_dataconnector_req(connectorReq);
   }
 
   /**
@@ -969,7 +970,10 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences) throws TException {
-    client.drop_dataconnector(name, ifNotExists, checkReferences);
+    DropDataConnectorRequest dropDcReq = new DropDataConnectorRequest(name);
+    dropDcReq.setIfNotExists(ifNotExists);
+    dropDcReq.setCheckReferences(checkReferences);
+    client.drop_dataconnector_req(dropDcReq);
   }
 
   /**
@@ -1772,7 +1776,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public void alterDataConnector(String dcName, DataConnector connector) throws TException {
-    client.alter_dataconnector(dcName, connector);
+    AlterDataConnectorRequest alterReq = new AlterDataConnectorRequest(dcName, connector);
+    client.alter_dataconnector_req(alterReq);
   }
 
   /**

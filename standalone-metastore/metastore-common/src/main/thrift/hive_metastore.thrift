@@ -2593,13 +2593,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void alter_database(1:string dbname, 2:Database db) throws(1:MetaException o1, 2:NoSuchObjectException o2)
   void alter_database_req(1:AlterDatabaseRequest alterDbReq) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
-  void create_dataconnector(1:DataConnector connector) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   void create_dataconnector_req(1:CreateDataConnectorRequest connectorReq) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   DataConnector get_dataconnector_req(1:GetDataConnectorRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  void drop_dataconnector(1:string name, 2:bool ifNotExists, 3:bool checkReferences) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   void drop_dataconnector_req(1:DropDataConnectorRequest dropDcReq) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_dataconnectors() throws(1:MetaException o1)
-  void alter_dataconnector(1:string name, 2:DataConnector connector) throws(1:MetaException o1, 2:NoSuchObjectException o2)
   void alter_dataconnector_req(1:AlterDataConnectorRequest alterReq) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
     // returns the type with given name (make seperate calls for the dependent types if needed)
@@ -2683,9 +2680,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws (1: MetaException o1)
   list<string> get_all_tables(1: string db_name) throws (1: MetaException o1)
 
-  Table get_table(1:string dbname, 2:string tbl_name)
-                       throws (1:MetaException o1, 2:NoSuchObjectException o2)
-  list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names)
   list<ExtendedTableInfo> get_tables_ext(1: GetTablesExtRequest req) throws (1: MetaException o1)
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
