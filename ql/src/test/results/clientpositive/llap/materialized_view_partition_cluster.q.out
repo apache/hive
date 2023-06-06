@@ -320,8 +320,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.src_txn	0/0/0               	 
+Table name          	Snapshot            	 
+default.src_txn     	:1:9223372036854775807::	 
 Found 32 items
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
@@ -1847,8 +1847,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.src_txn	0/0/0               	 
+Table name          	Snapshot            	 
+default.src_txn     	:3:9223372036854775807::	 
 PREHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -2648,5 +2648,5 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.src_txn	0/0/0               	 
+Table name          	Snapshot            	 
+default.src_txn     	:4:9223372036854775807::	 
