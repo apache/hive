@@ -42,3 +42,16 @@ SHOW CREATE TABLE TEST;
 SHOW CREATE TABLE TEST2;
 
 SHOW CREATE TABLE TEST3;
+
+CREATE TABLE TEST_RESERVED (
+`member_nr` varchar(8),
+`plan_nr` varchar(11),
+`timestamp` timestamp,
+`shared_ind` varchar(1))
+CLUSTERED BY (
+member_nr,
+plan_nr,
+`timestamp`)
+INTO 4 BUCKETS;
+
+SHOW CREATE TABLE TEST_RESERVED;
