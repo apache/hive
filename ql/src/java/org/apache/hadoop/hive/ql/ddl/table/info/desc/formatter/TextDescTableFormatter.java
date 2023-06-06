@@ -21,8 +21,11 @@ package org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -63,6 +66,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
@@ -248,27 +252,52 @@ class TextDescTableFormatter extends DescTableFormatter {
     formatOutput("Original Query:", table.getViewOriginalText(), tableInfo);
     formatOutput("Expanded Query:", table.getViewExpandedText(), tableInfo);
     if (table.isMaterializedView()) {
-      formatOutput("Rewrite Enabled:", table.isRewriteEnabled() ? "Yes" : "No", tableInfo);
-      formatOutput("Outdated for Rewriting:", table.isOutdatedForRewriting() == null ? "Unknown"
-          : table.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
-      tableInfo.append(LINE_DELIM).append("# Materialized View Source table information").append(LINE_DELIM);
-      TextMetaDataTable metaDataTable = new TextMetaDataTable();
-      metaDataTable.addRow("Table name", "I/U/D since last rebuild");
-      List<SourceTable> sourceTableList = new ArrayList<>(table.getMVMetadata().getSourceTables());
-
-      sourceTableList.sort(Comparator.<SourceTable, String>comparing(sourceTable -> sourceTable.getTable().getDbName())
-              .thenComparing(sourceTable -> sourceTable.getTable().getTableName()));
-      for (SourceTable sourceTable : sourceTableList) {
-        String qualifiedTableName = TableName.getQualified(
-                sourceTable.getTable().getCatName(),
-                sourceTable.getTable().getDbName(),
-                sourceTable.getTable().getTableName());
-        metaDataTable.addRow(qualifiedTableName,
-                String.format("%d/%d/%d",
-                        sourceTable.getInsertedCount(), sourceTable.getUpdatedCount(), sourceTable.getDeletedCount()));
-      }
-      tableInfo.append(metaDataTable.renderTable(isOutputPadded));
+      getMaterializedViewInfo(tableInfo, table, isOutputPadded);
     }
+  }
+
+  private static void getMaterializedViewInfo(StringBuilder tableInfo, Table table, boolean isOutputPadded) {
+    formatOutput("Rewrite Enabled:", table.isRewriteEnabled() ? "Yes" : "No", tableInfo);
+    formatOutput("Outdated for Rewriting:", table.isOutdatedForRewriting() == null ? "Unknown"
+        : table.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
+    tableInfo.append(LINE_DELIM).append("# Materialized View Source table information").append(LINE_DELIM);
+    TextMetaDataTable metaDataTable = new TextMetaDataTable();
+    metaDataTable.addRow("Table name", "Snapshot");
+    List<SourceTable> sourceTableList = new ArrayList<>(table.getMVMetadata().getSourceTables());
+
+    sourceTableList.sort(Comparator.<SourceTable, String>comparing(sourceTable -> sourceTable.getTable().getDbName())
+            .thenComparing(sourceTable -> sourceTable.getTable().getTableName()));
+
+    MaterializationSnapshotFormatter snapshotFormatter =
+            createMaterializationSnapshotFormatter(table.getMVMetadata().getSnapshot());
+
+    for (SourceTable sourceTable : sourceTableList) {
+      String qualifiedTableName = TableName.getDbTable(
+              sourceTable.getTable().getDbName(),
+              sourceTable.getTable().getTableName());
+      metaDataTable.addRow(qualifiedTableName,
+              snapshotFormatter.getSnapshotOf(qualifiedTableName));
+    }
+    tableInfo.append(metaDataTable.renderTable(isOutputPadded));
+  }
+
+  private static MaterializationSnapshotFormatter createMaterializationSnapshotFormatter(
+          MaterializationSnapshot snapshot) {
+    if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
+      return qualifiedTableName -> Objects.toString(snapshot.getTableSnapshots().get(qualifiedTableName), "Unknown");
+    } else if (snapshot != null && snapshot.getValidTxnList() != null) {
+      ValidTxnWriteIdList validReaderWriteIdList = new ValidTxnWriteIdList(snapshot.getValidTxnList());
+      return qualifiedTableName -> {
+        ValidWriteIdList writeIdList = validReaderWriteIdList.getTableValidWriteIdList(qualifiedTableName);
+        return writeIdList != null ? writeIdList.toString().replace(qualifiedTableName, "") : "Unknown";
+      };
+    } else {
+      return qualifiedTableName -> "N/A";
+    }
+  }
+
+  private interface MaterializationSnapshotFormatter {
+    String getSnapshotOf(String qualifiedTableName);
   }
 
   private void getStorageDescriptorInfo(StringBuilder tableInfo, Table table, StorageDescriptor storageDesc) {

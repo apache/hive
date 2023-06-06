@@ -2,6 +2,7 @@
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 -- Mask random snapshot id
 --! qt:replace:/(\s+current-snapshot-id\s+)\d+(\s*)/$1#SnapshotId#/
+--! qt:replace:/(.*snapshotId=)\S+(\}.*)/$1#SnapshotId#$2/
 -- Mask added file size
 --! qt:replace:/(\S\"added-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
 -- Mask total file size

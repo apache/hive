@@ -315,9 +315,9 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n1	0/0/0               	 
-hive.default.cmv_basetable_n3	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n1	:1:9223372036854775807::	 
+default.cmv_basetable_n3	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
@@ -554,9 +554,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n1	1/0/0               	 
-hive.default.cmv_basetable_n3	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n1	:1:9223372036854775807::	 
+default.cmv_basetable_n3	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
@@ -898,9 +898,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n1	0/0/0               	 
-hive.default.cmv_basetable_n3	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n1	:2:9223372036854775807::	 
+default.cmv_basetable_n3	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)

@@ -95,8 +95,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.tbl_ice	0/0/0               	 
+Table name          	Snapshot            	 
+default.tbl_ice     	SnapshotContext{snapshotId=#SnapshotId#}	 
 PREHOOK: query: select * from mat1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
@@ -183,5 +183,5 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.tbl_ice	0/0/0               	 
+Table name          	Snapshot            	 
+default.tbl_ice     	SnapshotContext{snapshotId=#SnapshotId#}	 

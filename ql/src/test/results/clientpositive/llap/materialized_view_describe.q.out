@@ -94,8 +94,8 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n8	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_n8	N/A                 	 
 PREHOOK: query: show tblproperties cmv_mat_view_n8
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view_n8
@@ -191,8 +191,8 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n8	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_n8	N/A                 	 
 PREHOOK: query: select a from cmv_mat_view2_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2_n3
@@ -278,8 +278,8 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n8	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_n8	N/A                 	 
 PREHOOK: query: select a, b, c from cmv_mat_view3_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view3_n0
@@ -374,8 +374,8 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n8	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_n8	N/A                 	 
 PREHOOK: query: select a from cmv_mat_view4_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view4_n0
