@@ -2034,16 +2034,22 @@ public class StatsUtils {
     return null;
   }
 
+  public static boolean checkCanProvideStats(Table table) {
+    if (MetaStoreUtils.isExternalTable(table.getTTable())) {
+      if (MetaStoreUtils.isNonNativeTable(table.getTTable()) && table.getStorageHandler().canProvideBasicStatistics()) {
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
   /**
    * Are the basic stats for the table up-to-date for query planning.
    * Can run additional checks compared to the version in StatsSetupConst.
    */
   public static boolean areBasicStatsUptoDateForQueryAnswering(Table table, Map<String, String> params) {
-    // HIVE-19332: external tables should not be considered to have up-to-date stats.
-    if (MetaStoreUtils.isExternalTable(table.getTTable())) {
-      return false;
-    }
-    return StatsSetupConst.areBasicStatsUptoDate(params);
+    return checkCanProvideStats(table) == true ? StatsSetupConst.areBasicStatsUptoDate(params) : false;
   }
 
   /**
@@ -2051,11 +2057,7 @@ public class StatsUtils {
    * Can run additional checks compared to the version in StatsSetupConst.
    */
   public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params, String colName) {
-    // HIVE-19332: external tables should not be considered to have up-to-date stats.
-    if (MetaStoreUtils.isExternalTable(table.getTTable())) {
-      return false;
-    }
-    return StatsSetupConst.areColumnStatsUptoDate(params, colName);
+    return checkCanProvideStats(table) == true ? StatsSetupConst.areColumnStatsUptoDate(params, colName) : false;
   }
 
   /**
