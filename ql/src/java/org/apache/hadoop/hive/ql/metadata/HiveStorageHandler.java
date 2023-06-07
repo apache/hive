@@ -557,7 +557,7 @@ public interface HiveStorageHandler extends Configurable {
    */
   @Deprecated
   default boolean isMetadataTableSupported() {
-    return false;
+    return isTableMetaRefSupported();
   }
 
   /**
