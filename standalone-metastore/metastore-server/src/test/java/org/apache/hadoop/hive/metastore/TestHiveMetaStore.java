@@ -2446,6 +2446,16 @@ public abstract class TestHiveMetaStore {
         "p3 between 31 and 32 and p1 between \"p12\" and \"p14\"", 3);
     checkFilter(client, dbName, tblName, "p4 between \"p41\" and \"p44\"", 5);
 
+    // Test in
+    checkFilter(client, dbName, tblName, "(p1) in (\"p11\", \"p12\")", 4);
+    checkFilter(client, dbName, tblName, "(p2) in (\"p21\", \"p25\")", 3);
+    checkFilter(client, dbName, tblName, "(p3) not in (31, 33)", 3);
+    checkFilter(client, dbName, tblName, "(p4) not in ('p43', 'p44')", 3);
+
+    // Test multi-in
+    checkFilter(client, dbName, tblName, "(struct (p1, p2)) in (const struct ('p11', 'p22'), const struct ('p12', 'p22'))", 1);
+    checkFilter(client, dbName, tblName, "(struct (p1, p3)) not in (struct ('p11', 31), struct ('p12', 33))", 5);
+
     //Test for setting the maximum partition count
     List<Partition> partitions = client.listPartitionsByFilter(dbName,
         tblName, "p1 >= \"p12\"", (short) 2);
@@ -2662,7 +2672,6 @@ public abstract class TestHiveMetaStore {
     client.dropTable(dbName, tblName);
     client.dropDatabase(dbName);
   }
-
 
   private void checkFilter(HiveMetaStoreClient client, String dbName,
         String tblName, String filter, int expectedCount) throws TException {
