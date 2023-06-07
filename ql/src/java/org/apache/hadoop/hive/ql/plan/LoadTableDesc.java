@@ -45,6 +45,8 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private boolean isInsertOverwrite;
   private boolean isDirectInsert;
 
+  private boolean isIcebergLoad;
+
   // TODO: the below seem like they should just be combined into partitionDesc
   private Table mdTable;
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
@@ -155,6 +157,19 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     } else {
       init(table, new LinkedHashMap<String, String>(), lft, writeId);
     }
+  }
+
+  public LoadTableDesc(Path path, Table tableHandle, boolean isOverWrite, boolean isIcebergLoad) {
+    super(path, AcidUtils.Operation.NOT_ACID);
+    this.mdTable = tableHandle;
+    this.isIcebergLoad = isIcebergLoad;
+    this.loadFileType = isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
+    this.table = Utilities.getTableDesc(tableHandle);
+  }
+
+  @Explain(displayName = "Iceberg Table Load")
+  public boolean isIcebergLoad() {
+    return isIcebergLoad;
   }
 
   private void init(

@@ -348,6 +348,17 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   @Override
   public int execute() {
+    if (work != null && work.getLoadTableWork() != null && work.getLoadTableWork().isIcebergLoad()) {
+      try {
+        work.getLoadTableWork().getMdTable().getStorageHandler()
+            .appendFiles(work.getLoadTableWork().getMdTable().getTTable(),
+                work.getLoadTableWork().getSourcePath().toUri(),
+                work.getLoadTableWork().getLoadFileType() == LoadFileType.REPLACE_ALL);
+        return 0;
+      } catch (HiveException he) {
+        return processHiveException(he);
+      }
+    }
     try {
       initializeFromDeferredContext();
     } catch (HiveException he) {

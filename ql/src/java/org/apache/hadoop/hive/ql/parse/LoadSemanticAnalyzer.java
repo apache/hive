@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
@@ -295,16 +296,25 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
       throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
     }
     if (ts.tableHandle.isNonNative()) {
-      // launch a tez job
-      StorageFormatDescriptor ss =
-          ts.tableHandle.getStorageHandler().getStorageFormatDescriptor(ts.tableHandle.getTTable());
-      if (ss != null) {
-        inputFormatClassName = ss.getInputFormat();
-        serDeClassName = ss.getSerde();
-        reparseAndSuperAnalyze(ts.tableHandle, fromURI);
+      HiveStorageHandler storageHandler = ts.tableHandle.getStorageHandler();
+      if (storageHandler.supportsAppendData(ts.tableHandle.getTTable())) {
+        LoadTableDesc loadTableWork = new LoadTableDesc(new Path(fromURI), ts.tableHandle, isOverWrite, true);
+        loadTableWork.setInsertOverwrite(isOverWrite);
+        Task<?> childTask =
+            TaskFactory.get(new MoveWork(getInputs(), getOutputs(), loadTableWork, null, true, isLocal));
+        rootTasks.add(childTask);
         return;
+      } else {
+        // launch a tez job
+        StorageFormatDescriptor ss = storageHandler.getStorageFormatDescriptor(ts.tableHandle.getTTable());
+        if (ss != null) {
+          inputFormatClassName = ss.getInputFormat();
+          serDeClassName = ss.getSerde();
+          reparseAndSuperAnalyze(ts.tableHandle, fromURI);
+          return;
+        }
+        throw new SemanticException(ErrorMsg.LOAD_INTO_NON_NATIVE.getMsg());
       }
-      throw new SemanticException(ErrorMsg.LOAD_INTO_NON_NATIVE.getMsg());
     }
 
     if(ts.tableHandle.isStoredAsSubDirectories()) {
