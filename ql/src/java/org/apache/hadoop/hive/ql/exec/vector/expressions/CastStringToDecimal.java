@@ -23,7 +23,7 @@ import java.util.Arrays;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.IDecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -58,17 +58,13 @@ public class CastStringToDecimal extends VectorExpression {
        * making a new string.
        */
       s = new String(inputColVector.vector[i], inputColVector.start[i], inputColVector.length[i], "UTF-8");
-      setOutputColumnVectorValue(outputColVector, i, s);
+      ((IDecimalColumnVector) outputColVector).set(i, HiveDecimal.create(s));
     } catch (Exception e) {
 
       // for any exception in conversion to decimal, produce NULL
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
-  }
-
-  protected void setOutputColumnVectorValue(ColumnVector outputColVector, int i, String s) {
-    ((DecimalColumnVector) outputColVector).set(i, HiveDecimal.create(s));
   }
 
   @Override

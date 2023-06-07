@@ -72,7 +72,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringGroupToVarCha
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToBoolean;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToDateWithFormat;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToTimestampWithFormat;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToChar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToCharWithFormat;
@@ -3324,15 +3323,12 @@ import com.google.common.annotations.VisibleForTesting;
             returnType, DataTypePhysicalVariation.NONE);
       }
     } else if (isStringFamily(inputType)) {
-      if (tryDecimal64Cast) {
-        if (((DecimalTypeInfo)returnType).precision() <= 18) {
-          return createVectorExpression(CastStringToDecimal64.class, childExpr,
-              VectorExpressionDescriptor.Mode.PROJECTION, returnType, DataTypePhysicalVariation.DECIMAL_64);
-        }
-        return null;
-      }
+      DataTypePhysicalVariation dataTypePhysicalVariation =
+          tryDecimal64Cast && ((DecimalTypeInfo) returnType).precision() <= 18 ?
+              DataTypePhysicalVariation.DECIMAL_64 : 
+              DataTypePhysicalVariation.NONE;
       return createVectorExpression(CastStringToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
-          returnType, DataTypePhysicalVariation.NONE);
+          returnType, dataTypePhysicalVariation);
     } else if (inputType.equals("timestamp")) {
       return createVectorExpression(CastTimestampToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
           returnType, DataTypePhysicalVariation.NONE);
