@@ -40,3 +40,6 @@ notifications:
   issues:       gitbox@hive.apache.org
   pullrequests: gitbox@hive.apache.org
   jira_options: link label
+publish:
+  whoami: asf-blog
+  type: blog  
