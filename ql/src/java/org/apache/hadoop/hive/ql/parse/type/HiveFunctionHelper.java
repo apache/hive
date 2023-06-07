@@ -458,7 +458,7 @@ public class HiveFunctionHelper implements FunctionHelper {
 
     FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(functionName);
     GenericUDTF genericUDTF = functionInfo.getGenericUDTF();
-    Preconditions.checkNotNull(genericUDTF);
+    Preconditions.checkNotNull(genericUDTF, "Generic UDTF not found: " + functionName);
 
     RelDataType udtfRetType = getReturnType(functionInfo, operands);
 

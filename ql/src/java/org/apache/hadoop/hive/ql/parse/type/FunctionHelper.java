@@ -80,7 +80,7 @@ public interface FunctionHelper {
       throws SemanticException;
 
   /**
-   * Returns RexCall for UDTF based on given parameters
+   * Returns RexCall for UDTF from the appropriate function registry based on given parameters
    */
   RexCall getUDTFFunction(String functionName, List<RexNode> operands)
       throws SemanticException;

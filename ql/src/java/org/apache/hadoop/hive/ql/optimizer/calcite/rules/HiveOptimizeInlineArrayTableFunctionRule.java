@@ -34,6 +34,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -68,7 +69,7 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
 
     Preconditions.checkState(tableFunctionScanRel.getCall() instanceof RexCall);
     RexCall udtfCall = (RexCall) tableFunctionScanRel.getCall();
-    if (!udtfCall.getOperator().getName().equalsIgnoreCase("inline")) {
+    if (!"inline".equalsIgnoreCase(udtfCall.getOperator().getName())) {
       return false;
     }
 
@@ -78,7 +79,7 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
       return false;
     }
     RexCall firstOperand = (RexCall) operand;
-    if (!firstOperand.getOperator().getName().equalsIgnoreCase("array")) {
+    if (!"array".equalsIgnoreCase(firstOperand.getOperator().getName())) {
       return false;
     }
     Preconditions.checkState(!firstOperand.getOperands().isEmpty());
@@ -114,8 +115,8 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
     RexCall firstStructCall = (RexCall) arrayCall.getOperands().get(0);
     returnTypes.addAll(Lists.transform(firstStructCall.getOperands(), RexNode::getType));
 
-    List<RexNode> newArrayCall =
-        Lists.newArrayList(cluster.getRexBuilder().makeCall(arrayCall.op, newStructExprs));
+    List<RexNode> newArrayCall = Collections.singletonList(
+        cluster.getRexBuilder().makeCall(arrayCall.op, newStructExprs));
     RexNode newInlineCall =
         cluster.getRexBuilder().makeCall(tfs.getRowType(), inlineCall.op, newArrayCall);
 
