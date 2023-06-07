@@ -105,6 +105,10 @@
       <artifactId>antlr-runtime</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
@@ -727,6 +731,23 @@
           </execution>
         </executions>
         <configuration>
+          <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+          <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>${antlr4.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <visitor>true</visitor>
           <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
           <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         </configuration>
