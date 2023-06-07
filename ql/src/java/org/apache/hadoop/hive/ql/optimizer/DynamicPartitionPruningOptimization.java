@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
@@ -302,8 +303,8 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     boolean disableSemiJoin = false;
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS)) {
       // We already have the TableScan for one side of the join. Check this now.
-      if (MetaStoreUtils.isExternalTable(ts.getConf().getTableMetadata().getTTable())) {
-        LOG.debug("Disabling semijoin optimzation on {} since it is an external table.",
+      if (!StatsUtils.checkCanProvideStats(new Table(ts.getConf().getTableMetadata().getTTable()))) {
+        LOG.debug("Disabling semijoin optimzation on {} since it is an external table and also could not provide statistics.",
             ts.getConf().getTableMetadata().getFullyQualifiedName());
         disableSemiJoin = true;
       } else {
