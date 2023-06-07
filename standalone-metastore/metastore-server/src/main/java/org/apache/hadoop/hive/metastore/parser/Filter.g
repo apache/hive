@@ -37,10 +37,10 @@ package org.apache.hadoop.hive.metastore.parser;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.format.ResolverStyle;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,34 +52,31 @@ import java.util.regex.Pattern;
   private static final Pattern datePattern = Pattern.compile(".*(\\d\\d\\d\\d-\\d\\d-\\d\\d).*");
   private static final Pattern timestampPattern =
       Pattern.compile(".*(\\d\\d\\d\\d-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d).*");
-  private static final ThreadLocal<SimpleDateFormat> dateFormat =
-       new ThreadLocal<SimpleDateFormat>() {
-    @Override
-    protected SimpleDateFormat initialValue() {
-      SimpleDateFormat val = new SimpleDateFormat("yyyy-MM-dd");
-      val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
-      val.setTimeZone(TimeZone.getTimeZone("UTC"));
-      return val;
-    };
-  };
-  private static final ThreadLocal<DateTimeFormatter> timestampFormat =
-       new ThreadLocal<DateTimeFormatter>() {
-    @Override
-    protected DateTimeFormatter initialValue() {
-      DateTimeFormatter val = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-          .withZone(TimeZone.getTimeZone("UTC").toZoneId());
-      return val;
-    };
-  };
 
-  public static java.sql.Date extractDate(String input) {
+  private static final DateTimeFormatter dateFormat = createDateTimeFormatter("uuuu-MM-dd");
+  private static final DateTimeFormatter timestampFormat = createDateTimeFormatter("uuuu-MM-dd HH:mm:ss");
+
+  public static DateTimeFormatter createDateTimeFormatter(String format) {
+    return DateTimeFormatter.ofPattern(format)
+                     .withZone(TimeZone.getTimeZone("UTC").toZoneId())
+                     .withResolverStyle(ResolverStyle.STRICT);
+  }
+
+  public static Object extractDate(String input) {
+    // Date literal is a suffix of timestamp. Try to parse it as a timestamp first
+    Object res = extractTimestamp(input);
+    if (res != null) {
+      return res;
+    }
+    
     Matcher m = datePattern.matcher(input);
     if (!m.matches()) {
       return null;
     }
     try {
-      return new java.sql.Date(dateFormat.get().parse(m.group(1)).getTime());
-    } catch (ParseException pe) {
+       LocalDate val = LocalDate.parse(m.group(1), dateFormat);
+       return java.sql.Date.valueOf(val);
+    } catch (Exception ex) {
       return null;
     }
   }
@@ -90,7 +87,7 @@ import java.util.regex.Pattern;
       return null;
     }
     try {
-       LocalDateTime val = LocalDateTime.from(timestampFormat.get().parse(m.group(1)));
+       LocalDateTime val = LocalDateTime.from(timestampFormat.parse(m.group(1)));
        return Timestamp.valueOf(val);
     } catch (Exception ex) {
       return null;
@@ -166,16 +163,10 @@ binOpExpression
     :
     (
        (
-         (key = Identifier op = operator  value = DateLiteral)
+         (key = Identifier op = operator  value = DateTimeLiteral)
          |
-         (value = DateLiteral  op = operator key = Identifier) { isReverseOrder = true; }
+         (value = DateTimeLiteral  op = operator key = Identifier) { isReverseOrder = true; }
        ) { val = FilterLexer.extractDate(value.getText()); }
-       |
-       (
-         (key = Identifier op = operator  value = TimestampLiteral)
-         |
-         (value = TimestampLiteral  op = operator key = Identifier) { isReverseOrder = true; }
-       ) { val = FilterLexer.extractTimestamp(value.getText()); }
        |
        (
          (key = Identifier op = operator  value = StringLiteral)
@@ -216,14 +207,9 @@ betweenExpression
     (
        key = Identifier (KW_NOT { isPositive = false; } )? BETWEEN
        (
-         (left = DateLiteral KW_AND right = DateLiteral) {
+         (left = DateTimeLiteral KW_AND right = DateTimeLiteral) {
             leftV = FilterLexer.extractDate(left.getText());
             rightV = FilterLexer.extractDate(right.getText());
-         }
-         |
-         (left = TimestampLiteral KW_AND right = TimestampLiteral) {
-            leftV = FilterLexer.extractTimestamp(left.getText());
-            rightV = FilterLexer.extractTimestamp(right.getText());
          }
          |
          (left = StringLiteral KW_AND right = StringLiteral) { leftV = TrimQuotes(left.getText());
@@ -258,34 +244,19 @@ inExpression
         LPAREN key = Identifier RPAREN ( KW_NOT { isPositive = false; } )? IN LPAREN
         (
             (
-                constant = DateLiteral
+                constant = DateTimeLiteral
                 {
                     constantV = FilterLexer.extractDate(constant.getText());
                     constants.add(constantV);
                 }
                 (
-                    COMMA constant = DateLiteral
+                    COMMA constant = DateTimeLiteral
                     {
                         constantV = FilterLexer.extractDate(constant.getText());
                         constants.add(constantV);
                     }
                 )*
             )
-            |
-            (
-                constant = TimestampLiteral
-                {
-                    constantV = FilterLexer.extractTimestamp(constant.getText());
-                    constants.add(constantV);
-                }
-                (
-                    COMMA constant = TimestampLiteral
-                    {
-                        constantV = FilterLexer.extractTimestamp(constant.getText());
-                        constants.add(constantV);
-                    }
-                )*
-             )
             |
             (
                 constant = StringLiteral
@@ -362,14 +333,9 @@ multiColInExpression
             partialConstants = new ArrayList();
         }
         (
-            constant = DateLiteral
+            constant = DateTimeLiteral
             {
                 constantV = FilterLexer.extractDate(constant.getText());
-                partialConstants.add(constantV);
-            }
-            | constant = TimestampLiteral
-            {
-                constantV = FilterLexer.extractTimestamp(constant.getText());
                 partialConstants.add(constantV);
             }
             | constant = StringLiteral
@@ -386,14 +352,9 @@ multiColInExpression
         (
             COMMA
             (
-                constant = DateLiteral
+                constant = DateTimeLiteral
                 {
                     constantV = FilterLexer.extractDate(constant.getText());
-                    partialConstants.add(constantV);
-                }
-                | constant = TimestampLiteral
-                {
-                    constantV = FilterLexer.extractTimestamp(constant.getText());
                     partialConstants.add(constantV);
                 }
                 | constant = StringLiteral
@@ -418,14 +379,9 @@ multiColInExpression
                 partialConstants = new ArrayList();
             }
             (
-                constant = DateLiteral
+                constant = DateTimeLiteral
                 {
                     constantV = FilterLexer.extractDate(constant.getText());
-                    partialConstants.add(constantV);
-                }
-                | constant = TimestampLiteral
-                {
-                    constantV = FilterLexer.extractTimestamp(constant.getText());
                     partialConstants.add(constantV);
                 }
                 | constant = StringLiteral
@@ -442,14 +398,9 @@ multiColInExpression
             (
                 COMMA
                 (
-                    constant = DateLiteral
+                    constant = DateTimeLiteral
                     {
                         constantV = FilterLexer.extractDate(constant.getText());
-                        partialConstants.add(constantV);
-                    }
-                    | constant = TimestampLiteral
-                    {
-                        constantV = FilterLexer.extractTimestamp(constant.getText());
                         partialConstants.add(constantV);
                     }
                     | constant = StringLiteral
@@ -540,16 +491,12 @@ fragment TimestampString
 /* When I figure out how to make lexer backtrack after validating predicate, dates would be able 
 to support single quotes [( '\'' DateString '\'' ) |]. For now, what we do instead is have a hack
 to parse the string in metastore code from StringLiteral. */
-DateLiteral
+DateTimeLiteral
     :
-    KW_DATE '\'' DateString '\'' { extractDate(getText()) != null }?
+    (TimestampString) => (TimestampString { extractTimestamp(getText()) != null }?)
+    | KW_TIMESTAMP '\'' TimestampString '\'' { extractTimestamp(getText()) != null }?
+    | KW_DATE '\'' DateString '\'' { extractDate(getText()) != null }?
     | DateString { extractDate(getText()) != null }?
-    ;
-
-TimestampLiteral
-    :
-    KW_TIMESTAMP '\'' TimestampString '\'' { extractTimestamp(getText()) != null }?
-    | TimestampString { extractTimestamp(getText()) != null }?
     ;
 
 StringLiteral
