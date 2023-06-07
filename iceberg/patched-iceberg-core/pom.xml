@@ -76,6 +76,7 @@
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
                   <excludes>
                       **/HadoopInputFile.class
+                      **/SerializableTable.class
                   </excludes>
                 </artifactItem>
               </artifactItems>
