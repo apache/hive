@@ -412,7 +412,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
     cleaner.run();
 
-    Mockito.verify(mockedTxnHandler, Mockito.times(1)).insertOrSetCleanerRetryRetentionTimeOnError(any(CompactionInfo.class));
+    Mockito.verify(mockedTxnHandler, Mockito.times(1)).setCleanerRetryRetentionTimeOnError(any(CompactionInfo.class));
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(1, scr.getCompactsSize());
     ShowCompactResponseElement scre = scr.getCompacts().get(0);

@@ -67,6 +67,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public String poolName;
   public int numberOfBuckets = 0;
   public String orderByClause;
+  public long minOpenWriteTxnId = 0;
 
   /**
    * The highest write id that the compaction job will pay attention to.
@@ -178,6 +179,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
         .append("poolName", poolName)
         .append("numberOfBuckets", numberOfBuckets)
         .append("orderByClause", orderByClause)
+        .append("minOpenWriteTxnId", minOpenWriteTxnId)
         .build();
   }
 

@@ -579,7 +579,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.CannotRetry
-  void insertOrSetCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException;
+  void setCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException;
 
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by

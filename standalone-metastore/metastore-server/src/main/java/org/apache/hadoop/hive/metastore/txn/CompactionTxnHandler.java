@@ -133,14 +133,14 @@ class CompactionTxnHandler extends TxnHandler {
       " WHERE \"res3\".\"RETRY_RECORD_CHECK\" <= 0 OR \"res3\".\"RETRY_RECORD_CHECK\" IS NULL";
 
   private static final String DELETE_ABORT_RETRY_ENTRIES_FROM_COMPACTION_QUEUE =
-          "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_DATABASE\" = ? " +
-          "AND \"CQ_TABLE\" = ? AND (\"CQ_PARTITION\" = ? OR \"CQ_PARTITION\" IS NULL) AND \"CQ_TYPE\" = "
-          + quoteChar(TxnStore.ABORT_TXN_CLEANUP_TYPE);
+      "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_DATABASE\" = ? " +
+      " AND \"CQ_TABLE\" = ? AND (\"CQ_PARTITION\" = ? OR \"CQ_PARTITION\" IS NULL) AND \"CQ_TYPE\" = " +
+      quoteChar(TxnStore.ABORT_TXN_CLEANUP_TYPE);
 
   private static final String INSERT_ABORT_RETRY_ENTRY_INTO_COMPACTION_QUEUE =
-          "INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
-          "\"CQ_TYPE\", \"CQ_STATE\", \"CQ_RETRY_RETENTION\", \"CQ_ERROR_MESSAGE\", \"CQ_COMMIT_TIME\") " +
-          " VALUES (?, ?, ?, ?, ?, ?, ?, ?, %s)";
+      "INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
+      " \"CQ_TYPE\", \"CQ_STATE\", \"CQ_RETRY_RETENTION\", \"CQ_ERROR_MESSAGE\", \"CQ_COMMIT_TIME\") " +
+      " VALUES (?, ?, ?, ?, ?, ?, ?, ?, %s)";
 
   public CompactionTxnHandler() {
   }
@@ -545,7 +545,7 @@ class CompactionTxnHandler extends TxnHandler {
               info.tableName = rs.getString(2);
               info.partName = rs.getString(3);
               // In this case, this field contains min open write txn ID.
-              info.txnId = rs.getLong(6) > 0 ? rs.getLong(6) : Long.MAX_VALUE;
+              info.minOpenWriteTxnId = rs.getLong(6) > 0 ? rs.getLong(6) : Long.MAX_VALUE;
               // The specific type, state assigned to abort cleanup.
               info.type = CompactionType.ABORT_TXN_CLEANUP;
               info.state = READY_FOR_CLEANING;
@@ -1653,7 +1653,7 @@ class CompactionTxnHandler extends TxnHandler {
 
   @Override
   @RetrySemantics.CannotRetry
-  public void insertOrSetCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException {
+  public void setCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException {
     try {
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction)) {
         if (info.isAbortedTxnCleanup() && info.id == 0) {
@@ -1686,7 +1686,7 @@ class CompactionTxnHandler extends TxnHandler {
         throw new MetaException(DB_FAILED_TO_CONNECT + e.getMessage());
       }
     } catch (RetryException e) {
-      insertOrSetCleanerRetryRetentionTimeOnError(info);
+      setCleanerRetryRetentionTimeOnError(info);
     }
   }
 

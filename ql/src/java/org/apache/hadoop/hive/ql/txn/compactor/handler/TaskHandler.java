@@ -175,7 +175,7 @@ public abstract class TaskHandler {
     if (info.isAbortedTxnCleanup()) {
       info.retryRetention = info.retryRetention > 0 ? info.retryRetention * 2 : defaultRetention;
       info.errorMessage = errorMessage;
-      txnHandler.insertOrSetCleanerRetryRetentionTimeOnError(info);
+      txnHandler.setCleanerRetryRetentionTimeOnError(info);
     } else {
       if (info.retryRetention > 0) {
         cleanAttempts = (int) (Math.log(info.retryRetention / defaultRetention) / Math.log(2)) + 1;
@@ -186,7 +186,7 @@ public abstract class TaskHandler {
       } else {
         //Calculate retry retention time and update record.
         info.retryRetention = (long) Math.pow(2, cleanAttempts) * defaultRetention;
-        txnHandler.insertOrSetCleanerRetryRetentionTimeOnError(info);
+        txnHandler.setCleanerRetryRetentionTimeOnError(info);
       }
     }
   }
