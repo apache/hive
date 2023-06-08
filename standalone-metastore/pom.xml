@@ -81,6 +81,7 @@
     <hadoop.version>3.3.1</hadoop.version>
     <hikaricp.version>4.0.3</hikaricp.version>
     <jackson.version>2.13.5</jackson.version>
+    <jexl.version>3.3</jexl.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
@@ -105,6 +106,7 @@
     <caffeine.version>2.8.4</caffeine.version>
     <slf4j.version>1.7.30</slf4j.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
+    <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <pac4j-core.version>4.5.5</pac4j-core.version>
     <nimbus-jose-jwt.version>9.20</nimbus-jose-jwt.version>
     <jetty.version>9.4.40.v20210413</jetty.version>

@@ -1153,6 +1153,9 @@
       <field name ="description">
         <column name="DESCRIPTION" length="1000" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
+      <field name ="propertyContent">
+        <column name="PROPERTY_CONTENT" jdbc-type="BLOB" allows-null="true"/>
+      </field>
     </class>
 
     <class name="MResourceUri" embedded-only="true" table="RESOURCE_URI" detachable="true">

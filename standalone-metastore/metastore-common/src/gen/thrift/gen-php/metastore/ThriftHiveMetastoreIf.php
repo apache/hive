@@ -861,6 +861,20 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_partitions_by_names_req(\metastore\GetPartitionsByNamesRequest $req);
     /**
+     * @param \metastore\PropertyGetRequest $req
+     * @return \metastore\PropertyGetResponse
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_properties(\metastore\PropertyGetRequest $req);
+    /**
+     * @param \metastore\PropertySetRequest $req
+     * @return bool
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function set_properties(\metastore\PropertySetRequest $req);
+    /**
      * @param string $db_name
      * @param string $tbl_name
      * @param \metastore\Partition $new_part

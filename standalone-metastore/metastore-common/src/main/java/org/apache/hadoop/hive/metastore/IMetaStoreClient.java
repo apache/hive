@@ -4393,4 +4393,27 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException;
 
+  /**
+   * Sets properties.
+   * @param nameSpace the property store namespace
+   * @param properties a map keyed by property path mapped to property values
+   * @return true if successful, false otherwise
+   * @throws TException
+   */
+  default boolean setProperties(String nameSpace, Map<String, String> properties) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Gets properties.
+   * @param nameSpace the property store namespace.
+   * @param mapPrefix the map prefix (ala starts-with) to select maps
+   * @param mapPredicate predicate expression on properties to further reduce the selected maps
+   * @param selection the list of properties to return, null for all
+   * @return a map keyed by property map path to maps keyed by property name mapped to property values
+   * @throws TException
+   */
+  default Map<String, Map<String, String>> getProperties(String nameSpace, String mapPrefix, String mapPredicate, String... selection) throws TException {
+    throw new UnsupportedOperationException();
+  };
 }

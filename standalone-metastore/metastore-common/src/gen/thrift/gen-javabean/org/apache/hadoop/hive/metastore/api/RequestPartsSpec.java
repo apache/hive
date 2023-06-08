@@ -144,13 +144,13 @@ package org.apache.hadoop.hive.metastore.api;
           if (field.type == NAMES_FIELD_DESC.type) {
             java.util.List<java.lang.String> names;
             {
-              org.apache.thrift.protocol.TList _list620 = iprot.readListBegin();
-              names = new java.util.ArrayList<java.lang.String>(_list620.size);
-              @org.apache.thrift.annotation.Nullable java.lang.String _elem621;
-              for (int _i622 = 0; _i622 < _list620.size; ++_i622)
+              org.apache.thrift.protocol.TList _list658 = iprot.readListBegin();
+              names = new java.util.ArrayList<java.lang.String>(_list658.size);
+              @org.apache.thrift.annotation.Nullable java.lang.String _elem659;
+              for (int _i660 = 0; _i660 < _list658.size; ++_i660)
               {
-                _elem621 = iprot.readString();
-                names.add(_elem621);
+                _elem659 = iprot.readString();
+                names.add(_elem659);
               }
               iprot.readListEnd();
             }
@@ -163,14 +163,14 @@ package org.apache.hadoop.hive.metastore.api;
           if (field.type == EXPRS_FIELD_DESC.type) {
             java.util.List<DropPartitionsExpr> exprs;
             {
-              org.apache.thrift.protocol.TList _list623 = iprot.readListBegin();
-              exprs = new java.util.ArrayList<DropPartitionsExpr>(_list623.size);
-              @org.apache.thrift.annotation.Nullable DropPartitionsExpr _elem624;
-              for (int _i625 = 0; _i625 < _list623.size; ++_i625)
+              org.apache.thrift.protocol.TList _list661 = iprot.readListBegin();
+              exprs = new java.util.ArrayList<DropPartitionsExpr>(_list661.size);
+              @org.apache.thrift.annotation.Nullable DropPartitionsExpr _elem662;
+              for (int _i663 = 0; _i663 < _list661.size; ++_i663)
               {
-                _elem624 = new DropPartitionsExpr();
-                _elem624.read(iprot);
-                exprs.add(_elem624);
+                _elem662 = new DropPartitionsExpr();
+                _elem662.read(iprot);
+                exprs.add(_elem662);
               }
               iprot.readListEnd();
             }
@@ -195,9 +195,9 @@ package org.apache.hadoop.hive.metastore.api;
         java.util.List<java.lang.String> names = (java.util.List<java.lang.String>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, names.size()));
-          for (java.lang.String _iter626 : names)
+          for (java.lang.String _iter664 : names)
           {
-            oprot.writeString(_iter626);
+            oprot.writeString(_iter664);
           }
           oprot.writeListEnd();
         }
@@ -206,9 +206,9 @@ package org.apache.hadoop.hive.metastore.api;
         java.util.List<DropPartitionsExpr> exprs = (java.util.List<DropPartitionsExpr>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, exprs.size()));
-          for (DropPartitionsExpr _iter627 : exprs)
+          for (DropPartitionsExpr _iter665 : exprs)
           {
-            _iter627.write(oprot);
+            _iter665.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -226,13 +226,13 @@ package org.apache.hadoop.hive.metastore.api;
         case NAMES:
           java.util.List<java.lang.String> names;
           {
-            org.apache.thrift.protocol.TList _list628 = iprot.readListBegin();
-            names = new java.util.ArrayList<java.lang.String>(_list628.size);
-            @org.apache.thrift.annotation.Nullable java.lang.String _elem629;
-            for (int _i630 = 0; _i630 < _list628.size; ++_i630)
+            org.apache.thrift.protocol.TList _list666 = iprot.readListBegin();
+            names = new java.util.ArrayList<java.lang.String>(_list666.size);
+            @org.apache.thrift.annotation.Nullable java.lang.String _elem667;
+            for (int _i668 = 0; _i668 < _list666.size; ++_i668)
             {
-              _elem629 = iprot.readString();
-              names.add(_elem629);
+              _elem667 = iprot.readString();
+              names.add(_elem667);
             }
             iprot.readListEnd();
           }
@@ -240,14 +240,14 @@ package org.apache.hadoop.hive.metastore.api;
         case EXPRS:
           java.util.List<DropPartitionsExpr> exprs;
           {
-            org.apache.thrift.protocol.TList _list631 = iprot.readListBegin();
-            exprs = new java.util.ArrayList<DropPartitionsExpr>(_list631.size);
-            @org.apache.thrift.annotation.Nullable DropPartitionsExpr _elem632;
-            for (int _i633 = 0; _i633 < _list631.size; ++_i633)
+            org.apache.thrift.protocol.TList _list669 = iprot.readListBegin();
+            exprs = new java.util.ArrayList<DropPartitionsExpr>(_list669.size);
+            @org.apache.thrift.annotation.Nullable DropPartitionsExpr _elem670;
+            for (int _i671 = 0; _i671 < _list669.size; ++_i671)
             {
-              _elem632 = new DropPartitionsExpr();
-              _elem632.read(iprot);
-              exprs.add(_elem632);
+              _elem670 = new DropPartitionsExpr();
+              _elem670.read(iprot);
+              exprs.add(_elem670);
             }
             iprot.readListEnd();
           }
@@ -267,9 +267,9 @@ package org.apache.hadoop.hive.metastore.api;
         java.util.List<java.lang.String> names = (java.util.List<java.lang.String>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, names.size()));
-          for (java.lang.String _iter634 : names)
+          for (java.lang.String _iter672 : names)
           {
-            oprot.writeString(_iter634);
+            oprot.writeString(_iter672);
           }
           oprot.writeListEnd();
         }
@@ -278,9 +278,9 @@ package org.apache.hadoop.hive.metastore.api;
         java.util.List<DropPartitionsExpr> exprs = (java.util.List<DropPartitionsExpr>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, exprs.size()));
-          for (DropPartitionsExpr _iter635 : exprs)
+          for (DropPartitionsExpr _iter673 : exprs)
           {
-            _iter635.write(oprot);
+            _iter673.write(oprot);
           }
           oprot.writeListEnd();
         }
