@@ -226,9 +226,11 @@ public class ColStatsProcessor implements IStatsProcessor {
         if (!(tbl.isMaterializedView() || tbl.isView() || tbl.isTemporary())) {
           setOrRemoveColumnStatsAccurateProperty(db, tbl, colStatDesc.getColName(), success);
         }
+        tbl.getStorageHandler().setColStatistics(tbl, colStats);
+      } else {
+        // Set table or partition column statistics in metastore.
+        db.setPartitionColumnStatistics(request);
       }
-      // TODO: Write stats for native tables only (See HIVE-27421)
-      db.setPartitionColumnStatistics(request);
       end = System.currentTimeMillis();
       LOG.info("Time taken to update " + colStats.size() + " stats : " + ((end - start)/1000F) + " seconds.");
     }
