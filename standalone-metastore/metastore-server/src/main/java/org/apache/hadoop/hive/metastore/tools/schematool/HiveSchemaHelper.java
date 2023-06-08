@@ -128,7 +128,7 @@ public class HiveSchemaHelper {
 
   private static void logAndPrintToStdout(String msg) {
     LOG.info(msg);
-    System.out.println(msg);
+    LOG.info(msg);
   }
 
   public static class MetaStoreConnectionInfo {

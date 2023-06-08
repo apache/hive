@@ -67,7 +67,7 @@ class SchemaToolTaskMergeCatalog extends MetaStoreTask {
     String fromCatalog = normalizeIdentifier(context.getCommandLine().getOptionValue(MERGE_CATALOG));
     String toCatalog = context.getCommandLine().getOptionValue(TO_CATALOG);
 
-    System.out.println("Merging databases from " + fromCatalog + " to " + toCatalog);
+    LOG.info("Merging databases from " + fromCatalog + " to " + toCatalog);
 
     NestedScriptParser parser = context.getParser();
     Connection conn = context.getConnectionToMetastore(true);
@@ -82,57 +82,57 @@ class SchemaToolTaskMergeCatalog extends MetaStoreTask {
 
         // Detect conflicting databases
         String conflicts = String.format(quote(DB_CONFLICTS_STMT, parser), fromCatalog, toCatalog);
-        System.out.println("Determining name conflicts between databases across catalogs");
+        LOG.info("Determining name conflicts between databases across catalogs");
         LOG.info("[DB Conflicts] Executing SQL:" + conflicts);
         ResultSet rs = stmt.executeQuery(conflicts);
         boolean cleanMerge = true;
         while (rs.next()) {
           cleanMerge = false;
-          System.out.println(
+          LOG.info(
               "Name conflict(s) between merging catalogs, database " + rs.getString(1) + " exists in catalogs "
                   + rs.getString(2) + " and " + rs.getString(3));
         }
 
         if (!cleanMerge) {
-          System.out.println("[ERROR] Please resolve the database name conflicts shown above manually and retry the mergeCatalog operation.");
+          LOG.error("[ERROR] Please resolve the database name conflicts shown above manually and retry the mergeCatalog operation.");
           System.exit(1);
         }
 
         conn.setAutoCommit(false);
         String insert =
             String.format(quote(ADD_AUTOPURGE_TO_TABLE, parser), "EXTERNAL", "TRUE", "MANAGED_TABLE", fromCatalog);
-        System.out.println("Setting external=true on all MANAGED tables in catalog " + fromCatalog);
+        LOG.info("Setting external=true on all MANAGED tables in catalog " + fromCatalog);
         LOG.debug("[external table property] Executing SQL:" + insert);
         prevTime = System.currentTimeMillis();
         int count = stmt.executeUpdate(insert);
         curTime = System.currentTimeMillis();
-        System.out.println("Set external.table.purge on " + count + " tables, time taken (ms):" + (curTime - prevTime));
+        LOG.info("Set external.table.purge on " + count + " tables, time taken (ms):" + (curTime - prevTime));
 
         insert = String.format(quote(ADD_AUTOPURGE_TO_TABLE, parser), "external.table.purge", "true", "MANAGED_TABLE",
             fromCatalog);
-        System.out.println("Setting external.table.purge=true on all MANAGED tables in catalog " + fromCatalog);
+        LOG.info("Setting external.table.purge=true on all MANAGED tables in catalog " + fromCatalog);
         LOG.debug("[external.table.purge] Executing SQL:" + insert);
         prevTime = curTime;
         count = stmt.executeUpdate(insert);
         curTime = System.currentTimeMillis();
-        System.out.println("Set external.table.purge on " + count + " tables, time taken (ms):" + (curTime - prevTime));
+        LOG.info("Set external.table.purge on " + count + " tables, time taken (ms):" + (curTime - prevTime));
 
         String update =
             String.format(quote(CONVERT_TABLE_TO_EXTERNAL, parser), "EXTERNAL_TABLE", "MANAGED_TABLE", fromCatalog);
-        System.out.println("Setting tableType to EXTERNAL on all MANAGED tables in catalog " + fromCatalog);
+        LOG.info("Setting tableType to EXTERNAL on all MANAGED tables in catalog " + fromCatalog);
         LOG.debug("[tableType=EXTERNAL_TABLE] Executing SQL:" + update);
         prevTime = curTime;
         count = stmt.executeUpdate(update);
         curTime = System.currentTimeMillis();
-        System.out.println("Set tableType=EXTERNAL_TABLE on " + count + " tables, time taken (ms):" + (curTime - prevTime));
+        LOG.info("Set tableType=EXTERNAL_TABLE on " + count + " tables, time taken (ms):" + (curTime - prevTime));
 
         String merge = String.format(quote(MERGE_CATALOG_STMT, parser), toCatalog, fromCatalog);
-        System.out.println("Setting catalog names on all databases in catalog " + fromCatalog);
+        LOG.info("Setting catalog names on all databases in catalog " + fromCatalog);
         LOG.debug("[catalog name] Executing SQL:" + merge);
         prevTime = curTime;
         count = stmt.executeUpdate(merge);
         curTime = System.currentTimeMillis();
-        System.out.println("Changed catalog names on " + count + " databases, time taken (ms):" + (curTime - prevTime));
+        LOG.info("Changed catalog names on " + count + " databases, time taken (ms):" + (curTime - prevTime));
 
         if (count == 0) {
           LOG.info(count + " databases have been merged from catalog " + fromCatalog + " into " + toCatalog);
@@ -141,7 +141,7 @@ class SchemaToolTaskMergeCatalog extends MetaStoreTask {
           conn.rollback();
         } else {
           conn.commit();
-          System.out.println("Committed the changes. Total time taken (ms):" + (curTime - initTime));
+          LOG.info("Committed the changes. Total time taken (ms):" + (curTime - initTime));
         }
         success = true;
       }
@@ -150,7 +150,7 @@ class SchemaToolTaskMergeCatalog extends MetaStoreTask {
     } finally {
       try {
         if (!success) {
-          System.out.println("Rolling back transaction");
+          LOG.info("Rolling back transaction");
           conn.rollback();
         }
         conn.close();

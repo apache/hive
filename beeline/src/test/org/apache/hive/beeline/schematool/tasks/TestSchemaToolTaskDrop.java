@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.tools.schematool.SchemaToolCommandLine;
 import org.apache.hadoop.hive.metastore.tools.schematool.hms.EmbeddedTaskProvider;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.SchemaToolTask;
+import org.apache.hadoop.hive.metastore.tools.schematool.task.SchemaToolTaskProvider;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.TaskContext;
 import org.junit.After;
 import org.junit.Before;
@@ -54,7 +55,7 @@ public class TestSchemaToolTaskDrop {
 
   @Before
   public void setUp() throws Exception {
-    uut = new HiveTaskProvider(new EmbeddedTaskProvider()).getTask("dropAllDatabases");
+    uut = new HiveTaskProvider(new EmbeddedTaskProvider()).getTask(SchemaToolTaskProvider.TaskType.DROP_ALL_DATABASES);
   }
 
   @After

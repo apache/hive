@@ -528,6 +528,7 @@
         <directory>${basedir}/src/main/resources</directory>
         <includes>
           <include>package.jdo</include>
+          <include>log4j2.xml</include>
         </includes>
       </resource>
     </resources>

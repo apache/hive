@@ -62,7 +62,7 @@ class SchemaToolTaskAlterCatalog extends MetaStoreTask {
       throw new HiveMetaException("Asked to update catalog " + catName + " but not given any changes to update");
     }
 
-    System.out.println("Updating catalog " + catName);
+    LOG.info("Updating catalog " + catName);
 
     NestedScriptParser parser = context.getParser();
     Connection conn = context.getConnectionToMetastore(true);

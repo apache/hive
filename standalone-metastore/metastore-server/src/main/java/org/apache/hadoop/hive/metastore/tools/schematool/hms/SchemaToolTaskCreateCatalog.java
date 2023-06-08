@@ -67,7 +67,7 @@ class SchemaToolTaskCreateCatalog extends MetaStoreTask {
     String description = commandLine.getOptionValue(CATALOG_DESCRIPTION);
     boolean ifNotExists = commandLine.hasOption("ifNotExists");
 
-    System.out.println("Create catalog " + catName + " at location " + location);
+    LOG.info("Create catalog " + catName + " at location " + location);
 
     NestedScriptParser parser = context.getParser();
     Connection conn = context.getConnectionToMetastore(true);
@@ -109,7 +109,7 @@ class SchemaToolTaskCreateCatalog extends MetaStoreTask {
     LOG.debug("Going to run " + query);
     try (ResultSet rs = stmt.executeQuery(query)) {
       if (rs.next()) {
-        System.out.println("Catalog " + catName + " already exists");
+        LOG.info("Catalog " + catName + " already exists");
         return true;
       }
     }

@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.metastore.tools.schematool.hms;
 
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
-import org.apache.hadoop.hive.metastore.tools.schematool.SchemaToolCommandLine;
 import org.apache.hadoop.hive.metastore.SchemaInfo;
+import org.apache.hadoop.hive.metastore.tools.schematool.SchemaToolCommandLine;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.TaskContext;
 
 import java.io.BufferedReader;
@@ -62,7 +62,7 @@ class SchemaToolTaskCreateUser extends MetaStoreTask {
     }
 
     testConnectionToMetastore(context);
-    System.out.println("Starting user creation");
+    LOG.info("Starting user creation");
 
     SchemaInfo schemaInfo = context.getSchemaInfo();
     String scriptDir = schemaInfo.getMetaStoreScriptDir();
@@ -71,13 +71,13 @@ class SchemaToolTaskCreateUser extends MetaStoreTask {
     try {
       String dbType = commandLine.getDbType();
       File createFile = subUserAndPassword(scriptDir, protoCreateFile, dbType);
-      System.out.println("Creation script " + createFile.getAbsolutePath());
+      LOG.info("Creation script " + createFile.getAbsolutePath());
       if (!commandLine.hasOption("dryRun")) {
         if ("oracle".equals(dbType)) oracleCreateUserHack(context, createFile);
         else {
           context.getScriptExecutor().execSql(createFile.getParent(), createFile.getName());
         }
-        System.out.println("User creation completed");
+        LOG.info("User creation completed");
       }
     } catch (IOException e) {
       throw new HiveMetaException("User creation FAILED!" +

@@ -75,7 +75,7 @@ class MetastoreValidationTask extends SchemaToolTask {
       }
     }
 
-    System.out.println("Starting metastore validation\n");
+    LOG.info("Starting metastore validation\n");
 
     NestedScriptParser parser = context.getParser();
     try (Connection conn = context.getConnectionToMetastore(false)) {
@@ -95,10 +95,10 @@ class MetastoreValidationTask extends SchemaToolTask {
 
       System.out.print("Done with metastore validation: ");
       if (!success) {
-        System.out.println("[FAIL]");
+        LOG.info("[FAIL]");
         throw new HiveMetaException("Validation failed");
       } else {
-        System.out.println("[SUCCESS]");
+        LOG.info("[SUCCESS]");
       }
     } catch (SQLException e) {
       throw new HiveMetaException("Metastore connection error.", e);
@@ -107,7 +107,7 @@ class MetastoreValidationTask extends SchemaToolTask {
 
   @VisibleForTesting
   boolean validateSchemaVersions(TaskContext context) throws HiveMetaException {
-    System.out.println("Validating schema version");
+    LOG.info("Validating schema version");
     try {
       SchemaInfo schemaInfo = context.getSchemaInfo();
       String minimumRequiredVersion = SchemaInfo.getRequiredHmsSchemaVersion();
@@ -115,7 +115,7 @@ class MetastoreValidationTask extends SchemaToolTask {
       if (!SchemaInfo.isVersionCompatible(minimumRequiredVersion, dbVersion)) {
         System.err.println("The HMS schema version (" + dbVersion +
             ") is not compatible with the minimum required version (" + minimumRequiredVersion + ")");
-        System.out.println("[FAIL]\n");
+        LOG.info("[FAIL]\n");
         return false;
       }
     } catch (HiveMetaException hme) {
@@ -123,13 +123,13 @@ class MetastoreValidationTask extends SchemaToolTask {
           hme.getMessage().contains("Could not find version info in metastore") ||
           hme.getMessage().contains("Failed to get schema version, Cause:")) {
         System.err.println(hme.getMessage());
-        System.out.println("[FAIL]\n");
+        LOG.info("[FAIL]\n");
         return false;
       } else {
         throw hme;
       }
     }
-    System.out.println("[SUCCESS]\n");
+    LOG.info("[SUCCESS]\n");
     return true;
   }
 
@@ -162,7 +162,7 @@ class MetastoreValidationTask extends SchemaToolTask {
         .put("MStringList", Pair.of("SKEWED_STRING_LIST", "STRING_LIST_ID"))
         .build();
 
-    System.out.println("Validating sequence number for SEQUENCE_TABLE");
+    LOG.info("Validating sequence number for SEQUENCE_TABLE");
 
     boolean isValid = true;
     try (Statement stmt = conn.createStatement()) {
@@ -193,7 +193,7 @@ class MetastoreValidationTask extends SchemaToolTask {
         }
       }
 
-      System.out.println(isValid ? "[SUCCESS]\n" :"[FAIL]\n");
+      LOG.info(isValid ? "[SUCCESS]\n" :"[FAIL]\n");
       return isValid;
     } catch (SQLException e) {
         throw new HiveMetaException("Failed to validate sequence number for SEQUENCE_TABLE", e);
@@ -202,7 +202,7 @@ class MetastoreValidationTask extends SchemaToolTask {
 
   @VisibleForTesting
   boolean validateSchemaTables(Connection conn, TaskContext context) throws HiveMetaException {
-    System.out.println("Validating metastore schema tables");
+    LOG.info("Validating metastore schema tables");
 
     List<String> dbTables = new ArrayList<>();
     try {
@@ -243,11 +243,11 @@ class MetastoreValidationTask extends SchemaToolTask {
       }
     } catch (HiveMetaException e) {
       System.err.println("Exception while trying to obtain the applied scripts. Cause:" + e.getMessage());
-      System.out.println("Failed in schema table validation.");
+      LOG.info("Failed in schema table validation.");
       return false;
     } catch (Exception e) {
       System.err.println("Exception in parsing schema file. Cause:" + e.getMessage());
-      System.out.println("Failed in schema table validation.");
+      LOG.info("Failed in schema table validation.");
       return false;
     }
 
@@ -259,23 +259,23 @@ class MetastoreValidationTask extends SchemaToolTask {
     if (schemaTables.size() > 0) {
       System.err.println("Table(s) [ " + Arrays.toString(schemaTables.toArray()) + " ] " +
           "are missing from the metastore database schema.");
-      System.out.println("[FAIL]\n");
+      LOG.info("[FAIL]\n");
       return false;
     } else {
-      System.out.println("[SUCCESS]\n");
+      LOG.info("[SUCCESS]\n");
       return true;
     }
   }
 
   @VisibleForTesting
   boolean validateLocations(Connection conn, URI[] defaultServers, NestedScriptParser parser) throws HiveMetaException {
-    System.out.println("Validating DFS locations");
+    LOG.info("Validating DFS locations");
     boolean rtn = true;
     rtn &= checkMetaStoreDBLocation(conn, defaultServers, parser);
     rtn &= checkMetaStoreTableLocation(conn, defaultServers, parser);
     rtn &= checkMetaStorePartitionLocation(conn, defaultServers, parser);
     rtn &= checkMetaStoreSkewedColumnsLocation(conn, defaultServers, parser);
-    System.out.println(rtn ? "[SUCCESS]\n" : "[FAIL]\n");
+    LOG.info(rtn ? "[SUCCESS]\n" : "[FAIL]\n");
     return rtn;
   }
 
@@ -561,7 +561,7 @@ class MetastoreValidationTask extends SchemaToolTask {
 
   @VisibleForTesting
   boolean validateColumnNullValues(Connection conn, NestedScriptParser parser) throws HiveMetaException {
-    System.out.println("Validating columns for incorrect NULL values.");
+    LOG.info("Validating columns for incorrect NULL values.");
 
     boolean isValid = true;
     String queryColumnNullValues = quote(QUERY_COLUMN_NULL_VALUES, parser);
@@ -576,7 +576,7 @@ class MetastoreValidationTask extends SchemaToolTask {
          System.err.println("SD_ID in TBLS should not be NULL for Table Name=" + tableName + ", Table ID=" + tableId + ", Table Type=" + tableType);
       }
 
-      System.out.println(isValid ? "[SUCCESS]\n" : "[FAIL]\n");
+      LOG.info(isValid ? "[SUCCESS]\n" : "[FAIL]\n");
       return isValid;
     } catch(SQLException e) {
         throw new HiveMetaException("Failed to validate columns for incorrect NULL values", e);

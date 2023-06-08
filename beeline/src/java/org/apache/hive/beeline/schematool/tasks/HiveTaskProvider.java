@@ -33,11 +33,11 @@ public class HiveTaskProvider implements SchemaToolTaskProvider {
   /**
    * The map contains {@link Supplier} lambdas, so only the required {@link SchemaToolTask}s are instantiated.
    */
-  private final Map<String, Supplier<SchemaToolTask>> taskSuppliers = new HashMap<>();
+  private final Map<TaskType, Supplier<SchemaToolTask>> taskSuppliers = new HashMap<>();
 
   @Override
-  public SchemaToolTask getTask(String command) {
-    return taskSuppliers.getOrDefault(command, () -> null).get();
+  public SchemaToolTask getTask(TaskType taskType) {
+    return taskSuppliers.getOrDefault(taskType, () -> null).get();
   }
 
   @Override
@@ -46,16 +46,16 @@ public class HiveTaskProvider implements SchemaToolTaskProvider {
   }
 
   public HiveTaskProvider(SchemaToolTaskProvider embeddedHmsTaskProvider) {
-    taskSuppliers.put(INIT_SCHEMA_COMMAND, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
-    taskSuppliers.put(INIT_SCHEMA_TO_COMMAND, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
-    taskSuppliers.put(UPGRADE_SCHEMA_COMMAND, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
-    taskSuppliers.put(UPGRADE_SCHEMA_FROM_COMMAND, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
-    taskSuppliers.put(INIT_OR_UPGRADE_SCHEMA_COMMAND, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask("info"))));
-    taskSuppliers.put(DROP_ALL_DATABASES_COMMAND, () -> new HiveContextTask().addChild(new SchemaToolTaskDrop()));
+    taskSuppliers.put(TaskType.INIT_SCHEMA, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask(TaskType.INFO))));
+    taskSuppliers.put(TaskType.INIT_SCHEMA_TO, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask(TaskType.INFO))));
+    taskSuppliers.put(TaskType.UPGRADE_SCHEMA, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask(TaskType.INFO))));
+    taskSuppliers.put(TaskType.UPGRADE_SCHEMA_FROM, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask(TaskType.INFO))));
+    taskSuppliers.put(TaskType.INIT_OR_UPGRADE_SCHEMA, () -> new HiveContextTask().addChild(new HiveUpdateTask().addChild(embeddedHmsTaskProvider.getTask(TaskType.INFO))));
+    taskSuppliers.put(TaskType.DROP_ALL_DATABASES, () -> new HiveContextTask().addChild(new SchemaToolTaskDrop()));
 
-    for(String command : new String[] {INFO_COMMAND, ALTER_CATALOG_COMMAND, CREATE_CATALOG_COMMAND, MERGE_CATALOG_COMMAND,
-        MOVE_DATABASE_COMMAND, MOVE_TABLE_COMMAND, CREATE_LOGS_TABLE_COMMAND, CREATE_USER_COMMAND}) {
-      taskSuppliers.put(command, () -> new HiveContextTask().addChild(embeddedHmsTaskProvider.getTask(command)));
+    for(TaskType taskType : new TaskType[] {TaskType.INFO, TaskType.ALTER_CATALOG, TaskType.CREATE_CATALOG, TaskType.MERGE_CATALOG,
+        TaskType.MOVE_DATABASE, TaskType.MOVE_TABLE, TaskType.CREATE_LOGS_TABLE, TaskType.CREATE_USER}) {
+      taskSuppliers.put(taskType, () -> new HiveContextTask().addChild(embeddedHmsTaskProvider.getTask(taskType)));
     }
   }
 }

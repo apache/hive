@@ -73,7 +73,7 @@ class HiveSchemaInfo extends SchemaInfo {
       }
     }
     if (firstScript == -1) {
-      throw new HiveMetaException("Unknown version specified for upgrade " + schemaVersion + " Metastore schema may be too old or newer");
+      throw new HiveMetaException("Unknown version specified for upgrade " + schemaVersion + " Metastore schema may be too old");
     }
 
     for (int i=firstScript; i < hiveSchemaVersions.length; i++) {
@@ -125,7 +125,7 @@ class HiveSchemaInfo extends SchemaInfo {
       }
       return currentSchemaVersion;
     } catch (SQLException e) {
-      throw new HiveMetaException("Failed to get schema version, Cause:" + e.getMessage());
+      throw new HiveMetaException("Failed to get schema version, Cause: " + e.getMessage());
     }
   }
 

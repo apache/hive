@@ -44,6 +44,11 @@ class BeelineScriptExecutor implements ScriptExecutor {
   private final NestedScriptParser dbCommandParser;
   private final CommandBuilder commandBuilder;
 
+  public BeelineScriptExecutor(NestedScriptParser dbCommandParser, CommandBuilder commandBuilder) {
+    this.dbCommandParser = dbCommandParser;
+    this.commandBuilder = commandBuilder;
+  }
+  
   @Override
   public void execSql(String scriptDir, String sqlScriptFile) throws IOException {
     // expand the nested script
@@ -86,13 +91,9 @@ class BeelineScriptExecutor implements ScriptExecutor {
       LOG.debug("Going to run command <" + commandBuilder.buildToLog(sqlScriptFile) + ">");
       int status = beeLine.begin(commandBuilder.buildToRun(sqlScriptFile), null, false);
       if (status != 0) {
-        throw new IOException("Schema script failed, errorcode " + status);
+        throw new IOException("Schema script failed, error code: " + status);
       }
     }
   }
 
-  public BeelineScriptExecutor(NestedScriptParser dbCommandParser, CommandBuilder commandBuilder) {
-    this.dbCommandParser = dbCommandParser;
-    this.commandBuilder = commandBuilder;
-  }
 }

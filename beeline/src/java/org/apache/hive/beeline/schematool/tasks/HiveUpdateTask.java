@@ -64,14 +64,14 @@ class HiveUpdateTask extends SchemaToolTask {
     }
 
     if (toVersion.equals(fromVersion)) {
-      System.out.println("No schema upgrade required from version " + fromVersion);
+      LOG.info("No schema upgrade required from version " + fromVersion);
       return;
     }
 
     if (fromVersion.equals(HiveSchemaInfo.INITIAL_VERSION)) {
-      System.out.println("Initializing schema");
+      LOG.info("Initializing schema");
     } else {
-      System.out.println("Starting upgrade metastore schema from version " + fromVersion + " to " + toVersion);
+      LOG.info("Starting upgrade metastore schema from version " + fromVersion + " to " + toVersion);
     }
 
     // Find the list of scripts to execute for this upgrade
@@ -80,10 +80,10 @@ class HiveUpdateTask extends SchemaToolTask {
     String scriptDir = schemaInfo.getMetaStoreScriptDir();
     try {
       for (String scriptFile : upgradeScripts) {
-        System.out.println("Upgrade script " + scriptFile);
+        LOG.info("Upgrade script " + scriptFile);
         if (!context.getCommandLine().hasOption("dryRun")) {
           context.getScriptExecutor().execSql(scriptDir, scriptFile);
-          System.out.println("Completed " + scriptFile);
+          LOG.info("Completed " + scriptFile);
         }
       }
       

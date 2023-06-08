@@ -53,7 +53,7 @@ public class SchemaToolTaskFactory {
       }
       SchemaToolTask rootTask = new RootTask(scriptParserFactory);
       for (Option command : cmdLine.getOptions()) {
-        SchemaToolTask task = provider.getTask(command.getOpt());
+        SchemaToolTask task = provider.getTask(SchemaToolTaskProvider.TaskType.fromCommand(command.getOpt()));
         if (task != null) {
           rootTask.addChild(task);
           //Check for unused command line arguments

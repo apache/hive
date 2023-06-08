@@ -33,11 +33,11 @@ public class LiquibaseTaskProvider implements SchemaToolTaskProvider {
   /**
    * The map contains {@link Supplier} lambdas, so only the required {@link SchemaToolTask}s are instantiated.
    */
-  private final Map<String, Supplier<SchemaToolTask>> taskSuppliers = new HashMap<>();
+  private final Map<TaskType, Supplier<SchemaToolTask>> taskSuppliers = new HashMap<>();
 
   @Override
-  public SchemaToolTask getTask(String command) {
-    return taskSuppliers.getOrDefault(command, () -> null).get();
+  public SchemaToolTask getTask(TaskType taskType) {
+    return taskSuppliers.getOrDefault(taskType, () -> null).get();
   }
 
   @Override
@@ -47,21 +47,21 @@ public class LiquibaseTaskProvider implements SchemaToolTaskProvider {
   }
 
   public LiquibaseTaskProvider(SchemaToolTaskProvider embeddedHmsTaskProvider) {
-    taskSuppliers.put(INIT_SCHEMA_COMMAND, () -> new LiquibaseContextTask()
+    taskSuppliers.put(TaskType.INIT_SCHEMA, () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseUpdateTask())));
-    taskSuppliers.put(INIT_SCHEMA_TO_COMMAND, () -> new LiquibaseContextTask()
+    taskSuppliers.put(TaskType.INIT_SCHEMA_TO, () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseUpdateToTask())));
-    taskSuppliers.put(UPGRADE_SCHEMA_COMMAND, () -> new LiquibaseContextTask()
+    taskSuppliers.put(TaskType.UPGRADE_SCHEMA, () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseSyncTask(false).addChild(new LiquibaseUpdateTask()))));
     // added only for limited backward-compatiblity. Will behave the same as 'upgradeSchema'
-    taskSuppliers.put(UPGRADE_SCHEMA_FROM_COMMAND, () -> new LiquibaseContextTask()
+    taskSuppliers.put(TaskType.UPGRADE_SCHEMA_FROM, () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseSyncTask(false).addChild(new LiquibaseUpdateTask()))));
-    taskSuppliers.put(INIT_OR_UPGRADE_SCHEMA_COMMAND, () -> new LiquibaseContextTask()
+    taskSuppliers.put(TaskType.INIT_OR_UPGRADE_SCHEMA, () -> new LiquibaseContextTask()
         .addChild(new LiquibaseValidationTask().addChild(new LiquibaseSyncTask(true).addChild(new LiquibaseUpdateTask()))));
-    taskSuppliers.put(VALIDATE_COMMAND, () -> new LiquibaseContextTask().addChild(new LiquibaseValidationTask()).addChild(new MetastoreValidationTask(new ScriptScannerFactory())));
-    for(String command : new String[] {INFO_COMMAND, ALTER_CATALOG_COMMAND, CREATE_CATALOG_COMMAND, MERGE_CATALOG_COMMAND,
-        MOVE_DATABASE_COMMAND, MOVE_TABLE_COMMAND, CREATE_LOGS_TABLE_COMMAND, CREATE_USER_COMMAND}) {
-      taskSuppliers.put(command, () -> new LiquibaseContextTask().addChild(embeddedHmsTaskProvider.getTask(command)));
+    taskSuppliers.put(TaskType.VALIDATE, () -> new LiquibaseContextTask().addChild(new LiquibaseValidationTask()).addChild(new MetastoreValidationTask(new ScriptScannerFactory())));
+    for(TaskType taskType : new TaskType[] {TaskType.INFO, TaskType.ALTER_CATALOG, TaskType.CREATE_CATALOG, TaskType.MERGE_CATALOG,
+        TaskType.MOVE_DATABASE, TaskType.MOVE_TABLE, TaskType.CREATE_LOGS_TABLE, TaskType.CREATE_USER}) {
+      taskSuppliers.put(taskType, () -> new LiquibaseContextTask().addChild(embeddedHmsTaskProvider.getTask(taskType)));
     }
   }
 }

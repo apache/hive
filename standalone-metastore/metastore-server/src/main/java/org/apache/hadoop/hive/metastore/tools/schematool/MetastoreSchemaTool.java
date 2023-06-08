@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.tools.schematool;
 
+import jline.internal.Log;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
@@ -28,10 +29,14 @@ import org.apache.hadoop.hive.metastore.tools.schematool.hms.EmbeddedTaskProvide
 import org.apache.hadoop.hive.metastore.tools.schematool.liquibase.LiquibaseTaskProvider;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.SchemaToolTaskFactory;
 import org.apache.hadoop.hive.metastore.tools.schematool.task.TaskContext;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.PatternLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.logging.LogManager;
 
 public class MetastoreSchemaTool {
 
@@ -55,29 +60,26 @@ public class MetastoreSchemaTool {
 
   protected int runcommandLine(String[] args, OptionGroup additionalOptions) {
     try {
-      System.out.println("Running schematool with the following arguments: " + StringUtils.join(args, ','));
       LOG.info("Running schematool with the following arguments: " + StringUtils.join(args, ','));
       run(findHomeDir(), args, additionalOptions, MetastoreConf.newMetastoreConf());
       return 0;
     } catch (HiveMetaException e) {
-      logAndPrintToError(e.getMessage());
+      Log.error(e.getMessage());
       if (e.getCause() != null) {
         Throwable t = e.getCause();
-        logAndPrintToError("Underlying cause: "
-            + t.getClass().getName() + " : "
-            + t.getMessage());
-        if (e.getCause() instanceof SQLException) {
-          logAndPrintToError("SQL Error code: " + ((SQLException) t).getErrorCode());
+        LOG.error("Underlying cause: " + t.getClass().getName() + " : " + t.getMessage());
+        if (t instanceof SQLException) {
+          LOG.error("SQL Error code: " + ((SQLException) t).getErrorCode());
         }
       }
       if (cmdLine != null) {
         if (cmdLine.hasOption("verbose")) {
           e.printStackTrace();
         } else {
-          logAndPrintToError("Use --verbose for detailed stacktrace.");
+          LOG.info("Use --verbose for detailed stacktrace.");
         }
       }
-      logAndPrintToError("*** schemaTool failed ***");
+      LOG.error("*** schemaTool failed ***");
       return 1;
     }
   }
@@ -94,11 +96,6 @@ public class MetastoreSchemaTool {
     }
     TaskContext context = new TaskContext(metastoreHome, conf, cmdLine);
     taskFactory.getTask(cmdLine).executeChain(context);
-  }
-
-  private static void logAndPrintToError(String errmsg) {
-    LOG.error(errmsg);
-    System.err.println(errmsg);
   }
 
   private String findHomeDir() {

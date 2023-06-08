@@ -23,30 +23,53 @@ import java.util.Set;
  * Responsible for creating the necessary {@link SchemaToolTask} instances
  */
 public interface SchemaToolTaskProvider {
-  
-  String INIT_SCHEMA_COMMAND = "initSchema";
-  String INIT_SCHEMA_TO_COMMAND = "initSchemaTo";
-  String UPGRADE_SCHEMA_COMMAND = "upgradeSchema";
-  String UPGRADE_SCHEMA_FROM_COMMAND = "upgradeSchemaFrom";
-  String INIT_OR_UPGRADE_SCHEMA_COMMAND = "initOrUpgradeSchema";
-  String VALIDATE_COMMAND = "validate";
-  String INFO_COMMAND = "info";
-  String ALTER_CATALOG_COMMAND = "alterCatalog";
-  String CREATE_CATALOG_COMMAND = "createCatalog";
-  String MERGE_CATALOG_COMMAND = "mergeCatalog";
-  String MOVE_DATABASE_COMMAND = "moveDatabase";
-  String MOVE_TABLE_COMMAND = "moveTable";
-  String CREATE_LOGS_TABLE_COMMAND = "createLogsTable";
-  String CREATE_USER_COMMAND = "createUser";
-  String DROP_ALL_DATABASES_COMMAND = "dropAllDatabases";
+
+  enum TaskType {
+
+    INIT_SCHEMA("initSchema"),
+    INIT_SCHEMA_TO("initSchemaTo"),
+    UPGRADE_SCHEMA("upgradeSchema"),
+    UPGRADE_SCHEMA_FROM("upgradeSchemaFrom"),
+    INIT_OR_UPGRADE_SCHEMA("initOrUpgradeSchema"),
+    VALIDATE("validate"),
+    INFO("info"),
+    ALTER_CATALOG("alterCatalog"),
+    CREATE_CATALOG("createCatalog"),
+    MERGE_CATALOG("mergeCatalog"),
+    MOVE_DATABASE("moveDatabase"),
+    MOVE_TABLE("moveTable"),
+    CREATE_LOGS_TABLE("createLogsTable"),
+    CREATE_USER("createUser"),
+    DROP_ALL_DATABASES("dropAllDatabases");
+    
+    private final String command;
+
+    public String getCommand() {
+      return command;      
+    }
+
+    TaskType(String command) {
+      this.command = command;
+    }
+    
+    public static TaskType fromCommand(String command) {
+      for(TaskType taskType : TaskType.values()) {
+        if (command.equalsIgnoreCase(taskType.command)) {
+          return taskType;
+        }
+      }
+      return null;
+    }
+
+  }
 
   /**
    * Creates a new {@link SchemaToolTask} instance associated with the given command
-   * @param command The schema tool command parsed from the arguments
+   * @param taskType The schema tool command parsed from the arguments
    * @return Returns with a new instance of the {@link SchemaToolTask} associated with the command, or null if there
    *  is nothing registered for it.
    */
-  SchemaToolTask getTask(String command);
+  SchemaToolTask getTask(TaskType taskType);
 
   /**
    * @return Returns the list of databases which are supported by the {@link SchemaToolTask} instances returned by this

@@ -37,22 +37,22 @@ public class EmbeddedTaskProvider implements SchemaToolTaskProvider {
   /**
    * The map contains {@link Supplier} lambdas, so only the required {@link SchemaToolTask}s are instantiated.
    */
-  private static final Map<String, Supplier<SchemaToolTask>> TASK_SUPPLIERS = new HashMap<>();
+  private static final Map<TaskType, Supplier<SchemaToolTask>> TASK_SUPPLIERS = new HashMap<>();
 
   static {
-    TASK_SUPPLIERS.put("info", SchemaToolTaskInfo::new);
-    TASK_SUPPLIERS.put("alterCatalog", SchemaToolTaskAlterCatalog::new);
-    TASK_SUPPLIERS.put("createCatalog", SchemaToolTaskCreateCatalog::new);
-    TASK_SUPPLIERS.put("mergeCatalog", SchemaToolTaskMergeCatalog::new);
-    TASK_SUPPLIERS.put("moveDatabase", SchemaToolTaskMoveDatabase::new);
-    TASK_SUPPLIERS.put("moveTable", SchemaToolTaskMoveTable::new);
-    TASK_SUPPLIERS.put("createLogsTable", SchemaToolTaskCreateLogsTable::new);
-    TASK_SUPPLIERS.put("createUser", SchemaToolTaskCreateUser::new);
+    TASK_SUPPLIERS.put(TaskType.INFO, SchemaToolTaskInfo::new);
+    TASK_SUPPLIERS.put(TaskType.ALTER_CATALOG, SchemaToolTaskAlterCatalog::new);
+    TASK_SUPPLIERS.put(TaskType.CREATE_CATALOG, SchemaToolTaskCreateCatalog::new);
+    TASK_SUPPLIERS.put(TaskType.MERGE_CATALOG, SchemaToolTaskMergeCatalog::new);
+    TASK_SUPPLIERS.put(TaskType.MOVE_DATABASE, SchemaToolTaskMoveDatabase::new);
+    TASK_SUPPLIERS.put(TaskType.MOVE_TABLE, SchemaToolTaskMoveTable::new);
+    TASK_SUPPLIERS.put(TaskType.CREATE_LOGS_TABLE, SchemaToolTaskCreateLogsTable::new);
+    TASK_SUPPLIERS.put(TaskType.CREATE_USER, SchemaToolTaskCreateUser::new);
   }
 
   @Override
-  public SchemaToolTask getTask(String command) {
-    return TASK_SUPPLIERS.getOrDefault(command, () -> null).get();
+  public SchemaToolTask getTask(TaskType taskType) {
+    return TASK_SUPPLIERS.getOrDefault(taskType, () -> null).get();
   }
 
   @Override

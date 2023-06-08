@@ -48,7 +48,7 @@ class SchemaToolTaskCreateLogsTable extends MetaStoreTask {
 
     testConnectionToMetastore(context);
 
-    System.out.println("Starting creation of logs table");
+    LOG.info("Starting creation of logs table");
 
     File scriptFile = generateLogsTableScript();
 
@@ -56,10 +56,10 @@ class SchemaToolTaskCreateLogsTable extends MetaStoreTask {
     String initScriptFile = scriptFile.getName();
 
     try {
-      System.out.println("Initialization script " + initScriptFile);
+      LOG.info("Initialization script " + initScriptFile);
       if (commandLine.hasOption("dryRun")) {
         context.getScriptExecutor().execSql(initScriptDir, initScriptFile);
-        System.out.println("Initialization script completed");
+        LOG.info("Initialization script completed");
       }
     } catch (IOException e) {
       throw new HiveMetaException("Logs table creation FAILED!", e);

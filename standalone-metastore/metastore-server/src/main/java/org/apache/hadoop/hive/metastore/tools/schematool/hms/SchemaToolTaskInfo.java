@@ -40,8 +40,8 @@ class SchemaToolTaskInfo extends SchemaToolTask {
     String minimumRequiredVersion = SchemaInfo.getRequiredHmsSchemaVersion();
     String dbVersion = schemaInfo.getSchemaVersion();
 
-    System.out.println("Hive distribution version:\t " + minimumRequiredVersion);
-    System.out.println("Schema version:\t " + dbVersion);
+    LOG.info("Hive distribution version:\t " + minimumRequiredVersion);
+    LOG.info("Schema version:\t " + dbVersion);
 
     if (!SchemaInfo.isVersionCompatible(minimumRequiredVersion, dbVersion)) {
       throw new HiveMetaException("The HMS schema version (" + dbVersion +
