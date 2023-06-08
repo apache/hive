@@ -140,6 +140,8 @@ public class Table implements Serializable {
    */
   private String asOfTimestamp = null;
 
+  private String branchName;
+
   /**
    * Used only for serialization.
    */
@@ -182,6 +184,7 @@ public class Table implements Serializable {
     newTab.setVersionIntervalFrom(this.versionIntervalFrom);
 
     newTab.setMetaTable(this.getMetaTable());
+    newTab.setBranchName(this.getBranchName());
     return newTab;
   }
 
@@ -1355,6 +1358,14 @@ public class Table implements Serializable {
 
   public void setMetaTable(String metaTable) {
     this.metaTable = metaTable;
+  }
+
+  public String getBranchName() {
+    return branchName;
+  }
+
+  public void setBranchName(String branchName) {
+    this.branchName = branchName;
   }
 
   public SourceTable createSourceTable() {

@@ -69,6 +69,7 @@ public final class Catalogs {
 
   public static final String NAME = "name";
   public static final String LOCATION = "location";
+  public static final String BRANCH_NAME = "branch_name";
 
   private static final String NO_CATALOG_TYPE = "no catalog";
   private static final Set<String> PROPERTIES_TO_REMOVE =

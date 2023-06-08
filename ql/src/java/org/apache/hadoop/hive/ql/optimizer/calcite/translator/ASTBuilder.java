@@ -83,6 +83,8 @@ public class ASTBuilder {
         .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
     if (hTbl.getHiveTableMD().getMetaTable() != null) {
       tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getMetaTable());
+    } else if (hTbl.getHiveTableMD().getBranchName() != null) {
+      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getBranchName());
     }
 
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(tableNameBuilder);

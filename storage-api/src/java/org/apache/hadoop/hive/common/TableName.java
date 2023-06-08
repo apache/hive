@@ -31,12 +31,13 @@ public class TableName implements Serializable {
   /** Exception message thrown. */
   private static final String ILL_ARG_EXCEPTION_MSG =
       "Table name must be either <tablename>, <dbname>.<tablename> " + "or <catname>.<dbname>.<tablename>";
+  public static final String BRANCH_NAME_PREFIX = "branch_";
 
   /** Names of the related DB objects. */
   private final String cat;
   private final String db;
   private final String table;
-  private final String metaTable;
+  private final String tableMetaRef;
 
   /**
    *
@@ -47,14 +48,14 @@ public class TableName implements Serializable {
    * @param dbName database name.  Cannot be null.  If you do not now it you can get it from
    *           SessionState.getCurrentDatabase() or use Warehouse.DEFAULT_DATABASE_NAME.
    * @param tableName  table name, cannot be null
-   * @param metaTable name
-   *           Use this to query Iceberg metadata tables.
+   * @param tableMetaRef name
+   *           Use this to query table meta ref, e.g. iceberg metadata table or branch
    */
-  public TableName(final String catName, final String dbName, final String tableName, String metaTable) {
+  public TableName(final String catName, final String dbName, final String tableName, String tableMetaRef) {
     this.cat = catName;
     this.db = dbName;
     this.table = tableName;
-    this.metaTable = metaTable;
+    this.tableMetaRef = tableMetaRef;
   }
 
   public TableName(final String catName, final String dbName, final String tableName) {
@@ -76,11 +77,11 @@ public class TableName implements Serializable {
    * @param defaultDatabase default database to use if database is not in the name.  If you do
    *                        not now it you can get it from SessionState.getCurrentDatabase() or
    *                        use Warehouse.DEFAULT_DATABASE_NAME.
-   * @param metaTable When querying Iceberg metadata tables, set this parameter.
+   * @param tableMetaRef When querying Iceberg meta ref, e.g. metadata table or branch, set this parameter.
    * @return TableName
    * @throws IllegalArgumentException if a non-null name is given
    */
-  public static TableName fromString(final String name, final String defaultCatalog, final String defaultDatabase, String metaTable)
+  public static TableName fromString(final String name, final String defaultCatalog, final String defaultDatabase, String tableMetaRef)
       throws IllegalArgumentException {
     if (name == null) {
       throw new IllegalArgumentException(String.join("", "Table value was null. ", ILL_ARG_EXCEPTION_MSG));
@@ -90,13 +91,17 @@ public class TableName implements Serializable {
       if (names.length == 2) {
         return new TableName(defaultCatalog, names[0], names[1], null);
       } else if (names.length == 3) {
-        return new TableName(names[0], names[1], names[2], null);
+        if (names[2].startsWith(BRANCH_NAME_PREFIX)) {
+          return new TableName(defaultCatalog, names[0], names[1], names[2]);
+        } else {
+          return new TableName(names[0], names[1], names[2], null);
+        }
       } else {
         throw new IllegalArgumentException(ILL_ARG_EXCEPTION_MSG);
       }
 
     } else {
-      return new TableName(defaultCatalog, defaultDatabase, name, metaTable);
+      return new TableName(defaultCatalog, defaultDatabase, name, tableMetaRef);
     }
   }
 
@@ -112,8 +117,8 @@ public class TableName implements Serializable {
     return table;
   }
 
-  public String getMetaTable() {
-    return metaTable;
+  public String getTableMetaRef() {
+    return tableMetaRef;
   }
 
   /**
@@ -139,8 +144,8 @@ public class TableName implements Serializable {
    * Get the name in db.table format, if db is not empty, otherwise pass only the table name.
    */
   public String getNotEmptyDbTable() {
-    String metaTableName = metaTable == null ? "" : "." + metaTable;
-    return db == null || db.trim().isEmpty() ? table : db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table + metaTableName;
+    String metaRefName = tableMetaRef == null ? "" : "." + tableMetaRef;
+    return db == null || db.trim().isEmpty() ? table : db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table + metaRefName;
   }
 
   /**

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -75,6 +76,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
@@ -633,11 +635,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     String location = commitProperties.getProperty(Catalogs.LOCATION);
+    String branchName = commitProperties.getProperty(Catalogs.BRANCH_NAME);
     Configuration configuration = SessionState.getSessionConf();
     if (location != null) {
       HiveTableUtil.cleanupTableObjectFile(location, configuration);
     }
-    List<JobContext> jobContextList = generateJobContext(configuration, tableName, overwrite);
+    List<JobContext> jobContextList = generateJobContext(configuration, tableName, branchName, overwrite);
     if (jobContextList.isEmpty()) {
       return;
     }
@@ -678,7 +681,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean isMetadataTableSupported() {
+  public boolean isTableMetaRefSupported() {
     return true;
   }
 
@@ -766,6 +769,25 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean isValidMetadataTable(String metaTableName) {
     return IcebergMetadataTables.isValidMetaTable(metaTableName);
+  }
+
+  @Override
+  public org.apache.hadoop.hive.ql.metadata.Table checkAndSetTableMetaRef(
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, String tableMetaRef) throws SemanticException {
+    String branch = HiveUtils.getTableBranch(tableMetaRef);
+    if (branch != null) {
+      Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+      if (tbl.snapshot(branch) != null) {
+        hmsTable.setBranchName(tableMetaRef);
+        return hmsTable;
+      }
+      throw new SemanticException(String.format("Cannot use branch (does not exist): %s", branch));
+    }
+    if (IcebergMetadataTables.isValidMetaTable(tableMetaRef)) {
+      hmsTable.setMetaTable(tableMetaRef);
+      return hmsTable;
+    }
+    throw new SemanticException(ErrorMsg.INVALID_METADATA_TABLE_NAME, tableMetaRef);
   }
 
   @Override
@@ -1252,7 +1274,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @return The generated Optional JobContext list or empty if not presents.
    */
   private List<JobContext> generateJobContext(Configuration configuration, String tableName,
-      boolean overwrite) {
+      String branchName, boolean overwrite) {
     JobConf jobConf = new JobConf(configuration);
     Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
         SessionStateUtil.getCommitInfo(jobConf, tableName);
@@ -1266,6 +1288,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         // we should only commit this current table because
         // for multi-table inserts, this hook method will be called sequentially for each target table
         jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
+        if (branchName != null) {
+          jobConf.set(InputFormatConfig.OUTPUT_TABLE_BRANCH, branchName);
+        }
 
         jobContextList.add(new JobContextImpl(jobConf, jobID, null));
       }
