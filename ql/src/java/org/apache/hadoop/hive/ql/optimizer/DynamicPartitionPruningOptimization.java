@@ -28,7 +28,6 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -319,8 +318,9 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
           if (columnOrigin != null && columnOrigin.op instanceof TableScanOperator) {
             // Join key origin has been traced to a table column. Check if the table is external.
             TableScanOperator joinKeyTs = (TableScanOperator) columnOrigin.op;
-            if (MetaStoreUtils.isExternalTable(joinKeyTs.getConf().getTableMetadata().getTTable())) {
-              LOG.debug("Join key {} is from {} which is an external table. Disabling semijoin optimization.",
+            if (!StatsUtils.checkCanProvideStats(new Table(joinKeyTs.getConf().getTableMetadata().getTTable()))) {
+              LOG.debug("Join key {} is from {} which is an external table and also could not provide statistics. " +
+                      "Disabling semijoin optimization.",
                   columnOrigin.col,
                   joinKeyTs.getConf().getTableMetadata().getFullyQualifiedName());
               disableSemiJoin = true;
