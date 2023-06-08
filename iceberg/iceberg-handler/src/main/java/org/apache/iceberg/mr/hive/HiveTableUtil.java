@@ -74,7 +74,6 @@ import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class HiveTableUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveTableUtil.class);
@@ -196,7 +195,7 @@ public class HiveTableUtil {
       append.commit();
       transaction.commitTransaction();
     } catch (Exception e) {
-      throw new SemanticException("Can not Append data files", e);
+      throw new SemanticException("Can not append data files", e);
     }
   }
 

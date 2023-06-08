@@ -18,6 +18,12 @@ STORED AS AVRO;
 
 explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 
+set hive.tez.for.load.native.table=true;
+
+explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
+
+set hive.tez.for.load.native.table=false;
+
 LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 
 select * from ice_avro order by number;
@@ -38,6 +44,14 @@ STORED AS ORC;
 
 explain LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc;
 
+LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc;
+
+select * from ice_orc order by p_partkey;
+
+select count(*) from ice_orc;
+
 LOAD DATA LOCAL INPATH '../../data/files/part.orc' INTO TABLE ice_orc;
 
 select * from ice_orc order by p_partkey;
+
+select count(*) from ice_orc;

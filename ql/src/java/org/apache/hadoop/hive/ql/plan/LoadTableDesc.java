@@ -45,7 +45,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private boolean isInsertOverwrite;
   private boolean isDirectInsert;
 
-  private boolean isIcebergLoad;
+  private boolean useAppendForLoad;
 
   // TODO: the below seem like they should just be combined into partitionDesc
   private Table mdTable;
@@ -159,17 +159,16 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     }
   }
 
-  public LoadTableDesc(Path path, Table tableHandle, boolean isOverWrite, boolean isIcebergLoad) {
+  public LoadTableDesc(Path path, Table tableHandle, boolean isOverWrite, boolean useAppendForLoad) {
     super(path, AcidUtils.Operation.NOT_ACID);
     this.mdTable = tableHandle;
-    this.isIcebergLoad = isIcebergLoad;
+    this.useAppendForLoad = useAppendForLoad;
     this.loadFileType = isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
     this.table = Utilities.getTableDesc(tableHandle);
   }
 
-  @Explain(displayName = "Iceberg Table Load")
-  public boolean isIcebergLoad() {
-    return isIcebergLoad;
+  public boolean isUseAppendForLoad() {
+    return useAppendForLoad;
   }
 
   private void init(

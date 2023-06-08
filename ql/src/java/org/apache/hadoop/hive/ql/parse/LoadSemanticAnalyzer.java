@@ -68,6 +68,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEZ_FOR_LOAD_NATIVE_TABLE;
+
 /**
  * LoadSemanticAnalyzer.
  *
@@ -297,7 +299,8 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     }
     if (ts.tableHandle.isNonNative()) {
       HiveStorageHandler storageHandler = ts.tableHandle.getStorageHandler();
-      if (storageHandler.supportsAppendData(ts.tableHandle.getTTable())) {
+      boolean isTezJob = conf.getBoolVar(HIVE_TEZ_FOR_LOAD_NATIVE_TABLE);
+      if (!isTezJob && storageHandler.supportsAppendData(ts.tableHandle.getTTable())) {
         LoadTableDesc loadTableWork = new LoadTableDesc(new Path(fromURI), ts.tableHandle, isOverWrite, true);
         loadTableWork.setInsertOverwrite(isOverWrite);
         Task<?> childTask =

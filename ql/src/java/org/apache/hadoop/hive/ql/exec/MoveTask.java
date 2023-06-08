@@ -348,7 +348,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   @Override
   public int execute() {
-    if (work != null && work.getLoadTableWork() != null && work.getLoadTableWork().isIcebergLoad()) {
+    if (work != null && work.getLoadTableWork() != null && work.getLoadTableWork().isUseAppendForLoad()) {
       try {
         work.getLoadTableWork().getMdTable().getStorageHandler()
             .appendFiles(work.getLoadTableWork().getMdTable().getTTable(),
