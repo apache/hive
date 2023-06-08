@@ -57,7 +57,7 @@ public abstract class AbstractHMSHandlerProxy implements InvocationHandler {
     initBaseHandler();
   }
 
-  static class Result {
+  static final class Result {
     static final Result ERROR_RESULT = new Result(null, "error=true");
     private final Object result;
     private final String additionalInfo;
