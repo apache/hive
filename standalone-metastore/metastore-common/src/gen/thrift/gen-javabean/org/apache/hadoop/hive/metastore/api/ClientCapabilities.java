@@ -329,15 +329,15 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1080 = iprot.readListBegin();
-                struct.values = new java.util.ArrayList<ClientCapability>(_list1080.size);
-                @org.apache.thrift.annotation.Nullable ClientCapability _elem1081;
-                for (int _i1082 = 0; _i1082 < _list1080.size; ++_i1082)
+                org.apache.thrift.protocol.TList _list1118 = iprot.readListBegin();
+                struct.values = new java.util.ArrayList<ClientCapability>(_list1118.size);
+                @org.apache.thrift.annotation.Nullable ClientCapability _elem1119;
+                for (int _i1120 = 0; _i1120 < _list1118.size; ++_i1120)
                 {
-                  _elem1081 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
-                  if (_elem1081 != null)
+                  _elem1119 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
+                  if (_elem1119 != null)
                   {
-                    struct.values.add(_elem1081);
+                    struct.values.add(_elem1119);
                   }
                 }
                 iprot.readListEnd();
@@ -364,9 +364,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.values.size()));
-          for (ClientCapability _iter1083 : struct.values)
+          for (ClientCapability _iter1121 : struct.values)
           {
-            oprot.writeI32(_iter1083.getValue());
+            oprot.writeI32(_iter1121.getValue());
           }
           oprot.writeListEnd();
         }
@@ -391,9 +391,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
-        for (ClientCapability _iter1084 : struct.values)
+        for (ClientCapability _iter1122 : struct.values)
         {
-          oprot.writeI32(_iter1084.getValue());
+          oprot.writeI32(_iter1122.getValue());
         }
       }
     }
@@ -402,15 +402,15 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, ClientCapabilities struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list1085 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
-        struct.values = new java.util.ArrayList<ClientCapability>(_list1085.size);
-        @org.apache.thrift.annotation.Nullable ClientCapability _elem1086;
-        for (int _i1087 = 0; _i1087 < _list1085.size; ++_i1087)
+        org.apache.thrift.protocol.TList _list1123 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
+        struct.values = new java.util.ArrayList<ClientCapability>(_list1123.size);
+        @org.apache.thrift.annotation.Nullable ClientCapability _elem1124;
+        for (int _i1125 = 0; _i1125 < _list1123.size; ++_i1125)
         {
-          _elem1086 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
-          if (_elem1086 != null)
+          _elem1124 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
+          if (_elem1124 != null)
           {
-            struct.values.add(_elem1086);
+            struct.values.add(_elem1124);
           }
         }
       }

@@ -91,16 +91,16 @@ class ThriftHiveMetastore_add_write_ids_to_min_history_args
                 case 2:
                     if ($ftype == TType::MAP) {
                         $this->writeIds = array();
-                        $_size1793 = 0;
-                        $_ktype1794 = 0;
-                        $_vtype1795 = 0;
-                        $xfer += $input->readMapBegin($_ktype1794, $_vtype1795, $_size1793);
-                        for ($_i1797 = 0; $_i1797 < $_size1793; ++$_i1797) {
-                            $key1798 = '';
-                            $val1799 = 0;
-                            $xfer += $input->readString($key1798);
-                            $xfer += $input->readI64($val1799);
-                            $this->writeIds[$key1798] = $val1799;
+                        $_size1827 = 0;
+                        $_ktype1828 = 0;
+                        $_vtype1829 = 0;
+                        $xfer += $input->readMapBegin($_ktype1828, $_vtype1829, $_size1827);
+                        for ($_i1831 = 0; $_i1831 < $_size1827; ++$_i1831) {
+                            $key1832 = '';
+                            $val1833 = 0;
+                            $xfer += $input->readString($key1832);
+                            $xfer += $input->readI64($val1833);
+                            $this->writeIds[$key1832] = $val1833;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -132,9 +132,9 @@ class ThriftHiveMetastore_add_write_ids_to_min_history_args
             }
             $xfer += $output->writeFieldBegin('writeIds', TType::MAP, 2);
             $output->writeMapBegin(TType::STRING, TType::I64, count($this->writeIds));
-            foreach ($this->writeIds as $kiter1800 => $viter1801) {
-                $xfer += $output->writeString($kiter1800);
-                $xfer += $output->writeI64($viter1801);
+            foreach ($this->writeIds as $kiter1834 => $viter1835) {
+                $xfer += $output->writeString($kiter1834);
+                $xfer += $output->writeI64($viter1835);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
