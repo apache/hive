@@ -550,12 +550,31 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  /**
+   * Introduced by HIVE-25457 for iceberg to query metadata table.
+   * @return true if the storage handler can support it
+   * @deprecated Use {@link #isTableMetaRefSupported()}
+   */
+  @Deprecated
   default boolean isMetadataTableSupported() {
+    return isTableMetaRefSupported();
+  }
+
+  /**
+   * Check whether the table supports metadata references which mainly include branch, tag and metadata tables.
+   * @return true if the storage handler can support it
+   */
+  default boolean isTableMetaRefSupported() {
     return false;
   }
 
   default boolean isValidMetadataTable(String metaTableName) {
     return false;
+  }
+
+  default org.apache.hadoop.hive.ql.metadata.Table checkAndSetTableMetaRef(
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, String tableMetaRef) throws SemanticException {
+    return null;
   }
 
   /**

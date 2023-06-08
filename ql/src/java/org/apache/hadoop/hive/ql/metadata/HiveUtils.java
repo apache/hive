@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.parse.Quotation;
 import org.slf4j.Logger;
@@ -107,6 +109,7 @@ public final class HiveUtils {
   static final byte[] tabEscapeBytes = "\\t".getBytes();;
   static final byte[] tabUnescapeBytes = "\t".getBytes();
   static final byte[] ctrlABytes = "\u0001".getBytes();
+  static final Pattern BRANCH = Pattern.compile("branch_(.*)");
 
 
   public static final Logger LOG = LoggerFactory.getLogger(HiveUtils.class);
@@ -438,5 +441,13 @@ public final class HiveUtils {
       return new Path(root, dbName + "." + tableName);
     }
     return new Path(root, dbName);
+  }
+
+  public static String getTableBranch(String branchName) {
+    Matcher branch = BRANCH.matcher(branchName);
+    if (branch.matches()) {
+      return branch.group(1);
+    }
+    return null;
   }
 }

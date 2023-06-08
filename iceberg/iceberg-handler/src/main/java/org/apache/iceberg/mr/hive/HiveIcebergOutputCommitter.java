@@ -36,11 +36,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.JobConf;
@@ -431,16 +433,17 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     FilesForCommit writeResults = collectResults(
         numTasks, executor, outputTable.table.location(), jobContext, io, true);
+    String branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_BRANCH);
     if (!conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false)) {
       if (writeResults.isEmpty()) {
         LOG.info(
             "Not creating a new commit for table: {}, jobID: {}, operation: {}, since there were no new files to add",
             table, jobContext.getJobID(), HiveCustomStorageHandlerUtils.getWriteOperation(conf, name));
       } else {
-        commitWrite(table, startTime, writeResults);
+        commitWrite(table, branchName, startTime, writeResults);
       }
     } else {
-      commitOverwrite(table, startTime, writeResults);
+      commitOverwrite(table, branchName, startTime, writeResults);
     }
   }
 
@@ -451,15 +454,21 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param startTime The start time of the commit - used only for logging
    * @param results The object containing the new files we would like to add to the table
    */
-  private void commitWrite(Table table, long startTime, FilesForCommit results) {
+  private void commitWrite(Table table, String branchName, long startTime, FilesForCommit results) {
     if (results.deleteFiles().isEmpty()) {
       AppendFiles write = table.newAppend();
       results.dataFiles().forEach(write::appendFile);
+      if (StringUtils.isNotEmpty(branchName)) {
+        write.toBranch(HiveUtils.getTableBranch(branchName));
+      }
       write.commit();
     } else {
       RowDelta write = table.newRowDelta();
       results.dataFiles().forEach(write::addRows);
       results.deleteFiles().forEach(write::addDeletes);
+      if (StringUtils.isNotEmpty(branchName)) {
+        write.toBranch(HiveUtils.getTableBranch(branchName));
+      }
       write.commit();
     }
 
@@ -478,17 +487,23 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param startTime The start time of the commit - used only for logging
    * @param results The object containing the new files
    */
-  private void commitOverwrite(Table table, long startTime, FilesForCommit results) {
+  private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
       ReplacePartitions overwrite = table.newReplacePartitions();
       results.dataFiles().forEach(overwrite::addFile);
+      if (StringUtils.isNotEmpty(branchName)) {
+        overwrite.toBranch(HiveUtils.getTableBranch(branchName));
+      }
       overwrite.commit();
       LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
           table, results.dataFiles().size());
     } else if (table.spec().isUnpartitioned()) {
       DeleteFiles deleteFiles = table.newDelete();
       deleteFiles.deleteFromRowFilter(Expressions.alwaysTrue());
+      if (StringUtils.isNotEmpty(branchName)) {
+        deleteFiles.toBranch(HiveUtils.getTableBranch(branchName));
+      }
       deleteFiles.commit();
       LOG.info("Cleared table contents as part of empty overwrite for unpartitioned table. " +
           "Commit took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
