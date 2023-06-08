@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -55,17 +54,12 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
   @Override
   public int execute() throws HiveException {
     Table tbl = context.getDb().getTable(desc.getTabName());
-    boolean partitionSupport = nonNativeTableSupportsPartitions(tbl);
-    if (!(tbl.isPartitioned() || partitionSupport)) {
-        throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, desc.getTabName());
-    }
-
-    // may not be always present tbl.tTable.parameters.get("table_type")
     List<String> parts;
-    if (partitionSupport) {
-      parts = tbl.getStorageHandler().showPartitions( context, tbl);
-    }
-    else if (desc.getCond() != null || desc.getOrder() != null) {
+    if(tbl!=null && tbl.isNonNative() && tbl.getStorageHandler().supportsPartitionTransform()){
+      parts = tbl.getStorageHandler().showPartitions(context, tbl);
+    } else if (!tbl.isPartitioned()) {
+        throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, desc.getTabName());
+    } else if (desc.getCond() != null || desc.getOrder() != null) {
       parts = getPartitionNames(tbl);
     } else if (desc.getPartSpec() != null) {
       parts = context.getDb().getPartitionNames(tbl.getDbName(), tbl.getTableName(),
@@ -123,8 +117,5 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
     return partNames;
   }
 
-  private boolean nonNativeTableSupportsPartitions(Table tbl) {
-    return tbl != null && tbl.isNonNative() && tbl.getStorageHandler().supportsPartitions();
-  }
-
 }
+

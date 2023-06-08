@@ -108,4 +108,5 @@ public class Constants {
   public static final String TIME_POSTFIX_REQUEST_TRACK = "_TIME";
 
   public static final String ICEBERG = "iceberg";
+  public static final String METADATA_LOCATION = "metadata_location";
 }

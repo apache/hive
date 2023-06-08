@@ -121,20 +121,6 @@ POSTHOOK: query: create table ice2 (a string, b int, c int) PARTITIONED BY (d_pa
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice2
-PREHOOK: query: select * from default.ice2.partitions order by `partition`
-PREHOOK: type: QUERY
-PREHOOK: Input: default@ice2
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from default.ice2.partitions order by `partition`
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice2
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: show partitions ice2
-PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@ice2
-POSTHOOK: query: show partitions ice2
-POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@ice2
 PREHOOK: query: insert into ice2 values  ('aa', 1, 2, 3, 4), ('aa', 1, 2, 3, 4), ('aa', 1, 2, 2, 5), ('aa', 1, 2, 10, 5), ('aa', 1, 2, 10, 5)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

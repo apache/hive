@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
@@ -1461,11 +1462,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public List<String> showPartitions(DDLOperationContext context, org.apache.hadoop.hive.ql.metadata.Table hmstbl) {
+  public List<String> showPartitions(DDLOperationContext context, org.apache.hadoop.hive.ql.metadata.Table hmstbl)
+      throws HiveException {
     Configuration confs = context.getConf();
-    Path path = new Path(hmstbl.getParameters().get("metadata_location"));
-    List<String> parts = Lists.newArrayList();
-    JobConf job = HiveTableUtil.getJobConf(confs, path, hmstbl);
+    Path path = new Path(hmstbl.getParameters().get(Constants.METADATA_LOCATION));
+    JobConf job = HiveTableUtil.getPartJobConf(confs, path, hmstbl);
     Class<? extends InputFormat> formatter = hmstbl.getInputFormatClass();
 
     try {
@@ -1473,18 +1474,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       InputSplit[] splits = inputFormat.getSplits(job, 1);
       try (RecordReader<WritableComparable, Writable> reader = inputFormat.getRecordReader(splits[0], job,
           Reporter.NULL)) {
-        parts = getParts(context, job, reader, hmstbl);
+        return getParts(context, job, reader, hmstbl);
       }
-      return parts;
     } catch (Exception e) {
-      LOG.warn("Warn: Unable to show partitions for iceberg table - ", e);
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR,
+          "show partitions for table " + hmstbl.getTableName() + ". " + ErrorMsg.TABLE_NOT_PARTITIONED +
+              " or the table is empty ");
     }
-    return parts;
-  }
-
-  @Override
-  public boolean supportsPartitions() {
-    return true;
   }
 
   private List<String> getParts(DDLOperationContext context, Configuration job,
@@ -1498,20 +1494,20 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     String prevRow = "";
 
     try (FetchFormatter fetcher = new DefaultFetchFormatter()) {
-      fetcher.initialize(job, HiveTableUtil.getProps());
+      fetcher.initialize(job, HiveTableUtil.getSerializationProps());
       org.apache.hadoop.hive.ql.metadata.Table metaDataPartTable =
           context.getDb().getTable(hmstbl.getDbName(), hmstbl.getTableName(), "partitions", true);
-
+      Deserializer currSerDe = metaDataPartTable.getDeserializer();
+      ObjectMapper mapper = new ObjectMapper();
       while (notEoF) {
         reader.next(key, value);
-        Deserializer currSerDe = metaDataPartTable.getDeserializer();
         String[] row =
             fetcher.convert(currSerDe.deserialize(value), currSerDe.getObjectInspector()).toString().split("\t");
         if (prevRow.equalsIgnoreCase(row[PART_IDX])) {
           notEoF = false;
         } else {
           prevRow = row[0];
-          parts.add(HiveTableUtil.getParseData(row[PART_IDX], row[SPEC_IDX]));
+          parts.add(HiveTableUtil.getParseData(row[PART_IDX], row[SPEC_IDX], mapper));
         }
       }
     }
