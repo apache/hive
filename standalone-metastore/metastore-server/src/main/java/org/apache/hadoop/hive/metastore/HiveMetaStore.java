@@ -119,6 +119,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static ZooKeeperHiveHelper zooKeeperHelper = null;
   private static String msHost = null;
   private static ThriftServer thriftServer;
+  private static Server propertyServer = null;
+
+
+  public static Server getPropertyServer() {
+    return propertyServer;
+  }
 
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
     if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
@@ -382,20 +388,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static ThriftServer startHttpMetastore(int port, Configuration conf)
       throws Exception {
     LOG.info("Attempting to start http metastore server on port: {}", port);
-
-    // This check is likely pointless, especially with the current state of the http
-    // servlet which respects whatever comes in. Putting this in place for the moment
-    // only to enable testing on an otherwise secure cluster.
-    LOG.info(" Checking if security is enabled");
-    if (UserGroupInformation.isSecurityEnabled()) {
-      LOG.info("Logging in via keytab while starting HTTP metastore");
-      // Handle renewal
-      String kerberosName = SecurityUtil.getServerPrincipal(MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL), "0.0.0.0");
-      String keyTabFile = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
-      UserGroupInformation.loginUserFromKeytab(kerberosName, keyTabFile);
-    } else {
-      LOG.info("Security is not enabled. Not logging in via keytab");
-    }
+    // login principal if security is enabled
+    ServletSecurity.loginServerPincipal(conf);
 
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
@@ -425,31 +419,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
-    final boolean useSsl  = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
-    String schemeName = useSsl ? "https" : "http";
-    if (useSsl) {
-      String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
-      if (keyStorePath.isEmpty()) {
-        throw new IllegalArgumentException(ConfVars.SSL_KEYSTORE_PATH.toString()
-            + " Not configured for SSL connection");
-      }
-      String keyStorePassword =
-          MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
-      String keyStoreType =
-          MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_TYPE).trim();
-      String keyStoreAlgorithm =
-          MetastoreConf.getVar(conf, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
-
-      SslContextFactory sslContextFactory = new SslContextFactory();
-      String[] excludedProtocols = MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
-      LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
-      sslContextFactory.addExcludeProtocols(excludedProtocols);
-      LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = "
-          + Arrays.toString(sslContextFactory.getExcludeProtocols()));
-      sslContextFactory.setKeyStorePath(keyStorePath);
-      sslContextFactory.setKeyStorePassword(keyStorePassword);
-      sslContextFactory.setKeyStoreType(keyStoreType);
-      sslContextFactory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm);
+    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
+    if (sslContextFactory != null) {
       connector = new ServerConnector(server, sslContextFactory, http);
     } else {
       connector = new ServerConnector(server, http);
@@ -474,8 +445,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       protocolFactory = new TBinaryProtocol.Factory();
     }
 
-    HMSHandler baseHandler = new HMSHandler("new db based metaserver",
-        conf);
+    HMSHandler baseHandler = new HMSHandler("new db based metaserver", conf);
     IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
     processor = new ThriftHiveMetastore.Processor<>(handler);
     LOG.info("Starting DB backed MetaStore Server with generic processor");
@@ -530,7 +500,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             + minWorkerThreads);
         HMSHandler.LOG.info("Options.maxWorkerThreads = "
             + maxWorkerThreads);
-        HMSHandler.LOG.info("Enable SSL = " + useSsl);
+        HMSHandler.LOG.info("Enable SSL = " + (sslContextFactory != null));
       }
 
       @Override
@@ -769,6 +739,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       }
     }
+    // optionally create and start the property server and servlet
+    propertyServer = PropertyServlet.startServer(conf);
 
     thriftServer.start();
   }
