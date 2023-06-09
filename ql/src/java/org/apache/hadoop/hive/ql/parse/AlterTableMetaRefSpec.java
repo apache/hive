@@ -20,21 +20,30 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
 
-public class AlterTableBranchSpec<T> {
+public class AlterTableMetaRefSpec<T> {
 
-  public enum AlterBranchOperationType {
-    CREATE_BRANCH
+  public enum AlterMetaRefOperationType {
+    CREATE_BRANCH("CREATE BRANCH"),
+    CREATE_TAG("CREATE TAG");
+
+    private final String name;
+    AlterMetaRefOperationType(String name) {
+      this.name = name;
+    }
+    public String getName() {
+      return name;
+    }
   }
 
-  private final AlterBranchOperationType operationType;
+  private final AlterMetaRefOperationType operationType;
   private final T operationParams;
 
-  public AlterTableBranchSpec(AlterBranchOperationType type, T value) {
+  public AlterTableMetaRefSpec(AlterMetaRefOperationType type, T value) {
     this.operationType = type;
     this.operationParams = value;
   }
 
-  public AlterBranchOperationType getOperationType() {
+  public AlterMetaRefOperationType getOperationType() {
     return operationType;
   }
 
@@ -95,6 +104,42 @@ public class AlterTableBranchSpec<T> {
       return MoreObjects.toStringHelper(this).add("branchName", branchName).add("snapshotId", snapshotId)
           .add("asOfTime", asOfTime).add("maxRefAgeMs", maxRefAgeMs).add("minSnapshotsToKeep", minSnapshotsToKeep)
           .add("maxSnapshotAgeMs", maxSnapshotAgeMs).toString();
+    }
+  }
+
+  public static class CreateTagSpec {
+
+    private final String tagName;
+    private final Long snapshotId;
+    private final Long asOfTime;
+    private final Long maxRefAgeMs;
+
+    public String getTagName() {
+      return tagName;
+    }
+
+    public Long getSnapshotId() {
+      return snapshotId;
+    }
+
+    public Long getAsOfTime() {
+      return asOfTime;
+    }
+
+    public Long getMaxRefAgeMs() {
+      return maxRefAgeMs;
+    }
+
+    public CreateTagSpec(String tagName, Long snapShotId, Long asOfTime, Long maxRefAgeMs) {
+      this.tagName = tagName;
+      this.snapshotId = snapShotId;
+      this.asOfTime = asOfTime;
+      this.maxRefAgeMs = maxRefAgeMs;
+    }
+
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("tagName", tagName).add("snapshotId", snapshotId)
+          .add("asOfTime", asOfTime).add("maxRefAgeMs", maxRefAgeMs).toString();
     }
   }
 }

@@ -19,7 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
-import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
 import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.util.SnapshotUtil;
@@ -36,29 +36,29 @@ public class IcebergBranchExec {
   /**
    * Create a branch on the iceberg table
    * @param table the iceberg table
-   * @param createBranchSpec Get the basic parameters needed to create a branch
+   * @param createMetaRefSpec Get the basic parameters needed to create a branch
    */
-  public static void createBranch(Table table, AlterTableBranchSpec.CreateBranchSpec createBranchSpec) {
-    String branchName = createBranchSpec.getBranchName();
+  public static void createBranch(Table table, AlterTableMetaRefSpec.CreateBranchSpec createMetaRefSpec) {
+    String branchName = createMetaRefSpec.getBranchName();
     Long snapshotId = null;
-    if (createBranchSpec.getSnapshotId() != null) {
-      snapshotId = createBranchSpec.getSnapshotId();
-    } else if (createBranchSpec.getAsOfTime() != null) {
-      snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, createBranchSpec.getAsOfTime());
+    if (createMetaRefSpec.getSnapshotId() != null) {
+      snapshotId = createMetaRefSpec.getSnapshotId();
+    } else if (createMetaRefSpec.getAsOfTime() != null) {
+      snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, createMetaRefSpec.getAsOfTime());
     } else {
       snapshotId = table.currentSnapshot().snapshotId();
     }
     LOG.info("Creating branch {} on iceberg table {} with snapshotId {}", branchName, table.name(), snapshotId);
     ManageSnapshots manageSnapshots = table.manageSnapshots();
     manageSnapshots.createBranch(branchName, snapshotId);
-    if (createBranchSpec.getMaxRefAgeMs() != null) {
-      manageSnapshots.setMaxRefAgeMs(branchName, createBranchSpec.getMaxRefAgeMs());
+    if (createMetaRefSpec.getMaxRefAgeMs() != null) {
+      manageSnapshots.setMaxRefAgeMs(branchName, createMetaRefSpec.getMaxRefAgeMs());
     }
-    if (createBranchSpec.getMinSnapshotsToKeep() != null) {
-      manageSnapshots.setMinSnapshotsToKeep(branchName, createBranchSpec.getMinSnapshotsToKeep());
+    if (createMetaRefSpec.getMinSnapshotsToKeep() != null) {
+      manageSnapshots.setMinSnapshotsToKeep(branchName, createMetaRefSpec.getMinSnapshotsToKeep());
     }
-    if (createBranchSpec.getMaxSnapshotAgeMs() != null) {
-      manageSnapshots.setMaxSnapshotAgeMs(branchName, createBranchSpec.getMaxSnapshotAgeMs());
+    if (createMetaRefSpec.getMaxSnapshotAgeMs() != null) {
+      manageSnapshots.setMaxSnapshotAgeMs(branchName, createMetaRefSpec.getMaxSnapshotAgeMs());
     }
 
     manageSnapshots.commit();

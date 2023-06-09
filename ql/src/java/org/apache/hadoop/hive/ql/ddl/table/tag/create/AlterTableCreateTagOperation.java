@@ -30,7 +30,7 @@ public class AlterTableCreateTagOperation extends DDLOperation<AlterTableCreateT
   @Override
   public int execute() throws Exception {
     Table table = context.getDb().getTable(desc.getFullTableName());
-    context.getDb().alterTableTagOperation(table, desc.getAlterTableTagSpec());
+    context.getDb().alterTableMetaRefOperation(table, desc.getAlterTableTagSpec());
     return 0;
   }
 }

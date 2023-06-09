@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.tag.create;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
-import org.apache.hadoop.hive.ql.parse.AlterTableTagSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 
@@ -29,15 +29,15 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 public class AlterTableCreateTagDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  private final AlterTableTagSpec alterTableTagSpec;
+  private final AlterTableMetaRefSpec alterTableTagSpec;
 
-  public AlterTableCreateTagDesc(TableName tableName, AlterTableTagSpec alterTableTagSpec)
+  public AlterTableCreateTagDesc(TableName tableName, AlterTableMetaRefSpec alterTableTagSpec)
       throws SemanticException {
     super(AlterTableType.CREATE_TAG, tableName, null, null, false, false, null);
     this.alterTableTagSpec = alterTableTagSpec;
   }
 
-  public AlterTableTagSpec getAlterTableTagSpec() {
+  public AlterTableMetaRefSpec getAlterTableTagSpec() {
     return alterTableTagSpec;
   }
 

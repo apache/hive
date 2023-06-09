@@ -19,7 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
-import org.apache.hadoop.hive.ql.parse.AlterTableTagSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
 import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.util.SnapshotUtil;
@@ -33,21 +33,21 @@ public class IcebergTagExec {
   private IcebergTagExec() {
   }
 
-  public static void createTag(Table table, AlterTableTagSpec.CreateTagSpec createBranchSpec) {
-    String tagName = createBranchSpec.getTagName();
+  public static void createTag(Table table, AlterTableMetaRefSpec.CreateTagSpec createTagSpec) {
+    String tagName = createTagSpec.getTagName();
     Long snapshotId = null;
-    if (createBranchSpec.getSnapshotId() != null) {
-      snapshotId = createBranchSpec.getSnapshotId();
-    } else if (createBranchSpec.getAsOfTime() != null) {
-      snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, createBranchSpec.getAsOfTime());
+    if (createTagSpec.getSnapshotId() != null) {
+      snapshotId = createTagSpec.getSnapshotId();
+    } else if (createTagSpec.getAsOfTime() != null) {
+      snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, createTagSpec.getAsOfTime());
     } else {
       snapshotId = table.currentSnapshot().snapshotId();
     }
     LOG.info("Creating tag {} on iceberg table {} with snapshotId {}", tagName, table.name(), snapshotId);
     ManageSnapshots manageSnapshots = table.manageSnapshots();
     manageSnapshots.createTag(tagName, snapshotId);
-    if (createBranchSpec.getMaxRefAgeMs() != null) {
-      manageSnapshots.setMaxRefAgeMs(tagName, createBranchSpec.getMaxRefAgeMs());
+    if (createTagSpec.getMaxRefAgeMs() != null) {
+      manageSnapshots.setMaxRefAgeMs(tagName, createTagSpec.getMaxRefAgeMs());
     }
     manageSnapshots.commit();
   }

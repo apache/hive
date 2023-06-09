@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.branch.create;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
-import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -30,20 +30,20 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableCreateBranchDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  private final AlterTableBranchSpec alterTableBranchSpec;
+  private final AlterTableMetaRefSpec alterTableMetaRefSpec;
 
-  public AlterTableCreateBranchDesc(TableName tableName, AlterTableBranchSpec alterTableBranchSpec)
+  public AlterTableCreateBranchDesc(TableName tableName, AlterTableMetaRefSpec alterTableMetaRefSpec)
       throws SemanticException {
     super(AlterTableType.CREATE_BRANCH, tableName, null, null, false, false, null);
-    this.alterTableBranchSpec = alterTableBranchSpec;
+    this.alterTableMetaRefSpec = alterTableMetaRefSpec;
   }
 
-  public AlterTableBranchSpec getAlterTableBranchSpec() {
-    return alterTableBranchSpec;
+  public AlterTableMetaRefSpec getAlterTableBranchSpec() {
+    return alterTableMetaRefSpec;
   }
 
   @Explain(displayName = "spec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getExplainOutput() {
-    return alterTableBranchSpec.toString();
+    return alterTableMetaRefSpec.toString();
   }
 }

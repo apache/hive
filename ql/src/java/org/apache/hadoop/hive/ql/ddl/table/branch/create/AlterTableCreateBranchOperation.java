@@ -31,7 +31,7 @@ public class AlterTableCreateBranchOperation extends DDLOperation<AlterTableCrea
   @Override
   public int execute() throws Exception {
     Table table = context.getDb().getTable(desc.getFullTableName());
-    context.getDb().alterTableBranchOperation(table, desc.getAlterTableBranchSpec());
+    context.getDb().alterTableMetaRefOperation(table, desc.getAlterTableBranchSpec());
     return 0;
   }
 }
