@@ -106,7 +106,8 @@ public class LateralViewPlan {
     RexCall udtfCall = getUDTFFunction(functionAST, inputRR);
 
     // Column aliases provided by the query.
-    List<String> columnAliases = getColumnAliasesFromASTNode(selExprAST, inputRel, udtfCall);
+    List<String> columnAliases =
+        getColumnAliasesFromASTNode(selExprAST, inputRel, udtfCall, this.lateralTableAlias);
 
     this.outputRR = getOutputRR(inputRR, udtfCall, columnAliases, this.lateralTableAlias);
 
@@ -155,7 +156,7 @@ public class LateralViewPlan {
   }
 
   private List<String> getColumnAliasesFromASTNode(ASTNode selExprClause, RelNode inputRel,
-      RexCall udtfCall) throws SemanticException {
+      RexCall udtfCall, String lateralTableAlias) throws SemanticException {
     Set<String> uniqueNames = new HashSet<>();
     List<String> colAliases = new ArrayList<>();
     for (Node obj : selExprClause.getChildren()) {
@@ -178,19 +179,8 @@ public class LateralViewPlan {
     // if no column aliases were provided, just retrieve them from the return type
     // of the udtf RexCall
     if (colAliases.isEmpty()) {
-      // generated column names should be different from any existing columns
-      uniqueNames.addAll(Lists.transform(inputRel.getRowType().getFieldList(),
-          RelDataTypeField::getName));
-      for (int i = 0, j = 1; i <  udtfCall.getType().getFieldList().size(); ++i) {
-        while (true) {
-          String colName = "col" + (j++);
-          if (!uniqueNames.contains(colName)) {
-            LOG.info("SJC: FOUND UNIQUE COLUMN ALIAS " + colName);
-            uniqueNames.add(colName);
-            colAliases.add(colName);
-            break;
-          }
-        }
+      for (RelDataTypeField relDataTypeField : udtfCall.getType().getFieldList()) {
+        colAliases.add(relDataTypeField.getName());
       }
     }
 
@@ -272,9 +262,13 @@ public class LateralViewPlan {
     // return type.
     allDataTypes.addAll(Lists.transform(retType.getFieldList(), RelDataTypeField::getType));
     for (String s : columnAliases) {
+      allDataTypeNames.add(lateralTableAlias + "." + s);
       LOG.info("SJC: ADDING COLUMN ALIAS: " + s);
     }
-    allDataTypeNames.addAll(columnAliases);
+//    allDataTypeNames.addAll(columnAliases);
+    for (String s : allDataTypeNames) {
+      LOG.info("SJC: ALL NAMES: " + s);
+    }
 
     return cluster.getTypeFactory().createStructType(allDataTypes, allDataTypeNames);
   }
