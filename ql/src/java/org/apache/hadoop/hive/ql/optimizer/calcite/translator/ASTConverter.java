@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -679,10 +680,29 @@ public class ASTConverter {
    * than the row level.
    */
   private boolean canOptimizeOutLateralView(HiveTableFunctionScan htfs) {
-    if (!(this.select instanceof HiveProject)) {
-      return false;
+    Set<Integer> inputRefs = new HashSet<>();
+    if (this.select instanceof HiveProject) {
+      inputRefs.addAll(HiveCalciteUtil.getInputRefs(((HiveProject)this.select).getProjects()));
     }
-    Set<Integer> inputRefs = HiveCalciteUtil.getInputRefs(((HiveProject)this.select).getProjects());
+    if (this.where != null) {
+      inputRefs.addAll(HiveCalciteUtil.getInputRefs(where.getCondition()));
+    }
+    if (this.having != null) {
+      inputRefs.addAll(HiveCalciteUtil.getInputRefs(having.getCondition()));
+    }
+    if (this.groupBy != null) {
+      inputRefs.addAll(HiveCalciteUtil.translateBitSetToProjIndx(
+          HiveCalciteUtil.extractRefs(this.groupBy)));
+    }
+    if (this.orderLimit instanceof HiveSortExchange) {
+      inputRefs.addAll(HiveCalciteUtil.getInputRefs(((HiveSortExchange)this.orderLimit).getKeys()));
+    }
+    if (this.orderLimit instanceof HiveSortLimit) {
+      if (((HiveSortLimit)this.orderLimit).getInputRefToCallMap() != null) {
+        inputRefs.addAll(((HiveSortLimit)this.orderLimit).getInputRefToCallMap().keySet());
+      }
+    }
+
     int startUdtfField = htfs.getStartUdtfField();
     for (Integer field : inputRefs) {
       if (field < startUdtfField) {

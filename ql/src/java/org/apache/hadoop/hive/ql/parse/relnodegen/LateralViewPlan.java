@@ -115,7 +115,7 @@ public class LateralViewPlan {
 
     this.lateralViewRel = HiveTableFunctionScan.create(cluster,
         TraitsUtil.getDefaultTraitSet(cluster), ImmutableList.of(inputRel), udtfCall,
-        null, retType, null);
+        null, retType, null, true);
   }
 
   public static void validateLateralView(ASTNode lateralView) throws SemanticException {
