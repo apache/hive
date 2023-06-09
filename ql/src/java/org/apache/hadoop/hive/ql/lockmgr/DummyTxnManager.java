@@ -447,4 +447,9 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   public String getQueryid() {
     return null;
   }
+
+  @Override
+  public void addWriteIdsToMinHistory(QueryPlan plan, ValidTxnWriteIdList txnWriteIds) {
+    
+  }
 }

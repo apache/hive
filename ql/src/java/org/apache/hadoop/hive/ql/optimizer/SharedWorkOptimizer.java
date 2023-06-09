@@ -1187,7 +1187,7 @@ public class SharedWorkOptimizer extends Transform {
         if (!bs.get(j)) {
           // If not visited yet
           Operator<?> dppOp2 = dppsOp2.get(j);
-          if (compareAndGatherOps(pctx, dppOp1, dppOp2) != null) {
+          if (compareAndGatherOps(pctx, optimizerCache, dppOp1, dppOp2) != null) {
             // The DPP operator/branch are equal
             bs.set(j);
             break;
@@ -1258,7 +1258,7 @@ public class SharedWorkOptimizer extends Transform {
         if (!bs.get(j)) {
           // If not visited yet
           Operator<?> dppOp2 = dppsOp2.get(j);
-          if (compareAndGatherOps(pctx, dppOp1, dppOp2) != null) {
+          if (compareAndGatherOps(pctx, optimizerCache, dppOp1, dppOp2) != null) {
             // The DPP operator/branch are equal
             bs.set(j);
             break;
@@ -1488,7 +1488,7 @@ public class SharedWorkOptimizer extends Transform {
           }
           // Compare input
           List<Operator<?>> removeOpsForCurrentInput =
-              compareAndGatherOps(pctx, parentOp1, parentOp2);
+              compareAndGatherOps(pctx, optimizerCache, parentOp1, parentOp2);
           if (removeOpsForCurrentInput == null) {
             // Inputs are not the same, bail out
             break;
@@ -1625,20 +1625,33 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   private static List<Operator<?>> compareAndGatherOps(ParseContext pctx,
-          Operator<?> op1, Operator<?> op2) throws SemanticException {
+      SharedWorkOptimizerCache optimizerCache, Operator<?> op1, Operator<?> op2) throws SemanticException {
     List<Operator<?>> result = new ArrayList<>();
-    boolean mergeable = compareAndGatherOps(pctx, op1, op2, result, true);
+    boolean mergeable = compareAndGatherOps(pctx, optimizerCache, op1, op2, result, true);
     if (!mergeable) {
       return null;
     }
     return result;
   }
 
-  private static boolean compareAndGatherOps(ParseContext pctx, Operator<?> op1, Operator<?> op2,
-      List<Operator<?>> result, boolean gather) throws SemanticException {
+  private static boolean compareAndGatherOps(ParseContext pctx,
+      SharedWorkOptimizerCache optimizerCache,
+      Operator<?> op1,
+      Operator<?> op2,
+      List<Operator<?>> result,
+      boolean gather) throws SemanticException {
     if (!compareOperator(pctx, op1, op2)) {
       LOG.debug("Operators not equal: {} and {}", op1, op2);
       return false;
+    }
+
+    if (op1 instanceof TableScanOperator) {
+      Boolean areMergeable =
+          areMergeableExtendedCheck(pctx, optimizerCache, (TableScanOperator) op1, (TableScanOperator) op2);
+      if (!areMergeable) {
+        LOG.debug("Operators have different DPP parent: {} and {}", op1, op2);
+        return false;
+      }
     }
 
     if (gather && op2.getChildOperators().size() > 1) {
@@ -1660,7 +1673,7 @@ public class SharedWorkOptimizer extends Transform {
         Operator<?> op1ParentOp = op1ParentOperators.get(i);
         Operator<?> op2ParentOp = op2ParentOperators.get(i);
         boolean mergeable =
-            compareAndGatherOps(pctx, op1ParentOp, op2ParentOp, result, gather);
+            compareAndGatherOps(pctx, optimizerCache, op1ParentOp, op2ParentOp, result, gather);
         if (!mergeable) {
           return false;
         }

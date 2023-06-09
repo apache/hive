@@ -6811,6 +6811,9 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         if ($result->o2 !== null) {
             throw $result->o2;
         }
+        if ($result->o3 !== null) {
+            throw $result->o3;
+        }
         throw new \Exception("get_partitions_by_names failed: unknown result");
     }
 
@@ -6876,7 +6879,140 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         if ($result->o2 !== null) {
             throw $result->o2;
         }
+        if ($result->o3 !== null) {
+            throw $result->o3;
+        }
         throw new \Exception("get_partitions_by_names_req failed: unknown result");
+    }
+
+    public function get_properties(\metastore\PropertyGetRequest $req)
+    {
+        $this->send_get_properties($req);
+        return $this->recv_get_properties();
+    }
+
+    public function send_get_properties(\metastore\PropertyGetRequest $req)
+    {
+        $args = new \metastore\ThriftHiveMetastore_get_properties_args();
+        $args->req = $req;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'get_properties',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('get_properties', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_get_properties()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_get_properties_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_get_properties_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->e1 !== null) {
+            throw $result->e1;
+        }
+        if ($result->e2 !== null) {
+            throw $result->e2;
+        }
+        throw new \Exception("get_properties failed: unknown result");
+    }
+
+    public function set_properties(\metastore\PropertySetRequest $req)
+    {
+        $this->send_set_properties($req);
+        return $this->recv_set_properties();
+    }
+
+    public function send_set_properties(\metastore\PropertySetRequest $req)
+    {
+        $args = new \metastore\ThriftHiveMetastore_set_properties_args();
+        $args->req = $req;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'set_properties',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('set_properties', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_set_properties()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_set_properties_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_set_properties_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->e1 !== null) {
+            throw $result->e1;
+        }
+        if ($result->e2 !== null) {
+            throw $result->e2;
+        }
+        throw new \Exception("set_properties failed: unknown result");
     }
 
     public function alter_partition($db_name, $tbl_name, \metastore\Partition $new_part)
@@ -11688,6 +11824,66 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
             throw $result->o2;
         }
         throw new \Exception("get_valid_write_ids failed: unknown result");
+    }
+
+    public function add_write_ids_to_min_history($txnId, array $writeIds)
+    {
+        $this->send_add_write_ids_to_min_history($txnId, $writeIds);
+        $this->recv_add_write_ids_to_min_history();
+    }
+
+    public function send_add_write_ids_to_min_history($txnId, array $writeIds)
+    {
+        $args = new \metastore\ThriftHiveMetastore_add_write_ids_to_min_history_args();
+        $args->txnId = $txnId;
+        $args->writeIds = $writeIds;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'add_write_ids_to_min_history',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('add_write_ids_to_min_history', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_add_write_ids_to_min_history()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_add_write_ids_to_min_history_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_add_write_ids_to_min_history_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
+        }
+        return;
     }
 
     public function allocate_table_write_ids(\metastore\AllocateTableWriteIdsRequest $rqst)

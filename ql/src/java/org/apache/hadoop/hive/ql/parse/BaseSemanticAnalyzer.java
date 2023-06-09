@@ -434,16 +434,16 @@ public abstract class BaseSemanticAnalyzer {
       // table node
       Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableOrColumnNode);
       String tableName = dbTablePair.getValue();
-      String metaTable = null;
+      String tableMetaRef = null;
       if (tableName.contains(".")) {
         String[] tmpNames = tableName.split("\\.");
         tableName = tmpNames[0];
-        metaTable = tmpNames[1];
+        tableMetaRef = tmpNames[1];
       }
       return TableName.fromString(tableName,
           null,
           dbTablePair.getKey() == null ? currentDatabase : dbTablePair.getKey(),
-          metaTable)
+          tableMetaRef)
           .getNotEmptyDbTable();
     } else if (tokenType == HiveParser.StringLiteral) {
       return unescapeSQLString(tableOrColumnNode.getText());
@@ -480,8 +480,8 @@ public abstract class BaseSemanticAnalyzer {
     if (tabNameNode.getChildCount() == 3) {
       final String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
       final String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
-      final String metaTableName = unescapeIdentifier(tabNameNode.getChild(2).getText());
-      return HiveTableName.fromString(tableName, catalogName, dbName, metaTableName);
+      final String tableMetaRef = unescapeIdentifier(tabNameNode.getChild(2).getText());
+      return HiveTableName.fromString(tableName, catalogName, dbName, tableMetaRef);
     }
 
     if (tabNameNode.getChildCount() == 2) {
@@ -572,6 +572,7 @@ public abstract class BaseSemanticAnalyzer {
     int ssampleIndex = -1;
     int asOfTimeIndex = -1;
     int asOfVersionIndex = -1;
+    int asOfVersionFromIndex = -1;
     for (int index = 1; index < tabref.getChildCount(); index++) {
       ASTNode ct = (ASTNode) tabref.getChild(index);
       if (ct.getToken().getType() == HiveParser.TOK_TABLEBUCKETSAMPLE) {
@@ -584,11 +585,14 @@ public abstract class BaseSemanticAnalyzer {
         asOfTimeIndex = index;
       } else if (ct.getToken().getType() == HiveParser.TOK_AS_OF_VERSION) {
         asOfVersionIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_FROM_VERSION) {
+        asOfVersionFromIndex = index;
       } else {
         aliasIndex = index;
       }
     }
-    return new int[] {aliasIndex, propsIndex, tsampleIndex, ssampleIndex, asOfTimeIndex, asOfVersionIndex};
+    return new int[] {
+        aliasIndex, propsIndex, tsampleIndex, ssampleIndex, asOfTimeIndex, asOfVersionIndex, asOfVersionFromIndex};
   }
 
   /**
@@ -1855,7 +1859,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected Table getTable(TableName tn, boolean throwException) throws SemanticException {
-    return getTable(tn.getDb(), tn.getTable(), tn.getMetaTable(), throwException);
+    return getTable(tn.getDb(), tn.getTable(), tn.getTableMetaRef(), throwException);
   }
 
   protected Table getTable(String tblName) throws SemanticException {
@@ -1870,13 +1874,13 @@ public abstract class BaseSemanticAnalyzer {
     return getTable(database, tblName, null, throwException);
   }
 
-  protected Table getTable(String database, String tblName, String metaTableName, boolean throwException)
+  protected Table getTable(String database, String tblName, String tableMetaRef, boolean throwException)
       throws SemanticException {
     Table tab;
     try {
-      String tableName = metaTableName == null ? tblName : tblName + "." + metaTableName;
+      String tableName = tableMetaRef == null ? tblName : tblName + "." + tableMetaRef;
       tab = database == null ? db.getTable(tableName, false)
-          : db.getTable(database, tblName, metaTableName, false);
+          : db.getTable(database, tblName, tableMetaRef, false);
     }
     catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);

@@ -48,7 +48,7 @@ public class UDFAcos extends UDFMath {
     if (d < -1 || d > 1) {
       return null;
     } else {
-      result.set(Math.acos(d));
+      result.set(StrictMath.acos(d));
       return result;
     }
   }

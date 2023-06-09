@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -263,7 +264,7 @@ public class Compiler {
 
   private void openTransaction(TxnType txnType) throws LockException, CommandProcessorException {
     if (DriverUtils.checkConcurrency(driverContext) && startImplicitTxn(driverContext.getTxnManager()) &&
-        !driverContext.getTxnManager().isTxnOpen() && txnType != TxnType.COMPACTION) {
+        !driverContext.getTxnManager().isTxnOpen() && !MetaStoreServerUtils.isCompactionTxn(txnType)) {
       String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
       if (HiveOperation.REPLDUMP.equals(driverContext.getQueryState().getHiveOperation())
          || HiveOperation.REPLLOAD.equals(driverContext.getQueryState().getHiveOperation())) {

@@ -353,6 +353,7 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ANY;
 
@@ -1955,7 +1956,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
               HiveRemoveEmptySingleRules.SORT_INSTANCE,
               HiveRemoveEmptySingleRules.SORT_FETCH_ZERO_INSTANCE,
               HiveRemoveEmptySingleRules.AGGREGATE_INSTANCE,
-              HiveRemoveEmptySingleRules.UNION_INSTANCE);
+              HiveRemoveEmptySingleRules.UNION_INSTANCE,
+              HiveRemoveEmptySingleRules.CORRELATE_LEFT_INSTANCE,
+              HiveRemoveEmptySingleRules.CORRELATE_RIGHT_INSTANCE);
 
       // Trigger program
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
@@ -2946,6 +2949,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
           virtualCols = VirtualColumn.getRegistry(conf);
           if (AcidUtils.isNonNativeAcidTable(tabMetaData, false)) {
             virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
+          }
+          if (tabMetaData.isNonNative() && tabMetaData.getStorageHandler().areSnapshotsSupported() &&
+              isBlank(tabMetaData.getMetaTable())) {
+            virtualCols.add(VirtualColumn.SNAPSHOT_ID);
           }
           for (VirtualColumn vc : virtualCols) {
             colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true,
@@ -5399,16 +5406,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
     String[] names = Utilities.getDbTableName(tabName);
     final String  tableName = names[1];
     final String  dbName = names[0];
-    String metaTable = null;
+    String tableMetaRef = null;
     if (names.length == 3) {
-      metaTable = names[2];
+      tableMetaRef = names[2];
     }
     String fullyQualName = dbName + "." + tableName;
-    if (metaTable != null) {
-      fullyQualName = fullyQualName + "." + metaTable;
+    if (tableMetaRef != null) {
+      fullyQualName += "." + tableMetaRef;
     }
     if (!tabNameToTabObject.containsKey(fullyQualName)) {
-      Table table = db.getTable(dbName, tableName, metaTable, throwException, true, false);
+      Table table = db.getTable(dbName, tableName, tableMetaRef, throwException, true, false);
       if (table != null) {
         tabNameToTabObject.put(fullyQualName, table);
       }

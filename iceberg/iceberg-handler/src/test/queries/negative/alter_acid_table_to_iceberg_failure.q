@@ -3,4 +3,4 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 drop table tbl_orc;
 create table tbl_orc (a int, b string) stored as orc tblproperties('transactional'='true');
-alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler');
+alter table tbl_orc convert to iceberg;

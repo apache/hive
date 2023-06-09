@@ -30,9 +30,12 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -47,12 +50,15 @@ import org.apache.iceberg.DataTableScan;
 import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.IncrementalAppendScan;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Partitioning;
+import org.apache.iceberg.Scan;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -109,9 +115,23 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
   }
 
   private static TableScan createTableScan(Table table, Configuration conf) {
-    TableScan scan = table.newScan()
-        .caseSensitive(conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT));
-    long snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
+    TableScan scan = table.newScan();
+
+    long snapshotId = -1;
+    try {
+      snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
+    } catch (NumberFormatException e) {
+      String version = conf.get(InputFormatConfig.SNAPSHOT_ID);
+      SnapshotRef ref = table.refs().get(version);
+      if (ref == null) {
+        throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " + version);
+      }
+      snapshotId = ref.snapshotId();
+    }
+    String branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_BRANCH);
+    if (StringUtils.isNotEmpty(branchName)) {
+      scan = scan.useRef(HiveUtils.getTableBranch(branchName));
+    }
     if (snapshotId != -1) {
       scan = scan.useSnapshot(snapshotId);
     }
@@ -120,6 +140,23 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     if (asOfTime != -1) {
       scan = scan.asOfTime(asOfTime);
     }
+
+    return scan;
+  }
+
+  private static IncrementalAppendScan createIncrementalAppendScan(Table table, Configuration conf) {
+    long fromSnapshot = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
+    return table.newIncrementalAppendScan().fromSnapshotExclusive(fromSnapshot);
+  }
+
+  private static <
+          T extends Scan<T, FileScanTask, CombinedScanTask>> Scan<T,
+          FileScanTask,
+          CombinedScanTask> applyConfig(
+          Configuration conf, Scan<T, FileScanTask, CombinedScanTask> scanToConfigure) {
+
+    Scan<T, FileScanTask, CombinedScanTask> scan = scanToConfigure.caseSensitive(
+            conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT));
 
     long splitSize = conf.getLong(InputFormatConfig.SPLIT_SIZE, 0);
     if (splitSize > 0) {
@@ -154,7 +191,6 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       // On the execution side residual expressions will be mined from the passed job conf.
       scan = scan.filter(filter).ignoreResiduals();
     }
-
     return scan;
   }
 
@@ -165,12 +201,19 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         .ofNullable(HiveIcebergStorageHandler.table(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER)))
         .orElseGet(() -> Catalogs.loadTable(conf));
 
-    TableScan scan = createTableScan(table, conf);
-
     List<InputSplit> splits = Lists.newArrayList();
     boolean applyResidual = !conf.getBoolean(InputFormatConfig.SKIP_RESIDUAL_FILTERING, false);
     InputFormatConfig.InMemoryDataModel model = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
         InputFormatConfig.InMemoryDataModel.GENERIC);
+
+    long fromVersion = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
+    Scan<?, FileScanTask, CombinedScanTask> scan;
+    if (fromVersion != -1) {
+      scan = applyConfig(conf, createIncrementalAppendScan(table, conf));
+    } else {
+      scan = applyConfig(conf, createTableScan(table, conf));
+    }
+
     try (CloseableIterable<CombinedScanTask> tasksIterable = scan.planTasks()) {
       Table serializableTable = SerializableTable.copyOf(table);
       tasksIterable.forEach(task -> {
@@ -268,7 +311,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     private CloseableIterator<T> nextTask() {
       CloseableIterator<T> closeableIterator = open(tasks.next(), expectedSchema).iterator();
-      if (!fetchVirtualColumns) {
+      if (!fetchVirtualColumns || Utilities.getIsVectorized(conf)) {
         return closeableIterator;
       }
       return new IcebergAcidUtil.VirtualColumnAwareIterator<T>(closeableIterator, expectedSchema, conf);

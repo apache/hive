@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.junit.rules.TestName;
 
 import org.slf4j.Logger;
@@ -279,13 +280,15 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     Path tablePath = new Path(primary.getTable(primaryDbName, tableName).getSd().getLocation());
     Path tablePath_dupe = new Path(primary.getTable(primaryDbName, tableName).getSd().getLocation() + "_dupe");
     FileSystem fs = tablePath.getFileSystem(conf);
-    FileUtils.copy(fs, tablePath, fs, tablePath_dupe, false, false, conf);
+    DataCopyStatistics copyStatistics = new DataCopyStatistics();
+    FileUtils.copy(fs, tablePath, fs, tablePath_dupe, false, false, conf, copyStatistics);
 
     // Drop the table.
     primary.run("drop table " + primaryDbName + "." + tableName);
 
     // Copy back the data to original location, so that copy happens from original location, not the CM location.
-    FileUtils.copy(fs, tablePath_dupe, fs, tablePath, false, false, conf);
+    copyStatistics = new DataCopyStatistics();
+    FileUtils.copy(fs, tablePath_dupe, fs, tablePath, false, false, conf, copyStatistics);
 
     // Add a util to delete the original source at the time of source checksum verification.
     CopyUtils.testCallable = () -> {

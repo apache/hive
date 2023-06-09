@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -62,6 +63,7 @@ public class TestInitiator2 extends CompactorTest {
 
   @Test
   public void dbNoAutoCompactSetFalseUpperCase() throws Exception {
+    boolean useCleanerForAbortCleanup = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
     String dbName = "test1";
     Map<String, String> params = new HashMap<String, String>(1);
     params.put("NO_AUTO_COMPACTION", "false");
@@ -89,7 +91,7 @@ public class TestInitiator2 extends CompactorTest {
     startInitiator();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(useCleanerForAbortCleanup ? 0 : 1, rsp.getCompactsSize());
   }
 
   @Override

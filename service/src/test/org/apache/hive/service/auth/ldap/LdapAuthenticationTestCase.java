@@ -123,6 +123,21 @@ public final class LdapAuthenticationTestCase {
           userMembershipKey);
     }
 
+    public Builder userSearchFilter(String userSearchFilter) {
+      return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER,
+          userSearchFilter);
+    }
+
+    public Builder groupSearchFilter(String groupSearchFilter) {
+      return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER,
+          groupSearchFilter);
+    }
+
+    public Builder groupBaseDN(String groupBaseDN) {
+      return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN,
+          groupBaseDN);
+    }
+
     private Builder setVarOnce(HiveConf.ConfVars confVar, String value) {
       Preconditions.checkState(!overrides.containsKey(confVar),
           "Property %s has been set already", confVar);

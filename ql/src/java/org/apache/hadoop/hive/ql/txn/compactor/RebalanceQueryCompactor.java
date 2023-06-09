@@ -63,7 +63,8 @@ final class RebalanceQueryCompactor extends QueryCompactor {
 
 
     List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
-    List<String> compactionQueries = getCompactionQueries(table, context.getPartition(), tmpTableName, numBuckets);
+    List<String> compactionQueries = getCompactionQueries(table, context.getPartition(), tmpTableName, numBuckets,
+        context.getCompactionInfo().orderByClause);
     List<String> dropQueries = getDropQueries(tmpTableName);
     runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
         Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries,
@@ -82,7 +83,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
         .build());
   }
 
-  private List<String> getCompactionQueries(Table t, Partition p, String tmpName, int numberOfBuckets) {
+  private List<String> getCompactionQueries(Table t, Partition p, String tmpName, int numberOfBuckets, String orderByClause) {
     return Lists.newArrayList(
         new CompactionQueryBuilder(
             CompactionType.REBALANCE,
@@ -92,6 +93,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
             .setSourceTab(t)
             .setSourcePartition(p)
             .setNumberOfBuckets(numberOfBuckets)
+            .setOrderByClause(orderByClause)
             .build());
   }
 

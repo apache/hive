@@ -218,6 +218,9 @@ public class ColStatsProcessor implements IStatsProcessor {
       }
 
       start = System. currentTimeMillis();
+      if (tbl != null && tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
+        tbl.getStorageHandler().setColStatistics(tbl, colStats);
+      }
       db.setPartitionColumnStatistics(request);
       end = System.currentTimeMillis();
       LOG.info("Time taken to update " + colStats.size() + " stats : " + ((end - start)/1000F) + " seconds.");

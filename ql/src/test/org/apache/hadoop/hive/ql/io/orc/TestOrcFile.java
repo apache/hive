@@ -1234,7 +1234,7 @@ public class TestOrcFile {
     assertEquals(false, reader.rows().hasNext());
     assertEquals(CompressionKind.NONE, reader.getCompression());
     assertEquals(0, reader.getNumberOfRows());
-    assertEquals(0, reader.getCompressionSize());
+    assertEquals(262144, reader.getCompressionSize());
     assertEquals(false, reader.getMetadataKeys().iterator().hasNext());
     assertEquals(3, reader.getContentLength());
     assertEquals(false, reader.getStripes().iterator().hasNext());

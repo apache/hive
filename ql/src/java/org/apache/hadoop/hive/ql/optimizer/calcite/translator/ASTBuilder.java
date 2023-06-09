@@ -83,6 +83,8 @@ public class ASTBuilder {
         .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
     if (hTbl.getHiveTableMD().getMetaTable() != null) {
       tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getMetaTable());
+    } else if (hTbl.getHiveTableMD().getBranchName() != null) {
+      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getBranchName());
     }
 
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(tableNameBuilder);
@@ -96,6 +98,12 @@ public class ASTBuilder {
     if (hTbl.getHiveTableMD().getAsOfVersion() != null) {
       ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_AS_OF_VERSION, "TOK_AS_OF_VERSION")
           .add(HiveParser.Number, hTbl.getHiveTableMD().getAsOfVersion());
+      b.add(asOfBuilder);
+    }
+
+    if (hTbl.getHiveTableMD().getVersionIntervalFrom() != null) {
+      ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_FROM_VERSION, "TOK_FROM_VERSION")
+          .add(HiveParser.Number, hTbl.getHiveTableMD().getVersionIntervalFrom());
       b.add(asOfBuilder);
     }
 

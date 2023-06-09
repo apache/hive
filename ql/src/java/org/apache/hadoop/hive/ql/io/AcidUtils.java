@@ -67,7 +67,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
@@ -1538,32 +1537,36 @@ public class AcidUtils {
   public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path)
       throws IOException {
     Map<Path, HdfsDirSnapshot> dirToSnapshots = new HashMap<>();
-    RemoteIterator<LocatedFileStatus> itr = FileUtils.listFiles(fs, path, true, acidHiddenFileFilter);
-    while (itr.hasNext()) {
-      FileStatus fStatus = itr.next();
-      Path fPath = fStatus.getPath();
-      if (fStatus.isDirectory() && acidTempDirFilter.accept(fPath)) {
-        addToSnapshot(dirToSnapshots, fPath);
-      } else {
-        Path parentDirPath = fPath.getParent();
-        if (acidTempDirFilter.accept(parentDirPath)) {
-          while (isChildOfDelta(parentDirPath, path)) {
-            // Some cases there are other directory layers between the delta and the datafiles
-            // (export-import mm table, insert with union all to mm table, skewed tables).
-            // But it does not matter for the AcidState, we just need the deltas and the data files
-            // So build the snapshot with the files inside the delta directory
-            parentDirPath = parentDirPath.getParent();
-          }
-          HdfsDirSnapshot dirSnapshot = addToSnapshot(dirToSnapshots, parentDirPath);
-          // We're not filtering out the metadata file and acid format file,
-          // as they represent parts of a valid snapshot
-          // We're not using the cached values downstream, but we can potentially optimize more in a follow-up task
-          if (fStatus.getPath().toString().contains(MetaDataFile.METADATA_FILE)) {
-            dirSnapshot.addMetadataFile(fStatus);
-          } else if (fStatus.getPath().toString().contains(OrcAcidVersion.ACID_FORMAT)) {
-            dirSnapshot.addOrcAcidFormatFile(fStatus);
-          } else {
-            dirSnapshot.addFile(fStatus);
+    Deque<RemoteIterator<FileStatus>> stack = new ArrayDeque<>();
+    stack.push(FileUtils.listStatusIterator(fs, path, acidHiddenFileFilter));
+    while (!stack.isEmpty()) {
+      RemoteIterator<FileStatus> itr = stack.pop();
+      while (itr.hasNext()) {
+        FileStatus fStatus = itr.next();
+        Path fPath = fStatus.getPath();
+        if (fStatus.isDirectory()) {
+          stack.push(FileUtils.listStatusIterator(fs, fPath, acidHiddenFileFilter));
+        } else {
+          Path parentDirPath = fPath.getParent();
+          if (acidTempDirFilter.accept(parentDirPath)) {
+            while (isChildOfDelta(parentDirPath, path)) {
+              // Some cases there are other directory layers between the delta and the datafiles
+              // (export-import mm table, insert with union all to mm table, skewed tables).
+              // But it does not matter for the AcidState, we just need the deltas and the data files
+              // So build the snapshot with the files inside the delta directory
+              parentDirPath = parentDirPath.getParent();
+            }
+            HdfsDirSnapshot dirSnapshot = addToSnapshot(dirToSnapshots, parentDirPath);
+            // We're not filtering out the metadata file and acid format file,
+            // as they represent parts of a valid snapshot
+            // We're not using the cached values downstream, but we can potentially optimize more in a follow-up task
+            if (fStatus.getPath().toString().contains(MetaDataFile.METADATA_FILE)) {
+              dirSnapshot.addMetadataFile(fStatus);
+            } else if (fStatus.getPath().toString().contains(OrcAcidVersion.ACID_FORMAT)) {
+              dirSnapshot.addOrcAcidFormatFile(fStatus);
+            } else {
+              dirSnapshot.addFile(fStatus);
+            }
           }
         }
       }
@@ -3093,6 +3096,8 @@ public class AcidUtils {
         assert t != null;
         if (AcidUtils.isTransactionalTable(t) && sharedWrite) {
           compBuilder.setSharedWrite();
+        } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
+          compBuilder.setLock(getLockTypeFromStorageHandler(output, t));
         } else {
           compBuilder.setExclWrite();
         }

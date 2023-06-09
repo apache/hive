@@ -112,15 +112,16 @@ public class ThriftHttpServlet extends TServlet {
   private final HiveAuthFactory hiveAuthFactory;
   private static final String HIVE_DELEGATION_TOKEN_HEADER =  "X-Hive-Delegation-Token";
   private static final String X_FORWARDED_FOR = "X-Forwarded-For";
+  private static final String AUTH_TYPE = "auth";
 
   private JWTValidator jwtValidator;
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
-      String authType, UserGroupInformation serviceUGI, UserGroupInformation httpUGI,
+      UserGroupInformation serviceUGI, UserGroupInformation httpUGI,
       HiveAuthFactory hiveAuthFactory, HiveConf hiveConf) throws Exception {
     super(processor, protocolFactory);
     this.hiveConf = hiveConf;
-    this.authType = new AuthType(authType);
+    this.authType = AuthType.authTypeFromConf(hiveConf, true);
     this.serviceUGI = serviceUGI;
     this.httpUGI = httpUGI;
     this.hiveAuthFactory = hiveAuthFactory;
@@ -215,7 +216,7 @@ public class ThriftHttpServlet extends TServlet {
           clientUserName = doPasswdAuth(request, HiveAuthConstants.AuthTypes.NOSASL.getAuthName());
         } else {
           // For a kerberos setup
-          if (isKerberosAuthMode(authType)) {
+          if (isAuthTypeEnabled(request, HiveAuthConstants.AuthTypes.KERBEROS)) {
             String delegationToken = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
             // Each http request must have an Authorization header
             if ((delegationToken != null) && (!delegationToken.isEmpty())) {
@@ -223,9 +224,9 @@ public class ThriftHttpServlet extends TServlet {
             } else {
               clientUserName = doKerberosAuth(request);
             }
-          } else if (authType.isEnabled(HiveAuthConstants.AuthTypes.JWT) && hasJWT(request)) {
+          } else if (isAuthTypeEnabled(request, HiveAuthConstants.AuthTypes.JWT)) {
             clientUserName = validateJWT(request, response);
-          } else if (authType.isEnabled(HiveAuthConstants.AuthTypes.SAML)) {
+          } else if (isAuthTypeEnabled(request, HiveAuthConstants.AuthTypes.SAML)) {
             // check if this request needs a SAML redirect
             String authHeader = request.getHeader(HttpAuthUtils.AUTHORIZATION);
             if ((authHeader == null || authHeader.isEmpty()) && needsRedirect(request, response)) {
@@ -292,7 +293,7 @@ public class ThriftHttpServlet extends TServlet {
       }
       // Send a 401 to the client
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      if(isKerberosAuthMode(authType)) {
+      if(isAuthTypeEnabled(request, HiveAuthConstants.AuthTypes.KERBEROS)) {
         response.addHeader(HttpAuthUtils.WWW_AUTHENTICATE, HttpAuthUtils.NEGOTIATE);
       } else {
         try {
@@ -763,8 +764,36 @@ public class ThriftHttpServlet extends TServlet {
     return authHeaderBase64String;
   }
 
-  private boolean isKerberosAuthMode(AuthType authType) {
-    return authType.isEnabled(HiveAuthConstants.AuthTypes.KERBEROS);
+  private boolean isAuthTypeEnabled(HttpServletRequest request,
+      HiveAuthConstants.AuthTypes authType) {
+    String authMethod = request.getHeader(AUTH_TYPE);
+
+    if (authType.getAuthName().equalsIgnoreCase(authMethod) && this.authType.isEnabled(authType) ||
+        "UIDPWD".equalsIgnoreCase(authMethod) && this.authType.isPasswordBasedAuth(authType)) {
+      // Request has already set the "auth" header
+      return true;
+    } else if (authMethod == null) {
+      // Kerberos -> JWT -> SAML -> Password(fall through if there is no match)
+      // If the auth header is missing, the request must come from the old running client.
+      // We support mixing JWT and SAML or LDAP auth methods in old client,
+      // the way to tell them is whether there is JWT token in request header.
+      if (this.authType.isEnabled(HiveAuthConstants.AuthTypes.JWT)) {
+        if (authType == HiveAuthConstants.AuthTypes.JWT) {
+          return hasJWT(request);
+        } else if (authType != HiveAuthConstants.AuthTypes.KERBEROS) {
+          // If you wish to try JWT,KERBEROS with the old client,
+          // append the property http.header.auth=kerberos to the URL.
+          return this.authType.isEnabled(authType);
+        }
+      }
+
+      if (this.authType.isLoadedFirst(authType)) {
+        // This is important to keep compatible with old clients, the first auth method
+        // takes over when the "auth" header is missing.
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean hasJWT(HttpServletRequest request) {

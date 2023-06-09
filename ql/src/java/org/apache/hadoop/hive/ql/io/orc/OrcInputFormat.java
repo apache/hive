@@ -2540,6 +2540,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             return TypeDescription.createDate();
           case TIMESTAMP:
             return TypeDescription.createTimestamp();
+          case TIMESTAMPLOCALTZ:
+            return TypeDescription.createTimestampInstant();
           case BINARY:
             return TypeDescription.createBinary();
           case DECIMAL: {

@@ -312,8 +312,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	3                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	6                   
+	rawDataSize         	37                  
 	totalSize           	43                  
 	transactional       	true                
 	transactional_properties	insert_only         

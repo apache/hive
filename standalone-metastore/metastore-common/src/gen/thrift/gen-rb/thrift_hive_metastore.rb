@@ -1753,6 +1753,7 @@ module ThriftHiveMetastore
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_by_names failed: unknown result')
     end
 
@@ -1770,7 +1771,42 @@ module ThriftHiveMetastore
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_by_names_req failed: unknown result')
+    end
+
+    def get_properties(req)
+      send_get_properties(req)
+      return recv_get_properties()
+    end
+
+    def send_get_properties(req)
+      send_message('get_properties', Get_properties_args, :req => req)
+    end
+
+    def recv_get_properties()
+      result = receive_message(Get_properties_result)
+      return result.success unless result.success.nil?
+      raise result.e1 unless result.e1.nil?
+      raise result.e2 unless result.e2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_properties failed: unknown result')
+    end
+
+    def set_properties(req)
+      send_set_properties(req)
+      return recv_set_properties()
+    end
+
+    def send_set_properties(req)
+      send_message('set_properties', Set_properties_args, :req => req)
+    end
+
+    def recv_set_properties()
+      result = receive_message(Set_properties_result)
+      return result.success unless result.success.nil?
+      raise result.e1 unless result.e1.nil?
+      raise result.e2 unless result.e2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'set_properties failed: unknown result')
     end
 
     def alter_partition(db_name, tbl_name, new_part)
@@ -3008,6 +3044,21 @@ module ThriftHiveMetastore
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_valid_write_ids failed: unknown result')
+    end
+
+    def add_write_ids_to_min_history(txnId, writeIds)
+      send_add_write_ids_to_min_history(txnId, writeIds)
+      recv_add_write_ids_to_min_history()
+    end
+
+    def send_add_write_ids_to_min_history(txnId, writeIds)
+      send_message('add_write_ids_to_min_history', Add_write_ids_to_min_history_args, :txnId => txnId, :writeIds => writeIds)
+    end
+
+    def recv_add_write_ids_to_min_history()
+      result = receive_message(Add_write_ids_to_min_history_result)
+      raise result.o2 unless result.o2.nil?
+      return
     end
 
     def allocate_table_write_ids(rqst)
@@ -5890,6 +5941,8 @@ module ThriftHiveMetastore
         result.o1 = o1
       rescue ::NoSuchObjectException => o2
         result.o2 = o2
+      rescue ::InvalidObjectException => o3
+        result.o3 = o3
       end
       write_result(result, oprot, 'get_partitions_by_names', seqid)
     end
@@ -5903,8 +5956,36 @@ module ThriftHiveMetastore
         result.o1 = o1
       rescue ::NoSuchObjectException => o2
         result.o2 = o2
+      rescue ::InvalidObjectException => o3
+        result.o3 = o3
       end
       write_result(result, oprot, 'get_partitions_by_names_req', seqid)
+    end
+
+    def process_get_properties(seqid, iprot, oprot)
+      args = read_args(iprot, Get_properties_args)
+      result = Get_properties_result.new()
+      begin
+        result.success = @handler.get_properties(args.req)
+      rescue ::MetaException => e1
+        result.e1 = e1
+      rescue ::NoSuchObjectException => e2
+        result.e2 = e2
+      end
+      write_result(result, oprot, 'get_properties', seqid)
+    end
+
+    def process_set_properties(seqid, iprot, oprot)
+      args = read_args(iprot, Set_properties_args)
+      result = Set_properties_result.new()
+      begin
+        result.success = @handler.set_properties(args.req)
+      rescue ::MetaException => e1
+        result.e1 = e1
+      rescue ::NoSuchObjectException => e2
+        result.e2 = e2
+      end
+      write_result(result, oprot, 'set_properties', seqid)
     end
 
     def process_alter_partition(seqid, iprot, oprot)
@@ -6816,6 +6897,17 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_valid_write_ids', seqid)
+    end
+
+    def process_add_write_ids_to_min_history(seqid, iprot, oprot)
+      args = read_args(iprot, Add_write_ids_to_min_history_args)
+      result = Add_write_ids_to_min_history_result.new()
+      begin
+        @handler.add_write_ids_to_min_history(args.txnId, args.writeIds)
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'add_write_ids_to_min_history', seqid)
     end
 
     def process_allocate_table_write_ids(seqid, iprot, oprot)
@@ -8520,8 +8612,8 @@ module ThriftHiveMetastore
   class Drop_dataconnector_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     NAME = 1
-    IFNOTEXISTS = -1
-    CHECKREFERENCES = -2
+    IFNOTEXISTS = 2
+    CHECKREFERENCES = 3
 
     FIELDS = {
       NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
@@ -11796,11 +11888,13 @@ module ThriftHiveMetastore
     SUCCESS = 0
     O1 = 1
     O2 = 2
+    O3 = 3
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException}
     }
 
     def struct_fields; FIELDS; end
@@ -11832,11 +11926,85 @@ module ThriftHiveMetastore
     SUCCESS = 0
     O1 = 1
     O2 = 2
+    O3 = 3
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetPartitionsByNamesResult},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_properties_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::PropertyGetRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_properties_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    E1 = 1
+    E2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::PropertyGetResponse},
+      E1 => {:type => ::Thrift::Types::STRUCT, :name => 'e1', :class => ::MetaException},
+      E2 => {:type => ::Thrift::Types::STRUCT, :name => 'e2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Set_properties_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::PropertySetRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Set_properties_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    E1 = 1
+    E2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      E1 => {:type => ::Thrift::Types::STRUCT, :name => 'e1', :class => ::MetaException},
+      E2 => {:type => ::Thrift::Types::STRUCT, :name => 'e2', :class => ::NoSuchObjectException}
     }
 
     def struct_fields; FIELDS; end
@@ -14588,6 +14756,40 @@ module ThriftHiveMetastore
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetValidWriteIdsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_write_ids_to_min_history_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TXNID = 1
+    WRITEIDS = 2
+
+    FIELDS = {
+      TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'},
+      WRITEIDS => {:type => ::Thrift::Types::MAP, :name => 'writeIds', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_write_ids_to_min_history_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O2 = 1
+
+    FIELDS = {
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 

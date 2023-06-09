@@ -35,10 +35,12 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -46,6 +48,7 @@ import static org.apache.hadoop.hive.metastore.tools.Constants.HMS_DEFAULT_PORT;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkCreatePartition;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkCreatePartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDeleteCreate;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDeleteMetaOnlyWithPartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDeleteWithPartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDropDatabase;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDropPartition;
@@ -61,6 +64,7 @@ import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkList
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListPartition;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListTables;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkOpenTxns;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkPartitionManagement;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkRenameTable;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkTableCreate;
 import static org.apache.hadoop.hive.metastore.tools.Util.getServerUri;
@@ -83,7 +87,8 @@ public class BenchmarkTool implements Runnable {
   private enum RunModes {
     ACID,
     NONACID,
-    ALL
+    ALL,
+    MSCK // test PartitionManagementTask
   }
 
 
@@ -142,7 +147,7 @@ public class BenchmarkTool implements Runnable {
   private Pattern[] exclude;
 
   @Option(names = {"--runMode"},
-      description = "flag for setting the mode for the benchmark, acceptable values are: ACID, NONACID, ALL")
+      description = "flag for setting the mode for the benchmark, acceptable values are: ACID, NONACID, ALL, MSCK")
   private RunModes runMode = RunModes.ALL;
 
   public static void main(String[] args) {
@@ -181,10 +186,12 @@ public class BenchmarkTool implements Runnable {
         + nThreads);
     HMSConfig.getInstance().init(host, port, confDir);
 
+    preRunMsck(runMode == RunModes.MSCK);
     switch (runMode) {
       case ACID:
         runAcidBenchmarks();
         break;
+      case MSCK:
       case NONACID:
         runNonAcidBenchmarks();
         break;
@@ -193,6 +200,18 @@ public class BenchmarkTool implements Runnable {
         runNonAcidBenchmarks();
         runAcidBenchmarks();
         break;
+    }
+  }
+
+  private void preRunMsck(boolean isMsck) {
+    if (isMsck) {
+      matches = new Pattern[]{Pattern.compile("PartitionManagementTask.*")};
+    } else {
+      List<Pattern> excludes = new ArrayList<>();
+      Optional.ofNullable(exclude)
+          .ifPresent(patterns -> Arrays.stream(patterns).forEach(p -> excludes.add(p)));
+      excludes.add(Pattern.compile("PartitionManagementTask.*"));
+      exclude = excludes.toArray(new Pattern[0]);
     }
   }
 
@@ -253,8 +272,10 @@ public class BenchmarkTool implements Runnable {
         .add("dropTable", () -> benchmarkDeleteCreate(bench, bData))
         .add("dropTableWithPartitions",
             () -> benchmarkDeleteWithPartitions(bench, bData, 1, nParameters[0]))
+        .add("dropTableMetadataWithPartitions",
+            () -> benchmarkDeleteMetaOnlyWithPartitions(bench, bData, 1, nParameters[0]))
         .add("addPartition", () -> benchmarkCreatePartition(bench, bData))
-        .add("dropPartition", () -> benchmarkDropPartition(bench, bData))
+        .add("dropPartition", () -> benchmarkDropPartition(bench, bData, 1))
         .add("listPartition", () -> benchmarkListPartition(bench, bData))
         .add("getPartition",
             () -> benchmarkGetPartitions(bench, bData, 1))
@@ -267,13 +288,17 @@ public class BenchmarkTool implements Runnable {
         .add("dropDatabase",
             () -> benchmarkDropDatabase(bench, bData, 1))
         .add("openTxn",
-            () -> benchmarkOpenTxns(bench, bData, 1));
+            () -> benchmarkOpenTxns(bench, bData, 1))
+        .add("PartitionManagementTask",
+            () -> benchmarkPartitionManagement(bench, bData, 1));
 
     for (int howMany: instances) {
       suite.add("listTables" + '.' + howMany,
           () -> benchmarkListTables(bench, bData, howMany))
           .add("dropTableWithPartitions" + '.' + howMany,
               () -> benchmarkDeleteWithPartitions(bench, bData, howMany, nParameters[0]))
+          .add("dropTableMetaOnlyWithPartitions" + '.' + howMany,
+              () -> benchmarkDeleteMetaOnlyWithPartitions(bench, bData, howMany, nParameters[0]))
           .add("listPartitions" + '.' + howMany,
               () -> benchmarkListManyPartitions(bench, bData, howMany))
           .add("getPartitions" + '.' + howMany,
@@ -290,8 +315,12 @@ public class BenchmarkTool implements Runnable {
               () -> benchmarkRenameTable(bench, bData, howMany))
           .add("dropDatabase" + '.' + howMany,
               () -> benchmarkDropDatabase(bench, bData, howMany))
+          .add("dropPartition" + '.' + howMany,
+              () -> benchmarkDropPartition(bench, bData, howMany))
           .add("openTxns" + '.' + howMany,
-              () -> benchmarkOpenTxns(bench, bData, howMany));
+              () -> benchmarkOpenTxns(bench, bData, howMany))
+          .add("PartitionManagementTask" + "." + howMany,
+              () -> benchmarkPartitionManagement(bench, bData, howMany));
     }
 
     List<String> toRun = suite.listMatching(matches, exclude);

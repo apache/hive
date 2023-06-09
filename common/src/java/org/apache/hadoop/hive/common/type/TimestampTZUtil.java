@@ -89,9 +89,13 @@ public class TimestampTZUtil {
   }
 
   public static TimestampTZ parse(String s, ZoneId defaultTimeZone) {
+    return parse(s, defaultTimeZone, FORMATTER);
+  }
+
+  public static TimestampTZ parse(String s, ZoneId defaultTimeZone, DateTimeFormatter formatter) {
     // need to handle offset with single digital hour, see JDK-8066806
     s = handleSingleDigitHourOffset(s);
-    TemporalAccessor accessor = FORMATTER.parse(s);
+    TemporalAccessor accessor = formatter.parse(s);
 
     LocalDate localDate = accessor.query(TemporalQueries.localDate());
 

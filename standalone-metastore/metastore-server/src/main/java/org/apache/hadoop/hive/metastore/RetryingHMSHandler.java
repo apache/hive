@@ -23,7 +23,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
+import javax.jdo.JDOException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -44,6 +49,11 @@ public class RetryingHMSHandler implements InvocationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(RetryingHMSHandler.class);
   private static final String CLASS_NAME = RetryingHMSHandler.class.getName();
+  private static final Class<SQLException>[] unrecoverableSqlExceptions = new Class[]{
+      // TODO: collect more unrecoverable SQLExceptions
+      SQLIntegrityConstraintViolationException.class
+  };
+
 
   private static class Result {
     private final Object result;
@@ -206,7 +216,7 @@ public class RetryingHMSHandler implements InvocationHandler {
       Throwable rootCause = ExceptionUtils.getRootCause(caughtException);
       String errorMessage = ExceptionUtils.getMessage(caughtException) +
               (rootCause == null ? "" : ("\nRoot cause: " + rootCause));
-      if (retryCount >= retryLimit) {
+      if (retryCount >= retryLimit || !isRecoverableException(caughtException)) {
         LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
         throw new MetaException(errorMessage);
       }
@@ -225,6 +235,15 @@ public class RetryingHMSHandler implements InvocationHandler {
       gotNewConnectUrl = MetaStoreInit.updateConnectionURL(origConf, getActiveConf(),
         lastUrl, metaStoreInitData);
     }
+  }
+
+  private boolean isRecoverableException(Throwable t) {
+    if (!(t instanceof JDOException || t instanceof NucleusException)) {
+      return false;
+    }
+
+    return Stream.of(unrecoverableSqlExceptions)
+                 .allMatch(ex -> ExceptionUtils.indexOfType(t, ex) < 0);
   }
 
   public Configuration getActiveConf() {

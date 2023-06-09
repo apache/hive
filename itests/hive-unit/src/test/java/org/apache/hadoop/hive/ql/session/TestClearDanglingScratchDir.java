@@ -18,12 +18,14 @@
 package org.apache.hadoop.hive.ql.session;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
@@ -128,5 +130,65 @@ public class TestClearDanglingScratchDir {
     Assert.assertTrue(stderr.toString().contains("Removing 1 scratch directories"));
     Assert.assertEquals(StringUtils.countMatches(stderr.toString(), "removed"), 1);
     ss.close();
+  }
+
+  /**
+   * Testing behaviour of ClearDanglingScratchDir service over local tmp files/dirs
+   * @throws Exception
+   */
+  @Test
+  public void testLocalDanglingFilesCleaning() throws Exception {
+    HiveConf conf = new HiveConf();
+    conf.set("fs.default.name", "file:///");
+    FileSystem fs = FileSystem.get(conf);
+
+    // constants
+    String appId = "appId_" + System.currentTimeMillis();
+    String userName = System.getProperty("user.name");
+    String hdfs = "hdfs";
+    String inuse = "inuse.lck";
+    String l = File.separator;
+
+    // simulating hdfs dangling dir and its inuse.lck file
+    Path hdfsRootDir = new Path( HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR) + l + userName + l + hdfs);
+    Path hdfsSessionDir = new Path(hdfsRootDir + l + userName + l + appId);
+    Path hdfsSessionLock = new Path(hdfsSessionDir + l + inuse);
+    fs.create(hdfsSessionLock);
+
+    // simulating local dangling files
+    String localTmpDir = HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR);
+    Path localSessionDir = new Path(localTmpDir + l + appId);
+    Path localPipeOutFileRemove = new Path(localTmpDir + l
+            + appId + "-started-with-session-name.pipeout");
+    Path localPipeOutFileNotRemove = new Path(localTmpDir + l
+            + "not-started-with-session-name-" + appId + ".pipeout");
+    Path localPipeOutFileFailRemove = new Path(localTmpDir + l
+            + appId + "-started-with-session-name-but-fail-delete.pipeout");
+
+    // Create dirs/files
+    fs.mkdirs(localSessionDir);
+    fs.create(localPipeOutFileRemove);
+    fs.create(localPipeOutFileNotRemove);
+    fs.create(localPipeOutFileFailRemove);
+
+    // Set permission for localPipeOutFileFailRemove file as not writable
+    // This will avoid file to be deleted as we check whether it is writable or not first
+    fs.setPermission(localPipeOutFileFailRemove, FsPermission.valueOf("-r--r--r--"));
+
+    // the main service will be identifying which session files/dirs are dangling
+    ClearDanglingScratchDir clearDanglingScratchDirMain = new ClearDanglingScratchDir(false,
+            false, true, hdfsRootDir.toString(), conf);
+    clearDanglingScratchDirMain.run();
+
+    // localSessionDir and localPipeOutFileRemove should be removed
+    // localPipeOutFileNotRemove and localPipeOutFileFailRemove should not be removed
+    Assert.assertFalse("Local session dir '" + localSessionDir
+            + "' still exists, should have been removed!", fs.exists(localSessionDir));
+    Assert.assertFalse("Local .pipeout file '" + localPipeOutFileRemove
+            + "' still exists, should have been removed!", fs.exists(localPipeOutFileRemove));
+    Assert.assertTrue("Local .pipeout file '" + localPipeOutFileNotRemove
+            + "' does not exist, should have not been removed!", fs.exists(localPipeOutFileNotRemove));
+    Assert.assertTrue("Local .pipeout file '" + localPipeOutFileFailRemove
+            + "' does not exist, should have not been removed!", fs.exists(localPipeOutFileFailRemove));
   }
 }

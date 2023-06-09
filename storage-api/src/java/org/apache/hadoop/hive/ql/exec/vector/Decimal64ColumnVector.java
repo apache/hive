@@ -136,12 +136,12 @@ public class Decimal64ColumnVector extends LongColumnVector implements IDecimalC
           decimal64ColVector.vector[inputElementNum], decimal64ColVector.scale);
       scratchHiveDecWritable.mutateEnforcePrecisionScale(precision, scale);
       if (scratchHiveDecWritable.isSet()) {
-        vector[inputElementNum] = scratchHiveDecWritable.serialize64(scale);
+        vector[outputElementNum] = scratchHiveDecWritable.serialize64(scale);
       } else {
 
         // In effect, the input is NULL because of out-of-range precision/scale.
         noNulls = false;
-        isNull[inputElementNum] = true;
+        isNull[outputElementNum] = true;
       }
     } else {
 

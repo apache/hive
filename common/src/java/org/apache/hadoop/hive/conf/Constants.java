@@ -102,6 +102,7 @@ public class Constants {
 
   public static final Pattern COMPACTION_POOLS_PATTERN = Pattern.compile("hive\\.compactor\\.worker\\.(.*)\\.threads");
   public static final String HIVE_COMPACTOR_WORKER_POOL = "hive.compactor.worker.pool";
+  public static final String HIVE_COMPACTOR_REBALANCE_ORDERBY = "hive.compactor.rebalance.orderby";
 
   public static final String HTTP_HEADER_REQUEST_TRACK = "X-Request-ID";
   public static final String TIME_POSTFIX_REQUEST_TRACK = "_TIME";

@@ -128,6 +128,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.thrift.TException;
@@ -346,6 +347,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public boolean dropPartition(String catName, String dbName, String tableName, List<String> part_vals)
+      throws MetaException {
+
+    return false;
+  }
+
+  @Override
+  public boolean dropPartition(String catName, String dbName, String tableName, String partName)
       throws MetaException {
 
     return false;
@@ -891,9 +899,15 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,List<String> partVals,
-      String  validWriteIds, long writeId)
+  public Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable, 
+      ColumnStatistics statsObj, List<String> partVals, String  validWriteIds, long writeId)
     throws NoSuchObjectException, MetaException, InvalidObjectException {
+    return null;
+  }
+
+  @Override public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj, List<String> partVals,
+      String validWriteIds, long writeId)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     return null;
   }
 
@@ -1523,6 +1537,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void dropPackage(DropPackageRequest request) {
+  }
+
+  @Override
+  public MTable ensureGetMTable(String catName, String dbName, String tblName) throws NoSuchObjectException {
+    return null;
   }
 
   @Override

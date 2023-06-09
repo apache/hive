@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionType;
@@ -219,9 +220,15 @@ final class CommandAuthorizerV2 {
           actionType, null, null, null, null);
       break;
     case FUNCTION:
-      String dbName = privObject.getDatabase() != null ? privObject.getDatabase().getName() : null;
-      hivePrivObject = new HivePrivilegeObject(privObjType, dbName, privObject.getFunctionName(),
-          null, null, actionType, null, privObject.getClassName(), null, null);
+      if (privObject.getFunction() != null) {
+        Function function = privObject.getFunction();
+        hivePrivObject = new HivePrivilegeObject(privObjType, function.getDbName(), function.getFunctionName(),
+                null, null, actionType, null, function.getClassName(), function.getOwnerName(), function.getOwnerType());
+      } else {
+        String dbName = privObject.getDatabase() != null ? privObject.getDatabase().getName() : null;
+        hivePrivObject = new HivePrivilegeObject(privObjType, dbName, privObject.getFunctionName(),
+                null, null, actionType, null, privObject.getClassName(), null, null);
+      }
       break;
     case DUMMYPARTITION:
     case PARTITION:

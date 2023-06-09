@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -39,6 +41,8 @@ import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
+import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -245,6 +249,61 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  /**
+   * Return some col statistics (Lower bounds, Upper bounds, Null value counts, NaN, total counts) calculated by
+   * the underlying storage handler implementation.
+   * @param table
+   * @return A List of Column Statistics Objects, can be null
+   */
+  default List<ColumnStatisticsObj>getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return null;
+  }
+
+  /**
+   * Set column stats for non-native tables
+   * @param table
+   * @param colStats
+   * @return boolean
+   */
+  default boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table table,
+      List<ColumnStatistics> colStats) {
+    return false;
+  }
+
+  /**
+   * Check if the storage handler can provide col statistics.
+   * @param tbl
+   * @return true if the storage handler can supply the col statistics
+   */
+  default boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+    return false;
+  }
+
+  /**
+   * Check if the storage handler can set col statistics.
+   * @return true if the storage handler can set the col statistics
+   */
+  default boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+    return false;
+  }
+
+  /**
+   * Check if the storage handler answer a few queries like count(1) purely using stats.
+   * @return true if the storage handler can answer query using statistics
+   */
+  default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+    return false;
+  }
+
+  /**
+   *
+   * Gets the storage format descriptor to be used for temp table for LOAD data.
+   * @param table table object
+   * @return StorageFormatDescriptor if the storage handler can support load data
+   */
+  default StorageFormatDescriptor getStorageFormatDescriptor(Table table) throws SemanticException {
+    return null;
+  }
   /**
    * Check if CTAS and CMV operations should behave in a direct-insert manner (i.e. no move task).
    * <p>
@@ -491,12 +550,31 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  /**
+   * Introduced by HIVE-25457 for iceberg to query metadata table.
+   * @return true if the storage handler can support it
+   * @deprecated Use {@link #isTableMetaRefSupported()}
+   */
+  @Deprecated
   default boolean isMetadataTableSupported() {
+    return isTableMetaRefSupported();
+  }
+
+  /**
+   * Check whether the table supports metadata references which mainly include branch, tag and metadata tables.
+   * @return true if the storage handler can support it
+   */
+  default boolean isTableMetaRefSupported() {
     return false;
   }
 
   default boolean isValidMetadataTable(String metaTableName) {
     return false;
+  }
+
+  default org.apache.hadoop.hive.ql.metadata.Table checkAndSetTableMetaRef(
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, String tableMetaRef) throws SemanticException {
+    return null;
   }
 
   /**
@@ -526,6 +604,10 @@ public interface HiveStorageHandler extends Configurable {
   default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
   }
 
+  default void alterTableBranchOperation(org.apache.hadoop.hive.ql.metadata.Table table,
+      AlterTableBranchSpec alterBranchSpec) {
+  }
+
   /**
    * Gets whether this storage handler supports snapshots.
    * @return true means snapshots are supported false otherwise
@@ -551,5 +633,9 @@ public interface HiveStorageHandler extends Configurable {
    */
   default void prepareAlterTableEnvironmentContext(AbstractAlterTableDesc alterTableDesc,
       EnvironmentContext environmentContext) {
+  }
+
+  default Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
+    return null;
   }
 }

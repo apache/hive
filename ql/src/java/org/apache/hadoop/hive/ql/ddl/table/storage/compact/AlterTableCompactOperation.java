@@ -103,6 +103,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     req.setProperties(desc.getProperties());
     req.setInitiatorId(JavaUtils.hostname() + "-" + HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION);
     req.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
+    req.setOrderByClause(desc.getOrderByClause());
     if (desc.getNumberOfBuckets() > 0) {
       req.setNumberOfBuckets(desc.getNumberOfBuckets());
     }

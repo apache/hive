@@ -849,6 +849,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @return \metastore\Partition[]
      * @throws \metastore\MetaException
      * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\InvalidObjectException
      */
     public function get_partitions_by_names($db_name, $tbl_name, array $names);
     /**
@@ -856,8 +857,23 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @return \metastore\GetPartitionsByNamesResult
      * @throws \metastore\MetaException
      * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\InvalidObjectException
      */
     public function get_partitions_by_names_req(\metastore\GetPartitionsByNamesRequest $req);
+    /**
+     * @param \metastore\PropertyGetRequest $req
+     * @return \metastore\PropertyGetResponse
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_properties(\metastore\PropertyGetRequest $req);
+    /**
+     * @param \metastore\PropertySetRequest $req
+     * @return bool
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function set_properties(\metastore\PropertySetRequest $req);
     /**
      * @param string $db_name
      * @param string $tbl_name
@@ -1395,6 +1411,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function get_valid_write_ids(\metastore\GetValidWriteIdsRequest $rqst);
+    /**
+     * @param int $txnId
+     * @param array $writeIds
+     * @throws \metastore\MetaException
+     */
+    public function add_write_ids_to_min_history($txnId, array $writeIds);
     /**
      * @param \metastore\AllocateTableWriteIdsRequest $rqst
      * @return \metastore\AllocateTableWriteIdsResponse

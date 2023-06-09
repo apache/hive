@@ -21,6 +21,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -39,9 +42,11 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.junit.After;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandler;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandlerFactory;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.internal.util.reflection.FieldSetter;
 
 import java.util.ArrayList;
@@ -56,7 +61,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.mockito.Mockito;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME;
@@ -67,7 +71,6 @@ import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 
 /**
  * Tests for the compactor Cleaner thread
@@ -92,14 +95,18 @@ public class TestCleaner extends CompactorTest {
   }
 
   public void testRetryAfterFailedCleanup(boolean delayEnabled) throws Exception {
-    conf.setBoolVar(HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, delayEnabled);
-    conf.setTimeVar(HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 2, TimeUnit.SECONDS);
+    HiveConf.setBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, delayEnabled);
+    HiveConf.setTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 2, TimeUnit.SECONDS);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS, 3);
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, 100, TimeUnit.MILLISECONDS);
     String errorMessage = "No cleanup here!";
 
     //Prevent cleaner from marking the compaction as cleaned
     TxnStore mockedHandler = spy(txnHandler);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
+    List<TaskHandler> taskHandlers = TaskHandlerFactory.getInstance()
+            .getHandlers(conf, mockedHandler, metadataCache, false, fsRemover);
     doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     Table t = newTable("default", "retry_test", false);
@@ -124,6 +131,7 @@ public class TestCleaner extends CompactorTest {
       Cleaner cleaner = new Cleaner();
       cleaner.setConf(conf);
       cleaner.init(new AtomicBoolean(true));
+      cleaner.setCleanupHandlers(taskHandlers);
       FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
       cleaner.run();
@@ -150,6 +158,7 @@ public class TestCleaner extends CompactorTest {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(taskHandlers);
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
     cleaner.run();
@@ -182,12 +191,17 @@ public class TestCleaner extends CompactorTest {
 
     //Prevent cleaner from marking the compaction as cleaned
     TxnStore mockedHandler = spy(txnHandler);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
+    List<TaskHandler> taskHandlers = TaskHandlerFactory.getInstance()
+            .getHandlers(conf, mockedHandler, metadataCache, false, fsRemover);
     doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     //Do a run to fail the clean and set the retention time
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(taskHandlers);
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
     cleaner.run();
@@ -203,6 +217,7 @@ public class TestCleaner extends CompactorTest {
     cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(taskHandlers);
     FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
     cleaner.run();
@@ -300,6 +315,9 @@ public class TestCleaner extends CompactorTest {
     txnHandler.markCompacted(ci);
     // Open a query during compaction
     long longQuery = openTxn();
+    if (useMinHistoryWriteId()) {
+      allocateTableWriteId("default", "camtc", longQuery);
+    }
     txnHandler.commitTxn(new CommitTxnRequest(compactTxn));
 
     startCleaner();
@@ -739,6 +757,8 @@ public class TestCleaner extends CompactorTest {
     rqst.setPartitionname(partName);
     long compactTxn = compactInTxn(rqst);
     addDeltaFile(t, p, 21, 22, 2);
+
+    txnHandler.addWriteIdsToMinHistory(1, Collections.singletonMap("default.trfcp", 23L));
     startCleaner();
 
     // make sure cleaner didn't remove anything, and cleaning is still queued
@@ -789,13 +809,13 @@ public class TestCleaner extends CompactorTest {
     return false;
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     compactorTestCleanup();
   }
 
   @Test
-  public void NoCleanupAfterMajorCompaction() throws Exception {
+  public void noCleanupAfterMajorCompaction() throws Exception {
     Map<String, String> parameters = new HashMap<>();
 
     //With no cleanup true
@@ -816,7 +836,7 @@ public class TestCleaner extends CompactorTest {
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(1, rsp.getCompactsSize());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, rsp.getCompacts().get(0).getState());
 
     // Check that the files are not removed
     List<Path> paths = getDirectories(conf, t, null);
@@ -864,7 +884,7 @@ public class TestCleaner extends CompactorTest {
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(1, rsp.getCompactsSize());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, rsp.getCompacts().get(0).getState());
 
     // Check that the files are not removed
     List<Path> paths = getDirectories(conf, t, p);
@@ -1059,7 +1079,7 @@ public class TestCleaner extends CompactorTest {
 
     List<Path> paths = getDirectories(conf, t, null);
     Assert.assertEquals(1, paths.size());
-    Assert.assertEquals("delta_0000020_0000020", paths.get(0).getName());
+    Assert.assertEquals(makeDeltaDirName(20,20), paths.get(0).getName());
   }
 
   @Test
@@ -1078,8 +1098,10 @@ public class TestCleaner extends CompactorTest {
     burnThroughTransactions(dbName, tblName, 22);
 
     // block cleaner with an open txn
-    openTxn();
-    
+    long txnId = openTxn();
+    if (useMinHistoryWriteId()) {
+      allocateTableWriteId(dbName, tblName, txnId);
+    }
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
     rqst.setPartitionname(partName);
     long ctxnid = compactInTxn(rqst);
@@ -1095,36 +1117,12 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
   }
 
-  @Test
-  public void testMetaCache() throws Exception {
-    conf.setBoolVar(HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, false);
+  private void allocateTableWriteId(String dbName, String tblName, long txnId) throws Exception {
+    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
+    awiRqst.setTxnIds(Collections.singletonList(txnId));
+    AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
 
-    Table t = newTable("default", "retry_test", false);
-
-    addBaseFile(t, null, 20L, 20);
-    addDeltaFile(t, null, 21L, 22L, 2);
-    addDeltaFile(t, null, 23L, 24L, 2);
-    burnThroughTransactions("default", "retry_test", 25);
-
-    CompactionRequest rqst = new CompactionRequest("default", "retry_test", CompactionType.MAJOR);
-    long compactTxn = compactInTxn(rqst);
-    addBaseFile(t, null, 25L, 25, compactTxn);
-
-    //Prevent cleaner from marking the compaction as cleaned
-    TxnStore mockedHandler = spy(txnHandler);
-    doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
-    Cleaner cleaner = Mockito.spy(new Cleaner());
-    cleaner.setConf(conf);
-    cleaner.init(new AtomicBoolean(true));
-    cleaner.run();
-    cleaner.run();
-
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals(1, compacts.size());
-    Mockito.verify(cleaner, times(2)).computeIfAbsent(Mockito.any(),Mockito.any());
-    Mockito.verify(cleaner, times(1)).resolveTable(Mockito.any());
+    txnHandler.addWriteIdsToMinHistory(txnId, Collections.singletonMap(dbName + "." + tblName,
+      awiResp.getTxnToWriteIds().get(0).getWriteId()));
   }
-
-
 }

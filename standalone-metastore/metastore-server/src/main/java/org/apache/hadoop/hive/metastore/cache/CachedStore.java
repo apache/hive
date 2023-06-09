@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.Executors;
@@ -64,6 +65,7 @@ import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFa
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.messaging.*;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -1276,7 +1278,7 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds, long tableId)
       throws MetaException {
-    catName = normalizeIdentifier(catName);
+    catName = normalizeIdentifier(Optional.ofNullable(catName).orElse(getDefaultCatalog(conf)));
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
@@ -1432,6 +1434,21 @@ public class CachedStore implements RawStore, Configurable {
         return succ;
       }
       sharedCache.removePartitionFromCache(catName, dbName, tblName, partVals);
+    }
+    return succ;
+  }
+
+  @Override public boolean dropPartition(String catName, String dbName, String tblName, String partName)
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean succ = rawStore.dropPartition(catName, dbName, tblName, partName);
+    // in case of event based cache update, cache will be updated during commit.
+    if (succ && !canUseEvents) {
+      catName = normalizeIdentifier(catName);
+      dbName = normalizeIdentifier(dbName);
+      tblName = normalizeIdentifier(tblName);
+      if (shouldCacheTable(catName, dbName, tblName)) {
+        sharedCache.removePartitionFromCache(catName, dbName, tblName, partNameToVals(partName));
+      }
     }
     return succ;
   }
@@ -2211,10 +2228,26 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals,
-      String validWriteIds, long writeId)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    Map<String, String> newParams =
-        rawStore.updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
+                                                                       String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return updatePartitionColumnStatisticsInternal(null, null, colStats, partVals, validWriteIds, writeId);
+  }
+
+  @Override public Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable,
+                                                                       ColumnStatistics colStats, List<String> partVals,
+                                                                       String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+     return updatePartitionColumnStatisticsInternal(table, mTable, colStats, partVals, validWriteIds, writeId);
+  }
+
+  private Map<String, String> updatePartitionColumnStatisticsInternal(Table table, MTable mTable, 
+                                                                      ColumnStatistics colStats, List<String> partVals, 
+                                                                      String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+    table = Optional.ofNullable(table).orElse(getTable(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName()));
+    mTable = Optional.ofNullable(mTable).orElse(ensureGetMTable(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName()));
+    Map<String, String> newParams = rawStore.updatePartitionColumnStatistics(table, mTable, colStats, partVals, validWriteIds, writeId);
     // in case of event based cache update, cache is updated during commit txn
     if (newParams != null && !canUseEvents) {
       updatePartitionColumnStatisticsInCache(colStats, newParams, partVals);
@@ -3323,6 +3356,11 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public void dropPackage(DropPackageRequest request) {
     rawStore.dropPackage(request);
+  }
+
+  @Override
+  public MTable ensureGetMTable(String catName, String dbName, String tblName) throws NoSuchObjectException {
+    return rawStore.ensureGetMTable(catName, dbName, tblName);
   }
 
   private boolean shouldGetConstraintFromRawStore(String catName, String dbName, String tblName) {

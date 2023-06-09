@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 
 /**
@@ -217,6 +216,10 @@ public class ExpressionTree {
       return rhs;
     }
 
+    public void setRhs(TreeNode rhs) {
+      this.rhs = rhs;
+    }
+
     /** Double dispatch for TreeVisitor. */
     protected void accept(TreeVisitor visitor) throws MetaException {
       visitor.visit(this);
@@ -248,6 +251,15 @@ public class ExpressionTree {
         }
         filterBuffer.append (") ");
       }
+    }
+
+    @Override
+    public String toString() {
+      return "TreeNode{" +
+              "lhs=" + lhs +
+              ", andOr='" + andOr + '\'' +
+              ", rhs=" + rhs +
+              '}';
     }
   }
 
@@ -284,7 +296,11 @@ public class ExpressionTree {
 
     private void generateJDOFilterOverTables(Map<String, Object> params,
         FilterBuilder filterBuilder) throws MetaException {
-      if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER)) {
+      if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME)) {
+        keyName = "this.tableName";
+      } else if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_TYPE)) {
+        keyName = "this.tableType";
+      } else if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER)) {
         keyName = "this.owner";
       } else if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_LAST_ACCESS)) {
         //lastAccessTime expects an integer, so we cannot use the "like operator"
@@ -304,6 +320,12 @@ public class ExpressionTree {
         //value is persisted as a string in the db, so make sure it's a string here
         // in case we get a long.
         value = value.toString();
+        // dot in parameter is not supported when parsing the tree.
+        if ("discover__partitions".equals(paramKeyName)) {
+          paramKeyName = "discover.partitions";
+          keyName = "this.parameters.get(\"" + paramKeyName + "\").toUpperCase()";
+          value = value.toString().toUpperCase();
+        }
       } else {
         filterBuilder.setError("Invalid key name in filter.  " +
           "Use constants from org.apache.hadoop.hive.metastore.api");
@@ -455,7 +477,7 @@ public class ExpressionTree {
     private String getJdoFilterPushdownParam(int partColIndex,
                                              FilterBuilder filterBuilder, boolean canPushDownIntegral, List<FieldSchema> partitionKeys) throws MetaException {
       boolean isIntegralSupported = canPushDownIntegral && canJdoUseStringsWithIntegral();
-      String colType = partitionKeys.get(partColIndex).getType();
+      String colType = ColumnType.getTypeName(partitionKeys.get(partColIndex).getType());
       // Can only support partitions whose types are string, or maybe integers
       // Date/Timestamp data type value is considered as string hence pushing down to JDO.
       if (!ColumnType.StringTypes.contains(colType) && !ColumnType.DATE_TYPE_NAME.equalsIgnoreCase(colType)
@@ -482,6 +504,16 @@ public class ExpressionTree {
       }
 
       return isStringValue ? (String)val : Long.toString((Long)val);
+    }
+
+    @Override
+    public String toString() {
+      return "LeafNode{" +
+              "keyName='" + keyName + '\'' +
+              ", operator='" + operator + '\'' +
+              ", value=" + value +
+              (isReverseOrder ? ", isReverseOrder=true" : "") +
+              '}';
     }
   }
 
@@ -561,8 +593,7 @@ public class ExpressionTree {
     return this.root;
   }
 
-  @VisibleForTesting
-  public void setRootForTest(TreeNode tn) {
+  public void setRoot(TreeNode tn) {
     this.root = tn;
   }
 

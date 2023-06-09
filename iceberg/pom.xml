@@ -25,11 +25,11 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
-    <iceberg.version>1.1.0</iceberg.version>
+    <iceberg.version>1.2.1</iceberg.version>
     <kryo-shaded.version>4.0.2</kryo-shaded.version>
     <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
     <iceberg.avro.version>1.11.1</iceberg.avro.version>
-    <iceberg.kryo.version>4.0.2</iceberg.kryo.version>
+    <iceberg.kryo.version>5.2.0</iceberg.kryo.version>
     <iceberg.checkstyle.plugin.version>3.1.2</iceberg.checkstyle.plugin.version>
     <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
     <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>

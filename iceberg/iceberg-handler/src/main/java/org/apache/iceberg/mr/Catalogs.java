@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
@@ -38,7 +37,6 @@ import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.iceberg.relocated.com.google.common.collect.Streams;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
@@ -71,6 +69,7 @@ public final class Catalogs {
 
   public static final String NAME = "name";
   public static final String LOCATION = "location";
+  public static final String BRANCH_NAME = "branch_name";
 
   private static final String NO_CATALOG_TYPE = "no catalog";
   private static final Set<String> PROPERTIES_TO_REMOVE =
@@ -224,6 +223,19 @@ public final class Catalogs {
     return new HadoopTables(conf).create(schema, spec, map, location);
   }
 
+  public static void renameTable(Configuration conf, Properties props, TableIdentifier to) {
+    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+
+    Optional<Catalog> catalog = loadCatalog(conf, catalogName);
+    if (catalog.isPresent()) {
+      String name = props.getProperty(NAME);
+      Preconditions.checkNotNull(name, "Table identifier not set");
+      catalog.get().renameTable(TableIdentifier.parse(name), to);
+    } else {
+      throw new RuntimeException("Rename from " + props.getProperty(NAME) + " to " + to + " failed");
+    }
+  }
+
   static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
     String catalogType = getCatalogType(conf, catalogName);
     if (NO_CATALOG_TYPE.equalsIgnoreCase(catalogType)) {
@@ -243,10 +255,19 @@ public final class Catalogs {
    * @return complete map of catalog properties
    */
   private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName, String catalogType) {
-    String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
-    Map<String, String> catalogProperties = Streams.stream(conf.iterator())
-            .filter(e -> e.getKey().startsWith(keyPrefix))
-            .collect(Collectors.toMap(e -> e.getKey().substring(keyPrefix.length() + 1), Map.Entry::getValue));
+    Map<String, String> catalogProperties = Maps.newHashMap();
+    conf.forEach(config -> {
+      if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
+        catalogProperties.putIfAbsent(
+            config.getKey().substring(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX.length()),
+            config.getValue());
+      } else if (config.getKey().startsWith(InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName)) {
+        catalogProperties.put(
+            config.getKey().substring((InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName).length() + 1),
+            config.getValue());
+      }
+    });
+
     return addCatalogPropertiesIfMissing(conf, catalogType, catalogProperties);
   }
 
