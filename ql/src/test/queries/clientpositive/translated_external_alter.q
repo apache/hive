@@ -6,3 +6,7 @@ set hive.compute.query.using.stats=false;
 
 create table caseSensitive (a integer);
 alter table  casesEnsitivE set tblproperties('some'='one');
+
+-- alter table with empty characters in quotes shouldn't throw error
+alter table ` default`.` caseSensitive ` add columns(i int);
+describe formatted caseSensitive;
