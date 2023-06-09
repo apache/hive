@@ -227,7 +227,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1_n50
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@V1_n5
-POSTHOOK: Lineage: V1_n5.key SIMPLE [(t1_n50)t1_n50.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v1_n5.key SIMPLE [(t1_n50)t1_n50.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: alter view V1_n5 set tblproperties ('test'='thisisatest')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@v1_n5
