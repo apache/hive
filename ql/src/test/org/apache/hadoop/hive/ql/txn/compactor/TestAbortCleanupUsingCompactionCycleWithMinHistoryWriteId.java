@@ -18,11 +18,11 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 public class TestAbortCleanupUsingCompactionCycleWithMinHistoryWriteId extends TestCleaner {
   @Override
-  @Before
+  @BeforeEach
   public void setup() throws Exception {
     super.setup();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, false);
