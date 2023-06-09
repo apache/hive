@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -43,13 +44,16 @@ public class TestGenericUDFArrayExcept {
 
     @Test
     public void testPrimitive() throws HiveException {
-        ObjectInspector[] inputOIs = {
-                ObjectInspectorFactory.getStandardListObjectInspector(
-                        PrimitiveObjectInspectorFactory.writableIntObjectInspector),
-                ObjectInspectorFactory.getStandardListObjectInspector(
-                        PrimitiveObjectInspectorFactory.writableIntObjectInspector)
-        };
-        udf.initialize(inputOIs);
+        ObjectInspector intObjectInspector = ObjectInspectorFactory.getStandardListObjectInspector(
+            PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+        ObjectInspector floatObjectInspector = ObjectInspectorFactory.getStandardListObjectInspector(
+            PrimitiveObjectInspectorFactory.writableFloatObjectInspector);
+        ObjectInspector doubleObjectInspector = ObjectInspectorFactory.getStandardListObjectInspector(
+            PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+        ObjectInspector longObjectInspector = ObjectInspectorFactory.getStandardListObjectInspector(
+            PrimitiveObjectInspectorFactory.writableLongObjectInspector);
+        ObjectInspector stringObjectInspector = ObjectInspectorFactory.getStandardListObjectInspector(
+            PrimitiveObjectInspectorFactory.writableStringObjectInspector);
 
         Object i1 = new IntWritable(1);
         Object i2 = new IntWritable(2);
@@ -65,6 +69,7 @@ public class TestGenericUDFArrayExcept {
         inputList.add(i3);
         inputList.add(i4);
 
+        udf.initialize(new ObjectInspector[] { intObjectInspector, intObjectInspector });
         runAndVerify(inputList, asList(i5, i6, i7, i8), asList(i3,i4));
 
         i1 = new FloatWritable(3.3f);
@@ -75,27 +80,41 @@ public class TestGenericUDFArrayExcept {
         i6 = new FloatWritable(1.1f);
         i7 = new FloatWritable(2.28f);
         i8 = new FloatWritable(2.20f);
-        List<Object> inputListf = new ArrayList<>();
-        inputListf.add(i1);
-        inputListf.add(i2);
-        inputListf.add(i3);
-        inputListf.add(i4);
+        List<Object> inputFloatList = new ArrayList<>();
+        inputFloatList.add(i1);
+        inputFloatList.add(i2);
+        inputFloatList.add(i3);
+        inputFloatList.add(i4);
 
-        runAndVerify(new ArrayList<>(inputListf), asList(i5, i6, i7, i8), asList(i3, i4));
-
-        runAndVerify(new ArrayList<>(inputListf),inputList,asList(i1,i2,i3,i4)); // Int & float arrays
+        udf.initialize(new ObjectInspector[] { floatObjectInspector, floatObjectInspector });
+        runAndVerify(new ArrayList<>(inputFloatList), asList(i5, i6, i7, i8), asList(i3, i4));
 
         Object s1 = new Text("1");
         Object s2 = new Text("2");
         Object s3 = new Text("4");
         Object s4 = new Text("5");
-        List<Object> inputLists = new ArrayList<>();
-        inputLists.add(s1);
-        inputLists.add(s2);
-        inputLists.add(s3);
-        inputLists.add(s4);
+        List<Object> inputStringList = new ArrayList<>();
+        inputStringList.add(s1);
+        inputStringList.add(s2);
+        inputStringList.add(s3);
+        inputStringList.add(s4);
 
-        runAndVerify(new ArrayList<>(inputListf),inputLists,asList(i1,i2,i3,i4)); // float and string arrays
+        udf.initialize(new ObjectInspector[] { stringObjectInspector, stringObjectInspector });
+        runAndVerify(inputStringList,asList(s1,s3),asList(s2,s4));
+        // Empty array output
+        runAndVerify(inputStringList,inputStringList,asList());
+        runAndVerify(inputStringList,asList(),inputStringList);
+        // Empty input arrays
+        runAndVerify(asList(),asList(),asList());
+        // Int & float arrays
+        UDFArgumentTypeException exception = Assert.assertThrows(UDFArgumentTypeException.class, () -> udf.initialize(new ObjectInspector[] { floatObjectInspector, intObjectInspector }));
+        Assert.assertEquals(GenericUDFArrayExcept.ERROR_NOT_COMPARABLE,exception.getMessage());
+        // float and string arrays
+        exception = Assert.assertThrows(UDFArgumentTypeException.class, () -> udf.initialize(new ObjectInspector[] { floatObjectInspector, stringObjectInspector }));
+        Assert.assertEquals(GenericUDFArrayExcept.ERROR_NOT_COMPARABLE,exception.getMessage());
+        // long and double arrays
+        exception = Assert.assertThrows(UDFArgumentTypeException.class, () -> udf.initialize(new ObjectInspector[] { longObjectInspector, doubleObjectInspector }));
+        Assert.assertEquals(GenericUDFArrayExcept.ERROR_NOT_COMPARABLE,exception.getMessage());
     }
 
     @Test

@@ -19,10 +19,13 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,9 +34,14 @@ import java.util.stream.Collectors;
  */
 @Description(name = "array_except", value = "_FUNC_(array1, array2) - Returns an array of the elements in array1 but not in array2.", extended =
     "Example:\n" + "  > SELECT _FUNC_(array(1, 2, 3,4), array(2,3)) FROM src LIMIT 1;\n"
-        + "  [1,4]") public class GenericUDFArrayExcept extends AbstractGenericUDFArrayBase {
+        + "  [1,4]")
+public class GenericUDFArrayExcept extends AbstractGenericUDFArrayBase {
   static final int ARRAY2_IDX = 1;
   private static final String FUNC_NAME = "ARRAY_EXCEPT";
+  static final String ERROR_NOT_COMPARABLE = "Input arrays are not comparable to use ARRAY_EXCEPT udf";
+  private transient ListObjectInspector array2OI;
+  private transient ObjectInspector arrayElementOI;
+  private transient ObjectInspector array2ElementOI;
 
   public GenericUDFArrayExcept() {
     super(FUNC_NAME, 2, 2, ObjectInspector.Category.LIST);
@@ -41,19 +49,32 @@ import java.util.stream.Collectors;
 
   @Override public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     ObjectInspector defaultOI = super.initialize(arguments);
+    array2OI = (ListObjectInspector) arguments[ARRAY2_IDX];
     checkArgCategory(arguments, ARRAY2_IDX, ObjectInspector.Category.LIST, FUNC_NAME,
         org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME); //Array1 is already getting validated in Parent class
+    arrayElementOI = arrayOI.getListElementObjectInspector();
+    array2ElementOI = array2OI.getListElementObjectInspector();
+    if (!ObjectInspectorUtils.compareTypes(arrayElementOI, array2ElementOI)) { // check if elements of arrays are comparable
+      throw new UDFArgumentTypeException(1, ERROR_NOT_COMPARABLE);
+    }
     return defaultOI;
   }
 
   @Override public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object array = arguments[ARRAY_IDX].get();
-    if (array == null || arrayOI.getListLength(array) <= 0) {
+    Object array2 = arguments[ARRAY2_IDX].get();
+    if (array == null) {
+      return null;
+    }
+
+    if (array2 == null) {
       return null;
     }
 
     List<?> retArray3 = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);
-    retArray3.removeAll(((ListObjectInspector) argumentOIs[ARRAY2_IDX]).getList(arguments[ARRAY2_IDX].get()));
-    return retArray3.stream().distinct().map(o -> converter.convert(o)).collect(Collectors.toList());
+    List inputArrayCopy = new ArrayList<>();
+    inputArrayCopy.addAll(retArray3);
+    inputArrayCopy.removeAll(((ListObjectInspector) argumentOIs[ARRAY2_IDX]).getList(arguments[ARRAY2_IDX].get()));
+    return inputArrayCopy.stream().distinct().map(o -> converter.convert(o)).collect(Collectors.toList());
   }
 }
