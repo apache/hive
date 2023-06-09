@@ -6084,12 +6084,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * Select ... For Update to sequence operations properly.  In practice that means when running
    * with Derby database.  See more notes at class level.
    */
-  private void lockInternal() {
+  protected void lockInternal() {
     if(dbProduct.isDERBY()) {
       derbyLock.lock();
     }
   }
-  private void unlockInternal() {
+  protected void unlockInternal() {
     if(dbProduct.isDERBY()) {
       derbyLock.unlock();
     }

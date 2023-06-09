@@ -58,15 +58,18 @@ class AbortedTxnCleaner extends TaskHandler {
 
   /**
    The following cleanup is based on the following idea - <br>
-   1. Aborted cleanup is independent of compaction. This is because directories which are written by
-      aborted txns are not visible by any open txns. It is only visible while determining the AcidState (which
-      only sees the aborted deltas and does not read the file).<br><br>
+   Aborted cleanup is independent of compaction. This is because directories which are written by
+   aborted txns are not visible by any open txns in most cases. The one case, wherein abort deltas
+   are visible for open txns are streaming aborts wherein, a single delta file can have writes
+   from committed and aborted txns. These deltas are also referred to as uncompacted aborts.
+   In such cases, we do not delete uncompacted aborts or its associated metadata.
 
    The following algorithm is used to clean the set of aborted directories - <br>
       a. Find the list of entries which are suitable for cleanup (This is done in {@link TxnStore#findReadyToCleanAborts(long, int)}).<br>
       b. If the table/partition does not exist, then remove the associated aborted entry in TXN_COMPONENTS table. <br>
-      c. Get the AcidState of the table by using the min open txnID, database name, tableName, partition name, highest write ID <br>
-      d. Fetch the aborted directories and delete the directories. <br>
+      c. Get the AcidState of the table by using the min open txnID, database name, tableName, partition name, highest write ID.
+         The construction of AcidState helps in identifying obsolete/aborted directories in the table/partition. <br>
+      d. Fetch the obsolete/aborted directories and delete the directories using the AcidState. <br>
       e. Fetch the aborted write IDs from the AcidState and use it to delete the associated metadata in the TXN_COMPONENTS table.
    **/
   @Override
@@ -79,8 +82,8 @@ class AbortedTxnCleaner extends TaskHandler {
     List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanAborts(abortedTimeThreshold, abortedThreshold);
 
     if (!readyToCleanAborts.isEmpty()) {
-      return readyToCleanAborts.stream().map(ci -> ThrowingRunnable.unchecked(() ->
-                      clean(ci, ci.txnId > 0 ? ci.txnId : Long.MAX_VALUE, metricsEnabled)))
+      return readyToCleanAborts.stream().map(info -> ThrowingRunnable.unchecked(() ->
+                      clean(info, info.minOpenWriteTxnId, metricsEnabled)))
               .collect(Collectors.toList());
     }
     return Collections.emptyList();
@@ -99,7 +102,7 @@ class AbortedTxnCleaner extends TaskHandler {
       if (isNull(t)) {
         // The table was dropped before we got around to cleaning it.
         LOG.info("Unable to find table {}, assuming it was dropped.", info.getFullTableName());
-        txnHandler.markCleaned(info, true);
+        txnHandler.markCleaned(info);
         return;
       }
       if (!isNull(info.partName)) {
@@ -108,7 +111,7 @@ class AbortedTxnCleaner extends TaskHandler {
           // The partition was dropped before we got around to cleaning it.
           LOG.info("Unable to find partition {}, assuming it was dropped.",
                   info.getFullPartitionName());
-          txnHandler.markCleaned(info, true);
+          txnHandler.markCleaned(info);
           return;
         }
       }
@@ -118,10 +121,14 @@ class AbortedTxnCleaner extends TaskHandler {
       abortCleanUsingAcidDir(info, location, minOpenWriteTxn);
 
     } catch (InterruptedException e) {
+      LOG.error("Caught an interrupted exception when cleaning, unable to complete cleaning of {} due to {}", info,
+              e.getMessage());
+      handleCleanerAttemptFailure(info, e.getMessage());
       throw e;
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", info,
               e.getMessage());
+      handleCleanerAttemptFailure(info, e.getMessage());
       throw new MetaException(e.getMessage());
     } finally {
       if (metricsEnabled) {
@@ -149,7 +156,7 @@ class AbortedTxnCleaner extends TaskHandler {
 
     boolean success = cleanAndVerifyObsoleteDirectories(info, location, validWriteIdList, table);
     if (success || CompactorUtil.isDynPartAbort(table, info.partName)) {
-      txnHandler.markCleaned(info, false);
+      txnHandler.markCleaned(info);
     } else {
       LOG.warn("Leaving aborted entry {} in TXN_COMPONENTS table.", info);
     }

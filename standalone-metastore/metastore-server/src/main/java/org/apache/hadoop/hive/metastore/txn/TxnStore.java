@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchCompactionException;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionAbortedException;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
@@ -125,6 +124,7 @@ public interface TxnStore extends Configurable {
   char MAJOR_TYPE = 'a';
   char MINOR_TYPE = 'i';
   char REBALANCE_TYPE = 'r';
+  char ABORT_TXN_CLEANUP_TYPE = 'c';
 
   String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
       SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE, REFUSED_RESPONSE };
@@ -550,10 +550,9 @@ public interface TxnStore extends Configurable {
    * it has been compacted.
    *
    * @param info info on the compaction entry to remove
-   * @param isAbortOnly whether to cleanup only abort related cleanup information
    */
   @RetrySemantics.CannotRetry
-  void markCleaned(CompactionInfo info, boolean isAbortOnly) throws MetaException;
+  void markCleaned(CompactionInfo info) throws MetaException;
 
   /**
    * Mark a compaction entry as failed.  This will move it to the compaction history queue with a
@@ -575,7 +574,7 @@ public interface TxnStore extends Configurable {
 
   /**
    * Stores the value of {@link CompactionInfo#retryRetention} and {@link CompactionInfo#errorMessage} fields
-   * of the CompactionInfo in the HMS database.
+   * of the CompactionInfo either by inserting or updating the fields in the HMS database.
    * @param info The {@link CompactionInfo} object holding the values.
    * @throws MetaException
    */
@@ -598,7 +597,7 @@ public interface TxnStore extends Configurable {
   /**
    * Clean up aborted or committed transactions from txns that have no components in txn_components.  The reason such
    * txns exist can be that no work was done in this txn (e.g. Streaming opened TransactionBatch and
-   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo, boolean)} being called,
+   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called,
    * or the delete from the txns was delayed because of TXN_OPENTXN_TIMEOUT window.
    */
   @RetrySemantics.SafeToRetry

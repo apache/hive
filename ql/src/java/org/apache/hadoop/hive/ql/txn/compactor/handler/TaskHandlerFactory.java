@@ -46,12 +46,12 @@ public class TaskHandlerFactory {
                                                   boolean metricsEnabled, FSRemover fsRemover) {
     boolean useAbortHandler = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
     List<TaskHandler> taskHandlers = new ArrayList<>();
+    taskHandlers.add(new CompactionCleaner(conf, txnHandler, metadataCache,
+            metricsEnabled, fsRemover));
     if (useAbortHandler) {
       taskHandlers.add(new AbortedTxnCleaner(conf, txnHandler, metadataCache,
               metricsEnabled, fsRemover));
     }
-    taskHandlers.add(new CompactionCleaner(conf, txnHandler, metadataCache,
-            metricsEnabled, fsRemover));
     return taskHandlers;
   }
 }

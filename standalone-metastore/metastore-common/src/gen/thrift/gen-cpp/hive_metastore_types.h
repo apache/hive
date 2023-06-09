@@ -127,7 +127,8 @@ struct CompactionType {
   enum type {
     MINOR = 1,
     MAJOR = 2,
-    REBALANCE = 3
+    REBALANCE = 3,
+    ABORT_TXN_CLEANUP = 4
   };
 };
 

@@ -11,7 +11,8 @@ package org.apache.hadoop.hive.metastore.api;
 public enum CompactionType implements org.apache.thrift.TEnum {
   MINOR(1),
   MAJOR(2),
-  REBALANCE(3);
+  REBALANCE(3),
+  ABORT_TXN_CLEANUP(4);
 
   private final int value;
 
@@ -39,6 +40,8 @@ public enum CompactionType implements org.apache.thrift.TEnum {
         return MAJOR;
       case 3:
         return REBALANCE;
+      case 4:
+        return ABORT_TXN_CLEANUP;
       default:
         return null;
     }

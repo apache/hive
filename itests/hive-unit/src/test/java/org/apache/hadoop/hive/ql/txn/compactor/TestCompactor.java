@@ -84,7 +84,6 @@ import static org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -1128,7 +1127,7 @@ public class TestCompactor extends TestCompactorBase {
     doAnswer(invocationOnMock -> {
       connection2.abortTransaction();
       return invocationOnMock.callRealMethod();
-    }).when(mockedTxnHandler).markCleaned(any(), eq(false));
+    }).when(mockedTxnHandler).markCleaned(any());
 
     MetadataCache metadataCache = new MetadataCache(false);
     FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
