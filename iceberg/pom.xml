@@ -26,7 +26,7 @@
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
     <iceberg.version>1.2.1</iceberg.version>
-    <kryo-shaded.version>4.0.2</kryo-shaded.version>
+    <kryo.version>5.0.3</kryo.version>
     <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
     <iceberg.avro.version>1.11.1</iceberg.avro.version>
     <iceberg.kryo.version>5.2.0</iceberg.kryo.version>
@@ -199,9 +199,9 @@
         <version>${junit.jupiter.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.esotericsoftware</groupId>
-        <artifactId>kryo-shaded</artifactId>
-        <version>${kryo-shaded.version}</version>
+        <groupId>com.esotericsoftware.kryo</groupId>
+        <artifactId>kryo5</artifactId>
+        <version>${kryo.version}</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
