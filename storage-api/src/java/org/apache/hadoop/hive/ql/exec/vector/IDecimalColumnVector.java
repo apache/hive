@@ -18,8 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 public interface IDecimalColumnVector {
+  
   void set(int elementNum, HiveDecimalWritable writable);
+  
+  void set(int elementNum, HiveDecimal hiveDec);
 }
