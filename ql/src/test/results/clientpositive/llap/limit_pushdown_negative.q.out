@@ -211,6 +211,21 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         ListSink
 
+PREHOOK: query: explain cbo select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(fetch=[10])
+  HiveProject(key=[$0], v=[$2])
+    HiveTableFunctionScan(invocation=[explode(ARRAY($1, $1))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) l.v)])
+      HiveProject(key=[$0], value=[$1])
+        HiveTableScan(table=[[default, src]], table:alias=[src])
+
 PREHOOK: query: CREATE TABLE dest_2(key STRING, c1 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

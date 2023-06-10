@@ -70,41 +70,22 @@ STAGE PLANS:
                 TableScan
                   alias: ta
                   Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: COMPLETE
-                  Lateral View Forward
-                    Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Lateral View Join Operator
-                        outputColumnNames: _col5, _col6
-                        Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: _col5 (type: int), (_col5 + 1) (type: int)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            key expressions: CASE WHEN ((_col0 = _col1)) THEN (1) ELSE (2) END (type: int)
-                            null sort order: z
-                            sort order: +
-                            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: array('a','b') (type: array<string>)
-                      outputColumnNames: _col0
+                  Select Operator
+                    expressions: array('a','b') (type: array<string>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
                       Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
-                      UDTF Operator
-                        Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
-                        function name: posexplode
-                        Lateral View Join Operator
-                          outputColumnNames: _col5, _col6
-                          Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: _col5 (type: int), (_col5 + 1) (type: int)
-                            outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                            Reduce Output Operator
-                              key expressions: CASE WHEN ((_col0 = _col1)) THEN (1) ELSE (2) END (type: int)
-                              null sort order: z
-                              sort order: +
-                              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: posexplode
+                      Select Operator
+                        expressions: pos (type: int), (pos + 1) (type: int)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: if((_col0 = _col1), 1, 2) (type: int)
+                          null sort order: z
+                          sort order: +
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -127,6 +108,52 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         ListSink
+
+PREHOOK: query: EXPLAIN CBO
+WITH
+TC AS
+(SELECT
+   TB.i A,
+   TB.i+1 B
+FROM TA
+LATERAL VIEW POSEXPLODE(ARRAY('a','b')) TB as i, x
+ORDER BY A),
+TD AS
+(SELECT
+    CASE WHEN A = B THEN 1 ELSE 2 END C
+FROM TC)
+SELECT C
+FROM TD
+ORDER BY C
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ta
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+WITH
+TC AS
+(SELECT
+   TB.i A,
+   TB.i+1 B
+FROM TA
+LATERAL VIEW POSEXPLODE(ARRAY('a','b')) TB as i, x
+ORDER BY A),
+TD AS
+(SELECT
+    CASE WHEN A = B THEN 1 ELSE 2 END C
+FROM TC)
+SELECT C
+FROM TD
+ORDER BY C
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ta
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC])
+  HiveProject(c=[CASE(=($0, $1), 1, 2)])
+    HiveSortLimit(sort0=[$0], dir0=[ASC])
+      HiveProject(a=[$5], b=[+($5, 1)])
+        HiveTableFunctionScan(invocation=[posexplode(ARRAY(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))], rowType=[RecordType(INTEGER id, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER tb.i, VARCHAR(2147483647) tb.x)])
+          HiveTableScan(table=[[default, ta]], table:alias=[ta])
 
 PREHOOK: query: WITH
 TC AS

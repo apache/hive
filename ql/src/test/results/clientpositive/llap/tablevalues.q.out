@@ -204,7 +204,7 @@ POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(col1=[$2], col2=[$3], col3=[$4])
-  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) col1, INTEGER col2, VARCHAR(2147483647) col3)])
+  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, VARCHAR(2147483647) tf.col3)])
     HiveProject(key=[$0], value=[$1])
       HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
 
@@ -742,7 +742,7 @@ POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(col1=[$2], col2=[$3], col3=[$4])
-  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) col1, INTEGER col2, VARCHAR(2147483647) col3)])
+  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, VARCHAR(2147483647) tf.col3)])
     HiveProject(key=[$0], value=[$1])
       HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
 
@@ -824,7 +824,7 @@ POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(key=[$0])
-  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) col1, INTEGER col2, VARCHAR(2147483647) col3)])
+  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, VARCHAR(2147483647) tf.col3)])
     HiveProject(key=[$0], value=[$1])
       HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
 
@@ -906,7 +906,7 @@ POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(col3=[$4])
-  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) col1, INTEGER col2, VARCHAR(2147483647) col3)])
+  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, VARCHAR(2147483647) tf.col3)])
     HiveProject(key=[$0], value=[$1])
       HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
 
@@ -1045,7 +1045,7 @@ POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(col3=[$3])
-  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(INTEGER r, VARCHAR(2147483647) col1, INTEGER col2, INTEGER col3)])
+  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(INTEGER r, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, INTEGER tf.col3)])
     HiveProject(r=[row_number() OVER (PARTITION BY 0 ORDER BY $0 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
       HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
 

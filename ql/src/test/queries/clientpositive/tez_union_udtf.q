@@ -11,6 +11,14 @@ CREATE TABLE x AS
   LATERAL VIEW EXPLODE(array(2)) tf as tag
   WHERE key = '238';
 
+EXPLAIN CBO
+CREATE TABLE x AS
+  SELECT key, 1 as tag FROM src WHERE key = '238'
+  UNION ALL
+  SELECT key, tag FROM src1
+  LATERAL VIEW EXPLODE(array(2)) tf as tag
+  WHERE key = '238';
+
 CREATE TABLE x AS
   SELECT key, 1 as tag FROM src WHERE key = '238'
   UNION ALL

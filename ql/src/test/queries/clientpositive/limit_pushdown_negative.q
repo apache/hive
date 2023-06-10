@@ -10,6 +10,7 @@ explain select value, sum(key) as sum from src group by value having sum > 100 l
 
 -- negative, RS + lateral view
 explain select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10;
+explain cbo select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10;
 
 -- negative, RS + forward + multi-groupby
 CREATE TABLE dest_2(key STRING, c1 INT);

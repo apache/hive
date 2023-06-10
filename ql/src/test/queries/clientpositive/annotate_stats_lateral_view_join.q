@@ -58,3 +58,7 @@ explain select * from annotate_stats_lateral_view_join_test a lateral view explo
 explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d;
+explain cbo select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
+explain cbo select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
+explain cbo select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c;
+explain cbo select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d;

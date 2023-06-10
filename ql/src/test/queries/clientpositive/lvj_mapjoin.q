@@ -29,6 +29,14 @@ select sub1.aid, sub1.avalue, sub2.bvalue
 from sub1,sub2
 where sub1.aid=sub2.bid;
 
+explain cbo with sub1 as
+(select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
+sub2 as
+(select bid, bvalue from expod2 lateral view explode(bv) bvs as bvalue)
+select sub1.aid, sub1.avalue, sub2.bvalue
+from sub1,sub2
+where sub1.aid=sub2.bid;
+
 with sub1 as
 (select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
 sub2 as
