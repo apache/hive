@@ -394,7 +394,8 @@ public class ASTConverter {
       // RelNode first and the generated UDTF columns after that. So we skip
       // all the input fields.
       List<String> fields = udtf.getRowType().getFieldNames();
-      for (int i = 0; i < udtf.getRowType().getFieldCount(); ++i) {
+      int startUdtfField = udtf.getStartUdtfField();
+      for (int i = startUdtfField; i < udtf.getRowType().getFieldCount(); ++i) {
         sel.add(HiveParser.Identifier, fields.get(i));
       }
       b.add(sel);
