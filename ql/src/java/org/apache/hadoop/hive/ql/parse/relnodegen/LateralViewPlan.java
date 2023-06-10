@@ -114,7 +114,7 @@ public class LateralViewPlan {
 
     this.lateralViewRel = HiveTableFunctionScan.create(cluster,
         TraitsUtil.getDefaultTraitSet(cluster), ImmutableList.of(inputRel), udtfCall,
-        null, retType, null);
+        null, retType, null, /*isLateralView*/ true);
   }
 
   public static void validateLateralView(ASTNode lateralView) throws SemanticException {
@@ -256,9 +256,11 @@ public class LateralViewPlan {
     Preconditions.checkState(retType.isStruct());
 
     // Add the type names and values from the udtf into the lists that will make up the
-    // return type.
+    // return type. Names need to be unique so add the table prefix
     allDataTypes.addAll(Lists.transform(retType.getFieldList(), RelDataTypeField::getType));
-    allDataTypeNames.addAll(columnAliases);
+    for (String s : columnAliases) {
+      allDataTypeNames.add(lateralTableAlias + "." + s);
+    }
 
     return cluster.getTypeFactory().createStructType(allDataTypes, allDataTypeNames);
   }

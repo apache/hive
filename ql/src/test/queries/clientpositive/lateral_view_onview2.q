@@ -5,3 +5,4 @@ INSERT OVERWRITE TABLE lv_table_n1 SELECT 'abc  ', array(1,2,3), 100, 't' FROM s
 CREATE OR REPLACE VIEW lv_view AS SELECT * FROM lv_table_n1; 
 
 EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9;
+EXPLAIN CBO SELECT myTable.myCol, myTable2.myCol2 FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9;

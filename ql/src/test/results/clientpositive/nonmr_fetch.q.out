@@ -1066,41 +1066,65 @@ STAGE PLANS:
           alias: srcpart
           filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-          Lateral View Forward
+          Select Operator
+            expressions: key (type: string), value (type: string)
+            outputColumnNames: _col0, _col1
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-              Lateral View Join Operator
-                outputColumnNames: _col0, _col8
-                Statistics: Num rows: 500 Data size: 1003500 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 20
-                  Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: string), _col8 (type: string)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
-                    ListSink
-            Select Operator
-              expressions: array(key,value) (type: array<string>)
-              outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 960000 Basic stats: COMPLETE Column stats: COMPLETE
-              UDTF Operator
-                Statistics: Num rows: 500 Data size: 960000 Basic stats: COMPLETE Column stats: COMPLETE
-                function name: explode
+            Lateral View Forward
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col8
                   Statistics: Num rows: 500 Data size: 1003500 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 20
-                    Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 40080 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), _col8 (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 20 Data size: 40080 Basic stats: COMPLETE Column stats: COMPLETE
                       ListSink
+              Select Operator
+                expressions: array(_col0,_col1) (type: array<string>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 960000 Basic stats: COMPLETE Column stats: COMPLETE
+                UDTF Operator
+                  Statistics: Num rows: 500 Data size: 960000 Basic stats: COMPLETE Column stats: COMPLETE
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col8
+                    Statistics: Num rows: 500 Data size: 1003500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Limit
+                      Number of rows: 20
+                      Statistics: Num rows: 20 Data size: 40080 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: string), _col8 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 20 Data size: 40080 Basic stats: COMPLETE Column stats: COMPLETE
+                        ListSink
+
+PREHOOK: query: explain cbo
+select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(fetch=[20])
+  HiveProject(key=[$0], x=[$8])
+    HiveTableFunctionScan(invocation=[explode(ARRAY($0, $1))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) ds, VARCHAR(2147483647) hr, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) l.x)])
+      HiveProject(key=[$0], value=[$1], ds=[$2], hr=[$3], BLOCK__OFFSET__INSIDE__FILE=[$4], INPUT__FILE__NAME=[$5], ROW__ID=[$6], ROW__IS__DELETED=[$7])
+        HiveFilter(condition=[AND(=($2, _UTF-16LE'2008-04-08'), =($3, _UTF-16LE'11'))])
+          HiveTableScan(table=[[default, srcpart]], table:alias=[srcpart])
 
 PREHOOK: query: select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20
 PREHOOK: type: QUERY

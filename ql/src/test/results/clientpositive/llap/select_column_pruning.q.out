@@ -154,6 +154,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: EXPLAIN CBO SELECT * FROM lv_table1 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE c3 = 100 SORT BY c1 ASC, myCol ASC LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT * FROM lv_table1 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE c3 = 100 SORT BY c1 ASC, myCol ASC LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table1
+#### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM lv_table1 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE c3 = 100 SORT BY c1 ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lv_table1

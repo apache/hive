@@ -17,7 +17,7 @@ POSTHOOK: Input: default@test_issue
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v_test_issue
 POSTHOOK: Lineage: v_test_issue.age EXPRESSION [(test_issue)test_issue.FieldSchema(name:test_c, type:struct<user_c:struct<age:int>>, comment:null), ]
-POSTHOOK: Lineage: v_test_issue.fileid EXPRESSION [(test_issue)test_issue.FieldSchema(name:fileid, type:int, comment:null), ]
+POSTHOOK: Lineage: v_test_issue.fileid SIMPLE [(test_issue)test_issue.FieldSchema(name:fileid, type:int, comment:null), ]
 POSTHOOK: Lineage: v_test_issue.u SCRIPT [(test_issue)test_issue.FieldSchema(name:infos, type:array<struct<u:int>>, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_issue
 PREHOOK: type: LOAD

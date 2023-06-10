@@ -17,6 +17,8 @@ explain select explode(a) from HIVE_20262;
 explain select 1, r from HIVE_20262
       lateral view explode(a) t as r ;
 
+explain cbo select 1, r from HIVE_20262
+      lateral view explode(a) t as r ;
 
 -- Default behaviour tests:
 

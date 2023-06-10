@@ -1138,6 +1138,14 @@ public class HiveCalciteUtil {
     return irefColl.getInputRefSet();
   }
 
+  public static Set<Integer> getInputRefs(List<RexNode> exprs) {
+    InputRefsCollector irefColl = new InputRefsCollector(true);
+    for (RexNode expr : exprs) {
+      expr.accept(irefColl);
+    }
+    return irefColl.getInputRefSet();
+  }
+
   private static class InputRefsCollector extends RexVisitorImpl<Void> {
 
     private final Set<Integer> inputRefSet = new HashSet<Integer>();

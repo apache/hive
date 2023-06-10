@@ -18,6 +18,17 @@ UNION ALL
    SELECT did AS first_login_did
    FROM tez_test_t2;
 
+explain CBO 
+SELECT NULL AS first_login_did
+   FROM tez_test_t5
+   LATERAL VIEW explode(split('0,6', ',')) gaps AS ads_h5_gap
+UNION ALL
+SELECT  null as first_login_did
+    FROM tez_test_t1
+UNION ALL
+   SELECT did AS first_login_did
+   FROM tez_test_t2;
+
 SELECT NULL AS first_login_did
    FROM tez_test_t5
    LATERAL VIEW explode(split('0,6', ',')) gaps AS ads_h5_gap

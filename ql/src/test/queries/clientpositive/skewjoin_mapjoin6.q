@@ -18,5 +18,8 @@ insert overwrite table array_valued_T1_n39 select key, array(value) from T1_n39;
 explain 
 select * from (select a.key as key, b.value as array_val from T1_n39 a join array_valued_T1_n39 b on a.key=b.key) i lateral view explode (array_val) c as val;
 
+explain cbo
+select * from (select a.key as key, b.value as array_val from T1_n39 a join array_valued_T1_n39 b on a.key=b.key) i lateral view explode (array_val) c as val;
+
 select * from (select a.key as key, b.value as array_val from T1_n39 a join array_valued_T1_n39 b on a.key=b.key) i lateral view explode (array_val) c as val
 ORDER BY key, val;

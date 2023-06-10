@@ -76,6 +76,8 @@ select key, value from (select value key,key value from src where key > 200) a w
 -- lateral view
 explain
 select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20;
+explain cbo
+select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20;
 select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20;
 
 -- non deterministic func

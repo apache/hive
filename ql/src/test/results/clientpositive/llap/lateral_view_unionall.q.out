@@ -99,49 +99,26 @@ STAGE PLANS:
                 TableScan
                   alias: tez_test_t5
                   Statistics: Num rows: 1 Data size: 35 Basic stats: COMPLETE Column stats: COMPLETE
-                  Lateral View Forward
-                    Statistics: Num rows: 1 Data size: 35 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Lateral View Join Operator
-                        outputColumnNames: _col6
-                        Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: null (type: string)
-                            outputColumnNames: _col0
-                            Statistics: Num rows: 2 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
-                            File Output Operator
-                              compressed: false
-                              Statistics: Num rows: 3 Data size: 183 Basic stats: COMPLETE Column stats: COMPLETE
-                              table:
-                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    Select Operator
-                      expressions: split('0,6', ',') (type: array<string>)
-                      outputColumnNames: _col0
+                  Select Operator
+                    expressions: split('0,6', ',') (type: array<string>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
                       Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
-                      UDTF Operator
-                        Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
-                        function name: explode
-                        Lateral View Join Operator
-                          outputColumnNames: _col6
-                          Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            Select Operator
-                              expressions: null (type: string)
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 2 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
-                              File Output Operator
-                                compressed: false
-                                Statistics: Num rows: 3 Data size: 183 Basic stats: COMPLETE Column stats: COMPLETE
-                                table:
-                                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      function name: explode
+                      Select Operator
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: null (type: string)
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 2 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 3 Data size: 183 Basic stats: COMPLETE Column stats: COMPLETE
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
             LLAP IO: all inputs
         Map 3 
@@ -190,6 +167,48 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         ListSink
+
+PREHOOK: query: explain CBO 
+SELECT NULL AS first_login_did
+   FROM tez_test_t5
+   LATERAL VIEW explode(split('0,6', ',')) gaps AS ads_h5_gap
+UNION ALL
+SELECT  null as first_login_did
+    FROM tez_test_t1
+UNION ALL
+   SELECT did AS first_login_did
+   FROM tez_test_t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tez_test_t1
+PREHOOK: Input: default@tez_test_t2
+PREHOOK: Input: default@tez_test_t5
+#### A masked pattern was here ####
+POSTHOOK: query: explain CBO 
+SELECT NULL AS first_login_did
+   FROM tez_test_t5
+   LATERAL VIEW explode(split('0,6', ',')) gaps AS ads_h5_gap
+UNION ALL
+SELECT  null as first_login_did
+    FROM tez_test_t1
+UNION ALL
+   SELECT did AS first_login_did
+   FROM tez_test_t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tez_test_t1
+POSTHOOK: Input: default@tez_test_t2
+POSTHOOK: Input: default@tez_test_t5
+#### A masked pattern was here ####
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(first_login_did=[null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+    HiveUnion(all=[true])
+      HiveProject(first_login_did=[null:NULL])
+        HiveTableFunctionScan(invocation=[explode(split(_UTF-16LE'0,6':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE',':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))], rowType=[RecordType(VARCHAR(2147483647) md_exper, VARCHAR(2147483647) did, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) gaps.ads_h5_gap)])
+          HiveTableScan(table=[[default, tez_test_t5]], table:alias=[tez_test_t5])
+      HiveProject(first_login_did=[null:NULL])
+        HiveTableScan(table=[[default, tez_test_t1]], table:alias=[tez_test_t1])
+  HiveProject(first_login_did=[$0])
+    HiveTableScan(table=[[default, tez_test_t2]], table:alias=[tez_test_t2])
 
 PREHOOK: query: SELECT NULL AS first_login_did
    FROM tez_test_t5
