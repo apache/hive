@@ -130,6 +130,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  properties:
+                    insideView TRUE
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                   Lateral View Forward
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE

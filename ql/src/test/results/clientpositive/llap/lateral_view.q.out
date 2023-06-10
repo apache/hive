@@ -673,11 +673,11 @@ STAGE PLANS:
                   alias: tmp_pyang_src_rcfile
                   Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), value (type: array<string>)
-                    outputColumnNames: key, value
+                    expressions: value[0] (type: string), key (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: value[0] (type: string), key (type: string)
+                      keys: _col0 (type: string), _col1 (type: string)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1

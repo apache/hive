@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,9 +72,11 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
@@ -383,8 +386,10 @@ public class ASTConverter {
       ASTBuilder sel = ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
       ASTNode function = buildUDTFAST(call.getOperator().getName(), children);
       sel.add(function);
-      for (String alias : udtf.getRowType().getFieldNames()) {
-        sel.add(HiveParser.Identifier, alias);
+
+      List<String> fields = udtf.getRowType().getFieldNames();
+      for (int i = 0; i < udtf.getRowType().getFieldCount(); ++i) {
+        sel.add(HiveParser.Identifier, fields.get(i));
       }
       b.add(sel);
       hiveAST.select = b.node();
@@ -408,7 +413,7 @@ public class ASTConverter {
     b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
   }
 
-  private ASTNode buildUDTFAST(String functionName, List<ASTNode> children) {
+  private static ASTNode buildUDTFAST(String functionName, List<ASTNode> children) {
     ASTNode node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
     node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, functionName));
     for (ASTNode c : children) {
@@ -577,6 +582,17 @@ public class ASTConverter {
         ast = ASTBuilder.subQuery(left, sqAlias);
         s = new Schema((Union) r, sqAlias);
       }
+    } else if (isLateralView(r)) {
+      TableFunctionScan tfs = ((TableFunctionScan) r);
+
+      // retrieve the base table source.
+      QueryBlockInfo tableFunctionSource = convertSource(tfs.getInput(0));
+      String sqAlias = tableFunctionSource.schema.get(0).table;
+      // the schema will contain the base table source fields
+      s = new Schema(tfs, sqAlias);
+
+      ast = createASTLateralView(tfs, s, tableFunctionSource, sqAlias);
+
     } else {
       ASTConverter src = new ASTConverter(r, this.derivedTableCount, planMapper);
       ASTNode srcAST = src.convert();
@@ -619,6 +635,77 @@ public class ASTConverter {
     } catch (ParseException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static ASTNode createASTLateralView(TableFunctionScan tfs, Schema s,
+      QueryBlockInfo tableFunctionSource, String sqAlias) {
+    // The structure of the AST LATERAL VIEW will be:
+    //
+    //   TOK_LATERAL_VIEW
+    //     TOK_SELECT
+    //       TOK_SELEXPR
+    //         TOK_FUNCTION
+    //           <udtf func>
+    //           ...
+    //         <col alias for function>
+    //         TOK_TABALIAS
+    //           <table alias for lateral view>
+
+    // set up the select for the parameters of the UDTF
+    List<ASTNode> children = new ArrayList<>();
+    // The UDTF function call within the table function scan will be of the form:
+    // lateral(my_udtf_func(...), $0, $1, ...).  For recreating the AST, we need
+    // the inner "my_udtf_func".
+    RexCall lateralCall = (RexCall) tfs.getCall();
+    RexCall call = (RexCall) lateralCall.getOperands().get(0);
+    for (RexNode rn : call.getOperands()) {
+      ASTNode expr = rn.accept(new RexVisitor(s, rn instanceof RexLiteral,
+          tfs.getCluster().getRexBuilder()));
+      children.add(expr);
+    }
+    ASTNode function = buildUDTFAST(call.getOperator().getName(), children);
+
+    // Add the function to the SELEXPR
+    ASTBuilder selexpr = ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+    selexpr.add(function);
+
+    // Add only the table generated size columns to the select expr for the function,
+    // skipping over the base table columns from the input side of the join.
+    int i = 0;
+    for (ColumnInfo c : s) {
+      if (i++ < tableFunctionSource.schema.size()) {
+        continue;
+      }
+      selexpr.add(HiveParser.Identifier, c.column);
+    }
+    // add the table alias for the lateral view.
+    ASTBuilder tabAlias = ASTBuilder.construct(HiveParser.TOK_TABALIAS, "TOK_TABALIAS");
+    tabAlias.add(HiveParser.Identifier, sqAlias);
+
+    // add the table alias to the SEL_EXPR
+    selexpr.add(tabAlias.node());
+
+    // create the SELECT clause
+    ASTBuilder sel = ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELECT");
+    sel.add(selexpr.node());
+
+    // place the SELECT clause under the LATERAL VIEW clause
+    ASTBuilder lateralview = ASTBuilder.construct(HiveParser.TOK_LATERAL_VIEW, "TOK_LATERAL_VIEW");
+    lateralview.add(sel.node());
+
+    // finally, add the LATERAL VIEW clause under the left side source which is the base table.
+    lateralview.add(tableFunctionSource.ast);
+
+    return lateralview.node();
+  }
+
+  private boolean isLateralView(RelNode relNode) {
+    if (!(relNode instanceof TableFunctionScan)) {
+      return false;
+    }
+    TableFunctionScan htfs = (TableFunctionScan) relNode;
+    RexCall call = (RexCall) htfs.getCall();
+    return ((RexCall) htfs.getCall()).getOperator() == SqlStdOperatorTable.LATERAL;
   }
 
   class QBVisitor extends RelVisitor {

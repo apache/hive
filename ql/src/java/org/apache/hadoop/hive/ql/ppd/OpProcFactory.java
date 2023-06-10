@@ -385,6 +385,25 @@ public final class OpProcFactory {
 
   }
 
+  public static class LateralViewJoinerPPD extends JoinerPPD implements SemanticNodeProcessor {
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      Object o = super.process(nd, stack, procCtx, nodeOutputs);
+      OpWalkerInfo owi = (OpWalkerInfo) procCtx;
+      if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+        // The lateral view join is allowed to have a filter pushed through it.
+        // We need to remove the filter candidate here once it has been applied.
+        // If we do not remove it here, the candidates will be cleared out through
+        // the getCandidateFilterOps().clear() method in another processor and the
+        // filter candidate would not be removed.
+        removeAllCandidates(owi);
+      }
+      return o;
+    }
+  }
+
   public static class LateralViewForwardPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
@@ -504,12 +523,14 @@ public final class OpProcFactory {
       // We try to push the full Filter predicate iff:
       // - the Filter is on top of a TableScan, or
       // - the Filter is on top of a PTF (between PTF and Filter, there might be Select operators)
+      // - the Filter is on top of a LateralViewJoinOperator (the filter can be pushed through one
+      //   side of the join with the base table predicate, but not the UDTF side.)
       // Otherwise, we push only the synthetic join predicates
       // Note : pushing Filter on top of PTF is necessary so the LimitPushdownOptimizer for Rank
-      // functions gets enabled
-      boolean parentTableScan = filterOp.getParentOperators().get(0) instanceof TableScanOperator;
-      boolean ancestorPTF = false;
-      if (!parentTableScan) {
+      // functions gets enabled.
+      boolean onlySyntheticJoinPredicate = false;
+      if (!(filterOp.getParentOperators().get(0) instanceof TableScanOperator)) {
+        onlySyntheticJoinPredicate = true;
         Operator<?> parent = filterOp;
         while (true) {
           assert parent.getParentOperators().size() == 1;
@@ -517,14 +538,17 @@ public final class OpProcFactory {
           if (parent instanceof SelectOperator) {
             continue;
           } else if (parent instanceof PTFOperator) {
-            ancestorPTF = true;
+            onlySyntheticJoinPredicate = false;
+            break;
+          } else if (parent instanceof LateralViewJoinOperator) {
+            onlySyntheticJoinPredicate = false;
             break;
           } else {
             break;
           }
         }
       }
-      return process(nd, stack, procCtx, !parentTableScan && !ancestorPTF, nodeOutputs);
+      return process(nd, stack, procCtx, onlySyntheticJoinPredicate, nodeOutputs);
     }
   }
 
@@ -1409,7 +1433,7 @@ public final class OpProcFactory {
   }
 
   public static SemanticNodeProcessor getLVJProc() {
-    return new JoinerPPD();
+    return new LateralViewJoinerPPD();
   }
 
   public static SemanticNodeProcessor getRSProc() {
