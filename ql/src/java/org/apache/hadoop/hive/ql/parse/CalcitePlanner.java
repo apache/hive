@@ -142,7 +142,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -223,6 +222,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransp
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSortPredicates;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSortTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterTableFunctionTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInBetweenExpandRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4JoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveIntersectMergeRule;
@@ -311,9 +311,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1024,30 +1022,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   @Override
   boolean isCBOSupportedLateralView(ASTNode lateralView) {
-    // Lateral view AST has the following shape:
-    // ^(TOK_LATERAL_VIEW
-    //   ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier params) identifier* tableAlias)))
-    if (lateralView.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
-      // LATERAL VIEW OUTER not supported in CBO
-      return false;
-    }
-    // Only INLINE followed by ARRAY supported in CBO
-    ASTNode lvFunc = (ASTNode) lateralView.getChild(0).getChild(0).getChild(0);
-    String lvFuncName = lvFunc.getChild(0).getText();
-    if (lvFuncName.compareToIgnoreCase(
-            GenericUDTFInline.class.getAnnotation(Description.class).name()) != 0) {
-      return false;
-    }
-    if (lvFunc.getChildCount() != 2) {
-      return false;
-    }
-    ASTNode innerFunc = (ASTNode) lvFunc.getChild(1);
-    if (innerFunc.getToken().getType() != HiveParser.TOK_FUNCTION ||
-            innerFunc.getChild(0).getText().compareToIgnoreCase(
-                GenericUDFArray.class.getAnnotation(Description.class).name()) != 0) {
-      return false;
-    }
-    return true;
+    // LATERAL VIEW OUTER not supported in CBO
+    return lateralView.getToken().getType() != HiveParser.TOK_LATERAL_VIEW_OUTER;
   }
 
   @Override
@@ -1838,6 +1814,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       } else {
         rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC);
       }
+      rules.add(HiveFilterTableFunctionTransposeRule.INSTANCE);
       rules.add(HiveOptimizeInlineArrayTableFunctionRule.INSTANCE);
       rules.add(HiveFilterSetOpTransposeRule.INSTANCE);
       rules.add(HiveFilterSortTransposeRule.INSTANCE);
