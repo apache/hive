@@ -218,7 +218,6 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
-      // Try to reuse cache for broadcast side in mapjoin operators that share the same input.
       runMapJoinCacheReuseOptimization(pctx, optimizerCache);
     }
 
@@ -943,6 +942,9 @@ public class SharedWorkOptimizer extends Transform {
         (Entry<String, TableScanOperator> e) -> e.getValue().getNumChild() == 0);
   }
 
+  /**
+   * Try to reuse cache for broadcast side in mapjoin operators that share the same input.
+   */
   @VisibleForTesting
   public void runMapJoinCacheReuseOptimization(
       ParseContext pctx, SharedWorkOptimizerCache optimizerCache) throws SemanticException {
@@ -953,7 +955,8 @@ public class SharedWorkOptimizer extends Transform {
         if (op instanceof MapJoinOperator) {
           MapJoinOperator mapJoinOp = (MapJoinOperator) op;
           // Only allowed for mapjoin operator
-          if (!mapJoinOp.getConf().isBucketMapJoin() && !mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
+          if (!mapJoinOp.getConf().isBucketMapJoin() &&
+              !mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
             parentToMapJoinOperators.put(
                 obtainFirstBroadcastInput(mapJoinOp).getParentOperators().get(0), mapJoinOp);
           }
