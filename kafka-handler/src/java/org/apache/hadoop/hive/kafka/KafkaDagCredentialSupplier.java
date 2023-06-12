@@ -45,9 +45,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static org.apache.hadoop.hive.kafka.KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS;
-import static org.apache.hadoop.hive.kafka.KafkaUtils.CONSUMER_CONFIGURATION_PREFIX;
 import static org.apache.hadoop.hive.kafka.KafkaUtils.KAFKA_DELEGATION_TOKEN_KEY;
-import static org.apache.hadoop.hive.kafka.KafkaUtils.PRODUCER_CONFIGURATION_PREFIX;
 
 public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaDagCredentialSupplier.class);
@@ -91,17 +89,13 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
    */
   private boolean isTokenRequired(TableDesc tableDesc) {
     String kafkaBrokers = (String) tableDesc.getProperties().get(HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
-    String consumerSecurityProtocol = (String) tableDesc.getProperties().get(
-        CONSUMER_CONFIGURATION_PREFIX + "." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
-    String producerSecurityProtocol = (String) tableDesc.getProperties().get(
-        PRODUCER_CONFIGURATION_PREFIX + "." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
-    return kafkaBrokers != null && !kafkaBrokers.isEmpty()
-        && !CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL.equalsIgnoreCase(consumerSecurityProtocol)
-        && !CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL.equalsIgnoreCase(producerSecurityProtocol);
+    SecurityProtocol protocol = KafkaUtils.securityProtocol(tableDesc.getProperties());
+    return kafkaBrokers != null && !kafkaBrokers.isEmpty() && SecurityProtocol.PLAINTEXT != protocol;
   }
 
   private Token<?> getKafkaDelegationTokenForBrokers(Configuration conf, TableDesc tableDesc) {
-    String kafkaBrokers = (String) tableDesc.getProperties().get(HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
+    Properties tableProperties = tableDesc.getProperties();
+    String kafkaBrokers = (String) tableProperties.get(HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
     LOG.info("Getting kafka credentials for brokers: {}", kafkaBrokers);
 
     String keytab = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
@@ -114,7 +108,12 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
 
     Properties config = new Properties();
     config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
-    config.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_PLAINTEXT.name);
+    SecurityProtocol protocol = KafkaUtils.securityProtocol(tableProperties);
+    if (protocol == null) {
+      protocol = SecurityProtocol.SASL_PLAINTEXT;
+      LOG.warn("Kafka security.protocol is undefined in table properties. Using default {}", protocol.name);
+    }
+    config.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, protocol.name);
 
     String jaasConfig =
         String.format("%s %s %s %s serviceName=\"%s\" keyTab=\"%s\" principal=\"%s\";",
@@ -123,6 +122,9 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
     config.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
 
     LOG.debug("Jaas config for requesting kafka credentials: {}", jaasConfig);
+    Configuration copy = new Configuration(conf);
+    tableProperties.stringPropertyNames().forEach((key) -> copy.set(key, tableProperties.getProperty(key)));
+    KafkaUtils.setupKafkaSslProperties(copy, config);
     CreateDelegationTokenOptions createDelegationTokenOptions = new CreateDelegationTokenOptions();
     try (AdminClient admin = AdminClient.create(config)) {
       CreateDelegationTokenResult createResult = admin.createDelegationToken(createDelegationTokenOptions);
