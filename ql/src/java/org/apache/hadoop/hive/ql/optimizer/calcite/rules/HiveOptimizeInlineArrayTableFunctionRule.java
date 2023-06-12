@@ -27,6 +27,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilderFactory;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 
@@ -67,9 +68,12 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
   public boolean matches(RelOptRuleCall call) {
     final HiveTableFunctionScan tableFunctionScanRel = call.rel(0);
 
-    Preconditions.checkState(tableFunctionScanRel.getCall() instanceof RexCall);
+    if (!(tableFunctionScanRel.getCall() instanceof RexCall)) {
+      return false;
+    }
+
     RexCall udtfCall = (RexCall) tableFunctionScanRel.getCall();
-    if (!"inline".equalsIgnoreCase(udtfCall.getOperator().getName())) {
+    if (!FunctionRegistry.INLINE_FUNC_NAME.equalsIgnoreCase(udtfCall.getOperator().getName())) {
       return false;
     }
 
@@ -79,7 +83,7 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
       return false;
     }
     RexCall firstOperand = (RexCall) operand;
-    if (!"array".equalsIgnoreCase(firstOperand.getOperator().getName())) {
+    if (!FunctionRegistry.ARRAY_FUNC_NAME.equalsIgnoreCase(firstOperand.getOperator().getName())) {
       return false;
     }
     Preconditions.checkState(!firstOperand.getOperands().isEmpty());
