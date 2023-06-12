@@ -49,6 +49,7 @@ array
 array_contains
 array_distinct
 array_except
+array_intersect
 array_join
 array_max
 array_min
