@@ -102,12 +102,14 @@ public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTable
       AlterTableMetaRefSpec.CreateBranchSpec createBranchspec =
           new AlterTableMetaRefSpec.CreateBranchSpec(metaRefName, snapshotId, asOfTime, maxRefAgeMs, minSnapshotsToKeep,
               maxSnapshotAgeMs);
-      AlterTableMetaRefSpec alterTableMetaRefSpec = new AlterTableMetaRefSpec(CREATE_BRANCH, createBranchspec);
+      AlterTableMetaRefSpec<AlterTableMetaRefSpec.CreateBranchSpec> alterTableMetaRefSpec
+          = new AlterTableMetaRefSpec(CREATE_BRANCH, createBranchspec);
       alterTableDesc = new AlterTableCreateBranchDesc(tableName, alterTableMetaRefSpec);
     } else {
       AlterTableMetaRefSpec.CreateTagSpec createTagspec =
           new AlterTableMetaRefSpec.CreateTagSpec(metaRefName, snapshotId, asOfTime, maxRefAgeMs);
-      AlterTableMetaRefSpec alterTableTagSpec = new AlterTableMetaRefSpec<>(CREATE_TAG, createTagspec);
+      AlterTableMetaRefSpec<AlterTableMetaRefSpec.CreateTagSpec> alterTableTagSpec
+          = new AlterTableMetaRefSpec(CREATE_TAG, createTagspec);
       alterTableDesc = new AlterTableCreateTagDesc(tableName, alterTableTagSpec);
     }
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTableDesc)));
