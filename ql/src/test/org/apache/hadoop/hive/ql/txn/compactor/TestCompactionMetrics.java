@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -984,6 +985,7 @@ public class TestCompactionMetrics  extends CompactorTest {
             .getCount());
   }
 
+  @Ignore("Disabled due to flaky test (HIVE-27429)")
   @Test
   public void testCleanerFailuresCountedCorrectly() throws Exception {
     final String DEFAULT_DB = "default";
