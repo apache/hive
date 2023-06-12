@@ -39,9 +39,6 @@ public class GenericUDFArrayExcept extends AbstractGenericUDFArrayBase {
   static final int ARRAY2_IDX = 1;
   private static final String FUNC_NAME = "ARRAY_EXCEPT";
   static final String ERROR_NOT_COMPARABLE = "Input arrays are not comparable to use ARRAY_EXCEPT udf";
-  private transient ListObjectInspector array2OI;
-  private transient ObjectInspector arrayElementOI;
-  private transient ObjectInspector array2ElementOI;
 
   public GenericUDFArrayExcept() {
     super(FUNC_NAME, 2, 2, ObjectInspector.Category.LIST);
@@ -49,12 +46,9 @@ public class GenericUDFArrayExcept extends AbstractGenericUDFArrayBase {
 
   @Override public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     ObjectInspector defaultOI = super.initialize(arguments);
-    array2OI = (ListObjectInspector) arguments[ARRAY2_IDX];
     checkArgCategory(arguments, ARRAY2_IDX, ObjectInspector.Category.LIST, FUNC_NAME,
         org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME); //Array1 is already getting validated in Parent class
-    arrayElementOI = arrayOI.getListElementObjectInspector();
-    array2ElementOI = array2OI.getListElementObjectInspector();
-    if (!ObjectInspectorUtils.compareTypes(arrayElementOI, array2ElementOI)) { // check if elements of arrays are comparable
+    if (!ObjectInspectorUtils.compareTypes(arrayOI.getListElementObjectInspector(), ((ListObjectInspector) arguments[ARRAY2_IDX]).getListElementObjectInspector())) { // check if elements of arrays are comparable
       throw new UDFArgumentTypeException(1, ERROR_NOT_COMPARABLE);
     }
     return defaultOI;
