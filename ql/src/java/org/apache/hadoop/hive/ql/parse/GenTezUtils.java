@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +104,14 @@ public class GenTezUtils {
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
     reduceWork.setSlowStart(reduceSink.getConf().isSlowStart());
+    float minSrcFraction = context.conf.getFloat(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION,
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION_DEFAULT);
+    reduceWork.setMinSrcFraction(minSrcFraction);
+    float maxSrcFraction = context.conf.getFloat(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION,
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION_DEFAULT);
+    reduceWork.setMaxSrcFraction(maxSrcFraction);
     reduceWork.setUniformDistribution(reduceSink.getConf().getReducerTraits().contains(UNIFORM));
 
     if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
@@ -142,7 +151,8 @@ public class GenTezUtils {
     if (reduceWork.isAutoReduceParallelism()) {
       edgeProp =
           new TezEdgeProperty(context.conf, edgeType, true, reduceWork.isSlowStart(),
-              reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer);
+              reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer,
+              reduceWork.getMinSrcFraction(), reduceWork.getMaxSrcFraction());
     } else {
       edgeProp = new TezEdgeProperty(edgeType);
       edgeProp.setSlowStart(reduceWork.isSlowStart());
