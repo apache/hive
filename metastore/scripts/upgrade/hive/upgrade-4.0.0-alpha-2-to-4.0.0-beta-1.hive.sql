@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 4.0.0-alpha-2 to 4.0.0';
+SELECT 'Upgrading MetaStore schema from 4.0.0-alpha-2 to 4.0.0-beta-1';
 
 USE SYS;
 
@@ -280,4 +280,4 @@ WHERE
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer());
 
-SELECT 'Finished upgrading MetaStore schema from 4.0.0-alpha-2 to 4.0.0';
+SELECT 'Finished upgrading MetaStore schema from 4.0.0-alpha-2 to 4.0.0-beta-1';
