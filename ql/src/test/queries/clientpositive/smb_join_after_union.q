@@ -31,7 +31,7 @@ on t.COLUMID = t1.COLUMID where t1.COLUMID is null;
 -- contained in MergeJoinWork(Root: GBY9, Name: Reduce3) for MERGEJOIN40.
 -- The output should be adjusted to MergeJoinWork as a merged work is not a regular tez vertex.
 -- But TezCompiler already visited RS21-GBY22 path during Path3 and cut the parent-child relationship between them.
--- Therefore, TezCompiler does not visit MERGEJOIN40 during Path4, and the output of RS21 is configured to non-existent Vertex.
+-- Therefore, TezCompiler does not visit MERGEJOIN40 during Path4, and the output name of RS21 is configured to non-existent vertex.
 
 -- Use SMB join
 set hive.auto.convert.join=false;
