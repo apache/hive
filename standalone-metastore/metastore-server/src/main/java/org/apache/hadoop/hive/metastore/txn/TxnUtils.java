@@ -607,4 +607,14 @@ public class TxnUtils {
         throw new MetaException("Unexpected compaction type " + ct);
     }
   }
+
+  /**
+   * A helper method to return SQL's 'IS NULL'
+   * clause whenever input is NULL.
+   * @param input A string to be compared to null.
+   * @return String
+   */
+  public static String nvl(String input) {
+    return input != null ? " = ? " : " IS NULL ";
+  }
 }
