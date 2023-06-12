@@ -44,4 +44,10 @@ public class HttpTokenAuthInterceptor extends HttpRequestInterceptorBase {
     throws Exception {
     httpRequest.addHeader(HIVE_DELEGATION_TOKEN_HEADER, tokenStr);
   }
+
+  @Override
+  protected String getAuthType() {
+    // The auth token is Kerberos based
+    return "KERBEROS";
+  }
 }

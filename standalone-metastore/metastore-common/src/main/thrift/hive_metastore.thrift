@@ -167,6 +167,22 @@ const string HIVE_FILTER_FIELD_LAST_ACCESS = "hive_filter_field_last_access__"
 const string HIVE_FILTER_FIELD_TABLE_NAME = "hive_filter_field_tableName__"
 const string HIVE_FILTER_FIELD_TABLE_TYPE = "hive_filter_field_tableType__"
 
+struct PropertySetRequest {
+    1: required string nameSpace;
+    2: map<string, string> propertyMap;
+}
+
+struct PropertyGetRequest {
+    1: required string nameSpace;
+    2: string mapPrefix;
+    3: optional string mapPredicate;
+    4: optional list<string> mapSelection;
+}
+
+struct PropertyGetResponse {
+    1: map<string, map<string , string>> properties;
+}
+
 enum PartitionEventType {
   LOAD_DONE = 1,
 }
@@ -202,6 +218,7 @@ enum CompactionType {
     MINOR = 1,
     MAJOR = 2,
     REBALANCE = 3,
+    ABORT_TXN_CLEANUP = 4,
 }
 
 enum GrantRevokeType {
@@ -1505,9 +1522,11 @@ struct InsertEventRequestData {
 }
 
 union FireEventRequestData {
-    1: InsertEventRequestData insertData
+    1: optional InsertEventRequestData insertData,
     // used to fire insert events on multiple partitions
-    2: list<InsertEventRequestData> insertDatas
+    2: optional list<InsertEventRequestData> insertDatas,
+    // Identify if it is a refresh or invalidate event
+    3: optional bool refreshEvent
 }
 
 struct FireEventRequest {
@@ -1520,6 +1539,7 @@ struct FireEventRequest {
     // ignored if event request data contains multiple insert event datas
     5: optional list<string> partitionVals,
     6: optional string catName,
+    7: optional map<string, string> tblParams,
 }
 
 struct FireEventResponse {
@@ -1752,6 +1772,8 @@ struct TableMeta {
   3: required string tableType;
   4: optional string comments;
   5: optional string catName;
+  6: optional string ownerName;
+  7: optional PrincipalType ownerType;
 }
 
 struct Materialization {
@@ -2765,9 +2787,14 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
 
   // get partitions give a list of partition names
   list<Partition> get_partitions_by_names(1:string db_name 2:string tbl_name 3:list<string> names)
-                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+      throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3)
   GetPartitionsByNamesResult get_partitions_by_names_req(1:GetPartitionsByNamesRequest req)
-                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+      throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3)
+
+    // retrieve properties
+    PropertyGetResponse get_properties(1:PropertyGetRequest req) throws(1:MetaException e1, 2:NoSuchObjectException e2);
+    // set properties
+    bool set_properties(1:PropertySetRequest req) throws(1:MetaException e1, 2:NoSuchObjectException e2);
 
   // changes the partition to the new partition object. partition is identified from the part values
   // in the new_part

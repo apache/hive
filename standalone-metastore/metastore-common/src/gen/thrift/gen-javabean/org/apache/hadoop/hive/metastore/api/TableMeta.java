@@ -16,6 +16,8 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField TABLE_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("tableType", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField COMMENTS_FIELD_DESC = new org.apache.thrift.protocol.TField("comments", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField OWNER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerName", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField OWNER_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerType", org.apache.thrift.protocol.TType.I32, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TableMetaStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TableMetaTupleSchemeFactory();
@@ -25,6 +27,8 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String tableType; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String comments; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String ownerName; // optional
+  private @org.apache.thrift.annotation.Nullable PrincipalType ownerType; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -32,7 +36,13 @@ package org.apache.hadoop.hive.metastore.api;
     TABLE_NAME((short)2, "tableName"),
     TABLE_TYPE((short)3, "tableType"),
     COMMENTS((short)4, "comments"),
-    CAT_NAME((short)5, "catName");
+    CAT_NAME((short)5, "catName"),
+    OWNER_NAME((short)6, "ownerName"),
+    /**
+     * 
+     * @see PrincipalType
+     */
+    OWNER_TYPE((short)7, "ownerType");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -58,6 +68,10 @@ package org.apache.hadoop.hive.metastore.api;
           return COMMENTS;
         case 5: // CAT_NAME
           return CAT_NAME;
+        case 6: // OWNER_NAME
+          return OWNER_NAME;
+        case 7: // OWNER_TYPE
+          return OWNER_TYPE;
         default:
           return null;
       }
@@ -99,7 +113,7 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.COMMENTS,_Fields.CAT_NAME};
+  private static final _Fields optionals[] = {_Fields.COMMENTS,_Fields.CAT_NAME,_Fields.OWNER_NAME,_Fields.OWNER_TYPE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -113,6 +127,10 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.OWNER_NAME, new org.apache.thrift.meta_data.FieldMetaData("ownerName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.OWNER_TYPE, new org.apache.thrift.meta_data.FieldMetaData("ownerType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PrincipalType.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TableMeta.class, metaDataMap);
   }
@@ -150,6 +168,12 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetCatName()) {
       this.catName = other.catName;
     }
+    if (other.isSetOwnerName()) {
+      this.ownerName = other.ownerName;
+    }
+    if (other.isSetOwnerType()) {
+      this.ownerType = other.ownerType;
+    }
   }
 
   public TableMeta deepCopy() {
@@ -163,6 +187,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.tableType = null;
     this.comments = null;
     this.catName = null;
+    this.ownerName = null;
+    this.ownerType = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -285,6 +311,62 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getOwnerName() {
+    return this.ownerName;
+  }
+
+  public void setOwnerName(@org.apache.thrift.annotation.Nullable java.lang.String ownerName) {
+    this.ownerName = ownerName;
+  }
+
+  public void unsetOwnerName() {
+    this.ownerName = null;
+  }
+
+  /** Returns true if field ownerName is set (has been assigned a value) and false otherwise */
+  public boolean isSetOwnerName() {
+    return this.ownerName != null;
+  }
+
+  public void setOwnerNameIsSet(boolean value) {
+    if (!value) {
+      this.ownerName = null;
+    }
+  }
+
+  /**
+   * 
+   * @see PrincipalType
+   */
+  @org.apache.thrift.annotation.Nullable
+  public PrincipalType getOwnerType() {
+    return this.ownerType;
+  }
+
+  /**
+   * 
+   * @see PrincipalType
+   */
+  public void setOwnerType(@org.apache.thrift.annotation.Nullable PrincipalType ownerType) {
+    this.ownerType = ownerType;
+  }
+
+  public void unsetOwnerType() {
+    this.ownerType = null;
+  }
+
+  /** Returns true if field ownerType is set (has been assigned a value) and false otherwise */
+  public boolean isSetOwnerType() {
+    return this.ownerType != null;
+  }
+
+  public void setOwnerTypeIsSet(boolean value) {
+    if (!value) {
+      this.ownerType = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -327,6 +409,22 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case OWNER_NAME:
+      if (value == null) {
+        unsetOwnerName();
+      } else {
+        setOwnerName((java.lang.String)value);
+      }
+      break;
+
+    case OWNER_TYPE:
+      if (value == null) {
+        unsetOwnerType();
+      } else {
+        setOwnerType((PrincipalType)value);
+      }
+      break;
+
     }
   }
 
@@ -347,6 +445,12 @@ package org.apache.hadoop.hive.metastore.api;
 
     case CAT_NAME:
       return getCatName();
+
+    case OWNER_NAME:
+      return getOwnerName();
+
+    case OWNER_TYPE:
+      return getOwnerType();
 
     }
     throw new java.lang.IllegalStateException();
@@ -369,6 +473,10 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetComments();
     case CAT_NAME:
       return isSetCatName();
+    case OWNER_NAME:
+      return isSetOwnerName();
+    case OWNER_TYPE:
+      return isSetOwnerType();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -431,6 +539,24 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_ownerName = true && this.isSetOwnerName();
+    boolean that_present_ownerName = true && that.isSetOwnerName();
+    if (this_present_ownerName || that_present_ownerName) {
+      if (!(this_present_ownerName && that_present_ownerName))
+        return false;
+      if (!this.ownerName.equals(that.ownerName))
+        return false;
+    }
+
+    boolean this_present_ownerType = true && this.isSetOwnerType();
+    boolean that_present_ownerType = true && that.isSetOwnerType();
+    if (this_present_ownerType || that_present_ownerType) {
+      if (!(this_present_ownerType && that_present_ownerType))
+        return false;
+      if (!this.ownerType.equals(that.ownerType))
+        return false;
+    }
+
     return true;
   }
 
@@ -457,6 +583,14 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
     if (isSetCatName())
       hashCode = hashCode * 8191 + catName.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetOwnerName()) ? 131071 : 524287);
+    if (isSetOwnerName())
+      hashCode = hashCode * 8191 + ownerName.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetOwnerType()) ? 131071 : 524287);
+    if (isSetOwnerType())
+      hashCode = hashCode * 8191 + ownerType.getValue();
 
     return hashCode;
   }
@@ -515,6 +649,26 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetCatName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetOwnerName(), other.isSetOwnerName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetOwnerName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ownerName, other.ownerName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetOwnerType(), other.isSetOwnerType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetOwnerType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ownerType, other.ownerType);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -580,6 +734,26 @@ package org.apache.hadoop.hive.metastore.api;
         sb.append("null");
       } else {
         sb.append(this.catName);
+      }
+      first = false;
+    }
+    if (isSetOwnerName()) {
+      if (!first) sb.append(", ");
+      sb.append("ownerName:");
+      if (this.ownerName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ownerName);
+      }
+      first = false;
+    }
+    if (isSetOwnerType()) {
+      if (!first) sb.append(", ");
+      sb.append("ownerType:");
+      if (this.ownerType == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ownerType);
       }
       first = false;
     }
@@ -678,6 +852,22 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // OWNER_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.ownerName = iprot.readString();
+              struct.setOwnerNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // OWNER_TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.findByValue(iprot.readI32());
+              struct.setOwnerTypeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -720,6 +910,20 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.ownerName != null) {
+        if (struct.isSetOwnerName()) {
+          oprot.writeFieldBegin(OWNER_NAME_FIELD_DESC);
+          oprot.writeString(struct.ownerName);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.ownerType != null) {
+        if (struct.isSetOwnerType()) {
+          oprot.writeFieldBegin(OWNER_TYPE_FIELD_DESC);
+          oprot.writeI32(struct.ownerType.getValue());
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -747,12 +951,24 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCatName()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetOwnerName()) {
+        optionals.set(2);
+      }
+      if (struct.isSetOwnerType()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetComments()) {
         oprot.writeString(struct.comments);
       }
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
+      }
+      if (struct.isSetOwnerName()) {
+        oprot.writeString(struct.ownerName);
+      }
+      if (struct.isSetOwnerType()) {
+        oprot.writeI32(struct.ownerType.getValue());
       }
     }
 
@@ -765,7 +981,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTableNameIsSet(true);
       struct.tableType = iprot.readString();
       struct.setTableTypeIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.comments = iprot.readString();
         struct.setCommentsIsSet(true);
@@ -773,6 +989,14 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(1)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.ownerName = iprot.readString();
+        struct.setOwnerNameIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.findByValue(iprot.readI32());
+        struct.setOwnerTypeIsSet(true);
       }
     }
   }

@@ -74,6 +74,8 @@ alterTableStatementSuffix
     | alterStatementSuffixSetOwner
     | alterStatementSuffixSetPartSpec
     | alterStatementSuffixExecute
+    | alterStatementSuffixCreateBranch
+    | alterStatementSuffixConvert
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -458,6 +460,13 @@ alterStatementSuffixSetPartSpec
     -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec)
     ;
 
+alterStatementSuffixConvert
+@init { gParent.pushMsg("alter table convert to", state); }
+@after { gParent.popMsg(state); }
+    : KW_CONVERT KW_TO genericSpec=identifier tablePropertiesPrefixed?
+    -> ^(TOK_ALTERTABLE_CONVERT $genericSpec tablePropertiesPrefixed?)
+    ;
+
 alterStatementSuffixExecute
 @init { gParent.pushMsg("alter table execute", state); }
 @after { gParent.popMsg(state); }
@@ -467,6 +476,37 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam)
     | KW_EXECUTE KW_SET_CURRENT_SNAPSHOT LPAREN (snapshotParam=Number) RPAREN
     -> ^(TOK_ALTERTABLE_EXECUTE KW_SET_CURRENT_SNAPSHOT $snapshotParam)
+    ;
+
+alterStatementSuffixCreateBranch
+@init { gParent.pushMsg("alter table create branch", state); }
+@after { gParent.popMsg(state); }
+    : KW_CREATE KW_BRANCH branchName=identifier snapshotIdOfBranch? branchRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName snapshotIdOfBranch? branchRetain? retentionOfSnapshots?)
+    ;
+
+snapshotIdOfBranch
+@init { gParent.pushMsg("alter table create branch as of version", state); }
+@after { gParent.popMsg(state); }
+    : KW_FOR KW_SYSTEM_VERSION KW_AS KW_OF snapshotId=Number
+    -> ^(TOK_AS_OF_VERSION $snapshotId)
+    |
+    (KW_FOR KW_SYSTEM_TIME KW_AS KW_OF asOfTime=StringLiteral)
+    -> ^(TOK_AS_OF_TIME $asOfTime)
+    ;
+
+branchRetain
+@init { gParent.pushMsg("alter table create branch RETAIN", state); }
+@after { gParent.popMsg(state); }
+    : KW_RETAIN maxRefAge=Number timeUnit=timeUnitQualifiers
+    -> ^(TOK_RETAIN $maxRefAge $timeUnit)
+    ;
+
+retentionOfSnapshots
+@init { gParent.pushMsg("alter table create branch WITH SNAPSHOT RETENTION", state); }
+@after { gParent.popMsg(state); }
+    : (KW_WITH KW_SNAPSHOT KW_RETENTION minSnapshotsToKeep=Number KW_SNAPSHOTS (maxSnapshotAge=Number timeUnit=timeUnitQualifiers)?)
+    -> ^(TOK_WITH_SNAPSHOT_RETENTION $minSnapshotsToKeep ($maxSnapshotAge $timeUnit)?)
     ;
 
 fileFormat

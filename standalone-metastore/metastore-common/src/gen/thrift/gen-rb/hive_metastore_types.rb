@@ -71,8 +71,9 @@ module CompactionType
   MINOR = 1
   MAJOR = 2
   REBALANCE = 3
-  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR", 3 => "REBALANCE"}
-  VALID_VALUES = Set.new([MINOR, MAJOR, REBALANCE]).freeze
+  ABORT_TXN_CLEANUP = 4
+  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR", 3 => "REBALANCE", 4 => "ABORT_TXN_CLEANUP"}
+  VALID_VALUES = Set.new([MINOR, MAJOR, REBALANCE, ABORT_TXN_CLEANUP]).freeze
 end
 
 module GrantRevokeType
@@ -269,6 +270,12 @@ class SQLCheckConstraint; end
 class SQLAllTableConstraints; end
 
 class Type; end
+
+class PropertySetRequest; end
+
+class PropertyGetRequest; end
+
+class PropertyGetResponse; end
 
 class HiveObjectRef; end
 
@@ -1178,6 +1185,64 @@ class Type
     TYPE1 => {:type => ::Thrift::Types::STRING, :name => 'type1', :optional => true},
     TYPE2 => {:type => ::Thrift::Types::STRING, :name => 'type2', :optional => true},
     FIELDS => {:type => ::Thrift::Types::LIST, :name => 'fields', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PropertySetRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAMESPACE = 1
+  PROPERTYMAP = 2
+
+  FIELDS = {
+    NAMESPACE => {:type => ::Thrift::Types::STRING, :name => 'nameSpace'},
+    PROPERTYMAP => {:type => ::Thrift::Types::MAP, :name => 'propertyMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field nameSpace is unset!') unless @nameSpace
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PropertyGetRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAMESPACE = 1
+  MAPPREFIX = 2
+  MAPPREDICATE = 3
+  MAPSELECTION = 4
+
+  FIELDS = {
+    NAMESPACE => {:type => ::Thrift::Types::STRING, :name => 'nameSpace'},
+    MAPPREFIX => {:type => ::Thrift::Types::STRING, :name => 'mapPrefix'},
+    MAPPREDICATE => {:type => ::Thrift::Types::STRING, :name => 'mapPredicate', :optional => true},
+    MAPSELECTION => {:type => ::Thrift::Types::LIST, :name => 'mapSelection', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field nameSpace is unset!') unless @nameSpace
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PropertyGetResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PROPERTIES = 1
+
+  FIELDS = {
+    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::MAP, :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}}
   }
 
   def struct_fields; FIELDS; end
@@ -5162,14 +5227,20 @@ class FireEventRequestData < ::Thrift::Union
     def insertDatas(val)
       FireEventRequestData.new(:insertDatas, val)
     end
+
+    def refreshEvent(val)
+      FireEventRequestData.new(:refreshEvent, val)
+    end
   end
 
   INSERTDATA = 1
   INSERTDATAS = 2
+  REFRESHEVENT = 3
 
   FIELDS = {
     INSERTDATA => {:type => ::Thrift::Types::STRUCT, :name => 'insertData', :class => ::InsertEventRequestData, :optional => true},
-    INSERTDATAS => {:type => ::Thrift::Types::LIST, :name => 'insertDatas', :element => {:type => ::Thrift::Types::STRUCT, :class => ::InsertEventRequestData}, :optional => true}
+    INSERTDATAS => {:type => ::Thrift::Types::LIST, :name => 'insertDatas', :element => {:type => ::Thrift::Types::STRUCT, :class => ::InsertEventRequestData}, :optional => true},
+    REFRESHEVENT => {:type => ::Thrift::Types::BOOL, :name => 'refreshEvent', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5189,6 +5260,7 @@ class FireEventRequest
   TABLENAME = 4
   PARTITIONVALS = 5
   CATNAME = 6
+  TBLPARAMS = 7
 
   FIELDS = {
     SUCCESSFUL => {:type => ::Thrift::Types::BOOL, :name => 'successful'},
@@ -5196,7 +5268,8 @@ class FireEventRequest
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
     PARTITIONVALS => {:type => ::Thrift::Types::LIST, :name => 'partitionVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
+    TBLPARAMS => {:type => ::Thrift::Types::MAP, :name => 'tblParams', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5836,13 +5909,17 @@ class TableMeta
   TABLETYPE = 3
   COMMENTS = 4
   CATNAME = 5
+  OWNERNAME = 6
+  OWNERTYPE = 7
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'},
     COMMENTS => {:type => ::Thrift::Types::STRING, :name => 'comments', :optional => true},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName', :optional => true},
+    OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :optional => true, :enum_class => ::PrincipalType}
   }
 
   def struct_fields; FIELDS; end
@@ -5851,6 +5928,9 @@ class TableMeta
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableType is unset!') unless @tableType
+    unless @ownerType.nil? || ::PrincipalType::VALID_VALUES.include?(@ownerType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field ownerType!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

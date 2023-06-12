@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.ddl.table.create;
 
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.ObjectDictionary;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
@@ -921,14 +924,25 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     // When replicating the statistics for a table will be obtained from the source. Do not
     // reset it on replica.
     if (replicationSpec == null || !replicationSpec.isInReplicationScope()) {
-      if (!this.isCTAS && (tbl.getPath() == null || (!isExternal() && tbl.isEmpty()))) {
-        if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
-                  MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
-        }
-      } else {
-        StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
-                StatsSetupConst.FALSE);
+      // Remove COLUMN_STATS_ACCURATE=true from table's parameter, let the HMS determine if
+      // there is need to add column stats dependent on the table's location.
+      StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
+          StatsSetupConst.FALSE);
+      if (!this.isCTAS && !tbl.isPartitioned() && !tbl.isTemporary() &&
+          conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        // Put the flag into the dictionary in order not to pollute the table,
+        // ObjectDictionary is meant to convey repeatitive messages.
+        ObjectDictionary dictionary = tbl.getTTable().isSetDictionary() ?
+            tbl.getTTable().getDictionary() : new ObjectDictionary();
+        List<ByteBuffer> buffers = new ArrayList<>();
+        String statsSetup = StatsSetupConst.ColumnStatsSetup.getStatsSetupAsString(true,
+            // Ignore all Iceberg leftover files when storageHandler.isTableIdentifierSupported() is true,
+            // as the method is only enabled in Iceberg currently.
+            storageHandler != null && storageHandler.isTableMetaRefSupported(),
+            MetaStoreUtils.getColumnNames(tbl.getCols()));
+        buffers.add(ByteBuffer.wrap(statsSetup.getBytes(StandardCharsets.UTF_8)));
+        dictionary.putToValues(StatsSetupConst.STATS_FOR_CREATE_TABLE, buffers);
+        tbl.getTTable().setDictionary(dictionary);
       }
     }
 

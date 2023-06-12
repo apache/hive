@@ -736,6 +736,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
           ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+      int connectionTimeout = (int) MetastoreConf.getTimeVar(conf,
+          ConfVars.CLIENT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
       if (useSSL) {
         String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
         if (trustStorePath.isEmpty()) {
@@ -749,10 +751,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         String trustStoreAlgorithm =
             MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
         binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-            trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
+            connectionTimeout, trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
       } else {
         binaryTransport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(),
-            clientSocketTimeout);
+            clientSocketTimeout, connectionTimeout);
       }
       binaryTransport = createAuthBinaryTransport(store, binaryTransport);
     } catch (Exception e) {
@@ -2934,9 +2936,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
                                       List<String> tableTypes) throws TException {
-    List<TableMeta> tableMetas = client.get_table_meta(prependCatalogToDbName(
-        catName, dbPatterns, conf), tablePatterns, tableTypes);
-    return FilterUtils.filterTableMetasIfEnabled(isClientFilterEnabled, filterHook, catName, dbPatterns, tableMetas);
+    List<TableMeta> tableMetas = client.get_table_meta(prependCatalogToDbName(catName, dbPatterns, conf),
+        tablePatterns, tableTypes);
+    return FilterUtils.filterTableMetasIfEnabled(isClientFilterEnabled, filterHook, tableMetas);
   }
 
   @Override
@@ -5191,5 +5193,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException{
     return client.abort_Compactions(request);
+  }
+
+  @Override
+  public boolean setProperties(String nameSpace, Map<String, String> properties) throws TException {
+    PropertySetRequest psr = new PropertySetRequest();
+    psr.setNameSpace(nameSpace);
+    psr.setPropertyMap(properties);
+    return client.set_properties(psr);
+  }
+
+  @Override
+  public Map<String, Map<String, String>> getProperties(String nameSpace, String mapPrefix, String mapPredicate, String... selection) throws TException {
+    PropertyGetRequest request = new PropertyGetRequest();
+    request.setNameSpace(nameSpace);
+    request.setMapPrefix(mapPrefix);
+    request.setMapPredicate(mapPredicate);
+    if (selection != null && selection.length > 0) {
+      request.setMapSelection(Arrays.asList(selection));
+    }
+    PropertyGetResponse response = client.get_properties(request);
+    return response.getProperties();
   }
 }

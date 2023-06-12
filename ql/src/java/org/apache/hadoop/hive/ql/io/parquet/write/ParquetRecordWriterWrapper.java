@@ -140,8 +140,7 @@ public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, Pa
     }
 
     // Collect file stats
-    try {
-      ParquetFileReader reader = ParquetFileReader.open(HadoopInputFile.fromPath(this.file, this.jobConf));
+    try (ParquetFileReader reader = ParquetFileReader.open(HadoopInputFile.fromPath(this.file, this.jobConf))) {
       long totalSize = 0;
       for (BlockMetaData block : reader.getFooter().getBlocks()) {
         totalSize += block.getTotalByteSize();
@@ -152,6 +151,7 @@ public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, Pa
       stats.setRawDataSize(totalSize);
     } catch(IOException e) {
       // Ignore
+      LOG.info("Unable to collect file stats from the parquet file {} due to: {}", file, e.getMessage());
     }
   }
 

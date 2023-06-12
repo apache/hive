@@ -190,7 +190,7 @@ public class HadoopInputFile implements InputFile, NativelyEncryptedFile {
       FutureDataInputStreamBuilder fsBuilder = fs.openFile(path);
       if (length != null) {
         LOG.debug("Using fs.option.openfile.length as {} for {}", length, location);
-        fsBuilder.opt("fs.option.openfile.length", length);
+        fsBuilder.opt("fs.option.openfile.length", Long.toString(length));
       }
       LOG.debug("Explicitly using fs.s3a.experimental.input.fadvise as normal for {}", location);
       return HadoopStreams.wrap(

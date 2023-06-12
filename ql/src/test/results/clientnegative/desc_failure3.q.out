@@ -12,4 +12,4 @@ POSTHOOK: query: CREATE TABLE db1.t1(key1 INT, value1 STRING) PARTITIONED BY (ds
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@t1
-FAILED: SemanticException [Error 10431]: Metadata tables are not supported for table t1.
+FAILED: SemanticException [Error 10431]: Table Meta Ref extension is not supported for table t1.

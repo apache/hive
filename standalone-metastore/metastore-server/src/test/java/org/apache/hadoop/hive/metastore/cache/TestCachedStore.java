@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -345,6 +346,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Table salesTable =
         createTable(tpcdsdb.getName(), "store_sales", createStorageDescriptor(columns), partitionsColumns);
     objectStore.createTable(salesTable);
+    MTable salesMTable = objectStore.ensureGetMTable(salesTable.getCatName(), salesTable.getDbName(), salesTable.getTableName());
 
     Map<String, ColumnStatisticsData> partitionStats = new HashMap<>();
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(100).numDVs(50)
@@ -363,7 +365,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
       partNames.add(pName);
 
       ColumnStatistics stats = createColumnStatistics(pStat.getValue(), salesTable, soldDateCol, pName);
-      objectStore.updatePartitionColumnStatistics(stats, partitionValue, null, -1);
+      objectStore.updatePartitionColumnStatistics(salesTable, salesMTable, stats, partitionValue, null, -1);
     }
 
     List<ColumnStatistics> rawStats = objectStore

@@ -415,16 +415,16 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // METADATA
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map1002 = iprot.readMapBegin();
-                struct.metadata = new java.util.HashMap<java.lang.Long,MetadataPpdResult>(2*_map1002.size);
-                long _key1003;
-                @org.apache.thrift.annotation.Nullable MetadataPpdResult _val1004;
-                for (int _i1005 = 0; _i1005 < _map1002.size; ++_i1005)
+                org.apache.thrift.protocol.TMap _map1050 = iprot.readMapBegin();
+                struct.metadata = new java.util.HashMap<java.lang.Long,MetadataPpdResult>(2*_map1050.size);
+                long _key1051;
+                @org.apache.thrift.annotation.Nullable MetadataPpdResult _val1052;
+                for (int _i1053 = 0; _i1053 < _map1050.size; ++_i1053)
                 {
-                  _key1003 = iprot.readI64();
-                  _val1004 = new MetadataPpdResult();
-                  _val1004.read(iprot);
-                  struct.metadata.put(_key1003, _val1004);
+                  _key1051 = iprot.readI64();
+                  _val1052 = new MetadataPpdResult();
+                  _val1052.read(iprot);
+                  struct.metadata.put(_key1051, _val1052);
                 }
                 iprot.readMapEnd();
               }
@@ -458,10 +458,10 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(METADATA_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, struct.metadata.size()));
-          for (java.util.Map.Entry<java.lang.Long, MetadataPpdResult> _iter1006 : struct.metadata.entrySet())
+          for (java.util.Map.Entry<java.lang.Long, MetadataPpdResult> _iter1054 : struct.metadata.entrySet())
           {
-            oprot.writeI64(_iter1006.getKey());
-            _iter1006.getValue().write(oprot);
+            oprot.writeI64(_iter1054.getKey());
+            _iter1054.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -489,10 +489,10 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.metadata.size());
-        for (java.util.Map.Entry<java.lang.Long, MetadataPpdResult> _iter1007 : struct.metadata.entrySet())
+        for (java.util.Map.Entry<java.lang.Long, MetadataPpdResult> _iter1055 : struct.metadata.entrySet())
         {
-          oprot.writeI64(_iter1007.getKey());
-          _iter1007.getValue().write(oprot);
+          oprot.writeI64(_iter1055.getKey());
+          _iter1055.getValue().write(oprot);
         }
       }
       oprot.writeBool(struct.isSupported);
@@ -502,16 +502,16 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetFileMetadataByExprResult struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map1008 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT); 
-        struct.metadata = new java.util.HashMap<java.lang.Long,MetadataPpdResult>(2*_map1008.size);
-        long _key1009;
-        @org.apache.thrift.annotation.Nullable MetadataPpdResult _val1010;
-        for (int _i1011 = 0; _i1011 < _map1008.size; ++_i1011)
+        org.apache.thrift.protocol.TMap _map1056 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT); 
+        struct.metadata = new java.util.HashMap<java.lang.Long,MetadataPpdResult>(2*_map1056.size);
+        long _key1057;
+        @org.apache.thrift.annotation.Nullable MetadataPpdResult _val1058;
+        for (int _i1059 = 0; _i1059 < _map1056.size; ++_i1059)
         {
-          _key1009 = iprot.readI64();
-          _val1010 = new MetadataPpdResult();
-          _val1010.read(iprot);
-          struct.metadata.put(_key1009, _val1010);
+          _key1057 = iprot.readI64();
+          _val1058 = new MetadataPpdResult();
+          _val1058.read(iprot);
+          struct.metadata.put(_key1057, _val1058);
         }
       }
       struct.setMetadataIsSet(true);

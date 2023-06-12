@@ -270,7 +270,7 @@ public class SecurityUtils {
     return thriftServerSocket;
   }
 
-  public static TTransport getSSLSocket(String host, int port, int loginTimeout,
+  public static TTransport getSSLSocket(String host, int port, int socketTimeout, int connectionTimeout,
       String trustStorePath, String trustStorePassWord, String trustStoreType,
       String trustStoreAlgorithm) throws TTransportException {
     TSSLTransportFactory.TSSLTransportParameters params =
@@ -282,8 +282,9 @@ public class SecurityUtils {
         tStoreAlgorithm, tStoreType);
     params.requireClientAuth(true);
     // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT and
-    // SSLContext created with the given params
-    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, loginTimeout, params);
+    // connection timeout and SSLContext created with the given params
+    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, socketTimeout, params);
+    tSSLSocket.setConnectTimeout(connectionTimeout);
     return getSSLSocketWithHttps(tSSLSocket);
   }
 

@@ -30,10 +30,12 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -56,6 +58,7 @@ import org.apache.iceberg.Scan;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -114,7 +117,21 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
   private static TableScan createTableScan(Table table, Configuration conf) {
     TableScan scan = table.newScan();
 
-    long snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
+    long snapshotId = -1;
+    try {
+      snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
+    } catch (NumberFormatException e) {
+      String version = conf.get(InputFormatConfig.SNAPSHOT_ID);
+      SnapshotRef ref = table.refs().get(version);
+      if (ref == null) {
+        throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " + version);
+      }
+      snapshotId = ref.snapshotId();
+    }
+    String branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_BRANCH);
+    if (StringUtils.isNotEmpty(branchName)) {
+      scan = scan.useRef(HiveUtils.getTableBranch(branchName));
+    }
     if (snapshotId != -1) {
       scan = scan.useSnapshot(snapshotId);
     }

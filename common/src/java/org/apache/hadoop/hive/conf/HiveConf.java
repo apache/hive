@@ -2207,6 +2207,9 @@ public class HiveConf extends Configuration {
         "Whether to use codec pool in ORC. Disable if there are bugs with codec reuse."),
     HIVE_ICEBERG_STATS_SOURCE("hive.iceberg.stats.source", "iceberg",
         "Use stats from iceberg table snapshot for query planning. This has two values metastore and iceberg"),
+    HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS("hive.iceberg.expire.snapshot.numthreads", 4,
+        "The number of threads to be used for deleting files during expire snapshot. If set to 0 or below it uses the" +
+            " defult DirectExecutorService"),
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +
@@ -2363,11 +2366,8 @@ public class HiveConf extends Configuration {
         "Whether Hive enables the optimization about converting common join into mapjoin based on the input file size. \n" +
         "If this parameter is on, and the sum of size for n-1 of the tables/partitions for a n-way join is smaller than the\n" +
         "specified size, the join is directly converted to a mapjoin (there is no conditional task)."),
-    HIVE_CONVERT_ANTI_JOIN("hive.auto.convert.anti.join", false,
-        "Whether Hive enables the optimization about converting join with null filter to anti join. The " +
-        "default is currently false because of HIVE-26659. There is the possibility of incorrect results. " +
-        "The incorrect results shown on testing were zeros and nulls on aggregate tpcds queries so it was " +
-        "fairly obvious they were incorrect. But be wary when turning on this flag."),
+    HIVE_CONVERT_ANTI_JOIN("hive.auto.convert.anti.join", true,
+        "Whether Hive enables the optimization about converting join with null filter to anti join."),
     HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD("hive.auto.convert.join.noconditionaltask.size",
         10000000L,
         "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
@@ -3272,11 +3272,11 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD("hive.compactor.abortedtxn.threshold", 1000,
         "Number of aborted transactions involving a given table or partition that will trigger\n" +
-        "a major compaction."),
+        "a major compaction / cleanup of aborted directories."),
 
     HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD("hive.compactor.aborted.txn.time.threshold", "12h",
         new TimeValidator(TimeUnit.HOURS),
-        "Age of table/partition's oldest aborted transaction when compaction will be triggered. " +
+        "Age of table/partition's oldest aborted transaction when compaction / cleanup of aborted directories will be triggered. " +
         "Default time unit is: hours. Set to a negative number to disable."),
 
     HIVE_COMPACTOR_ACTIVE_DELTA_DIR_THRESHOLD("hive.compactor.active.delta.dir.threshold", 200,
@@ -4252,6 +4252,16 @@ public class HiveConf extends Configuration {
         "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
         "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
         "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
+    HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER("hive.server2.authentication.ldap.userSearchFilter", null,
+        "User search filter to be used with baseDN to search for users\n" +
+            "For example: (&(uid={0})(objectClass=person))"),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN("hive.server2.authentication.ldap.groupBaseDN", null,
+        "BaseDN for Group Search. This is used in conjunction with hive.server2.authentication.ldap.baseDN\n" +
+            "and \n" +
+            "request, succeeds if the group is part of the resultset."),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER("hive.server2.authentication.ldap.groupSearchFilter", null,
+        "Group search filter to be used with baseDN, userSearchFilter, groupBaseDN to search for users in groups\n" +
+            "For example: (&(|(memberUid={0})(memberUid={1}))(objectClass=posixGroup))\n"),
     HIVE_SERVER2_PLAIN_LDAP_BIND_USER("hive.server2.authentication.ldap.binddn", null,
         "The user with which to bind to the LDAP server, and search for the full domain name " +
         "of the user being authenticated.\n" +
@@ -4769,7 +4779,7 @@ public class HiveConf extends Configuration {
         "hive.tez.bucket.pruning", true,
          "When pruning is enabled, filters on bucket columns will be processed by \n" +
          "filtering the splits against a bitset of included buckets. This needs predicates \n"+
-            "produced by hive.optimize.ppd and hive.optimize.index.filters."),
+            "produced by hive.optimize.ppd and hive.optimize.index.filter."),
     TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT(
         "hive.tez.bucket.pruning.compat", true,
         "When pruning is enabled, handle possibly broken inserts due to negative hashcodes.\n" +

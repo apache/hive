@@ -46,4 +46,9 @@ public class HttpJwtAuthRequestInterceptor extends HttpRequestInterceptorBase {
   protected void addHttpAuthHeader(HttpRequest httpRequest, HttpContext httpContext) {
     httpRequest.addHeader(HttpHeaders.AUTHORIZATION, HttpAuthUtils.BEARER + " " + signedJwt);
   }
+
+  @Override
+  protected String getAuthType() {
+    return "JWT";
+  }
 }

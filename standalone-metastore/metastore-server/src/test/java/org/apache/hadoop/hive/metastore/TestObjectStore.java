@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -78,6 +77,7 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.junit.Assert;
@@ -498,6 +498,68 @@ public class TestObjectStore {
     }
   }
 
+  @Test
+  public void testDropPartitionByName() throws Exception {
+    Database db1 = new DatabaseBuilder()
+        .setName(DB1)
+        .setDescription("description")
+        .setLocation("locationurl")
+        .build(conf);
+    try (AutoCloseable c = deadline()) {
+      objectStore.createDatabase(db1);
+    }
+    StorageDescriptor sd = createFakeSd("location");
+    HashMap<String, String> tableParams = new HashMap<>();
+    tableParams.put("EXTERNAL", "false");
+    FieldSchema partitionKey1 = new FieldSchema("Country", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema partitionKey2 = new FieldSchema("State", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl1 =
+        new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2),
+            tableParams, null, null, "MANAGED_TABLE");
+    try (AutoCloseable c = deadline()) {
+      objectStore.createTable(tbl1);
+    }
+    HashMap<String, String> partitionParams = new HashMap<>();
+    partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
+    List<String> value1 = Arrays.asList("US", "CA");
+    Partition part1 = new Partition(value1, DB1, TABLE1, 111, 111, sd, partitionParams);
+    part1.setCatName(DEFAULT_CATALOG_NAME);
+    try (AutoCloseable c = deadline()) {
+      objectStore.addPartition(part1);
+    }
+    List<String> value2 = Arrays.asList("US", "MA");
+    Partition part2 = new Partition(value2, DB1, TABLE1, 222, 222, sd, partitionParams);
+    part2.setCatName(DEFAULT_CATALOG_NAME);
+    try (AutoCloseable c = deadline()) {
+      objectStore.addPartition(part2);
+    }
+
+    List<Partition> partitions;
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=CA");
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    }
+    Assert.assertEquals(1, partitions.size());
+    Assert.assertEquals(222, partitions.get(0).getCreateTime());
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=MA");
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    }
+    Assert.assertEquals(0, partitions.size());
+
+    try (AutoCloseable c = deadline()) {
+      // Illegal partName will do nothing, it doesn't matter
+      // because the real HMSHandler will guarantee the partName is legal and exists.
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=NON_EXIST");
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/st=CA");
+    }
+
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+      objectStore.dropDatabase(db1.getCatalogName(), DB1);
+    }
+  }
+
   /**
    * Test the concurrent drop of same partition would leak transaction.
    * https://issues.apache.org/jira/browse/HIVE-16839
@@ -758,6 +820,7 @@ public class TestObjectStore {
     try (AutoCloseable c = deadline()) {
       objectStore.createTable(tbl1);
     }
+    MTable mTable1 = objectStore.ensureGetMTable(tbl1.getCatName(), tbl1.getDbName(), tbl1.getTableName());
     PrivilegeBag privilegeBag = new PrivilegeBag();
     // Create partitions for the partitioned table
     for(int i=0; i < 3; i++) {
@@ -816,7 +879,7 @@ public class TestObjectStore {
         statsObjList.add(partStats);
 
         try (AutoCloseable c = deadline()) {
-          objectStore.updatePartitionColumnStatistics(stats, part.getValues(), null, -1);
+          objectStore.updatePartitionColumnStatistics(tbl1, mTable1, stats, part.getValues(), null, -1);
         }
       }
     }

@@ -37,6 +37,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,6 +50,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +67,6 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -248,10 +249,11 @@ import org.apache.hadoop.hive.metastore.model.MReplicationMetrics;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.properties.CachingPropertyStore;
+import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
@@ -293,7 +295,7 @@ public class ObjectStore implements RawStore, Configurable {
   /**
   * Verify the schema only once per JVM since the db connection info is static
   */
-  private final static AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
+  private static final AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
   private static final Logger LOG = LoggerFactory.getLogger(ObjectStore.class);
   private int RM_PROGRESS_COL_WIDTH = 10000;
   private int RM_METADATA_COL_WIDTH = 4000;
@@ -325,6 +327,11 @@ public class ObjectStore implements RawStore, Configurable {
     USER = org.apache.commons.lang3.StringUtils.defaultString(user, "UNKNOWN");
   }
 
+  /** Constant declaring a query parameter of type string and name key. */
+  private static final String PTYPARAM_STR_KEY = "java.lang.String key";
+  /** Constant declaring a property query predicate using equality. */
+  private static final String PTYARG_EQ_KEY = "this.propertyKey == key";
+
   private boolean isInitialized = false;
   private PersistenceManager pm = null;
   private SQLGenerator sqlGenerator = null;
@@ -338,6 +345,7 @@ public class ObjectStore implements RawStore, Configurable {
   private Pattern partitionValidationPattern;
   private Counter directSqlErrors;
   private boolean areTxnStatsSupported = false;
+  private PropertyStore propertyStore;
 
   private static Striped<Lock> tablelocks;
 
@@ -432,6 +440,17 @@ public class ObjectStore implements RawStore, Configurable {
         directSql = new MetaStoreDirectSql(pm, conf, schema);
       }
     }
+    if (propertyStore == null) {
+      propertyStore = new CachingPropertyStore(new JdoPropertyStore(this), conf);
+    }
+  }
+
+  /**
+   * @return the property store instance
+   */
+  @Override
+  public PropertyStore getPropertyStore() {
+    return propertyStore;
   }
 
   private DatabaseProduct determineDatabaseProduct() {
@@ -1974,13 +1993,19 @@ public class ObjectStore implements RawStore, Configurable {
       // tables in all databases, essentially a full dump)
       pm.getFetchPlan().addGroup(FetchGroups.FETCH_DATABASE_ON_MTABLE);
       query = pm.newQuery(MTable.class, filterBuilder.toString()) ;
-      query.setResult("database.name, tableName, tableType, parameters.get(\"comment\")");
+      query.setResult("database.name, tableName, tableType, parameters.get(\"comment\"), owner, ownerType");
       List<Object[]> tables = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[0]));
       for (Object[] table : tables) {
         TableMeta metaData = new TableMeta(table[0].toString(), table[1].toString(), table[2].toString());
         metaData.setCatName(catName);
         if (table[3] != null) {
           metaData.setComments(table[3].toString());
+        }
+        if (table[4] != null) {
+          metaData.setOwnerName(table[4].toString());
+        }
+        if (table[5] != null) {
+          metaData.setOwnerType(getPrincipalTypeFromStr(table[5].toString()));
         }
         metas.add(metaData);
       }
@@ -2059,7 +2084,7 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      catName = normalizeIdentifier(catName);
+      catName = normalizeIdentifier(Optional.ofNullable(catName).orElse(getDefaultCatalog(conf)));
       db = normalizeIdentifier(db);
       table = normalizeIdentifier(table);
       query = pm.newQuery(MTable.class,
@@ -3092,6 +3117,22 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MPartition part = getMPartition(catName, dbName, tableName, part_vals, null);
       dropPartitionCommon(part);
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return success;
+  }
+
+  @Override
+  public boolean dropPartition(String catName, String dbName, String tableName, String partName)
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean success = false;
+    try {
+      openTransaction();
+      dropPartitionsInternal(catName, dbName, tableName, Arrays.asList(partName), true, true);
       success = commitTransaction();
     } finally {
       if (!success) {
@@ -4178,7 +4219,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Gets partition names from the table via ORM (JDOQL) filter pushdown.
-   * @param table The table.
+   * @param tblName The table.
    * @param tree The expression tree from which JDOQL filter will be made.
    * @param maxParts Maximum number of partitions to return.
    * @param isValidatedFilter Whether the filter was pre-validated for JDOQL pushdown by a client
@@ -4605,7 +4646,7 @@ public class ObjectStore implements RawStore, Configurable {
   public int getNumPartitionsByFilter(String catName, String dbName, String tblName,
                                       String filter) throws MetaException, NoSuchObjectException {
     final ExpressionTree exprTree = org.apache.commons.lang3.StringUtils.isNotEmpty(filter)
-        ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
+        ? PartFilterExprUtil.parseFilterTree(filter) : ExpressionTree.EMPTY_TREE;
 
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
@@ -4705,7 +4746,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
     boolean isAcidTable = TxnUtils.isAcidTable(mTable.getParameters());
     final ExpressionTree tree = (filter != null && !filter.isEmpty())
-        ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
+        ? PartFilterExprUtil.parseFilterTree(filter) : ExpressionTree.EMPTY_TREE;
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
       private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
 
@@ -4784,7 +4825,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
         }
         String filterStr = filterBuilder.toString();
-        tree = PartFilterExprUtil.getFilterParser(filterStr).tree;
+        tree = PartFilterExprUtil.parseFilterTree(filterStr);
       }
 
       @Override
@@ -4853,7 +4894,8 @@ public class ObjectStore implements RawStore, Configurable {
    * @param tblName Table name.
    * @return Table object.
    */
-  private MTable ensureGetMTable(String catName, String dbName, String tblName)
+  @Override
+  public MTable ensureGetMTable(String catName, String dbName, String tblName)
       throws NoSuchObjectException {
     MTable mtable = getMTable(catName, dbName, tblName);
     if (mtable == null) {
@@ -4881,7 +4923,7 @@ public class ObjectStore implements RawStore, Configurable {
   private String makeQueryFilterString(String catName, String dbName, MTable mtable, String filter,
       Map<String, Object> params) throws MetaException {
     ExpressionTree tree = (filter != null && !filter.isEmpty())
-        ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
+        ? PartFilterExprUtil.parseFilterTree(filter) : ExpressionTree.EMPTY_TREE;
     return makeQueryFilterString(catName, dbName, convertToTable(mtable), tree, params, true);
   }
 
@@ -5641,8 +5683,8 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
-      query.declareParameters("java.lang.String key");
+      query = pm.newQuery(MMetastoreDBProperties.class, PTYARG_EQ_KEY);
+      query.declareParameters(PTYPARAM_STR_KEY);
       Collection<MMetastoreDBProperties> names = (Collection<MMetastoreDBProperties>) query.execute("guid");
       List<String> uuids = new ArrayList<>();
       for (Iterator<MMetastoreDBProperties> i = names.iterator(); i.hasNext();) {
@@ -5663,6 +5705,190 @@ public class ObjectStore implements RawStore, Configurable {
     }
     LOG.warn("Guid for metastore db not found");
     return null;
+  }
+
+  public boolean runInTransaction(Runnable exec) {
+    boolean success = false;
+    try {
+      if (openTransaction()) {
+        exec.run();
+        success = commitTransaction();
+      }
+    } catch (Exception e) {
+      LOG.warn("Metastore operation failed", e);
+    } finally {
+      rollbackAndCleanup(success, null);
+    }
+    return success;
+  }
+
+  public boolean dropProperties(String key) {
+    boolean success = false;
+    Query<MMetastoreDBProperties> query = null;
+    try {
+      if (openTransaction()) {
+        query = pm.newQuery(MMetastoreDBProperties.class, PTYARG_EQ_KEY);
+        query.declareParameters(PTYPARAM_STR_KEY);
+        @SuppressWarnings("unchecked")
+        Collection<MMetastoreDBProperties> properties = (Collection<MMetastoreDBProperties>) query.execute(key);
+        if (!properties.isEmpty()) {
+          pm.deletePersistentAll(properties);
+        }
+        success = commitTransaction();
+      }
+    } catch (Exception e) {
+      LOG.warn("Metastore property drop failed", e);
+    } finally {
+      rollbackAndCleanup(success, query);
+    }
+    return success;
+  }
+
+
+  public MMetastoreDBProperties putProperties(String key, String value, String description,  byte[] content) {
+    boolean success = false;
+    try {
+      if (openTransaction()) {
+        //pm.currentTransaction().setOptimistic(false);
+        // fetch first to determine new vs update
+        MMetastoreDBProperties properties = doFetchProperties(key, null);
+        final boolean newInstance;
+        if (properties == null) {
+          newInstance = true;
+          properties = new MMetastoreDBProperties();
+          properties.setPropertykey(key);
+        } else {
+          newInstance = false;
+        }
+        properties.setDescription(description);
+        properties.setPropertyValue(value);
+        properties.setPropertyContent(content);
+        LOG.debug("Attempting to add property {} for the metastore db", key);
+        properties.setDescription("Metastore property "
+            + (newInstance ? "created" : "updated")
+            + " " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+        if (newInstance) {
+          pm.makePersistent(properties);
+        }
+        success = commitTransaction();
+        if (success) {
+          LOG.info("Metastore property {} created successfully", key);
+          return properties;
+        }
+      }
+    } finally {
+      rollbackAndCleanup(success, null);
+    }
+    return null;
+  }
+
+
+  public boolean renameProperties(String mapKey, String newKey) {
+    boolean success = false;
+    Query<MMetastoreDBProperties> query = null;
+    try {
+      LOG.debug("Attempting to rename property {} to {} for the metastore db", mapKey, newKey);
+      if (openTransaction()) {
+        // ensure the target is clear;
+        // query is cleaned up in finally block
+        query = pm.newQuery(MMetastoreDBProperties.class, PTYARG_EQ_KEY);
+        query.declareParameters(PTYPARAM_STR_KEY);
+        query.setUnique(true);
+        MMetastoreDBProperties properties = (MMetastoreDBProperties) query.execute(newKey);
+        if (properties != null) {
+          return false;
+        }
+        // ensure we got a source
+        properties = (MMetastoreDBProperties) query.execute(mapKey);
+        if (properties == null) {
+          return false;
+        }
+        byte[] content = properties.getPropertyContent();
+        String value = properties.getPropertyValue();
+        // remove source from persistent storage
+        pm.deletePersistent(properties);
+        // make it persist with new key
+        MMetastoreDBProperties newProperties = new MMetastoreDBProperties();
+        // update description
+        newProperties.setDescription("Metastore property renamed from " + mapKey + " to " + newKey
+            + " " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+        // change key
+        newProperties.setPropertykey(newKey);
+        newProperties.setPropertyValue(value);
+        newProperties.setPropertyContent(content);
+        pm.makePersistent(newProperties);
+        // commit
+        success = commitTransaction();
+        if (success) {
+          LOG.info("Metastore property {} renamed {} successfully", mapKey, newKey);
+          return true;
+        }
+      }
+    } finally {
+      rollbackAndCleanup(success, query);
+    }
+    return false;
+  }
+
+  private <T> T doFetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
+    try(QueryWrapper query = new QueryWrapper(pm.newQuery(MMetastoreDBProperties.class, PTYARG_EQ_KEY))) {
+      query.declareParameters(PTYPARAM_STR_KEY);
+      query.setUnique(true);
+      MMetastoreDBProperties properties = (MMetastoreDBProperties) query.execute(key);
+      if (properties != null) {
+        return (T) (transform != null? transform.apply(properties) : properties);
+      }
+    }
+    return null;
+  }
+
+  public <T> T fetchProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
+    boolean success = false;
+    T properties = null;
+    try {
+      if (openTransaction()) {
+        properties = doFetchProperties(key, transform);
+        success = commitTransaction();
+      }
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return properties;
+  }
+
+  public <T> Map<String, T> selectProperties(String key, java.util.function.Function<MMetastoreDBProperties, T> transform) {
+    boolean success = false;
+    Query<MMetastoreDBProperties> query = null;
+    Map<String, T> results = null;
+    try {
+      if (openTransaction()) {
+        Collection<MMetastoreDBProperties> properties;
+        if (key == null || key.isEmpty()) {
+          query = pm.newQuery(MMetastoreDBProperties.class);
+          properties = (Collection<MMetastoreDBProperties>) query.execute();
+        } else {
+          query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey.startsWith(key)");
+          query.declareParameters(PTYPARAM_STR_KEY);
+          properties = (Collection<MMetastoreDBProperties>) query.execute(key);
+        }
+        pm.retrieveAll(properties);
+        if (!properties.isEmpty()) {
+          results = new TreeMap<String, T>();
+          for(MMetastoreDBProperties ptys : properties) {
+            T t = (T) (transform != null? transform.apply(ptys) : ptys);
+            if (t != null) {
+              results.put(ptys.getPropertykey(), t);
+            }
+          }
+        }
+        success = commitTransaction();
+      }
+    } finally {
+      rollbackAndCleanup(success, query);
+    }
+    return results;
   }
 
   //TODO: clean up this method
@@ -9903,7 +10129,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats,
+  public Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable, ColumnStatistics colStats,
       List<String> partVals, String validWriteIds, long writeId)
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
@@ -9913,8 +10139,6 @@ public class ObjectStore implements RawStore, Configurable {
       List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
-      Table table = convertToTable(mTable);
       Partition partition = convertToPart(getMPartition(
           catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), false);
       List<String> colNames = new ArrayList<>();
@@ -9971,6 +10195,16 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  @Override
+  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats,
+      List<String> partVals, String validWriteIds, long writeId)
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+    Table table = getTable(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName());
+    MTable mTable = ensureGetMTable(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName());
+    return updatePartitionColumnStatistics(table, mTable, colStats, partVals, validWriteIds, writeId);
   }
 
   @Override

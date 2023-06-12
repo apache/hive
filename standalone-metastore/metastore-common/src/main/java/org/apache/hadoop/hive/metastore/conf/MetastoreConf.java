@@ -402,6 +402,8 @@ public class MetastoreConf {
             "has an infinite lifetime."),
     CLIENT_SOCKET_TIMEOUT("metastore.client.socket.timeout", "hive.metastore.client.socket.timeout", 600,
             TimeUnit.SECONDS, "MetaStore Client socket timeout in seconds"),
+    CLIENT_CONNECTION_TIMEOUT("metastore.client.connection.timeout", "hive.metastore.client.connection.timeout", 600,
+            TimeUnit.SECONDS, "MetaStore Client connection timeout in seconds"),
     COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE("metastore.compactor.history.retention.did.not.initiate",
         "hive.compactor.history.retention.did.not.initiate", 2,
         new RangeValidator(0, 100), "Determines how many compaction records in state " +
@@ -649,6 +651,10 @@ public class MetastoreConf {
     COMPACTOR_CLEANER_TABLECACHE_ON("metastore.compactor.cleaner.tablecache.on",
             "hive.compactor.cleaner.tablecache.on", true,
             "Enable table caching in the cleaner. Currently the cache is cleaned after each cycle."),
+    COMPACTOR_CLEAN_ABORTS_USING_CLEANER("metastore.compactor.clean.aborts.using.cleaner", "hive.compactor.clean.aborts.using.cleaner", true,
+            "Whether to use cleaner for cleaning aborted directories or not.\n" +
+            "Set to true when cleaner is expected to clean delta/delete-delta directories from aborted transactions.\n" +
+            "Otherwise the cleanup of such directories will take place within the compaction cycle."),
     HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS("metastore.compactor.connectionPool.maxPoolSize",
             "hive.compactor.connectionPool.maxPoolSize", 5,
             "Specify the maximum number of connections in the connection pool used by the compactor."),
@@ -979,6 +985,19 @@ public class MetastoreConf {
             "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
             "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
             "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
+    METASTORE_PLAIN_LDAP_USERSEARCHFILTER("metastore.authentication.ldap.userSearchFilter",
+        "hive.metastore.authentication.ldap.userSearchFilter", "",
+        "User search filter to be used with baseDN to search for users\n" +
+            "For example: (&(uid={0})(objectClass=person))"),
+    METASTORE_PLAIN_LDAP_GROUPBASEDN("metastore.authentication.ldap.groupBaseDN",
+        "hive.metastore.authentication.ldap.groupBaseDN", "",
+        "BaseDN for Group Search. This is used in conjunction with metastore.authentication.ldap.baseDN\n" +
+            "and \n" +
+            "request, succeeds if the group is part of the resultset."),
+    METASTORE_PLAIN_LDAP_GROUPSEARCHFILTER("metastore.authentication.ldap.groupSearchFilter",
+        "hive.metastore.authentication.ldap.groupSearchFilter", "",
+        "Group search filter to be used with baseDN, userSearchFilter, groupBaseDN to search for users in groups\n" +
+            "For example: (&(|(memberUid={0})(memberUid={1}))(objectClass=posixGroup))\n"),
     METASTORE_PLAIN_LDAP_BIND_USER("metastore.authentication.ldap.binddn",
             "hive.metastore.authentication.ldap.binddn", "",
 "The user with which to bind to the LDAP server, and search for the full domain name " +
@@ -1697,6 +1716,30 @@ public class MetastoreConf {
           "metastore.use.custom.database.product is set to true."),
     HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "hive.blobstore.supported.schemes", "s3,s3a,s3n",
             "Comma-separated list of supported blobstore schemes."),
+
+    // Property-maps
+    PROPERTIES_CACHE_CAPACITY("hive.metastore.properties.cache.capacity",
+        "hive.metastore.properties.cache.maxsize", 64,
+        "Maximum number of property-maps (collection of properties for one entity) held in cache per store."
+    ),
+    PROPERTIES_CACHE_LOADFACTOR("hive.metastore.properties.cache.loadfactor",
+        "hive.metastore.properties.cache.maxsize", 0.75d,
+        "Property-maps cache map initial fill factor (> 0.0, < 1.0)."
+    ),
+    PROPERTIES_SERVLET_PATH("hive.metastore.properties.servlet.path",
+        "hive.metastore.properties.servlet.path", "hmscli",
+        "Property-maps servlet path component of URL endpoint."
+    ),
+    PROPERTIES_SERVLET_PORT("hive.metastore.properties.servlet.port",
+        "hive.metastore.properties.servlet.port", -1,
+        "Property-maps servlet server port. Negative value disables the servlet," +
+            " 0 will let the system determine the servlet server port," +
+            " positive value will be used as-is."
+    ),
+    PROPERTIES_SERVLET_AUTH("hive.metastore.properties.servlet.auth",
+        "hive.metastore.properties.servlet.auth", "jwt",
+        "Property-maps servlet authentication method (simple or jwt)."
+    ),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

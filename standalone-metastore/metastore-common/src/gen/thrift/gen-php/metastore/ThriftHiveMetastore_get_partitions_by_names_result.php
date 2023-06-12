@@ -43,6 +43,12 @@ class ThriftHiveMetastore_get_partitions_by_names_result
             'type' => TType::STRUCT,
             'class' => '\metastore\NoSuchObjectException',
         ),
+        3 => array(
+            'var' => 'o3',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\InvalidObjectException',
+        ),
     );
 
     /**
@@ -57,6 +63,10 @@ class ThriftHiveMetastore_get_partitions_by_names_result
      * @var \metastore\NoSuchObjectException
      */
     public $o2 = null;
+    /**
+     * @var \metastore\InvalidObjectException
+     */
+    public $o3 = null;
 
     public function __construct($vals = null)
     {
@@ -69,6 +79,9 @@ class ThriftHiveMetastore_get_partitions_by_names_result
             }
             if (isset($vals['o2'])) {
                 $this->o2 = $vals['o2'];
+            }
+            if (isset($vals['o3'])) {
+                $this->o3 = $vals['o3'];
             }
         }
     }
@@ -95,14 +108,14 @@ class ThriftHiveMetastore_get_partitions_by_names_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1652 = 0;
-                        $_etype1655 = 0;
-                        $xfer += $input->readListBegin($_etype1655, $_size1652);
-                        for ($_i1656 = 0; $_i1656 < $_size1652; ++$_i1656) {
-                            $elem1657 = null;
-                            $elem1657 = new \metastore\Partition();
-                            $xfer += $elem1657->read($input);
-                            $this->success []= $elem1657;
+                        $_size1695 = 0;
+                        $_etype1698 = 0;
+                        $xfer += $input->readListBegin($_etype1698, $_size1695);
+                        for ($_i1699 = 0; $_i1699 < $_size1695; ++$_i1699) {
+                            $elem1700 = null;
+                            $elem1700 = new \metastore\Partition();
+                            $xfer += $elem1700->read($input);
+                            $this->success []= $elem1700;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -121,6 +134,14 @@ class ThriftHiveMetastore_get_partitions_by_names_result
                     if ($ftype == TType::STRUCT) {
                         $this->o2 = new \metastore\NoSuchObjectException();
                         $xfer += $this->o2->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 3:
+                    if ($ftype == TType::STRUCT) {
+                        $this->o3 = new \metastore\InvalidObjectException();
+                        $xfer += $this->o3->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -145,8 +166,8 @@ class ThriftHiveMetastore_get_partitions_by_names_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRUCT, count($this->success));
-            foreach ($this->success as $iter1658) {
-                $xfer += $iter1658->write($output);
+            foreach ($this->success as $iter1701) {
+                $xfer += $iter1701->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -159,6 +180,11 @@ class ThriftHiveMetastore_get_partitions_by_names_result
         if ($this->o2 !== null) {
             $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
             $xfer += $this->o2->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->o3 !== null) {
+            $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
+            $xfer += $this->o3->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

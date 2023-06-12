@@ -45,6 +45,8 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.cleanup.CleanupService;
+import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -741,7 +743,10 @@ public class Context {
           // because that will be taken care by removeResultCacheDir
           FileSystem fs = p.getFileSystem(conf);
           LOG.info("Deleting scratch dir: {}", p);
-          sessionState.getCleanupService().deleteRecursive(p, fs);
+          CleanupService cleanupService = sessionState != null
+              ? sessionState.getCleanupService()
+              : SyncCleanupService.INSTANCE;
+          cleanupService.deleteRecursive(p, fs);
         }
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch", e);

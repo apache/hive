@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.metastore.messaging.json.JSONUpdateTableColumnStat
 import org.apache.hadoop.hive.metastore.messaging.json.JSONUpdatePartitionColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONDeleteTableColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONDeletePartitionColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONReloadMessage;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
@@ -142,6 +143,7 @@ public class MessageBuilder {
   public static final String CREATE_DATACONNECTOR_EVENT = "CREATE_DATACONNECTOR";
   public static final String ALTER_DATACONNECTOR_EVENT = "ALTER_DATACONNECTOR";
   public static final String DROP_DATACONNECTOR_EVENT = "DROP_DATACONNECTOR";
+  public static final String RELOAD_EVENT = "RELOAD";
 
   protected static final Configuration conf = MetastoreConf.newMetastoreConf();
 
@@ -339,6 +341,12 @@ public class MessageBuilder {
 
   public CommitCompactionMessage buildCommitCompactionMessage(CommitCompactionEvent event) {
     return new JSONCommitCompactionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), event);
+  }
+
+  public ReloadMessage buildReloadMessage(Table tableObj, Partition partObj,
+                                          boolean refreshEvent) {
+    return new JSONReloadMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+            tableObj, partObj, refreshEvent, now());
   }
 
   private long now() {

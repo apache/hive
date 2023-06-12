@@ -103,11 +103,11 @@
     <maven.cyclonedx.plugin.version>2.7.6</maven.cyclonedx.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.1</accumulo.version>
-    <ant.version>1.10.12</ant.version>
+    <ant.version>1.10.13</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
-    <arrow.version>2.0.0</arrow.version>
+    <arrow.version>12.0.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.11.1</avro.version>
     <bcprov-jdk15on.version>1.64</bcprov-jdk15on.version>
@@ -116,25 +116,25 @@
     <datanucleus-core.version>5.2.10</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>5.2.10</datanucleus-rdbms.version>
-    <commons-cli.version>1.4</commons-cli.version>
+    <commons-cli.version>1.5.0</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-collections4.version>4.1</commons-collections4.version>
-    <commons-compress.version>1.21</commons-compress.version>
+    <commons-compress.version>1.23.0</commons-compress.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-io.version>2.11.0</commons-io.version>
+    <commons-io.version>2.12.0</commons-io.version>
     <commons-pool2.version>2.11.1</commons-pool2.version>
-    <commons-lang3.version>3.9</commons-lang3.version>
+    <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
-    <commons-dbcp2.version>2.7.0</commons-dbcp2.version>
-    <commons-text.version>1.8</commons-text.version>
+    <commons-dbcp2.version>2.9.0</commons-dbcp2.version>
+    <commons-text.version>1.10.0</commons-text.version>
     <derby.version>10.14.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <druid.version>0.17.1</druid.version>
     <esri.version>2.2.4</esri.version>
-    <flatbuffers.version>1.9.0</flatbuffers.version>
+    <flatbuffers.version>1.12.0</flatbuffers.version>
     <guava.version>22.0</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.1.214</h2database.version>
@@ -155,7 +155,7 @@
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
     <javax-servlet.version>3.1.0</javax-servlet.version>
     <javolution.version>5.5.1</javolution.version>
-    <jettison.version>1.5.3</jettison.version>
+    <jettison.version>1.5.4</jettison.version>
     <jetty.version>9.4.40.v20210413</jetty.version>
     <jersey.version>1.19</jersey.version>
     <jline.version>2.14.6</jline.version>
@@ -189,7 +189,7 @@
     <!-- used by druid storage handler -->
     <pac4j-saml.version>4.5.5</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.12.3</parquet.version>
+    <parquet.version>1.13.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.21.7</protobuf.version>
@@ -205,7 +205,7 @@
     <velocity.version>2.3</velocity.version>
     <xerces.version>2.12.2</xerces.version>
     <xmlsec.version>2.3.0</xmlsec.version>
-    <zookeeper.version>3.6.3</zookeeper.version>
+    <zookeeper.version>3.7.1</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
     <curator.version>5.2.0</curator.version>
@@ -214,7 +214,7 @@
     <jjwt.version>0.10.5</jjwt.version>
     <re2j.version>1.2</re2j.version>
     <rs-api.version>2.0.1</rs-api.version>
-    <json-path.version>2.7.0</json-path.version>
+    <json-path.version>2.8.0</json-path.version>
     <janino.version>3.0.11</janino.version>
     <datasketches.version>1.1.0-incubating</datasketches.version>
     <spotbugs.version>4.0.3</spotbugs.version>
@@ -1117,6 +1117,22 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-reload4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>ch.qos.reload4j</groupId>
+            <artifactId>reload4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -1327,42 +1343,36 @@
         <artifactId>mssql-jdbc</artifactId>
         <version>${mssql.version}</version>
         <scope>runtime</scope>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>com.oracle.database.jdbc</groupId>
         <artifactId>ojdbc8</artifactId>
         <version>${oracle.version}</version>
         <scope>runtime</scope>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>com.mysql</groupId>
         <artifactId>mysql-connector-j</artifactId>
         <version>${mysql.version}</version>
         <scope>runtime</scope>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>org.apache.derby</groupId>
         <artifactId>derby</artifactId>
         <version>${derby.version}</version>
         <scope>runtime</scope>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>org.mariadb.jdbc</groupId>
         <artifactId>mariadb-java-client</artifactId>
         <version>${mariadb.version}</version>
         <scope>runtime</scope>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>${postgres.version}</version>
         <scope>runtime</scope>
-        <optional>true</optional>
       </dependency>
     </dependencies>
   </dependencyManagement>

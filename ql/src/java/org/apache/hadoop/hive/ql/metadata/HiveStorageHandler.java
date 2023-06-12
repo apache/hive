@@ -41,10 +41,11 @@ import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
+import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -286,6 +287,23 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  /**
+   * Check if the storage handler answer a few queries like count(1) purely using stats.
+   * @return true if the storage handler can answer query using statistics
+   */
+  default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+    return false;
+  }
+
+  /**
+   *
+   * Gets the storage format descriptor to be used for temp table for LOAD data.
+   * @param table table object
+   * @return StorageFormatDescriptor if the storage handler can support load data
+   */
+  default StorageFormatDescriptor getStorageFormatDescriptor(Table table) throws SemanticException {
+    return null;
+  }
   /**
    * Check if CTAS and CMV operations should behave in a direct-insert manner (i.e. no move task).
    * <p>
@@ -532,12 +550,31 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  /**
+   * Introduced by HIVE-25457 for iceberg to query metadata table.
+   * @return true if the storage handler can support it
+   * @deprecated Use {@link #isTableMetaRefSupported()}
+   */
+  @Deprecated
   default boolean isMetadataTableSupported() {
+    return isTableMetaRefSupported();
+  }
+
+  /**
+   * Check whether the table supports metadata references which mainly include branch, tag and metadata tables.
+   * @return true if the storage handler can support it
+   */
+  default boolean isTableMetaRefSupported() {
     return false;
   }
 
   default boolean isValidMetadataTable(String metaTableName) {
     return false;
+  }
+
+  default org.apache.hadoop.hive.ql.metadata.Table checkAndSetTableMetaRef(
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, String tableMetaRef) throws SemanticException {
+    return null;
   }
 
   /**
@@ -565,6 +602,10 @@ public interface HiveStorageHandler extends Configurable {
    * @param executeSpec operation specification
    */
   default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
+  }
+
+  default void alterTableBranchOperation(org.apache.hadoop.hive.ql.metadata.Table table,
+      AlterTableBranchSpec alterBranchSpec) {
   }
 
   /**

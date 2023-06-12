@@ -295,11 +295,13 @@ public class StatsOptimizer extends Transform {
           tbl = hive.getTable(tbl.getDbName(), tbl.getTableName(), true, true);
         }
 
-        if (MetaStoreUtils.isExternalTable(tbl.getTTable())) {
-          Logger.info("Table " + tbl.getTableName() + " is external. Skip StatsOptimizer.");
+        if (!StatsUtils.checkCanProvideStats(tbl)) {
+          Logger.info("Table " + tbl.getTableName() + " is external and also could not provide statistics. " +
+              "Skip StatsOptimizer.");
           return null;
         }
-        if (MetaStoreUtils.isNonNativeTable(tbl.getTTable())) {
+        if (MetaStoreUtils.isNonNativeTable(tbl.getTTable())
+            && !tbl.getStorageHandler().canComputeQueryUsingStats(tbl)) {
           Logger.info("Table " + tbl.getTableName() + " is non Native table. Skip StatsOptimizer.");
           return null;
         }
