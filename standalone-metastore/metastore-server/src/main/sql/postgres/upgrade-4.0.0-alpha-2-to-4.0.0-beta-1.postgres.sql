@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 4.0.0-alpha-2 to 4.0.0';
+SELECT 'Upgrading MetaStore schema from 4.0.0-alpha-2 to 4.0.0-beta-1';
 
 -- HIVE-26221
 ALTER TABLE "TAB_COL_STATS" ADD "HISTOGRAM" bytea;
@@ -30,5 +30,5 @@ CREATE INDEX "PCS_STATS_IDX" ON "PART_COL_STATS" USING btree ("DB_NAME","TABLE_N
 ALTER TABLE "METASTORE_DB_PROPERTIES" ADD "PROPERTYCONTENT" bytea;
 
 -- These lines need to be last. Insert any changes above.
-UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0', "VERSION_COMMENT"='Hive release version 4.0.0' where "VER_ID"=1;
-SELECT 'Finished upgrading MetaStore schema from 4.0.0-alpha-2 to 4.0.0';
+UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0-beta-1', "VERSION_COMMENT"='Hive release version 4.0.0-beta-1' where "VER_ID"=1;
+SELECT 'Finished upgrading MetaStore schema from 4.0.0-alpha-2 to 4.0.0-beta-1';
