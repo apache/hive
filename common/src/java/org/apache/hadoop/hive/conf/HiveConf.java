@@ -2211,9 +2211,6 @@ public class HiveConf extends Configuration {
         "Whether to use codec pool in ORC. Disable if there are bugs with codec reuse."),
     HIVE_ICEBERG_STATS_SOURCE("hive.iceberg.stats.source", "iceberg",
         "Use stats from iceberg table snapshot for query planning. This has two values metastore and iceberg"),
-    HIVE_ICEBERG_MR_TABLE_LOC("iceberg.mr.table.location", "", "Iceberg table location"),
-    HIVE_ICEBERG_MR_TABLE_ID("iceberg.mr.table.identifier", "", "Iceberg table Identifier"),
-
     HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS("hive.iceberg.expire.snapshot.numthreads", 4,
         "The number of threads to be used for deleting files during expire snapshot. If set to 0 or below it uses the" +
             " defult DirectExecutorService"),
@@ -3705,8 +3702,6 @@ public class HiveConf extends Configuration {
         "to construct a list exception handlers to handle exceptions thrown\n" +
         "by record readers"),
     HIVE_MAPRED_INPUT_DIR("mapred.input.dir", "", "Path to input dir."),
-    HIVE_READ_COLUMN_NAMES_CONF_STR("hive.io.file.readcolumn.names", "",
-        "Read column names" + " from the config string"),
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
         "Hive log4j configuration file.\n" +

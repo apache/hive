@@ -658,6 +658,14 @@ public interface HiveStorageHandler extends Configurable {
     return null;
   }
 
+  /**
+   * Checks if storage handler supports Show Partitions and returns a list of partitions
+   * @param context
+   * @param tbl
+   * @return List of partitions
+   * @throws UnsupportedOperationException
+   * @throws HiveException
+   */
   default List<String> showPartitions(DDLOperationContext context,
       org.apache.hadoop.hive.ql.metadata.Table tbl) throws UnsupportedOperationException, HiveException {
     throw new UnsupportedOperationException("Storage handler does not support show partitions command");

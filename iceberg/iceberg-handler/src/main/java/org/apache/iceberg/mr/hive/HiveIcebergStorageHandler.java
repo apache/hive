@@ -168,7 +168,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
   private static final String ICEBERG = "iceberg";
-  private static final String PUFFIN = "puffin";
   private static final int SPEC_IDX = 3;
   private static final int PART_IDX = 0;
   public static final String COPY_ON_WRITE = "copy-on-write";

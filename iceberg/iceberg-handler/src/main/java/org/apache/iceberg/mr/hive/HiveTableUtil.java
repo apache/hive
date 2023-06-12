@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -86,6 +87,7 @@ public class HiveTableUtil {
   private static final Logger LOG = LoggerFactory.getLogger(HiveTableUtil.class);
 
   static final String TABLE_EXTENSION = ".table";
+  static final String MAPRED_INPUT_DIR = "mapred.input.dir";
 
   private HiveTableUtil() {
   }
@@ -263,14 +265,14 @@ public class HiveTableUtil {
     return Boolean.parseBoolean(properties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS));
   }
 
-  protected static Properties getSerializationProps() {
+  static Properties getSerializationProps() {
     Properties props = new Properties();
     props.put(serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
     props.put(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
     return props;
   }
 
-  protected static String getParseData(String parseData, String specId, ObjectMapper mapper)
+  static String getParseData(String parseData, String specId, ObjectMapper mapper)
       throws JsonProcessingException {
     Map<String, String> map = mapper.readValue(parseData, Map.class);
     String partString =
@@ -279,17 +281,13 @@ public class HiveTableUtil {
     return String.format("Spec-id=%s/%s", specId, partString);
   }
 
-  protected static JobConf getPartJobConf(Configuration confs, Path path,
-      org.apache.hadoop.hive.ql.metadata.Table tbl) {
+  static JobConf getPartJobConf(Configuration confs, Path path, org.apache.hadoop.hive.ql.metadata.Table tbl) {
     JobConf job = new JobConf(confs);
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVE_MAPRED_INPUT_DIR, path.toString());
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVE_READ_COLUMN_NAMES_CONF_STR,
-        "partition,record_count,file_count," + "spec_id");
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVE_ICEBERG_MR_TABLE_LOC, tbl.getPath().toString());
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVE_MAPRED_INPUT_DIR, path.toString());
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVE_ICEBERG_MR_TABLE_ID, tbl.getFullyQualifiedName() + ".partitions");
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE,
-        "org.apache.hadoop.hive.serde2" + ".DelimitedJSONSerDe");
+    job.set(MAPRED_INPUT_DIR, path.toString());
+    job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, "partition,record_count,file_count,spec_id");
+    job.set(InputFormatConfig.TABLE_LOCATION, tbl.getPath().toString());
+    job.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.getFullyQualifiedName() + ".partitions");
+    HiveConf.setVar(job, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE, "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe");
     HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     return job;
   }
