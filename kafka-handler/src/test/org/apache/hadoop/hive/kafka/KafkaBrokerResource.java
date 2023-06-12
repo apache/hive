@@ -25,7 +25,9 @@ import kafka.utils.TestUtils;
 import kafka.zk.AdminZkClient;
 import kafka.zk.EmbeddedZookeeper;
 import org.apache.commons.io.FileUtils;
+import org.apache.kafka.common.network.Mode;
 import org.apache.kafka.common.utils.Time;
+import org.apache.kafka.test.TestSslUtils;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +49,14 @@ class KafkaBrokerResource extends ExternalResource {
   private static final String TOPIC = "TEST-CREATE_TOPIC";
   static final String BROKER_IP_PORT = "127.0.0.1:9092";
   static final String BROKER_SASL_PORT = "127.0.0.1:9093";
+  static final String BROKER_SASL_SSL_PORT = "127.0.0.1:9094";
   private EmbeddedZookeeper zkServer;
   private KafkaServer kafkaServer;
   private AdminZkClient adminZkClient;
   private Path tmpLogDir;
   private String principal;
   private String keytab;
+  private File truststoreFile;
 
   /**
    * Enables SASL for broker using the principal and keytab provided.
@@ -85,6 +89,7 @@ class KafkaBrokerResource extends ExternalResource {
     listeners.put("L1", new BrokerListener(BROKER_IP_PORT, "PLAINTEXT"));
     if (principal != null) {
       listeners.put("L2", new BrokerListener(BROKER_SASL_PORT, "SASL_PLAINTEXT"));
+      listeners.put("L3", new BrokerListener(BROKER_SASL_SSL_PORT, "SASL_SSL"));
     }
     String listenersURLs = listeners.entrySet().stream().map((e) -> e.getKey() + "://" + e.getValue().url)
         .collect(Collectors.joining(","));
@@ -98,7 +103,10 @@ class KafkaBrokerResource extends ExternalResource {
           "com.sun.security.auth.module.Krb5LoginModule required", "debug=true", "useKeyTab=true", "storeKey=true",
           principal, keytab, principal + "/localhost");
       brokerProps.setProperty("listener.name.l2.gssapi.sasl.jaas.config", jaasConfig);
-      brokerProps.setProperty("delegation.token.secret.key", "abcd");
+      brokerProps.setProperty("listener.name.l3.gssapi.sasl.jaas.config", jaasConfig);
+      truststoreFile = File.createTempFile("kafka_truststore", "jks");
+      brokerProps.putAll(new TestSslUtils.SslConfigsBuilder(Mode.SERVER).createNewTrustStore(truststoreFile).build());
+      brokerProps.setProperty("delegation.token.secret.key", "AnyValueShouldDoHereItDoesntMatter");
     }
     brokerProps.setProperty("offsets.topic.replication.factor", "1");
     brokerProps.setProperty("transaction.state.log.replication.factor", "1");
@@ -129,6 +137,17 @@ class KafkaBrokerResource extends ExternalResource {
     } catch (IOException e) {
       LOG.warn("did not clean " + tmpLogDir.toString(), e);
     }
+  }
+
+  Path getTruststorePath() {
+    if (truststoreFile == null) {
+      throw new IllegalStateException("Truststore is available only when SASL is in use");
+    }
+    return truststoreFile.toPath();
+  }
+
+  String getTruststorePwd() {
+    return TestSslUtils.TRUST_STORE_PASSWORD;
   }
 
   void deleteTopic(@SuppressWarnings("SameParameterValue") String topic) {
