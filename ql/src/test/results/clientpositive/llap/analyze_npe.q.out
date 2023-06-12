@@ -133,7 +133,7 @@ STAGE PLANS:
           Filter Operator
             predicate: c1 is null (type: boolean)
             Select Operator
-              expressions: null (type: void)
+              expressions: map(null:null) (type: map<string,string>)
               outputColumnNames: _col0
               ListSink
 
@@ -159,7 +159,7 @@ STAGE PLANS:
           Filter Operator
             predicate: c1 is null (type: boolean)
             Select Operator
-              expressions: null (type: void)
+              expressions: array(null) (type: array<string>)
               outputColumnNames: _col0
               ListSink
 
@@ -185,7 +185,7 @@ STAGE PLANS:
           Filter Operator
             predicate: c1 is null (type: boolean)
             Select Operator
-              expressions: null (type: void)
+              expressions: named_struct('name',null,'age',null) (type: struct<name:string,age:int>)
               outputColumnNames: _col0
               ListSink
 

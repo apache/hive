@@ -20,13 +20,11 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptUtil;
@@ -699,8 +697,6 @@ public class ASTConverter {
 
     private final Schema schema;
     private final RexBuilder rexBuilder;
-    // this is to keep track of null literal which already has been visited
-    private Map<RexLiteral, Boolean> nullLiteralMap ;
 
 
     protected RexVisitor(Schema schema, boolean useTypeQualInLiteral) {
@@ -715,21 +711,6 @@ public class ASTConverter {
       super(true);
       this.schema = schema;
       this.rexBuilder = rexBuilder;
-
-      this.nullLiteralMap =
-          new TreeMap<>(new Comparator<RexLiteral>(){
-            // RexLiteral's equal only consider value and type which isn't sufficient
-            // so providing custom comparator which distinguishes b/w objects irrespective
-            // of value/type
-            @Override
-            public int compare(RexLiteral o1, RexLiteral o2) {
-              if(o1 == o2) {
-                return 0;
-              } else {
-                return 1;
-              }
-            }
-          });
     }
 
     @Override
@@ -756,17 +737,8 @@ public class ASTConverter {
     @Override
     public ASTNode visitLiteral(RexLiteral literal) {
 
-      if (RexUtil.isNull(literal) && literal.getType().getSqlTypeName() != SqlTypeName.NULL
-          && rexBuilder != null) {
-        // It is NULL value with different type, we need to introduce a CAST
-        // to keep it
-        if(nullLiteralMap.containsKey(literal)) {
-          return ASTBuilder.literal(literal);
-        }
-        nullLiteralMap.put(literal, true);
-        RexNode r = rexBuilder.makeAbstractCast(literal.getType(), literal);
-
-        return r.accept(this);
+      if (RexUtil.isNull(literal) && literal.getType().getSqlTypeName() != SqlTypeName.NULL) {
+        return createNullField(literal.getType());
       }
       return ASTBuilder.literal(literal);
     }
