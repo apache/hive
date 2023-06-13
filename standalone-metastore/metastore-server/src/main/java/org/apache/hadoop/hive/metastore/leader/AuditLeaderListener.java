@@ -18,18 +18,24 @@
 
 package org.apache.hadoop.hive.metastore.leader;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 
 import java.io.OutputStream;
@@ -38,17 +44,22 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
 public class AuditLeaderListener implements LeaderElection.LeadershipStateListener {
   private final Configuration configuration;
-
   private final Path tableLocation;
 
   private final static String SERDE = "org.apache.hadoop.hive.serde2.JsonSerDe";
   private final static String INPUTFORMAT = "org.apache.hadoop.mapred.TextInputFormat";
   private final static String OUTPUTFORMAT = "org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat";
+
+  public static final String AUDIT_FILE_LIMIT = "metastore.housekeeping.leader.auditFiles.limit";
+  public static final String CREATE_NEW_FILE_ON_ELECTION = "metastore.housekeeping.leader.newAuditFile";
 
   public AuditLeaderListener(TableName tableName, IHMSHandler handler) throws Exception {
     requireNonNull(tableName, "tableName is null");
@@ -60,15 +71,18 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
           .setCatName(tableName.getCat())
           .setDbName(tableName.getDb())
           .setTableName(tableName.getTable())
-          .addCol("leader", ColumnType.STRING_TYPE_NAME)
-          .addCol("type", ColumnType.STRING_TYPE_NAME)
+          .addCol("leader_host", ColumnType.STRING_TYPE_NAME)
+          .addCol("leader_type", ColumnType.STRING_TYPE_NAME)
           .addCol("elected_time", ColumnType.STRING_TYPE_NAME)
           .setOwner(SecurityUtils.getUser())
           .setOwnerType(PrincipalType.USER)
           .setSerdeLib(SERDE)
           .setInputFormat(INPUTFORMAT)
           .setOutputFormat(OUTPUTFORMAT)
+          .addTableParam("EXTERNAL", "TRUE")
+          .addTableParam(MetaStoreUtils.EXTERNAL_TABLE_PURGE, "TRUE")
           .build(handler.getConf());
+      table.setTableType(TableType.EXTERNAL_TABLE.toString());
       handler.create_table(table);
     } catch (AlreadyExistsException e) {
       // ignore
@@ -84,26 +98,60 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
         || !OUTPUTFORMAT.equals(output)) {
       throw new RuntimeException(tableName + " should be in json + text format");
     }
+  }
 
+  // For testing purpose only
+  @VisibleForTesting
+  public AuditLeaderListener(Path tableLocation, Configuration configuration) {
+    this.tableLocation = tableLocation;
+    this.configuration = configuration;
   }
 
   @Override
   public void takeLeadership(LeaderElection election) throws Exception {
     String hostName = getHostname();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    String message = "{\"leader\": \"" + hostName + "\", \"type\": \""
+    String message = "{\"leader_host\": \"" + hostName + "\", \"leader_type\": \""
         + election.getName() + "\", \"elected_time\": \"" + LocalDateTime.now().format(formatter) + "\"} \n";
-    Path path = new Path(tableLocation, "leader_" + election.getName() + ".json");
+
+    Path path = null;
     try {
-      FileSystem fs = Warehouse.getFs(path, configuration);
-      try (OutputStream outputStream = fs.exists(path) ?
-          fs.append(path) :
-          fs.create(path, false)) {
+      FileSystem fs = Warehouse.getFs(tableLocation, configuration);
+      boolean createNewFile = FileUtils.isS3a(fs) ||
+          configuration.getBoolean(CREATE_NEW_FILE_ON_ELECTION, false);
+      String prefix =  "leader_" + election.getName();
+      String fileName = createNewFile ?
+          prefix + "_" + System.currentTimeMillis() + ".json" :
+          prefix + ".json";
+      path = new Path(tableLocation, fileName);
+      // Audit the election event
+      try (OutputStream outputStream = createNewFile ?
+          fs.create(path, false) :
+          (fs.exists(path) ? fs.append(path) : fs.create(path, false))) {
         outputStream.write(message.getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
       }
+      // Trash out small files when the file system cannot support append
+      final int limit;
+      if (createNewFile && (limit = configuration.getInt(AUDIT_FILE_LIMIT, 10)) > 0) {
+        List<FileStatus> allFileStatuses = FileUtils.getFileStatusRecurse(tableLocation, fs);
+        List<FileStatus> thisLeaderFiles = new ArrayList<>();
+        // All this leader audit file must start with leader_$name_
+        allFileStatuses.stream().forEach(f -> {
+          if (f.getPath().getName().startsWith(prefix)) {
+            thisLeaderFiles.add(f);
+          }
+        });
+        if (thisLeaderFiles.size() > limit) {
+          thisLeaderFiles.sort((Comparator.comparing(o -> o.getPath().getName())));
+          // delete the files that beyond the limit
+          for (int i = 0; i < thisLeaderFiles.size() - limit; i++) {
+            FileUtils.moveToTrash(fs, thisLeaderFiles.get(i).getPath(), configuration, true);
+          }
+        }
+      }
     } catch (Exception e) {
-      HiveMetaStore.LOG.error("Error while writing the leader info, path: " + path, e);
+      HiveMetaStore.LOG.error("Error while writing the leader info into file: " + path, e);
     }
   }
 
