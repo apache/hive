@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -217,48 +218,7 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
-      // Try to reuse cache for broadcast side in mapjoin operators that
-      // share same input.
-      // First we group together all the mapjoin operators that share same
-      // reduce sink operator.
-      final Multimap<Operator<?>, MapJoinOperator> parentToMapJoinOperators =
-          ArrayListMultimap.create();
-      for (Set<Operator<?>> workOperators : optimizerCache.getWorkGroups()) {
-        for (Operator<?> op : workOperators) {
-          if (op instanceof MapJoinOperator) {
-            MapJoinOperator mapJoinOp = (MapJoinOperator) op;
-            // Only allowed for mapjoin operator
-            if (!mapJoinOp.getConf().isBucketMapJoin() &&
-                !mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
-              parentToMapJoinOperators.put(
-                  obtainBroadcastInput(mapJoinOp).getParentOperators().get(0), mapJoinOp);
-            }
-          }
-        }
-      }
-      // For each group, set the cache key accordingly if there is more than one operator
-      // and input RS operator are equal
-      for (Collection<MapJoinOperator> c : parentToMapJoinOperators.asMap().values()) {
-        Map<ReduceSinkOperator, String> rsOpToCacheKey = new HashMap<>();
-        for (MapJoinOperator mapJoinOp : c) {
-          ReduceSinkOperator rsOp = obtainBroadcastInput(mapJoinOp);
-          String cacheKey = null;
-          for (Entry<ReduceSinkOperator, String> e: rsOpToCacheKey.entrySet()) {
-            if (compareOperator(pctx, rsOp, e.getKey())) {
-              cacheKey = e.getValue();
-              break;
-            }
-          }
-          if (cacheKey == null) {
-            // Either it is the first map join operator or there was no equivalent RS,
-            // hence generate cache key
-            cacheKey = MapJoinDesc.generateCacheKey(mapJoinOp.getOperatorId());
-            rsOpToCacheKey.put(rsOp, cacheKey);
-          }
-          // Set in the conf of the map join operator
-          mapJoinOp.getConf().setCacheKey(cacheKey);
-        }
-      }
+      runMapJoinCacheReuseOptimization(pctx, optimizerCache);
     }
 
     // If we are running tests, we are going to verify that the contents of the cache
@@ -983,12 +943,89 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   /**
-   * Obtain the RS input for a mapjoin operator.
+   * Try to reuse cache for broadcast side in mapjoin operators that share the same input.
    */
-  private static ReduceSinkOperator obtainBroadcastInput(MapJoinOperator mapJoinOp) {
+  @VisibleForTesting
+  public void runMapJoinCacheReuseOptimization(
+      ParseContext pctx, SharedWorkOptimizerCache optimizerCache) throws SemanticException {
+    // First we group together all the mapjoin operators whose first broadcast input is the same.
+    final Multimap<Operator<?>, MapJoinOperator> parentToMapJoinOperators = ArrayListMultimap.create();
+    for (Set<Operator<?>> workOperators : optimizerCache.getWorkGroups()) {
+      for (Operator<?> op : workOperators) {
+        if (op instanceof MapJoinOperator) {
+          MapJoinOperator mapJoinOp = (MapJoinOperator) op;
+          // Only allowed for mapjoin operator
+          if (!mapJoinOp.getConf().isBucketMapJoin() &&
+              !mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
+            parentToMapJoinOperators.put(
+                obtainFirstBroadcastInput(mapJoinOp).getParentOperators().get(0), mapJoinOp);
+          }
+        }
+      }
+    }
+
+    // For each group, set the cache key accordingly if there is more than one operator
+    // and input RS operator are equal
+    for (Collection<MapJoinOperator> c : parentToMapJoinOperators.asMap().values()) {
+      Map<MapJoinOperator, String> mapJoinOpToCacheKey = new HashMap<>();
+      for (MapJoinOperator mapJoinOp : c) {
+        String cacheKey = null;
+        for (Entry<MapJoinOperator, String> e: mapJoinOpToCacheKey.entrySet()) {
+          if (canShareBroadcastInputs(pctx, mapJoinOp, e.getKey())) {
+            cacheKey = e.getValue();
+            break;
+          }
+        }
+
+        if (cacheKey == null) {
+          // Either it is the first map join operator or there was no equivalent broadcast input,
+          // hence generate cache key
+          cacheKey = MapJoinDesc.generateCacheKey(mapJoinOp.getOperatorId());
+          mapJoinOpToCacheKey.put(mapJoinOp, cacheKey);
+        }
+
+        mapJoinOp.getConf().setCacheKey(cacheKey);
+      }
+    }
+  }
+
+  private ReduceSinkOperator obtainFirstBroadcastInput(MapJoinOperator mapJoinOp) {
     return mapJoinOp.getParentOperators().get(0) instanceof ReduceSinkOperator ?
         (ReduceSinkOperator) mapJoinOp.getParentOperators().get(0) :
         (ReduceSinkOperator) mapJoinOp.getParentOperators().get(1);
+  }
+
+  private boolean canShareBroadcastInputs(
+      ParseContext pctx, MapJoinOperator mapJoinOp1, MapJoinOperator mapJoinOp2) throws SemanticException {
+    if (mapJoinOp1.getNumParent() != mapJoinOp2.getNumParent()) {
+      return false;
+    }
+
+    if (mapJoinOp1.getConf().getPosBigTable() != mapJoinOp2.getConf().getPosBigTable()) {
+      return false;
+    }
+
+    for (int i = 0; i < mapJoinOp1.getNumParent(); i ++) {
+      if (i == mapJoinOp1.getConf().getPosBigTable()) {
+        continue;
+      }
+
+      ReduceSinkOperator parentRS1 = (ReduceSinkOperator) mapJoinOp1.getParentOperators().get(i);
+      ReduceSinkOperator parentRS2 = (ReduceSinkOperator) mapJoinOp2.getParentOperators().get(i);
+
+      if (!compareOperator(pctx, parentRS1, parentRS2)) {
+        return false;
+      }
+
+      Operator<?> grandParent1 = parentRS1.getParentOperators().get(0);
+      Operator<?> grandParent2 = parentRS2.getParentOperators().get(0);
+
+      if (grandParent1 != grandParent2) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /**
