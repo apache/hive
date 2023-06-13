@@ -18,39 +18,48 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer.SharedWorkOptimizerCache;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer.TSComparator;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer.SharedWorkOptimizerCache;
-import org.apache.hadoop.hive.ql.plan.FilterDesc;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
-
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Properties;
+
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.FIXED;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNSET;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestSharedWorkOptimizer {
 
@@ -266,4 +275,87 @@ public class TestSharedWorkOptimizer {
 
   }
 
+  private ReduceSinkDesc getReduceSinkDesc() {
+    TableDesc dummyKeySerializeInfo = new TableDesc();
+    dummyKeySerializeInfo.setProperties(new Properties());
+
+    ReduceSinkDesc conf = new ReduceSinkDesc(new ArrayList<>(), 0, new ArrayList<>(), new ArrayList<>(),
+        new ArrayList<>(), new ArrayList<>(), 0, new ArrayList<>(), 0, null, null, null);
+    conf.setKeySerializeInfo(dummyKeySerializeInfo);
+    return conf;
+  }
+
+  private MapJoinDesc getMapJoinDesc(int posBigTable) {
+    MapJoinDesc conf = new MapJoinDesc();
+    conf.setPosBigTable(posBigTable);
+    return conf;
+  }
+
+  private void runMapJoinCacheReuseOptimization(Operator<?> op1, Operator<?> op2) {
+    SharedWorkOptimizer sharedWorkOptimizer = new SharedWorkOptimizer();
+    SharedWorkOptimizerCache optimizerCache = new SharedWorkOptimizerCache();
+
+    optimizerCache.addWorkGroup(Arrays.asList(op1, op2));
+    try {
+      sharedWorkOptimizer.runMapJoinCacheReuseOptimization(null, optimizerCache);
+    } catch (SemanticException se) {
+      fail();
+    }
+  }
+
+  @Test
+  public void testMapJoinCacheReuse() {
+    // Big tables
+    TableScanOperator ts1 = getTsOp();
+    TableScanOperator ts2 = getTsOp();
+
+    // Small tables
+    Operator<?> smallTableA = getFilterOp(0);
+    Operator<?> smallTableB = getFilterOp(0);
+    Operator<?> smallTableC = getFilterOp(0);
+
+    Operator<?> rsA1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+    Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+
+    Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+
+    Operator<?> rsC2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableC);
+
+    // case 1. MapJoin1: (big, A, B), MapJoin2: (big, A, B)
+    List<Operator<?>> joinSource1 = Arrays.asList(ts1, rsA1, rsB1);
+    List<Operator<?>> joinSource2 = Arrays.asList(ts2, rsA2, rsB2);
+
+    MapJoinOperator mapJoin1 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
+        cCtx, getMapJoinDesc(0), joinSource1);
+    MapJoinOperator mapJoin2 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
+        cCtx, getMapJoinDesc(0), joinSource2);
+
+    runMapJoinCacheReuseOptimization(mapJoin1, mapJoin2);
+    assertEquals(mapJoin1.getConf().getCacheKey(), mapJoin2.getConf().getCacheKey());
+
+    // case 2. MapJoin3: (big, A, B), MapJoin4: (big, A, C)
+    List<Operator<?>> joinSource3 = Arrays.asList(ts1, rsA1, rsB1);
+    List<Operator<?>> joinSource4 = Arrays.asList(ts2, rsA2, rsC2);
+
+    MapJoinOperator mapJoin3 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
+        cCtx, getMapJoinDesc(0), joinSource3);
+    MapJoinOperator mapJoin4 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
+        cCtx, getMapJoinDesc(0), joinSource4);
+
+    runMapJoinCacheReuseOptimization(mapJoin3, mapJoin4);
+    assertNotEquals(mapJoin3.getConf().getCacheKey(), mapJoin4.getConf().getCacheKey());
+
+    // case 3. MapJoin5: (big, A, B), MapJoin6: (A, big, B)
+    List<Operator<?>> joinSource5 = Arrays.asList(ts1, rsA1, rsB1);
+    List<Operator<?>> joinSource6 = Arrays.asList(rsA2, ts2, rsB2);
+
+    MapJoinOperator mapJoin5 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
+        cCtx, getMapJoinDesc(0), joinSource5);
+    MapJoinOperator mapJoin6 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
+        cCtx, getMapJoinDesc(1), joinSource6);
+
+    runMapJoinCacheReuseOptimization(mapJoin5, mapJoin6);
+    assertNotEquals(mapJoin5.getConf().getCacheKey(), mapJoin6.getConf().getCacheKey());
+  }
 }
