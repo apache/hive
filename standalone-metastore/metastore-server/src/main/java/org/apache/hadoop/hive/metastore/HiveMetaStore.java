@@ -88,6 +88,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -404,7 +405,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       thread.setDaemon(true);
       thread.setName("Metastore-HttpHandler-Pool: Thread-" + thread.getId());
       return thread;
-    });
+    }) {
+      @Override
+      public void setThreadFactory(ThreadFactory threadFactory) {
+        // Avoid ExecutorThreadPool overriding the ThreadFactory
+        LOG.warn("Ignore setting the thread factory as the pool has already provided his own: {}", getThreadFactory());
+      }
+    };
     ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);
     // HTTP Server
     org.eclipse.jetty.server.Server server = new Server(threadPool);
