@@ -19,6 +19,7 @@
 package org.apache.hive.hplsql;
 
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hive.hplsql.objects.MethodDictionary.__GETITEM__;
 import static org.apache.hive.hplsql.objects.MethodDictionary.__SETITEM__;
 import static org.apache.hive.hplsql.objects.MethodParams.Arity.UNARY;
@@ -34,6 +35,7 @@ import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,6 +86,8 @@ import org.apache.hive.hplsql.packages.HmsPackageRegistry;
 import org.apache.hive.hplsql.packages.InMemoryPackageRegistry;
 import org.apache.hive.hplsql.packages.PackageRegistry;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HPL/SQL script executor
@@ -638,10 +642,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     }
     ArrayList<String> sql = new ArrayList<>();
     String dir = Utils.getExecDir();
-    String hplsqlJarName = findJarLike(dir, "hive-hplsql");
-    String antlr4RuntimeJarName = findJarLike(dir, "antlr4-runtime");
-    sql.add("ADD JAR " + dir + hplsqlJarName);
-    sql.add("ADD JAR " + dir + antlr4RuntimeJarName);
+    addJar(sql, dir, findJarLike(dir, "hive-hplsql"));
+    addJar(sql, dir, findJarLike(dir, "antlr4-runtime"));
     if(!conf.getLocation().equals("")) {
       sql.add("ADD FILE " + conf.getLocation());
     } else {
@@ -662,11 +664,19 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     udfRegistered = true;
   }
 
+  private static void addJar(ArrayList<String> sql, String dir, String jarName) {
+    if (isNotBlank(jarName)) {
+      sql.add("ADD JAR " + Paths.get(dir, jarName));
+    }
+  }
+
+  private static final Logger LOG = LoggerFactory.getLogger(Exec.class);
+
   private static String findJarLike(String dir, String prefix) {
     String[] files = new File(dir).list();
     if (files == null) {
-      throw new UncheckedIOException(
-          new FileNotFoundException("No jar file found in directory '" + dir));
+      LOG.warn("No jar file found in directory '{}'", dir);
+      return null;
     }
 
     for(String jarName: files) {
@@ -675,8 +685,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
       }
     }
 
-    throw new UncheckedIOException(
-        new FileNotFoundException("No jar file found in directory '" + dir + "' with prefix '" + prefix + "'"));
+    LOG.warn("No jar file found in directory '{}' with prefix '{}'", dir, prefix);
+    return null;
   }
 
   /**
