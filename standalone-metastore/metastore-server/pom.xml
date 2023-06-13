@@ -108,10 +108,6 @@
     </dependency>
     <dependency>
       <groupId>org.antlr</groupId>
-      <artifactId>antlr-runtime</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.antlr</groupId>
       <artifactId>antlr4-runtime</artifactId>
     </dependency>
     <dependency>
@@ -727,24 +723,8 @@
       </plugin>
       <plugin>
         <groupId>org.antlr</groupId>
-        <artifactId>antlr3-maven-plugin</artifactId>
-        <version>${antlr.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>antlr</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-          <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
-        <version>${antlr4.version}</version>
+        <version>${antlr.version}</version>
         <executions>
           <execution>
             <goals>
