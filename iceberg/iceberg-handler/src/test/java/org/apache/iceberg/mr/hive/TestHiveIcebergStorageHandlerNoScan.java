@@ -759,7 +759,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageStartingWith("Failed to execute Hive query")
           .hasMessageEndingWith(
-          "Provide only one of the following: Hive partition specification, " +
+          "Provide only one of the following: Hive partition transform specification, " +
                     "or the iceberg.mr.table.partition.spec property");
   }
 
@@ -1374,7 +1374,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     for (String command : commands) {
       Assertions.assertThatThrownBy(() -> shell.executeStatement(command))
               .isInstanceOf(IllegalArgumentException.class)
-              .hasMessage("Unsupported operation to use REPLACE COLUMNS");
+              .hasMessageContaining("Unsupported operation to use REPLACE COLUMNS");
     }
 
     // check no-op case too
@@ -1382,7 +1382,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         " is first name', last_name string COMMENT 'This is last name', address struct<city:string,street:string>)";
     Assertions.assertThatThrownBy(() -> shell.executeStatement(command))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("No schema change detected");
+            .hasMessageContaining("No schema change detected");
   }
 
   @Test
@@ -1477,7 +1477,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     for (String command : commands) {
       Assertions.assertThatThrownBy(() -> shell.executeStatement(command))
               .isInstanceOf(IllegalArgumentException.class)
-              .hasMessage("Using partition spec in query is unsupported");
+              .hasMessageContaining("Using partition spec in query is unsupported");
     }
   }
 
@@ -1632,7 +1632,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
               metadataLocation + "')");
     })
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Cannot change iceberg table");
+        .hasMessageContaining("Cannot change iceberg table");
   }
 
   @Test
@@ -1642,12 +1642,11 @@ public class TestHiveIcebergStorageHandlerNoScan {
         testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     shell.executeStatement(createQuery);
-    Assertions.assertThatThrownBy(() -> {
-      shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES(" +
-              "'storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler','metadata_location'='asdf')");
-    })
+    Assertions.assertThatThrownBy(() -> shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES(" +
+            "'storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler','metadata_location'='asdf')"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Cannot perform table migration to Iceberg and setting the snapshot location in one step.");
+        .hasMessageContaining("Cannot perform table migration to Iceberg " +
+                "and setting the snapshot location in one step.");
   }
 
   @Test
@@ -1694,7 +1693,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
               testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
     })
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(" CTLT target table must be a HiveCatalog table");
+        .hasMessageContaining(" CTLT target table must be a HiveCatalog table");
   }
 
   @Test

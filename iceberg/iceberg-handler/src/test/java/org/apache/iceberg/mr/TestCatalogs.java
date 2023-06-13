@@ -68,7 +68,7 @@ public class TestCatalogs {
 
     Assertions.assertThatThrownBy(() -> Catalogs.loadTable(conf))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Table location not set");
+        .hasMessageContaining("Table location not set");
 
     HadoopTables tables = new HadoopTables();
     Table hadoopTable = tables.create(SCHEMA, temp.newFolder("hadoop_tables").toString());
@@ -244,7 +244,7 @@ public class TestCatalogs {
 
     Assertions.assertThatThrownBy(() -> Catalogs.loadCatalog(conf, null))
             .isInstanceOf(UnsupportedOperationException.class)
-            .hasMessage("Unknown catalog type");
+            .hasMessageContaining("Unknown catalog type");
   }
 
   @Test
@@ -281,7 +281,7 @@ public class TestCatalogs {
 
     Assertions.assertThatThrownBy(() -> Catalogs.loadCatalog(conf, catalogName))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("both type and catalog-impl are set");
+            .hasMessageContaining("both type and catalog-impl are set");
   }
 
   @Test

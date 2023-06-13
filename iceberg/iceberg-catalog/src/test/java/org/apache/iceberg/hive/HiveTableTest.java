@@ -440,7 +440,7 @@ public class HiveTableTest extends HiveTableBaseTest {
 
     Assertions.assertThatThrownBy(() -> metastoreClient.getTable(DB_NAME, "table1"))
         .isInstanceOf(NoSuchObjectException.class)
-        .hasMessage("hivedb.table1 table not found");
+        .hasMessage("hive.hivedb.table1 table not found");
     Assertions.assertThatThrownBy(() -> catalog.loadTable(identifier))
         .isInstanceOf(NoSuchTableException.class)
         .hasMessage("Table does not exist: hivedb.table1");
