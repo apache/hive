@@ -25,6 +25,7 @@ import static org.apache.hive.hplsql.objects.MethodParams.Arity.UNARY;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -637,15 +638,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     }
     ArrayList<String> sql = new ArrayList<>();
     String dir = Utils.getExecDir();
-    String hplsqlJarName = "hplsql.jar";
-    for(String jarName: new java.io.File(dir).list()) {
-      if(jarName.startsWith("hive-hplsql") && jarName.endsWith(".jar")) {
-        hplsqlJarName = jarName;
-        break;
-      }
-    }
+    String hplsqlJarName = findJarLike(dir, "hive-hplsql");
+    String antlr4RuntimeJarName = findJarLike(dir, "antlr4-runtime");
     sql.add("ADD JAR " + dir + hplsqlJarName);
-    sql.add("ADD JAR " + dir + "antlr4-runtime-4.5.jar");
+    sql.add("ADD JAR " + dir + antlr4RuntimeJarName);
     if(!conf.getLocation().equals("")) {
       sql.add("ADD FILE " + conf.getLocation());
     } else {
@@ -664,6 +660,23 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     sql.add("CREATE TEMPORARY FUNCTION hplsql AS 'org.apache.hive.hplsql.udf.Udf'");
     exec.conn.addPreSql(exec.conf.defaultConnection, sql);
     udfRegistered = true;
+  }
+
+  private static String findJarLike(String dir, String prefix) {
+    String[] files = new File(dir).list();
+    if (files == null) {
+      throw new UncheckedIOException(
+          new FileNotFoundException("No jar file found in directory '" + dir));
+    }
+
+    for(String jarName: files) {
+      if(jarName.startsWith(prefix) && jarName.endsWith(".jar")) {
+        return jarName;
+      }
+    }
+
+    throw new UncheckedIOException(
+        new FileNotFoundException("No jar file found in directory '" + dir + "' with prefix '" + prefix + "'"));
   }
 
   /**
