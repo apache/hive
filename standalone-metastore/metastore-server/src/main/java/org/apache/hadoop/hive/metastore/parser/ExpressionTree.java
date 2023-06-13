@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -214,10 +212,6 @@ public class ExpressionTree {
 
     public TreeNode getRhs() {
       return rhs;
-    }
-
-    public void setRhs(TreeNode rhs) {
-      this.rhs = rhs;
     }
 
     /** Double dispatch for TreeVisitor. */
@@ -640,26 +634,5 @@ public class ExpressionTree {
     filterBuilder.append(" && ( ");
     root.generateJDOFilter(conf, params, filterBuilder, partitionKeys);
     filterBuilder.append(" )");
-  }
-
-  /** Case insensitive ANTLR string stream */
-  public static class ANTLRNoCaseStringStream extends ANTLRStringStream {
-    public ANTLRNoCaseStringStream (String input) {
-      super(input);
-    }
-
-    @Override
-    public int LA (int i) {
-      int returnChar = super.LA (i);
-
-      if (returnChar == CharStream.EOF) {
-        return returnChar;
-      }
-      else if (returnChar == 0) {
-        return returnChar;
-      }
-
-      return Character.toUpperCase ((char) returnChar);
-    }
   }
 }
