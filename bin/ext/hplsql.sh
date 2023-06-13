@@ -21,7 +21,7 @@ hplsql () {
 
   # include only the HPL/SQL jar and its dependencies
   hplsqlJarPath=`ls ${HIVE_LIB}/hive-hplsql-*.jar`
-  antlrJarPath="${HIVE_LIB}/antlr-runtime-4.5.jar"
+  antlrJarPath="${HIVE_LIB}/antlr4-runtime-*.jar"
   hadoopClasspath=""
   if [[ -n "${HADOOP_CLASSPATH}" ]]
   then
