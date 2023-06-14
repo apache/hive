@@ -205,6 +205,11 @@ public class TestIcebergInputFormats {
 
   @Test
   public void testFailedResidualFiltering() throws Exception {
+    // Vectorization is not yet supported for AVRO
+    if (this.fileFormat.equals(FileFormat.AVRO)) {
+      return;
+    }
+
     helper.createTable();
 
     List<Record> expectedRecords = helper.generateRandomRecords(2, 0L);

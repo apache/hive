@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
@@ -38,7 +37,6 @@ import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.iceberg.relocated.com.google.common.collect.Streams;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
@@ -255,13 +253,20 @@ public final class Catalogs {
    */
   private static Map<String, String> getCatalogProperties(
       Configuration conf, String catalogName, String catalogType) {
-    String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
+    Map<String, String> catalogProperties = Maps.newHashMap();
+    conf.forEach(config -> {
+      if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
+        catalogProperties.putIfAbsent(
+                config.getKey().substring(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX.length()),
+                config.getValue());
+      } else if (config.getKey().startsWith(InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName)) {
+        catalogProperties.put(
+                config.getKey().substring((InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName).length() + 1),
+                config.getValue());
+      }
+    });
 
-    return Streams.stream(conf.iterator())
-        .filter(e -> e.getKey().startsWith(keyPrefix))
-        .collect(
-            Collectors.toMap(
-                e -> e.getKey().substring(keyPrefix.length() + 1), Map.Entry::getValue));
+    return catalogProperties;
   }
 
   /**

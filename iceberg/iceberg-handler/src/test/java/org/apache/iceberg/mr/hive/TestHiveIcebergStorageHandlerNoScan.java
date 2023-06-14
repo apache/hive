@@ -1814,8 +1814,10 @@ public class TestHiveIcebergStorageHandlerNoScan {
               testTables.locationForCreateTableSQL(targetIdentifier) + tblProps);
     })
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("CREATE EXTERNAL TABLE target STORED BY ICEBERG " +
-            testTables.locationForCreateTableSQL(targetIdentifier) + tblProps);
+        .hasMessageContaining("Column names can not be provided along with metadata location.");
+    shell.executeStatement(
+            "CREATE EXTERNAL TABLE target STORED BY ICEBERG " + testTables.locationForCreateTableSQL(targetIdentifier) +
+                    tblProps);
 
     // Check the partition and the schema are preserved.
     Table targetIcebergTable =
