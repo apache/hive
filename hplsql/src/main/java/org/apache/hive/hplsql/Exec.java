@@ -94,7 +94,9 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
-  
+
+  private static final Logger LOG = LoggerFactory.getLogger(Exec.class);
+
   public static final String VERSION = "HPL/SQL 0.3.31";
   public static final String ERRORCODE = "ERRORCODE";
   public static final String SQLCODE = "SQLCODE";
@@ -642,8 +644,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     }
     ArrayList<String> sql = new ArrayList<>();
     String dir = Utils.getExecDir();
-    addJar(sql, dir, findJarLike(dir, "hive-hplsql"));
-    addJar(sql, dir, findJarLike(dir, "antlr4-runtime"));
+    addJar(sql, dir, "hive-hplsql");
+    addJar(sql, dir, "antlr4-runtime");
     if(!conf.getLocation().equals("")) {
       sql.add("ADD FILE " + conf.getLocation());
     } else {
@@ -664,29 +666,21 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     udfRegistered = true;
   }
 
-  private static void addJar(ArrayList<String> sql, String dir, String jarName) {
+  private static void addJar(ArrayList<String> sql, String dir, String jarNamePrefix) {
+    String jarName = findJarLike(dir, jarNamePrefix);
     if (isNotBlank(jarName)) {
       sql.add("ADD JAR " + Paths.get(dir, jarName));
     }
   }
 
-  private static final Logger LOG = LoggerFactory.getLogger(Exec.class);
-
   private static String findJarLike(String dir, String prefix) {
-    String[] files = new File(dir).list();
-    if (files == null) {
-      LOG.warn("No jar file found in directory '{}'", dir);
+    String[] files = new File(dir).list((dir1, name) -> name.startsWith(prefix) && name.endsWith(".jar"));
+    if (files == null || files.length < 1) {
+      LOG.warn("No jar file found in directory '{}' with prefix '{}'", dir, prefix);
       return null;
     }
 
-    for(String jarName: files) {
-      if(jarName.startsWith(prefix) && jarName.endsWith(".jar")) {
-        return jarName;
-      }
-    }
-
-    LOG.warn("No jar file found in directory '{}' with prefix '{}'", dir, prefix);
-    return null;
+    return files[0];
   }
 
   /**
