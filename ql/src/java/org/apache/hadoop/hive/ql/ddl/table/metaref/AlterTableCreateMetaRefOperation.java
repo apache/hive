@@ -16,22 +16,21 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.branch.create;
+package org.apache.hadoop.hive.ql.ddl.table.metaref;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
-public class AlterTableCreateBranchOperation extends DDLOperation<AlterTableCreateBranchDesc> {
-
-  public AlterTableCreateBranchOperation(DDLOperationContext context, AlterTableCreateBranchDesc desc) {
+public class AlterTableCreateMetaRefOperation extends DDLOperation<AlterTableCreateMetaRefDesc> {
+  public AlterTableCreateMetaRefOperation(DDLOperationContext context, AlterTableCreateMetaRefDesc desc) {
     super(context, desc);
   }
 
   @Override
   public int execute() throws Exception {
     Table table = context.getDb().getTable(desc.getFullTableName());
-    context.getDb().alterTableMetaRefOperation(table, desc.getAlterTableBranchSpec());
+    context.getDb().alterTableMetaRefOperation(table, desc.getAlterTableMetaRefSpec());
     return 0;
   }
 }

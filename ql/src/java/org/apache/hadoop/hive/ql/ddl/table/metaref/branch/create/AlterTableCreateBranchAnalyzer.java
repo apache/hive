@@ -16,33 +16,36 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.branch.create;
+package org.apache.hadoop.hive.ql.ddl.table.metaref.branch.create;
 
-import java.util.Map;
-
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
-import org.apache.hadoop.hive.ql.ddl.table.AlterTableCreateMetaRefAnalyzer;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.metaref.AlterTableCreateMetaRefAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.ddl.table.metaref.AlterTableCreateMetaRefDesc;
+import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+
+import static org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec.AlterMetaRefOperationType.CREATE_BRANCH;
 
 @DDLSemanticAnalyzerFactory.DDLType(types = HiveParser.TOK_ALTERTABLE_CREATE_BRANCH)
 public class AlterTableCreateBranchAnalyzer extends AlterTableCreateMetaRefAnalyzer {
 
   public AlterTableCreateBranchAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
+    super.alterTableType = AlterTableType.CREATE_BRANCH;
   }
 
   @Override
-  protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
+  protected AbstractAlterTableDesc getAlterTableDesc(AlterTableCreateMetaRefAnalyzer.AlterTableTypeReq req)
       throws SemanticException {
-    Table table = getTable(tableName);
-    validateAlterTableType(table, AlterTableType.CREATE_BRANCH, false);
-
-    super.analyzeCommand(tableName, partitionSpec, command);
+    AlterTableMetaRefSpec.CreateBranchSpec createBranchSpec =
+        new AlterTableMetaRefSpec.CreateBranchSpec(req.getMetaRefName(), req.getSnapshotId(), req.getAsOfTime(),
+            req.getMaxRefAgeMs(), req.getMinSnapshotsToKeep(), req.getMaxSnapshotAgeMs());
+    AlterTableMetaRefSpec<AlterTableMetaRefSpec.CreateBranchSpec> alterTableBranchSpec
+        = new AlterTableMetaRefSpec(CREATE_BRANCH, createBranchSpec);
+    return new AlterTableCreateMetaRefDesc(AlterTableType.CREATE_BRANCH, req.getTableName(), alterTableBranchSpec);
   }
 }

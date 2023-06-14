@@ -36,29 +36,29 @@ public class IcebergBranchExec {
   /**
    * Create a branch on the iceberg table
    * @param table the iceberg table
-   * @param createMetaRefSpec Get the basic parameters needed to create a branch
+   * @param createBranchSpec Get the basic parameters needed to create a branch
    */
-  public static void createBranch(Table table, AlterTableMetaRefSpec.CreateBranchSpec createMetaRefSpec) {
-    String branchName = createMetaRefSpec.getBranchName();
+  public static void createBranch(Table table, AlterTableMetaRefSpec.CreateBranchSpec createBranchSpec) {
+    String branchName = createBranchSpec.getBranchName();
     Long snapshotId = null;
-    if (createMetaRefSpec.getSnapshotId() != null) {
-      snapshotId = createMetaRefSpec.getSnapshotId();
-    } else if (createMetaRefSpec.getAsOfTime() != null) {
-      snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, createMetaRefSpec.getAsOfTime());
+    if (createBranchSpec.getSnapshotId() != null) {
+      snapshotId = createBranchSpec.getSnapshotId();
+    } else if (createBranchSpec.getAsOfTime() != null) {
+      snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, createBranchSpec.getAsOfTime());
     } else {
       snapshotId = table.currentSnapshot().snapshotId();
     }
     LOG.info("Creating branch {} on iceberg table {} with snapshotId {}", branchName, table.name(), snapshotId);
     ManageSnapshots manageSnapshots = table.manageSnapshots();
     manageSnapshots.createBranch(branchName, snapshotId);
-    if (createMetaRefSpec.getMaxRefAgeMs() != null) {
-      manageSnapshots.setMaxRefAgeMs(branchName, createMetaRefSpec.getMaxRefAgeMs());
+    if (createBranchSpec.getMaxRefAgeMs() != null) {
+      manageSnapshots.setMaxRefAgeMs(branchName, createBranchSpec.getMaxRefAgeMs());
     }
-    if (createMetaRefSpec.getMinSnapshotsToKeep() != null) {
-      manageSnapshots.setMinSnapshotsToKeep(branchName, createMetaRefSpec.getMinSnapshotsToKeep());
+    if (createBranchSpec.getMinSnapshotsToKeep() != null) {
+      manageSnapshots.setMinSnapshotsToKeep(branchName, createBranchSpec.getMinSnapshotsToKeep());
     }
-    if (createMetaRefSpec.getMaxSnapshotAgeMs() != null) {
-      manageSnapshots.setMaxSnapshotAgeMs(branchName, createMetaRefSpec.getMaxSnapshotAgeMs());
+    if (createBranchSpec.getMaxSnapshotAgeMs() != null) {
+      manageSnapshots.setMaxSnapshotAgeMs(branchName, createBranchSpec.getMaxSnapshotAgeMs());
     }
 
     manageSnapshots.commit();

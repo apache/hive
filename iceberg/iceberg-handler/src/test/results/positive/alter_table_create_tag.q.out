@@ -25,7 +25,7 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateTag operation
+    CreateMetaRef Operation
       table name: default.iceTbl
       spec: AlterTableMetaRefSpec{operationType=CREATE_TAG, operationParams=CreateTagSpec{tagName=test_tag_1, snapshotId=null, asOfTime=null, maxRefAgeMs=null}}
 
@@ -63,7 +63,7 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateTag operation
+    CreateMetaRef Operation
       table name: default.iceTbl
       spec: AlterTableMetaRefSpec{operationType=CREATE_TAG, operationParams=CreateTagSpec{tagName=test_tag_2, snapshotId=null, asOfTime=null, maxRefAgeMs=432000000}}
 

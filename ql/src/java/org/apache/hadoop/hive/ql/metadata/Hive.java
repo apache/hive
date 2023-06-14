@@ -6723,10 +6723,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public void alterTableMetaRefOperation(Table table, AlterTableMetaRefSpec createBranchSpec) throws HiveException {
+  public void alterTableMetaRefOperation(Table table, AlterTableMetaRefSpec alterTableMetaRefSpec) throws HiveException {
     try {
       HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
-      storageHandler.alterTableMetaRefOperation(table, createBranchSpec);
+      storageHandler.alterTableMetaRefOperation(table, alterTableMetaRefSpec);
     } catch (Exception e) {
       throw new HiveException(e);
     }

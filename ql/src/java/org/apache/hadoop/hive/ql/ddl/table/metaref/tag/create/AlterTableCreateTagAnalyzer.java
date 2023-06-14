@@ -16,31 +16,35 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.tag.create;
+package org.apache.hadoop.hive.ql.ddl.table.metaref.tag.create;
 
-import java.util.Map;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
-import org.apache.hadoop.hive.ql.ddl.table.AlterTableCreateMetaRefAnalyzer;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.metaref.AlterTableCreateMetaRefAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.ddl.table.metaref.AlterTableCreateMetaRefDesc;
+import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+import static org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec.AlterMetaRefOperationType.CREATE_TAG;
+
 @DDLSemanticAnalyzerFactory.DDLType(types = HiveParser.TOK_ALTERTABLE_CREATE_TAG)
 public class AlterTableCreateTagAnalyzer extends AlterTableCreateMetaRefAnalyzer {
+
   public AlterTableCreateTagAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
+    super.alterTableType = AlterTableType.CREATE_TAG;
   }
 
   @Override
-  protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
-      throws SemanticException {
-    Table table = getTable(tableName);
-    validateAlterTableType(table, AlterTableType.CREATE_TAG, false);
-
-    super.analyzeCommand(tableName, partitionSpec, command);
+  protected AbstractAlterTableDesc getAlterTableDesc(AlterTableTypeReq req) throws SemanticException {
+    AlterTableMetaRefSpec.CreateTagSpec createTagspec =
+        new AlterTableMetaRefSpec.CreateTagSpec(req.getMetaRefName(), req.getSnapshotId(), req.getAsOfTime(),
+            req.getMaxRefAgeMs());
+    AlterTableMetaRefSpec<AlterTableMetaRefSpec.CreateTagSpec> alterTableTagSpec
+        = new AlterTableMetaRefSpec(CREATE_TAG, createTagspec);
+    return new AlterTableCreateMetaRefDesc(AlterTableType.CREATE_TAG, req.getTableName(), alterTableTagSpec);
   }
 }

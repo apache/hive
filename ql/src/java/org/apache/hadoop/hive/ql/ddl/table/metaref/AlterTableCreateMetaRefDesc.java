@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.tag.create;
+package org.apache.hadoop.hive.ql.ddl.table.metaref;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
@@ -25,24 +25,25 @@ import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 
-@Explain(displayName = "CreateTag operation", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
-public class AlterTableCreateTagDesc extends AbstractAlterTableDesc {
+@Explain(displayName = "CreateMetaRef Operation", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT,
+    Explain.Level.EXTENDED })
+public class AlterTableCreateMetaRefDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  private final AlterTableMetaRefSpec alterTableTagSpec;
+  protected AlterTableMetaRefSpec alterTableMetaRefSpec;
 
-  public AlterTableCreateTagDesc(TableName tableName, AlterTableMetaRefSpec alterTableTagSpec)
+  public AlterTableCreateMetaRefDesc(AlterTableType alterTableType, TableName tableName, AlterTableMetaRefSpec alterTableMetaRefSpec)
       throws SemanticException {
-    super(AlterTableType.CREATE_TAG, tableName, null, null, false, false, null);
-    this.alterTableTagSpec = alterTableTagSpec;
+    super(alterTableType, tableName, null, null, false, false, null);
+    this.alterTableMetaRefSpec = alterTableMetaRefSpec;
   }
 
-  public AlterTableMetaRefSpec getAlterTableTagSpec() {
-    return alterTableTagSpec;
+  public AlterTableMetaRefSpec getAlterTableMetaRefSpec() {
+    return alterTableMetaRefSpec;
   }
 
   @Explain(displayName = "spec", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
   public String getExplainOutput() {
-    return alterTableTagSpec.toString();
+    return alterTableMetaRefSpec.toString();
   }
 }
