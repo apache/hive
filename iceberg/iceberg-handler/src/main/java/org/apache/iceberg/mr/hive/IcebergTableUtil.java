@@ -138,7 +138,7 @@ public class IcebergTableUtil {
     partitionTransformSpecList.forEach(spec -> {
       switch (spec.getTransformType()) {
         case IDENTITY:
-          builder.identity(spec.getColumnName());
+          builder.identity(spec.getColumnName().toLowerCase());
           break;
         case YEAR:
           builder.year(spec.getColumnName());
