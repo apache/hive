@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez.monitoring;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -145,6 +147,9 @@ class RenderStrategy {
    */
   static class LogToFileFunction extends BaseUpdateFunction {
     private static final Logger LOGGER = LoggerFactory.getLogger(LogToFileFunction.class);
+    private static final DateTimeFormatter REPORT_DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss,SSS");
+
     private boolean hiveServer2InPlaceProgressEnabled =
         SessionState.get().getConf().getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_INPLACE_PROGRESS);
     LogToFileFunction(TezJobMonitor monitor) {
@@ -161,7 +166,8 @@ class RenderStrategy {
       if (hiveServer2InPlaceProgressEnabled) {
         LOGGER.info(report);
       } else {
-        monitor.console.printInfo(report);
+        String time = REPORT_DATE_TIME_FORMATTER.format(LocalDateTime.now());
+        monitor.console.printInfo(time + "\t" + report);
       }
     }
   }
