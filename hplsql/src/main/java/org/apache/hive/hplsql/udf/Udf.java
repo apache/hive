@@ -40,13 +40,13 @@ import org.slf4j.LoggerFactory;
         extended = "Example:\n" + " > SELECT _FUNC_('CURRENT_DATE') FROM src LIMIT 1;\n")
 @UDFType(deterministic = false)
 public class Udf extends GenericUDF {
+  private static final Logger LOG = LoggerFactory.getLogger(Udf.class.getName());
   public static String NAME = "hplsql";
   private final transient Exec exec = new Exec();
   private StringObjectInspector queryOI;
   private ObjectInspector[] argumentsOI;
   private StringObjectInspector funcDefOI;
   private String functionDefinition = null;
-  private static final Logger LOG = LoggerFactory.getLogger(Udf.class.getName());
 
   public Udf() {
     exec.setQueryExecutor(QueryExecutor.DISABLED);
@@ -82,9 +82,7 @@ public class Udf extends GenericUDF {
       int idx = arguments.length-1;
       setParameterForPrimitiveTypeArgument(":" + idx, arguments[idx].get(), funcDefOI);
       functionDefinition = funcDefOI.getPrimitiveJavaObject(arguments[idx].get());
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("functionDefinition: {}", functionDefinition);
-      }
+      LOG.debug("functionDefinition: {}", functionDefinition);
       exec.parseAndEval(Arguments.script(functionDefinition));
     }
     exec.enterScope(Scope.Type.ROUTINE);
@@ -112,7 +110,7 @@ public class Udf extends GenericUDF {
    * Set parameters for the current call
    */
   void setParameters(DeferredObject[] arguments) throws HiveException {
-    for (int i = 1; i < arguments.length-1; i++) {
+    for (int i = 1; i < arguments.length - 1; i++) {
       String name = ":" + i;
       Object inputObject = arguments[i].get();
       ObjectInspector objectInspector = argumentsOI[i];
