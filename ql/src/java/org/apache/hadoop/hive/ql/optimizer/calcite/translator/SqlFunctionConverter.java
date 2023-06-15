@@ -386,7 +386,8 @@ public class SqlFunctionConverter {
       registerFunction("in", HiveIn.INSTANCE, hToken(HiveParser.Identifier, "in"));
       registerFunction("between", HiveBetween.INSTANCE, hToken(HiveParser.Identifier, "between"));
       registerFunction("struct", SqlStdOperatorTable.ROW, hToken(HiveParser.Identifier, "struct"));
-      registerFunction("array", SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR, hToken(HiveParser.Identifier, "array"));
+      registerFunction(FunctionRegistry.ARRAY_FUNC_NAME,
+          SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR, hToken(HiveParser.Identifier, FunctionRegistry.ARRAY_FUNC_NAME));
       registerFunction("map", SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR, hToken(HiveParser.Identifier, "map"));
       registerFunction("isnotnull", SqlStdOperatorTable.IS_NOT_NULL, hToken(HiveParser.Identifier, "isnotnull"));
       registerFunction("isnull", SqlStdOperatorTable.IS_NULL, hToken(HiveParser.Identifier, "isnull"));

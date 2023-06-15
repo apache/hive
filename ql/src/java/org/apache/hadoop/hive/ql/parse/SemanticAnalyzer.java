@@ -13303,7 +13303,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     for (ASTNode node : fieldDescList) {
-      Map<ASTNode, String> map = translateFieldDesc(node);
+      Map<ASTNode, String> map = translateFieldDesc(node, conf);
       for (Entry<ASTNode, String> entry : map.entrySet()) {
         unparseTranslator.addTranslation(entry.getKey(), entry.getValue().toLowerCase());
       }
@@ -13312,11 +13312,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return nodeOutputs;
   }
 
-  protected final Map<ASTNode, String> translateFieldDesc(ASTNode node) {
+  public static final Map<ASTNode, String> translateFieldDesc(ASTNode node, HiveConf conf) {
     Map<ASTNode, String> map = new HashMap<>();
     if (node.getType() == HiveParser.DOT) {
       for (Node child : node.getChildren()) {
-        map.putAll(translateFieldDesc((ASTNode) child));
+        map.putAll(translateFieldDesc((ASTNode) child, conf));
       }
     } else if (node.getType() == HiveParser.Identifier) {
       map.put(node, HiveUtils.unparseIdentifier(node.getText(), conf));
