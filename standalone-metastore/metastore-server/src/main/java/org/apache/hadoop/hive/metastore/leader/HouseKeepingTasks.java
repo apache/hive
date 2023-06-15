@@ -114,6 +114,9 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
       metastoreTaskThreadPool.shutdown();
       metastoreTaskThreadPool = null;
     }
+
+    HiveMetaStore.LOG.info("Stopped the {} Housekeeping tasks",
+        runOnlyRemoteTasks ? "remote" : "always");
   }
 
 }

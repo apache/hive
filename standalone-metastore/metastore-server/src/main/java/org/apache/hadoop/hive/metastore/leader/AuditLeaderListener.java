@@ -109,6 +109,7 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
 
   @Override
   public void takeLeadership(LeaderElection election) throws Exception {
+    HiveMetaStore.LOG.info("Became the LEADER for {}", election.getName());
     String hostName = getHostname();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     String message = "{\"leader_host\": \"" + hostName + "\", \"leader_type\": \""
@@ -166,7 +167,7 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
 
   @Override
   public void lossLeadership(LeaderElection election) throws Exception {
-    // do nothing
+    HiveMetaStore.LOG.info("Lost leadership for {}", election.getName());
   }
 
 }

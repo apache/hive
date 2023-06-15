@@ -852,7 +852,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           context.start();
         } catch (Throwable e) {
-          LOG.error("Compactions or housekeeping tasks may not happen", e);
+          LOG.error("Compaction or Housekeeping tasks may not happen", e);
         } finally {
           startLock.unlock();
         }
