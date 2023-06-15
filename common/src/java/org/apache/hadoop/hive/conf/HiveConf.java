@@ -3701,7 +3701,6 @@ public class HiveConf extends Configuration {
         "A list of io exception handler class names. This is used\n" +
         "to construct a list exception handlers to handle exceptions thrown\n" +
         "by record readers"),
-    HIVE_MAPRED_INPUT_DIR("mapred.input.dir", "", "Path to input dir."),
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
         "Hive log4j configuration file.\n" +

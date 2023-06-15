@@ -167,7 +167,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
-  private static final String ICEBERG = "iceberg";
+  // Column index for partition metadata table
   private static final int SPEC_IDX = 3;
   private static final int PART_IDX = 0;
   public static final String COPY_ON_WRITE = "copy-on-write";
@@ -379,7 +379,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Table table = getTable(hmsTable);
     Map<String, String> stats = Maps.newHashMap();
-    if (getStatsSource().equals(ICEBERG)) {
+    if (getStatsSource().equals(Constants.ICEBERG)) {
       if (table.currentSnapshot() != null) {
         Map<String, String> summary = table.currentSnapshot().summary();
         if (summary != null) {
@@ -430,7 +430,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return table.currentSnapshot() != null && getStatsSource().equals(ICEBERG);
+    return table.currentSnapshot() != null && getStatsSource().equals(Constants.ICEBERG);
   }
 
   @Override
@@ -496,7 +496,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (getStatsSource().equals(ICEBERG)) {
+    if (getStatsSource().equals(Constants.ICEBERG)) {
       Table table = getTable(hmsTable);
       if (table.currentSnapshot() != null) {
         Map<String, String> summary = table.currentSnapshot().summary();
@@ -513,7 +513,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private String getStatsSource() {
-    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, ICEBERG).toLowerCase();
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, Constants.ICEBERG).toLowerCase();
   }
 
   private Path getStatsPath(Table table) {
@@ -1489,8 +1489,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     List<String> parts = Lists.newArrayList();
     Writable value = reader.createValue();
     WritableComparable key = reader.createKey();
-    boolean notEoF = true;
-    String prevRow = "";
 
     try (FetchFormatter fetcher = new DefaultFetchFormatter()) {
       fetcher.initialize(job, HiveTableUtil.getSerializationProps());
@@ -1498,16 +1496,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           context.getDb().getTable(hmstbl.getDbName(), hmstbl.getTableName(), "partitions", true);
       Deserializer currSerDe = metaDataPartTable.getDeserializer();
       ObjectMapper mapper = new ObjectMapper();
-      while (notEoF) {
-        reader.next(key, value);
+      Table tbl = getTable(hmstbl);
+
+
+      while (reader.next(key, value)) {
         String[] row =
             fetcher.convert(currSerDe.deserialize(value), currSerDe.getObjectInspector()).toString().split("\t");
-        if (prevRow.equalsIgnoreCase(row[PART_IDX])) {
-          notEoF = false;
-        } else {
-          prevRow = row[0];
-          parts.add(HiveTableUtil.getParseData(row[PART_IDX], row[SPEC_IDX], mapper));
-        }
+        parts.add(HiveTableUtil.getParseData(row[PART_IDX], row[SPEC_IDX], mapper, tbl.spec().specId()));
       }
     }
     Collections.sort(parts);

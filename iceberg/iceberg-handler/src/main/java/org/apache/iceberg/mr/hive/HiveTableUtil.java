@@ -272,18 +272,18 @@ public class HiveTableUtil {
     return props;
   }
 
-  static String getParseData(String parseData, String specId, ObjectMapper mapper)
+  static String getParseData(String parseData, String specId, ObjectMapper mapper, Integer currentSpecId)
       throws JsonProcessingException {
     Map<String, String> map = mapper.readValue(parseData, Map.class);
     String partString =
         map.entrySet().stream().filter(entry -> entry.getValue() != null).map(java.lang.Object::toString)
             .collect(Collectors.joining("/"));
-    return String.format("Spec-id=%s/%s", specId, partString);
+    String currentSpecMarker = currentSpecId.toString().equals(specId) ? "*" : "";
+    return String.format("Spec-id=%s%s/%s", specId, currentSpecMarker, partString);
   }
 
   static JobConf getPartJobConf(Configuration confs, Path path, org.apache.hadoop.hive.ql.metadata.Table tbl) {
     JobConf job = new JobConf(confs);
-    job.set(MAPRED_INPUT_DIR, path.toString());
     job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, "partition,record_count,file_count,spec_id");
     job.set(InputFormatConfig.TABLE_LOCATION, tbl.getPath().toString());
     job.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.getFullyQualifiedName() + ".partitions");

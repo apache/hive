@@ -55,7 +55,7 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
   public int execute() throws HiveException {
     Table tbl = context.getDb().getTable(desc.getTabName());
     List<String> parts;
-    if (tbl != null && tbl.isNonNative() && tbl.getStorageHandler().supportsPartitionTransform()) {
+    if (tbl.isNonNative() && tbl.getStorageHandler().supportsPartitionTransform()) {
       parts = tbl.getStorageHandler().showPartitions(context, tbl);
     } else if (!tbl.isPartitioned()) {
       throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, desc.getTabName());

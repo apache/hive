@@ -57,9 +57,9 @@ PREHOOK: Input: default@ice1
 POSTHOOK: query: show partitions ice1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@ice1
-Spec-id=0/d_part=10/e_part=5
-Spec-id=0/d_part=2/e_part=5
-Spec-id=0/d_part=3/e_part=4
+Spec-id=0*/d_part=10/e_part=5
+Spec-id=0*/d_part=2/e_part=5
+Spec-id=0*/d_part=3/e_part=4
 PREHOOK: query: select * from default.ice1.partitions order by `partition`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice1
@@ -146,9 +146,9 @@ PREHOOK: Input: default@ice2
 POSTHOOK: query: show partitions ice2
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@ice2
-Spec-id=0/d_part=10/e_part=5
-Spec-id=0/d_part=2/e_part=5
-Spec-id=0/d_part=3/e_part=4
+Spec-id=0*/d_part=10/e_part=5
+Spec-id=0*/d_part=2/e_part=5
+Spec-id=0*/d_part=3/e_part=4
 PREHOOK: query: ALTER TABLE ice2 SET PARTITION SPEC (c)
 PREHOOK: type: ALTERTABLE_SETPARTSPEC
 PREHOOK: Input: default@ice2
@@ -208,7 +208,7 @@ POSTHOOK: Input: default@ice2
 Spec-id=0/d_part=10/e_part=5
 Spec-id=0/d_part=2/e_part=5
 Spec-id=0/d_part=3/e_part=4
-Spec-id=1/c=2
-Spec-id=1/c=3
-Spec-id=1/c=4
-Spec-id=1/c=5
+Spec-id=1*/c=2
+Spec-id=1*/c=3
+Spec-id=1*/c=4
+Spec-id=1*/c=5
