@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -348,17 +349,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   @Override
   public int execute() {
-    if (work != null && work.getLoadTableWork() != null && work.getLoadTableWork().isUseAppendForLoad()) {
-      try {
-        work.getLoadTableWork().getMdTable().getStorageHandler()
-            .appendFiles(work.getLoadTableWork().getMdTable().getTTable(),
-                work.getLoadTableWork().getSourcePath().toUri(),
-                work.getLoadTableWork().getLoadFileType() == LoadFileType.REPLACE_ALL);
-        return 0;
-      } catch (HiveException he) {
-        return processHiveException(he);
-      }
-    }
     try {
       initializeFromDeferredContext();
     } catch (HiveException he) {
@@ -373,6 +363,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     if (context.getExplainAnalyze() == AnalyzeState.RUNNING) {
       return 0;
+    }
+
+    Integer x = executeIcebergLoad();
+    if (x != null) {
+      return x;
     }
 
     try (LocalTableLock lock = acquireLockForFileMove(work.getLoadTableWork())) {
@@ -545,6 +540,22 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(), work.getMetricCollector(),
                                        getName(), conf);
     }
+  }
+
+  @Nullable
+  private Integer executeIcebergLoad() {
+    if (work != null && work.getLoadTableWork() != null && work.getLoadTableWork().isUseAppendForLoad()) {
+      try {
+        work.getLoadTableWork().getMdTable().getStorageHandler()
+            .appendFiles(work.getLoadTableWork().getMdTable().getTTable(),
+                work.getLoadTableWork().getSourcePath().toUri(),
+                work.getLoadTableWork().getLoadFileType() == LoadFileType.REPLACE_ALL);
+        return 0;
+      } catch (HiveException he) {
+        return processHiveException(he);
+      }
+    }
+    return null;
   }
 
   private int processHiveException(HiveException he) {

@@ -313,7 +313,7 @@ public interface HiveStorageHandler extends Configurable {
    * @throws SemanticException in case of any error.
    */
   default boolean supportsAppendData(Table table) throws SemanticException {
-    throw new SemanticException(ErrorMsg.LOAD_INTO_NON_NATIVE.getMsg());
+    return false;
   }
 
   default void appendFiles(Table tbl, URI fromURI, boolean isOverwrite)

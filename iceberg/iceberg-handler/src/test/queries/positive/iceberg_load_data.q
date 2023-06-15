@@ -5,6 +5,7 @@ create external table ice_parquet(
 stored by iceberg;
 
 explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet;
+explain analyze LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet;
 
 LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet;
 
@@ -17,12 +18,13 @@ stored by iceberg
 STORED AS AVRO;
 
 explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
+explain analyze LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 
-set hive.tez.for.load.native.table=true;
+set hive.tez.for.load.non.native.table=true;
 
 explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 
-set hive.tez.for.load.native.table=false;
+set hive.tez.for.load.non.native.table=false;
 
 LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 
@@ -43,6 +45,7 @@ stored by iceberg
 STORED AS ORC;
 
 explain LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc;
+explain analyze LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc;
 
 LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc;
 
