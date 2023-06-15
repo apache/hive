@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -985,6 +986,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
+  @Ignore("HIVE-27442")
   public void testCleanerFailuresCountedCorrectly() throws Exception {
     final String DEFAULT_DB = "default";
     final String SUCCESS_TABLE_NAME = "success_table";
