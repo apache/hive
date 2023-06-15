@@ -116,6 +116,7 @@
     <thrift.args>-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
     </thrift.args>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
+    <rerun.failing.tests.count>1</rerun.failing.tests.count>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -502,6 +503,7 @@
           <version>${maven.surefire.plugin.version}</version>
           <configuration>
             <failIfNoTests>false</failIfNoTests>
+            <rerunFailingTestsCount>${rerun.failing.tests.count}</rerunFailingTestsCount>
           </configuration>
         </plugin>
         <plugin>

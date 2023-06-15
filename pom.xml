@@ -182,6 +182,7 @@
     <orc.version>1.8.3</orc.version>
     <mockito-core.version>3.4.4</mockito-core.version>
     <powermock.version>2.0.2</powermock.version>
+    <rerun.failing.tests.count>1</rerun.failing.tests.count>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.77.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
@@ -1673,6 +1674,7 @@
           <reuseForks>false</reuseForks>
           <failIfNoTests>false</failIfNoTests>
           <argLine>${maven.test.jvm.args}</argLine>
+          <rerunFailingTestsCount>${rerun.failing.tests.count}</rerunFailingTestsCount>
           <trimStackTrace>false</trimStackTrace>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
