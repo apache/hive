@@ -52,9 +52,10 @@ public class DataConnectorProviderFactory {
     public void onRemoval(@Nullable String dcName, @Nullable IDataConnectorProvider dataConnectorProvider,
                           @NonNull RemovalCause cause) {
       try {
+        LOG.info("Closing dataConnectorProvider :{}", dcName);
         dataConnectorProvider.close();
       } catch (Exception e) {
-        LOG.warn("Exception when closing dataconnectorprovider: {} due to: {}" + dcName, e.getMessage());
+        LOG.warn("Exception when closing dataConnectorProvider: {} due to: {}" + dcName, e.getMessage());
       }
     }
   }
@@ -119,14 +120,14 @@ public class DataConnectorProviderFactory {
    * to avoid using the invalid dataConnector next time.
    * @param dcName dataConnector to be cleaned
    */
-  public static synchronized void updateDataConnectorCache(String dcName) {
+  public static synchronized void invalidateDataConnectorFromCache(String dcName) {
     try {
       IDataConnectorProvider dataConnectorProvider = dataConnectorCache.getIfPresent(dcName);
       if (dataConnectorProvider != null) {
         dataConnectorCache.invalidate(dcName);
       }
     } catch (Exception e) {
-      LOG.warn("Exception when removing dataconnectorprovider: {} from cache due to: {}" + dcName, e.getMessage());
+      LOG.warn("Exception when removing dataConnectorProvider: {} from cache due to: {}" + dcName, e.getMessage());
     }
   }
 }
