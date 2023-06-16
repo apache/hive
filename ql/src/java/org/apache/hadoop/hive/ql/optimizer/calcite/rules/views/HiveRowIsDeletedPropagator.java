@@ -174,11 +174,11 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
             .build();
   }
 
-  private static class InputRefShifter extends RexShuttle {
+  protected static class InputRefShifter extends RexShuttle {
     private final int startIndex;
     private final RelBuilder relBuilder;
 
-    private InputRefShifter(int startIndex, RelBuilder relBuilder) {
+    InputRefShifter(int startIndex, RelBuilder relBuilder) {
       this.startIndex = startIndex;
       this.relBuilder = relBuilder;
     }
