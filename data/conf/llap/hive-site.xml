@@ -30,7 +30,10 @@
     <value>true</value>
     <description>This property enables a Caffeiene Cache for Metastore client</description>
   </property>
-
+  <property>
+    <name>hive.tez.dynamic.partition.pruning.max.data.size</name>
+    <value>0</value>
+  </property>
   <property>
     <name>hive.metastore.client.cache.recordStats</name>
     <value>true</value>
