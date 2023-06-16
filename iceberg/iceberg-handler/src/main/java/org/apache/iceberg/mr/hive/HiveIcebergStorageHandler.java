@@ -1381,6 +1381,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec);
       tbl.getSd().getCols().addAll(tbl.getPartitionKeys());
       tbl.getTTable().setPartitionKeysIsSet(false);
+
+      // Remove any transactional properties as they aren't relevant in case of iceberg tables.
+      tbl.getParameters().keySet().removeIf(
+          key -> hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.equalsIgnoreCase(key) ||
+              hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES.equalsIgnoreCase(key));
     }
   }
 

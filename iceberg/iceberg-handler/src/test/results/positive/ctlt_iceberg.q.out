@@ -242,3 +242,39 @@ TBLPROPERTIES (
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
   'uuid'='#Masked#')
+PREHOOK: query: create managed table man_table (id int) Stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@man_table
+POSTHOOK: query: create managed table man_table (id int) Stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@man_table
+PREHOOK: query: create table like_man_table like man_table stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_man_table
+POSTHOOK: query: create table like_man_table like man_table stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_man_table
+PREHOOK: query: insert into like_man_table values (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@like_man_table
+POSTHOOK: query: insert into like_man_table values (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@like_man_table
+PREHOOK: query: select * from like_man_table order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_man_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from like_man_table order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_man_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
