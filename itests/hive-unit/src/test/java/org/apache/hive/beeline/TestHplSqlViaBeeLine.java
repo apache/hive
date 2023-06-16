@@ -381,6 +381,24 @@ public class TestHplSqlViaBeeLine {
   }
 
   @Test
+  public void testBuiltInUdf() throws Throwable {
+    String SCRIPT_TEXT = "SELECT abs(-2);\n";
+    testScriptFile(SCRIPT_TEXT, args(), "2");
+  }
+
+  @Test
+  public void testNestedUdfAndProcedure() throws Throwable {
+    String SCRIPT_TEXT =
+        "CREATE FUNCTION dbl(d int)\n" +
+        "   RETURNS int\n" +
+        "BEGIN\n" +
+        "   RETURN d * 2;\n" +
+        "END;\n" +
+        "SELECT dbl(abs(-2)), abs(dbl(-2)), dbl(dbl(20));\n";
+    testScriptFile(SCRIPT_TEXT, args(), "4.*4\\.0.*80");
+  }
+
+  @Test
     public void testDbChange() throws Throwable {
     String SCRIPT_TEXT =
         "DROP TABLE IF EXISTS result;\n" +
