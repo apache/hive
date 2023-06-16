@@ -50,7 +50,7 @@ public class CsrfHttpRequestInterceptor implements HttpRequestInterceptor {
   public void process(HttpRequest httpRequest, HttpContext httpContext)
       throws HttpException, IOException {
     if (injectHeader){
-      httpRequest.addHeader("X-CSRF-HEADER", "true");
+      httpRequest.addHeader("X-CSRF-TOKEN", "true");
     }
   }
 }

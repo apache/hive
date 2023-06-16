@@ -24,7 +24,14 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
@@ -107,8 +114,8 @@ public class ThriftHttpServlet extends TServlet {
   private static final String X_FORWARDED_FOR = "X-Forwarded-For";
   private static final String AUTH_TYPE = "auth";
 
-  private static final String X_CSRF_TOKEN = "X-CSRF-TOKEN";
-  private static final String X_XSRF_HEADER = "X-XSRF-HEADER";
+  protected static final String X_CSRF_TOKEN = "X-CSRF-TOKEN";
+  protected static final String X_XSRF_HEADER = "X-XSRF-HEADER";
 
   private JWTValidator jwtValidator;
 
@@ -149,25 +156,10 @@ public class ThriftHttpServlet extends TServlet {
     String clientUserName = null;
     String clientIpAddress;
     boolean requireNewCookie = false;
-    boolean xsrfFlag = this.hiveConf.getBoolean(ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname, false);
-    boolean csrfFlag = this.hiveConf.getBoolean(ConfVars.HIVE_SERVER2_CSRF_FILTER_ENABLED.varname, false);
-
     logTrackingHeaderIfAny(request);
 
     try {
-      boolean approve = false;
-
-      if (csrfFlag && Utils.doXsrfFilter(request, response, null, X_CSRF_TOKEN)) {
-        approve = true;
-      }
-      LOG.info("Is X_CSRF_TOKEN filtering Enabled : " + csrfFlag +". Does X_CSRF_TOKEN exists in request? " + approve);
-
-      if (xsrfFlag && Utils.doXsrfFilter(request, response, null, X_XSRF_HEADER)) {
-        approve = true;
-      }
-      LOG.info("Is X-XSRF-HEADER filtering Enabled : " + xsrfFlag +". Does X-XSRF-HEADER exists in request? " + approve);
-
-      if (!approve) {
+      if (!approveOnFilter(request, response)) {
         LOG.warn("Request did not have valid XSRF header/CSRF token, rejecting.");
         return;
       }
@@ -318,6 +310,31 @@ public class ThriftHttpServlet extends TServlet {
       SessionManager.clearProxyUserName();
       SessionManager.clearForwardedAddresses();
     }
+  }
+
+  boolean approveOnFilter(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+
+    boolean xsrfFlag = this.hiveConf.getBoolean(ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname, false);
+    boolean csrfFlag = this.hiveConf.getBoolean(ConfVars.HIVE_SERVER2_CSRF_FILTER_ENABLED.varname, false);
+    LOG.info("Is X-CSRF-TOKEN filtering Enabled : " + csrfFlag);
+    LOG.info("Is X-XSRF-HEADER filtering Enabled : " + xsrfFlag);
+
+    if(!xsrfFlag && !csrfFlag){
+      return true;
+    }
+
+    if(csrfFlag && Utils.doXsrfFilter(request, response, null, X_CSRF_TOKEN)){
+      return true;
+    }
+    LOG.info("X-CSRF-TOKEN does not exist in request");
+
+    if (xsrfFlag && Utils.doXsrfFilter(request, response, null, X_XSRF_HEADER)) {
+      return true;
+    }
+    LOG.info("X-XSRF-HEADER does not exist in request");
+
+    return false;
   }
 
   private void logTrackingHeaderIfAny(HttpServletRequest request) {
