@@ -251,6 +251,29 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: explain cbo
+select * from (select a.key as key, b.value as array_val from T1_n88 a join array_valued_T1_n0 b on a.key=b.key) i lateral view explode (array_val) c as val
+PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued_t1_n0
+PREHOOK: Input: default@t1_n88
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from (select a.key as key, b.value as array_val from T1_n88 a join array_valued_T1_n0 b on a.key=b.key) i lateral view explode (array_val) c as val
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued_t1_n0
+POSTHOOK: Input: default@t1_n88
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableFunctionScan(invocation=[explode($1)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) ARRAY array_val, VARCHAR(2147483647) c.val)])
+  HiveProject(key=[$0], array_val=[$2])
+    HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, t1_n88]], table:alias=[a])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, array_valued_t1_n0]], table:alias=[b])
+
 PREHOOK: query: select * from (select a.key as key, b.value as array_val from T1_n88 a join array_valued_T1_n0 b on a.key=b.key) i lateral view explode (array_val) c as val
 ORDER BY key, val
 PREHOOK: type: QUERY

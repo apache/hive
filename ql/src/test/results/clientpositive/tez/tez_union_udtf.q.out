@@ -115,6 +115,41 @@ Stage-3
              Please refer to the previous Stage-4(CONDITIONAL)
              Please refer to the previous Stage-7
 
+PREHOOK: query: EXPLAIN CBO
+CREATE TABLE x AS
+  SELECT key, 1 as tag FROM src WHERE key = '238'
+  UNION ALL
+  SELECT key, tag FROM src1
+  LATERAL VIEW EXPLODE(array(2)) tf as tag
+  WHERE key = '238'
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x
+POSTHOOK: query: EXPLAIN CBO
+CREATE TABLE x AS
+  SELECT key, 1 as tag FROM src WHERE key = '238'
+  UNION ALL
+  SELECT key, tag FROM src1
+  LATERAL VIEW EXPLODE(array(2)) tf as tag
+  WHERE key = '238'
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject($f0=[CAST(_UTF-16LE'238':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], $f1=[1])
+    HiveFilter(condition=[=($0, _UTF-16LE'238')])
+      HiveTableScan(table=[[default, src]], table:alias=[src])
+  HiveProject(key=[$0], tag=[$6])
+    HiveTableFunctionScan(invocation=[explode(ARRAY(2))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER tf.tag)])
+      HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5])
+        HiveFilter(condition=[=($0, _UTF-16LE'238')])
+          HiveTableScan(table=[[default, src1]], table:alias=[src1])
+
 PREHOOK: query: CREATE TABLE x AS
   SELECT key, 1 as tag FROM src WHERE key = '238'
   UNION ALL
