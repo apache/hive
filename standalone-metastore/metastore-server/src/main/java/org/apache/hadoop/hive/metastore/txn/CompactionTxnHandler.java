@@ -132,10 +132,12 @@ class CompactionTxnHandler extends TxnHandler {
               " OR (\"res1\".\"TC_PARTITION\" IS NULL AND \"res3\".\"CQ_PARTITION\" IS NULL))" +
       " WHERE \"res3\".\"RETRY_RECORD_CHECK\" <= 0 OR \"res3\".\"RETRY_RECORD_CHECK\" IS NULL";
 
-  private static final String DELETE_ABORT_RETRY_ENTRIES_FROM_COMPACTION_QUEUE =
-      "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_DATABASE\" = ? " +
-      " AND \"CQ_TABLE\" = ? AND (\"CQ_PARTITION\" = ? OR \"CQ_PARTITION\" IS NULL) AND \"CQ_TYPE\" = " +
-      quoteChar(TxnStore.ABORT_TXN_CLEANUP_TYPE);
+  private static final String DELETE_CQ_ENTRIES = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
+
+  private static final String DELETE_CQ_AND_ABORT_ENTRIES = DELETE_CQ_ENTRIES +
+      " OR ( \"CQ_DATABASE\" = ? AND \"CQ_TABLE\" = ? " +
+      " AND \"CQ_PARTITION\" %s AND \"CQ_TYPE\" = " +
+      quoteChar(TxnStore.ABORT_TXN_CLEANUP_TYPE) + " )";
 
   private static final String INSERT_ABORT_RETRY_ENTRY_INTO_COMPACTION_QUEUE =
       "INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
@@ -694,28 +696,30 @@ class CompactionTxnHandler extends TxnHandler {
           pStmt.setLong(1, info.id);
           LOG.debug("Going to execute update <{}> for CQ_ID={}", s, info.id);
           pStmt.executeUpdate();
+        }
 
-          s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
-          pStmt = dbConn.prepareStatement(s);
-          pStmt.setLong(1, info.id);
-          LOG.debug("Going to execute update <{}>", s);
-          int updCount = pStmt.executeUpdate();
-          if (updCount != 1) {
-            LOG.error("Unable to delete compaction record: {}.  Update count={}", info, updCount);
-            LOG.debug("Going to rollback");
-            dbConn.rollback();
-          }
+        /* Remove compaction queue record corresponding to the compaction which has been successful as well as
+         * remove all abort retry associated metadata of table/partition in the COMPACTION_QUEUE both when compaction
+         * or abort cleanup is successful. We don't want a situation wherein we have an abort retry entry for a table
+         * but no corresponding entry in TXN_COMPONENTS table. Successful compaction will delete
+         * the retry metadata, so that abort cleanup is retried again (an optimistic retry approach).
+         */
+        removeCompactionAndAbortRetryEntries(dbConn, info);
+
+        if (!info.isAbortedTxnCleanup()) {
           // Remove entries from completed_txn_components as well, so we don't start looking there
           // again but only up to the highest write ID include in this compaction job.
           //highestWriteId will be NULL in upgrade scenarios
-          s = "DELETE FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_DATABASE\" = ? AND \"CTC_TABLE\" = ?";
+          String query =
+              "DELETE FROM \"COMPLETED_TXN_COMPONENTS\" " +
+              " WHERE \"CTC_DATABASE\" = ? AND \"CTC_TABLE\" = ?";
           if (info.partName != null) {
-            s += " AND \"CTC_PARTITION\" = ?";
+            query += " AND \"CTC_PARTITION\" = ?";
           }
           if (info.highestWriteId != 0) {
-            s += " AND \"CTC_WRITEID\" <= ?";
+            query += " AND \"CTC_WRITEID\" <= ?";
           }
-          pStmt = dbConn.prepareStatement(s);
+          pStmt = dbConn.prepareStatement(query);
           int paramCount = 1;
           pStmt.setString(paramCount++, info.dbname);
           pStmt.setString(paramCount++, info.tableName);
@@ -725,8 +729,9 @@ class CompactionTxnHandler extends TxnHandler {
           if (info.highestWriteId != 0) {
             pStmt.setLong(paramCount, info.highestWriteId);
           }
-          LOG.debug("Going to execute update <{}>", s);
-          if ((updCount = pStmt.executeUpdate()) < 1) {
+          LOG.debug("Going to execute update <{}>", query);
+          int updCount = pStmt.executeUpdate();
+          if (updCount < 1) {
             LOG.warn("Expected to remove at least one row from completed_txn_components when " +
                     "marking compaction entry as clean!");
           }
@@ -756,14 +761,6 @@ class CompactionTxnHandler extends TxnHandler {
     ResultSet rs = null;
     try {
       /*
-       * Remove all abort retry associated metadata of table/partition in the COMPACTION_QUEUE both when compaction
-       * or abort cleanup is successful. We don't want a situation wherein we have a abort retry entry for a table
-       * but no corresponding entry in TXN_COMPONENTS table. Successful compaction will delete
-       * the retry metadata, so that abort cleanup is retried again (an optimistic retry approach).
-       */
-      removeAbortRetryEntries(dbConn, info);
-
-      /*
        * compaction may remove data from aborted txns above tc_writeid bit it only guarantees to
        * remove it up to (inclusive) tc_writeid, so it's critical to not remove metadata about
        * aborted TXN_COMPONENTS above tc_writeid (and consequently about aborted txns).
@@ -772,7 +769,7 @@ class CompactionTxnHandler extends TxnHandler {
       String s = "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
               + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED + ") "
               + "AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? "
-              + "AND \"TC_PARTITION\" " + (info.partName != null ? "= ?" : "IS NULL");
+              + "AND \"TC_PARTITION\" " + TxnUtils.nvl(info.partName);
 
       List<String> queries = new ArrayList<>();
       Iterator<Long> writeIdsIter = null;
@@ -1295,25 +1292,32 @@ class CompactionTxnHandler extends TxnHandler {
             && (rc.hasSucceededMajorCompaction || (rc.hasSucceededMinorCompaction && ci.type == CompactionType.MINOR));
   }
 
-  private void removeAbortRetryEntries(Connection dbConn, CompactionInfo info) throws MetaException, RetryException {
-    LOG.debug("Going to execute update <{}>", DELETE_ABORT_RETRY_ENTRIES_FROM_COMPACTION_QUEUE);
-    try (PreparedStatement pStmt = dbConn.prepareStatement(DELETE_ABORT_RETRY_ENTRIES_FROM_COMPACTION_QUEUE)) {
-      pStmt.setString(1, info.dbname);
-      pStmt.setString(2, info.tableName);
-      if (info.partName != null) {
-        pStmt.setString(3, info.partName);
-      } else {
-        // Since the type of 'CQ_PARTITION' column is varchar.
-        // Hence, setting null for VARCHAR type.
-        pStmt.setNull(3, Types.VARCHAR);
+  private void removeCompactionAndAbortRetryEntries(Connection dbConn, CompactionInfo info) throws MetaException, RetryException {
+    // Do not perform delete when the related records do not exist.
+    // This is valid in case of no abort retry.
+    if (info.id == 0) {
+      return;
+    }
+    String query = info.isAbortedTxnCleanup() ? DELETE_CQ_ENTRIES :
+      String.format(DELETE_CQ_AND_ABORT_ENTRIES, TxnUtils.nvl(info.partName));
+    LOG.debug("Going to execute update <{}>", query);
+    try (PreparedStatement pStmt = dbConn.prepareStatement(query)) {
+      int paramCnt = 1;
+      pStmt.setLong(paramCnt++, info.id);
+      if (!info.isAbortedTxnCleanup()) {
+        pStmt.setString(paramCnt++, info.dbname);
+        pStmt.setString(paramCnt++, info.tableName);
+        if (info.partName != null) {
+          pStmt.setString(paramCnt, info.partName);
+        }
       }
       int rc = pStmt.executeUpdate();
       LOG.debug("Removed {} records in COMPACTION_QUEUE", rc);
     } catch (SQLException e) {
-      LOG.error("Unable to delete abort retry entries from COMPACTION_QUEUE due to {}", e.getMessage());
+      LOG.error("Unable to delete compaction or abort retry entries from COMPACTION_QUEUE due to {}", e.getMessage());
       LOG.debug("Going to rollback");
       rollbackDBConn(dbConn);
-      checkRetryable(e, "removeAbortRetryEntries(" + info + ")");
+      checkRetryable(e, "removeCompactionAndAbortRetryEntries(" + info + ")");
       throw new MetaException(DB_FAILED_TO_CONNECT + e.getMessage());
     }
   }
@@ -1580,10 +1584,9 @@ class CompactionTxnHandler extends TxnHandler {
           ci.errorMessage = errorMessage;
           ci.state = state;
 
-          String s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
-          pStmt = dbConn.prepareStatement(s);
+          pStmt = dbConn.prepareStatement(DELETE_CQ_ENTRIES);
           pStmt.setLong(1, ci.id);
-          LOG.debug("Going to execute update <{}>", s);
+          LOG.debug("Going to execute update <{}>", DELETE_CQ_ENTRIES);
           pStmt.executeUpdate();
         }
         else {
