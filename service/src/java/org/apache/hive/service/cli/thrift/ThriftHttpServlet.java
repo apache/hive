@@ -317,22 +317,22 @@ public class ThriftHttpServlet extends TServlet {
 
     boolean xsrfFlag = this.hiveConf.getBoolean(ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname, false);
     boolean csrfFlag = this.hiveConf.getBoolean(ConfVars.HIVE_SERVER2_CSRF_FILTER_ENABLED.varname, false);
-    LOG.debug("Is X-CSRF-TOKEN filtering Enabled : " + csrfFlag);
-    LOG.debug("Is X-XSRF-HEADER filtering Enabled : " + xsrfFlag);
+    LOG.debug("Is " + X_CSRF_TOKEN + " filtering Enabled : " + csrfFlag);
+    LOG.debug("Is " + X_XSRF_HEADER + " filtering Enabled : " + xsrfFlag);
 
-    if(!xsrfFlag && !csrfFlag){
+    if (!xsrfFlag && !csrfFlag) {
       return true;
     }
 
-    if(csrfFlag && Utils.doXsrfFilter(request, response, null, X_CSRF_TOKEN)){
+    if (csrfFlag && Utils.doXsrfFilter(request, response, null, X_CSRF_TOKEN)) {
       return true;
     }
-    LOG.debug("X-CSRF-TOKEN does not exist in request");
+    LOG.debug(X_CSRF_TOKEN + " does not exist in request");
 
     if (xsrfFlag && Utils.doXsrfFilter(request, response, null, X_XSRF_HEADER)) {
       return true;
     }
-    LOG.debug("X-XSRF-HEADER does not exist in request");
+    LOG.debug(X_XSRF_HEADER + " does not exist in request");
 
     return false;
   }

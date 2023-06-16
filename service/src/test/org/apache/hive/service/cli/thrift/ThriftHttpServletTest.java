@@ -76,17 +76,21 @@ public class ThriftHttpServletTest {
     thriftHttpServlet.doKerberosAuth(httpServletRequest);
   }
 
-  @Test
-  public void testApproveOnFilters() throws Exception {
+  @Test public void testApproveOnFilters() throws Exception {
     // No Filtering and no headers in request
-    Assert.assertTrue(thriftHttpServlet.approveOnFilter(Mockito.mock(HttpServletRequest.class),Mockito.mock(HttpServletResponse.class)));
+    Assert.assertTrue(thriftHttpServlet.approveOnFilter(Mockito.mock(HttpServletRequest.class),
+        Mockito.mock(HttpServletResponse.class)));
 
-    testApproveOnFiltersBase(HiveConf.ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname,ThriftHttpServlet.X_XSRF_HEADER,true);
-    testApproveOnFiltersBase(HiveConf.ConfVars.HIVE_SERVER2_CSRF_FILTER_ENABLED.varname,ThriftHttpServlet.X_CSRF_TOKEN,true);
+    testApproveOnFiltersBase(HiveConf.ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname,
+        ThriftHttpServlet.X_XSRF_HEADER, true);
+    testApproveOnFiltersBase(HiveConf.ConfVars.HIVE_SERVER2_CSRF_FILTER_ENABLED.varname, ThriftHttpServlet.X_CSRF_TOKEN,
+        true);
 
     // Filter flag and header did not match
-    testApproveOnFiltersBase(HiveConf.ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname,ThriftHttpServlet.X_CSRF_TOKEN,false);
-    testApproveOnFiltersBase(HiveConf.ConfVars.HIVE_SERVER2_CSRF_FILTER_ENABLED.varname,ThriftHttpServlet.X_XSRF_HEADER,false);
+    testApproveOnFiltersBase(HiveConf.ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname, ThriftHttpServlet.X_CSRF_TOKEN,
+        false);
+    testApproveOnFiltersBase(HiveConf.ConfVars.HIVE_SERVER2_CSRF_FILTER_ENABLED.varname,
+        ThriftHttpServlet.X_XSRF_HEADER, false);
   }
 
   private void testApproveOnFiltersBase(String filterName, String headerName, boolean assertion) throws Exception {
@@ -100,12 +104,12 @@ public class ThriftHttpServletTest {
     // Filtering is enabled, but header is not sent
     hiveConf.setBoolean(filterName, true);
     thriftHttpServlet = new ThriftHttpServlet(null, null, null, null, null, hiveConf);
-    Assert.assertFalse(thriftHttpServlet.approveOnFilter(httpServletRequest,httpServletResponse));
+    Assert.assertFalse(thriftHttpServlet.approveOnFilter(httpServletRequest, httpServletResponse));
 
     // header sent and filtering enabled
     Mockito.when(httpServletRequest.getHeader(headerName)).thenReturn("value");
     thriftHttpServlet = new ThriftHttpServlet(null, null, null, null, null, hiveConf);
-    Assert.assertEquals(thriftHttpServlet.approveOnFilter(httpServletRequest,httpServletResponse),assertion);
+    Assert.assertEquals(thriftHttpServlet.approveOnFilter(httpServletRequest, httpServletResponse), assertion);
 
     // header sent but filtering not enabled
     hiveConf.setBoolean(filterName, false);
@@ -115,7 +119,7 @@ public class ThriftHttpServletTest {
       hiveConf.setBoolean(HiveConf.ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname, true);
     }
     thriftHttpServlet = new ThriftHttpServlet(null, null, null, null, null, hiveConf);
-    Assert.assertEquals(thriftHttpServlet.approveOnFilter(httpServletRequest,httpServletResponse),!assertion);
+    Assert.assertEquals(thriftHttpServlet.approveOnFilter(httpServletRequest, httpServletResponse), !assertion);
   }
 
 }
