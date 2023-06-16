@@ -24,14 +24,7 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
@@ -114,6 +107,9 @@ public class ThriftHttpServlet extends TServlet {
   private static final String X_FORWARDED_FOR = "X-Forwarded-For";
   private static final String AUTH_TYPE = "auth";
 
+  private static final String X_CSRF_TOKEN = "X-CSRF-TOKEN";
+  private static final String X_XSRF_HEADER = "X-XSRF-HEADER";
+
   private JWTValidator jwtValidator;
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
@@ -153,16 +149,27 @@ public class ThriftHttpServlet extends TServlet {
     String clientUserName = null;
     String clientIpAddress;
     boolean requireNewCookie = false;
+    boolean xsrfFlag = this.hiveConf.getBoolean(ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname, false);
+    boolean csrfFlag = this.hiveConf.getBoolean(ConfVars.HIVE_SERVER2_CSRF_FILTER_ENABLED.varname, false);
 
     logTrackingHeaderIfAny(request);
 
     try {
-      if (hiveConf.getBoolean(ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname,false)){
-        boolean continueProcessing = Utils.doXsrfFilter(request,response,null,null);
-        if (!continueProcessing){
-          LOG.warn("Request did not have valid XSRF header, rejecting.");
-          return;
-        }
+      boolean approve = false;
+
+      if (csrfFlag && Utils.doXsrfFilter(request, response, null, X_CSRF_TOKEN)) {
+        approve = true;
+      }
+      LOG.info("Is X_CSRF_TOKEN filtering Enabled : " + csrfFlag +". Does X_CSRF_TOKEN exists in request? " + approve);
+
+      if (xsrfFlag && Utils.doXsrfFilter(request, response, null, X_XSRF_HEADER)) {
+        approve = true;
+      }
+      LOG.info("Is X-XSRF-HEADER filtering Enabled : " + xsrfFlag +". Does X-XSRF-HEADER exists in request? " + approve);
+
+      if (!approve) {
+        LOG.warn("Request did not have valid XSRF header/CSRF token, rejecting.");
+        return;
       }
 
       clientIpAddress = request.getRemoteAddr();
