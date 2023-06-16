@@ -767,7 +767,7 @@ public class HiveConnection implements java.sql.Connection {
     // Add an interceptor to add in an XSRF header
     httpClientBuilder.addInterceptorLast(new XsrfHttpRequestInterceptor());
 
-    // Add an interceptor to add in an CSRF header
+    // Add an interceptor to add in a CSRF header
     httpClientBuilder.addInterceptorLast(new CsrfHttpRequestInterceptor());
 
     // set the specified timeout (socketTimeout jdbc param) for http connection as well
