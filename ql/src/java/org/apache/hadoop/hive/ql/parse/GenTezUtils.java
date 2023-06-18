@@ -130,8 +130,8 @@ public class GenTezUtils {
       maxPartition = (maxPartition > maxReducers) ? maxReducers : maxPartition;
 
       // reduce only if the parameters are significant
-      if (minPartition < maxPartition &&
-          nReducers * minPartitionFactor >= 1.0) {
+      final int parallelismThreshold = context.conf.getIntVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM_THRESHOLD);
+      if (minPartition < maxPartition && maxPartition >= parallelismThreshold) {
         reduceWork.setAutoReduceParallelism(true);
 
         reduceWork.setMinReduceTasks(minPartition);
