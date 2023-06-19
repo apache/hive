@@ -45,12 +45,12 @@ import java.util.List;
  * Since CBO plan does not contain the INSERT branches we focus on the SELECT part of the plan in this rule.
  * See also {@link CalcitePlanner}
  *
- * FROM (select mv.ROW__ID, mv.a, mv.b from mv) mv
+ * FROM (select mv.ROW__ID, mv.a, mv.b, true as flag from mv) mv
  * RIGHT OUTER JOIN (SELECT _source_.ROW__IS_DELETED,_source_.a, _source_.b FROM _source_) source
  * ON (mv.a &lt;=&gt; source.a AND mv.b &lt;=&gt; source.b)
  * INSERT INTO TABLE mv_delete_delta
  *   SELECT mv.ROW__ID
- *   WHERE source.ROW__IS__DELETED
+ *   WHERE source.ROW__IS__DELETED AND flag
  * INSERT INTO TABLE mv
  *   SELECT source.a, source.b
  *   WHERE NOT source.ROW__IS__DELETED
