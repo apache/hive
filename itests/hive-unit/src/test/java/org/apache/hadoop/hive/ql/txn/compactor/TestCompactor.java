@@ -777,6 +777,128 @@ public class TestCompactor {
   }
 
   @Test
+  public void autoCompactOnStreamingIngestWithDynamicPartition() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+    String columnNamesProperty = "a,b";
+    String columnTypesProperty = "string:int";
+    String agentInfo = "UT_" + Thread.currentThread().getName();
+
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a STRING) " +
+        " PARTITIONED BY (b INT)" + //currently ACID requires table to be bucketed
+        " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+
+    StrictDelimitedInputWriter writer1 = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+    StrictDelimitedInputWriter writer2 = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+
+    StreamingConnection connection1 = HiveStreamingConnection.newBuilder()
+        .withDatabase(dbName)
+        .withTable(tblName)
+        .withAgentInfo(agentInfo)
+        .withHiveConf(conf)
+        .withRecordWriter(writer1)
+        .withStreamingOptimizations(true)
+        // Transaction size has to be one or exception should happen.
+        .withTransactionBatchSize(1)
+        .connect();
+
+    StreamingConnection connection2 = HiveStreamingConnection.newBuilder()
+        .withDatabase(dbName)
+        .withTable(tblName)
+        .withAgentInfo(agentInfo)
+        .withHiveConf(conf)
+        .withRecordWriter(writer2)
+        .withStreamingOptimizations(true)
+        // Transaction size has to be one or exception should happen.
+        .withTransactionBatchSize(1)
+        .connect();
+
+    try {
+      connection1.beginTransaction();
+      connection1.write("1,1".getBytes());
+      connection1.commitTransaction();
+
+      connection1.beginTransaction();
+      connection1.write("1,1".getBytes());
+      connection1.commitTransaction();
+      connection1.close();
+
+      conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 1);
+      runInitiator(conf);
+
+      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+      ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+
+      List<ShowCompactResponseElement> compacts1 = rsp.getCompacts();
+      Assert.assertEquals(1, compacts1.size());
+      SortedSet<String> partNames1 = new TreeSet<String>();
+      verifyCompactions(compacts1, partNames1, tblName);
+      List<String> names1 = new ArrayList<String>(partNames1);
+      Assert.assertEquals("b=1", names1.get(0));
+
+      runWorker(conf);
+      runCleaner(conf);
+
+      connection2.beginTransaction();
+      connection2.write("1,1".getBytes());
+      connection2.commitTransaction();
+
+      connection2.beginTransaction();
+      connection2.write("1,1".getBytes());
+      connection2.commitTransaction();
+      connection2.close();
+
+      runInitiator(conf);
+
+      List<ShowCompactResponseElement> compacts2 = rsp.getCompacts();
+      Assert.assertEquals(1, compacts2.size());
+      SortedSet<String> partNames2 = new TreeSet<String>();
+      verifyCompactions(compacts2, partNames2, tblName);
+      List<String> names2 = new ArrayList<String>(partNames2);
+      Assert.assertEquals("b=1", names2.get(0));
+
+      runWorker(conf);
+      runCleaner(conf);
+
+      // Find the location of the table
+      IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+      Table table = msClient.getTable(dbName, tblName);
+      String tablePath = table.getSd().getLocation();
+      String partName = "b=1";
+      Path partPath = new Path(tablePath, partName);
+      FileSystem fs = FileSystem.get(conf);
+      FileStatus[] stat = fs.listStatus(partPath, AcidUtils.baseFileFilter);
+      if (1 != stat.length) {
+        Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
+      }
+      String name = stat[0].getPath().getName();
+      Assert.assertEquals("base_0000004", name);
+      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, 1);
+    } finally {
+      if (connection1 != null) {
+        connection1.close();
+      }
+      if (connection2 != null) {
+        connection2.close();
+      }
+    }
+  }
+
+  private void verifyCompactions(List<ShowCompactResponseElement> compacts, SortedSet<String> partNames, String tblName) {
+    for (ShowCompactResponseElement compact : compacts) {
+      Assert.assertEquals("default", compact.getDbname());
+      Assert.assertEquals(tblName, compact.getTablename());
+      Assert.assertEquals("initiated", compact.getState());
+      partNames.add(compact.getPartitionname());
+    }
+  }
+
+  @Test
   public void minorCompactAfterAbort() throws Exception {
     String dbName = "default";
     String tblName = "cws";
