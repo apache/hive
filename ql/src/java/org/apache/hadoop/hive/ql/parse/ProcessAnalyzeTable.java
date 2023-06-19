@@ -24,6 +24,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
+import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -88,7 +89,7 @@ public class ProcessAnalyzeTable implements NodeProcessor {
 
       assert alias != null;
       TezWork tezWork = context.currentTask.getWork();
-      if (BasicStatsNoJobTask.canUseFooterScan(table, inputFormat)) {
+      if (BasicStatsNoJobTask.canUseBasicStats(table, inputFormat)) {
         // For ORC & Parquet, all the following statements are the same
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;

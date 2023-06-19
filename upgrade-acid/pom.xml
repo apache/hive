@@ -47,6 +47,7 @@
         <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
         <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
         <maven.surefire.version>2.20.1</maven.surefire.version>
+        <maven.setversion.plugin.version>2.13.0</maven.setversion.plugin.version>
 
         <!-- Test Properties -->
         <test.conf.dir>${project.build.directory}/testconf</test.conf.dir>
@@ -168,6 +169,11 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>${maven.exec.plugin.version}</version>
+                </plugin>
+                <plugin>
+                  <groupId>org.codehaus.mojo</groupId>
+                  <artifactId>versions-maven-plugin</artifactId>
+                  <version>${maven.setversion.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

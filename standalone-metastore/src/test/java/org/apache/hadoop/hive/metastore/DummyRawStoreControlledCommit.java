@@ -1236,6 +1236,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
+      return objectStore.isPartOfMaterializedView(catName, dbName, tblName);
+  }
+
+  @Override
   public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
     return objectStore.getAllWriteEventInfo(txnId, dbName, tableName);
   }

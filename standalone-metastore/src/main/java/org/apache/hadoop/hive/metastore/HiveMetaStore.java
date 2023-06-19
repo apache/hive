@@ -133,11 +133,13 @@ import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreAuthorizationCallEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreCreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreDropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropSchemaVersionEvent;
@@ -2538,6 +2540,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (tbl == null) {
           throw new NoSuchObjectException(name + " doesn't exist");
         }
+
+        // Check if table is part of a materialized view.
+        // If it is, it cannot be dropped.
+        List<String> isPartOfMV = ms.isPartOfMaterializedView(catName, dbname, name);
+        if (!isPartOfMV.isEmpty()) {
+          throw new MetaException(String.format("Cannot drop table as it is used in the following materialized" +
+                  " views %s%n", isPartOfMV));
+        }
+
         if (tbl.getSd() == null) {
           throw new MetaException("Table metadata is corrupted");
         }
@@ -7175,6 +7186,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       try {
         String catName = func.isSetCatName() ? func.getCatName() : getDefaultCatalog(conf);
+        if (!func.isSetOwnerName()) {
+          try {
+            func.setOwnerName(SecurityUtils.getUGI().getShortUserName());
+          } catch (Exception ex) {
+            LOG.error("Cannot obtain username from the session to create a function", ex);
+            throw new TException(ex);
+          }
+        }
         ms.openTransaction();
         Database db = ms.getDatabase(catName, func.getDbName());
         if (db == null) {
@@ -7186,7 +7205,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new AlreadyExistsException(
               "Function " + func.getFunctionName() + " already exists");
         }
-
+        firePreEvent(new PreCreateFunctionEvent(func, this));
         long time = System.currentTimeMillis() / 1000;
         func.setCreateTime((int) time);
         ms.createFunction(func);
@@ -7230,7 +7249,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         Boolean isSourceOfReplication =
               ReplChangeManager.isSourceOfReplication(get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]));
-
+        firePreEvent(new PreDropFunctionEvent(func, this));
         // if copy of jar to change management fails we fail the metastore transaction, since the
         // user might delete the jars on HDFS externally after dropping the function, hence having
         // a copy is required to allow incremental replication to work correctly.
@@ -7276,6 +7295,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String[] parsedDbName = parseDbName(dbName, conf);
       try {
         ms.openTransaction();
+        firePreEvent(new PreCreateFunctionEvent(newFunc, this));
         ms.alterFunction(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], funcName, newFunc);
         success = ms.commitTransaction();
       } finally {
@@ -9842,7 +9862,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   private static void startRemoteOnlyTasks(Configuration conf) throws Exception {
-    if(!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
+    if(!MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON)) {
       return;
     }
 

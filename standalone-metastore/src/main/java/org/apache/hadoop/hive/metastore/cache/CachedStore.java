@@ -2618,6 +2618,11 @@ public class CachedStore implements RawStore, Configurable {
         && MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_CACHED_OBJECTS_BLACKLIST).isEmpty();
   }
 
+  @Override
+  public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
+    return rawStore.isPartOfMaterializedView(catName, dbName, tblName);
+  }
+
   @VisibleForTesting
   void resetCatalogCache() {
     sharedCache.resetCatalogCache();

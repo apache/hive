@@ -1769,4 +1769,14 @@ public interface RawStore extends Configurable {
    * @param tableName the name of the table for which the dump is being taken
    */
   List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException;
+
+  /**
+   * Checking if table is part of a materialized view.
+   * @param catName catalog the table is in
+   * @param dbName database the table is in
+   * @param tblName table name
+   * @return list of materialized views that uses the table
+   */
+  List<String> isPartOfMaterializedView(String catName, String dbName, String tblName);
+
 }
