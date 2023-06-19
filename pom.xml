@@ -104,6 +104,8 @@
     <accumulo.version>1.10.1</accumulo.version>
     <ant.version>1.10.13</ant.version>
     <antlr.version>3.5.2</antlr.version>
+    <!-- Make sure to sync it with standalone-metastore/pom.xml -->
+    <antlr4.version>4.9.3</antlr4.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>12.0.0</arrow.version>
