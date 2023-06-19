@@ -508,8 +508,8 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        null sort order:
-                        sort order:
+                        null sort order: 
+                        sort order: 
                         Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 0
                         value expressions: _col0 (type: bigint)
@@ -569,7 +569,7 @@ STAGE PLANS:
                   name: default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
             Truncated Path -> Alias:
               /l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 [dw]
-        Map 4
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: snap
@@ -641,7 +641,7 @@ STAGE PLANS:
                   name: default.l3_clarity__l3_snap_number_2018022300104
             Truncated Path -> Alias:
               /l3_clarity__l3_snap_number_2018022300104 [snap]
-        Map 5
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: s1
@@ -692,7 +692,7 @@ STAGE PLANS:
                     serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 5231448
+                    totalSize 5274840
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -715,14 +715,14 @@ STAGE PLANS:
                       serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 5231448
+                      totalSize 5274840
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.l3_monthly_dw_dimplan
                   name: default.l3_monthly_dw_dimplan
             Truncated Path -> Alias:
               /l3_monthly_dw_dimplan [s1]
-        Map 6
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: s2
@@ -809,8 +809,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0
-                  1
+                  0 
+                  1 
                 outputColumnNames: _col0, _col2
                 Position of Big Table: 0
                 Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
@@ -855,7 +855,7 @@ STAGE PLANS:
                           TopN: 5
                           TopN Hash Memory Usage: 0.1
                           auto parallelism: false
-        Reducer 3
+        Reducer 3 
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1025,8 +1025,8 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        null sort order:
-                        sort order:
+                        null sort order: 
+                        sort order: 
                         Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 0
                         value expressions: _col0 (type: bigint)
@@ -1086,7 +1086,7 @@ STAGE PLANS:
                   name: default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
             Truncated Path -> Alias:
               /l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 [dw]
-        Map 4
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: snap
@@ -1158,7 +1158,7 @@ STAGE PLANS:
                   name: default.l3_clarity__l3_snap_number_2018022300104
             Truncated Path -> Alias:
               /l3_clarity__l3_snap_number_2018022300104 [snap]
-        Map 5
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: s1
@@ -1210,7 +1210,7 @@ STAGE PLANS:
                     serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 5231448
+                    totalSize 5274840
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1233,14 +1233,14 @@ STAGE PLANS:
                       serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 5231448
+                      totalSize 5274840
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.l3_monthly_dw_dimplan
                   name: default.l3_monthly_dw_dimplan
             Truncated Path -> Alias:
               /l3_monthly_dw_dimplan [s1]
-        Map 6
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: s2
@@ -1327,8 +1327,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0
-                  1
+                  0 
+                  1 
                 outputColumnNames: _col0, _col2
                 Position of Big Table: 0
                 Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1373,7 +1373,7 @@ STAGE PLANS:
                           TopN: 5
                           TopN Hash Memory Usage: 0.1
                           auto parallelism: false
-        Reducer 3
+        Reducer 3 
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1489,8 +1489,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table
 #### A masked pattern was here ####
 2	two	TWO
-1	one	ONE
 4	four	FOUR
+1	one	ONE
 3	three	THREE
 PREHOOK: query: explain extended select col_1, col_2, col_3 from test_table where col_1 <> 2 order by col_2
 PREHOOK: type: QUERY
@@ -1516,7 +1516,7 @@ STAGE PLANS:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: test_table
@@ -1556,7 +1556,7 @@ STAGE PLANS:
                     bucketing_version 2
                     column.name.delimiter ,
                     columns col_1,col_2,col_3
-                    columns.comments
+                    columns.comments 
                     columns.types int:string:string
 #### A masked pattern was here ####
                     name default.test_table
@@ -1579,7 +1579,7 @@ STAGE PLANS:
                       bucketing_version 2
                       column.name.delimiter ,
                       columns col_1,col_2,col_3
-                      columns.comments
+                      columns.comments 
                       columns.types int:string:string
 #### A masked pattern was here ####
                       name default.test_table
@@ -1596,7 +1596,7 @@ STAGE PLANS:
                   name: default.test_table
             Truncated Path -> Alias:
               /test_table [test_table]
-        Reducer 2
+        Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1669,7 +1669,7 @@ STAGE PLANS:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: test_table
@@ -1710,7 +1710,7 @@ STAGE PLANS:
                     bucketing_version 2
                     column.name.delimiter ,
                     columns col_1,col_2,col_3
-                    columns.comments
+                    columns.comments 
                     columns.types int:string:string
 #### A masked pattern was here ####
                     name default.test_table
@@ -1733,7 +1733,7 @@ STAGE PLANS:
                       bucketing_version 2
                       column.name.delimiter ,
                       columns col_1,col_2,col_3
-                      columns.comments
+                      columns.comments 
                       columns.types int:string:string
 #### A masked pattern was here ####
                       name default.test_table
@@ -1750,7 +1750,7 @@ STAGE PLANS:
                   name: default.test_table
             Truncated Path -> Alias:
               /test_table [test_table]
-        Reducer 2
+        Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
