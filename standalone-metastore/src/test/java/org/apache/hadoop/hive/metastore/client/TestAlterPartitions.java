@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
+import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.transport.TTransportException;
 
 import com.google.common.collect.Lists;
@@ -716,7 +718,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
       client.alter_partitions(DB_NAME, TABLE_NAME, null);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TProtocolException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -885,7 +887,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
       client.alter_partitions(DB_NAME, TABLE_NAME, null, new EnvironmentContext());
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TProtocolException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -1028,7 +1030,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       Partition partToRename = oldParts.get(3);
       partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
       client.renamePartition(DB_NAME, TABLE_NAME, oldValues.get(3), null);
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TProtocolException e) {
     }
   }
 

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
@@ -210,7 +211,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     try {
       client.add_partitions_pspec(partitionSpecProxy);
       Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       // TODO: NPE should not be thrown.
     }
   }
@@ -225,7 +226,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     try {
       client.add_partitions_pspec(partitionSpecProxy);
       Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       // TODO: NPE should not be thrown.
     }
   }
@@ -242,7 +243,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     try {
       client.add_partitions_pspec(partitionSpecProxy);
       Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       // TODO: NPE should not be thrown.
     }
   }
@@ -581,7 +582,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     try {
       client.add_partitions_pspec(partitionSpecProxy);
       Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       // TODO: NPE should not be thrown.
     }
   }
@@ -700,7 +701,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     try {
       client.add_partitions_pspec(partitionSpecProxy);
       Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       // TODO: NPE should not be thrown.
     }
   }

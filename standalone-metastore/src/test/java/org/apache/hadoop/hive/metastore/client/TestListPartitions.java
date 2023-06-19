@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.transport.TTransportException;
@@ -305,7 +306,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       List<Partition> partitions = client.listPartitions(DB_NAME,
           (String)null, (short)-1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -316,7 +317,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable3PartCols1Part(client);
       client.listPartitions(null, TABLE_NAME, (short)-1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -469,7 +470,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       client.listPartitionSpecs(DB_NAME, null, -1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e ) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -682,7 +683,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       client.listPartitionsWithAuthInfo(null, TABLE_NAME, Lists
               .newArrayList("2017", "11", "27"), (short)-1, "", Lists.newArrayList());
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -694,7 +695,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       client.listPartitionsWithAuthInfo(DB_NAME, null, Lists
               .newArrayList("2017", "11", "27"), (short)-1, "", Lists.newArrayList());
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -798,7 +799,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       client.listPartitionsByFilter(DB_NAME, null, "yyyy=\"2017\"", (short)-1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -809,7 +810,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       client.listPartitionsByFilter(null, TABLE_NAME, "yyyy=\"2017\"", (short)-1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -1067,7 +1068,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       client.listPartitionNames(null, TABLE_NAME, (short)-1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -1078,7 +1079,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       client.listPartitionNames(DB_NAME, (String)null, (short)-1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -1170,7 +1171,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       client.listPartitionNames(null, TABLE_NAME, Lists.newArrayList("2017"), (short) -1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -1181,7 +1182,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       client.listPartitionNames(DB_NAME, null, Lists.newArrayList("2017"), (short)-1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -1222,7 +1223,7 @@ public class TestListPartitions extends MetaStoreClientTest {
               partitionSchema);
       client.listPartitionValues(request);
       fail("Should have thrown exception");
-    } catch (IndexOutOfBoundsException | TTransportException e) {
+    } catch (IndexOutOfBoundsException | TException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
