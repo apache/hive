@@ -38,7 +38,6 @@ STORED BY
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
-  'TRANSLATED_TO_EXTERNAL'='TRUE', 
   'bucketing_version'='2', 
   'created_with_ctlt'='true', 
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"a","required":false,"type":"int"}]}', 
@@ -162,7 +161,6 @@ STORED BY
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
-  'TRANSLATED_TO_EXTERNAL'='TRUE', 
   'bucketing_version'='2', 
   'created_with_ctlt'='true', 
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
@@ -230,7 +228,6 @@ STORED BY
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
-  'TRANSLATED_TO_EXTERNAL'='TRUE', 
   'bucketing_version'='2', 
   'created_with_ctlt'='true', 
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
