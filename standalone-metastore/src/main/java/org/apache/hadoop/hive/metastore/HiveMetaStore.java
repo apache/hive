@@ -5907,6 +5907,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private boolean updateTableColumnStatsInternal(ColumnStatistics colStats,
         String validWriteIds, long writeId)
         throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+      String catName;
+      String dbName;
+      String tableName;
+      String colName;
+      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+      catName = statsDesc.isSetCatName() ? statsDesc.getCatName().toLowerCase() : getDefaultCatalog(conf);
+      dbName = statsDesc.getDbName().toLowerCase();
+      tableName = statsDesc.getTableName().toLowerCase();
+
+      statsDesc.setCatName(catName);
+      statsDesc.setDbName(dbName);
+      statsDesc.setTableName(tableName);
+      long time = System.currentTimeMillis() / 1000;
+      statsDesc.setLastAnalyzed(time);
+
+      List<ColumnStatisticsObj> statsObjs =  colStats.getStatsObj();
       normalizeColStatsInput(colStats);
 
       startFunction("write_column_statistics", ":  table=" +

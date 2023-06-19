@@ -2330,9 +2330,28 @@ public class ObjectStore implements RawStore, Configurable {
     boolean committed = false;
     try {
       openTransaction();
+      part = convertToPart(getMPartition(catName, dbName, tableName, part_vals));
+      committed = commitTransaction();
+      if (part == null) {
+        throw new NoSuchObjectException("partition values=" + part_vals.toString());
+      }
+      part.setValues(part_vals);
+      return part;
+    } finally {
+      rollbackAndCleanup(committed, (Query)null);
+    }
+  }
+
+  @Override
+  public Partition getPartition(String catName, String dbName, String tableName,
+      List<String> part_vals, String validWriteIds) throws NoSuchObjectException, MetaException {
+    Partition part;
+    boolean committed = false;
+    try {
+      openTransaction();
       MTable table = this.getMTable(catName, dbName, tableName);
       MPartition mpart = getMPartition(catName, dbName, tableName, part_vals);
-      Partition part = convertToPart(mpart);
+      part = convertToPart(mpart);
       committed = commitTransaction();
       if (part == null) {
         throw new NoSuchObjectException("partition values=" + part_vals.toString());

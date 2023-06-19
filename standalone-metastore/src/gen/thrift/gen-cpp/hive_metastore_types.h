@@ -1962,7 +1962,7 @@ typedef struct _TruncateTableRequest__isset {
   bool validWriteIdList :1;
 } _TruncateTableRequest__isset;
 
-class TruncateTableRequest {
+class TruncateTableRequest : public virtual ::apache::thrift::TBase {
  public:
 
   TruncateTableRequest(const TruncateTableRequest&);
@@ -1970,7 +1970,7 @@ class TruncateTableRequest {
   TruncateTableRequest() : dbName(), tableName(), writeId(-1LL), validWriteIdList() {
   }
 
-  virtual ~TruncateTableRequest() throw();
+  virtual ~TruncateTableRequest() noexcept;
   std::string dbName;
   std::string tableName;
   std::vector<std::string>  partNames;
@@ -2023,14 +2023,10 @@ class TruncateTableRequest {
 
 void swap(TruncateTableRequest &a, TruncateTableRequest &b);
 
-inline std::ostream& operator<<(std::ostream& out, const TruncateTableRequest& obj)
-{
-  obj.printTo(out);
-  return out;
-}
+std::ostream& operator<<(std::ostream& out, const TruncateTableRequest& obj);
 
 
-class TruncateTableResponse {
+class TruncateTableResponse : public virtual ::apache::thrift::TBase {
  public:
 
   TruncateTableResponse(const TruncateTableResponse&);
@@ -2038,7 +2034,7 @@ class TruncateTableResponse {
   TruncateTableResponse() {
   }
 
-  virtual ~TruncateTableResponse() throw();
+  virtual ~TruncateTableResponse() noexcept;
 
   bool operator == (const TruncateTableResponse & /* rhs */) const
   {
@@ -2058,11 +2054,7 @@ class TruncateTableResponse {
 
 void swap(TruncateTableResponse &a, TruncateTableResponse &b);
 
-inline std::ostream& operator<<(std::ostream& out, const TruncateTableResponse& obj)
-{
-  obj.printTo(out);
-  return out;
-}
+std::ostream& operator<<(std::ostream& out, const TruncateTableResponse& obj);
 
 typedef struct _Role__isset {
   _Role__isset() : roleName(false), createTime(false), ownerName(false) {}
@@ -4735,7 +4727,7 @@ void swap(SetPartitionsStatsRequest &a, SetPartitionsStatsRequest &b);
 std::ostream& operator<<(std::ostream& out, const SetPartitionsStatsRequest& obj);
 
 
-class SetPartitionsStatsResponse {
+class SetPartitionsStatsResponse : public virtual ::apache::thrift::TBase {
  public:
 
   SetPartitionsStatsResponse(const SetPartitionsStatsResponse&);
@@ -4743,7 +4735,7 @@ class SetPartitionsStatsResponse {
   SetPartitionsStatsResponse() : result(0) {
   }
 
-  virtual ~SetPartitionsStatsResponse() throw();
+  virtual ~SetPartitionsStatsResponse() noexcept;
   bool result;
 
   void __set_result(const bool val);
@@ -4768,11 +4760,7 @@ class SetPartitionsStatsResponse {
 
 void swap(SetPartitionsStatsResponse &a, SetPartitionsStatsResponse &b);
 
-inline std::ostream& operator<<(std::ostream& out, const SetPartitionsStatsResponse& obj)
-{
-  obj.printTo(out);
-  return out;
-}
+std::ostream& operator<<(std::ostream& out, const SetPartitionsStatsResponse& obj);
 
 typedef struct _Schema__isset {
   _Schema__isset() : fieldSchemas(false), properties(false) {}
@@ -13008,7 +12996,7 @@ typedef struct _AlterPartitionsRequest__isset {
   bool validWriteIdList :1;
 } _AlterPartitionsRequest__isset;
 
-class AlterPartitionsRequest {
+class AlterPartitionsRequest : public virtual ::apache::thrift::TBase {
  public:
 
   AlterPartitionsRequest(const AlterPartitionsRequest&);
@@ -13016,7 +13004,7 @@ class AlterPartitionsRequest {
   AlterPartitionsRequest() : catName(), dbName(), tableName(), writeId(-1LL), validWriteIdList() {
   }
 
-  virtual ~AlterPartitionsRequest() throw();
+  virtual ~AlterPartitionsRequest() noexcept;
   std::string catName;
   std::string dbName;
   std::string tableName;
@@ -13081,14 +13069,10 @@ class AlterPartitionsRequest {
 
 void swap(AlterPartitionsRequest &a, AlterPartitionsRequest &b);
 
-inline std::ostream& operator<<(std::ostream& out, const AlterPartitionsRequest& obj)
-{
-  obj.printTo(out);
-  return out;
-}
+std::ostream& operator<<(std::ostream& out, const AlterPartitionsRequest& obj);
 
 
-class AlterPartitionsResponse {
+class AlterPartitionsResponse : public virtual ::apache::thrift::TBase {
  public:
 
   AlterPartitionsResponse(const AlterPartitionsResponse&);
@@ -13096,7 +13080,7 @@ class AlterPartitionsResponse {
   AlterPartitionsResponse() {
   }
 
-  virtual ~AlterPartitionsResponse() throw();
+  virtual ~AlterPartitionsResponse() noexcept;
 
   bool operator == (const AlterPartitionsResponse & /* rhs */) const
   {
@@ -13116,11 +13100,7 @@ class AlterPartitionsResponse {
 
 void swap(AlterPartitionsResponse &a, AlterPartitionsResponse &b);
 
-inline std::ostream& operator<<(std::ostream& out, const AlterPartitionsResponse& obj)
-{
-  obj.printTo(out);
-  return out;
-}
+std::ostream& operator<<(std::ostream& out, const AlterPartitionsResponse& obj);
 
 typedef struct _RenamePartitionRequest__isset {
   _RenamePartitionRequest__isset() : catName(false), validWriteIdList(false) {}
@@ -13128,7 +13108,7 @@ typedef struct _RenamePartitionRequest__isset {
   bool validWriteIdList :1;
 } _RenamePartitionRequest__isset;
 
-class RenamePartitionRequest {
+class RenamePartitionRequest : public virtual ::apache::thrift::TBase {
  public:
 
   RenamePartitionRequest(const RenamePartitionRequest&);
@@ -13136,7 +13116,7 @@ class RenamePartitionRequest {
   RenamePartitionRequest() : catName(), dbName(), tableName(), validWriteIdList() {
   }
 
-  virtual ~RenamePartitionRequest() throw();
+  virtual ~RenamePartitionRequest() noexcept;
   std::string catName;
   std::string dbName;
   std::string tableName;
@@ -13192,14 +13172,10 @@ class RenamePartitionRequest {
 
 void swap(RenamePartitionRequest &a, RenamePartitionRequest &b);
 
-inline std::ostream& operator<<(std::ostream& out, const RenamePartitionRequest& obj)
-{
-  obj.printTo(out);
-  return out;
-}
+std::ostream& operator<<(std::ostream& out, const RenamePartitionRequest& obj);
 
 
-class RenamePartitionResponse {
+class RenamePartitionResponse : public virtual ::apache::thrift::TBase {
  public:
 
   RenamePartitionResponse(const RenamePartitionResponse&);
@@ -13207,7 +13183,7 @@ class RenamePartitionResponse {
   RenamePartitionResponse() {
   }
 
-  virtual ~RenamePartitionResponse() throw();
+  virtual ~RenamePartitionResponse() noexcept;
 
   bool operator == (const RenamePartitionResponse & /* rhs */) const
   {
@@ -13227,11 +13203,7 @@ class RenamePartitionResponse {
 
 void swap(RenamePartitionResponse &a, RenamePartitionResponse &b);
 
-inline std::ostream& operator<<(std::ostream& out, const RenamePartitionResponse& obj)
-{
-  obj.printTo(out);
-  return out;
-}
+std::ostream& operator<<(std::ostream& out, const RenamePartitionResponse& obj);
 
 typedef struct _AlterTableRequest__isset {
   _AlterTableRequest__isset() : catName(false), environmentContext(false), writeId(true), validWriteIdList(false) {}
@@ -13241,7 +13213,7 @@ typedef struct _AlterTableRequest__isset {
   bool validWriteIdList :1;
 } _AlterTableRequest__isset;
 
-class AlterTableRequest {
+class AlterTableRequest : public virtual ::apache::thrift::TBase {
  public:
 
   AlterTableRequest(const AlterTableRequest&);
@@ -13249,7 +13221,7 @@ class AlterTableRequest {
   AlterTableRequest() : catName(), dbName(), tableName(), writeId(-1LL), validWriteIdList() {
   }
 
-  virtual ~AlterTableRequest() throw();
+  virtual ~AlterTableRequest() noexcept;
   std::string catName;
   std::string dbName;
   std::string tableName;
@@ -13314,14 +13286,10 @@ class AlterTableRequest {
 
 void swap(AlterTableRequest &a, AlterTableRequest &b);
 
-inline std::ostream& operator<<(std::ostream& out, const AlterTableRequest& obj)
-{
-  obj.printTo(out);
-  return out;
-}
+std::ostream& operator<<(std::ostream& out, const AlterTableRequest& obj);
 
 
-class AlterTableResponse {
+class AlterTableResponse : public virtual ::apache::thrift::TBase {
  public:
 
   AlterTableResponse(const AlterTableResponse&);
@@ -13329,7 +13297,7 @@ class AlterTableResponse {
   AlterTableResponse() {
   }
 
-  virtual ~AlterTableResponse() throw();
+  virtual ~AlterTableResponse() noexcept;
 
   bool operator == (const AlterTableResponse & /* rhs */) const
   {
@@ -13349,11 +13317,7 @@ class AlterTableResponse {
 
 void swap(AlterTableResponse &a, AlterTableResponse &b);
 
-inline std::ostream& operator<<(std::ostream& out, const AlterTableResponse& obj)
-{
-  obj.printTo(out);
-  return out;
-}
+std::ostream& operator<<(std::ostream& out, const AlterTableResponse& obj);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

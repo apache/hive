@@ -215,6 +215,10 @@ class GrantRevokePrivilegeRequest; end
 
 class GrantRevokePrivilegeResponse; end
 
+class TruncateTableRequest; end
+
+class TruncateTableResponse; end
+
 class Role; end
 
 class RolePrincipalGrant; end
@@ -298,6 +302,8 @@ class ColumnStatistics; end
 class AggrStats; end
 
 class SetPartitionsStatsRequest; end
+
+class SetPartitionsStatsResponse; end
 
 class Schema; end
 
@@ -616,6 +622,18 @@ class GetSerdeRequest; end
 class RuntimeStat; end
 
 class GetRuntimeStatsRequest; end
+
+class AlterPartitionsRequest; end
+
+class AlterPartitionsResponse; end
+
+class RenamePartitionRequest; end
+
+class RenamePartitionResponse; end
+
+class AlterTableRequest; end
+
+class AlterTableResponse; end
 
 class MetaException < ::Thrift::Exception; end
 
