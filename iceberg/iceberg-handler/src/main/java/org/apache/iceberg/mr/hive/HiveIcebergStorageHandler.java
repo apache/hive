@@ -470,10 +470,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
               PuffinCompressionCodec.NONE,
               ImmutableMap.of()));
       writer.finish();
+      return true;
     } catch (IOException e) {
       LOG.error(String.valueOf(e));
+      return false;
     }
-    return false;
   }
 
   @Override
