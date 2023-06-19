@@ -968,7 +968,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
       Assert.fail("Expected a NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TProtocolException exception) {
+    } catch (TTransportException | TProtocolException exception) {
       // Expected exception - Remote MetaStore
     }
   }
