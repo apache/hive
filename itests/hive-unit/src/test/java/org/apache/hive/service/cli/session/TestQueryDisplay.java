@@ -20,6 +20,7 @@ package org.apache.hive.service.cli.session;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryInfo;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.OperationHandle;
@@ -152,6 +153,12 @@ public class TestQueryDisplay {
 
     Assert.assertTrue(qDisplay1.getPerfLogStarts(QueryDisplay.Phase.COMPILATION).size() > 0);
     Assert.assertTrue(qDisplay1.getPerfLogEnds(QueryDisplay.Phase.COMPILATION).size() > 0);
+
+    Assert.assertTrue(qDisplay1.getPerfLogStarts(QueryDisplay.Phase.COMPILATION).containsKey(PerfLogger.COMPILE));
+    Assert.assertFalse(qDisplay1.getPerfLogStarts(QueryDisplay.Phase.EXECUTION).containsKey(PerfLogger.COMPILE));
+    Assert.assertTrue(qDisplay1.getPerfLogStarts(QueryDisplay.Phase.EXECUTION).containsKey(PerfLogger.DRIVER_EXECUTE));
+    Assert.assertFalse(qDisplay1.getPerfLogStarts(QueryDisplay.Phase.COMPILATION)
+        .containsKey(PerfLogger.DRIVER_EXECUTE));
 
     Assert.assertEquals(qDisplay1.getTaskDisplays().size(), 1);
     QueryDisplay.TaskDisplay tInfo1 = qDisplay1.getTaskDisplays().get(0);

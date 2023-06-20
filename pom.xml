@@ -66,6 +66,7 @@
   </modules>
 
   <properties>
+    <standalone-metastore.version>3.2.0-SNAPSHOT</standalone-metastore.version>
     <hive.version.shortname>3.2.0</hive.version.shortname>
 
     <!-- Build Properties -->
@@ -112,17 +113,17 @@
     <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
     <maven.eclipse.plugin.version>2.9</maven.eclipse.plugin.version>
     <maven.build-helper.plugin.version>1.8</maven.build-helper.plugin.version>
+    <maven.setversion.plugin.version>2.13.0</maven.setversion.plugin.version>
 
     <!-- Library Dependency Versions -->
     <accumulo.version>1.7.3</accumulo.version>
-    <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.11.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
-    <avro.version>1.7.7</avro.version>
+    <avro.version>1.8.2</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.17.0</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
@@ -130,13 +131,13 @@
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
     <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
     <commons-cli.version>1.2</commons-cli.version>
-    <commons-codec.version>1.7</commons-codec.version>
+    <commons-codec.version>1.15</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
-    <commons-compress.version>1.9</commons-compress.version>
+    <commons-compress.version>1.19</commons-compress.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-io.version>2.4</commons-io.version>
+    <commons-io.version>2.6</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
-    <commons-lang3.version>3.2</commons-lang3.version>
+    <commons-lang3.version>3.9</commons-lang3.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <derby.version>10.14.1.0</derby.version>
@@ -181,10 +182,10 @@
     <kryo.version>3.0.3</kryo.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3</libthrift.version>
-    <log4j2.version>2.16.0</log4j2.version>
+    <log4j2.version>2.17.1</log4j2.version>
     <postgres.version>42.5.1</postgres.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.6</orc.version>
+    <orc.version>1.5.8</orc.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <powermock.version>1.7.4</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -206,7 +207,7 @@
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
-    <velocity.version>1.5</velocity.version>
+    <velocity.version>2.3</velocity.version>
     <xerces.version>2.9.1</xerces.version>
     <zookeeper.version>3.4.6</zookeeper.version>
     <jpam.version>1.1</jpam.version>
@@ -426,22 +427,6 @@
         <version>${accumulo.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-core</artifactId>
-        <version>${activemq.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>kahadb</artifactId>
-        <version>${activemq.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.avro</groupId>
         <artifactId>avro</artifactId>
         <version>${avro.version}</version>
@@ -479,7 +464,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.velocity</groupId>
-        <artifactId>velocity</artifactId>
+        <artifactId>velocity-engine-core</artifactId>
         <version>${velocity.version}</version>
       </dependency>
       <dependency>
@@ -1073,6 +1058,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven.checkstyle.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>${maven.setversion.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

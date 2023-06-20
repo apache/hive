@@ -231,7 +231,7 @@ public class SimpleFetchOptimizer extends Transform {
       return null;
     }
     Operator<?> op = ts.getChildOperators().get(0);
-    for (; ; op = op.getChildOperators().get(0)) {
+    for (; op.getChildOperators().size() > 0 ; op = op.getChildOperators().get(0)) {
       if (op instanceof SelectOperator) {
         if (!checkExpressions((SelectOperator) op)) {
           return null;
