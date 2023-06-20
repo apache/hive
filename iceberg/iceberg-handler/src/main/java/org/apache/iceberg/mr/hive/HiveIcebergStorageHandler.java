@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -108,6 +109,7 @@ import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
@@ -715,12 +717,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           final ExecutorService deleteExecutorService =
               getDeleteExecutorService(hmsTable.getCompleteName(), numThreads);
           try {
-            icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis())
-                .executeDeleteWith(deleteExecutorService).commit();
+            if (expireSnapshotsSpec.isExpireByIds()) {
+              expireSnapshotByIds(icebergTable, expireSnapshotsSpec.getIdsToExpire(), deleteExecutorService);
+            } else {
+              icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis())
+                  .executeDeleteWith(deleteExecutorService).commit();
+            }
           } finally {
             deleteExecutorService.shutdown();
           }
         } else {
+          if (expireSnapshotsSpec.isExpireByIds()) {
+            expireSnapshotByIds(icebergTable, expireSnapshotsSpec.getIdsToExpire(), null);
+          }
           icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
         }
         break;
@@ -734,6 +743,22 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       default:
         throw new UnsupportedOperationException(
             String.format("Operation type %s is not supported", executeSpec.getOperationType().name()));
+    }
+  }
+
+  private static void expireSnapshotByIds(Table icebergTable, String[] idsToExpire,
+      ExecutorService deleteExecutorService) {
+    if (idsToExpire.length != 0) {
+      ExpireSnapshots expireSnapshots = icebergTable.expireSnapshots();
+      for (String id : idsToExpire) {
+        expireSnapshots.expireSnapshotId(Long.parseLong(id));
+      }
+      LOG.info("Expiring snapshot on {} for snapshot Ids: {}", icebergTable.name(), Arrays.toString(idsToExpire));
+      if (deleteExecutorService != null) {
+        expireSnapshots.executeDeleteWith(deleteExecutorService).commit();
+      } else {
+        expireSnapshots.commit();
+      }
     }
   }
 

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.execute;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
@@ -89,8 +90,13 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
 
       ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
           .getLocalTimeZone();
-      TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(child.getText()), timeZone);
-      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
+      String childText = PlanUtils.stripQuotes(child.getText().trim());
+      if (childText.contains(",") || StringUtils.isNumeric(childText)) {
+         spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(childText));
+      } else {
+        TimestampTZ time = TimestampTZUtil.parse(childText, timeZone);
+        spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
+      }
       desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
     } else if (HiveParser.KW_SET_CURRENT_SNAPSHOT == executeCommandType.getType()) {
       ASTNode child = (ASTNode) command.getChild(1);

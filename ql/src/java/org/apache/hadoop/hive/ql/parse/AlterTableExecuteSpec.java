@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
 
+import java.util.Arrays;
+
 /**
  * Execute operation specification. It stores the type of the operation and its parameters.
  * The following operations are supported
@@ -102,18 +104,34 @@ public class AlterTableExecuteSpec<T> {
    * </ul>
    */
   public static class ExpireSnapshotsSpec {
-    private final long timestampMillis;
+    private long timestampMillis = -1L;
+    private String[] idsToExpire = null;
 
     public ExpireSnapshotsSpec(long timestampMillis) {
       this.timestampMillis = timestampMillis;
+    }
+
+    public ExpireSnapshotsSpec(String ids) {
+      this.idsToExpire = ids.split(",");
     }
 
     public Long getTimestampMillis() {
       return timestampMillis;
     }
 
+    public String[] getIdsToExpire() {
+      return idsToExpire;
+    }
+
+    public boolean isExpireByIds() {
+      return idsToExpire != null;
+    }
+
     @Override
     public String toString() {
+      if (isExpireByIds()) {
+        return MoreObjects.toStringHelper(this).add("idsToExpire", Arrays.toString(idsToExpire)).toString();
+      }
       return MoreObjects.toStringHelper(this).add("timestampMillis", timestampMillis).toString();
     }
   }
