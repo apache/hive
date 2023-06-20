@@ -355,7 +355,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void appendFiles(org.apache.hadoop.hive.metastore.api.Table table, URI fromURI, boolean isOverwrite)
       throws SemanticException {
     Table icebergTbl = IcebergTableUtil.getTable(conf, table);
-    String format = table.getParameters().get("write.format.default");
+    String format = table.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT);
     HiveTableUtil.appendFiles(fromURI, format, icebergTbl, isOverwrite, conf);
   }
 

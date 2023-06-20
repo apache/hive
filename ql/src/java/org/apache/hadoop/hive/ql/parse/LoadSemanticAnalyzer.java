@@ -68,7 +68,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEZ_FOR_LOAD_NON_NATIVE_TABLE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_LOAD_DATA_USE_NATIVE_API;
 
 /**
  * LoadSemanticAnalyzer.
@@ -299,8 +299,8 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     }
     if (ts.tableHandle.isNonNative()) {
       HiveStorageHandler storageHandler = ts.tableHandle.getStorageHandler();
-      boolean isTezJob = conf.getBoolVar(HIVE_TEZ_FOR_LOAD_NON_NATIVE_TABLE);
-      if (!isTezJob && storageHandler.supportsAppendData(ts.tableHandle.getTTable())) {
+      boolean isUseNativeApi = conf.getBoolVar(HIVE_LOAD_DATA_USE_NATIVE_API);
+      if (isUseNativeApi && storageHandler.supportsAppendData(ts.tableHandle.getTTable())) {
         LoadTableDesc loadTableWork =
             new LoadTableDesc(new Path(fromURI), ts.tableHandle, isOverWrite, true, isOverWrite);
         Task<?> childTask =

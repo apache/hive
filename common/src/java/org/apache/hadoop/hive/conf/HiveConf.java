@@ -795,8 +795,9 @@ public class HiveConf extends Configuration {
         "String used as a file extension for output files. \n" +
         "If not set, defaults to the codec extension for text files (e.g. \".gz\"), or no extension otherwise."),
 
-    HIVE_TEZ_FOR_LOAD_NON_NATIVE_TABLE("hive.tez.for.load.non.native.table", false,
-        "Whether to use a Tez job always for load queries to non-native table(like iceberg) even if they support appending data files directly"),
+    HIVE_LOAD_DATA_USE_NATIVE_API("hive.load.data.use.native.api", true,
+        "Whether to use a native APIs for load queries to non-native table(like iceberg), if false uses a Tez job for" +
+            " load queries"),
 
     HIVE_IN_TEST("hive.in.test", false, "internal usage only, true in test mode", true),
     HIVE_IN_TEST_SSL("hive.in.ssl.test", false, "internal usage only, true in SSL test mode", true),

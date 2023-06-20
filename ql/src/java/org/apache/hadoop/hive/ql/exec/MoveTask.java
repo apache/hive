@@ -75,7 +75,6 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.util.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -542,17 +541,18 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
-  @Nullable
   private Integer executeIcebergLoad() {
-    if (work != null && work.getLoadTableWork() != null && work.getLoadTableWork().isUseAppendForLoad()) {
-      try {
-        work.getLoadTableWork().getMdTable().getStorageHandler()
-            .appendFiles(work.getLoadTableWork().getMdTable().getTTable(),
-                work.getLoadTableWork().getSourcePath().toUri(),
-                work.getLoadTableWork().getLoadFileType() == LoadFileType.REPLACE_ALL);
-        return 0;
-      } catch (HiveException he) {
-        return processHiveException(he);
+    if (work != null) {
+      final LoadTableDesc loadTableWork = work.getLoadTableWork();
+      if (loadTableWork != null && loadTableWork.isUseAppendForLoad()) {
+        try {
+          loadTableWork.getMdTable().getStorageHandler()
+              .appendFiles(loadTableWork.getMdTable().getTTable(), loadTableWork.getSourcePath().toUri(),
+                  loadTableWork.getLoadFileType() == LoadFileType.REPLACE_ALL);
+          return 0;
+        } catch (HiveException he) {
+          return processHiveException(he);
+        }
       }
     }
     return null;
