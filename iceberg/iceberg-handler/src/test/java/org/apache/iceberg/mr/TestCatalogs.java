@@ -258,9 +258,7 @@ public class TestCatalogs {
   @Test
   public void testLoadCatalogUnknown() {
     String catalogName = "barCatalog";
-    conf.set(
-        InputFormatConfig.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE),
-        "fooType");
+    conf.set(InputFormatConfig.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE), "fooType");
 
     Assertions.assertThatThrownBy(() -> Catalogs.loadCatalog(conf, catalogName))
         .isInstanceOf(UnsupportedOperationException.class)

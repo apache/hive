@@ -254,14 +254,15 @@ public final class Catalogs {
   private static Map<String, String> getCatalogProperties(
       Configuration conf, String catalogName, String catalogType) {
     Map<String, String> catalogProperties = Maps.newHashMap();
+    String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
     conf.forEach(config -> {
       if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
         catalogProperties.putIfAbsent(
                 config.getKey().substring(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX.length()),
                 config.getValue());
-      } else if (config.getKey().startsWith(InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName)) {
+      } else if (config.getKey().startsWith(keyPrefix)) {
         catalogProperties.put(
-                config.getKey().substring((InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName).length() + 1),
+                config.getKey().substring(keyPrefix.length() + 1),
                 config.getValue());
       }
     });

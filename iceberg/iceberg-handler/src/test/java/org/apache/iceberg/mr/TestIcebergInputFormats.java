@@ -66,6 +66,7 @@ import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -210,10 +211,7 @@ public class TestIcebergInputFormats {
   // and for ORC and PARQUET, IcebergInputFormat class ignores residuals
   // '... scan.filter(filter).ignoreResiduals()' and it is not compatible with this test
   public void testFailedResidualFiltering() throws Exception {
-    // Vectorization is not yet supported for AVRO
-    if (this.fileFormat.equals(FileFormat.AVRO)) {
-      return;
-    }
+    Assume.assumeTrue("Vectorization is not yet supported for AVRO", this.fileFormat != FileFormat.AVRO);
 
     helper.createTable();
 

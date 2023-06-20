@@ -177,7 +177,6 @@ public class MetastoreLock implements HiveLock {
     }
   }
 
-  // TODO add lock heart beating for cases where default lock timeout is too low.
   @SuppressWarnings("checkstyle:CyclomaticComplexity")
   private long acquireLock() throws LockException {
     LockInfo lockInfo = createLock();
@@ -454,10 +453,6 @@ public class MetastoreLock implements HiveLock {
         }
       }
     }
-  }
-
-  public String getTableName() {
-    return tableName;
   }
 
   private static class Heartbeat implements Runnable {
