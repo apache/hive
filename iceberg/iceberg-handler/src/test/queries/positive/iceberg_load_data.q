@@ -20,11 +20,11 @@ STORED AS AVRO;
 explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 explain analyze LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 
-set hive.tez.for.load.non.native.table=true;
+set hive.load.data.use.native.api=false;
 
 explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 
-set hive.tez.for.load.non.native.table=false;
+set hive.load.data.use.native.api=true;
 
 LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 

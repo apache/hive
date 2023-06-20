@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -364,11 +365,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       return 0;
     }
 
-    Integer x = executeIcebergLoad();
-    if (x != null) {
-      return x;
-    }
-
     try (LocalTableLock lock = acquireLockForFileMove(work.getLoadTableWork())) {
       if (checkAndCommitNatively(work, conf)) {
         return 0;
@@ -541,18 +537,14 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
-  private Integer executeIcebergLoad() {
+  private Integer executeIcebergLoad() throws SemanticException {
     if (work != null) {
       final LoadTableDesc loadTableWork = work.getLoadTableWork();
       if (loadTableWork != null && loadTableWork.isUseAppendForLoad()) {
-        try {
-          loadTableWork.getMdTable().getStorageHandler()
-              .appendFiles(loadTableWork.getMdTable().getTTable(), loadTableWork.getSourcePath().toUri(),
-                  loadTableWork.getLoadFileType() == LoadFileType.REPLACE_ALL);
-          return 0;
-        } catch (HiveException he) {
-          return processHiveException(he);
-        }
+        loadTableWork.getMdTable().getStorageHandler()
+            .appendFiles(loadTableWork.getMdTable().getTTable(), loadTableWork.getSourcePath().toUri(),
+                loadTableWork.getLoadFileType() == LoadFileType.REPLACE_ALL);
+        return 0;
       }
     }
     return null;
@@ -1081,7 +1073,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
    * @return Returns <code>true</code> if the commit was successfully executed
    * @throws HiveException If we tried to commit, but there was an error during the process
    */
-  private static boolean checkAndCommitNatively(MoveWork moveWork, Configuration configuration) throws HiveException {
+  private boolean checkAndCommitNatively(MoveWork moveWork, Configuration configuration) throws HiveException {
+
+    Integer x = executeIcebergLoad();
+    if (x != null) {
+      return true;
+    }
+
     String storageHandlerClass = null;
     Properties commitProperties = null;
     boolean overwrite = false;
