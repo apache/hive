@@ -1464,8 +1464,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public List<String> showPartitions(DDLOperationContext context, org.apache.hadoop.hive.ql.metadata.Table hmstbl)
       throws HiveException {
     Configuration confs = context.getConf();
-    Path path = new Path(hmstbl.getParameters().get(Constants.METADATA_LOCATION));
-    JobConf job = HiveTableUtil.getPartJobConf(confs, path, hmstbl);
+    JobConf job = HiveTableUtil.getPartJobConf(confs, hmstbl);
     Class<? extends InputFormat> formatter = hmstbl.getInputFormatClass();
 
     try {
@@ -1473,7 +1472,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       InputSplit[] splits = inputFormat.getSplits(job, 1);
       try (RecordReader<WritableComparable, Writable> reader = inputFormat.getRecordReader(splits[0], job,
           Reporter.NULL)) {
-        return getParts(context, job, reader, hmstbl);
+        return getPartitions(context, job, reader, hmstbl);
       }
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR,
@@ -1482,7 +1481,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
-  private List<String> getParts(DDLOperationContext context, Configuration job,
+  private List<String> getPartitions(DDLOperationContext context, Configuration job,
       RecordReader<WritableComparable, Writable> reader, org.apache.hadoop.hive.ql.metadata.Table hmstbl)
       throws Exception {
 
@@ -1497,11 +1496,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       Deserializer currSerDe = metaDataPartTable.getDeserializer();
       ObjectMapper mapper = new ObjectMapper();
       Table tbl = getTable(hmstbl);
-
-
       while (reader.next(key, value)) {
         String[] row =
-            fetcher.convert(currSerDe.deserialize(value), currSerDe.getObjectInspector()).toString().split("\t");
+            fetcher.convert(currSerDe.deserialize(value), currSerDe.getObjectInspector())
+                .toString().split("\t");
         parts.add(HiveTableUtil.getParseData(row[PART_IDX], row[SPEC_IDX], mapper, tbl.spec().specId()));
       }
     }

@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -49,12 +50,11 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.hive.metastore.utils.FileUtils;
-import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFiles;
@@ -87,7 +87,6 @@ public class HiveTableUtil {
   private static final Logger LOG = LoggerFactory.getLogger(HiveTableUtil.class);
 
   static final String TABLE_EXTENSION = ".table";
-  static final String MAPRED_INPUT_DIR = "mapred.input.dir";
 
   private HiveTableUtil() {
   }
@@ -276,18 +275,20 @@ public class HiveTableUtil {
       throws JsonProcessingException {
     Map<String, String> map = mapper.readValue(parseData, Map.class);
     String partString =
-        map.entrySet().stream().filter(entry -> entry.getValue() != null).map(java.lang.Object::toString)
+        map.entrySet().stream()
+            .filter(entry -> entry.getValue() != null)
+            .map(java.lang.Object::toString)
             .collect(Collectors.joining("/"));
     String currentSpecMarker = currentSpecId.toString().equals(specId) ? "*" : "";
-    return String.format("Spec-id=%s%s/%s", specId, currentSpecMarker, partString);
+    return String.format("{Spec-id=%s}%s:%s", specId, currentSpecMarker, partString);
   }
 
-  static JobConf getPartJobConf(Configuration confs, Path path, org.apache.hadoop.hive.ql.metadata.Table tbl) {
+  static JobConf getPartJobConf(Configuration confs, org.apache.hadoop.hive.ql.metadata.Table tbl) {
     JobConf job = new JobConf(confs);
-    job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, "partition,record_count,file_count,spec_id");
+    job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, Constants.ICEBERG_PARTITION_TABLE_SCHEMA);
     job.set(InputFormatConfig.TABLE_LOCATION, tbl.getPath().toString());
     job.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.getFullyQualifiedName() + ".partitions");
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE, "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe");
+    HiveConf.setVar(job, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE, Constants.DELIMITED_JSON_SERDE);
     HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     return job;
   }
