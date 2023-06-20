@@ -72,14 +72,12 @@ public class CachedClientPool implements ClientPool<IMetaStoreClient, TException
   private static Cache<Key, HiveClientPool> clientPoolCache;
 
   private final Configuration conf;
-  private final String metastoreUri;
   private final int clientPoolSize;
   private final long evictionInterval;
   private final Key key;
 
   public CachedClientPool(Configuration conf, Map<String, String> properties) {
     this.conf = conf;
-    this.metastoreUri = conf.get(HiveConf.ConfVars.METASTOREURIS.varname, "");
     this.clientPoolSize = PropertyUtil.propertyAsInt(properties,
             CatalogProperties.CLIENT_POOL_SIZE,
             CatalogProperties.CLIENT_POOL_SIZE_DEFAULT);
