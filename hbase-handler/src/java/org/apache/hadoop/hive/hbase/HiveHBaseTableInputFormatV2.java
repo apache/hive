@@ -94,7 +94,7 @@ public class HiveHBaseTableInputFormatV2 implements InputFormat<ImmutableBytesWr
       } catch (InterruptedException e) {
         delegate.closeTableDelegate(); // Free up the HTable connections
         conn.close();
-        throw new IOException("Failed to initialize RecordReader", e);
+        throw new IOException("Failed to initialize RecordReader: ", e);
       }
     }
 
@@ -237,22 +237,27 @@ public class HiveHBaseTableInputFormatV2 implements InputFormat<ImmutableBytesWr
     // BA representation of constant of filter condition.
     // We can do other comparisons only if storage format in hbase is either binary
     // or we are dealing with string types since there lexicographic ordering will suffice.
+    String genericUDFOPEqualClass = "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual";
+    String genericUDFOPEqualOrGreaterThanClass = "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan";
+    String genericUDFOPEqualOrLessThanClass = "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan";
+    String genericUDFOPLessThanClass = "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan";
+    String genericUDFOPGreaterThanClass = "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan";
     if (isKeyComparable) {
-      analyzer.addComparisonOp(keyColumnName, "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual",
-          "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan",
-          "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan",
-          "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan",
-          "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan");
+      analyzer.addComparisonOp(keyColumnName, genericUDFOPEqualClass,
+              genericUDFOPEqualOrGreaterThanClass,
+              genericUDFOPEqualOrLessThanClass,
+              genericUDFOPLessThanClass,
+              genericUDFOPGreaterThanClass);
     } else {
-      analyzer.addComparisonOp(keyColumnName, "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual");
+      analyzer.addComparisonOp(keyColumnName, genericUDFOPEqualClass);
     }
 
     if (timestampColumn != null) {
-      analyzer.addComparisonOp(timestampColumn, "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual",
-          "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan",
-          "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan",
-          "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan",
-          "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan");
+      analyzer.addComparisonOp(timestampColumn, genericUDFOPEqualClass,
+              genericUDFOPEqualOrGreaterThanClass,
+              genericUDFOPEqualOrLessThanClass,
+              genericUDFOPLessThanClass,
+              genericUDFOPGreaterThanClass);
     }
 
     return analyzer;
