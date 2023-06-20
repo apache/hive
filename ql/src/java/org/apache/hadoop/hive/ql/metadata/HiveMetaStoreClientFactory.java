@@ -48,7 +48,7 @@ public interface HiveMetaStoreClientFactory {
    *          A container for storing entry and exit timestamps of IMetaStoreClient method
    *          invocations.
    * @return IMetaStoreClient An implementation of IMetaStoreClient.
-   * @throws MetaException
+   * @throws MetaException if this method fails to create IMetaStoreClient
    */
   IMetaStoreClient createMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader,
       boolean allowEmbedded, ConcurrentHashMap<String, Long> metaCallTimeMap) throws MetaException;
