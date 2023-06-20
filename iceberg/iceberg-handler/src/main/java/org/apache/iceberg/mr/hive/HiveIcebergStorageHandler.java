@@ -439,7 +439,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     if (canSetColStatistics(hmsTable)) {
       Path statsPath = getStatsPath(table);
-      try (FileSystem fs = statsPath.getFileSystem(conf)) {
+      try {
+        FileSystem fs = statsPath.getFileSystem(conf);
         if (fs.exists(statsPath)) {
           return true;
         }
@@ -496,12 +497,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private void invalidateStats(Path statsPath) {
-    try (FileSystem fs = statsPath.getFileSystem(conf)) {
+    try {
+      FileSystem fs = statsPath.getFileSystem(conf);
       if (fs.exists(statsPath)) {
         fs.delete(statsPath, true);
       }
     } catch (IOException e) {
-      LOG.error("Failed to invalidate stale column stats: {}", e);
+      LOG.error("Failed to invalidate stale column stats: {}", e.getMessage());
     }
   }
 
