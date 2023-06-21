@@ -97,12 +97,11 @@ public class MetastoreLock implements HiveLock {
   private Heartbeat heartbeat = null;
 
   public MetastoreLock(Configuration conf, ClientPool<IMetaStoreClient, TException> metaClients,
-                       String catalogName, String databaseName, String tableName, Optional<Long> txnId) {
+                       String catalogName, String databaseName, String tableName) {
     this.metaClients = metaClients;
     this.fullName = catalogName + "." + databaseName + "." + tableName;
     this.databaseName = databaseName;
     this.tableName = tableName;
-    this.hmsLockId = txnId;
 
     this.lockAcquireTimeout =
         conf.getLong(HIVE_ACQUIRE_LOCK_TIMEOUT_MS, HIVE_ACQUIRE_LOCK_TIMEOUT_MS_DEFAULT);
@@ -179,6 +178,10 @@ public class MetastoreLock implements HiveLock {
 
   @SuppressWarnings("checkstyle:CyclomaticComplexity")
   private long acquireLock() throws LockException {
+    if (hmsLockId.isPresent()) {
+      throw new IllegalArgumentException(String.format("HMS lock ID=%s already acquired for table %s.%s",
+          hmsLockId.get(), databaseName, tableName));
+    }
     LockInfo lockInfo = createLock();
 
     final long start = System.currentTimeMillis();

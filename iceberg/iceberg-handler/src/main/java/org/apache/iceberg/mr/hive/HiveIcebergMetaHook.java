@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
@@ -103,7 +102,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.util.Pair;
 import org.apache.thrift.TException;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -326,11 +324,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           context.getProperties().get(OLD_TABLE_NAME)).toString());
     }
     if (commitLock == null) {
-
-      Optional<Long> txnId = getTxnId();
-
       commitLock = new MetastoreLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
-          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(), hmsTable.getTableName(), txnId);
+          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(), hmsTable.getTableName());
     }
 
     try {
@@ -340,23 +335,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       commitLock.unlock();
       throw new MetaException(StringUtils.stringifyException(e));
     }
-  }
-
-  @NotNull
-  private static Optional<Long> getTxnId() {
-    Optional<Long> txnId;
-    txnId = Optional.empty();
-
-    SessionState sessionState = SessionState.get();
-
-    if (sessionState != null) {
-      HiveTxnManager txnMgr = sessionState.getTxnMgr();
-      if (txnMgr != null) {
-        txnId = Optional.of(txnMgr.getCurrentTxnId());
-      }
-    }
-
-    return txnId;
   }
 
   private void doPreAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
