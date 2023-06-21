@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -123,7 +124,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
-import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -5707,7 +5707,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private static HiveMetaStoreClientFactory createMetaStoreClientFactory(HiveConf conf) throws
           MetaException {
-    String metaStoreClientFactoryClassName = conf.getVar(HiveConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS);
+    String metaStoreClientFactoryClassName = MetastoreConf.getVar(conf,
+        MetastoreConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS);
 
     try {
       Class<? extends HiveMetaStoreClientFactory> factoryClass =
