@@ -43,6 +43,8 @@ import org.apache.parquet.hadoop.ParquetOutputFormat;
 
 public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Container<Record>>,
     HiveOutputFormat<NullWritable, Container<Record>> {
+  // There can be multiple MROutput present for a single operator
+  public static final String ICEBERG_OUTPUT_ID = "iceberg.output.id";
 
   @Override
   public FileSinkOperator.RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath, Class valueClass,
@@ -72,6 +74,7 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
         .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
         .tableName(tableName)
         .attemptID(taskAttemptID)
+        .outputId(jc.get(ICEBERG_OUTPUT_ID))
         .operation(HiveCustomStorageHandlerUtils.getWriteOperation(jc::get, tableName))
         .hasOrdering(HiveCustomStorageHandlerUtils.getWriteOperationIsSorted(jc::get, tableName))
         .isMergeTask(HiveCustomStorageHandlerUtils.isMergeTaskEnabled(jc::get, tableName))
