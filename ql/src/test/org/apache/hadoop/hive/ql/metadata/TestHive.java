@@ -1085,7 +1085,7 @@ public class TestHive {
   public void testLoadingHiveMetaStoreClientFactory() throws Throwable {
     String factoryClassName = SessionHiveMetaStoreClientFactory.class.getName();
     HiveConf conf = new HiveConf();
-    conf.setVar(ConfVars.METASTORE_CLIENT_FACTORY_CLASS, factoryClassName);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS, factoryClassName);
     // Make sure we instantiate the embedded version
     // so the implementation chosen is SessionHiveMetaStoreClient, not a retryable version of it.
     conf.setBoolVar(ConfVars.METASTORE_FASTPATH, true);
@@ -1104,7 +1104,7 @@ public class TestHive {
     // Intentionally invalid class
     String factoryClassName = String.class.getName();
     HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS, factoryClassName);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS, factoryClassName);
     // The current object was constructed in setUp() before we got here
     // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
     Hive.closeCurrent();
