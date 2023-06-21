@@ -537,19 +537,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
-  private Integer executeIcebergLoad() throws SemanticException {
-    if (work != null) {
-      final LoadTableDesc loadTableWork = work.getLoadTableWork();
-      if (loadTableWork != null && loadTableWork.isUseAppendForLoad()) {
-        loadTableWork.getMdTable().getStorageHandler()
-            .appendFiles(loadTableWork.getMdTable().getTTable(), loadTableWork.getSourcePath().toUri(),
-                loadTableWork.getLoadFileType() == LoadFileType.REPLACE_ALL);
-        return 0;
-      }
-    }
-    return null;
-  }
-
   private int processHiveException(HiveException he) {
     int errorCode = 1;
 
@@ -1074,17 +1061,17 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
    * @throws HiveException If we tried to commit, but there was an error during the process
    */
   private boolean checkAndCommitNatively(MoveWork moveWork, Configuration configuration) throws HiveException {
-
-    Integer x = executeIcebergLoad();
-    if (x != null) {
-      return true;
-    }
-
     String storageHandlerClass = null;
     Properties commitProperties = null;
     boolean overwrite = false;
-
-    if (moveWork.getLoadTableWork() != null) {
+    LoadTableDesc loadTableWork = moveWork.getLoadTableWork();
+    if (loadTableWork != null) {
+      if (loadTableWork.isUseAppendForLoad()) {
+        loadTableWork.getMdTable().getStorageHandler()
+            .appendFiles(loadTableWork.getMdTable().getTTable(), loadTableWork.getSourcePath().toUri(),
+                loadTableWork.getLoadFileType() == LoadFileType.REPLACE_ALL);
+        return true;
+      }
       // Get the info from the table data
       TableDesc tableDesc = moveWork.getLoadTableWork().getTable();
       storageHandlerClass = tableDesc.getProperties().getProperty(
