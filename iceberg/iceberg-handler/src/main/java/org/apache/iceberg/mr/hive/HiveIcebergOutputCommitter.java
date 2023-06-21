@@ -116,8 +116,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     TaskAttemptID attemptID = context.getTaskAttemptID();
     JobConf jobConf = context.getJobConf();
+    String outputId = jobConf.get(HiveIcebergOutputFormat.ICEBERG_OUTPUT_ID);
     Set<String> outputs = HiveIcebergStorageHandler.outputTables(context.getJobConf());
-    Map<String, List<HiveIcebergWriter>> writers = Optional.ofNullable(WriterRegistry.writers(attemptID))
+    Map<String, List<HiveIcebergWriter>> writers = Optional.ofNullable(WriterRegistry.writers(attemptID, outputId))
         .orElseGet(() -> {
           LOG.info("CommitTask found no writers for output tables: {}, attemptID: {}", outputs, attemptID);
           return ImmutableMap.of();
@@ -162,7 +163,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
 
     // remove the writer to release the object
-    WriterRegistry.removeWriters(attemptID);
+    WriterRegistry.removeWriters(attemptID, outputId);
   }
 
   /**
@@ -175,7 +176,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     TaskAttemptContext context = TezUtil.enrichContextWithAttemptWrapper(originalContext);
 
     // Clean up writer data from the local store
-    Map<String, List<HiveIcebergWriter>> writerMap = WriterRegistry.removeWriters(context.getTaskAttemptID());
+    Map<String, List<HiveIcebergWriter>> writerMap = WriterRegistry.removeWriters(context.getTaskAttemptID(),
+            originalContext.getJobConf().get(HiveIcebergOutputFormat.ICEBERG_OUTPUT_ID));
 
     // Remove files if it was not done already
     if (writerMap != null) {

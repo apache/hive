@@ -45,6 +45,8 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
     HiveOutputFormat<NullWritable, Container<Record>> {
   private static final String DELETE_FILE_THREAD_POOL_SIZE = "iceberg.delete.file.thread.pool.size";
   private static final int DELETE_FILE_THREAD_POOL_SIZE_DEFAULT = 10;
+  // There can be multiple MROutput present for a single operator
+  public static final String ICEBERG_OUTPUT_ID = "iceberg.output.id";
 
   @Override
   public FileSinkOperator.RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath, Class valueClass,
@@ -75,6 +77,7 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
         .queryId(jc.get(HiveConf.ConfVars.HIVEQUERYID.varname))
         .tableName(tableName)
         .attemptID(taskAttemptID)
+        .outputId(jc.get(ICEBERG_OUTPUT_ID))
         .poolSize(poolSize)
         .operation(HiveCustomStorageHandlerUtils.getWriteOperation(jc, tableName))
         .build();

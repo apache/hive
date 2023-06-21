@@ -41,6 +41,7 @@ public class WriterBuilder {
   private final Table table;
   private String tableName;
   private TaskAttemptID attemptID;
+  private String outputId;
   private String queryId;
   private int poolSize;
   private Operation operation;
@@ -66,6 +67,11 @@ public class WriterBuilder {
 
   public WriterBuilder attemptID(TaskAttemptID newAttemptID) {
     this.attemptID = newAttemptID;
+    return this;
+  }
+
+  public WriterBuilder outputId(String identifier) {
+    this.outputId = identifier;
     return this;
   }
 
@@ -136,7 +142,7 @@ public class WriterBuilder {
                 operation.name());
     }
 
-    WriterRegistry.registerWriter(attemptID, tableName, writer);
+    WriterRegistry.registerWriter(attemptID, outputId, tableName, writer);
     return writer;
   }
 }

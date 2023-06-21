@@ -21,31 +21,63 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 
 public class WriterRegistry {
-  private static final Map<TaskAttemptID, Map<String, List<HiveIcebergWriter>>> writers = Maps.newConcurrentMap();
+  private static final Map<WriterKey, Map<String, List<HiveIcebergWriter>>> writers = Maps.newConcurrentMap();
 
   private WriterRegistry() {
   }
 
-  public static Map<String, List<HiveIcebergWriter>> removeWriters(TaskAttemptID taskAttemptID) {
-    return writers.remove(taskAttemptID);
+  public static Map<String, List<HiveIcebergWriter>> removeWriters(TaskAttemptID taskAttemptID, String outputId) {
+    return writers.remove(new WriterKey(taskAttemptID, outputId));
   }
 
-  public static void registerWriter(TaskAttemptID taskAttemptID, String tableName, HiveIcebergWriter writer) {
-    writers.putIfAbsent(taskAttemptID, Maps.newConcurrentMap());
+  public static void registerWriter(TaskAttemptID taskAttemptID,
+                                    String outputId,
+                                    String tableName,
+                                    HiveIcebergWriter writer) {
+    WriterKey key = new WriterKey(taskAttemptID, outputId);
+    writers.putIfAbsent(key, Maps.newConcurrentMap());
 
-    Map<String, List<HiveIcebergWriter>> writersOfTableMap = writers.get(taskAttemptID);
+    Map<String, List<HiveIcebergWriter>> writersOfTableMap = writers.get(key);
     writersOfTableMap.putIfAbsent(tableName, Lists.newArrayList());
 
     List<HiveIcebergWriter> writerList = writersOfTableMap.get(tableName);
     writerList.add(writer);
   }
 
-  public static Map<String, List<HiveIcebergWriter>> writers(TaskAttemptID taskAttemptID) {
-    return writers.get(taskAttemptID);
+  public static Map<String, List<HiveIcebergWriter>> writers(TaskAttemptID taskAttemptID, String outputId) {
+    return writers.get(new WriterKey(taskAttemptID, outputId));
+  }
+
+  static class WriterKey {
+    private final TaskAttemptID taskAttemptID;
+    private final String outputId;
+
+    WriterKey(TaskAttemptID taskAttemptID, String outputId) {
+      this.taskAttemptID = taskAttemptID;
+      this.outputId = outputId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      WriterKey writerKey = (WriterKey) o;
+      return taskAttemptID.equals(writerKey.taskAttemptID) && Objects.equals(outputId, writerKey.outputId);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(taskAttemptID, outputId);
+    }
   }
 }
