@@ -195,6 +195,7 @@ public class MetastoreConf {
       ConfVars.KERBEROS_PRINCIPAL,
       ConfVars.USE_THRIFT_SASL,
       ConfVars.METASTORE_CLIENT_AUTH_MODE,
+      ConfVars.METASTORE_CLIENT_FACTORY_CLASS,
       ConfVars.METASTORE_CLIENT_PLAIN_USERNAME,
       ConfVars.CACHE_PINOBJTYPES,
       ConfVars.CONNECTION_POOLING_TYPE,
@@ -1728,6 +1729,10 @@ public class MetastoreConf {
                     " and password. Any other value is ignored right now but may be used later."
                 + "If JWT- Supported only in HTTP transport mode. If set, HMS Client will pick the value of JWT from "
                 + "environment variable HMS_JWT and set it in Authorization header in http request"),
+    METASTORE_CLIENT_FACTORY_CLASS("metastore.client.factory.class",
+        "hive.metastore.client.factory.class",
+        "org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClientFactory",
+        "The name of the factory class that produces objects implementing the IMetaStoreClient interface."),
     METASTORE_CLIENT_ADDITIONAL_HEADERS("metastore.client.http.additional.headers",
         "hive.metastore.client.http.additional.headers", "",
         "Comma separated list of headers which are passed to the metastore service in the http headers"),

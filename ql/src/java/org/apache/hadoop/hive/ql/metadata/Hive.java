@@ -139,6 +139,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
+import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -6024,7 +6025,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private static HiveMetaStoreClientFactory createMetaStoreClientFactory(HiveConf conf) throws
           MetaException {
-    String metaStoreClientFactoryClassName = conf.getVar(HiveConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS);
+    String metaStoreClientFactoryClassName = MetastoreConf.getVar(conf,
+        MetastoreConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS);
 
     try {
       Class<? extends HiveMetaStoreClientFactory> factoryClass =
