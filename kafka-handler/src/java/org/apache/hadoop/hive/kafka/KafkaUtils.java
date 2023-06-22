@@ -61,7 +61,6 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -436,9 +435,9 @@ final class KafkaUtils {
    * @return the security protocol if one is defined in the properties and null otherwise.
    */
   static SecurityProtocol securityProtocol(Properties props) {
-    List<String> securityProtocolConfigs = Arrays.asList(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,
+    String[] securityProtocolConfigs = new String[] { CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,
         CONSUMER_CONFIGURATION_PREFIX + "." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,
-        PRODUCER_CONFIGURATION_PREFIX + "." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
+        PRODUCER_CONFIGURATION_PREFIX + "." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG };
     for (String c : securityProtocolConfigs) {
       String v = props.getProperty(c);
       if (v != null && !v.isEmpty()) {
