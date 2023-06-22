@@ -140,9 +140,12 @@ class KafkaBrokerResource extends ExternalResource {
   }
 
   Path getTruststorePath() {
-    return truststoreFile != null ? truststoreFile.toPath() : null;
+    if (truststoreFile == null) {
+      throw new IllegalStateException("Truststore is available only when SASL is in use");
+    }
+    return truststoreFile.toPath();
   }
-  
+
   String getTruststorePwd() {
     return TestSslUtils.TRUST_STORE_PASSWORD;
   }
