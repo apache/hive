@@ -16,6 +16,7 @@
  */
 package org.apache.hadoop.hive.kafka;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -29,15 +30,12 @@ import org.apache.hadoop.minikdc.MiniKdc;
 import org.apache.hadoop.security.token.Token;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.security.auth.SecurityProtocol;
-
-import com.google.common.collect.ImmutableMap;
-
-import javax.crypto.spec.SecretKeySpec;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;

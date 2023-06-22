@@ -28,7 +28,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.kafka.common.network.Mode;
 import org.apache.kafka.common.utils.Time;
 import org.apache.kafka.test.TestSslUtils;
-
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
