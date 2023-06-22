@@ -119,6 +119,7 @@ import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.misc.hooks.InsertCommitHookDesc;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
+import org.apache.hadoop.hive.ql.ddl.table.convert.AlterTableConvertOperation;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.preinsert.PreInsertTableDesc;
@@ -13967,7 +13968,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
           isTransactional, isManaged, new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()}, isDefaultTableTypeChanged);
       tblProps.put(hive_metastoreConstants.TABLE_IS_CTLT, "true");
-      isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
+      isExt = isIcebergTable(tblProps) ||
+          isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
 
@@ -14078,6 +14080,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unrecognized command.");
     }
     return null;
+  }
+
+  private static boolean isIcebergTable(Map<String, String> tblProps) {
+    return AlterTableConvertOperation.ConversionFormats.ICEBERG.properties().get(META_TABLE_STORAGE)
+        .equalsIgnoreCase(tblProps.get(META_TABLE_STORAGE));
   }
 
   private void validateStorageFormat(

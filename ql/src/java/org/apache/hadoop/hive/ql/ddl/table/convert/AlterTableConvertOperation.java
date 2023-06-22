@@ -38,7 +38,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE
  */
 public class AlterTableConvertOperation extends AbstractAlterTableOperation<AlterTableConvertDesc> {
 
-  private enum ConversionFormats {
+  public enum ConversionFormats {
     ICEBERG(ImmutableMap.of(META_TABLE_STORAGE, "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler")),
     ACID(ImmutableMap.of(TABLE_IS_TRANSACTIONAL, "true", TABLE_TRANSACTIONAL_PROPERTIES,
         DEFAULT_TRANSACTIONAL_PROPERTY));
