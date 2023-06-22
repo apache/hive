@@ -4899,7 +4899,7 @@ public class HiveConf extends Configuration {
         "(size/arena_count) bytes. This size must be <= 1Gb and >= max allocation; if it is\n" +
         "not the case, an adjusted size will be used. Using powers of 2 is recommended."),
     LLAP_IO_MEMORY_MAX_SIZE("hive.llap.io.memory.size", "1Gb", new SizeValidator(),
-        "Maximum size for IO allocator or ORC low-level cache."),
+        "Maximum size for IO allocator or ORC low-level cache.", "hive.llap.io.cache.orc.size"),
     LLAP_ALLOCATOR_DIRECT("hive.llap.io.allocator.direct", true,
         "Whether ORC low-level cache should use direct allocation."),
     LLAP_ALLOCATOR_PREALLOCATE("hive.llap.io.allocator.preallocate", true,
