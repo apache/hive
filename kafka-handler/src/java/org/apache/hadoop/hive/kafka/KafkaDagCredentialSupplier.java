@@ -122,9 +122,9 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
     config.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
 
     LOG.debug("Jaas config for requesting kafka credentials: {}", jaasConfig);
-    Configuration copy = new Configuration(conf);
-    tableProperties.stringPropertyNames().forEach((key) -> copy.set(key, tableProperties.getProperty(key)));
-    KafkaUtils.setupKafkaSslProperties(copy, config);
+    Configuration confCopy = new Configuration(conf);
+    tableProperties.stringPropertyNames().forEach((key) -> confCopy.set(key, tableProperties.getProperty(key)));
+    KafkaUtils.setupKafkaSslProperties(confCopy, config);
     CreateDelegationTokenOptions createDelegationTokenOptions = new CreateDelegationTokenOptions();
     try (AdminClient admin = AdminClient.create(config)) {
       CreateDelegationTokenResult createResult = admin.createDelegationToken(createDelegationTokenOptions);
