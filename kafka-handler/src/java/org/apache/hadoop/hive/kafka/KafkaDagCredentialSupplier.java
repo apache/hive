@@ -16,6 +16,7 @@
  */
 package org.apache.hadoop.hive.kafka;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.tez.DagCredentialSupplier;
@@ -88,9 +89,9 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
    * @return true if a Kafka token is required for performing operations on the specified table and false otherwise.
    */
   private boolean isTokenRequired(TableDesc tableDesc) {
-    String kafkaBrokers = (String) tableDesc.getProperties().get(HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
+    String kafkaBrokers = tableDesc.getProperties().getProperty(HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
     SecurityProtocol protocol = KafkaUtils.securityProtocol(tableDesc.getProperties());
-    return kafkaBrokers != null && !kafkaBrokers.isEmpty() && SecurityProtocol.PLAINTEXT != protocol;
+    return !StringUtils.isEmpty(kafkaBrokers) && SecurityProtocol.PLAINTEXT != protocol;
   }
 
   private Token<?> getKafkaDelegationTokenForBrokers(Configuration conf, TableDesc tableDesc) {
