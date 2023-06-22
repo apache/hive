@@ -250,7 +250,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         }
         // when they are equal it's an equality predicate, we cannot handle it as "between"
         if (Double.compare(leftValue, rightValue) != 0) {
-          return betweenSelectivity(kll, leftValue, rightValue);
+          //return betweenSelectivity(kll, leftValue, rightValue);
+          return kll.getN() * betweenSelectivity(kll, leftValue, rightValue) / t.getTable().getRowCount();
         }
       }
     }
