@@ -5,6 +5,7 @@ create external table ice_parquet(
 stored by iceberg;
 
 explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet;
+explain analyze LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet;
 
 LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet;
 
@@ -17,6 +18,13 @@ stored by iceberg
 STORED AS AVRO;
 
 explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
+explain analyze LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
+
+set hive.load.data.use.native.api=false;
+
+explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
+
+set hive.load.data.use.native.api=true;
 
 LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro;
 
@@ -37,7 +45,16 @@ stored by iceberg
 STORED AS ORC;
 
 explain LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc;
+explain analyze LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc;
+
+LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc;
+
+select * from ice_orc order by p_partkey;
+
+select count(*) from ice_orc;
 
 LOAD DATA LOCAL INPATH '../../data/files/part.orc' INTO TABLE ice_orc;
 
 select * from ice_orc order by p_partkey;
+
+select count(*) from ice_orc;
