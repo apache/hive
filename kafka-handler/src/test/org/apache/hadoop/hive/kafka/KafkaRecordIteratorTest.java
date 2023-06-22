@@ -55,7 +55,6 @@ import java.util.stream.IntStream;
 /**
  * Kafka Iterator Tests.
  */
-@org.junit.Ignore("HIVE-23838: KafkaRecordIteratorTest is flaky")
 @RunWith(Parameterized.class) public class KafkaRecordIteratorTest {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaRecordIteratorTest.class);
   private static final int RECORD_NUMBER = 19384;
@@ -92,7 +91,7 @@ import java.util.stream.IntStream;
       boolean readUncommitted,
       List<ConsumerRecord<byte[], byte[]>> expectedRecords) {
     this.currentTopic = currentTopic;
-    // when true means the the topic is not Transactional topic
+    // when true means the topic is not Transactional topic
     this.readUncommitted = readUncommitted;
     this.expectedRecords = expectedRecords;
     this.topicPartition = new TopicPartition(currentTopic, 0);
@@ -279,7 +278,6 @@ import java.util.stream.IntStream;
     producerProps.setProperty("bootstrap.servers", KafkaBrokerResource.BROKER_IP_PORT);
     producerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
     producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
-    producerProps.setProperty("max.block.ms", "10000");
     if (txId != null) {
       producerProps.setProperty(ProducerConfig.TRANSACTIONAL_ID_CONFIG, txId);
     }
