@@ -60,8 +60,8 @@ public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTable
     AlterTableTypeReq alterTableTypeReq = new AlterTableTypeReq();
 
     String metaRefName = command.getChild(0).getText();
-    alterTableTypeReq.setTableName(tableName);
-    alterTableTypeReq.setMetaRefName(metaRefName);
+    alterTableTypeReq.tableName = tableName;
+    alterTableTypeReq.metaRefName = metaRefName;
     Long snapshotId = null;
     Long asOfTime = null;
     Long maxRefAgeMs = null;
@@ -74,31 +74,31 @@ public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTable
       switch (childNode.getToken().getType()) {
       case HiveParser.TOK_AS_OF_VERSION:
         snapshotId = Long.parseLong(childNode.getChild(0).getText());
-        alterTableTypeReq.setSnapshotId(snapshotId);
+        alterTableTypeReq.snapshotId = snapshotId;
         break;
       case HiveParser.TOK_AS_OF_TIME:
         ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
             SessionState.get().getConf().getLocalTimeZone();
         TimestampTZ ts = TimestampTZUtil.parse(stripQuotes(childNode.getChild(0).getText()), timeZone);
         asOfTime = ts.toEpochMilli();
-        alterTableTypeReq.setAsOfTime(asOfTime);
+        alterTableTypeReq.asOfTime = asOfTime;
         break;
       case HiveParser.TOK_RETAIN:
         String maxRefAge = childNode.getChild(0).getText();
         String timeUnitOfBranchRetain = childNode.getChild(1).getText();
         maxRefAgeMs =
             TimeUnit.valueOf(timeUnitOfBranchRetain.toUpperCase(Locale.ENGLISH)).toMillis(Long.parseLong(maxRefAge));
-        alterTableTypeReq.setMaxRefAgeMs(maxRefAgeMs);
+        alterTableTypeReq.maxRefAgeMs = maxRefAgeMs;
         break;
       case HiveParser.TOK_WITH_SNAPSHOT_RETENTION:
         minSnapshotsToKeep = Integer.valueOf(childNode.getChild(0).getText());
-        alterTableTypeReq.setMinSnapshotsToKeep(minSnapshotsToKeep);
+        alterTableTypeReq.minSnapshotsToKeep = minSnapshotsToKeep;
         if (childNode.getChildren().size() > 1) {
           String maxSnapshotAge = childNode.getChild(1).getText();
           String timeUnitOfSnapshotsRetention = childNode.getChild(2).getText();
           maxSnapshotAgeMs = TimeUnit.valueOf(timeUnitOfSnapshotsRetention.toUpperCase(Locale.ENGLISH))
               .toMillis(Long.parseLong(maxSnapshotAge));
-          alterTableTypeReq.setMaxSnapshotAgeMs(maxSnapshotAgeMs);
+          alterTableTypeReq.maxSnapshotAgeMs = maxSnapshotAgeMs;
         }
         break;
       default:
@@ -109,7 +109,7 @@ public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTable
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTableDesc)));
   }
 
-  public class AlterTableTypeReq{
+  protected class AlterTableTypeReq{
     TableName tableName;
     String metaRefName;
     Long snapshotId, asOfTime, maxRefAgeMs, maxSnapshotAgeMs;
@@ -119,56 +119,28 @@ public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTable
       return tableName;
     }
 
-    public void setTableName(TableName tableName) {
-      this.tableName = tableName;
-    }
-
     public String getMetaRefName() {
       return metaRefName;
-    }
-
-    public void setMetaRefName(String metaRefName) {
-      this.metaRefName = metaRefName;
     }
 
     public Long getSnapshotId() {
       return snapshotId;
     }
 
-    public void setSnapshotId(Long snapshotId) {
-      this.snapshotId = snapshotId;
-    }
-
     public Long getAsOfTime() {
       return asOfTime;
-    }
-
-    public void setAsOfTime(Long asOfTime) {
-      this.asOfTime = asOfTime;
     }
 
     public Long getMaxRefAgeMs() {
       return maxRefAgeMs;
     }
 
-    public void setMaxRefAgeMs(Long maxRefAgeMs) {
-      this.maxRefAgeMs = maxRefAgeMs;
-    }
-
     public Long getMaxSnapshotAgeMs() {
       return maxSnapshotAgeMs;
     }
 
-    public void setMaxSnapshotAgeMs(Long maxSnapshotAgeMs) {
-      this.maxSnapshotAgeMs = maxSnapshotAgeMs;
-    }
-
     public Integer getMinSnapshotsToKeep() {
       return minSnapshotsToKeep;
-    }
-
-    public void setMinSnapshotsToKeep(Integer minSnapshotsToKeep) {
-      this.minSnapshotsToKeep = minSnapshotsToKeep;
     }
   }
 }
