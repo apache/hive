@@ -43,9 +43,11 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.security.HiveMetastoreAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.*;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
@@ -108,7 +110,10 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
       }
     } catch (Exception e) {
       LOG.error("HiveMetaStoreAuthorizer.onEvent(): failed", e);
-      throw new MetaException(e.getMessage());
+      MetaException me = new MetaException(e.getMessage());
+      // Init cause for testing check.
+      me.initCause(e);
+      throw me;
     }
 
     LOG.debug("<== HiveMetaStoreAuthorizer.onEvent(): EventType=" + preEventContext.getEventType());
@@ -592,7 +597,8 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     return ret;
   }
 
-  private void checkPrivileges(final HiveMetaStoreAuthzInfo authzContext, HiveAuthorizer authorizer) throws MetaException {
+  private void checkPrivileges(final HiveMetaStoreAuthzInfo authzContext, HiveAuthorizer authorizer)
+      throws HiveAccessControlException, HiveAuthzPluginException, MetaException {
     LOG.debug("==> HiveMetaStoreAuthorizer.checkPrivileges(): authzContext=" + authzContext + ", authorizer=" + authorizer);
 
     HiveOperationType         hiveOpType       = authzContext.getOperationType();
@@ -600,11 +606,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     List<HivePrivilegeObject> outputHObjs      = authzContext.getOutputHObjs();
     HiveAuthzContext          hiveAuthzContext = authzContext.getHiveAuthzContext();
 
-    try {
-      authorizer.checkPrivileges(hiveOpType, inputHObjs, outputHObjs, hiveAuthzContext);
-    } catch (Exception e) {
-      throw new MetaException(e.getMessage());
-    }
+    authorizer.checkPrivileges(hiveOpType, inputHObjs, outputHObjs, hiveAuthzContext);
 
     LOG.debug("<== HiveMetaStoreAuthorizer.checkPrivileges(): authzContext=" + authzContext + ", authorizer=" + authorizer);
   }

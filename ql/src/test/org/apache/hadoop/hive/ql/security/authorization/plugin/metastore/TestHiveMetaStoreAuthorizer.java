@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -36,9 +37,10 @@ import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.Before;
 import org.junit.Test;
-import java.util.Map;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -409,6 +411,21 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.drop_dataconnector(dcName, true, true);
     } catch (Exception e) {
       fail("testU_DropDataConnector_authorizedUser() failed with " + e);
+    }
+  }
+
+  @Test
+  public void testUnAuthorizedCause() {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+    try {
+      Database db = new DatabaseBuilder()
+              .setName(dbName)
+              .build(conf);
+      hmsHandler.create_database(db);
+    } catch (Exception e) {
+      String[] rootCauseStackTrace = ExceptionUtils.getRootCauseStackTrace(e);
+      assertTrue(Arrays.stream(rootCauseStackTrace)
+              .anyMatch(stack -> stack.contains(DummyHiveAuthorizer.class.getName())));
     }
   }
 }
