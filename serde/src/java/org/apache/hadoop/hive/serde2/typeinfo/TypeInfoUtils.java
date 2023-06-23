@@ -334,7 +334,7 @@ public final class TypeInfoUtils {
             || !isTypeChar(typeInfoString.charAt(end))) {
           Token t = new Token();
           t.position = begin;
-          t.text = typeInfoString.substring(begin, end);
+          t.text = typeInfoString.substring(begin, end).trim();
           t.isType = isTypeChar(typeInfoString.charAt(begin));
           tokens.add(t);
           begin = end;
