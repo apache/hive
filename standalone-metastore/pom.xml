@@ -558,7 +558,6 @@
         <configuration>
           <excludes>
             <exclude>*.patch</exclude>
-            <exclude>binary-package-licenses/**</exclude>
             <exclude>DEV-README</exclude>
             <exclude>**/src/main/sql/**</exclude>
             <exclude>**/README.md</exclude>
