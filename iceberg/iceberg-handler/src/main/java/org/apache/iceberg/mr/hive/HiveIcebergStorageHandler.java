@@ -90,6 +90,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
 import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -455,10 +456,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      List<ColumnStatistics> colStats) {
+      List<ColumnStatistics> colStats, ColumnStatsDesc columnStatsDesc) {
     Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     String snapshotId = String.format("%s-STATS-%d", tbl.name(), tbl.currentSnapshot().snapshotId());
-    checkAndMergeOrInvalidateStats(colStats.get(0), hmsTable);
+    if (!checkAndInvalidateStats(tbl)) {
+      checkAndMergeStats(colStats.get(0), tbl, hmsTable, columnStatsDesc);
+    }
     byte[] serializeColStats = SerializationUtils.serialize((Serializable) colStats);
     try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(getStatsPath(tbl).toString()))
         .createdBy(Constants.HIVE_ENGINE).build()) {
@@ -474,7 +477,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       writer.finish();
       return true;
     } catch (IOException e) {
-      LOG.error(String.valueOf(e));
+      LOG.error("Unable to write stats to puffin file", e.getMessage());
       return false;
     }
   }
@@ -482,11 +485,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return canSetColStatistics(hmsTable) && canProvideColStatistics(hmsTable, table.currentSnapshot().snapshotId());
+    return canSetColStatistics(hmsTable) && canProvideColStatistics(table, table.currentSnapshot().snapshotId());
   }
 
-  private boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable, long snapshotId) {
-    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+  private boolean canProvideColStatistics(Table table, long snapshotId) {
     Path statsPath = getStatsPath(table, snapshotId);
     try {
       FileSystem fs = statsPath.getFileSystem(conf);
@@ -503,13 +505,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    String statsPath = getStatsPath(table).toString();
+    Path statsPath = getStatsPath(table);
     LOG.info("Using stats from puffin file at: {}", statsPath);
-    return readColStats(table, statsPath).equals(null) ? null : readColStats(table, statsPath).getStatsObj();
+    return readColStats(table, statsPath).getStatsObj();
   }
 
-  private ColumnStatistics readColStats(Table table, String statsPath) {
-    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
+  private ColumnStatistics readColStats(Table table, Path statsPath) {
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath.toString())).build()) {
       List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
       Map<BlobMetadata, List<ColumnStatistics>> collect = Streams.stream(reader.readAll(blobMetadata)).collect(
           Collectors.toMap(Pair::first, blobMetadataByteBufferPair -> SerializationUtils.deserialize(
@@ -517,7 +519,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       return collect.get(blobMetadata.get(0)).get(0);
     } catch (IOException e) {
       LOG.error("Error when trying to read iceberg col stats from puffin files: ", e);
-      return null;
+      return new ColumnStatistics();
     }
   }
 
@@ -551,35 +553,32 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return new Path(table.location() + STATS + table.name() + snapshotId);
   }
 
-  private void checkAndMergeOrInvalidateStats(ColumnStatistics statsObjNew,
-      org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+  private boolean checkAndInvalidateStats(Table tbl) {
     Path statsPath = getStatsPath(tbl);
     try {
       FileSystem fs = statsPath.getFileSystem(conf);
       if (fs.exists(statsPath)) {
         // Analyze table and stats updater thread
-        fs.delete(statsPath, true);
-      } else {
-        // Insert queries
-        mergeStats(statsObjNew, tbl, hmsTable);
+        return fs.delete(statsPath, true);
       }
     } catch (IOException e) {
       LOG.error("Failed to invalidate stale column stats: {}", e.getMessage());
     }
+    return false;
   }
 
-  private void mergeStats(ColumnStatistics statsObjNew, Table tbl, org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (tbl.currentSnapshot().parentId() != null) {
-      long previousSnapshotId = tbl.currentSnapshot().parentId();
-      if (canProvideColStatistics(hmsTable, previousSnapshotId)) {
-        ColumnStatistics statsObjOld = readColStats(tbl, getStatsPath(tbl, previousSnapshotId).toString());
-        if (statsObjOld != null) {
-          try {
-            MetaStoreServerUtils.mergeColStats(statsObjNew, statsObjOld);
-          } catch (InvalidObjectException e) {
-            LOG.error("Unable to merge column stats: ", e.getMessage());
-          }
+  private void checkAndMergeStats(ColumnStatistics statsObjNew, Table tbl,
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, ColumnStatsDesc columnStatsDesc) {
+    Long previousSnapshotId = tbl.currentSnapshot().parentId();
+    if (previousSnapshotId != null && canProvideColStatistics(tbl, previousSnapshotId)) {
+      ColumnStatistics statsObjOld = readColStats(tbl, getStatsPath(tbl, previousSnapshotId));
+      if (statsObjOld != null && statsObjOld.getStatsObjSize() != 0 && !statsObjNew.getStatsObj().isEmpty()) {
+        try {
+          MetaStoreServerUtils.mergeColStats(statsObjNew, statsObjOld);
+          StatsSetupConst.setColumnStatsState(hmsTable.getParameters(), columnStatsDesc.getColName());
+        } catch (InvalidObjectException e) {
+          StatsSetupConst.removeColumnStatsState(hmsTable.getParameters(), columnStatsDesc.getColName());
+          LOG.error("Unable to merge column stats: ", e.getMessage());
         }
       }
     }

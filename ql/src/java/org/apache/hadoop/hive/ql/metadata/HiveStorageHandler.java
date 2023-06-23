@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -273,7 +274,7 @@ public interface HiveStorageHandler extends Configurable {
    * @return boolean
    */
   default boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table table,
-      List<ColumnStatistics> colStats) {
+      List<ColumnStatistics> colStats, ColumnStatsDesc columnStatisticsDesc) {
     return false;
   }
 
