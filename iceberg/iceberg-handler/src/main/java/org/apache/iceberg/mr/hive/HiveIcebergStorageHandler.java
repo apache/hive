@@ -349,6 +349,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return null;
   }
 
+  public boolean supportsAppendData(org.apache.hadoop.hive.metastore.api.Table table) throws SemanticException {
+    Table icebergTbl = IcebergTableUtil.getTable(conf, table);
+    return icebergTbl.spec().isUnpartitioned();
+  }
+
+  public void appendFiles(org.apache.hadoop.hive.metastore.api.Table table, URI fromURI, boolean isOverwrite)
+      throws SemanticException {
+    Table icebergTbl = IcebergTableUtil.getTable(conf, table);
+    String format = table.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT);
+    HiveTableUtil.appendFiles(fromURI, format, icebergTbl, isOverwrite, conf);
+  }
+
   @Override
   public Map<String, String> getBasicStatistics(Partish partish) {
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();

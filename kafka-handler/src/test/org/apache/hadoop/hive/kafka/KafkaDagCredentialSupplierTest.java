@@ -16,6 +16,7 @@
  */
 package org.apache.hadoop.hive.kafka;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -27,16 +28,31 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.minikdc.MiniKdc;
 import org.apache.hadoop.security.token.Token;
-
+import org.apache.kafka.common.config.SslConfigs;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+
+import static org.apache.hadoop.crypto.key.JavaKeyStoreProvider.KEYSTORE_PASSWORD_DEFAULT;
+import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 
 public class KafkaDagCredentialSupplierTest {
   private static final java.nio.file.Path KEYSTORE_DIR =
@@ -75,13 +91,39 @@ public class KafkaDagCredentialSupplierTest {
   }
 
   @Test
-  public void testObtainTokenNotNull() {
+  public void testObtainTokenFromSamlPlainTextListenerNotNull() {
+    Properties props = new Properties();
+    props.setProperty("kafka.bootstrap.servers", KafkaBrokerResource.BROKER_SASL_PORT);
+    checkObtainToken(props);
+  }
+
+  @Test
+  public void testObtainTokenFromSamlSslListenerNotNull()
+      throws IOException, URISyntaxException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
+    Properties props = new Properties();
+    props.setProperty(KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName(),
+        KafkaBrokerResource.BROKER_SASL_SSL_PORT);
+    // Should the SSL properties be divided between producer/consumer? Probably not!
+    props.setProperty(SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_SSL.name);
+    props.setProperty(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "");
+    String pwdAlias = "HereIsAnAliasForTheKeyWhichHoldsTheTrustorePassword";
+    URI storeURI = createCredentialStore(ImmutableMap.of(pwdAlias, KAFKA_BROKER_RESOURCE.getTruststorePwd()));
+    props.setProperty(KafkaTableProperties.HIVE_KAFKA_SSL_CREDENTIAL_KEYSTORE.getName(), storeURI.toString());
+    props.setProperty(KafkaTableProperties.HIVE_KAFKA_SSL_TRUSTSTORE_PASSWORD.getName(), pwdAlias);
+    props.setProperty(KafkaTableProperties.HIVE_KAFKA_SSL_KEYSTORE_PASSWORD.getName(), "");
+    props.setProperty(KafkaTableProperties.HIVE_KAFKA_SSL_KEY_PASSWORD.getName(), "");
+    String location = KAFKA_BROKER_RESOURCE.getTruststorePath().toUri().toString();
+    props.setProperty(KafkaTableProperties.HIVE_SSL_TRUSTSTORE_LOCATION_CONFIG.getName(), location);
+    checkObtainToken(props);
+  }
+
+  private void checkObtainToken(Properties kafkaTableProperties) {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION, "KERBEROS");
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL, HIVE_USER_NAME + "/localhost");
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB, HIVE_USER_KEYTAB.toString());
 
-    TableDesc fileSinkDesc = createKafkaDesc();
+    TableDesc fileSinkDesc = createKafkaDesc(kafkaTableProperties);
     MapWork work = createFileSinkWork(fileSinkDesc);
     KafkaDagCredentialSupplier supplier = new KafkaDagCredentialSupplier();
     Token<?> t = supplier.obtainToken(work, Collections.singleton(fileSinkDesc), conf);
@@ -98,10 +140,33 @@ public class KafkaDagCredentialSupplierTest {
     return work;
   }
 
-  private static TableDesc createKafkaDesc() {
-    Properties props = new Properties();
+  private static TableDesc createKafkaDesc(Properties props) {
     props.setProperty("name", "kafka_table_fake");
-    props.setProperty("kafka.bootstrap.servers", KafkaBrokerResource.BROKER_SASL_PORT);
     return new TableDesc(KafkaInputFormat.class, KafkaOutputFormat.class, props);
+  }
+
+  /**
+   * Creates a credential store holding the specified keys.
+   * <p>
+   * The  {@link org.apache.hadoop.crypto.key.JavaKeyStoreProvider#KEYSTORE_PASSWORD_DEFAULT} is used to protect the
+   * keys in the store. Using a smarter/non-default password requires additional (global) configuration settings so
+   * for the purpose of tests its better to avoid this.
+   * </p>
+   * @param keys a map holding pairs with the key name/alias and its secret
+   * @return a URI to the newly created store
+   */
+  private static URI createCredentialStore(Map<String, String> keys)
+      throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, URISyntaxException {
+    java.nio.file.Path storePath = Files.createTempFile("credstore", ".jceks");
+    KeyStore ks = KeyStore.getInstance("JCEKS");
+    try (OutputStream fos = Files.newOutputStream(storePath)) {
+      ks.load(null, null);
+      for (Map.Entry<String, String> k : keys.entrySet()) {
+        ks.setKeyEntry(k.getKey(), new SecretKeySpec(k.getValue().getBytes(), "AES/CTR/NoPadding"),
+            KEYSTORE_PASSWORD_DEFAULT, null);
+      }
+      ks.store(fos, KEYSTORE_PASSWORD_DEFAULT);
+    }
+    return new URI("jceks://file" + storePath);
   }
 }

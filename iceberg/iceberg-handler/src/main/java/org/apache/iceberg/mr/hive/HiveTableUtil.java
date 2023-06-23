@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,16 +45,21 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.Transaction;
 import org.apache.iceberg.data.TableMigrationUtil;
 import org.apache.iceberg.exceptions.NotFoundException;
+import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.io.FileIO;
@@ -166,6 +172,31 @@ public class HiveTableUtil {
           }));
     }
     return dataFiles;
+  }
+
+  public static void appendFiles(URI fromURI, String format, Table icebergTbl, boolean isOverwrite, Configuration conf)
+      throws SemanticException {
+    try {
+      Transaction transaction = icebergTbl.newTransaction();
+      if (isOverwrite) {
+        DeleteFiles delete = transaction.newDelete();
+        delete.deleteFromRowFilter(Expressions.alwaysTrue());
+        delete.commit();
+      }
+      AppendFiles append = transaction.newAppend();
+      PartitionSpec spec = icebergTbl.spec();
+      MetricsConfig metricsConfig = MetricsConfig.fromProperties(icebergTbl.properties());
+      String nameMappingString = icebergTbl.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
+      NameMapping nameMapping = nameMappingString != null ? NameMappingParser.fromJson(nameMappingString) : null;
+      RemoteIterator<LocatedFileStatus> filesIterator = HiveTableUtil.getFilesIterator(new Path(fromURI), conf);
+      List<DataFile> dataFiles = HiveTableUtil.getDataFiles(filesIterator, Collections.emptyMap(),
+          format == null ? IOConstants.PARQUET : format, spec, metricsConfig, nameMapping, conf);
+      dataFiles.forEach(append::appendFile);
+      append.commit();
+      transaction.commitTransaction();
+    } catch (Exception e) {
+      throw new SemanticException("Can not append data files", e);
+    }
   }
 
   public static RemoteIterator<LocatedFileStatus> getFilesIterator(Path path, Configuration conf) throws MetaException {
