@@ -80,7 +80,7 @@
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.11</junit.version>
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.9.3</libthrift.version>
+    <libthrift.version>0.13.0</libthrift.version>
     <log4j2.version>2.17.1</log4j2.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <orc.version>1.5.1</orc.version>
@@ -94,7 +94,8 @@
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
-    <thrift.args>-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb</thrift.args>
+    <thrift.args>-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
+    </thrift.args>
 
   </properties>
 
