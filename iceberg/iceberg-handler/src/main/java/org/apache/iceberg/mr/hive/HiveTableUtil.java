@@ -279,8 +279,8 @@ public class HiveTableUtil {
             .filter(entry -> entry.getValue() != null)
             .map(java.lang.Object::toString)
             .collect(Collectors.joining("/"));
-    String currentSpecMarker = currentSpecId.toString().equals(specId) ? "*" : "";
-    return String.format("{Spec-id=%s}%s:%s", specId, currentSpecMarker, partString);
+    String currentSpecMarker = currentSpecId.toString().equals(specId) ? "current-" : "";
+    return String.format("%sspec-id=%s/%s", currentSpecMarker, specId, partString);
   }
 
   static JobConf getPartJobConf(Configuration confs, org.apache.hadoop.hive.ql.metadata.Table tbl) {
