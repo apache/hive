@@ -33,8 +33,8 @@ public class IcebergTagExec {
   private IcebergTagExec() {
   }
 
-  public static void createTag(Table table, AlterTableMetaRefSpec.CreateTagSpec createTagSpec) {
-    String tagName = createTagSpec.getTagName();
+  public static void createTag(Table table, AlterTableMetaRefSpec.CreateMetaRefSpec createTagSpec) {
+    String tagName = createTagSpec.getMetaRefName();
     Long snapshotId = null;
     if (createTagSpec.getSnapshotId() != null) {
       snapshotId = createTagSpec.getSnapshotId();

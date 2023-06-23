@@ -27,7 +27,7 @@ STAGE PLANS:
   Stage: Stage-0
     CreateMetaRef Operation
       table name: default.iceTbl
-      spec: AlterTableMetaRefSpec{operationType=CREATE_TAG, operationParams=CreateTagSpec{tagName=test_tag_1, snapshotId=null, asOfTime=null, maxRefAgeMs=null}}
+      spec: AlterTableMetaRefSpec{operationType=CREATE_TAG, operationParams=CreateMetaRefSpec{branchName=test_tag_1}}
 
 PREHOOK: query: alter table iceTbl create tag test_tag_1
 PREHOOK: type: ALTERTABLE_CREATETAG
@@ -65,7 +65,7 @@ STAGE PLANS:
   Stage: Stage-0
     CreateMetaRef Operation
       table name: default.iceTbl
-      spec: AlterTableMetaRefSpec{operationType=CREATE_TAG, operationParams=CreateTagSpec{tagName=test_tag_2, snapshotId=null, asOfTime=null, maxRefAgeMs=432000000}}
+      spec: AlterTableMetaRefSpec{operationType=CREATE_TAG, operationParams=CreateMetaRefSpec{branchName=test_tag_2, maxRefAgeMs=432000000}}
 
 PREHOOK: query: alter table iceTbl create tag test_tag_2 retain 5 days
 PREHOOK: type: ALTERTABLE_CREATETAG

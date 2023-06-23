@@ -57,17 +57,17 @@ public class AlterTableMetaRefSpec<T> {
         .add("operationParams", operationParams).toString();
   }
 
-  public static class CreateBranchSpec {
+  public static class CreateMetaRefSpec {
 
-    private final String branchName;
-    private final Long snapshotId;
-    private final Long asOfTime;
-    private final Long maxRefAgeMs;
-    private final Integer minSnapshotsToKeep;
-    private final Long maxSnapshotAgeMs;
+    private String metaRefName;
+    private Long snapshotId;
+    private Long asOfTime;
+    private Long maxRefAgeMs;
+    private Integer minSnapshotsToKeep;
+    private Long maxSnapshotAgeMs;
 
-    public String getBranchName() {
-      return branchName;
+    public String getMetaRefName() {
+      return metaRefName;
     }
 
     public Long getSnapshotId() {
@@ -90,56 +90,24 @@ public class AlterTableMetaRefSpec<T> {
       return maxSnapshotAgeMs;
     }
 
-    public CreateBranchSpec(String branchName, Long snapShotId, Long asOfTime, Long maxRefAgeMs,
-        Integer minSnapshotsToKeep, Long maxSnapshotAgeMs) {
-      this.branchName = branchName;
-      this.snapshotId = snapShotId;
-      this.asOfTime = asOfTime;
-      this.maxRefAgeMs = maxRefAgeMs;
+    public CreateMetaRefSpec(String metaRefName, Long snapShotId, Long asOfTime, Long maxRefAgeMs,
+                             Integer minSnapshotsToKeep, Long maxSnapshotAgeMs) {
+      this(metaRefName, snapShotId, asOfTime, maxRefAgeMs);
       this.minSnapshotsToKeep = minSnapshotsToKeep;
       this.maxSnapshotAgeMs = maxSnapshotAgeMs;
     }
 
-    public String toString() {
-      return MoreObjects.toStringHelper(this).add("branchName", branchName).add("snapshotId", snapshotId)
-          .add("asOfTime", asOfTime).add("maxRefAgeMs", maxRefAgeMs).add("minSnapshotsToKeep", minSnapshotsToKeep)
-          .add("maxSnapshotAgeMs", maxSnapshotAgeMs).toString();
-    }
-  }
-
-  public static class CreateTagSpec {
-
-    private final String tagName;
-    private final Long snapshotId;
-    private final Long asOfTime;
-    private final Long maxRefAgeMs;
-
-    public String getTagName() {
-      return tagName;
-    }
-
-    public Long getSnapshotId() {
-      return snapshotId;
-    }
-
-    public Long getAsOfTime() {
-      return asOfTime;
-    }
-
-    public Long getMaxRefAgeMs() {
-      return maxRefAgeMs;
-    }
-
-    public CreateTagSpec(String tagName, Long snapShotId, Long asOfTime, Long maxRefAgeMs) {
-      this.tagName = tagName;
+    public CreateMetaRefSpec(String metaRefName, Long snapShotId, Long asOfTime, Long maxRefAgeMs) {
+      this.metaRefName = metaRefName;
       this.snapshotId = snapShotId;
       this.asOfTime = asOfTime;
       this.maxRefAgeMs = maxRefAgeMs;
     }
 
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("tagName", tagName).add("snapshotId", snapshotId)
-          .add("asOfTime", asOfTime).add("maxRefAgeMs", maxRefAgeMs).toString();
+      return MoreObjects.toStringHelper(this).add("branchName", metaRefName).add("snapshotId", snapshotId)
+          .add("asOfTime", asOfTime).add("maxRefAgeMs", maxRefAgeMs).add("minSnapshotsToKeep", minSnapshotsToKeep)
+          .add("maxSnapshotAgeMs", maxSnapshotAgeMs).omitNullValues().toString();
     }
   }
 }

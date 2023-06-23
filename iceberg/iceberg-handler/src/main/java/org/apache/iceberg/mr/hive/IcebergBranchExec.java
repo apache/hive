@@ -38,8 +38,8 @@ public class IcebergBranchExec {
    * @param table the iceberg table
    * @param createBranchSpec Get the basic parameters needed to create a branch
    */
-  public static void createBranch(Table table, AlterTableMetaRefSpec.CreateBranchSpec createBranchSpec) {
-    String branchName = createBranchSpec.getBranchName();
+  public static void createBranch(Table table, AlterTableMetaRefSpec.CreateMetaRefSpec createBranchSpec) {
+    String branchName = createBranchSpec.getMetaRefName();
     Long snapshotId = null;
     if (createBranchSpec.getSnapshotId() != null) {
       snapshotId = createBranchSpec.getSnapshotId();

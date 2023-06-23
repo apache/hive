@@ -799,13 +799,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
     switch (alterTableMetaRefSpec.getOperationType()) {
       case CREATE_BRANCH:
-        AlterTableMetaRefSpec.CreateBranchSpec createBranchSpec =
-            (AlterTableMetaRefSpec.CreateBranchSpec) alterTableMetaRefSpec.getOperationParams();
+        AlterTableMetaRefSpec.CreateMetaRefSpec createBranchSpec =
+            (AlterTableMetaRefSpec.CreateMetaRefSpec) alterTableMetaRefSpec.getOperationParams();
         IcebergBranchExec.createBranch(icebergTable, createBranchSpec);
         break;
       case CREATE_TAG:
-        AlterTableMetaRefSpec.CreateTagSpec createTagSpec =
-            (AlterTableMetaRefSpec.CreateTagSpec) alterTableMetaRefSpec.getOperationParams();
+        AlterTableMetaRefSpec.CreateMetaRefSpec createTagSpec =
+            (AlterTableMetaRefSpec.CreateMetaRefSpec) alterTableMetaRefSpec.getOperationParams();
         IcebergTagExec.createTag(icebergTable, createTagSpec);
         break;
       default:
