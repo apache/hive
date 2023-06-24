@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,8 @@ public class JavaUtils {
           "Number of constructor parameter types doesn't match number of arguments");
     }
     for (int i = 0; i < parameterTypes.length; i++) {
-      Class<?> clazz = parameterTypes[i];
+      // initargs are boxed to Object, so we need to wrapper primitive types here.
+      Class<?> clazz = ClassUtils.primitiveToWrapper(parameterTypes[i]);
       if (initargs[i] != null && !(clazz.isInstance(initargs[i]))) {
         throw new IllegalArgumentException("Object : " + initargs[i]
             + " is not an instance of " + clazz);
