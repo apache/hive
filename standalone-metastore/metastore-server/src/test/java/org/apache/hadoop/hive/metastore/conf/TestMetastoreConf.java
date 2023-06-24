@@ -42,11 +42,12 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
-import org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.RetryingHMSHandler;
 import org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask;
+import org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
@@ -491,6 +492,8 @@ public class TestMetastoreConf {
         MaterializationsRebuildLockCleanerTask.class.getName());
     Assert.assertEquals(MetastoreConf.METASTORE_TASK_THREAD_CLASS,
         MetastoreTaskThread.class.getName());
+    Assert.assertEquals(MetastoreConf.METASTORE_RETRYING_HANDLER_CLASS,
+        RetryingHMSHandler.class.getName());
     Assert.assertEquals(MetastoreConf.RUNTIME_STATS_CLEANER_TASK_CLASS,
         RuntimeStatsCleanerTask.class.getName());
     Assert.assertEquals(MetastoreConf.EVENT_CLEANER_TASK_CLASS,

@@ -105,6 +105,8 @@ public class MetastoreConf {
 
   public static final String METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
           "metastore.authentication.ldap.userMembershipKey";
+  public static final String METASTORE_RETRYING_HANDLER_CLASS =
+          "org.apache.hadoop.hive.metastore.RetryingHMSHandler";
 
   private static final Map<String, ConfVars> metaConfs = new HashMap<>();
   private static volatile URL hiveSiteURL = null;
@@ -874,6 +876,9 @@ public class MetastoreConf {
             "testing only."),
     HMS_HANDLER_INTERVAL("metastore.hmshandler.retry.interval", "hive.hmshandler.retry.interval",
         2000, TimeUnit.MILLISECONDS, "The time between HMSHandler retry attempts on failure."),
+    HMS_HANDLER_PROXY_CLASS("metastore.hmshandler.proxy", "hive.metastore.hmshandler.proxy",
+        METASTORE_RETRYING_HANDLER_CLASS,
+        "The proxy class name of HMSHandler, default is RetryingHMSHandler."),
     IDENTIFIER_FACTORY("datanucleus.identifierFactory",
         "datanucleus.identifierFactory", "datanucleus1",
         "Name of the identifier factory to use when generating table/column names etc. \n" +

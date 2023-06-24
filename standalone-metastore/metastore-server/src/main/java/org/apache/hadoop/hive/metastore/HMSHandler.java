@@ -143,12 +143,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public static final String PARTITION_NUMBER_EXCEED_LIMIT_MSG =
       "Number of partitions scanned (=%d) on table '%s' exceeds limit (=%d). This is controlled on the metastore server by %s.";
 
-  // Used for testing to simulate method timeout.
-  @VisibleForTesting
-  static boolean testTimeoutEnabled = false;
-  @VisibleForTesting
-  static long testTimeoutValue = -1;
-
   public static final String ADMIN = "admin";
   public static final String PUBLIC = "public";
 
@@ -1345,14 +1339,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // expected
       }
 
-      if (testTimeoutEnabled) {
-        try {
-          Thread.sleep(testTimeoutValue);
-        } catch (InterruptedException e) {
-          // do nothing
-        }
-        Deadline.checkTimeout();
-      }
       create_database_core(getMS(), db);
       success = true;
     } catch (Exception e) {
@@ -1891,14 +1877,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       } catch (NoSuchObjectException e) {
         // expected
-      }
-      if (testTimeoutEnabled) {
-        try {
-          Thread.sleep(testTimeoutValue);
-        } catch (InterruptedException e) {
-          // do nothing
-        }
-        Deadline.checkTimeout();
       }
       create_dataconnector_core(getMS(), connector);
       success = true;

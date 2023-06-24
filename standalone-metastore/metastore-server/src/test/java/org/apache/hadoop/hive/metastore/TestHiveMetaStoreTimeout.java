@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
@@ -32,7 +35,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,8 +42,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
- * Test long running request timeout functionality in MetaStore Server
- * HMSHandler.create_database() is used to simulate a long running method.
+ * Test long running request timeout functionality in MetaStore Server.
  */
 @Category(MetastoreCheckinTest.class)
 public class TestHiveMetaStoreTimeout {
@@ -52,6 +53,42 @@ public class TestHiveMetaStoreTimeout {
 
   private final String dbName = "db";
   
+  /** Test handler proxy used to simulate a long-running create_database() method */
+  static class DelayedHMSHandler extends AbstractHMSHandlerProxy {
+    static long testTimeoutValue = -1;
+    public DelayedHMSHandler(Configuration conf, IHMSHandler baseHandler, boolean local)
+        throws MetaException {
+      super(conf, baseHandler, local);
+    }
+
+    @Override
+    protected Result invokeInternal(Object proxy, Method method, Object[] args)
+        throws Throwable {
+      try {
+        boolean isStarted = Deadline.startTimer(method.getName());
+        Object object;
+        try {
+          if (testTimeoutValue > 0 && method.getName().equals("create_database")) {
+            try {
+              Thread.sleep(testTimeoutValue);
+            } catch (InterruptedException e) {
+              // do nothing.
+            }
+            Deadline.checkTimeout();
+          }
+          object = method.invoke(baseHandler, args);
+        } finally {
+          if (isStarted) {
+            Deadline.stopTimer();
+          }
+        }
+        return new Result(object, "error=false");
+      } catch (UndeclaredThrowableException | InvocationTargetException e) {
+        throw e.getCause();
+      }
+    }
+  }
+
   @BeforeClass
   public static void startMetaStoreServer() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
@@ -59,6 +96,7 @@ public class TestHiveMetaStoreTimeout {
         MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
     MetastoreConf.setTimeVar(conf, ConfVars.CLIENT_SOCKET_TIMEOUT, 2000,
         TimeUnit.MILLISECONDS);
+    MetastoreConf.setVar(conf, ConfVars.HMS_HANDLER_PROXY_CLASS, DelayedHMSHandler.class.getName());
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     warehouse = new Warehouse(conf);
     port = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
@@ -68,8 +106,7 @@ public class TestHiveMetaStoreTimeout {
 
   @Before
   public void setup() throws MetaException {
-    HMSHandler.testTimeoutEnabled = false;
-    HMSHandler.testTimeoutValue = -1;
+    DelayedHMSHandler.testTimeoutValue = -1;
     client = new HiveMetaStoreClient(conf);
   }
 
@@ -90,8 +127,7 @@ public class TestHiveMetaStoreTimeout {
 
   @Test
   public void testTimeout() throws Exception {
-    HMSHandler.testTimeoutEnabled = true;
-    HMSHandler.testTimeoutValue = 4000;
+    DelayedHMSHandler.testTimeoutValue = 4000;
 
     Database db = new DatabaseBuilder()
         .setName(dbName)
@@ -102,6 +138,9 @@ public class TestHiveMetaStoreTimeout {
     } catch (TTransportException e) {
       Assert.assertTrue("unexpected Exception", e.getMessage().contains("Read timed out"));
     }
+
+    // restore
+    DelayedHMSHandler.testTimeoutValue = -1;
   }
 
   @Test
@@ -117,8 +156,7 @@ public class TestHiveMetaStoreTimeout {
     client.dropDatabase(dbName, true, true);
 
     // reset
-    HMSHandler.testTimeoutEnabled = true;
-    HMSHandler.testTimeoutValue = 4000;
+    DelayedHMSHandler.testTimeoutValue = 4000;
 
     // timeout after reset
     try {
