@@ -1793,6 +1793,7 @@
             <exclude>**/test/resources/**/*.ldif</exclude>
             <exclude>hcatalog/core/mapred/**/part-m*</exclude>
             <exclude>hcatalog/core/mapred/**/*_SUCCESS*</exclude>
+            <exclude>**/PriorityBlockingDeque.java</exclude>
           </excludes>
         </configuration>
       </plugin>
