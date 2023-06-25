@@ -785,6 +785,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
     };
+    t.setDaemon(true);
     t.start();
   }
 
