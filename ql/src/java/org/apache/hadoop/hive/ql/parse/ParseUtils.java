@@ -313,7 +313,9 @@ public final class ParseUtils {
     while (true) {
       astSearcher.reset();
       ASTNode setCols = astSearcher.depthFirstSearch(tree, HiveParser.TOK_SETCOLREF);
-      if (setCols == null) break;
+      if (setCols == null) {
+        break;
+      }
       processSetColsNode(setCols, astSearcher, ctx);
     }
   }
@@ -390,7 +392,9 @@ public final class ParseUtils {
         setCols.token.setType(HiveParser.TOK_ALLCOLREF);
         return;
       }
-      if (queryOfSelect.childIndex == 0) break; // We are the left-most child.
+      if (queryOfSelect.childIndex == 0) {
+        break; // We are the left-most child.
+      }
       Tree moreToTheLeft = queryOfSelect.parent.getChild(0);
       Preconditions.checkState(moreToTheLeft != queryOfSelect);
       ASTNode newSelect = searcher.simpleBreadthFirstSearchAny((ASTNode)moreToTheLeft,
@@ -405,7 +409,9 @@ public final class ParseUtils {
     HashSet<String> aliases = new HashSet<>();
     for (int i = 0; i < select.getChildCount(); ++i) {
       Tree selExpr = select.getChild(i);
-      if (selExpr.getType() == HiveParser.QUERY_HINT) continue;
+      if (selExpr.getType() == HiveParser.QUERY_HINT) {
+        continue;
+      }
       assert selExpr.getType() == HiveParser.TOK_SELEXPR;
       assert selExpr.getChildCount() > 0;
       // we can have functions which generate multiple aliases (e.g. explode(map(x, y)) as (key, val))
@@ -502,11 +508,17 @@ public final class ParseUtils {
   public static String getKeywords(Set<String> excludes) {
     StringBuilder sb = new StringBuilder();
     for (Field f : HiveLexer.class.getDeclaredFields()) {
-      if (!Modifier.isStatic(f.getModifiers())) continue;
+      if (!Modifier.isStatic(f.getModifiers())) {
+        continue;
+      }
       String name = f.getName();
-      if (!name.startsWith("KW_")) continue;
+      if (!name.startsWith("KW_")) {
+        continue;
+      }
       name = name.substring(3);
-      if (excludes != null && excludes.contains(name)) continue;
+      if (excludes != null && excludes.contains(name)) {
+        continue;
+      }
       if (sb.length() > 0) {
         sb.append(",");
       }
