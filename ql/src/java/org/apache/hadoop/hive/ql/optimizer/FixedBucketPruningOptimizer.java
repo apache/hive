@@ -125,6 +125,7 @@ public class FixedBucketPruningOptimizer extends Transform {
       for (StructField fs : tbl.getFields()) {
         if(fs.getFieldName().equals(bucketCol)) {
           bucketField = fs;
+          break;
         }
       }
       Preconditions.checkArgument(bucketField != null);
@@ -200,6 +201,9 @@ public class FixedBucketPruningOptimizer extends Transform {
             return;
           }
         }
+      } else if (expr.getOperator() == Operator.NOT) {
+        // TODO: think we can handle NOT IS_NULL?
+        return;
       }
       // invariant: bucket-col IN literals of type bucketField
       BitSet bs = new BitSet(numBuckets);
