@@ -406,7 +406,7 @@ public final class ParseUtils {
 
     // Find the proper columns.
     List<ASTNode> newChildren = new ArrayList<>(select.getChildCount());
-    HashSet<String> aliases = new HashSet<>();
+    Set<String> aliases = new HashSet<>();
     for (int i = 0; i < select.getChildCount(); ++i) {
       Tree selExpr = select.getChild(i);
       if (selExpr.getType() == HiveParser.QUERY_HINT) {
@@ -447,7 +447,7 @@ public final class ParseUtils {
             return;
           }
           break;
-        case HiveParser.DOT: {
+        case HiveParser.DOT:
           Tree colChild = child.getChild(child.getChildCount() - 1);
           assert colChild.getType() == HiveParser.Identifier : colChild;
           if (!createChildColumnRef(colChild, alias, newChildren, aliases, ctx)) {
@@ -455,7 +455,6 @@ public final class ParseUtils {
             return;
           }
           break;
-        }
         default:
           // Not really sure how to refer to this (or if we can).
           // TODO: We could find a different from branch for the union, that might have an alias?
@@ -479,7 +478,7 @@ public final class ParseUtils {
   }
 
   private static boolean createChildColumnRef(Tree child, String alias,
-      List<ASTNode> newChildren, HashSet<String> aliases, Context ctx) {
+      List<ASTNode> newChildren, Set<String> aliases, Context ctx) {
     String colAlias = child.getText();
     if (SemanticAnalyzer.isRegex(colAlias, (HiveConf)ctx.getConf())) {
       LOG.debug("Skip creating child column reference because of regexp used as alias: " + colAlias);
