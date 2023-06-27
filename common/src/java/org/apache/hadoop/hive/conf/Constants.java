@@ -108,6 +108,8 @@ public class Constants {
   public static final String TIME_POSTFIX_REQUEST_TRACK = "_TIME";
 
   public static final String ICEBERG = "iceberg";
-  public static final String ICEBERG_PARTITION_TABLE_SCHEMA = "partition,record_count,file_count,spec_id";
+  public static final String ICEBERG_PARTITION_TABLE_SCHEMA = "partition,spec_id,record_count,file_count," +
+      "position_delete_record_count,position_delete_file_count,equality_delete_record_count," +
+      "equality_delete_file_count";
   public static final String DELIMITED_JSON_SERDE = "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe";
 }
