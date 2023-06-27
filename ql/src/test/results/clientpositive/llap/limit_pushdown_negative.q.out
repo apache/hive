@@ -222,7 +222,7 @@ POSTHOOK: Input: default@src
 CBO PLAN:
 HiveSortLimit(fetch=[10])
   HiveProject(key=[$0], v=[$2])
-    HiveTableFunctionScan(invocation=[explode(ARRAY($1, $1))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) l.v)])
+    HiveLVTableFunctionScan(invocation=[explode(ARRAY($1, $1))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) l.v)])
       HiveProject(key=[$0], value=[$1])
         HiveTableScan(table=[[default, src]], table:alias=[src])
 

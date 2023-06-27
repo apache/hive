@@ -170,7 +170,7 @@ POSTHOOK: Input: default@table_7
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject($f0=[$1])
-  HiveTableFunctionScan(invocation=[replicate_rows($0, $1)], rowType=[RecordType(BIGINT $f0, TIMESTAMP(9) $f1)])
+  HiveLVTableFunctionScan(invocation=[replicate_rows($0, $1)], rowType=[RecordType(BIGINT $f0, TIMESTAMP(9) $f1)])
     HiveProject($f0=[$2], $f1=[$0])
       HiveFilter(condition=[=($1, 2)])
         HiveAggregate(group=[{0}], agg#0=[count($1)], agg#1=[min($1)])

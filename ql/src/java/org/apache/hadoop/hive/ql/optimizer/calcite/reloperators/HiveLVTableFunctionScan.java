@@ -30,7 +30,14 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 
-public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelNode {
+/**
+  *  HiveLVTableFunctionScan (LV stands for lateral views).
+  * This RelNode is created through a lateral view. This class differs from its
+  * parent's class in that the fields in the child RelNode are present in the output
+  * RelDataType. The output of the UDTF is joined to these base table types on each
+  * row.
+  */
+public class HiveLVTableFunctionScan extends HiveTableFunctionScan {
 
   /**
    * @param cluster
@@ -48,28 +55,30 @@ public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelN
    * @param columnMappings
    *          columnMappings - Column mappings associated with this function
    */
-  protected HiveTableFunctionScan(RelOptCluster cluster, RelTraitSet traitSet, List<RelNode> inputs,
+  private HiveLVTableFunctionScan(RelOptCluster cluster, RelTraitSet traitSet, List<RelNode> inputs,
       RexNode rexCall, Type elementType, RelDataType rowType, Set<RelColumnMapping> columnMappings) {
     super(cluster, traitSet, inputs, rexCall, elementType, rowType, columnMappings);
   }
 
-  public static HiveTableFunctionScan create(RelOptCluster cluster, RelTraitSet traitSet,
+  public static HiveLVTableFunctionScan create(RelOptCluster cluster, RelTraitSet traitSet,
       List<RelNode> inputs, RexNode rexCall, Type elementType, RelDataType rowType,
       Set<RelColumnMapping> columnMappings) throws CalciteSemanticException {
-    return new HiveTableFunctionScan(cluster, traitSet, inputs, rexCall, elementType, rowType,
-        columnMappings);
+    return new HiveLVTableFunctionScan(cluster, traitSet,
+        inputs, rexCall, elementType, rowType, columnMappings);
   }
 
   @Override
   public TableFunctionScan copy(RelTraitSet traitSet, List<RelNode> inputs, RexNode rexCall,
       Type elementType, RelDataType rowType, Set<RelColumnMapping> columnMappings) {
-    return new HiveTableFunctionScan(getCluster(), traitSet, inputs, rexCall,
+    return new HiveLVTableFunctionScan(getCluster(), traitSet, inputs, rexCall,
         elementType, rowType, columnMappings);
   }
 
   // return the field in the return type where the udtf field starts.
-  // The first field in the return type is the udtf return field.
+  // We subtract from the end the amount of udtf fields and the rest
+  // are from the input ref.
+  @Override
   public int getStartUdtfField() {
-    return 0;
+    return getRowType().getFieldCount() - getCall().getType().getFieldCount();
   }
 }

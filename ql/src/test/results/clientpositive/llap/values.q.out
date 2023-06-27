@@ -10,7 +10,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, 2, 3), ROW(4, 5, 6)))], rowType=[RecordType(INTEGER col1, INTEGER col2, INTEGER col3)])
+HiveLVTableFunctionScan(invocation=[inline(ARRAY(ROW(1, 2, 3), ROW(4, 5, 6)))], rowType=[RecordType(INTEGER col1, INTEGER col2, INTEGER col3)])
   HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: VALUES(1,2,3),(4,5,6)
@@ -36,7 +36,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, 2, 3), ROW(4, 5, 6)))], rowType=[RecordType(INTEGER col1, INTEGER col2, INTEGER col3)])
+HiveLVTableFunctionScan(invocation=[inline(ARRAY(ROW(1, 2, 3), ROW(4, 5, 6)))], rowType=[RecordType(INTEGER col1, INTEGER col2, INTEGER col3)])
   HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: SELECT * FROM (VALUES(1,2,3),(4,5,6)) as foo
@@ -71,11 +71,11 @@ CBO PLAN:
 HiveUnion(all=[true])
   HiveProject(col1=[CAST(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], col2=[$1])
     HiveFilter(condition=[=($0, _UTF-16LE'a')])
-      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(_UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))], rowType=[RecordType(VARCHAR(2147483647) col1, VARCHAR(2147483647) col2)])
+      HiveLVTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(_UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))], rowType=[RecordType(VARCHAR(2147483647) col1, VARCHAR(2147483647) col2)])
         HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
   HiveProject(col1=[CAST(_UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], col2=[$1])
     HiveFilter(condition=[=($0, _UTF-16LE'b')])
-      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(_UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))], rowType=[RecordType(VARCHAR(2147483647) col1, VARCHAR(2147483647) col2)])
+      HiveLVTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(_UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))], rowType=[RecordType(VARCHAR(2147483647) col1, VARCHAR(2147483647) col2)])
         HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: WITH t1 AS (VALUES('a', 'b'), ('b', 'c'))
@@ -118,13 +118,13 @@ CBO PLAN:
 HiveProject(col1=[$0], col2=[$1], col3=[null:NULL], col4=[$2])
   HiveUnion(all=[true])
     HiveProject(col1=[$0], col2=[$1], col4=[$3])
-      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, _UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:NULL, 10:DECIMAL(2, 0))))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2, NULL col3, DECIMAL(2, 0) col4)])
+      HiveLVTableFunctionScan(invocation=[inline(ARRAY(ROW(1, _UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:NULL, 10:DECIMAL(2, 0))))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2, NULL col3, DECIMAL(2, 0) col4)])
         HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
     HiveProject(col1=[$0], col2=[$1], col4=[$3])
-      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(2, _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:NULL, 20:DECIMAL(2, 0))))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2, NULL col3, DECIMAL(2, 0) col4)])
+      HiveLVTableFunctionScan(invocation=[inline(ARRAY(ROW(2, _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:NULL, 20:DECIMAL(2, 0))))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2, NULL col3, DECIMAL(2, 0) col4)])
         HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
     HiveProject(col1=[$0], col2=[$1], col4=[$3])
-      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(3, _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:NULL, 30:DECIMAL(2, 0))))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2, NULL col3, DECIMAL(2, 0) col4)])
+      HiveLVTableFunctionScan(invocation=[inline(ARRAY(ROW(3, _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:NULL, 30:DECIMAL(2, 0))))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2, NULL col3, DECIMAL(2, 0) col4)])
         HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: VALUES(1, 'a', NULL, 10.0)

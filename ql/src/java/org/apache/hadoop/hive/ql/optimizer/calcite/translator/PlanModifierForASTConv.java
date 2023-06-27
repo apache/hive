@@ -388,7 +388,8 @@ public class PlanModifierForASTConv {
   }
 
   private static boolean validTableFunctionScanChild(HiveTableFunctionScan htfsNode) {
-    return htfsNode.getInput(0) instanceof Project || htfsNode.getInput(0) instanceof HiveTableScan;
+    return htfsNode.getInputs().size() == 1 &&
+        (htfsNode.getInput(0) instanceof Project || htfsNode.getInput(0) instanceof HiveTableScan);
   }
 
   private static boolean validSetopParent(RelNode setop, RelNode parent) {

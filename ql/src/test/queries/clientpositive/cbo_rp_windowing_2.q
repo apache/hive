@@ -234,6 +234,7 @@ set hive.cbo.returnpath.hiveop=true ;
 select * from mfgr_brand_price_view_n1;        
         
 -- 24. testLateralViews
+-- HIVE-27470: implement returnpath for lateral views
 set hive.cbo.returnpath.hiveop=false;
 select p_mfgr, p_name, 
 lv_col, p_size, sum(p_size) over w1   as s

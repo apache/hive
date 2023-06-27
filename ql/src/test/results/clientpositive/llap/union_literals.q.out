@@ -324,7 +324,7 @@ HiveUnion(all=[true])
   HiveProject(a=[CAST($0):INTEGER])
     HiveTableScan(table=[[default, t]], table:alias=[t])
   HiveProject(EXPR$0=[$0])
-    HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1), ROW(2)))], rowType=[RecordType(INTEGER EXPR$0)])
+    HiveLVTableFunctionScan(invocation=[inline(ARRAY(ROW(1), ROW(2)))], rowType=[RecordType(INTEGER EXPR$0)])
       HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: explain

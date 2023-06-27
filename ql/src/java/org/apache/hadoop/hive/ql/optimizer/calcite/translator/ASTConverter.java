@@ -593,6 +593,19 @@ public class ASTConverter {
       // operator out if only the udtf fields are grabbed out of the RelNode.  If any
       // of the base table fields need to be grabbed out, then a 'join' needs to be done
       // and we need the lateral view.
+      //
+      // The structure of the AST in this "else if" branch will be:
+      //
+      // TOK_FROM
+      //   TOK_LATERAL_VIEW
+      //     TOK_SELECT
+      //       TOK_SELEXPR
+      //         TOK_FUNCTION
+      //           <udtf func>
+      //           ...
+      //         <col alias for function>
+      //         TOK_TABALIAS
+      //           <table alias for lateral view>
       TableFunctionScan tfs = ((TableFunctionScan) r);
 
       // retrieve the base table source.

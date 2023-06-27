@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveLVTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTErrorUtils;
@@ -112,9 +113,9 @@ public class LateralViewPlan {
 
     RelDataType retType = getRetType(cluster, inputRel, udtfCall, columnAliases);
 
-    this.lateralViewRel = HiveTableFunctionScan.create(cluster,
+    this.lateralViewRel = HiveLVTableFunctionScan.create(cluster,
         TraitsUtil.getDefaultTraitSet(cluster), ImmutableList.of(inputRel), udtfCall,
-        null, retType, null, /*isLateralView*/ true);
+        null, retType, null);
   }
 
   public static void validateLateralView(ASTNode lateralView) throws SemanticException {

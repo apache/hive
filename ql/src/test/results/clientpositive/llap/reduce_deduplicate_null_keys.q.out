@@ -152,7 +152,7 @@ HiveSortLimit(sort0=[$0], dir0=[ASC])
   HiveProject(c=[CASE(=($0, $1), 1, 2)])
     HiveSortLimit(sort0=[$0], dir0=[ASC])
       HiveProject(a=[$5], b=[+($5, 1)])
-        HiveTableFunctionScan(invocation=[posexplode(ARRAY(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))], rowType=[RecordType(INTEGER id, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER tb.i, VARCHAR(2147483647) tb.x)])
+        HiveLVTableFunctionScan(invocation=[posexplode(ARRAY(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))], rowType=[RecordType(INTEGER id, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER tb.i, VARCHAR(2147483647) tb.x)])
           HiveTableScan(table=[[default, ta]], table:alias=[ta])
 
 PREHOOK: query: WITH

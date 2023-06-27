@@ -3222,7 +3222,7 @@ POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(id=[$0], name=[$1], col=[$6])
-  HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col)])
+  HiveLVTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col)])
     HiveTableScan(table=[[default, annotate_stats_lateral_view_join_test]], table:alias=[a])
 
 PREHOOK: query: explain cbo select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
@@ -3235,7 +3235,7 @@ POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(id=[$0], n=[$1], col=[$6])
-  HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col)])
+  HiveLVTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col)])
     HiveTableScan(table=[[default, annotate_stats_lateral_view_join_test]], table:alias=[a])
 
 PREHOOK: query: explain cbo select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
@@ -3248,9 +3248,9 @@ POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(id=[$0], name=[$1], col=[$6], col1=[$7])
-  HiveTableFunctionScan(invocation=[explode(ARRAY(1))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col, INTEGER c.col)])
+  HiveLVTableFunctionScan(invocation=[explode(ARRAY(1))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col, INTEGER c.col)])
     HiveProject(id=[$0], name=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], b.col=[$6])
-      HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col)])
+      HiveLVTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col)])
         HiveTableScan(table=[[default, annotate_stats_lateral_view_join_test]], table:alias=[a])
 
 PREHOOK: query: explain cbo select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
@@ -3263,10 +3263,10 @@ POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(id=[$0], name=[$1], col=[$6], col1=[$7], col2=[$8])
-  HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col, INTEGER c.col, INTEGER d.col)])
+  HiveLVTableFunctionScan(invocation=[explode(ARRAY(1, 2))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col, INTEGER c.col, INTEGER d.col)])
     HiveProject(id=[$0], name=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], b.col=[$6], c.col=[$7])
-      HiveTableFunctionScan(invocation=[explode(ARRAY(1))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col, INTEGER c.col)])
+      HiveLVTableFunctionScan(invocation=[explode(ARRAY(1))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col, INTEGER c.col)])
         HiveProject(id=[$0], name=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], b.col=[$6])
-          HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col)])
+          HiveLVTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(INTEGER id, VARCHAR(2147483647) name, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER b.col)])
             HiveTableScan(table=[[default, annotate_stats_lateral_view_join_test]], table:alias=[a])
 
