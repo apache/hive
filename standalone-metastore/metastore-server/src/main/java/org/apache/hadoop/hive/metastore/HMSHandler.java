@@ -3957,10 +3957,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     for (MetaStorePreEventListener listener : preListeners) {
       try {
         listener.onEvent(event);
-      } catch (NoSuchObjectException e) {
-        throw new MetaException(e.getMessage());
-      } catch (InvalidOperationException e) {
-        throw new MetaException(e.getMessage());
+      } catch (NoSuchObjectException | InvalidOperationException e) {
+        MetaException me = new MetaException(e.getMessage());
+        me.initCause(e);
+        throw me;
       }
     }
   }
