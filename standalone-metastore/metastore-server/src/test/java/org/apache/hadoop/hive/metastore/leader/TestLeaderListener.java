@@ -39,8 +39,8 @@ public class TestLeaderListener {
     Configuration conf = MetastoreConf.newMetastoreConf();
     FileSystem fileSystem = FileSystem.get(conf);
     try {
-      conf.set(AuditLeaderListener.CREATE_NEW_FILE_ON_ELECTION, "true");
-      conf.set(AuditLeaderListener.AUDIT_FILE_LIMIT, "3");
+      MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_NEW_AUDIT_FILE, true);
+      MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_AUDIT_FILE_LIMIT, 3);
       // create a new file on the election event
       AuditLeaderListener listener = new AuditLeaderListener(location, conf);
       StaticLeaderElection election = new StaticLeaderElection();
@@ -80,7 +80,7 @@ public class TestLeaderListener {
       // only one file
       fileSystem.delete(location, true);
       Assert.assertTrue(FileUtils.isDirEmpty(fileSystem, location));
-      conf.set(AuditLeaderListener.CREATE_NEW_FILE_ON_ELECTION, "false");
+      MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_NEW_AUDIT_FILE, false);
       listener.takeLeadership(election);
       fileStatuses = FileUtils.getFileStatusRecurse(location, fileSystem);
       Assert.assertTrue(fileStatuses.size() == 1);

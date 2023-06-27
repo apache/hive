@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -57,9 +58,6 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
   private final static String SERDE = "org.apache.hadoop.hive.serde2.JsonSerDe";
   private final static String INPUTFORMAT = "org.apache.hadoop.mapred.TextInputFormat";
   private final static String OUTPUTFORMAT = "org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat";
-
-  public static final String AUDIT_FILE_LIMIT = "metastore.housekeeping.leader.auditFiles.limit";
-  public static final String CREATE_NEW_FILE_ON_ELECTION = "metastore.housekeeping.leader.newAuditFile";
 
   public AuditLeaderListener(TableName tableName, IHMSHandler handler) throws Exception {
     requireNonNull(tableName, "tableName is null");
@@ -118,8 +116,8 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
     Path path = null;
     try {
       FileSystem fs = Warehouse.getFs(tableLocation, configuration);
-      boolean createNewFile = FileUtils.isS3a(fs) ||
-          configuration.getBoolean(CREATE_NEW_FILE_ON_ELECTION, false);
+      boolean createNewFile = FileUtils.isS3a(fs) || MetastoreConf.getBoolVar(configuration,
+          MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_NEW_AUDIT_FILE);
       String prefix =  "leader_" + election.getName();
       String fileName = createNewFile ?
           prefix + "_" + System.currentTimeMillis() + ".json" :
@@ -133,8 +131,9 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
         outputStream.flush();
       }
       // Trash out small files when the file system cannot support append
-      final int limit;
-      if (createNewFile && (limit = configuration.getInt(AUDIT_FILE_LIMIT, 10)) > 0) {
+      final int limit = MetastoreConf.getIntVar(configuration,
+          MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_AUDIT_FILE_LIMIT);
+      if (createNewFile && limit > 0) {
         List<FileStatus> allFileStatuses = FileUtils.getFileStatusRecurse(tableLocation, fs);
         List<FileStatus> thisLeaderFiles = new ArrayList<>();
         // All this leader audit file must start with leader_$name_
