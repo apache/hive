@@ -94,7 +94,7 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
     String output = table.getSd().getOutputFormat();
     if (!SERDE.equals(serde) || !INPUTFORMAT.equals(input)
         || !OUTPUTFORMAT.equals(output)) {
-      throw new RuntimeException(tableName + " should be in json + text format");
+      throw new RuntimeException(tableName + " should be a plain json table");
     }
   }
 
