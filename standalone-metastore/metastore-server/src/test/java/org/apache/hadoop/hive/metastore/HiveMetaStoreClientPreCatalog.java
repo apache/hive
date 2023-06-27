@@ -113,6 +113,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public final static ClientCapabilities TEST_VERSION = new ClientCapabilities(
       Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES, ClientCapability.TEST_CAPABILITY));
 
+  private static final String CONNECT_METASTORE_FAILED = "Could not connect to metastore: ";
+
   ThriftHiveMetastore.Iface client = null;
   private TTransport transport = null;
   private boolean isConnected = false;
@@ -560,8 +562,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
             LOG.warn("Failed to connect to the MetaStore Server...");
           }
         } catch (MetaException e) {
-          throw new MetaException("Could not connect to meta store by MetaException: "
-              + StringUtils.stringifyException(e));
+          throw new MetaException(CONNECT_METASTORE_FAILED + StringUtils.stringifyException(e));
         }
         if (isConnected) {
           break;

@@ -74,8 +74,7 @@ public class TestHiveMetastoreClientConnection {
       Assert.fail("Instantiate client should fail by MetaException for http mode.");
     } catch (MetaException e) {
       // expected
-      Assert.assertTrue(
-          e.getMessage().contains("Could not connect to meta store by MetaException:"));
+      Assert.assertTrue(e.getMessage().contains("Failed to connect to metastore:"));
     }
     Assert.assertEquals(HiveMetastoreClientWithException.connectCounts, 1);
   }

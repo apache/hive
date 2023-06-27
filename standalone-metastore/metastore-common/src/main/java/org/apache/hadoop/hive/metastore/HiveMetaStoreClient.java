@@ -171,6 +171,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private static final String REPL_EVENTS_WITH_DUPLICATE_ID_IN_METASTORE =
           "Notification events with duplicate event ids in the meta store.";
 
+  private static final String CREATE_TRANSPORT_FAILED = "Failed to create client transport.";
+  private static final String CONNECT_METASTORE_FAILED = "Failed to connect to metastore: ";
+
   static final protected Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClient.class);
 
   public HiveMetaStoreClient(Configuration conf) throws MetaException {
@@ -846,8 +849,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           LOG.warn(errMsg);
           LOG.debug(errMsg, e);
         } catch (MetaException e) {
-          throw new MetaException("Could not connect to meta store by MetaException: "
-                + StringUtils.stringifyException(e));
+          throw new MetaException(CONNECT_METASTORE_FAILED + StringUtils.stringifyException(e));
         }
         if (isConnected) {
           break;
@@ -918,12 +920,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         }
         // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
         transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, underlyingTransport);
-      } catch (IOException | TTransportException sasle) {
+      } catch (TTransportException e) {
+        LOG.error(CREATE_TRANSPORT_FAILED, e);
+        throw e;
+      } catch (IOException sasle) {
         // IOException covers SaslException
-        LOG.error("Could not create client transport", sasle);
-        if (sasle instanceof TTransportException) {
-          throw (TTransportException) sasle;
-        }
+        LOG.error(CREATE_TRANSPORT_FAILED, sasle);
         throw new MetaException(sasle.toString());
       }
     } else if (useSasl) {
@@ -956,7 +958,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               underlyingTransport, MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
         }
       } catch (IOException ioe) {
-        LOG.error("Failed to create client transport", ioe);
+        LOG.error(CREATE_TRANSPORT_FAILED, ioe);
         throw new MetaException(ioe.toString());
       }
     } else {
@@ -964,7 +966,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         try {
           transport = new TFramedTransport(transport);
         } catch (TTransportException e) {
-          LOG.error("Failed to create client transport", e);
+          LOG.error(CREATE_TRANSPORT_FAILED, e);
           throw e;
         }
       }
