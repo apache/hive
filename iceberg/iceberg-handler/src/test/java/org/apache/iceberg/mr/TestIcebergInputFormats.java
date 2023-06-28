@@ -64,8 +64,11 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -110,7 +113,7 @@ public class TestIcebergInputFormats {
   @Before
   public void before() throws IOException {
     conf = new Configuration();
-    conf.set(InputFormatConfig.CATALOG, Catalogs.LOCATION);
+    conf.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
     HadoopTables tables = new HadoopTables(conf);
 
     File location = temp.newFolder(testInputFormat.name(), fileFormat.name());
@@ -200,6 +203,42 @@ public class TestIcebergInputFormats {
     // skip residual filtering
     builder.skipResidualFiltering();
     testInputFormat.create(builder.conf()).validate(writeRecords);
+  }
+
+  @Test
+  @Ignore
+  // This test is ignored because for ARVO, the vectorized IcebergInputFormat.IcebergRecordReader doesn't support AVRO
+  // and for ORC and PARQUET, IcebergInputFormat class ignores residuals
+  // '... scan.filter(filter).ignoreResiduals()' and it is not compatible with this test
+  public void testFailedResidualFiltering() throws Exception {
+    Assume.assumeTrue("Vectorization is not yet supported for AVRO", this.fileFormat != FileFormat.AVRO);
+
+    helper.createTable();
+
+    List<Record> expectedRecords = helper.generateRandomRecords(2, 0L);
+    expectedRecords.get(0).set(2, "2020-03-20");
+    expectedRecords.get(1).set(2, "2020-03-20");
+
+    helper.appendToTable(Row.of("2020-03-20", 0), expectedRecords);
+
+    builder
+        .useHiveRows()
+        .filter(
+            Expressions.and(Expressions.equal("date", "2020-03-20"), Expressions.equal("id", 0)));
+
+    Assertions.assertThatThrownBy(() -> testInputFormat.create(builder.conf()))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage(
+            "Filter expression ref(name=\"id\") == 0 is not completely satisfied. Additional rows can be returned " +
+                    "not satisfied by the filter expression");
+
+    builder.usePigTuples();
+
+    Assertions.assertThatThrownBy(() -> testInputFormat.create(builder.conf()))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage(
+            "Filter expression ref(name=\"id\") == 0 is not completely satisfied. Additional rows can be returned " +
+                    "not satisfied by the filter expression");
   }
 
   @Test

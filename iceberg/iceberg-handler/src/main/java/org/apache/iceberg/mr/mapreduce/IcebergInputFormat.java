@@ -76,7 +76,7 @@ import org.apache.iceberg.encryption.EncryptedFiles;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
-import org.apache.iceberg.hive.MetastoreUtil;
+import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.InputFile;
@@ -261,7 +261,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private static final DynMethods.StaticMethod HIVE_VECTORIZED_READER_BUILDER;
 
     static {
-      if (MetastoreUtil.hive3PresentOnClasspath()) {
+      if (HiveVersion.min(HiveVersion.HIVE_3)) {
         HIVE_VECTORIZED_READER_BUILDER = DynMethods.builder("reader")
             .impl(HIVE_VECTORIZED_READER_CLASS,
                 Table.class,
@@ -363,7 +363,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       Preconditions.checkArgument(!task.file().format().equals(FileFormat.AVRO),
           "Vectorized execution is not yet supported for Iceberg avro tables. " +
               "Please turn off vectorization and retry the query.");
-      Preconditions.checkArgument(MetastoreUtil.hive3PresentOnClasspath(),
+      Preconditions.checkArgument(HiveVersion.min(HiveVersion.HIVE_3),
           "Vectorized read is unsupported for Hive 2 integration.");
 
       Path path = new Path(task.file().path().toString());

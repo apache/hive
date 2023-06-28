@@ -169,7 +169,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
   // Column index for partition metadata table
-  private static final int SPEC_IDX = 3;
+  private static final int SPEC_IDX = 1;
   private static final int PART_IDX = 0;
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";

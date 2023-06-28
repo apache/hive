@@ -32,7 +32,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.hive.MetastoreUtil;
+import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -112,7 +112,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
         if (javaVersion.equals("1.8")) {
           testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, false});
           // test for vectorization=ON in case of ORC and PARQUET format with Tez engine
-          if (fileFormat != FileFormat.METADATA && "tez".equals(engine) && MetastoreUtil.hive3PresentOnClasspath()) {
+          if (fileFormat != FileFormat.METADATA && "tez".equals(engine) && HiveVersion.min(HiveVersion.HIVE_3)) {
             testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, true});
           }
         }
