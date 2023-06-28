@@ -128,11 +128,11 @@ public class TestCSRFFilter {
     runTest(true,false);
   }
 
-  private void runTest(boolean filterEnabled, boolean injectionEnabled) throws Exception {
+  private void runTest(boolean isFilterEnabled, boolean isInjectionEnabled) throws Exception {
     // Exception is expected only if filter is enabled and injection is disabled
-    boolean exceptionExpected = filterEnabled && (!injectionEnabled);
-    initHS2(filterEnabled);
-    CsrfHttpRequestInterceptor.enableHeaderInjection(injectionEnabled);
+    boolean exceptionExpected = isFilterEnabled && (!isInjectionEnabled);
+    initHS2(isFilterEnabled);
+    CsrfHttpRequestInterceptor.setInjectHeader(isInjectionEnabled);
     Exception e = null;
     try {
       runBasicCommands();

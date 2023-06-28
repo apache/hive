@@ -42,8 +42,8 @@ public class CsrfHttpRequestInterceptor implements HttpRequestInterceptor {
 
   private static boolean injectHeader = true;
 
-  public static void enableHeaderInjection(boolean enabled){
-    injectHeader = enabled;
+  public static void setInjectHeader(boolean headerInjection){
+    injectHeader = headerInjection;
   }
 
   @Override
