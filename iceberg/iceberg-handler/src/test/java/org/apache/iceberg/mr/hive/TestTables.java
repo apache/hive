@@ -49,7 +49,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HiveCatalog;
-import org.apache.iceberg.hive.MetastoreUtil;
+import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestCatalogs;
@@ -506,7 +506,7 @@ public abstract class TestTables {
     private final String warehouseLocation;
 
     CustomCatalogTestTables(Configuration conf, TemporaryFolder temp, String catalogName) throws IOException {
-      this(conf, temp, (MetastoreUtil.hive3PresentOnClasspath() ? "file:" : "") +
+      this(conf, temp, (HiveVersion.min(HiveVersion.HIVE_3) ? "file:" : "") +
           temp.newFolder("custom", "warehouse").toString(), catalogName);
     }
 
@@ -537,7 +537,7 @@ public abstract class TestTables {
     private final String warehouseLocation;
 
     HadoopCatalogTestTables(Configuration conf, TemporaryFolder temp, String catalogName) throws IOException {
-      this(conf, temp, (MetastoreUtil.hive3PresentOnClasspath() ? "file:" : "") +
+      this(conf, temp, (HiveVersion.min(HiveVersion.HIVE_3) ? "file:" : "") +
           temp.newFolder("hadoop", "warehouse").toString(), catalogName);
     }
 
