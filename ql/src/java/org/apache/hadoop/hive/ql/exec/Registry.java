@@ -147,13 +147,13 @@ public class Registry {
   }
 
   public FunctionInfo registerUDF(String functionName,
-      Class<? extends UDF> UDFClass, boolean isOperator, FunctionResource... resources) {
-    return registerUDF(functionName, UDFClass, isOperator, functionName.toLowerCase(), resources);
+      Class<? extends UDF> UDFClass, boolean isOperator) {
+    FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    return registerUDF(functionName, functionType, UDFClass, isOperator, functionName.toLowerCase());
   }
 
   public FunctionInfo registerUDF(String functionName,
-      Class<? extends UDF> UDFClass, boolean isOperator, String displayName,
-      FunctionResource... resources) {
+                                  Class<? extends UDF> UDFClass, boolean isOperator, String displayName) {
     FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
     return registerUDF(functionName, functionType, UDFClass, isOperator, displayName);
   }
