@@ -245,7 +245,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         final Object rightBoundValueObject = ((RexLiteral) call.getOperands().get(3)).getValue();
         float rightValue = extractLiteral(typeName, rightBoundValueObject);
         // when inverseBool == true, this is a NOT_BETWEEN and selectivity must be inverted
-        if (inverseBool == true) {
+        if (inverseBool) {
           if (rightValue == leftValue) {
             return computeNotEqualitySelectivity(call);
           } else if (rightValue < leftValue) {
