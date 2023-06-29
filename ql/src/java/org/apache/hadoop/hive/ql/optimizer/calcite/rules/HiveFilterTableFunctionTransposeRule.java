@@ -73,8 +73,6 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
       return false;
     }
 
-    RelNode inputRel = tfs.getInput(0);
-
     // The TableFunctionScan is always created such that all the input RelNode
     // fields are present in its RelNode.  If a Filter has an InputRef that is
     // greater then the number of the RelNode below the TableFunctionScan, that
@@ -94,7 +92,6 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final Filter filter = call.rel(0);
     final HiveTableFunctionScan tfs = call.rel(1);
-    final RelNode inputRel = tfs.getInput(0);
     final RelBuilder builder = call.builder();
 
     final List<RexNode> newPartKeyFilterConditions = new ArrayList<>();
