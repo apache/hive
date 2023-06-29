@@ -17,22 +17,12 @@
  * under the License.
  */
 
-package org.apache.iceberg.util;
+package org.apache.iceberg.hive;
 
-import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
+interface HiveLock {
+  void lock() throws LockException;
 
-public class LocationUtil {
-  private LocationUtil() {
+  void ensureActive() throws LockException;
 
-  }
-
-  public static String stripTrailingSlash(String path) {
-    Preconditions.checkArgument(path != null && path.length() > 0, "path must not be null or empty");
-
-    String result = path;
-    while (result.endsWith("/")) {
-      result = result.substring(0, result.length() - 1);
-    }
-    return result;
-  }
+  void unlock();
 }
