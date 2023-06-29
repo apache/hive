@@ -42,7 +42,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@country
 CBO PLAN:
-HiveLVTableFunctionScan(invocation=[inline(ARRAY(ROW(8, _UTF-16LE'Hungary':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2)])
+HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(8, _UTF-16LE'Hungary':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2)])
   HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: EXPLAIN INSERT INTO country VALUES (8, 'Hungary')

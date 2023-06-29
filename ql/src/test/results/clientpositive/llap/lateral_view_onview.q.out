@@ -487,7 +487,7 @@ POSTHOOK: Input: default@lv_view
 CBO PLAN:
 HiveSortLimit(fetch=[3])
   HiveProject(mycol=[$4])
-    HiveLVTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol)])
+    HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol)])
       HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3])
         HiveTableScan(table=[[default, lv_table_n0]], table:alias=[lv_table_n0])
 
@@ -504,9 +504,9 @@ POSTHOOK: Input: default@lv_view
 CBO PLAN:
 HiveSortLimit(fetch=[9])
   HiveProject(mycol=[$4], mycol2=[$5])
-    HiveLVTableFunctionScan(invocation=[explode(ARRAY(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol, VARCHAR(2147483647) mytable2.mycol2)])
+    HiveTableFunctionScan(invocation=[explode(ARRAY(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol, VARCHAR(2147483647) mytable2.mycol2)])
       HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3], mytable.mycol=[$4])
-        HiveLVTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol)])
+        HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol)])
           HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3])
             HiveTableScan(table=[[default, lv_table_n0]], table:alias=[lv_table_n0])
 
@@ -523,9 +523,9 @@ POSTHOOK: Input: default@lv_view
 CBO PLAN:
 HiveSortLimit(fetch=[3])
   HiveProject(mycol2=[$5])
-    HiveLVTableFunctionScan(invocation=[explode($4)], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER ARRAY mytable.mycol, INTEGER mytable2.mycol2)])
+    HiveTableFunctionScan(invocation=[explode($4)], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER ARRAY mytable.mycol, INTEGER mytable2.mycol2)])
       HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3], mytable.mycol=[$4])
-        HiveLVTableFunctionScan(invocation=[explode(ARRAY(ARRAY(1, 2, 3)))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER ARRAY mytable.mycol)])
+        HiveTableFunctionScan(invocation=[explode(ARRAY(ARRAY(1, 2, 3)))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER ARRAY mytable.mycol)])
           HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3])
             HiveTableScan(table=[[default, lv_table_n0]], table:alias=[lv_table_n0])
 
@@ -653,7 +653,7 @@ POSTHOOK: Input: default@lv_view
 CBO PLAN:
 HiveSortLimit(fetch=[3])
   HiveProject(_o__c0=[size($1)], c3=[$2], _o__c2=[trim($0)], c4=[$3], mycol=[$4])
-    HiveLVTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytab.mycol)])
+    HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytab.mycol)])
       HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3])
         HiveTableScan(table=[[default, lv_table_n0]], table:alias=[lv_table_n0])
 

@@ -174,7 +174,7 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count($2)])
-  HiveLVTableFunctionScan(invocation=[explode($1)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) ARRAY array_val, VARCHAR(2147483647) c.val)])
+  HiveTableFunctionScan(invocation=[explode($1)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) ARRAY array_val, VARCHAR(2147483647) c.val)])
     HiveProject(key=[$0], array_val=[$2])
       HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(key=[$0])

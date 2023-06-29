@@ -389,11 +389,13 @@ public class ASTConverter {
 
       // When we are treating a UDTF as a 'select', it is not a lateral view.
       // In this case, it means that only the fields from the UDTF are selected
-      // out of the RelNode and placed into the SELEXPR. This starting field
-      // is obtained from udtf.getStartField()
+      // out of the RelNode and placed into the SELEXPR. So we want to ignore
+      // any field in the inputRef mapping.
       List<String> fields = udtf.getRowType().getFieldNames();
-      for (int i = udtf.getStartUdtfField(); i < udtf.getRowType().getFieldCount(); ++i) {
-        sel.add(HiveParser.Identifier, fields.get(i));
+      for (int i = 0; i < udtf.getRowType().getFieldCount(); ++i) {
+        if (!udtf.containsInputRefMapping(i)) {
+          sel.add(HiveParser.Identifier, fields.get(i));
+        }
       }
       b.add(sel);
       hiveAST.select = b.node();
@@ -732,9 +734,8 @@ public class ASTConverter {
       }
     }
 
-    int startUdtfField = htfs.getStartUdtfField();
-    for (Integer field : inputRefs) {
-      if (field < startUdtfField) {
+    for (Integer inputRef : inputRefs) {
+      if (htfs.containsInputRefMapping(inputRef)) {
         return false;
       }
     }

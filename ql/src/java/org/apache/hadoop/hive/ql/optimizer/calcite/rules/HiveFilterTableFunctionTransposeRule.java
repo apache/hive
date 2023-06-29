@@ -22,16 +22,18 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.metadata.RelColumnMapping;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveLVTableFunctionScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -49,29 +51,29 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
           new HiveFilterTableFunctionTransposeRule(HiveRelFactories.HIVE_BUILDER);
 
   public HiveFilterTableFunctionTransposeRule(RelBuilderFactory relBuilderFactory) {
-    super(operand(HiveFilter.class, operand(HiveLVTableFunctionScan.class, any())),
+    super(operand(HiveFilter.class, operand(HiveTableFunctionScan.class, any())),
         relBuilderFactory, null);
   }
 
   @Override
   public boolean matches(RelOptRuleCall call) {
     final Filter filterRel = call.rel(0);
-    final HiveLVTableFunctionScan tableFunctionScanRel = call.rel(1);
+    final HiveTableFunctionScan tfs = call.rel(1);
 
     RexNode condition = filterRel.getCondition();
     if (!HiveCalciteUtil.isDeterministic(condition)) {
       return false;
     }
 
-    // If the HiveLVTableFunctionScan is a special inline(array(...))
+    // If the HiveTableFunctionScan is a special inline(array(...))
     // udtf, the table is generated from this node. The underlying
     // RelNode will be a dummy table so no filter condition should
-    // pass through the HiveLVTableFunctionScan.
-    if (isInlineArray(tableFunctionScanRel)) {
+    // pass through the HiveTableFunctionScan.
+    if (isInlineArray(tfs)) {
       return false;
     }
 
-    RelNode inputRel = tableFunctionScanRel.getInput(0);
+    RelNode inputRel = tfs.getInput(0);
 
     // The TableFunctionScan is always created such that all the input RelNode
     // fields are present in its RelNode.  If a Filter has an InputRef that is
@@ -82,8 +84,7 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
     // We check for each individual conjunction (breaking it up by top level 'and'
     // conditions).
     for (RexNode ce : RelOptUtil.conjunctions(filterRel.getCondition())) {
-      Set<Integer> inputRefs = HiveCalciteUtil.getInputRefs(ce);
-      if (canBePushed(HiveCalciteUtil.getInputRefs(ce), inputRel)) {
+      if (canBePushed(HiveCalciteUtil.getInputRefs(ce), tfs)) {
         return true;
       }
     }
@@ -92,7 +93,7 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
 
   public void onMatch(RelOptRuleCall call) {
     final Filter filter = call.rel(0);
-    final HiveLVTableFunctionScan tfs = call.rel(1);
+    final HiveTableFunctionScan tfs = call.rel(1);
     final RelNode inputRel = tfs.getInput(0);
     final RelBuilder builder = call.builder();
 
@@ -104,7 +105,7 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
     for (RexNode ce : RelOptUtil.conjunctions(filter.getCondition())) {
       // We can only push if all the InputRef pointers are referencing the
       // input RelNode to the TableFunctionScan
-      if (canBePushed(HiveCalciteUtil.getInputRefs(ce), inputRel)) {
+      if (canBePushed(HiveCalciteUtil.getInputRefs(ce), tfs)) {
         newPartKeyFilterConditions.add(ce);
       } else {
         unpushedFilterConditions.add(ce);
@@ -115,7 +116,7 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
     final RexNode filterCondToPushBelowProj = RexUtil.composeConjunction(
         filter.getCluster().getRexBuilder(), newPartKeyFilterConditions, true);
 
-    builder.push(tfs.getInput(0)).filter(filterCondToPushBelowProj);;
+    builder.push(tfs.getInput(0)).filter(filterCondToPushBelowProj);
 
     // If there are conditions that cannot be pushed through, generate the RexNode
     final RexNode unpushedFilCondAboveProj = unpushedFilterConditions.isEmpty()
@@ -138,8 +139,8 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
     call.transformTo(builder.build());
   }
 
-  private boolean isInlineArray(HiveLVTableFunctionScan tableFunctionScanRel) {
-    RexCall udtfCall = (RexCall) tableFunctionScanRel.getCall();
+  private boolean isInlineArray(HiveTableFunctionScan tfs) {
+    RexCall udtfCall = (RexCall) tfs.getCall();
     if (!FunctionRegistry.INLINE_FUNC_NAME.equalsIgnoreCase(udtfCall.getOperator().getName())) {
       return false;
     }
@@ -155,14 +156,20 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
     return true;
   }
 
-  // The first fields in the HiveTableFunctionScan match the fields in the
-  // inputRel. If any of the inputRefs are references to a field that is
-  // a result of the UDTF (the fields after the inputRel fields),
+  // If any of the inputRefs are references to a field that is not mapped into the inputRelNode,
   // the condition cannot be pushed.
-  private boolean canBePushed(Set<Integer> inputRefs, RelNode inputRel) {
-    int numFieldsInInput = inputRel.getRowType().getFieldCount();
+  private boolean canBePushed(Set<Integer> inputRefs, HiveTableFunctionScan tfs) {
+    Set<RelColumnMapping> columnMappings = tfs.getColumnMappings();
+    if (inputRefs.isEmpty()) {
+      return true;
+    }
+
+    if (CollectionUtils.isEmpty(columnMappings)) {
+      return false;
+    }
+
     for (Integer inputRef : inputRefs) {
-      if (inputRef >= numFieldsInInput) {
+      if (!tfs.containsInputRefMapping(inputRef)) {
         return false;
       }
     }

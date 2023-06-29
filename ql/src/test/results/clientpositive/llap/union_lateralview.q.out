@@ -326,7 +326,7 @@ CBO PLAN:
 HiveProject(key=[$3], arr_ele=[$0], value=[$2])
   HiveJoin(condition=[=($1, $3)], joinType=[left], algorithm=[none], cost=[not available])
     HiveProject(arr_ele=[$3], key=[$0], value=[$1])
-      HiveLVTableFunctionScan(invocation=[explode($2)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, INTEGER ARRAY arr, INTEGER c.arr_ele)])
+      HiveTableFunctionScan(invocation=[explode($2)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, INTEGER ARRAY arr, INTEGER c.arr_ele)])
         HiveProject(key=[$0], value=[$1], arr=[ARRAY(1, 2, 3)])
           HiveUnion(all=[true])
             HiveProject(key=[$0], value=[$1])

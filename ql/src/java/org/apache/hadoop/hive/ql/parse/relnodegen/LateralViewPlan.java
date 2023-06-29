@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.relnodegen;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.metadata.RelColumnMapping;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
@@ -28,7 +29,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveLVTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTErrorUtils;
@@ -113,9 +113,9 @@ public class LateralViewPlan {
 
     RelDataType retType = getRetType(cluster, inputRel, udtfCall, columnAliases);
 
-    this.lateralViewRel = HiveLVTableFunctionScan.create(cluster,
+    this.lateralViewRel = HiveTableFunctionScan.create(cluster,
         TraitsUtil.getDefaultTraitSet(cluster), ImmutableList.of(inputRel), udtfCall,
-        null, retType, null);
+        null, retType, createColumnMappings(inputRel));
   }
 
   public static void validateLateralView(ASTNode lateralView) throws SemanticException {
@@ -264,5 +264,13 @@ public class LateralViewPlan {
     }
 
     return cluster.getTypeFactory().createStructType(allDataTypes, allDataTypeNames);
+  }
+
+  private Set<RelColumnMapping> createColumnMappings(RelNode inputRel) {
+    Set<RelColumnMapping> colMappings = new HashSet<>();
+    for (int i = 0; i < inputRel.getRowType().getFieldCount(); ++i) {
+      colMappings.add(new RelColumnMapping(i, 0, i, false));
+    }
+    return colMappings;
   }
 }
