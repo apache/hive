@@ -160,13 +160,13 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   }
 
   public LoadTableDesc(Path path, Table tableHandle, boolean isOverWrite, boolean useAppendForLoad,
-      boolean isInsertOverwrite) {
+      Map<String, String> partitionSpec) {
     super(path, AcidUtils.Operation.NOT_ACID);
     this.mdTable = tableHandle;
     this.useAppendForLoad = useAppendForLoad;
     this.loadFileType = isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
     this.table = Utilities.getTableDesc(tableHandle);
-    this.isInsertOverwrite = isInsertOverwrite;
+    this.partitionSpec = partitionSpec;
   }
 
   public boolean isUseAppendForLoad() {

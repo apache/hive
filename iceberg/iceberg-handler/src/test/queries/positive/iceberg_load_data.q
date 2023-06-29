@@ -58,3 +58,29 @@ LOAD DATA LOCAL INPATH '../../data/files/part.orc' INTO TABLE ice_orc;
 select * from ice_orc order by p_partkey;
 
 select count(*) from ice_orc;
+
+create external table ice_parquet_partitioned (
+  strcol string,
+  intcol integer
+) partitioned by (pcol int)
+stored by iceberg;
+
+insert into ice_parquet_partitioned values ('AA', 10, 100), ('BB', 20, 200), ('CC', 30, 300);
+
+select * from ice_parquet_partitioned order by intcol;
+
+explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=100' INTO TABLE ice_parquet_partitioned
+PARTITION (pcol='300');
+
+LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=100' INTO TABLE
+ice_parquet_partitioned PARTITION (pcol='100');
+
+select * from ice_parquet_partitioned order by intcol;
+
+explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=200' OVERWRITE INTO TABLE
+        ice_parquet_partitioned PARTITION (pcol='200');
+
+LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=200' OVERWRITE INTO TABLE
+ice_parquet_partitioned PARTITION (pcol='200');
+
+select * from ice_parquet_partitioned order by intcol;
