@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.executionengine.ExecException;
@@ -74,6 +75,15 @@ public abstract class HCatBaseTest {
     }
   }
 
+  // Iceberg tables store table and partition information in SessionState and uses it as a Cache.
+  // Driver needs to be refreshed to clear the cache and obtain changes made by Pig server.
+  public void refreshDriver() throws Exception {
+    if (driver != null) {
+      driver.close();
+    }
+    driver = DriverFactory.newDriver(hiveConf);
+  }
+
   /**
    * Create a new HiveConf and set properties necessary for unit tests.
    */
@@ -100,6 +110,7 @@ public abstract class HCatBaseTest {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    hiveConf.setBoolean(InputFormatConfig.SCHEMA_AUTO_CONVERSION, true);
   }
 
   protected void logAndRegister(PigServer server, String query) throws IOException {

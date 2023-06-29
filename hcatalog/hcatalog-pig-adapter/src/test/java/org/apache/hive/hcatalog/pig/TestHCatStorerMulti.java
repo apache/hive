@@ -82,7 +82,7 @@ public class TestHCatStorerMulti {
   }
 
   private void createTable(String tablename, String schema, String partitionedBy) throws Exception {
-    AbstractHCatLoaderTest.createTableDefaultDB(tablename, schema, partitionedBy, driver, storageFormat);
+    AbstractHCatLoaderTest.createTableDefaultDB(tablename, schema, partitionedBy, driver, storageFormat, false);
   }
 
   private void createTable(String tablename, String schema) throws Exception {

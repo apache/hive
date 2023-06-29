@@ -145,6 +145,7 @@ public final class HCatConstants {
   public static final String HCAT_MSGBUS_TOPIC_PREFIX = "hcat.msgbus.topic.prefix";
 
   public static final String HCAT_OUTPUT_ID_HASH = HCAT_KEY_OUTPUT_BASE + ".id";
+  public static final String ICEBERG_OUTPUT_ID = "iceberg.output.id";
 
   public static final String HCAT_DYNAMIC_PTN_JOBID = HCAT_KEY_OUTPUT_BASE + ".dynamic.jobid";
   public static final boolean HCAT_IS_DYNAMIC_MAX_PTN_CHECK_ENABLED = false;

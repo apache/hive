@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -79,6 +80,8 @@ import org.apache.hive.hcatalog.mapreduce.StorerInfo;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
 
 public class HCatUtil {
 
@@ -526,9 +529,16 @@ public class HCatUtil {
           }
         }
       }
+      // Commit Iceberg job in Tez AM
+      String outputCommitter = jobProperties.get("mapred.output.committer.class");
+      if (outputCommitter != null && outputCommitter.contains("HiveIcebergNoJobCommitter")) {
+        jobProperties.put("mapred.output.committer.class", "org.apache.iceberg.mr.hive.HiveIcebergOutputCommitter");
+      }
       for (Map.Entry<String, String> el : jobProperties.entrySet()) {
         conf.set(el.getKey(), el.getValue());
       }
+      setWriteOperation(conf, tableDesc.getFullTableName(), Context.Operation.OTHER);
+      conf.set(HiveConf.ConfVars.HIVE_QUERY_ID.varname, "PIG-QUERY");
     } catch (IOException e) {
       throw new IllegalStateException(
         "Failed to configure StorageHandler", e);

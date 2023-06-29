@@ -84,11 +84,16 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
   private Map<Integer, Pair<Integer, String>> basicInputData;
 
   protected String storageFormat;
+  protected boolean isIcebergTable;
 
   abstract String getStorageFormat();
+  public boolean isIcebergTable() {
+    return false;
+  }
 
   public AbstractHCatLoaderTest() {
     this.storageFormat = getStorageFormat();
+    this.isIcebergTable = isIcebergTable();
   }
 
   private void dropTable(String tablename) throws Exception {
@@ -101,30 +106,37 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
 
   private void createTable(String db, String tablename, String schema, String partitionedBy) throws
           Exception {
-    createTable(db, tablename, schema, partitionedBy, driver, storageFormat);
+    createTable(db, tablename, schema, partitionedBy, driver, storageFormat, isIcebergTable);
   }
 
   private void createTableDefaultDB(String tablename, String schema, String partitionedBy) throws
           Exception {
-    createTable(null, tablename, schema, partitionedBy, driver, storageFormat);
+    createTable(null, tablename, schema, partitionedBy, driver, storageFormat, isIcebergTable);
+    // Iceberg table store partition information in SessionState
+    if (isIcebergTable) {
+      refreshDriver();
+    }
   }
 
   static void createTableDefaultDB(String tablename, String schema, String partitionedBy, IDriver
-          driver, String storageFormat) throws Exception {
-    createTable(null, tablename, schema, partitionedBy, driver, storageFormat);
+          driver, String storageFormat, boolean isIcebergTable) throws Exception {
+    createTable(null, tablename, schema, partitionedBy, driver, storageFormat, isIcebergTable);
   }
 
   static void createTable(String db, String tablename, String schema, String partitionedBy, IDriver
-          driver, String storageFormat)
+          driver, String storageFormat, boolean isIcebergTable)
       throws Exception {
     String createTable;
     createTable = "create table " + tablename + "(" + schema + ") ";
     if ((partitionedBy != null) && (!partitionedBy.trim().isEmpty())) {
       createTable = createTable + "partitioned by (" + partitionedBy + ") ";
     }
+    if (isIcebergTable) {
+      createTable = createTable + "stored by iceberg ";
+    }
     createTable = createTable + "stored as " +storageFormat;
     //HCat doesn't support transactional tables
-    createTable += " TBLPROPERTIES ('transactional'='false')";
+    createTable += " TBLPROPERTIES ('transactional'='false', 'engine.hive.lock-enabled'='false')";
     if (db != null) {
       executeStatementOnDriver("create database if not exists " + db, driver);
       executeStatementOnDriver("use " + db + "", driver);
@@ -195,8 +207,8 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     );
     HcatTestUtils.createTestDataFile(DATE_FILE_NAME,
       new String[]{
-        "2016-07-14 08:10:15\tHenry Jekyll",
-        "2016-07-15 11:54:55\tEdward Hyde",
+        "2016-07-14\tHenry Jekyll",
+        "2016-07-15\tEdward Hyde",
       }
     );
     PigServer server = createPigServer(false);
@@ -210,17 +222,29 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
             "using org.apache.hive" +".hcatalog.pig.HCatStorer();", ++i);
     server.registerQuery("B = foreach A generate a,b;", ++i);
     server.registerQuery("B2 = filter B by a < 2;", ++i);
-    server.registerQuery("store B2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=0');", ++i);
+    if (isIcebergTable) {
+      server.registerQuery("B2_WITH_BKT = foreach B2 generate *, '0' as bkt:chararray;", ++i);
+      server.registerQuery("store B2_WITH_BKT into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();", ++i);
+      // TODO: A single vertex cannot write to same table multiple times. Execute this before inserting C2_WITH_BKT.
+      server.executeBatch();
+    } else {
+      server.registerQuery("store B2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=0');", ++i);
+    }
 
     server.registerQuery("C = foreach A generate a,b;", ++i);
     server.registerQuery("C2 = filter C by a >= 2;", ++i);
-    server.registerQuery("store C2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=1');", ++i);
+    if (isIcebergTable) {
+      server.registerQuery("C2_WITH_BKT = foreach C2 generate *, '1' as bkt:chararray;", ++i);
+      server.registerQuery("store C2_WITH_BKT into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();", ++i);
+    } else {
+      server.registerQuery("store C2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=1');", ++i);
+    }
 
     server.registerQuery("D = load '" + COMPLEX_FILE_NAME + "' as (name:chararray, studentid:int, contact:tuple(phno:chararray,email:chararray), currently_registered_courses:bag{innertup:tuple(course:chararray)}, current_grades:map[ ] , phnos :bag{innertup:tuple(phno:chararray,type:chararray)});", ++i);
     server.registerQuery("store D into '" + COMPLEX_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();", ++i);
 
     server.registerQuery("E = load '" + DATE_FILE_NAME + "' as (dt:chararray, b:chararray);", ++i);
-    server.registerQuery("F = foreach E generate ToDate(dt, 'yyyy-MM-dd HH:mm:ss') as dt, b;", ++i);
+    server.registerQuery("F = foreach E generate b, ToDate(dt, 'yyyy-MM-dd') as dt;", ++i);
     server.registerQuery("store F into '" + PARTITIONED_DATE_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();", ++i);
 
     server.executeBatch();
@@ -357,7 +381,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
   @Test
   public void testReadPartitionedBasic() throws Exception {
     PigServer server = createPigServer(false);
-
+    refreshDriver();
     driver.run("select * from " + PARTITIONED_TABLE);
     ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
     driver.getResults(valuesReadFromHiveDriver);
@@ -695,7 +719,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
   public void testDatePartitionPushUp() throws Exception {
     PigServer server = createPigServer(false);
     server.registerQuery("X = load '" + PARTITIONED_DATE_TABLE + "' using " + HCatLoader.class.getName() + "();");
-    server.registerQuery("Y = filter X by dt == ToDate('2016-07-14','yyyy-MM-dd');");
+    server.registerQuery("Y = filter X by dt == ToDate('2016-07-14T00:00:00.000Z');");
     Iterator<Tuple> YIter = server.openIterator("Y");
     int numTuplesRead = 0;
     while (YIter.hasNext()) {
