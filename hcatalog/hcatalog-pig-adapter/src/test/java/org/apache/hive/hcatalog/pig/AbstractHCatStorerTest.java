@@ -35,6 +35,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
@@ -55,9 +56,11 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   static Logger LOG = LoggerFactory.getLogger(AbstractHCatStorerTest.class);
   static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
   protected String storageFormat;
+  protected boolean isIcebergTable;
 
   public AbstractHCatStorerTest() {
     storageFormat = getStorageFormat();
+    isIcebergTable = isIcebergTable();
   }
 
   // Start: tests that check values from Pig that are out of range for target column
@@ -264,8 +267,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
       String format) throws Exception {
     AbstractHCatLoaderTest.dropTable(tblName, driver);
     final String field = "f1";
-    AbstractHCatLoaderTest.createTableDefaultDB(tblName, field + " " + hiveType, null, driver,
-            storageFormat);
+    createTableDefaultDB(tblName, field + " " + hiveType, null, driver,
+            storageFormat, isIcebergTable);
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, new String[] { inputValue });
     LOG.debug("File=" + INPUT_FILE_NAME);
     dumpFile(INPUT_FILE_NAME);
@@ -337,6 +340,10 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
 
   abstract String getStorageFormat();
 
+  public boolean isIcebergTable() {
+    return false;
+  }
+
   /**
    * Create a data file with datatypes added in 0.13. Read it with Pig and use Pig + HCatStorer to
    * write to a Hive table. Then read it using Pig and Hive and make sure results match.
@@ -345,9 +352,9 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   public void testDateCharTypes() throws Exception {
     final String tblName = "junit_date_char";
     AbstractHCatLoaderTest.dropTable(tblName, driver);
-    AbstractHCatLoaderTest.createTableDefaultDB(tblName,
+    createTableDefaultDB(tblName,
         "id int, char5 char(5), varchar10 varchar(10), dec52 decimal(5,2)", null, driver,
-        storageFormat);
+        storageFormat, isIcebergTable);
     int NUM_ROWS = 5;
     String[] rows = new String[NUM_ROWS];
     for (int i = 0; i < NUM_ROWS; i++) {
@@ -414,9 +421,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testPartColsInData() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_unparted", "a int", "b string", driver,
-            storageFormat);
-
+    createTableDefaultDB("junit_unparted", "a int", "b string", driver,
+            storageFormat, isIcebergTable);
     int LOOP_SIZE = 11;
     String[] input = new String[LOOP_SIZE];
     for (int i = 0; i < LOOP_SIZE; i++) {
@@ -425,8 +431,12 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
     PigServer server = createPigServer(false);
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
-    server.registerQuery("store A into 'default.junit_unparted' using "
-        + HCatStorer.class.getName() + "('b=1');");
+    if (isIcebergTable) {
+      server.registerQuery("store A into 'default.junit_unparted' using " + HCatStorer.class.getName() + "();");
+    } else {
+      server.registerQuery("store A into 'default.junit_unparted' using " + HCatStorer.class.getName() + "('b=1');");
+    }
+
     server.registerQuery("B = load 'default.junit_unparted' using " + HCatLoader.class.getName()
         + "();");
     Iterator<Tuple> itr = server.openIterator("B");
@@ -449,9 +459,9 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   public void testMultiPartColsInData() throws Exception {
 
     AbstractHCatLoaderTest.dropTable("employee", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("employee",
+    createTableDefaultDB("employee",
         "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
-        "emp_country STRING , emp_state STRING", driver, storageFormat);
+        "emp_country STRING , emp_state STRING", driver, storageFormat, isIcebergTable);
 
     String[] inputData =
         { "111237\tKrishna\t01/01/1990\tM\tIN\tTN", "111238\tKalpana\t01/01/2000\tF\tIN\tKA",
@@ -500,8 +510,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   public void testStoreInPartiitonedTbl() throws Exception {
 
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_unparted", "a int", "b string",
-        driver, storageFormat);
+    createTableDefaultDB("junit_unparted", "a int", "b string",
+        driver, storageFormat, isIcebergTable);
 
     int LOOP_SIZE = 11;
     String[] input = new String[LOOP_SIZE];
@@ -511,8 +521,12 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
     PigServer server = createPigServer(false);
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int);");
-    server.registerQuery("store A into 'default.junit_unparted' using "
-        + HCatStorer.class.getName() + "('b=1');");
+    if (isIcebergTable) {
+      server.registerQuery("A_WITH_B = FOREACH A GENERATE a as a:int, '1' as b:chararray;");
+      server.registerQuery("store A_WITH_B into 'default.junit_unparted' using " + HCatStorer.class.getName() + "();");
+    } else {
+      server.registerQuery("store A into 'default.junit_unparted' using " + HCatStorer.class.getName() + "('b=1');");
+    }
     server.registerQuery("B = load 'default.junit_unparted' using " + HCatLoader.class.getName()
         + "();");
     Iterator<Tuple> itr = server.openIterator("B");
@@ -532,22 +546,31 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     // verify the scratch directories has been cleaned up
     Path path = new Path(client.getTable("default", "junit_unparted").getSd().getLocation());
     FileSystem fs = path.getFileSystem(hiveConf);
-    assertEquals(1, fs.listStatus(path).length);
+    if (isIcebergTable) {
+      assertEquals(3, fs.listStatus(path).length);
+      assertEquals(1, fs.listStatus(new Path(path, "data")).length);
+    } else {
+      assertEquals(1, fs.listStatus(path).length);
+    }
   }
 
   @Test
   public void testNoAlias() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_parted", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_parted", "a int, b string", "ds " +
-            "string", driver, storageFormat);
+    createTableDefaultDB("junit_parted", "a int, b string", "ds " +
+            "string", driver, storageFormat, isIcebergTable);
     PigServer server = createPigServer(false);
     boolean errCaught = false;
     try {
       server.setBatchOn();
       server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
       server.registerQuery("B = foreach A generate a+10, b;");
-      server.registerQuery("store B into 'junit_parted' using " + HCatStorer.class.getName()
-          + "('ds=20100101');");
+      if (isIcebergTable) {
+        server.registerQuery("store B into 'junit_parted' using " + HCatStorer.class.getName() + "();");
+      } else {
+        server.registerQuery("store B into 'junit_parted' using " + HCatStorer.class.getName()
+                + "('ds=20100101');");
+      }
       server.executeBatch();
     } catch (PigException fe) {
       PigException pe = LogUtils.getPigException(fe);
@@ -565,8 +588,11 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
       server.setBatchOn();
       server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, B:chararray);");
       server.registerQuery("B = foreach A generate a, B;");
-      server.registerQuery("store B into 'junit_parted' using " + HCatStorer.class.getName()
-          + "('ds=20100101');");
+      if (isIcebergTable) {
+        server.registerQuery("store B into 'junit_parted' using " + HCatStorer.class.getName() + "();");
+      } else {
+        server.registerQuery("store B into 'junit_parted' using " + HCatStorer.class.getName() + "('ds=20100101');");
+      }
       server.executeBatch();
     } catch (PigException fe) {
       PigException pe = LogUtils.getPigException(fe);
@@ -583,12 +609,12 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testStoreMultiTables() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_unparted", "a int, b string", null,
-        driver, storageFormat);
+    createTableDefaultDB("junit_unparted", "a int, b string", null,
+        driver, storageFormat, isIcebergTable);
 
     AbstractHCatLoaderTest.dropTable("junit_unparted2", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_unparted2", "a int, b string", null,
-        driver, "RCFILE");
+    createTableDefaultDB("junit_unparted2", "a int, b string", null,
+        driver, "RCFILE", false);
 
     int LOOP_SIZE = 3;
     String[] input = new String[LOOP_SIZE * LOOP_SIZE];
@@ -634,8 +660,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testStoreWithNoSchema() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_unparted", "a int, b string", null,
-        driver, storageFormat);
+    createTableDefaultDB("junit_unparted", "a int, b string", null,
+        driver, storageFormat, isIcebergTable);
 
     int LOOP_SIZE = 3;
     String[] input = new String[LOOP_SIZE * LOOP_SIZE];
@@ -670,8 +696,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testStoreWithNoCtorArgs() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_unparted", "a int, b string", null,
-        driver, storageFormat);
+    createTableDefaultDB("junit_unparted", "a int, b string", null,
+        driver, storageFormat, isIcebergTable);
 
     int LOOP_SIZE = 3;
     String[] input = new String[LOOP_SIZE * LOOP_SIZE];
@@ -707,8 +733,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   public void testEmptyStore() throws Exception {
 
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_unparted", "a int, b string", null,
-            driver, storageFormat);
+    createTableDefaultDB("junit_unparted", "a int, b string", null,
+            driver, storageFormat, isIcebergTable);
 
     int LOOP_SIZE = 3;
     String[] input = new String[LOOP_SIZE * LOOP_SIZE];
@@ -740,10 +766,10 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testBagNStruct() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_unparted",
+    createTableDefaultDB("junit_unparted",
         "b string,a struct<a1:int>,  arr_of_struct array<string>, " +
             "arr_of_struct2 array<struct<s1:string,s2:string>>,  arr_of_struct3 array<struct<s3:string>>",
-        null, driver, storageFormat);
+        null, driver, storageFormat, isIcebergTable);
 
     String[] inputData =
         new String[] { "zookeeper\t(2)\t{(pig)}\t{(pnuts,hdfs)}\t{(hadoop),(hcat)}",
@@ -782,9 +808,9 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testStoreFuncAllSimpleTypes() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_unparted",
+    createTableDefaultDB("junit_unparted",
         "a int, b float, c double, d bigint, e string, h boolean, f binary, g binary", null,
-        driver, storageFormat);
+        driver, storageFormat, isIcebergTable);
 
     int i = 0;
     String[] input = new String[3];
@@ -801,10 +827,18 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME
         + "' as (a:int, b:float, c:double, d:long, e:chararray, h:boolean, f:bytearray);");
-    // null gets stored into column g which is a binary field.
-    server.registerQuery("store A into 'default.junit_unparted' using "
-        + HCatStorer.class.getName()
-        + "('','a:int, b:float, c:double, d:long, e:chararray, h:boolean, f:bytearray');");
+    if (isIcebergTable) {
+      // TODO: Fix Iceberg deserializer (FixNameMappingObjectInspectorPair) to handle missing columns
+      server.registerQuery("A_WITH_G = FOREACH A generate *, null as g:bytearray;");
+      server.registerQuery("store A_WITH_G into 'default.junit_unparted' using "
+              + HCatStorer.class.getName()
+              + "('','a:int, b:float, c:double, d:long, e:chararray, h:boolean, f:bytearray, g:bytearray');");
+    } else {
+      // null gets stored into column g which is a binary field.
+      server.registerQuery("store A into 'default.junit_unparted' using "
+              + HCatStorer.class.getName()
+              + "('','a:int, b:float, c:double, d:long, e:chararray, h:boolean, f:bytearray');");
+    }
     server.executeBatch();
 
     driver.run("select * from junit_unparted");
@@ -841,8 +875,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testStoreFuncSimple() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("junit_unparted", "a int, b string", null,
-        driver, storageFormat);
+    createTableDefaultDB("junit_unparted", "a int, b string", null,
+        driver, storageFormat, isIcebergTable);
 
     int LOOP_SIZE = 3;
     String[] inputData = new String[LOOP_SIZE * LOOP_SIZE];
@@ -879,9 +913,9 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testDynamicPartitioningMultiPartColsInDataPartialSpec() throws Exception {
     AbstractHCatLoaderTest.dropTable("employee", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("employee",
+    createTableDefaultDB("employee",
         "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
-        "emp_country STRING , emp_state STRING", driver, storageFormat);
+        "emp_country STRING , emp_state STRING", driver, storageFormat, isIcebergTable);
 
     String[] inputData =
         { "111237\tKrishna\t01/01/1990\tM\tIN\tTN", "111238\tKalpana\t01/01/2000\tF\tIN\tKA",
@@ -894,8 +928,12 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
         + "' USING PigStorage() AS (emp_id:int,emp_name:chararray,emp_start_date:chararray,"
         + "emp_gender:chararray,emp_country:chararray,emp_state:chararray);");
     pig.registerQuery("IN = FILTER A BY emp_country == 'IN';");
-    pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName()
-        + "('emp_country=IN');");
+    if (isIcebergTable) {
+      pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName() + "();");
+    } else {
+      pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName()
+              + "('emp_country=IN');");
+    }
     pig.executeBatch();
     driver.run("select * from employee");
     ArrayList<String> results = new ArrayList<String>();
@@ -912,9 +950,9 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testDynamicPartitioningMultiPartColsInDataNoSpec() throws Exception {
     AbstractHCatLoaderTest.dropTable("employee", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("employee",
-        "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
-        "emp_country STRING , emp_state STRING", driver, storageFormat);
+    createTableDefaultDB("employee",
+            "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
+            "emp_country STRING , emp_state STRING", driver, storageFormat, isIcebergTable);
 
     String[] inputData =
         { "111237\tKrishna\t01/01/1990\tM\tIN\tTN", "111238\tKalpana\t01/01/2000\tF\tIN\tKA",
@@ -944,9 +982,9 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testDynamicPartitioningMultiPartColsNoDataInDataNoSpec() throws Exception {
     AbstractHCatLoaderTest.dropTable("employee", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("employee",
+    createTableDefaultDB("employee",
         "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
-        "emp_country STRING , emp_state STRING", driver, storageFormat);
+        "emp_country STRING , emp_state STRING", driver, storageFormat, isIcebergTable);
 
 
     String[] inputData = {};
@@ -970,9 +1008,9 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testStaticPartitioningMultiPartCols() throws Exception {
     AbstractHCatLoaderTest.dropTable("employee", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("employee",
+    createTableDefaultDB("employee",
         "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
-        "emp_country STRING , emp_state STRING", driver, storageFormat);
+        "emp_country STRING , emp_state STRING", driver, storageFormat, isIcebergTable);
 
     String[] inputData =
         {"111237\tKrishna\t01/01/1990\tM\tIN\tKA", "111238\tKalpana\t01/01/2000\tF\tIN\tKA",
@@ -985,8 +1023,12 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
         + "' USING PigStorage() AS (emp_id:int,emp_name:chararray,emp_start_date:chararray,"
         + "emp_gender:chararray,emp_country:chararray,emp_state:chararray);");
     pig.registerQuery("IN = FILTER A BY emp_country == 'IN' AND emp_state== 'KA';");
-    pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName()
-        + "('emp_country=IN, emp_state=KA');");
+    if (isIcebergTable) {
+      pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName() + "();");
+    } else {
+      pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName()
+              + "('emp_country=IN, emp_state=KA');");
+    }
     pig.executeBatch();
     driver.run("select * from employee");
     ArrayList<String> results = new ArrayList<String>();
@@ -1003,9 +1045,9 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testStaticPartitioningMultiPartColsNoData() throws Exception {
     AbstractHCatLoaderTest.dropTable("employee", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("employee",
+    createTableDefaultDB("employee",
         "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
-        "emp_country STRING , emp_state STRING", driver, storageFormat);
+        "emp_country STRING , emp_state STRING", driver, storageFormat, isIcebergTable);
 
     String[] inputData = {};
 
@@ -1016,8 +1058,12 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
         + "' USING PigStorage() AS (emp_id:int,emp_name:chararray,emp_start_date:chararray,"
         + "emp_gender:chararray,emp_country:chararray,emp_state:chararray);");
     pig.registerQuery("IN = FILTER A BY emp_country == 'IN' AND emp_state== 'KA';");
-    pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName()
-        + "('emp_country=IN, emp_state=KA');");
+    if (isIcebergTable) {
+      pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName() + "();");
+    } else {
+      pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName()
+              + "('emp_country=IN, emp_state=KA');");
+    }
     pig.executeBatch();
     driver.run("select * from employee");
     ArrayList<String> results = new ArrayList<String>();
@@ -1029,8 +1075,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testPartitionPublish() throws Exception {
     AbstractHCatLoaderTest.dropTable("ptn_fail", driver);
-    AbstractHCatLoaderTest.createTableDefaultDB("ptn_fail", "a int, c string", "b string",
-        driver, storageFormat);
+    createTableDefaultDB("ptn_fail", "a int, c string", "b string",
+        driver, storageFormat, false);
 
     int LOOP_SIZE = 11;
     String[] input = new String[LOOP_SIZE];
@@ -1057,6 +1103,14 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     // Make sure the partitions directory is not in hdfs.
     assertTrue((new File(TEST_WAREHOUSE_DIR + "/ptn_fail")).exists());
     assertFalse((new File(TEST_WAREHOUSE_DIR + "/ptn_fail/b=math")).exists());
+  }
+
+  void createTableDefaultDB(String tablename, String schema, String partitionedBy, IDriver
+          driver, String storageFormat, boolean isIcebergTable) throws Exception {
+    AbstractHCatLoaderTest.createTable(null, tablename, schema, partitionedBy, driver, storageFormat, isIcebergTable);
+    if (isIcebergTable) {
+      refreshDriver();
+    }
   }
 
   static public class FailEvalFunc extends EvalFunc<Boolean> {

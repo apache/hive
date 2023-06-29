@@ -166,8 +166,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
 
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
-  private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
+  private static final Splitter TABLE_NAME_SPLITTER = Splitter.on(TABLE_NAME_SEPARATOR);
   // Column index for partition metadata table
   private static final int SPEC_IDX = 1;
   private static final int PART_IDX = 0;
@@ -247,11 +247,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
     String opType = getOperationType();
-    map.put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
+    String tableName = tableDesc.getTableName();
+    map.put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName, opType);
+    String existingOutputTables = map.get(InputFormatConfig.OUTPUT_TABLES);
+    map.put(InputFormatConfig.OUTPUT_TABLES, getOutputTables(tableName, existingOutputTables));
     // Putting the key into the table props as well, so that projection pushdown can be determined on a
     // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
     // the serde config for all tables in the query, not just the output tables, so we can't rely on that in the serde.
-    tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
+    tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName, opType);
   }
 
   /**
@@ -288,9 +291,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       jobConf.set(opKey, tableDesc.getProperties().getProperty(opKey));
       Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
-      String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
-      tables = tables == null ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
-      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
+      String existingOutputTables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
+      jobConf.set(InputFormatConfig.OUTPUT_TABLES, getOutputTables(tableName, existingOutputTables));
 
       String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
       if (catalogName != null) {
@@ -305,6 +307,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     } catch (IOException e) {
       Throwables.propagate(e);
+    }
+  }
+
+  private static String getOutputTables(String outputTable, String existingOutputTables) {
+    if (existingOutputTables == null) {
+      return outputTable;
+    } else {
+      return TABLE_NAME_SPLITTER.splitToStream(existingOutputTables).anyMatch(x -> x.equals(outputTable)) ?
+              existingOutputTables : existingOutputTables + TABLE_NAME_SEPARATOR + outputTable;
     }
   }
 
