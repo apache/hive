@@ -37,15 +37,4 @@ public class AlterTableCreateBranchAnalyzer extends AlterTableCreateMetaRefAnaly
     super(queryState);
     super.alterTableType = AlterTableType.CREATE_BRANCH;
   }
-
-  @Override
-  protected AbstractAlterTableDesc getAlterTableDesc(AlterTableCreateMetaRefAnalyzer.AlterTableTypeReq req)
-      throws SemanticException {
-    AlterTableMetaRefSpec.CreateMetaRefSpec createBranchSpec =
-        new AlterTableMetaRefSpec.CreateMetaRefSpec(req.getMetaRefName(), req.getSnapshotId(), req.getAsOfTime(),
-            req.getMaxRefAgeMs(), req.getMinSnapshotsToKeep(), req.getMaxSnapshotAgeMs());
-    AlterTableMetaRefSpec<AlterTableMetaRefSpec.CreateMetaRefSpec> alterTableBranchSpec
-        = new AlterTableMetaRefSpec(CREATE_BRANCH, createBranchSpec);
-    return new AlterTableCreateMetaRefDesc(AlterTableType.CREATE_BRANCH, req.getTableName(), alterTableBranchSpec);
-  }
 }

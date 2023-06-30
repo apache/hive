@@ -37,14 +37,4 @@ public class AlterTableCreateTagAnalyzer extends AlterTableCreateMetaRefAnalyzer
     super(queryState);
     super.alterTableType = AlterTableType.CREATE_TAG;
   }
-
-  @Override
-  protected AbstractAlterTableDesc getAlterTableDesc(AlterTableTypeReq req) throws SemanticException {
-    AlterTableMetaRefSpec.CreateMetaRefSpec createTagspec =
-        new AlterTableMetaRefSpec.CreateMetaRefSpec(req.getMetaRefName(), req.getSnapshotId(), req.getAsOfTime(),
-            req.getMaxRefAgeMs());
-    AlterTableMetaRefSpec<AlterTableMetaRefSpec.CreateMetaRefSpec> alterTableTagSpec
-        = new AlterTableMetaRefSpec(CREATE_TAG, createTagspec);
-    return new AlterTableCreateMetaRefDesc(AlterTableType.CREATE_TAG, req.getTableName(), alterTableTagSpec);
-  }
 }

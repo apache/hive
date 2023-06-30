@@ -36,15 +36,17 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+import static org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec.AlterMetaRefOperationType.CREATE_BRANCH;
+import static org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec.AlterMetaRefOperationType.CREATE_TAG;
+
 public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTableAnalyzer {
   protected static AbstractAlterTableDesc alterTableDesc;
   protected static AlterTableType alterTableType;
-  protected abstract AbstractAlterTableDesc getAlterTableDesc(AlterTableTypeReq alterTableTypeReq)
-      throws SemanticException;
 
   public AlterTableCreateMetaRefAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -57,11 +59,8 @@ public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTable
     DDLUtils.validateTableIsIceberg(table);
     inputs.add(new ReadEntity(table));
     validateAlterTableType(table, alterTableType, false);
-    AlterTableTypeReq alterTableTypeReq = new AlterTableTypeReq();
 
     String metaRefName = command.getChild(0).getText();
-    alterTableTypeReq.tableName = tableName;
-    alterTableTypeReq.metaRefName = metaRefName;
     Long snapshotId = null;
     Long asOfTime = null;
     Long maxRefAgeMs = null;
@@ -69,78 +68,46 @@ public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTable
     Long maxSnapshotAgeMs = null;
     AlterTableType alterTableType = command.getType()
         == HiveParser.TOK_ALTERTABLE_CREATE_BRANCH ? AlterTableType.CREATE_BRANCH : AlterTableType.CREATE_TAG;
+    AlterTableMetaRefSpec.AlterMetaRefOperationType alterTableMetaRefType = command.getType()
+        == HiveParser.TOK_ALTERTABLE_CREATE_BRANCH ? CREATE_BRANCH : CREATE_TAG;
     for (int i = 1; i < command.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) command.getChild(i);
       switch (childNode.getToken().getType()) {
       case HiveParser.TOK_AS_OF_VERSION:
         snapshotId = Long.parseLong(childNode.getChild(0).getText());
-        alterTableTypeReq.snapshotId = snapshotId;
         break;
       case HiveParser.TOK_AS_OF_TIME:
         ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
             SessionState.get().getConf().getLocalTimeZone();
         TimestampTZ ts = TimestampTZUtil.parse(stripQuotes(childNode.getChild(0).getText()), timeZone);
         asOfTime = ts.toEpochMilli();
-        alterTableTypeReq.asOfTime = asOfTime;
         break;
       case HiveParser.TOK_RETAIN:
         String maxRefAge = childNode.getChild(0).getText();
         String timeUnitOfBranchRetain = childNode.getChild(1).getText();
         maxRefAgeMs =
             TimeUnit.valueOf(timeUnitOfBranchRetain.toUpperCase(Locale.ENGLISH)).toMillis(Long.parseLong(maxRefAge));
-        alterTableTypeReq.maxRefAgeMs = maxRefAgeMs;
         break;
       case HiveParser.TOK_WITH_SNAPSHOT_RETENTION:
         minSnapshotsToKeep = Integer.valueOf(childNode.getChild(0).getText());
-        alterTableTypeReq.minSnapshotsToKeep = minSnapshotsToKeep;
         if (childNode.getChildren().size() > 1) {
           String maxSnapshotAge = childNode.getChild(1).getText();
           String timeUnitOfSnapshotsRetention = childNode.getChild(2).getText();
           maxSnapshotAgeMs = TimeUnit.valueOf(timeUnitOfSnapshotsRetention.toUpperCase(Locale.ENGLISH))
               .toMillis(Long.parseLong(maxSnapshotAge));
-          alterTableTypeReq.maxSnapshotAgeMs = maxSnapshotAgeMs;
         }
         break;
       default:
         throw new SemanticException("Unrecognized token in ALTER " + alterTableType.getName() + " statement");
       }
     }
-    alterTableDesc = getAlterTableDesc(alterTableTypeReq);
+
+    AlterTableMetaRefSpec.CreateMetaRefSpec createMetaRefSpec =
+        new AlterTableMetaRefSpec.CreateMetaRefSpec(metaRefName, snapshotId, asOfTime,
+            maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs);
+    AlterTableMetaRefSpec<AlterTableMetaRefSpec.CreateMetaRefSpec> alterTableMetaRefSpec
+        = new AlterTableMetaRefSpec(alterTableMetaRefType, createMetaRefSpec);
+    alterTableDesc =  new AlterTableCreateMetaRefDesc(alterTableType, tableName, alterTableMetaRefSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTableDesc)));
-  }
-
-  protected class AlterTableTypeReq{
-    TableName tableName;
-    String metaRefName;
-    Long snapshotId, asOfTime, maxRefAgeMs, maxSnapshotAgeMs;
-    Integer minSnapshotsToKeep;
-
-    public TableName getTableName() {
-      return tableName;
-    }
-
-    public String getMetaRefName() {
-      return metaRefName;
-    }
-
-    public Long getSnapshotId() {
-      return snapshotId;
-    }
-
-    public Long getAsOfTime() {
-      return asOfTime;
-    }
-
-    public Long getMaxRefAgeMs() {
-      return maxRefAgeMs;
-    }
-
-    public Long getMaxSnapshotAgeMs() {
-      return maxSnapshotAgeMs;
-    }
-
-    public Integer getMinSnapshotsToKeep() {
-      return minSnapshotsToKeep;
-    }
   }
 }

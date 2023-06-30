@@ -92,16 +92,12 @@ public class AlterTableMetaRefSpec<T> {
 
     public CreateMetaRefSpec(String metaRefName, Long snapShotId, Long asOfTime, Long maxRefAgeMs,
                              Integer minSnapshotsToKeep, Long maxSnapshotAgeMs) {
-      this(metaRefName, snapShotId, asOfTime, maxRefAgeMs);
-      this.minSnapshotsToKeep = minSnapshotsToKeep;
-      this.maxSnapshotAgeMs = maxSnapshotAgeMs;
-    }
-
-    public CreateMetaRefSpec(String metaRefName, Long snapShotId, Long asOfTime, Long maxRefAgeMs) {
       this.metaRefName = metaRefName;
       this.snapshotId = snapShotId;
       this.asOfTime = asOfTime;
       this.maxRefAgeMs = maxRefAgeMs;
+      this.minSnapshotsToKeep = minSnapshotsToKeep;
+      this.maxSnapshotAgeMs = maxSnapshotAgeMs;
     }
 
     public String toString() {
