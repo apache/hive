@@ -24,7 +24,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
@@ -316,14 +315,23 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Checks whether the table supports appending data files to the table.
    * @param table the table
+   * @param withPartClause whether a partition is specified
    * @return true if the table can append files directly to the table
    * @throws SemanticException in case of any error.
    */
-  default boolean supportsAppendData(Table table) throws SemanticException {
+  default boolean supportsAppendData(Table table, boolean withPartClause) throws SemanticException {
     return false;
   }
 
-  default void appendFiles(Table tbl, URI fromURI, boolean isOverwrite)
+  /**
+   * Appends files to the table
+   * @param tbl the table object.
+   * @param fromURI the source of files.
+   * @param isOverwrite whether to overwrite the existing table data.
+   * @param partitionSpec the partition spec.
+   * @throws SemanticException in case of any error
+   */
+  default void appendFiles(Table tbl, URI fromURI, boolean isOverwrite, Map<String, String> partitionSpec)
       throws SemanticException {
     throw new SemanticException(ErrorMsg.LOAD_INTO_NON_NATIVE.getMsg());
   }

@@ -29,6 +29,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -78,6 +79,8 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.iceberg.types.Conversions;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,23 +185,37 @@ public class HiveTableUtil {
     return dataFiles;
   }
 
-  public static void appendFiles(URI fromURI, String format, Table icebergTbl, boolean isOverwrite, Configuration conf)
-      throws SemanticException {
+  public static void appendFiles(URI fromURI, String format, Table icebergTbl, boolean isOverwrite,
+      Map<String, String> partitionSpec, Configuration conf) throws SemanticException {
     try {
       Transaction transaction = icebergTbl.newTransaction();
       if (isOverwrite) {
         DeleteFiles delete = transaction.newDelete();
-        delete.deleteFromRowFilter(Expressions.alwaysTrue());
+        if (partitionSpec != null) {
+          for (Map.Entry<String, String> part : partitionSpec.entrySet()) {
+            final Type partKeyType = icebergTbl.schema().findType(part.getKey());
+            final Object partKeyVal = Conversions.fromPartitionString(partKeyType, part.getValue());
+            delete.deleteFromRowFilter(Expressions.equal(part.getKey(), partKeyVal));
+          }
+        } else {
+          delete.deleteFromRowFilter(Expressions.alwaysTrue());
+        }
         delete.commit();
       }
-      AppendFiles append = transaction.newAppend();
-      PartitionSpec spec = icebergTbl.spec();
+
       MetricsConfig metricsConfig = MetricsConfig.fromProperties(icebergTbl.properties());
-      String nameMappingString = icebergTbl.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
-      NameMapping nameMapping = nameMappingString != null ? NameMappingParser.fromJson(nameMappingString) : null;
-      RemoteIterator<LocatedFileStatus> filesIterator = HiveTableUtil.getFilesIterator(new Path(fromURI), conf);
-      List<DataFile> dataFiles = HiveTableUtil.getDataFiles(filesIterator, Collections.emptyMap(),
-          format == null ? IOConstants.PARQUET : format, spec, metricsConfig, nameMapping, conf);
+      PartitionSpec spec = icebergTbl.spec();
+      String nameMappingStr = icebergTbl.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
+      NameMapping nameMapping = null;
+      if (nameMappingStr != null) {
+        nameMapping = NameMappingParser.fromJson(nameMappingStr);
+      }
+      AppendFiles append = transaction.newAppend();
+      Map<String, String> actualPartitionSpec = Optional.ofNullable(partitionSpec).orElse(Collections.emptyMap());
+      String actualFormat = Optional.ofNullable(format).orElse(IOConstants.PARQUET).toLowerCase();
+      RemoteIterator<LocatedFileStatus> iterator = getFilesIterator(new Path(fromURI), conf);
+      List<DataFile> dataFiles =
+          getDataFiles(iterator, actualPartitionSpec, actualFormat, spec, metricsConfig, nameMapping, conf);
       dataFiles.forEach(append::appendFile);
       append.commit();
       transaction.commitTransaction();
