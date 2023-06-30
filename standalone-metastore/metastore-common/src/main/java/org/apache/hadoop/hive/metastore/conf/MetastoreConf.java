@@ -579,7 +579,7 @@ public class MetastoreConf {
     METASTORE_HOUSEKEEPING_LEADER_AUDIT_FILE_LIMIT("metastore.housekeeping.leader.auditFiles.limit",
         "metastore.housekeeping.leader.auditFiles.limit", 10,
         "Limit the number of small audit files when metastore.housekeeping.leader.newAuditFile is true.\n" +
-        "If the number of audit files exceeds the limit that greater than 0, then the oldest will be deleted."),
+        "If the number of audit files exceeds the limit, then the oldest will be deleted."),
     METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
         "hive.metastore.housekeeping.threads.on", false,
         "Whether to run the tasks under metastore.task.threads.remote on this metastore instance or not.\n" +
