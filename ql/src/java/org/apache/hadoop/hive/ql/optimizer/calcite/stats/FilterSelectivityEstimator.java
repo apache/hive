@@ -225,32 +225,37 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   }
 
   private Double computeBetweenPredicateSelectivity(RexCall call) {
-    final boolean hasInputRef = call.getOperands().get(0).getKind().equals(SqlKind.INPUT_REF);
-    final boolean hasLiteralLeft = call.getOperands().get(1).getKind().equals(SqlKind.LITERAL);
-    final boolean hasLiteralRight = call.getOperands().get(2).getKind().equals(SqlKind.LITERAL);
+    final boolean hasLiteralBool = call.getOperands().get(0).getKind().equals(SqlKind.LITERAL);
+    final boolean hasInputRef = call.getOperands().get(1).getKind().equals(SqlKind.INPUT_REF);
+    final boolean hasLiteralLeft = call.getOperands().get(2).getKind().equals(SqlKind.LITERAL);
+    final boolean hasLiteralRight = call.getOperands().get(3).getKind().equals(SqlKind.LITERAL);
 
-    if (childRel instanceof HiveTableScan && hasInputRef && hasLiteralLeft && hasLiteralRight) {
+    if (childRel instanceof HiveTableScan && hasLiteralBool && hasInputRef && hasLiteralLeft && hasLiteralRight) {
       final HiveTableScan t = (HiveTableScan) childRel;
-      final int inputRefIndex = ((RexInputRef) call.getOperands().get(0)).getIndex();
+      final int inputRefIndex = ((RexInputRef) call.getOperands().get(1)).getIndex();
       final List<ColStatistics> colStats = t.getColStat(Collections.singletonList(inputRefIndex));
 
       if (!colStats.isEmpty() && isHistogramAvailable(colStats.get(0))) {
         final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
-        final SqlTypeName typeName = call.getOperands().get(0).getType().getSqlTypeName();
-        final Object leftBoundValueObject = ((RexLiteral) call.getOperands().get(1)).getValue();
+        final SqlTypeName typeName = call.getOperands().get(1).getType().getSqlTypeName();
+        final Object inverseBoolValueObject = ((RexLiteral) call.getOperands().get(0)).getValue();
+        boolean inverseBool = Boolean.parseBoolean(inverseBoolValueObject.toString());
+        final Object leftBoundValueObject = ((RexLiteral) call.getOperands().get(2)).getValue();
         float leftValue = extractLiteral(typeName, leftBoundValueObject);
-        final Object rightBoundValueObject = ((RexLiteral) call.getOperands().get(2)).getValue();
+        final Object rightBoundValueObject = ((RexLiteral) call.getOperands().get(3)).getValue();
         float rightValue = extractLiteral(typeName, rightBoundValueObject);
-
-        if (NOT_BETWEEN.equals(call.getOperator())) {
-          if (rightValue <= leftValue) {
+        // when inverseBool == true, this is a NOT_BETWEEN and selectivity must be inverted
+        if (inverseBool) {
+          if (rightValue == leftValue) {
+            return computeNotEqualitySelectivity(call);
+          } else if (rightValue < leftValue) {
             return 1.0;
           }
-          return lessThanSelectivity(kll, leftValue) + greaterThanSelectivity(kll, rightValue);
+          return 1.0 - (kll.getN() * betweenSelectivity(kll, leftValue, rightValue) / t.getTable().getRowCount());
         }
         // when they are equal it's an equality predicate, we cannot handle it as "between"
         if (Double.compare(leftValue, rightValue) != 0) {
-          return betweenSelectivity(kll, leftValue, rightValue);
+          return kll.getN() * betweenSelectivity(kll, leftValue, rightValue) / t.getTable().getRowCount();
         }
       }
     }
