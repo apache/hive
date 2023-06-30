@@ -106,7 +106,7 @@ class KafkaBrokerResource extends ExternalResource {
       brokerProps.setProperty("listener.name.l3.gssapi.sasl.jaas.config", jaasConfig);
       truststoreFile = File.createTempFile("kafka_truststore", "jks");
       brokerProps.putAll(new TestSslUtils.SslConfigsBuilder(Mode.SERVER).createNewTrustStore(truststoreFile).build());
-      brokerProps.setProperty("delegation.token.secret.key", "AnyValueShouldDoHereItDoesntMatter");
+      brokerProps.setProperty("delegation.token.master.key", "AnyValueShouldDoHereItDoesntMatter");
     }
     brokerProps.setProperty("offsets.topic.replication.factor", "1");
     brokerProps.setProperty("transaction.state.log.replication.factor", "1");
@@ -117,7 +117,7 @@ class KafkaBrokerResource extends ExternalResource {
     kafkaServer.zkClient();
     adminZkClient = new AdminZkClient(kafkaServer.zkClient());
     LOG.info("Creating kafka TOPIC [{}]", TOPIC);
-    adminZkClient.createTopic(TOPIC, 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$, false);
+    adminZkClient.createTopic(TOPIC, 1, 1, new Properties(), RackAwareMode.Disabled$.MODULE$);
   }
 
   /**
