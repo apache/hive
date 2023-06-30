@@ -93,13 +93,13 @@
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4</maven.test.jvm.args>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
-    <maven.build-helper.plugin.version>1.12</maven.build-helper.plugin.version>
+    <maven.build-helper.plugin.version>3.4.0</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-    <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-    <maven.versions.plugin.version>2.13.0</maven.versions.plugin.version>
-    <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
+    <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
+    <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
+    <maven.shade.plugin.version>3.5.0</maven.shade.plugin.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
-    <maven.cyclonedx.plugin.version>2.7.6</maven.cyclonedx.plugin.version>
+    <maven.cyclonedx.plugin.version>2.7.9</maven.cyclonedx.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.1</accumulo.version>
     <ant.version>1.10.13</ant.version>
