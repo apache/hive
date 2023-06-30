@@ -300,9 +300,11 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     if (ts.tableHandle.isNonNative()) {
       HiveStorageHandler storageHandler = ts.tableHandle.getStorageHandler();
       boolean isUseNativeApi = conf.getBoolVar(HIVE_LOAD_DATA_USE_NATIVE_API);
-      if (isUseNativeApi && storageHandler.supportsAppendData(ts.tableHandle.getTTable())) {
+      boolean supportAppend = isUseNativeApi && storageHandler.supportsAppendData(ts.tableHandle.getTTable(),
+          ts.getPartSpec() != null && !ts.getPartSpec().isEmpty());
+      if (supportAppend) {
         LoadTableDesc loadTableWork =
-            new LoadTableDesc(new Path(fromURI), ts.tableHandle, isOverWrite, true, isOverWrite);
+            new LoadTableDesc(new Path(fromURI), ts.tableHandle, isOverWrite, true, ts.getPartSpec());
         Task<?> childTask =
             TaskFactory.get(new MoveWork(getInputs(), getOutputs(), loadTableWork, null, true, isLocal));
         rootTasks.add(childTask);

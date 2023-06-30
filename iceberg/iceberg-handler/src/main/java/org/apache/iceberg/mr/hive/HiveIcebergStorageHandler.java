@@ -362,16 +362,33 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return null;
   }
 
-  public boolean supportsAppendData(org.apache.hadoop.hive.metastore.api.Table table) throws SemanticException {
+  public boolean supportsAppendData(org.apache.hadoop.hive.metastore.api.Table table, boolean withPartClause)
+      throws SemanticException {
     Table icebergTbl = IcebergTableUtil.getTable(conf, table);
-    return icebergTbl.spec().isUnpartitioned();
+    if (icebergTbl.spec().isUnpartitioned()) {
+      return true;
+    }
+    // If it is a table which has undergone partition evolution, return false;
+    if (icebergTbl.currentSnapshot() != null) {
+      if (icebergTbl.currentSnapshot().allManifests(icebergTbl.io()).parallelStream()
+          .map(ManifestFile::partitionSpecId)
+          .anyMatch(id -> id < icebergTbl.spec().specId())) {
+        if (withPartClause) {
+          throw new SemanticException("Can not Load into an iceberg table, which has undergone partition evolution " +
+              "using the PARTITION clause");
+        }
+        return false;
+      }
+    }
+    return withPartClause;
   }
 
-  public void appendFiles(org.apache.hadoop.hive.metastore.api.Table table, URI fromURI, boolean isOverwrite)
+  public void appendFiles(org.apache.hadoop.hive.metastore.api.Table table, URI fromURI, boolean isOverwrite,
+      Map<String, String> partitionSpec)
       throws SemanticException {
     Table icebergTbl = IcebergTableUtil.getTable(conf, table);
     String format = table.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT);
-    HiveTableUtil.appendFiles(fromURI, format, icebergTbl, isOverwrite, conf);
+    HiveTableUtil.appendFiles(fromURI, format, icebergTbl, isOverwrite, partitionSpec, conf);
   }
 
   @Override
