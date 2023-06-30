@@ -23,12 +23,12 @@ import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.QueryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.sql.ResultSet;
@@ -45,7 +45,7 @@ public class NextCompactionHandler implements QueryHandler<CompactionInfo> {
   private static final Logger LOG = LoggerFactory.getLogger(NextCompactionHandler.class);
 
   private final FindNextCompactRequest request;
-  private final NamedParameterJdbcTemplate jdbcTemplate;
+  private final DataSourceWrapper dataSourceWrapper;
   private final Timestamp currentDbTime;
   private final long poolTimeout;
 
@@ -58,9 +58,9 @@ public class NextCompactionHandler implements QueryHandler<CompactionInfo> {
           " \"CQ_STATE\" = :newState " +
           "WHERE \"CQ_ID\" = :id AND \"CQ_STATE\"= :oldState";
 
-  public NextCompactionHandler(FindNextCompactRequest request, NamedParameterJdbcTemplate jdbcTemplate, Timestamp currentDbTime, long poolTimeout) {
+  public NextCompactionHandler(FindNextCompactRequest request, DataSourceWrapper dataSourceWrapper, Timestamp currentDbTime, long poolTimeout) {
     this.request = request;
-    this.jdbcTemplate = jdbcTemplate;
+    this.dataSourceWrapper = dataSourceWrapper;
     this.currentDbTime = currentDbTime;
     this.poolTimeout = poolTimeout;
   }
@@ -111,7 +111,7 @@ public class NextCompactionHandler implements QueryHandler<CompactionInfo> {
       String workerVersion = request.getWorkerVersion();
 
       // Now, update this record as being worked on by this worker.
-      int updCount = jdbcTemplate.update(updateStatement,
+      int updCount = dataSourceWrapper.getJdbcTemplate().update(updateStatement,
           new MapSqlParameterSource()
               .addValue("id", info.id)
               .addValue("workerId", info.workerId)

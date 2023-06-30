@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.metastore.txn.retryhandling;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.TransactionStatus;
 
 import java.sql.SQLException;
 
@@ -30,14 +28,12 @@ import java.sql.SQLException;
 public interface TransactionalVoidFunction {
 
   /**
-   * Implementations typically should execute database calls inside, and handle the transaction (through the passed
-   * {@link TransactionStatus} interface) accordingly.
-   * @param status A {@link TransactionStatus} instance which represents the database transaction. The implementing 
-   *               funtion can use it to manage the transaction programatically: Rollback, create/delete savepoint, etc.
-   * @param jdbcTemplate A {@link NamedParameterJdbcTemplate} instance which can be used to execute the SQL statements
+   * Implementations typically should execute transsactional database calls inside.
+   * @param dataSourceWrapper A {@link DataSourceWrapper} instance responsible for providing all the necessary resources 
+   *                          to be able to perform transactional database calls.
    * @throws SQLException Thrown if any of the JDBC calls fail
    * @throws MetaException Thrown in case of application error within the function
    */
-  void call(TransactionStatus status, NamedParameterJdbcTemplate jdbcTemplate) throws SQLException, MetaException;
+  void call(DataSourceWrapper dataSourceWrapper) throws SQLException, MetaException;
   
 }

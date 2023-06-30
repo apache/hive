@@ -23,14 +23,13 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalVoidFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.TransactionStatus;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +50,8 @@ public class PurgeCompactionHistoryFunction implements TransactionalVoidFunction
   }
 
   @Override
-  public void call(TransactionStatus status, NamedParameterJdbcTemplate jdbcTemplate) throws SQLException, MetaException {
+  public void call(DataSourceWrapper dataSourceWrapper) throws MetaException {
+    NamedParameterJdbcTemplate jdbcTemplate = dataSourceWrapper.getJdbcTemplate();
     List<Long> deleteSet = new ArrayList<>();
     long timeoutThreshold = System.currentTimeMillis() -
         MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, TimeUnit.MILLISECONDS);

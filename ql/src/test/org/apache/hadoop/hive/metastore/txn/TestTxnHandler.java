@@ -1823,9 +1823,8 @@ public class TestTxnHandler {
     // use TxnHandler instance w/ increased retry limit
     long originalLimit = MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS, iterations + 1);
-    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-
-    try (Connection dbConn = ((TxnHandler) txnHandler).getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);    
+    try (Connection dbConn = TestTxnDbUtil.getConnection(conf);
          Statement stmt = dbConn.createStatement()) {
       // run this multiple times to get write-write conflicts with relatively high chance
       for (int i = 0; i < iterations; ++i) {

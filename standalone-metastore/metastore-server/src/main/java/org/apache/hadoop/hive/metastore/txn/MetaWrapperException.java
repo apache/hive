@@ -19,6 +19,10 @@ package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
+/**
+ * Used to wrap the {@link MetaException} in a {@link RuntimeException}. It is required because Spring JDBC template's
+ * {@link org.springframework.transaction.support.TransactionCallback} interface doesn't allow to throw checked exceptions.
+ */
 public class MetaWrapperException extends RuntimeException {
 
   public MetaWrapperException(MetaException cause) {

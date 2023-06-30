@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.metastore.txn.retryhandling;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.datanucleus.transaction.TransactionIsolation;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.function.Function;
 
@@ -27,22 +26,31 @@ import java.util.function.Function;
  * Contains all the properties which can alter the behavior of a retry-call in 
  * {@link org.apache.hadoop.hive.metastore.txn.retryhandling.RetryHandler}.
  */
-public class CallProperties {
+public class RetryCallProperties {
 
+  private String dataSource;
   private String caller = null;
   private boolean retryOnDuplicateKey = false;
   private int transactionIsolationLevel = TransactionIsolation.READ_COMMITTED;
   private boolean lockInternally = false;
   private boolean rollbackOnError = true;
-  private NamedParameterJdbcTemplate jdbcTemplate;
   private Function<Exception, MetaException> exceptionSupplier =
       (e -> new MetaException("Failed to execute function: " + caller + ", details:" + e.getMessage()));
+
+  /**
+   * @param dataSource Sets the name of the datasource to use within the {@link DataSourceWrapper.RetryContext}
+   * @return itself
+   */
+  public RetryCallProperties withDataSource(String dataSource) {
+    this.dataSource = dataSource;
+    return this;
+  }
 
   /**
    * @param caller Sets the caller id to use during the retry-call
    * @return itself
    */
-  public CallProperties withCallerId(String caller) {
+  public RetryCallProperties withCallerId(String caller) {
     this.caller = caller;
     return this;
   }
@@ -52,7 +60,7 @@ public class CallProperties {
    *                            The default value is false.
    * @return itself
    */
-  public CallProperties withRetryOnDuplicateKey(boolean retryOnDuplicateKey) {
+  public RetryCallProperties withRetryOnDuplicateKey(boolean retryOnDuplicateKey) {
     this.retryOnDuplicateKey = retryOnDuplicateKey;
     return this;
   }
@@ -62,7 +70,7 @@ public class CallProperties {
    *                                  is {@link TransactionIsolation#READ_COMMITTED}.
    * @return itself
    */
-  public CallProperties withTransactionIsolationLevel(int transactionIsolationLevel) {
+  public RetryCallProperties withTransactionIsolationLevel(int transactionIsolationLevel) {
     this.transactionIsolationLevel = transactionIsolationLevel;
     return this;
   }
@@ -72,7 +80,7 @@ public class CallProperties {
    *                       The default value is false.
    * @return itself
    */
-  public CallProperties withLockInternally(boolean lockInternally) {
+  public RetryCallProperties withLockInternally(boolean lockInternally) {
     this.lockInternally = lockInternally;
     return this;
   }
@@ -82,19 +90,8 @@ public class CallProperties {
    *                        The default value is true.
    * @return itself
    */
-  public CallProperties withRollbackOnError(boolean rollbackOnError) {
+  public RetryCallProperties withRollbackOnError(boolean rollbackOnError) {
     this.rollbackOnError = rollbackOnError;
-    return this;
-  }
-
-  /**
-   * If set, the retry-call will use it instead of the default template. Useful if the retry-fynction has custom 
-   * fetch-size, max-rows or other values.
-   * @param jdbcTemplate The custom {@link NamedParameterJdbcTemplate} to use during the retry call.
-   * @return itself
-   */
-  public CallProperties withJdbcTemplate(NamedParameterJdbcTemplate jdbcTemplate) {
-    this.jdbcTemplate = jdbcTemplate;
     return this;
   }
 
@@ -104,36 +101,36 @@ public class CallProperties {
    *                          following message: Failed to execute function: <b>caller</b>, details: <b>exception message</b>
    * @return itself
    */
-  public CallProperties withExceptionSupplier(Function<Exception, MetaException> exceptionSupplier) {
+  public RetryCallProperties withExceptionSupplier(Function<Exception, MetaException> exceptionSupplier) {
     this.exceptionSupplier = exceptionSupplier;
     return this;
   }
 
-  public String getCaller() {
+  String getDataSource() {
+    return dataSource;
+  }
+
+  String getCaller() {
     return caller;
   }
 
-  public boolean isRetryOnDuplicateKey() {
+  boolean isRetryOnDuplicateKey() {
     return retryOnDuplicateKey;
   }
 
-  public int getTransactionIsolationLevel() {
+  int getTransactionIsolationLevel() {
     return transactionIsolationLevel;
   }
 
-  public boolean isLockInternally() {
+  boolean isLockInternally() {
     return lockInternally;
   }
 
-  public boolean isRollbackOnError() {
+  boolean isRollbackOnError() {
     return rollbackOnError;
   }
 
-  public NamedParameterJdbcTemplate getJdbcTemplate() {
-    return jdbcTemplate;
-  }
-
-  public Function<Exception, MetaException> getExceptionSupplier() {
+  Function<Exception, MetaException> getExceptionSupplier() {
     return exceptionSupplier;
   }
 

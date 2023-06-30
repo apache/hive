@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn.retryhandling;
 
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.util.function.Function;
@@ -24,17 +25,30 @@ import java.util.function.Function;
 /**
  * Basic implementation of the {@link ParameterizedCommand} interface.
  */
-public class SimpleParameterizedCommand extends SimpleParameterizedQuery implements ParameterizedCommand {
-  
+class SimpleParameterizedCommand implements ParameterizedCommand {
+
+  private final String query;
+  private final SqlParameterSource params;
   private final Function<Integer, Boolean> resultPolicy;
-  
+
+  @Override
+  public String getParameterizedQueryString(DatabaseProduct databaseProduct) {
+    return query;
+  }
+
+  @Override
+  public SqlParameterSource getQueryParameters() {
+    return params;
+  }
+
   @Override
   public Function<Integer, Boolean> resultPolicy() {
     return resultPolicy;
   }
 
-  public SimpleParameterizedCommand(String query, SqlParameterSource params, Function<Integer, Boolean> resultPolicy) {
-    super(query, params);
+  SimpleParameterizedCommand(String query, SqlParameterSource params, Function<Integer, Boolean> resultPolicy) {
+    this.query = query;
+    this.params = params;
     this.resultPolicy = resultPolicy;
   }
 }

@@ -19,14 +19,13 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SimpleQuery;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SimpleUpdate;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalFunction;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.TransactionStatus;
 
-import java.sql.SQLException;
 import java.sql.Types;
 
 public class UpdateCompactionMetricsDataFunction implements TransactionalFunction<Boolean> {
@@ -38,23 +37,23 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
   }
 
   @Override
-  public Boolean call(TransactionStatus status, NamedParameterJdbcTemplate jdbcTemplate) throws SQLException, MetaException {
-    SimpleQuery<CompactionMetricsData> query = new SimpleQuery<>(null,
+  public Boolean call(DataSourceWrapper dataSourceWrapper) throws MetaException {
+    SimpleQuery<CompactionMetricsData> query = new SimpleQuery<>(
         new CompactionMetricsDataHandler(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
-    CompactionMetricsData prevMetricsData = query.call(status, jdbcTemplate);
+    CompactionMetricsData prevMetricsData = query.call(dataSourceWrapper);
 
     boolean updateRes;
     if (data.getMetricValue() >= data.getThreshold()) {
       if (prevMetricsData != null) {
-        updateRes = updateCompactionMetricsData(data, prevMetricsData, jdbcTemplate);
+        updateRes = updateCompactionMetricsData(data, prevMetricsData, dataSourceWrapper.getJdbcTemplate());
       } else {
-        updateRes = createCompactionMetricsData(data, jdbcTemplate);
+        updateRes = createCompactionMetricsData(data, dataSourceWrapper.getJdbcTemplate());
       }
     } else {
       if (prevMetricsData != null) {
-        SimpleUpdate delete = new SimpleUpdate(null,
+        SimpleUpdate delete = new SimpleUpdate(
             new RemoveCompactionMetricsDataCommand(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
-        updateRes = delete.call(status, jdbcTemplate) > 0;
+        updateRes = delete.call(dataSourceWrapper) > 0;
       } else {
         return true;
       }

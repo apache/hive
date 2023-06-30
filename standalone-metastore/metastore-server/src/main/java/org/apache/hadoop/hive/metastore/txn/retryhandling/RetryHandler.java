@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.UncategorizedSQLException;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -61,9 +60,6 @@ public class RetryHandler {
   
   private Configuration conf;
   
-  private static final ThreadLocal<RetryState> threadLocal = new ThreadLocal<>();
-
-
   public static String getMessage(Exception ex) {
     StringBuilder sb = new StringBuilder();
     sb.append(ex.getMessage());
@@ -72,7 +68,7 @@ public class RetryHandler {
       sb.append(" (SQLState=").append(sqlEx.getSQLState()).append(", ErrorCode=").append(sqlEx.getErrorCode()).append(")");
     }
     return sb.toString();
-  }  
+  }
   
   public void init(Configuration conf, DatabaseProduct dbProduct){
     if (dbProduct == null) {
@@ -89,73 +85,74 @@ public class RetryHandler {
   }
 
   /**
-   * Executes the passed {@link TransactionalFunction}, and automatically retries the execution in case of failure.
-   * @param properties {@link CallProperties} instance used to fine-tune/alter the execution-mechanism.
+   * Establishes a {@link DataSourceWrapper.RetryContext} and executes the passed {@link TransactionalFunction}. 
+   * Automatically retries the execution in case of failure.
+   * @param properties {@link RetryCallProperties} instance used to fine-tune/alter the execution-mechanism.
    * @param function The {@link TransactionalFunction} to execute.
    * @return Returns with the result of the execution of the passed {@link TransactionalFunction}.
    * @param <Result> Type of the result
    * @throws MetaException Thrown in case of execution error.
    */
-  public <Result> Result executeWithRetry(DataSourceWrapper dataSourceWrapper, CallProperties properties, TransactionalFunction<Result> function) 
+  public <Result> Result executeWithRetry(DataSourceWrapper dataSourceWrapper, RetryCallProperties properties, TransactionalFunction<Result> function) 
       throws MetaException {
     return executeWithRetryInternal(dataSourceWrapper, properties, function, retryLimit, ALLOWED_REPEATED_DEADLOCKS);
   }
 
   /**
-   * Executes the passed {@link TransactionalVoidFunction}, and automatically retries the execution in case of failure.
-   * @param properties {@link CallProperties} instance used to fine-tune/alter the execution-mechanism.
+   * Establishes a {@link DataSourceWrapper.RetryContext} and executes the passed {@link TransactionalVoidFunction}. 
+   * Automatically retries the execution in case of failure.
+   * @param properties {@link RetryCallProperties} instance used to fine-tune/alter the execution-mechanism.
    * @param function The {@link TransactionalVoidFunction} to execute.
    * @throws MetaException Thrown in case of execution error.
    */
-  public void executeWithRetry(DataSourceWrapper dataSourceWrapper, CallProperties properties, TransactionalVoidFunction function) throws MetaException {
-    executeWithRetryInternal(dataSourceWrapper, properties, (TransactionStatus status, NamedParameterJdbcTemplate jdbcTemplate) -> { 
-      function.call(status, jdbcTemplate); 
+  public void executeWithRetry(DataSourceWrapper dataSourceWrapper, RetryCallProperties properties, TransactionalVoidFunction function) throws MetaException {
+    executeWithRetryInternal(dataSourceWrapper, properties, (DataSourceWrapper wrapper) -> { 
+      function.call(wrapper);
       return null;
     }, retryLimit, ALLOWED_REPEATED_DEADLOCKS);
   }
 
   /**
    * Executes the passed {@link TransactionalFunction}, without retry in case of failure.
-   * @param properties {@link CallProperties} instance used to fine-tune/alter the execution-mechanism.
+   * @param properties {@link RetryCallProperties} instance used to fine-tune/alter the execution-mechanism.
    * @param function The {@link TransactionalFunction} to execute.
    * @return Returns with the result of the execution of the passed {@link TransactionalFunction}.
    * @param <Result> Type of the result
    * @throws MetaException Thrown in case of execution error.
    */
-  public  <Result> Result executeWithoutRetry(DataSourceWrapper dataSourceWrapper, CallProperties properties, TransactionalFunction<Result> function) 
+  public  <Result> Result executeWithoutRetry(DataSourceWrapper dataSourceWrapper, RetryCallProperties properties, TransactionalFunction<Result> function) 
       throws MetaException {
     return executeWithRetryInternal(dataSourceWrapper, properties, function, 0, 0);
   }
 
   /**
    * Executes the passed {@link TransactionalVoidFunction}, without retry in case of failure.
-   * @param properties {@link CallProperties} instance used to fine-tune/alter the execution-mechanism.
+   * @param properties {@link RetryCallProperties} instance used to fine-tune/alter the execution-mechanism.
    * @param function The {@link TransactionalVoidFunction} to execute.
    * @throws MetaException Thrown in case of execution error.
    */
-  public void executeWithoutRetry(DataSourceWrapper dataSourceWrapper, CallProperties properties, TransactionalVoidFunction function) throws MetaException {
-    executeWithRetryInternal(dataSourceWrapper, properties, (TransactionStatus status, NamedParameterJdbcTemplate jdbcTemplate) -> {
-      function.call(status, jdbcTemplate);
+  public void executeWithoutRetry(DataSourceWrapper dataSourceWrapper, RetryCallProperties properties, TransactionalVoidFunction function) throws MetaException {
+    executeWithRetryInternal(dataSourceWrapper, properties, (DataSourceWrapper wrapper) -> {
+      function.call(wrapper);
       return null;
     }, 0, 0);
   }
   
-  private <Result> Result executeWithRetryInternal(DataSourceWrapper dataSourceWrapper, CallProperties properties, TransactionalFunction<Result> function
+  private <Result> Result executeWithRetryInternal(DataSourceWrapper dataSourceWrapper, RetryCallProperties properties, TransactionalFunction<Result> function
       , int retryCount, int deadlockCount) throws MetaException {
     Objects.requireNonNull(function, "RetryFunction<Result> cannot be null!");
 
-    RetryState oldState = threadLocal.get();
-    if(oldState != null) {
+    if(dataSourceWrapper.hasRetryContext()) {
       /*
         If there is a RetryState in the ThreadLocal, we are already inside a retry-call, so there is no need
         to establish a nested retry-call, we can join the existing one. Using this approach there is no need to separate
         retry-handling from the actual function body. If a retry method internally calls another method which
         uses RetryHandler, the inner call will simply join the already established retry-context (and transaction).
       */
-      LOG.info("Already established retry-context ({}) detected, current retry-call will join it. The passed CallProperties " +
-          "instance will be ignored, using the original one.", oldState);
+      LOG.info("Already established retry-context detected, current retry-call will join it. The passed CallProperties " +
+          "instance will be ignored, using the original one.");
       try {
-        return function.call(oldState.status, oldState.jdbcTemplate);
+        return function.call(dataSourceWrapper);
       } catch (SQLException e) {
         throw new UncategorizedSQLException(null, null, e);
       }
@@ -168,7 +165,7 @@ public class RetryHandler {
       properties.withCallerId(function.toString());
     }
 
-    TransactionTemplate transactionTemplate = new TransactionTemplate(dataSourceWrapper.getTransactionManager());
+    TransactionTemplate transactionTemplate = dataSourceWrapper.getTransactionTemplate(properties.getDataSource());
     transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
     transactionTemplate.setIsolationLevel(properties.getTransactionIsolationLevel());
 
@@ -179,13 +176,9 @@ public class RetryHandler {
       // This exception handling is required to be able to pass managed exceptions through Spring JDBC's transactionmanagement layer
       return transactionTemplate.execute((TransactionStatus status) -> {
             try {
-              NamedParameterJdbcTemplate jdbcTemplate = properties.getJdbcTemplate() == null
-                  ? dataSourceWrapper.getJdbcTemplate()
-                  : properties.getJdbcTemplate();
-              
               //set TransactionStatus to allow detection of nested retry calls              
-              threadLocal.set(new RetryState(status, jdbcTemplate));
-              Result result = function.call(status, jdbcTemplate);
+              dataSourceWrapper.setRetryContext(status, properties.getDataSource());
+              Result result = function.call(dataSourceWrapper);
               LOG.debug("Going to commit transaction");
               return result;
             } catch (SQLException | MetaException e) {
@@ -200,7 +193,7 @@ public class RetryHandler {
               }
             } finally {
               //do not pollute the ThreadLocal
-              threadLocal.remove();
+              dataSourceWrapper.clearRetryContext();
             }
           }
       );
@@ -346,16 +339,6 @@ public class RetryHandler {
   private void unlockInternal() {
     if(dbProduct.isDERBY()) {
       derbyLock.unlock();
-    }
-  }
-  
-  private static class RetryState {
-    private final TransactionStatus status;
-    private final NamedParameterJdbcTemplate jdbcTemplate;
-
-    public RetryState(TransactionStatus status, NamedParameterJdbcTemplate jdbcTemplate) {
-      this.status = status;
-      this.jdbcTemplate = jdbcTemplate;
     }
   }
 

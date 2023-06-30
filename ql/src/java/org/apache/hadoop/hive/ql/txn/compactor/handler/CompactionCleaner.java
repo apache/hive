@@ -162,8 +162,7 @@ class CompactionCleaner extends TaskHandler {
         cleanUsingLocation(ci, location, false);
       }
     } catch (Exception e) {
-      LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", ci,
-              e.getMessage());
+      LOG.error("Caught exception when cleaning, unable to complete cleaning of {}", ci, e);
       if (metricsEnabled) {
         Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER).inc();
       }

@@ -22,9 +22,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.TransactionStatus;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
-import java.sql.SQLException;
+import java.util.function.Function;
 
 /**
  * A built-in implementation of the {@link TransactionalVoidFunction} interface, responsible for executing a statement and
@@ -32,58 +32,56 @@ import java.sql.SQLException;
  * <ul>
  *   <li>Executes the {@link ParameterizedQuery} in it, </li>
  *   <li>and then uses the {@link ParameterizedCommand#resultPolicy()} to validate the number of affected rows: If the 
- *   policy returns true, the number of affected rows is accepted, otherwise an {@link SQLException} is thrown.</li>
+ *   policy returns true, the number of affected rows is accepted, otherwise a {@link MetaException} is thrown.</li>
  * </ul> 
- * This class is capable of executing multiple {@link ParameterizedCommand} instances in a loop. In this case the 
- * {@link ParameterizedCommand#resultPolicy()} called for every individual {@link ParameterizedCommand} result, not for 
- * the sum of their affected rows.
  */
 public class SimpleUpdate implements TransactionalFunction<Integer> {
 
   private static final Logger LOG = LoggerFactory.getLogger(SimpleUpdate.class);
   
-  private final ParameterizedCommand[] commands;
-  private final DatabaseProduct databaseProduct;
+  private final ParameterizedCommand command;
 
   /**
-   * Executes one or more {@link NamedParameterJdbcTemplate#update(String, org.springframework.jdbc.core.namedparam.SqlParameterSource)} 
+   * Executes a {@link NamedParameterJdbcTemplate#update(String, org.springframework.jdbc.core.namedparam.SqlParameterSource)} 
    * calls using the query string and parameters obtained from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)} and 
    * {@link ParameterizedCommand#getQueryParameters()} methods. Validates the resulted number of affected rows using the 
    * {@link ParameterizedCommand#resultPolicy()} function.
-   * @param status A {@link TransactionStatus} instance which represents the database transaction. The implementing 
-   *               funtion can use it to manage the transaction programatically: Rollback, create/delete savepoint, etc.
-   * @param jdbcTemplate A {@link NamedParameterJdbcTemplate} instance which can be used to execute the SQL statements
-   * @return Returns the total number of affected rows: If multiple {@link ParameterizedCommand} instances were passed in
-   * the constructor, the returned number is the sum of the number of affected rows of all the update calls.
-   * @throws SQLException Thrown if the update count was rejected by the {@link ParameterizedCommand#resultPolicy()} method.
-   * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)}.
+   * @param dataSourceWrapper A {@link DataSourceWrapper} instance responsible for providing all the necessary resources 
+   *                          to be able to perform transactional database calls.
+   * @return Returns the number of affected rows.
+   * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)} or
+   * thrown if the update count was rejected by the {@link ParameterizedCommand#resultPolicy()} method
    */
   @Override
-  public Integer call(TransactionStatus status, NamedParameterJdbcTemplate jdbcTemplate) throws SQLException, MetaException {
-    int total = 0;
-    for(ParameterizedCommand command : commands) {
-      String queryStr = command.getParameterizedQueryString(databaseProduct);
-      LOG.debug("Going to execute command <{}>", queryStr);
-
-      int count = jdbcTemplate.update(queryStr, command.getQueryParameters());
-      if (command.resultPolicy() != null && !command.resultPolicy().apply(count)) {
-        LOG.error("The update count was " + count + " which is not the expected. Rolling back.");
-        throw new SQLException("The update count was " + count + " which is not the expected. Rolling back.");
-      }
-      LOG.debug("Command <{}> updated {} records.", queryStr, count);
-      total += count;
+  public Integer call(DataSourceWrapper dataSourceWrapper) throws MetaException {
+    String queryStr = command.getParameterizedQueryString(dataSourceWrapper.getDatabaseProduct());
+    LOG.debug("Going to execute command <{}>", queryStr);
+    int count = dataSourceWrapper.getJdbcTemplate().update(queryStr, command.getQueryParameters());
+    if (command.resultPolicy() != null && !command.resultPolicy().apply(count)) {
+      LOG.error("The update count was " + count + " which is not the expected. Rolling back.");
+      throw new MetaException("The update count was " + count + " which is not the expected. Rolling back.");
     }
-    return total;
+    LOG.debug("Command <{}> updated {} records.", queryStr, count);
+    return count;
   }
 
   /**
    * Creates a new instance of the {@link SimpleUpdate} class
-   * @param databaseProduct A {@link DatabaseProduct} instance representing the type of the underlying HMS dabatabe.
-   * @param command One or more {@link ParameterizedCommand} instances representing the SQL commands to execute.
+   * @param command A {@link ParameterizedCommand} instance representing the SQL command (and its parameters) to execute.
    */
-  public SimpleUpdate(DatabaseProduct databaseProduct, ParameterizedCommand... command) {
-    this.commands = command;
-    this.databaseProduct = databaseProduct;
+  public SimpleUpdate(ParameterizedCommand command) {
+    this.command = command;
+  }
+
+  /**
+   * Creates a new instance of the {@link SimpleUpdate} class. Internally creates a {@link ParameterizedCommand} from the
+   * arguments.
+   * @param parameterizedQuery See {@link ParameterizedQuery#getParameterizedQueryString(DatabaseProduct)}
+   * @param params See {@link ParameterizedQuery#getQueryParameters()}
+   * @param resultPolicy See {@link  ParameterizedCommand#resultPolicy()}
+   */
+  public SimpleUpdate(String parameterizedQuery, SqlParameterSource params, Function<Integer, Boolean> resultPolicy) {
+    this(new SimpleParameterizedCommand(parameterizedQuery, params, resultPolicy));
   }
   
 }

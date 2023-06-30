@@ -26,7 +26,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
  * A pair of a Spring {@link NamedParameterJdbcTemplate} style parameterized query string <br>
  * (for example: <b>SELECT * FROM TBL WHERE ID = :id</b>) and its parameters.
  */
-public interface ParameterizedQuery {
+interface ParameterizedQuery {
 
   /**
    * The parameterized query string. It is allowed if the query has no parameters at all.

@@ -20,11 +20,10 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalFunction;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.TransactionStatus;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,11 +45,11 @@ public class TopCompactionMetricsDataPerTypeFunction implements TransactionalFun
   }
 
   @Override
-  public List<CompactionMetricsData> call(TransactionStatus status, NamedParameterJdbcTemplate jdbcTemplate) throws SQLException, MetaException {
+  public List<CompactionMetricsData> call(DataSourceWrapper dataSourceWrapper) throws MetaException {
     //TODO: Highly inefficient, should be replaced by a single select
     List<CompactionMetricsData> metricsDataList = new ArrayList<>();
     for (CompactionMetricsData.MetricType type : CompactionMetricsData.MetricType.values()) {
-      metricsDataList.addAll(jdbcTemplate.query(
+      metricsDataList.addAll(dataSourceWrapper.getJdbcTemplate().query(
           sqlGenerator.addLimitClause(limit, NO_SELECT_COMPACTION_METRICS_CACHE_FOR_TYPE_QUERY),
           new MapSqlParameterSource().addValue("type", type.toString()),
           new CompactionMetricsDataMapper(type)));

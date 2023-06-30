@@ -24,16 +24,15 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalVoidFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.TransactionStatus;
 
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,7 +60,8 @@ public class MarkCleanedFunction implements TransactionalVoidFunction {
   }
 
   @Override
-  public void call(TransactionStatus status, NamedParameterJdbcTemplate jdbcTemplate) throws SQLException, MetaException {
+  public void call(DataSourceWrapper dataSourceWrapper) throws MetaException {
+    NamedParameterJdbcTemplate jdbcTemplate = dataSourceWrapper.getJdbcTemplate();
     MapSqlParameterSource param;
     if (!info.isAbortedTxnCleanup()) {
       param = new MapSqlParameterSource()

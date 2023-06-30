@@ -42,40 +42,35 @@ public class SimpleQuery<Result> implements TransactionalFunction<Result> {
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQuery.class);
 
   private final QueryHandler<Result> handler;
-  private final DatabaseProduct databaseProduct;
 
   /**
    * Executes a {@link NamedParameterJdbcTemplate#query(String, SqlParameterSource, ResultSetExtractor)} call using the query 
    * string and parameters obtained from {@link QueryHandler#getParameterizedQueryString(DatabaseProduct)} and 
    * {@link QueryHandler#getQueryParameters()} methods. Processes the result using the {@link QueryHandler#extractData(ResultSet)}
    * method ({@link QueryHandler} extends the {@link ResultSetExtractor} interface).
-   * @param status A {@link TransactionStatus} instance which represents the database transaction. The implementing 
-   *               funtion can use it to manage the transaction programatically: Rollback, create/delete savepoint, etc.
-   * @param jdbcTemplate A {@link NamedParameterJdbcTemplate} instance which can be used to execute the SQL statements
+   * @param dataSourceWrapper A {@link DataSourceWrapper} instance responsible for providing all the necessary resources 
+   *                          to be able to perform transactional database calls.
    * @return Returns with the object(s) constructed from the result of the executed query. 
    * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)}.
    */
   @Override
-  public Result call(TransactionStatus status, NamedParameterJdbcTemplate jdbcTemplate) throws MetaException {
-    String queryStr = handler.getParameterizedQueryString(databaseProduct);
+  public Result call(DataSourceWrapper dataSourceWrapper) throws MetaException {
+    String queryStr = handler.getParameterizedQueryString(dataSourceWrapper.getDatabaseProduct());
     LOG.debug("Going to execute query <{}>", queryStr);
-
     SqlParameterSource params = handler.getQueryParameters();
     if (params != null) {
-      return jdbcTemplate.query(queryStr, params, handler);
+      return dataSourceWrapper.getJdbcTemplate().query(queryStr, params, handler);
     } else {
-      return jdbcTemplate.query(queryStr, handler);
+      return dataSourceWrapper.getJdbcTemplate().query(queryStr, handler);
     }
   }
 
   /**
    * Creates a new instance of the {@link SimpleQuery} class
-   * @param databaseProduct A {@link DatabaseProduct} instance representing the type of the underlying HMS dabatabe.
    * @param handler A {@link QueryHandler} instance representing the query to execute and process its results.
    */
-  public SimpleQuery(DatabaseProduct databaseProduct, QueryHandler<Result> handler) {
+  public SimpleQuery(QueryHandler<Result> handler) {
     this.handler = handler;
-    this.databaseProduct = databaseProduct;
   }
 
 }
