@@ -11236,13 +11236,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     curr = genSelectPlan(dest, qb, curr, gbySource);
 
     Integer limit = qbp.getDestLimit(dest);
-    Integer offset = (qbp.getDestLimitOffset(dest) == null) ? 0 : qbp.getDestLimitOffset(dest);
+    int offset = (qbp.getDestLimitOffset(dest) == null) ? 0 : qbp.getDestLimitOffset(dest);
 
-    // Expressions are not supported currently without a alias.
+    // Expressions are not supported currently without an alias.
 
     // Reduce sink is needed if the query contains a cluster by, distribute by,
     // order by or a sort by clause.
     boolean genReduceSink = false;
+    int numReducers = -1;
     boolean hasOrderBy = false;
 
     // Currently, expressions are not allowed in cluster by, distribute by,
@@ -11258,7 +11259,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (qbp.getOrderByForClause(dest) != null) {
       genReduceSink = true;
+      numReducers = 1;
       hasOrderBy = true;
+    }
+
+    if (offset > 0 && !hasOrderBy) {
+      HiveConf.StrictChecks.checkOffsetWithoutOrderBy(conf);
+
+      assert limit != null : "OFFSET is always paired with LIMIT";
+      genReduceSink = true;
+      // # of reducers must be one in order to compute a global offset
+      numReducers = 1;
+      final long offsetPlusLimit = (long) offset + (long) limit;
+      if (offsetPlusLimit <= Integer.MAX_VALUE) {
+        // This pushes `offset` + `limit` because the parallelism of `curr` can be greater than 1
+        curr = genLimitPlan(dest, curr, 0, (int) offsetPlusLimit);
+      }
     }
 
     if (qbp.getSortByForClause(dest) != null) {
@@ -11266,30 +11282,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (genReduceSink) {
-      int numReducers = -1;
-
-      // Use only 1 reducer if order by is present
-      if (hasOrderBy) {
-        numReducers = 1;
-      }
-
       curr = genReduceSinkPlan(dest, qb, curr, numReducers, hasOrderBy);
     }
 
 
     if (qbp.getIsSubQ()) {
       if (limit != null) {
-        // In case of order by, only 1 reducer is used, so no need of
-        // another shuffle
-        curr = genLimitMapRedPlan(dest, qb, curr, offset,
-            limit, limit != 0 && !hasOrderBy);
+        // In the following cases, no further step is required
+        // - When limit is zero, `curr` generates empty rows
+        // - When `curr` is already a single reduce task, it can generate the exactly correct result
+        final boolean extraMRStep = limit != 0 && numReducers != 1;
+        curr = genLimitMapRedPlan(dest, qb, curr, offset, limit, extraMRStep);
       }
     } else {
       // exact limit can be taken care of by the fetch operator
       if (limit != null) {
         boolean extraMRStep = true;
 
-        if (limit == 0 || hasOrderBy ||
+        if (limit == 0 || numReducers == 1 ||
             qb.getIsQuery() && qbp.getClusterByForClause(dest) == null &&
                 qbp.getSortByForClause(dest) == null) {
           extraMRStep = false;
