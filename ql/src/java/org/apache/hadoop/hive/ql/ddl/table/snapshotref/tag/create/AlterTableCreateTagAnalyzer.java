@@ -16,25 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.metaref.branch.create;
+package org.apache.hadoop.hive.ql.ddl.table.snapshotref.tag.create;
 
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
-import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.metaref.AlterTableCreateMetaRefAnalyzer;
+import org.apache.hadoop.hive.ql.ddl.table.snapshotref.AlterTableCreateSnapshotRefAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
-import org.apache.hadoop.hive.ql.ddl.table.metaref.AlterTableCreateMetaRefDesc;
-import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import static org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec.AlterMetaRefOperationType.CREATE_BRANCH;
+@DDLSemanticAnalyzerFactory.DDLType(types = HiveParser.TOK_ALTERTABLE_CREATE_TAG)
+public class AlterTableCreateTagAnalyzer extends AlterTableCreateSnapshotRefAnalyzer {
 
-@DDLSemanticAnalyzerFactory.DDLType(types = HiveParser.TOK_ALTERTABLE_CREATE_BRANCH)
-public class AlterTableCreateBranchAnalyzer extends AlterTableCreateMetaRefAnalyzer {
-
-  public AlterTableCreateBranchAnalyzer(QueryState queryState) throws SemanticException {
+  public AlterTableCreateTagAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
-    super.alterTableType = AlterTableType.CREATE_BRANCH;
+    super.alterTableType = AlterTableType.CREATE_TAG;
   }
 }

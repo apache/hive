@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.metaref;
+package org.apache.hadoop.hive.ql.ddl.table.snapshotref;
 
 import java.time.ZoneId;
 import java.util.Locale;
@@ -36,19 +36,16 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-import static org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec.AlterMetaRefOperationType.CREATE_BRANCH;
-import static org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec.AlterMetaRefOperationType.CREATE_TAG;
-
-public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTableAnalyzer {
+public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterTableAnalyzer {
   protected static AbstractAlterTableDesc alterTableDesc;
   protected static AlterTableType alterTableType;
 
-  public AlterTableCreateMetaRefAnalyzer(QueryState queryState) throws SemanticException {
+  public AlterTableCreateSnapshotRefAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 
@@ -60,16 +57,12 @@ public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTable
     inputs.add(new ReadEntity(table));
     validateAlterTableType(table, alterTableType, false);
 
-    String metaRefName = command.getChild(0).getText();
+    String refName = command.getChild(0).getText();
     Long snapshotId = null;
     Long asOfTime = null;
     Long maxRefAgeMs = null;
     Integer minSnapshotsToKeep = null;
     Long maxSnapshotAgeMs = null;
-    AlterTableType alterTableType = command.getType()
-        == HiveParser.TOK_ALTERTABLE_CREATE_BRANCH ? AlterTableType.CREATE_BRANCH : AlterTableType.CREATE_TAG;
-    AlterTableMetaRefSpec.AlterMetaRefOperationType alterTableMetaRefType = command.getType()
-        == HiveParser.TOK_ALTERTABLE_CREATE_BRANCH ? CREATE_BRANCH : CREATE_TAG;
     for (int i = 1; i < command.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) command.getChild(i);
       switch (childNode.getToken().getType()) {
@@ -102,12 +95,12 @@ public abstract class AlterTableCreateMetaRefAnalyzer extends AbstractAlterTable
       }
     }
 
-    AlterTableMetaRefSpec.CreateMetaRefSpec createMetaRefSpec =
-        new AlterTableMetaRefSpec.CreateMetaRefSpec(metaRefName, snapshotId, asOfTime,
+    AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createSnapshotRefSpec =
+        new AlterTableSnapshotRefSpec.CreateSnapshotRefSpec(refName, snapshotId, asOfTime,
             maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs);
-    AlterTableMetaRefSpec<AlterTableMetaRefSpec.CreateMetaRefSpec> alterTableMetaRefSpec
-        = new AlterTableMetaRefSpec(alterTableMetaRefType, createMetaRefSpec);
-    alterTableDesc =  new AlterTableCreateMetaRefDesc(alterTableType, tableName, alterTableMetaRefSpec);
+    AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.CreateSnapshotRefSpec> alterTableSnapshotRefSpec
+        = new AlterTableSnapshotRefSpec(alterTableType, createSnapshotRefSpec);
+    alterTableDesc =  new AlterTableCreateSnapshotRefDesc(alterTableType, tableName, alterTableSnapshotRefSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTableDesc)));
   }
 }

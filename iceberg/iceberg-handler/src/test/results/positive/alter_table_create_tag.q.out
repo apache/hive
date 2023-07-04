@@ -25,9 +25,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateMetaRef Operation
+    CreateSnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableMetaRefSpec{operationType=CREATE_TAG, operationParams=CreateMetaRefSpec{branchName=test_tag_1}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_TAG, operationParams=CreateSnapshotRefSpec{branchName=test_tag_1}}
 
 PREHOOK: query: alter table iceTbl create tag test_tag_1
 PREHOOK: type: ALTERTABLE_CREATETAG
@@ -63,9 +63,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateMetaRef Operation
+    CreateSnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableMetaRefSpec{operationType=CREATE_TAG, operationParams=CreateMetaRefSpec{branchName=test_tag_2, maxRefAgeMs=432000000}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_TAG, operationParams=CreateSnapshotRefSpec{branchName=test_tag_2, maxRefAgeMs=432000000}}
 
 PREHOOK: query: alter table iceTbl create tag test_tag_2 retain 5 days
 PREHOOK: type: ALTERTABLE_CREATETAG

@@ -16,34 +16,34 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.metaref;
+package org.apache.hadoop.hive.ql.ddl.table.snapshotref;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
-import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 
-@Explain(displayName = "CreateMetaRef Operation", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT,
+@Explain(displayName = "CreateSnapshotRef Operation", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
-public class AlterTableCreateMetaRefDesc extends AbstractAlterTableDesc {
+public class AlterTableCreateSnapshotRefDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  protected AlterTableMetaRefSpec alterTableMetaRefSpec;
+  protected AlterTableSnapshotRefSpec alterTableSnapshotRefSpec;
 
-  public AlterTableCreateMetaRefDesc(AlterTableType alterTableType, TableName tableName, AlterTableMetaRefSpec alterTableMetaRefSpec)
+  public AlterTableCreateSnapshotRefDesc(AlterTableType alterTableType, TableName tableName, AlterTableSnapshotRefSpec alterTableSnapshotRefSpec)
       throws SemanticException {
     super(alterTableType, tableName, null, null, false, false, null);
-    this.alterTableMetaRefSpec = alterTableMetaRefSpec;
+    this.alterTableSnapshotRefSpec = alterTableSnapshotRefSpec;
   }
 
-  public AlterTableMetaRefSpec getAlterTableMetaRefSpec() {
-    return alterTableMetaRefSpec;
+  public AlterTableSnapshotRefSpec getAlterTableSnapshotRefSpec() {
+    return alterTableSnapshotRefSpec;
   }
 
   @Explain(displayName = "spec", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
   public String getExplainOutput() {
-    return alterTableMetaRefSpec.toString();
+    return alterTableSnapshotRefSpec.toString();
   }
 }

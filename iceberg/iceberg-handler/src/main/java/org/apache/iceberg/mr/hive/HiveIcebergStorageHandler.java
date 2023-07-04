@@ -82,7 +82,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
-import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
@@ -789,28 +789,28 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public void alterTableMetaRefOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      AlterTableMetaRefSpec alterTableMetaRefSpec) {
+  public void alterTableSnapshotRefOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      AlterTableSnapshotRefSpec alterTableSnapshotRefSpec) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() ->
-        new UnsupportedOperationException(String.format("Cannot ALTER %s on iceberg table %s.%s which has no snapshot",
-            alterTableMetaRefSpec.getOperationType().getName(), hmsTable.getDbName(), hmsTable.getTableName())));
+        new UnsupportedOperationException(String.format("Cannot alter %s on iceberg table %s.%s which has no snapshot",
+            alterTableSnapshotRefSpec.getOperationType().getName(), hmsTable.getDbName(), hmsTable.getTableName())));
 
-    switch (alterTableMetaRefSpec.getOperationType()) {
+    switch (alterTableSnapshotRefSpec.getOperationType()) {
       case CREATE_BRANCH:
-        AlterTableMetaRefSpec.CreateMetaRefSpec createBranchSpec =
-            (AlterTableMetaRefSpec.CreateMetaRefSpec) alterTableMetaRefSpec.getOperationParams();
+        AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createBranchSpec =
+            (AlterTableSnapshotRefSpec.CreateSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
         IcebergBranchExec.createBranch(icebergTable, createBranchSpec);
         break;
       case CREATE_TAG:
-        AlterTableMetaRefSpec.CreateMetaRefSpec createTagSpec =
-            (AlterTableMetaRefSpec.CreateMetaRefSpec) alterTableMetaRefSpec.getOperationParams();
+        AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createTagSpec =
+            (AlterTableSnapshotRefSpec.CreateSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
         IcebergTagExec.createTag(icebergTable, createTagSpec);
         break;
       default:
-        throw new UnsupportedOperationException(
-            String.format("Operation type %s is not supported", alterTableMetaRefSpec.getOperationType().getName()));
+        throw new UnsupportedOperationException(String.format(
+            "Operation type %s is not supported", alterTableSnapshotRefSpec.getOperationType().getName()));
     }
   }
 

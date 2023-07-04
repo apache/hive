@@ -19,31 +19,19 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 
-public class AlterTableMetaRefSpec<T> {
+public class AlterTableSnapshotRefSpec<T> {
 
-  public enum AlterMetaRefOperationType {
-    CREATE_BRANCH("CREATE BRANCH"),
-    CREATE_TAG("CREATE TAG");
-
-    private final String name;
-    AlterMetaRefOperationType(String name) {
-      this.name = name;
-    }
-    public String getName() {
-      return name;
-    }
-  }
-
-  private final AlterMetaRefOperationType operationType;
+  private final AlterTableType operationType;
   private final T operationParams;
 
-  public AlterTableMetaRefSpec(AlterMetaRefOperationType type, T value) {
+  public AlterTableSnapshotRefSpec(AlterTableType type, T value) {
     this.operationType = type;
     this.operationParams = value;
   }
 
-  public AlterMetaRefOperationType getOperationType() {
+  public AlterTableType getOperationType() {
     return operationType;
   }
 
@@ -57,17 +45,17 @@ public class AlterTableMetaRefSpec<T> {
         .add("operationParams", operationParams).toString();
   }
 
-  public static class CreateMetaRefSpec {
+  public static class CreateSnapshotRefSpec {
 
-    private String metaRefName;
+    private String refName;
     private Long snapshotId;
     private Long asOfTime;
     private Long maxRefAgeMs;
     private Integer minSnapshotsToKeep;
     private Long maxSnapshotAgeMs;
 
-    public String getMetaRefName() {
-      return metaRefName;
+    public String getRefName() {
+      return refName;
     }
 
     public Long getSnapshotId() {
@@ -90,9 +78,9 @@ public class AlterTableMetaRefSpec<T> {
       return maxSnapshotAgeMs;
     }
 
-    public CreateMetaRefSpec(String metaRefName, Long snapShotId, Long asOfTime, Long maxRefAgeMs,
+    public CreateSnapshotRefSpec(String refName, Long snapShotId, Long asOfTime, Long maxRefAgeMs,
                              Integer minSnapshotsToKeep, Long maxSnapshotAgeMs) {
-      this.metaRefName = metaRefName;
+      this.refName = refName;
       this.snapshotId = snapShotId;
       this.asOfTime = asOfTime;
       this.maxRefAgeMs = maxRefAgeMs;
@@ -101,7 +89,7 @@ public class AlterTableMetaRefSpec<T> {
     }
 
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("branchName", metaRefName).add("snapshotId", snapshotId)
+      return MoreObjects.toStringHelper(this).add("branchName", refName).add("snapshotId", snapshotId)
           .add("asOfTime", asOfTime).add("maxRefAgeMs", maxRefAgeMs).add("minSnapshotsToKeep", minSnapshotsToKeep)
           .add("maxSnapshotAgeMs", maxSnapshotAgeMs).omitNullValues().toString();
     }

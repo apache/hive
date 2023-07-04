@@ -16,21 +16,21 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.metaref;
+package org.apache.hadoop.hive.ql.ddl.table.snapshotref;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
-public class AlterTableCreateMetaRefOperation extends DDLOperation<AlterTableCreateMetaRefDesc> {
-  public AlterTableCreateMetaRefOperation(DDLOperationContext context, AlterTableCreateMetaRefDesc desc) {
+public class AlterTableCreateSnapshotRefOperation extends DDLOperation<AlterTableCreateSnapshotRefDesc> {
+  public AlterTableCreateSnapshotRefOperation(DDLOperationContext context, AlterTableCreateSnapshotRefDesc desc) {
     super(context, desc);
   }
 
   @Override
   public int execute() throws Exception {
     Table table = context.getDb().getTable(desc.getFullTableName());
-    context.getDb().alterTableMetaRefOperation(table, desc.getAlterTableMetaRefSpec());
+    context.getDb().alterTableSnapshotRefOperation(table, desc.getAlterTableSnapshotRefSpec());
     return 0;
   }
 }

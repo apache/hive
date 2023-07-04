@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
-import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
@@ -636,8 +636,8 @@ public interface HiveStorageHandler extends Configurable {
   default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
   }
 
-  default void alterTableMetaRefOperation(org.apache.hadoop.hive.ql.metadata.Table table,
-      AlterTableMetaRefSpec alterTableMetaRefSpec) {
+  default void alterTableSnapshotRefOperation(org.apache.hadoop.hive.ql.metadata.Table table,
+      AlterTableSnapshotRefSpec alterTableSnapshotRefSpec) {
   }
 
   /**

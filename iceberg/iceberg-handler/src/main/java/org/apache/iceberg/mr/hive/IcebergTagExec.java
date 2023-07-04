@@ -19,7 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
-import org.apache.hadoop.hive.ql.parse.AlterTableMetaRefSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.util.SnapshotUtil;
@@ -33,8 +33,8 @@ public class IcebergTagExec {
   private IcebergTagExec() {
   }
 
-  public static void createTag(Table table, AlterTableMetaRefSpec.CreateMetaRefSpec createTagSpec) {
-    String tagName = createTagSpec.getMetaRefName();
+  public static void createTag(Table table, AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createTagSpec) {
+    String tagName = createTagSpec.getRefName();
     Long snapshotId = null;
     if (createTagSpec.getSnapshotId() != null) {
       snapshotId = createTagSpec.getSnapshotId();
@@ -49,8 +49,7 @@ public class IcebergTagExec {
     if (createTagSpec.getMaxRefAgeMs() != null) {
       manageSnapshots.setMaxRefAgeMs(tagName, createTagSpec.getMaxRefAgeMs());
     }
+
     manageSnapshots.commit();
   }
-
-
 }
