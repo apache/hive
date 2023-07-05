@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.util.Shell;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -45,6 +46,8 @@ public class TestClearDanglingScratchDir {
   private ByteArrayOutputStream stderr;
   private PrintStream origStdoutPs;
   private PrintStream origStderrPs;
+  private static Path customScratchDir;
+  private static Path customLocalTmpDir;
 
   @BeforeClass
   static public void oneTimeSetup() throws Exception {
@@ -66,6 +69,11 @@ public class TestClearDanglingScratchDir {
   @AfterClass
   static public void shutdown() throws Exception {
     m_dfs.shutdown();
+
+    // Need to make sure deleting in correct FS
+    FileSystem fs = customScratchDir.getFileSystem(new Configuration());
+    fs.delete(customScratchDir, true);
+    fs.delete(customLocalTmpDir, true);
   }
 
   public void redirectStdOutErr() {
@@ -140,33 +148,40 @@ public class TestClearDanglingScratchDir {
   public void testLocalDanglingFilesCleaning() throws Exception {
     HiveConf conf = new HiveConf();
     conf.set("fs.default.name", "file:///");
+    String tmpDir = System.getProperty("test.tmp.dir");
+    conf.set("hive.exec.scratchdir", tmpDir + "/hive-27317-hdfsscratchdir");
+    conf.set("hive.exec.local.scratchdir", tmpDir + "/hive-27317-localscratchdir");
     FileSystem fs = FileSystem.get(conf);
 
-    // constants
+    // Constants
     String appId = "appId_" + System.currentTimeMillis();
     String userName = System.getProperty("user.name");
     String hdfs = "hdfs";
     String inuse = "inuse.lck";
     String l = File.separator;
 
-    // simulating hdfs dangling dir and its inuse.lck file
-    Path hdfsRootDir = new Path( HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR) + l + userName + l + hdfs);
+    // Simulating hdfs dangling dir and its inuse.lck file
+    // Note: Give scratch dirs all the write permissions
+    FsPermission allPermissions = new FsPermission((short)00777);
+    customScratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    Utilities.createDirsWithPermission(conf, customScratchDir, allPermissions, true);
+    Path hdfsRootDir = new Path(customScratchDir + l + userName + l + hdfs);
     Path hdfsSessionDir = new Path(hdfsRootDir + l + userName + l + appId);
     Path hdfsSessionLock = new Path(hdfsSessionDir + l + inuse);
     fs.create(hdfsSessionLock);
 
-    // simulating local dangling files
-    String localTmpDir = HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR);
-    Path localSessionDir = new Path(localTmpDir + l + appId);
-    Path localPipeOutFileRemove = new Path(localTmpDir + l
+    // Simulating local dangling files
+    customLocalTmpDir = new Path (HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+    Path localSessionDir = new Path(customLocalTmpDir + l + appId);
+    Path localPipeOutFileRemove = new Path(customLocalTmpDir + l
             + appId + "-started-with-session-name.pipeout");
-    Path localPipeOutFileNotRemove = new Path(localTmpDir + l
+    Path localPipeOutFileNotRemove = new Path(customLocalTmpDir + l
             + "not-started-with-session-name-" + appId + ".pipeout");
-    Path localPipeOutFileFailRemove = new Path(localTmpDir + l
+    Path localPipeOutFileFailRemove = new Path(customLocalTmpDir + l
             + appId + "-started-with-session-name-but-fail-delete.pipeout");
 
     // Create dirs/files
-    fs.mkdirs(localSessionDir);
+    Utilities.createDirsWithPermission(conf, localSessionDir, allPermissions, true);
     fs.create(localPipeOutFileRemove);
     fs.create(localPipeOutFileNotRemove);
     fs.create(localPipeOutFileFailRemove);
@@ -175,7 +190,7 @@ public class TestClearDanglingScratchDir {
     // This will avoid file to be deleted as we check whether it is writable or not first
     fs.setPermission(localPipeOutFileFailRemove, FsPermission.valueOf("-r--r--r--"));
 
-    // the main service will be identifying which session files/dirs are dangling
+    // The main service will be identifying which session files/dirs are dangling
     ClearDanglingScratchDir clearDanglingScratchDirMain = new ClearDanglingScratchDir(false,
             false, true, hdfsRootDir.toString(), conf);
     clearDanglingScratchDirMain.run();

@@ -36,6 +36,8 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_WRITE_NOTIFICAT
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.ql.ddl.DDLUtils.isIcebergStatsSource;
+import static org.apache.hadoop.hive.ql.ddl.DDLUtils.isIcebergTable;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.CALCITE;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ALL;
@@ -109,6 +111,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
@@ -1346,14 +1349,22 @@ public class Hive {
         }
       }
 
-      if (primaryKeys == null && foreignKeys == null
-              && uniqueConstraints == null && notNullConstraints == null && defaultConstraints == null
-          && checkConstraints == null) {
-        getMSC().createTable(tTbl);
-      } else {
-        getMSC().createTableWithConstraints(tTbl, primaryKeys, foreignKeys,
-            uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
+      CreateTableRequest request = new CreateTableRequest(tTbl);
+
+      if (isIcebergTable(tbl) && isIcebergStatsSource(conf)) {
+        EnvironmentContext envContext = new EnvironmentContext();
+        envContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+        request.setEnvContext(envContext);
       }
+
+      request.setPrimaryKeys(primaryKeys);
+      request.setForeignKeys(foreignKeys);
+      request.setUniqueConstraints(uniqueConstraints);
+      request.setNotNullConstraints(notNullConstraints);
+      request.setDefaultConstraints(defaultConstraints);
+      request.setCheckConstraints(checkConstraints);
+
+      getMSC().createTable(request);
 
     } catch (AlreadyExistsException e) {
       if (!ifNotExists) {

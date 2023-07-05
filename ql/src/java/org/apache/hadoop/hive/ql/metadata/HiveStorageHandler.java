@@ -37,6 +37,8 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
@@ -44,6 +46,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -201,6 +204,10 @@ public interface HiveStorageHandler extends Configurable {
   {
     return null;
   }
+  
+  default StorageHandlerTypes getType() {
+    return StorageHandlerTypes.DEFAULT;
+  }
 
   default LockType getLockType(WriteEntity writeEntity){
     return LockType.EXCLUSIVE;
@@ -304,6 +311,31 @@ public interface HiveStorageHandler extends Configurable {
   default StorageFormatDescriptor getStorageFormatDescriptor(Table table) throws SemanticException {
     return null;
   }
+
+  /**
+   * Checks whether the table supports appending data files to the table.
+   * @param table the table
+   * @param withPartClause whether a partition is specified
+   * @return true if the table can append files directly to the table
+   * @throws SemanticException in case of any error.
+   */
+  default boolean supportsAppendData(Table table, boolean withPartClause) throws SemanticException {
+    return false;
+  }
+
+  /**
+   * Appends files to the table
+   * @param tbl the table object.
+   * @param fromURI the source of files.
+   * @param isOverwrite whether to overwrite the existing table data.
+   * @param partitionSpec the partition spec.
+   * @throws SemanticException in case of any error
+   */
+  default void appendFiles(Table tbl, URI fromURI, boolean isOverwrite, Map<String, String> partitionSpec)
+      throws SemanticException {
+    throw new SemanticException(ErrorMsg.LOAD_INTO_NON_NATIVE.getMsg());
+  }
+
   /**
    * Check if CTAS and CMV operations should behave in a direct-insert manner (i.e. no move task).
    * <p>
@@ -638,4 +670,16 @@ public interface HiveStorageHandler extends Configurable {
   default Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     return null;
   }
+
+  /**
+   * Checks if storage handler supports Show Partitions and returns a list of partitions
+   * @return List of partitions
+   * @throws UnsupportedOperationException
+   * @throws HiveException
+   */
+  default List<String> showPartitions(DDLOperationContext context,
+      org.apache.hadoop.hive.ql.metadata.Table tbl) throws UnsupportedOperationException, HiveException {
+    throw new UnsupportedOperationException("Storage handler does not support show partitions command");
+  }
+
 }

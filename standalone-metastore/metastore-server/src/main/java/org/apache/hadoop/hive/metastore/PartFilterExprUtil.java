@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.parser.PartFilterParser;
@@ -29,9 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
-import org.apache.hadoop.hive.metastore.parser.FilterLexer;
-import org.apache.hadoop.hive.metastore.parser.FilterParser;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 
 /**
  * Utility functions for working with partition filter expressions
@@ -120,27 +115,5 @@ public class PartFilterExprUtil {
 
   public static ExpressionTree parseFilterTree(String filter) throws MetaException {
     return PartFilterParser.parseFilter(filter);
-  }
-
-  /**
-   * @deprecated Use {@link PartFilterParser#parseFilter(String)} instead.
-   */
-  @Deprecated
-  public static FilterParser getFilterParser(String filter) throws MetaException {
-    FilterLexer lexer = new FilterLexer(new ANTLRNoCaseStringStream(filter));
-    CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-    FilterParser parser = new FilterParser(tokens);
-    try {
-      parser.filter();
-    } catch(RecognitionException re) {
-      throw new MetaException("Error parsing partition filter; lexer error: "
-          + lexer.errorMsg + "; exception " + re);
-    }
-
-    if (lexer.errorMsg != null) {
-      throw new MetaException("Error parsing partition filter : " + lexer.errorMsg);
-    }
-    return parser;
   }
 }

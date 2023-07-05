@@ -254,6 +254,10 @@ public final class FunctionRegistry {
 
   public static final String BLOOM_FILTER_FUNCTION = "bloom_filter";
   public static final String WINDOWING_TABLE_FUNCTION = "windowingtablefunction";
+
+  public static final String ARRAY_FUNC_NAME = "array";
+  public static final String INLINE_FUNC_NAME = "inline";
+
   private static final String NOOP_TABLE_FUNCTION = "noop";
   private static final String NOOP_MAP_TABLE_FUNCTION = "noopwithmap";
   private static final String NOOP_STREAMING_TABLE_FUNCTION = "noopstreaming";
@@ -575,7 +579,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("java_method", GenericUDFReflect.class);
     system.registerGenericUDF("exception_in_vertex_udf", GenericUDFExceptionInVertex.class);
 
-    system.registerGenericUDF("array", GenericUDFArray.class);
+    system.registerGenericUDF(ARRAY_FUNC_NAME, GenericUDFArray.class);
     system.registerGenericUDF("assert_true", GenericUDFAssertTrue.class);
     system.registerGenericUDF("assert_true_oom", GenericUDFAssertTrueOOM.class);
     system.registerGenericUDF("map", GenericUDFMap.class);
@@ -605,6 +609,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("array_distinct", GenericUDFArrayDistinct.class);
     system.registerGenericUDF("array_join", GenericUDFArrayJoin.class);
     system.registerGenericUDF("array_slice", GenericUDFArraySlice.class);
+    system.registerGenericUDF("array_except", GenericUDFArrayExcept.class);
     system.registerGenericUDF("array_intersect", GenericUDFArrayIntersect.class);
     system.registerGenericUDF("deserialize", GenericUDFDeserialize.class);
     system.registerGenericUDF("sentences", GenericUDFSentences.class);
@@ -635,7 +640,7 @@ public final class FunctionRegistry {
     // Generic UDTF's
     system.registerGenericUDTF("explode", GenericUDTFExplode.class);
     system.registerGenericUDTF("replicate_rows", GenericUDTFReplicateRows.class);
-    system.registerGenericUDTF("inline", GenericUDTFInline.class);
+    system.registerGenericUDTF(INLINE_FUNC_NAME, GenericUDTFInline.class);
     system.registerGenericUDTF("json_tuple", GenericUDTFJSONTuple.class);
     system.registerGenericUDTF("parse_url_tuple", GenericUDTFParseUrlTuple.class);
     system.registerGenericUDTF("posexplode", GenericUDTFPosExplode.class);

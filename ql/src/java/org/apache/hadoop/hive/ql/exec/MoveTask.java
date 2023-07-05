@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -1059,12 +1060,18 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
    * @return Returns <code>true</code> if the commit was successfully executed
    * @throws HiveException If we tried to commit, but there was an error during the process
    */
-  private static boolean checkAndCommitNatively(MoveWork moveWork, Configuration configuration) throws HiveException {
+  private boolean checkAndCommitNatively(MoveWork moveWork, Configuration configuration) throws HiveException {
     String storageHandlerClass = null;
     Properties commitProperties = null;
     boolean overwrite = false;
-
-    if (moveWork.getLoadTableWork() != null) {
+    LoadTableDesc loadTableWork = moveWork.getLoadTableWork();
+    if (loadTableWork != null) {
+      if (loadTableWork.isUseAppendForLoad()) {
+        loadTableWork.getMdTable().getStorageHandler()
+            .appendFiles(loadTableWork.getMdTable().getTTable(), loadTableWork.getSourcePath().toUri(),
+                loadTableWork.getLoadFileType() == LoadFileType.REPLACE_ALL, loadTableWork.getPartitionSpec());
+        return true;
+      }
       // Get the info from the table data
       TableDesc tableDesc = moveWork.getLoadTableWork().getTable();
       storageHandlerClass = tableDesc.getProperties().getProperty(

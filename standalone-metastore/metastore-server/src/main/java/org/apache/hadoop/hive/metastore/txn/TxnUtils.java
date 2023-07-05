@@ -586,6 +586,8 @@ public class TxnUtils {
         return CompactionType.MINOR;
       case TxnStore.REBALANCE_TYPE:
         return CompactionType.REBALANCE;
+      case TxnStore.ABORT_TXN_CLEANUP_TYPE:
+        return CompactionType.ABORT_TXN_CLEANUP;
       default:
         throw new MetaException("Unexpected compaction type " + dbValue);
     }
@@ -599,8 +601,20 @@ public class TxnUtils {
         return TxnStore.MINOR_TYPE;
       case REBALANCE:
         return TxnStore.REBALANCE_TYPE;
+      case ABORT_TXN_CLEANUP:
+        return TxnStore.ABORT_TXN_CLEANUP_TYPE;
       default:
         throw new MetaException("Unexpected compaction type " + ct);
     }
+  }
+
+  /**
+   * A helper method to return SQL's 'IS NULL'
+   * clause whenever input is NULL.
+   * @param input A string to be compared to null.
+   * @return String
+   */
+  public static String nvl(String input) {
+    return input != null ? " = ? " : " IS NULL ";
   }
 }

@@ -93,7 +93,7 @@ INSERT INTO llap_items VALUES
 (5, 83000,  'Sports',    'Model S', 'Long range'),
 (6, 123000, 'Sports',   'Model S', 'Plaid');
 
-CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, p2 STRING) STORED BY ICEBERG STORED AS ORC;
+CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, P2 STRING) STORED BY ICEBERG STORED AS ORC;
 INSERT INTO llap_orders VALUES
 (0, 48, 5, timestamp('2000-06-04 19:55:46.129'), 'EU', 'DE'),
 (1, 12, 6, timestamp('2007-06-24 19:23:22.829'), 'US', 'TX'),
@@ -172,13 +172,13 @@ SELECT name, min(to60), max(cost) FROM llap_items WHERE itemid > 3 GROUP BY name
 
 --schema evolution on partitioned table (including partition changes)
 --renames and reorders
-ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER p2;
+ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER P2;
 ALTER TABLE llap_orders CHANGE p1 region string;
 INSERT INTO llap_orders VALUES
 (21, 21, 8, 'EU', 'HU', timestamp('2000-01-04 19:55:46.129'));
 SELECT region, min(ordertime), sum(quantity) FROM llap_orders WHERE itemid > 5 GROUP BY region;
 
-ALTER TABLE llap_orders CHANGE p2 state string;
+ALTER TABLE llap_orders CHANGE P2 state string;
 SELECT region, state, min(ordertime), sum(quantity) FROM llap_orders WHERE itemid > 5 GROUP BY region, state;
 
 --adding new column

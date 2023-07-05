@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>4.0.0-SNAPSHOT</version>
+  <version>4.0.0-beta-1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive</name>
   <url>https://hive.apache.org</url>
@@ -62,7 +62,7 @@
     <module>kafka-handler</module>
   </modules>
   <properties>
-    <standalone-metastore.version>4.0.0-SNAPSHOT</standalone-metastore.version>
+    <standalone-metastore.version>4.0.0-beta-1-SNAPSHOT</standalone-metastore.version>
     <hive.version.shortname>4.0.0</hive.version.shortname>
     <!-- Build Properties -->
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -104,6 +104,8 @@
     <accumulo.version>1.10.1</accumulo.version>
     <ant.version>1.10.13</ant.version>
     <antlr.version>3.5.2</antlr.version>
+    <!-- Make sure to sync it with standalone-metastore/pom.xml -->
+    <antlr4.version>4.9.3</antlr4.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>12.0.0</arrow.version>
@@ -115,16 +117,16 @@
     <datanucleus-core.version>5.2.10</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>5.2.10</datanucleus-rdbms.version>
-    <commons-cli.version>1.4</commons-cli.version>
+    <commons-cli.version>1.5.0</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-collections4.version>4.1</commons-collections4.version>
-    <commons-compress.version>1.21</commons-compress.version>
+    <commons-compress.version>1.23.0</commons-compress.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-io.version>2.11.0</commons-io.version>
+    <commons-io.version>2.12.0</commons-io.version>
     <commons-pool2.version>2.11.1</commons-pool2.version>
-    <commons-lang3.version>3.9</commons-lang3.version>
+    <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
     <commons-dbcp2.version>2.9.0</commons-dbcp2.version>
     <commons-text.version>1.10.0</commons-text.version>
@@ -165,7 +167,7 @@
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.3</junit.vintage.version>
-    <kafka.version>3.4.0</kafka.version>
+    <kafka.version>2.5.0</kafka.version>
     <kryo.version>5.2.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
     <kudu.version>1.12.0</kudu.version>
@@ -195,11 +197,11 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>4.0.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>4.0.0-beta-1-SNAPSHOT</storage-api.version>
     <tez.version>0.10.2</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
-    <snappy.version>1.1.8.4</snappy.version>
+    <snappy.version>1.1.10.1</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
     <velocity.version>2.3</velocity.version>
     <xerces.version>2.12.2</xerces.version>
