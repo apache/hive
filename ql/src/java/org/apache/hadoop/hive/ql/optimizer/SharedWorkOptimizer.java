@@ -749,17 +749,6 @@ public class SharedWorkOptimizer extends Transform {
     if (!prevTsOpPPList.getPartitions().equals(tsOpPPList.getPartitions())) {
       return false;
     }
-
-    if(!Objects.equals(tsOp1.getConf().getIncludedBuckets(),
-            tsOp2.getConf().getIncludedBuckets())) {
-      return false;
-    }
-
-    return true;
-  }
-
-  private static boolean areMergeableExtendedCheck(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
-      TableScanOperator tsOp1, TableScanOperator tsOp2) throws SemanticException {
     // If is a DPP, check if actually it refers to same target, column, etc.
     // Further, the DPP value needs to be generated from same subtree
     List<Operator<?>> dppsOp1 = new ArrayList<>(optimizerCache.tableScanToDPPSource.get(tsOp1));
@@ -1166,7 +1155,6 @@ public class SharedWorkOptimizer extends Transform {
           && pctx.getPrunedPartitions(tsOp1).getPartitions().equals(
               pctx.getPrunedPartitions(tsOp2).getPartitions())
           && op1Conf.getRowLimit() == op2Conf.getRowLimit()
-          && Objects.equals(op1Conf.getIncludedBuckets(), op2Conf.getIncludedBuckets())
           && Objects.equals(op1Conf.getOpProps(), op2Conf.getOpProps())) {
         return true;
       } else {
