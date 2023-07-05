@@ -29,5 +29,21 @@ CREATE INDEX "APP"."PCS_STATS_IDX" ON "APP"."PART_COL_STATS" ("DB_NAME","TABLE_N
 -- HIVE-27186
 ALTER TABLE "APP"."METASTORE_DB_PROPERTIES" ADD PROPERTYCONTENT BLOB;
 
+-- HIVE-27457
+UPDATE SDS
+    SET SDS.INPUT_FORMAT = "org.apache.hadoop.hive.kudu.KuduInputFormat",
+        SDS.OUTPUT_FORMAT = "org.apache.hadoop.hive.kudu.KuduOutputFormat"
+    WHERE SDS.SD_ID IN (
+        SELECT TBL_ID FROM TABLE_PARAMS WHERE PARAM_VALUE LIKE '%KuduStorageHandler%'
+    );
+UPDATE SERDES
+    SET SERDES.SLIB = "org.apache.hadoop.hive.kudu.KuduSerDe"
+    WHERE SERDE_ID IN (
+        SELECT SDS.SERDE_ID
+            FROM TBLS
+            LEFT JOIN SDS ON TBLS.SD_ID = SDS.SD_ID
+            WHERE TBL_ID IN (SELECT TBL_ID FROM TABLE_PARAMS WHERE PARAM_VALUE LIKE '%KuduStorageHandler%')
+    );
+
 -- This needs to be the last thing done.  Insert any changes above this line.
 UPDATE "APP".VERSION SET SCHEMA_VERSION='4.0.0-beta-1', VERSION_COMMENT='Hive release version 4.0.0-beta-1' where VER_ID=1;
