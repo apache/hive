@@ -30,19 +30,19 @@ CREATE INDEX TAB_COL_STATS_IDX ON TAB_COL_STATS (DB_NAME, TABLE_NAME, COLUMN_NAM
 ALTER TABLE METASTORE_DB_PROPERTIES ADD PROPERTYCONTENT varbinary(max);
 
 -- HIVE-27457
-UPDATE SDS
-    SET SDS.INPUT_FORMAT = "org.apache.hadoop.hive.kudu.KuduInputFormat",
-        SDS.OUTPUT_FORMAT = "org.apache.hadoop.hive.kudu.KuduOutputFormat"
-    WHERE SDS.SD_ID IN (
-        SELECT TBL_ID FROM TABLE_PARAMS WHERE PARAM_VALUE LIKE '%KuduStorageHandler%'
+UPDATE "SDS"
+    SET "SDS"."INPUT_FORMAT" = 'org.apache.hadoop.hive.kudu.KuduInputFormat',
+        "SDS"."OUTPUT_FORMAT" = 'org.apache.hadoop.hive.kudu.KuduOutputFormat'
+    WHERE "SDS"."SD_ID" IN (
+        SELECT "TBL_ID" FROM "TABLE_PARAMS" WHERE "PARAM_VALUE" LIKE '%KuduStorageHandler%'
     );
-UPDATE SERDES
-    SET SERDES.SLIB = "org.apache.hadoop.hive.kudu.KuduSerDe"
-    WHERE SERDE_ID IN (
-        SELECT SDS.SERDE_ID
-            FROM TBLS
-            LEFT JOIN SDS ON TBLS.SD_ID = SDS.SD_ID
-            WHERE TBL_ID IN (SELECT TBL_ID FROM TABLE_PARAMS WHERE PARAM_VALUE LIKE '%KuduStorageHandler%')
+UPDATE "SERDES"
+    SET "SERDES"."SLIB" = 'org.apache.hadoop.hive.kudu.KuduSerDe'
+    WHERE "SERDE_ID" IN (
+        SELECT "SDS"."SERDE_ID"
+            FROM "TBLS"
+            LEFT JOIN "SDS" ON "TBLS"."SD_ID" = "SDS"."SD_ID"
+            WHERE "TBL_ID" IN (SELECT "TBL_ID" FROM "TABLE_PARAMS" WHERE "PARAM_VALUE" LIKE '%KuduStorageHandler%')
     );
 
 -- These lines need to be last.  Insert any changes above.
