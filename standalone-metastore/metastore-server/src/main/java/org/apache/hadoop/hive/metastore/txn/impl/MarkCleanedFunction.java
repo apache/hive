@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn.impl;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -28,17 +29,11 @@ import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalVoidFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import java.sql.PreparedStatement;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.SUCCEEDED_STATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
@@ -46,8 +41,6 @@ import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 public class MarkCleanedFunction implements TransactionalVoidFunction {
 
   private static final Logger LOG = LoggerFactory.getLogger(MarkCleanedFunction.class);
-
-  private static final String DELETE_CQ_ENTRIES = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = :id";
 
   private final CompactionInfo info;
   private final DatabaseProduct dbProduct;
@@ -131,61 +124,32 @@ public class MarkCleanedFunction implements TransactionalVoidFunction {
      * aborted TXN_COMPONENTS above tc_writeid (and consequently about aborted txns).
      * See {@link ql.txn.compactor.Cleaner.removeFiles()}
      */
-    String sql = "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
-        + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = ?) "
-        + "AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? "
-        + "AND \"TC_PARTITION\" " + (info.partName != null ? "= ? " : "IS NULL ");
 
-    List<String> queries = new ArrayList<>();
-    final Iterator<Long> writeIdsIter;
-    List<Integer> counts = null;
-
-    if (info.writeIds != null && !info.writeIds.isEmpty()) {
-      StringBuilder prefix = new StringBuilder(sql).append(" AND ");
-      List<String> questions = Collections.nCopies(info.writeIds.size(), "?");
-
-      counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix,
-          new StringBuilder(), questions, "\"TC_WRITEID\"", false, false);
-      writeIdsIter = info.writeIds.iterator();
-    } else {
-      writeIdsIter = null;
-      if (!info.hasUncompactedAborts) {
-        if (info.highestWriteId != 0) {
-          sql += " AND \"TC_WRITEID\" <= ?";
-        }
-        queries.add(sql);
-      }
-    }
+    MapSqlParameterSource params = new MapSqlParameterSource()
+        .addValue("state", TxnStatus.ABORTED.getSqlConst(), Types.CHAR)
+        .addValue("db", info.dbname)
+        .addValue("table", info.tableName)
+        .addValue("partition", info.partName);
 
     int totalCount = 0;
-    for (int i = 0; i < queries.size(); i++) {
-      String query = queries.get(i);
-      int writeIdCount = (counts != null) ? counts.get(i) : 0;
-      totalCount += Objects.requireNonNull(jdbcTemplate.getJdbcTemplate().execute((ConnectionCallback<Integer>) con -> {
-        int sumCount = 0;        
-        try (PreparedStatement pStmt = con.prepareStatement(query)) {
-          LOG.debug("Going to execute update <{}>", query);
-          int paramCount = 1;
-          pStmt.setString(paramCount++, TxnStatus.ABORTED.getSqlConst());
-          pStmt.setString(paramCount++, info.dbname);
-          pStmt.setString(paramCount++, info.tableName);
-          if (info.partName != null) {
-            pStmt.setString(paramCount++, info.partName);
-          }
-          if (info.highestWriteId != 0 && writeIdCount == 0) {
-            pStmt.setLong(paramCount, info.highestWriteId);
-          }
-          for (int j = 0; j < writeIdCount; j++) {
-            if (writeIdsIter.hasNext()) {
-              pStmt.setLong(paramCount + j, writeIdsIter.next());
-            }
-          }
-          sumCount += pStmt.executeUpdate();
-        }
-        return sumCount;
-      }));
-      LOG.debug("Removed {} records from txn_components", totalCount);
+    if (!info.hasUncompactedAborts && info.highestWriteId != 0) {
+      totalCount = jdbcTemplate.update(
+          "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
+              + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = :state) "
+              + "AND \"TC_DATABASE\" = :db AND \"TC_TABLE\" = :table "
+              + "AND (:partition is NULL OR \"TC_PARTITION\" = :partition) "
+              + "AND \"TC_WRITEID\" <= :id",
+          params.addValue("id", info.highestWriteId));
+    } else if (CollectionUtils.isNotEmpty(info.writeIds)) {
+      totalCount = TxnUtils.executeStatementWithInClause(conf, jdbcTemplate,
+          "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
+              + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = :state) "
+              + "AND \"TC_DATABASE\" = :db AND \"TC_TABLE\" = :table "
+              + "AND (:partition is NULL OR \"TC_PARTITION\" = :partition) "
+              + "AND \"TC_WRITEID\" IN (:ids)",
+          params, "ids", new ArrayList<>(info.writeIds), Long::compareTo);
     }
+    LOG.debug("Removed {} records from txn_components", totalCount);
   }
 
   private void removeCompactionAndAbortRetryEntries(CompactionInfo info, NamedParameterJdbcTemplate jdbcTemplate) {
@@ -195,21 +159,18 @@ public class MarkCleanedFunction implements TransactionalVoidFunction {
       return;
     }
 
-    String query = DELETE_CQ_ENTRIES;
-    MapSqlParameterSource params = new MapSqlParameterSource()
-        .addValue("id", info.id);
-    
-    if (!info.isAbortedTxnCleanup()) {
-      query += " OR ( \"CQ_DATABASE\" = :db AND \"CQ_TABLE\" = :table AND \"CQ_PARTITION\" " +
-          (info.partName != null ? " = :partition" : "IS NULL") + " AND \"CQ_TYPE\" = :type )";
-
+    MapSqlParameterSource params = new MapSqlParameterSource("id", info.id);
+    String query;
+    if (info.isAbortedTxnCleanup()) {
+      query = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = :id";
+    } else {
+      query = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = :id " +
+          "OR (\"CQ_DATABASE\" = :db AND \"CQ_TABLE\" = :table AND \"CQ_TYPE\" = :type AND (:partition is NULL OR \"CQ_PARTITION\" = :partition))";
       params.addValue("db", info.dbname)
-            .addValue("table", info.tableName)
-            .addValue("type", Character.toString(TxnStore.ABORT_TXN_CLEANUP_TYPE), Types.CHAR);
-      if (info.partName != null) {
-        params.addValue("partition", info.partName);
-      }
-    }
+          .addValue("table", info.tableName)
+          .addValue("type", Character.toString(TxnStore.ABORT_TXN_CLEANUP_TYPE), Types.CHAR)
+          .addValue("partition", info.partName, Types.VARCHAR);
+    }    
 
     LOG.debug("Going to execute update <{}>", query);
     int rc = jdbcTemplate.update(query,params);

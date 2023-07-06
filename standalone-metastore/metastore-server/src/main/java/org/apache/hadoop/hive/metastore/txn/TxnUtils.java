@@ -25,20 +25,21 @@ import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.RetryHandler;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -49,14 +50,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
-import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
 import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
 
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
@@ -405,6 +408,50 @@ public class TxnUtils {
     queries.add(buf.toString());
     ret.add(currentCount);
     return ret;
+  }
+
+  /**
+   * Executes the statement with an IN clause. If the number of elements or the length of the constructed statement would be
+   * too big, the IN clause will be split into multiple smaller ranges, and the statement will be executed multiple times.
+   * @param conf Hive configuration used to get the query and IN clause length limits.
+   * @param jdbcTemplate The {@link NamedParameterJdbcTemplate} instance to used for statement execution.
+   * @param query The query with the IN clause
+   * @param params A {@link MapSqlParameterSource} instance with the parameters of the query
+   * @param inClauseParamName The name of the parameter representing the content of the IN clause 
+   * @param elements A {@link List} containing the elements to put in the IN clause
+   * @param comparator A {@link Comparator} instance used to find the longest element in the list. Used to
+   *                   estimate the length of the query.
+   * @return Returns the total number of affected rows.
+   * @param <T> Type of the elements in the list.
+   */
+  public static <T> int executeStatementWithInClause(Configuration conf, NamedParameterJdbcTemplate jdbcTemplate, 
+                                                     String query, MapSqlParameterSource params, String inClauseParamName, 
+                                                     List<T> elements, Comparator<T> comparator) {
+    if (elements.size() == 0) {
+      throw new IllegalArgumentException("The elements list cannot be empty! An empty IN clause is invalid!");
+    }
+    if (!Pattern.compile("IN\\s*\\(\\s*:" + inClauseParamName + "\\s*\\)", Pattern.CASE_INSENSITIVE).matcher(query).find()) {
+      throw new IllegalArgumentException("The query must contain the IN(:" + inClauseParamName + ") clause!");      
+    }
+
+    int maxQueryLength = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH) * 1024;
+    int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
+    // The length of a single element is the string length of the longest element + 2 characters (comma, space) 
+    int elementLength = elements.stream().max(comparator).get().toString().length() + 2;
+    // estimated base query size: query size + the length of all parameters.
+    int baseQuerySize = query.length() + params.getValues().values().stream().mapToInt(s -> s.toString().length()).sum();
+    int maxElementsByLength = (maxQueryLength - baseQuerySize) / elementLength;
+
+    int inClauseMaxSize = Math.min(batchSize, maxElementsByLength);
+
+    int fromIndex = 0, totalCount = 0;
+    while (fromIndex < elements.size()) {
+      int endIndex = Math.min(elements.size(), fromIndex + inClauseMaxSize);
+      params.addValue(inClauseParamName, elements.subList(fromIndex, endIndex));
+      totalCount += jdbcTemplate.update(query, params);
+      fromIndex = endIndex;
+    }
+    return totalCount;
   }
 
   /**

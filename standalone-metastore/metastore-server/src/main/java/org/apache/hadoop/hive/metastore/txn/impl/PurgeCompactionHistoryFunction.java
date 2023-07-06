@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalVoidFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.ArrayList;
@@ -90,37 +90,10 @@ public class PurgeCompactionHistoryFunction implements TransactionalVoidFunction
       return;
     }
 
-    List<String> queries = new ArrayList<>();
-
-    StringBuilder prefix = new StringBuilder();
-    StringBuilder suffix = new StringBuilder();
-
-    prefix.append("DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE ");
-
-    List<String> questions = new ArrayList<>(deleteSet.size());
-    for (int i = 0; i < deleteSet.size(); i++) {
-      questions.add("?");
-    }
-    List<Integer> counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix, questions,
-        "\"CC_ID\"", false, false);
-    int totalCount = 0;
-    for (int i = 0; i < queries.size(); i++) {
-      String query = queries.get(i);
-      int insertCount = counts.get(i);
-      final int finalTotalCount = totalCount;
-
-      LOG.debug("Going to execute update <{}>", query);
-      jdbcTemplate.getJdbcTemplate().execute(query, (PreparedStatementCallback<Void>) pStmt -> {
-        for (int j = 0; j < insertCount; j++) {
-          pStmt.setLong(j + 1, deleteSet.get(finalTotalCount + j));
-        }
-        int count = pStmt.executeUpdate();
-        LOG.debug("Removed {} records from COMPLETED_COMPACTIONS", count);
-        return null;
-      });
-
-      totalCount += insertCount;
-    }
+    int totalCount = TxnUtils.executeStatementWithInClause(conf, jdbcTemplate,
+        "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE \"CC_ID\" in (:ids)",
+        new MapSqlParameterSource(), "ids", deleteSet, Long::compareTo);
+    LOG.debug("Removed {} records from COMPLETED_COMPACTIONS", totalCount);
   }
   
 
