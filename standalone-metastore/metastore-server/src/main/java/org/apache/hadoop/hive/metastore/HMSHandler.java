@@ -4055,7 +4055,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private List<Partition> add_partitions_core(final RawStore ms, String catName,
                                               String dbName, String tblName, List<Partition> parts, final boolean ifNotExists)
       throws TException {
-    logAndAudit("add_partitions");
+    startTableFunction("add_partitions", catName, dbName, tblName);
     boolean success = false;
     // Ensures that the list doesn't have dups, and keeps track of directories we have created.
     final Map<PartValEqWrapperLite, Boolean> addedPartitions = new ConcurrentHashMap<>();
@@ -4428,9 +4428,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public int add_partitions_pspec(final List<PartitionSpec> partSpecs)
       throws TException {
-    logAndAudit("add_partitions_pspec");
-
     if (partSpecs.isEmpty()) {
+      logAndAudit("add_partitions_pspec");
       return 0;
     }
 
@@ -4445,7 +4444,20 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       catName = partSpecs.get(0).getCatName();
     }
 
-    return add_partitions_pspec_core(getMS(), catName, dbName, tableName, partSpecs, false);
+    Integer ret = null;
+    Exception ex = null;
+    try {
+      startTableFunction("add_partitions_pspec", catName, dbName, tableName);
+      ret = add_partitions_pspec_core(getMS(), catName, dbName, tableName, partSpecs, false);
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e)
+              .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
+              .defaultMetaException();
+    } finally {
+      endFunction("add_partitions_pspec", ret != null, ex, tableName);
+    }
+    return ret;
   }
 
   private int add_partitions_pspec_core(RawStore ms, String catName, String dbName,
