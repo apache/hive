@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import java.math.BigDecimal;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelCollation;
@@ -26,7 +27,9 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexLiteral;
+import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -111,10 +114,24 @@ public class HiveSortJoinReduceRule extends RelOptRule {
     RelNode inputLeft = join.getLeft();
     RelNode inputRight = join.getRight();
 
+    final int offset = sortLimit.offset == null ? 0 : RexLiteral.intValue(sortLimit.offset);
+    final RexNode inputOffset;
+    final RexNode inputLimit;
+    if (offset > 0) {
+      // We have to retain 0 ~ offset + limit because each task might not access the global offset
+      final int limit = RexLiteral.intValue(sortLimit.fetch);
+      final RexBuilder rexBuilder = sortLimit.getCluster().getRexBuilder();
+      inputOffset = rexBuilder.makeExactLiteral(BigDecimal.valueOf(0));
+      inputLimit = rexBuilder.makeExactLiteral(BigDecimal.valueOf(offset + limit));
+    } else {
+      inputOffset = sortLimit.offset;
+      inputLimit = sortLimit.fetch;
+    }
+
     // We create a new sort operator on the corresponding input
     if (join.getJoinType() == JoinRelType.LEFT) {
       inputLeft = sortLimit.copy(sortLimit.getTraitSet(), inputLeft,
-              sortLimit.getCollation(), sortLimit.offset, sortLimit.fetch);
+              sortLimit.getCollation(), inputOffset, inputLimit);
       ((HiveSortLimit) inputLeft).setRuleCreated(true);
     } else {
       // Adjust right collation
@@ -123,7 +140,7 @@ public class HiveSortJoinReduceRule extends RelOptRule {
                   RelCollations.shift(sortLimit.getCollation(),
                       -join.getLeft().getRowType().getFieldCount()));
       inputRight = sortLimit.copy(sortLimit.getTraitSet().replace(rightCollation), inputRight,
-              rightCollation, sortLimit.offset, sortLimit.fetch);
+              rightCollation, inputOffset, inputLimit);
       ((HiveSortLimit) inputRight).setRuleCreated(true);
     }
     // We copy the join and the top sort operator
