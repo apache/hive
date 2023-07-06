@@ -38,7 +38,9 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.transport.TTransportException;
 
 import com.google.common.collect.Lists;
@@ -392,7 +394,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
       createTable3PartCols1Part(client);
       client.getPartitionsByNames(null, TABLE_NAME, Lists.newArrayList("yyyy=2000/mm=01/dd=02"));
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -403,7 +405,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
       createTable3PartCols1Part(client);
       client.getPartitionsByNames(DB_NAME, null, Lists.newArrayList("yyyy=2000/mm=01/dd=02"));
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TProtocolException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -482,7 +484,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
       client.getPartitionWithAuthInfo(null, TABLE_NAME,
               Lists.newArrayList("1997", "05", "16"), "user0", Lists.newArrayList("group0"));
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -494,7 +496,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
       client.getPartitionWithAuthInfo(DB_NAME, null,
               Lists.newArrayList("1997", "05", "16"), "user0", Lists.newArrayList("group0"));
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TApplicationException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }

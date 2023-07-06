@@ -30,6 +30,7 @@
   <name>Hive Standalone Metastore</name>
 
   <properties>
+    <hive.version>3.2.0-SNAPSHOT</hive.version>
     <hive.version.shortname>3.2.0</hive.version.shortname>
 
     <!-- Build properties -->
@@ -40,6 +41,7 @@
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
     <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
+    <maven.setversion.plugin.version>2.13.0</maven.setversion.plugin.version>
 
     <!-- Test Properties -->
     <log4j.conf.dir>${project.basedir}/src/test/resources</log4j.conf.dir>
@@ -78,8 +80,8 @@
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.11</junit.version>
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.9.3</libthrift.version>
-    <log4j2.version>2.16.0</log4j2.version>
+    <libthrift.version>0.13.0</libthrift.version>
+    <log4j2.version>2.17.1</log4j2.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <orc.version>1.5.1</orc.version>
     <protobuf.version>2.5.0</protobuf.version>
@@ -92,7 +94,8 @@
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
-    <thrift.args>-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb</thrift.args>
+    <thrift.args>-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
+    </thrift.args>
 
   </properties>
 
@@ -554,6 +557,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven.checkstyle.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>${maven.setversion.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
