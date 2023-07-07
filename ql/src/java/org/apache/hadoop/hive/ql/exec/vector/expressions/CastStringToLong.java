@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -63,8 +64,8 @@ public class CastStringToLong extends VectorExpression {
   }
 
   @Override
-  public void transientInit() throws HiveException {
-    super.transientInit();
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
 
     integerPrimitiveCategory = ((PrimitiveTypeInfo) outputTypeInfo).getPrimitiveCategory();
   }

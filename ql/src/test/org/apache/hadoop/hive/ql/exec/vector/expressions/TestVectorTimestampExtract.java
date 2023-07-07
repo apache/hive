@@ -390,7 +390,7 @@ public class TestVectorTimestampExtract {
             Arrays.asList(dataTypePhysicalVariations),
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo " + dateTimeStringTypeInfo.toString() +

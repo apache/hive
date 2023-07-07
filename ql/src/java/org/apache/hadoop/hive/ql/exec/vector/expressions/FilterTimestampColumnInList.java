@@ -22,6 +22,7 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -55,8 +56,8 @@ public class FilterTimestampColumnInList extends VectorExpression implements ITi
   }
 
   @Override
-  public void transientInit() throws HiveException {
-    super.transientInit();
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
 
     inSet = new HashSet<Timestamp>(inListValues.length);
     for (Timestamp val : inListValues) {

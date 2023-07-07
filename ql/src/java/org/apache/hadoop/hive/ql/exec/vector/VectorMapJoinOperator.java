@@ -105,9 +105,9 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
 
   @Override
   public void initializeOp(Configuration hconf) throws HiveException {
-    VectorExpression.doTransientInit(bigTableFilterExpressions);
-    VectorExpression.doTransientInit(keyExpressions);
-    VectorExpression.doTransientInit(bigTableValueExpressions);
+    VectorExpression.doTransientInit(bigTableFilterExpressions, hconf);
+    VectorExpression.doTransientInit(keyExpressions, hconf);
+    VectorExpression.doTransientInit(bigTableValueExpressions, hconf);
 
     // Use a final variable to properly parameterize the processVectorInspector closure.
     // Using a member variable in the closure will not do the right thing...

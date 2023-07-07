@@ -430,7 +430,7 @@ public class TestVectorDateDiff {
             Arrays.asList(dataTypePhysicalVariations),
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 

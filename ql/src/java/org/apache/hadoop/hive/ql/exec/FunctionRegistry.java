@@ -63,7 +63,6 @@ import org.apache.hadoop.hive.ql.udf.UDFDegrees;
 import org.apache.hadoop.hive.ql.udf.UDFE;
 import org.apache.hadoop.hive.ql.udf.UDFExp;
 import org.apache.hadoop.hive.ql.udf.UDFFindInSet;
-import org.apache.hadoop.hive.ql.udf.UDFFromUnixTime;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFJson;
@@ -298,7 +297,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("hour", UDFHour.class);
     system.registerGenericUDF("minute", UDFMinute.class);
     system.registerGenericUDF("second", UDFSecond.class);
-    system.registerUDF("from_unixtime", UDFFromUnixTime.class, false);
+    system.registerGenericUDF("from_unixtime", GenericUDFFromUnixTime.class);
     system.registerGenericUDF("to_date", GenericUDFDate.class);
     system.registerUDF("weekofyear", UDFWeekOfYear.class, false);
     system.registerGenericUDF("last_day", GenericUDFLastDay.class);

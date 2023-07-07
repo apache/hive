@@ -108,7 +108,7 @@ public class VectorSelectOperator extends Operator<SelectDesc>
     if (conf.isSelStarNoCompute()) {
       return;
     }
-    VectorExpression.doTransientInit(vExpressions);
+    VectorExpression.doTransientInit(vExpressions, hconf);
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -63,8 +64,8 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
   }
 
   @Override
-  public void transientInit() throws HiveException {
-    super.transientInit();
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
 
     dateVector1 = new LongColumnVector();
     dateVector2 = new LongColumnVector();
