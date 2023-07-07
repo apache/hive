@@ -97,14 +97,13 @@ public class HiveSortJoinReduceRule extends RelOptRule {
     }
 
     // Finally, if we do not reduce the input size, we bail out
-    final int offset = sortLimit.offset == null ? 0 : RexLiteral.intValue(sortLimit.offset);
-    final RelMetadataQuery mq = call.getMetadataQuery();
-    if (offset + RexLiteral.intValue(sortLimit.fetch)
-            >= mq.getRowCount(reducedInput)) {
+    final long offset = sortLimit.offset == null ? 0 : RexLiteral.intValue(sortLimit.offset);
+    final long offsetPlusLimit = offset + RexLiteral.intValue(sortLimit.fetch);
+    if (offsetPlusLimit > Integer.MAX_VALUE) {
       return false;
     }
-
-    return true;
+    final RelMetadataQuery mq = call.getMetadataQuery();
+    return offsetPlusLimit < mq.getRowCount(reducedInput);
   }
 
   @Override
@@ -114,19 +113,12 @@ public class HiveSortJoinReduceRule extends RelOptRule {
     RelNode inputLeft = join.getLeft();
     RelNode inputRight = join.getRight();
 
+    final RexBuilder rexBuilder = sortLimit.getCluster().getRexBuilder();
+    // We have to retain 0 ~ offset + limit because each task might not access the global offset
+    final RexNode inputOffset = rexBuilder.makeExactLiteral(BigDecimal.valueOf(0));
     final int offset = sortLimit.offset == null ? 0 : RexLiteral.intValue(sortLimit.offset);
-    final RexNode inputOffset;
-    final RexNode inputLimit;
-    if (offset > 0) {
-      // We have to retain 0 ~ offset + limit because each task might not access the global offset
-      final int limit = RexLiteral.intValue(sortLimit.fetch);
-      final RexBuilder rexBuilder = sortLimit.getCluster().getRexBuilder();
-      inputOffset = rexBuilder.makeExactLiteral(BigDecimal.valueOf(0));
-      inputLimit = rexBuilder.makeExactLiteral(BigDecimal.valueOf(offset + limit));
-    } else {
-      inputOffset = sortLimit.offset;
-      inputLimit = sortLimit.fetch;
-    }
+    final int limit = RexLiteral.intValue(sortLimit.fetch);
+    final RexNode inputLimit = rexBuilder.makeExactLiteral(BigDecimal.valueOf(offset + limit));
 
     // We create a new sort operator on the corresponding input
     if (join.getJoinType() == JoinRelType.LEFT) {
