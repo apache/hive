@@ -555,12 +555,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
           }
         } catch (TTransportException e) {
           tte = e;
-          if (LOG.isDebugEnabled()) {
-            LOG.warn("Failed to connect to the MetaStore Server...", e);
-          } else {
-            // Don't print full exception trace if DEBUG is not on.
-            LOG.warn("Failed to connect to the MetaStore Server...");
-          }
+          LOG.warn("Failed to connect to the MetaStore Server.");
         } catch (MetaException e) {
           throw new MetaException(CONNECT_METASTORE_FAILED + StringUtils.stringifyException(e));
         }
