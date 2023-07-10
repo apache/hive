@@ -32,8 +32,10 @@ import java.util.stream.Collectors;
 /**
  * GenericUDFArrayIntersect.
  */
-@Description(name = "array_intersect", value = "_FUNC_(array1, array2) - Returns an array of the elements in the intersection of array1 and array2, without duplicates.", extended =
-    "Example:\n" + "  > SELECT _FUNC_(array(1, 2, 3,4), array(1,2,3)) FROM src;\n  [1,2,3]")
+@Description(name = "array_intersect", value =
+    "_FUNC_(array1, array2) - Returns an array of the elements in the intersection of array1 and array2,"
+        + " without duplicates.", extended = "Example:\n"
+    + "  > SELECT _FUNC_(array(1, 2, 3,4), array(1,2,3)) FROM src;" + "\n  [1,2,3]")
 public class GenericUDFArrayIntersect extends AbstractGenericUDFArrayBase {
   static final int ARRAY2_IDX = 1;
   private static final String FUNC_NAME = "ARRAY_INTERSECT";
@@ -47,7 +49,9 @@ public class GenericUDFArrayIntersect extends AbstractGenericUDFArrayBase {
     ObjectInspector defaultOI = super.initialize(arguments);
     checkArgCategory(arguments, ARRAY2_IDX, ObjectInspector.Category.LIST, FUNC_NAME,
         org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME); //Array1 is already getting validated in Parent class
-    if (!ObjectInspectorUtils.compareTypes(arrayOI.getListElementObjectInspector(), ((ListObjectInspector) arguments[ARRAY2_IDX]).getListElementObjectInspector())) { // check if elements of arrays are comparable
+    if (!ObjectInspectorUtils.compareTypes(arrayOI.getListElementObjectInspector(),
+        ((ListObjectInspector) arguments[ARRAY2_IDX]).getListElementObjectInspector())) {
+      // check if elements of arrays are comparable
       throw new UDFArgumentTypeException(1, ERROR_NOT_COMPARABLE);
     }
     return defaultOI;
@@ -57,17 +61,12 @@ public class GenericUDFArrayIntersect extends AbstractGenericUDFArrayBase {
 
     Object array = arguments[ARRAY_IDX].get();
     Object array2 = arguments[ARRAY2_IDX].get();
-    if (array == null) {
+    if (array == null || array2 == null) {
       return null;
     }
-
-    if (array2 == null) {
-      return null;
-    }
-
-    List<?> retArray3 = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);
-    List<?> inputArrayCopy = new ArrayList<Object>(retArray3);
-    inputArrayCopy.retainAll(((ListObjectInspector) argumentOIs[ARRAY2_IDX]).getList(arguments[ARRAY2_IDX].get()));
-    return inputArrayCopy.stream().distinct().map(o -> converter.convert(o)).collect(Collectors.toList());
+    //Copy the first input array into a new list
+    List<?> resultArray = new ArrayList<>(((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array));
+    resultArray.retainAll(((ListObjectInspector) argumentOIs[ARRAY2_IDX]).getList(array2));
+    return resultArray.stream().distinct().map(o -> converter.convert(o)).collect(Collectors.toList());
   }
 }
