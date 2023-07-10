@@ -42,8 +42,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterTableAnalyzer {
-  protected static AbstractAlterTableDesc alterTableDesc;
-  protected static AlterTableType alterTableType;
+  protected AlterTableType alterTableType;
 
   public AlterTableCreateSnapshotRefAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -100,7 +99,8 @@ public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterT
             maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs);
     AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.CreateSnapshotRefSpec> alterTableSnapshotRefSpec
         = new AlterTableSnapshotRefSpec(alterTableType, createSnapshotRefSpec);
-    alterTableDesc =  new AlterTableCreateSnapshotRefDesc(alterTableType, tableName, alterTableSnapshotRefSpec);
+    AbstractAlterTableDesc alterTableDesc =
+        new AlterTableCreateSnapshotRefDesc(alterTableType, tableName, alterTableSnapshotRefSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTableDesc)));
   }
 }

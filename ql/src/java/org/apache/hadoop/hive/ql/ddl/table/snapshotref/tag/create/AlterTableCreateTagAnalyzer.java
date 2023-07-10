@@ -30,6 +30,6 @@ public class AlterTableCreateTagAnalyzer extends AlterTableCreateSnapshotRefAnal
 
   public AlterTableCreateTagAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
-    super.alterTableType = AlterTableType.CREATE_TAG;
+    alterTableType = AlterTableType.CREATE_TAG;
   }
 }

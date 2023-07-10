@@ -30,6 +30,6 @@ public class AlterTableCreateBranchAnalyzer extends AlterTableCreateSnapshotRefA
 
   public AlterTableCreateBranchAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
-    super.alterTableType = AlterTableType.CREATE_BRANCH;
+    alterTableType = AlterTableType.CREATE_BRANCH;
   }
 }
