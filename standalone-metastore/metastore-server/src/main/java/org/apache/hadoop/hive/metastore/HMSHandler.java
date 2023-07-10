@@ -4055,7 +4055,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private List<Partition> add_partitions_core(final RawStore ms, String catName,
                                               String dbName, String tblName, List<Partition> parts, final boolean ifNotExists)
       throws TException {
-    logAndAudit("add_partitions" + " : tbl=" + TableName.getQualified(catName, dbName, tblName));
     boolean success = false;
     // Ensures that the list doesn't have dups, and keeps track of directories we have created.
     final Map<PartValEqWrapperLite, Boolean> addedPartitions = new ConcurrentHashMap<>();
@@ -4371,6 +4370,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return result;
     }
 
+    List<Partition> ret = null;
+    Exception ex = null;
     if (!request.isSetCatName()) {
       request.setCatName(getDefaultCatalog(conf));
     }
@@ -4380,13 +4381,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         p.setCatName(getDefaultCatalog(conf));
       }
     });
-
     String catName = request.getCatName();
     String dbName = request.getDbName();
     String tableName = request.getTblName();
     startTableFunction(functionName, catName, dbName, tableName);
-    List<Partition> ret = null;
-    Exception ex = null;
     try {
       ret = add_partitions_core(getMS(), catName, dbName,
               tableName, request.getParts(), request.isIfNotExists());
