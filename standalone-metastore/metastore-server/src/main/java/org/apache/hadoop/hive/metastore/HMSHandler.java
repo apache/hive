@@ -4364,27 +4364,40 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public AddPartitionsResult add_partitions_req(AddPartitionsRequest request)
       throws TException {
+    String functionName = "add_partitions_req";
     AddPartitionsResult result = new AddPartitionsResult();
     if (request.getParts().isEmpty()) {
+      logAndAudit(functionName);
       return result;
     }
-    try {
-      if (!request.isSetCatName()) {
-        request.setCatName(getDefaultCatalog(conf));
+
+    if (!request.isSetCatName()) {
+      request.setCatName(getDefaultCatalog(conf));
+    }
+    // Make sure all the partitions have the catalog set as well
+    request.getParts().forEach(p -> {
+      if (!p.isSetCatName()) {
+        p.setCatName(getDefaultCatalog(conf));
       }
-      // Make sure all of the partitions have the catalog set as well
-      request.getParts().forEach(p -> {
-        if (!p.isSetCatName()) {
-          p.setCatName(getDefaultCatalog(conf));
-        }
-      });
-      List<Partition> parts = add_partitions_core(getMS(), request.getCatName(), request.getDbName(),
-          request.getTblName(), request.getParts(), request.isIfNotExists());
+    });
+
+    String catName = request.getCatName();
+    String dbName = request.getDbName();
+    String tableName = request.getTblName();
+    startTableFunction(functionName, catName, dbName, tableName);
+    List<Partition> ret = null;
+    Exception ex = null;
+    try {
+      ret = add_partitions_core(getMS(), catName, dbName,
+              tableName, request.getParts(), request.isIfNotExists());
       if (request.isNeedResult()) {
-        result.setPartitions(parts);
+        result.setPartitions(ret);
       }
     } catch (Exception e) {
+      ex = e;
       throw handleException(e).throwIfInstance(TException.class).defaultMetaException();
+    } finally {
+      endFunction(functionName, ret != null, ex, tableName);
     }
     return result;
   }
@@ -4392,26 +4405,32 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public int add_partitions(final List<Partition> parts) throws MetaException,
       InvalidObjectException, AlreadyExistsException {
-    startFunction("add_partition");
+    final String functionName = "add_partitions";
     if (parts == null) {
+      logAndAudit(functionName);
       throw new MetaException("Partition list cannot be null.");
     }
     if (parts.isEmpty()) {
+      logAndAudit(functionName);
       return 0;
     }
 
     Integer ret = null;
     Exception ex = null;
-    try {
-      // Old API assumed all partitions belong to the same table; keep the same assumption
-      if (!parts.get(0).isSetCatName()) {
-        String defaultCat = getDefaultCatalog(conf);
-        for (Partition p : parts) {
-          p.setCatName(defaultCat);
-        }
+    // Old API assumed all partitions belong to the same table; keep the same assumption
+    if (!parts.get(0).isSetCatName()) {
+      String defaultCat = getDefaultCatalog(conf);
+      for (Partition p : parts) {
+        p.setCatName(defaultCat);
       }
-      ret = add_partitions_core(getMS(), parts.get(0).getCatName(), parts.get(0).getDbName(),
-          parts.get(0).getTableName(), parts, false).size();
+    }
+    String catName = parts.get(0).getCatName();
+    String dbName = parts.get(0).getDbName();
+    String tableName = parts.get(0).getTableName();
+    startTableFunction(functionName, catName, dbName, tableName);
+    try {
+      ret = add_partitions_core(getMS(), catName, dbName,
+              tableName, parts, false).size();
       assert ret == parts.size();
     } catch (Exception e) {
       ex = e;
@@ -4419,8 +4438,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
           .defaultMetaException();
     } finally {
-      String tableName = parts.get(0).getTableName();
-      endFunction("add_partition", ret != null, ex, tableName);
+      endFunction(functionName, ret != null, ex, tableName);
     }
     return ret;
   }
