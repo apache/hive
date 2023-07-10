@@ -4446,8 +4446,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     Integer ret = null;
     Exception ex = null;
+    startTableFunction("add_partitions_pspec", catName, dbName, tableName);
     try {
-      startTableFunction("add_partitions_pspec", catName, dbName, tableName);
       ret = add_partitions_pspec_core(getMS(), catName, dbName, tableName, partSpecs, false);
     } catch (Exception e) {
       ex = e;
