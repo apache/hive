@@ -32,18 +32,22 @@ public class Utils {
 	  }
 	  
 	  int len = s.length();
-	  StringBuilder s2 = new StringBuilder(len);	  
+	  StringBuilder s2 = new StringBuilder(len);
+	  boolean isEscape = true;
 	  
 	  for (int i = 0; i < len; i++) {
 		char ch = s.charAt(i);
 		char ch2 = (i < len - 1) ? s.charAt(i+1) : 0;
 		  
-	    if((i == 0 || i == len -1) && (ch == '\'' || ch == '"'))
+	    if((i == 0 || i == len - 1) && (ch == '\'' || ch == '"'))
 	      continue;
 	    else
-	    // \' and '' escape sequences
-	    if((ch == '\\' && ch2 == '\'') || (ch == '\'' && ch2 == '\''))
+	    // \' and '' escape sequences and include ' if last two characters are ''
+	    if((ch == '\\' && ch2 == '\'') || (ch == '\'' && ch2 == '\'' && isEscape && i != len - 2)) {
+	      isEscape = false;
 	      continue;
+	    }
+	    isEscape = true;
 	    
 	    s2.append(ch);	
 	  }

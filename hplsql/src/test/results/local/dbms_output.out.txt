@@ -1,3 +1,9 @@
 Ln:2 DECLARE str VARCHAR = 'Hello, world!'
 Hello, world!
 Hello, world!
+a'a
+'a
+a'
+''aa
+a''a
+aa''
