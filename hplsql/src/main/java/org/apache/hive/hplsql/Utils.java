@@ -38,11 +38,11 @@ public class Utils {
 		char ch = s.charAt(i);
 		char ch2 = (i < len - 1) ? s.charAt(i+1) : 0;
 		  
-	    if((i == 0 || i == len -1) && (ch == '\'' || ch == '"'))
+	    if((i == 0 || i == len - 1) && (ch == '\'' || ch == '"'))
 	      continue;
 	    else
-	    // \' and '' escape sequences
-	    if((ch == '\\' && ch2 == '\'') || (ch == '\'' && ch2 == '\''))
+	    // \' and '' escape sequences and include ' if last two characters are ''
+	    if((ch == '\\' && ch2 == '\'') || (ch == '\'' && ch2 == '\'' && i != len - 2))
 	      continue;
 	    
 	    s2.append(ch);	
