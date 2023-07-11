@@ -31,13 +31,13 @@ ALTER TABLE "METASTORE_DB_PROPERTIES" ADD "PROPERTYCONTENT" bytea;
 
 -- HIVE-27457
 UPDATE "SDS"
-    SET "SDS"."INPUT_FORMAT" = 'org.apache.hadoop.hive.kudu.KuduInputFormat',
-        "SDS"."OUTPUT_FORMAT" = 'org.apache.hadoop.hive.kudu.KuduOutputFormat'
+    SET "INPUT_FORMAT" = 'org.apache.hadoop.hive.kudu.KuduInputFormat',
+        "OUTPUT_FORMAT" = 'org.apache.hadoop.hive.kudu.KuduOutputFormat'
     WHERE "SDS"."SD_ID" IN (
         SELECT "TBL_ID" FROM "TABLE_PARAMS" WHERE "PARAM_VALUE" LIKE '%KuduStorageHandler%'
     );
 UPDATE "SERDES"
-    SET "SERDES"."SLIB" = 'org.apache.hadoop.hive.kudu.KuduSerDe'
+    SET "SLIB" = 'org.apache.hadoop.hive.kudu.KuduSerDe'
     WHERE "SERDE_ID" IN (
         SELECT "SDS"."SERDE_ID"
             FROM "TBLS"
