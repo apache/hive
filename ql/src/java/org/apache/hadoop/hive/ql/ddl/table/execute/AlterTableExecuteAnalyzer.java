@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.time.ZoneId;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ROLLBACK;
@@ -54,6 +55,8 @@ import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec
  */
 @DDLType(types = HiveParser.TOK_ALTERTABLE_EXECUTE)
 public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
+
+  private static final Pattern EXPIRE_SNAPSHOT_BY_ID_REGEX = Pattern.compile("\\d+(\\s*,\\s*\\d+)*");
 
   public AlterTableExecuteAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -91,7 +94,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
           .getLocalTimeZone();
       String childText = PlanUtils.stripQuotes(child.getText().trim());
-      if (childText.contains(",") || StringUtils.isNumeric(childText)) {
+      if (EXPIRE_SNAPSHOT_BY_ID_REGEX.matcher(childText).matches()) {
          spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(childText));
       } else {
         TimestampTZ time = TimestampTZUtil.parse(childText, timeZone);

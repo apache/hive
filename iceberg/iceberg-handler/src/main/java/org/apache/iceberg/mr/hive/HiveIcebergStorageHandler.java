@@ -711,27 +711,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             (AlterTableExecuteSpec.ExpireSnapshotsSpec) executeSpec.getOperationParams();
         int numThreads = conf.getInt(HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.varname,
             HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.defaultIntVal);
+        ExecutorService deleteExecutorService = null;
         if (numThreads > 0) {
           LOG.info("Executing expire snapshots on iceberg table {} with {} threads", hmsTable.getCompleteName(),
               numThreads);
-          final ExecutorService deleteExecutorService =
-              getDeleteExecutorService(hmsTable.getCompleteName(), numThreads);
-          try {
-            if (expireSnapshotsSpec.isExpireByIds()) {
-              expireSnapshotByIds(icebergTable, expireSnapshotsSpec.getIdsToExpire(), deleteExecutorService);
-            } else {
-              icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis())
-                  .executeDeleteWith(deleteExecutorService).commit();
-            }
-          } finally {
-            deleteExecutorService.shutdown();
-          }
-        } else {
-          if (expireSnapshotsSpec.isExpireByIds()) {
-            expireSnapshotByIds(icebergTable, expireSnapshotsSpec.getIdsToExpire(), null);
-          }
-          icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
+          deleteExecutorService = getDeleteExecutorService(hmsTable.getCompleteName(), numThreads);
         }
+        expireSnapshot(icebergTable, expireSnapshotsSpec, deleteExecutorService);
         break;
       case SET_CURRENT_SNAPSHOT:
         AlterTableExecuteSpec.SetCurrentSnapshotSpec setSnapshotVersionSpec =
@@ -746,6 +732,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
+  private static void expireSnapshot(Table icebergTable, AlterTableExecuteSpec.ExpireSnapshotsSpec expireSnapshotsSpec,
+      ExecutorService deleteExecutorService) {
+    try {
+      if (expireSnapshotsSpec.isExpireByIds()) {
+        expireSnapshotByIds(icebergTable, expireSnapshotsSpec.getIdsToExpire(), deleteExecutorService);
+      } else {
+        expireSnapshotOlderThanTimestamp(icebergTable, expireSnapshotsSpec.getTimestampMillis(), deleteExecutorService);
+      }
+    } finally {
+      if (deleteExecutorService != null) {
+        deleteExecutorService.shutdown();
+      }
+    }
+  }
+
+  private static void expireSnapshotOlderThanTimestamp(Table icebergTable, Long timestamp,
+      ExecutorService deleteExecutorService) {
+    if (deleteExecutorService != null) {
+      icebergTable.expireSnapshots().expireOlderThan(timestamp).executeDeleteWith(deleteExecutorService).commit();
+    } else {
+      icebergTable.expireSnapshots().expireOlderThan(timestamp).commit();
+    }
+  }
+
   private static void expireSnapshotByIds(Table icebergTable, String[] idsToExpire,
       ExecutorService deleteExecutorService) {
     if (idsToExpire.length != 0) {
@@ -755,10 +765,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
       LOG.info("Expiring snapshot on {} for snapshot Ids: {}", icebergTable.name(), Arrays.toString(idsToExpire));
       if (deleteExecutorService != null) {
-        expireSnapshots.executeDeleteWith(deleteExecutorService).commit();
-      } else {
-        expireSnapshots.commit();
+        expireSnapshots = expireSnapshots.executeDeleteWith(deleteExecutorService);
       }
+      expireSnapshots.commit();
     }
   }
 

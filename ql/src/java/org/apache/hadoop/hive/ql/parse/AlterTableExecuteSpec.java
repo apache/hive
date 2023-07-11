@@ -129,10 +129,13 @@ public class AlterTableExecuteSpec<T> {
 
     @Override
     public String toString() {
+      MoreObjects.ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
       if (isExpireByIds()) {
-        return MoreObjects.toStringHelper(this).add("idsToExpire", Arrays.toString(idsToExpire)).toString();
+        stringHelper.add("idsToExpire", Arrays.toString(idsToExpire));
+      } else {
+        stringHelper.add("timestampMillis", timestampMillis);
       }
-      return MoreObjects.toStringHelper(this).add("timestampMillis", timestampMillis).toString();
+      return stringHelper.toString();
     }
   }
 
