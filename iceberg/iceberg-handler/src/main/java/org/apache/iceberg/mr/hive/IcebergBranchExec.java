@@ -19,7 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
-import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.util.SnapshotUtil;
@@ -38,8 +38,8 @@ public class IcebergBranchExec {
    * @param table the iceberg table
    * @param createBranchSpec Get the basic parameters needed to create a branch
    */
-  public static void createBranch(Table table, AlterTableBranchSpec.CreateBranchSpec createBranchSpec) {
-    String branchName = createBranchSpec.getBranchName();
+  public static void createBranch(Table table, AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createBranchSpec) {
+    String branchName = createBranchSpec.getRefName();
     Long snapshotId = null;
     if (createBranchSpec.getSnapshotId() != null) {
       snapshotId = createBranchSpec.getSnapshotId();

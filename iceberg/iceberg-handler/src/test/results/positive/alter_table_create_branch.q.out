@@ -25,9 +25,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateBranch operation
+    CreateSnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableBranchSpec{operationType=CREATE_BRANCH, operationParams=CreateBranchSpec{branchName=test_branch_1, snapshotId=null, asOfTime=null, maxRefAgeMs=null, minSnapshotsToKeep=null, maxSnapshotAgeMs=null}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{branchName=test_branch_1}}
 
 PREHOOK: query: alter table iceTbl create branch test_branch_1
 PREHOOK: type: ALTERTABLE_CREATEBRANCH
@@ -63,9 +63,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateBranch operation
+    CreateSnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableBranchSpec{operationType=CREATE_BRANCH, operationParams=CreateBranchSpec{branchName=test_branch_2, snapshotId=null, asOfTime=null, maxRefAgeMs=432000000, minSnapshotsToKeep=null, maxSnapshotAgeMs=null}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{branchName=test_branch_2, maxRefAgeMs=432000000}}
 
 PREHOOK: query: alter table iceTbl create branch test_branch_2 retain 5 days
 PREHOOK: type: ALTERTABLE_CREATEBRANCH
@@ -102,9 +102,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateBranch operation
+    CreateSnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableBranchSpec{operationType=CREATE_BRANCH, operationParams=CreateBranchSpec{branchName=test_branch_3, snapshotId=null, asOfTime=null, maxRefAgeMs=null, minSnapshotsToKeep=5, maxSnapshotAgeMs=null}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{branchName=test_branch_3, minSnapshotsToKeep=5}}
 
 PREHOOK: query: alter table iceTbl create branch test_branch_3 with snapshot retention 5 snapshots
 PREHOOK: type: ALTERTABLE_CREATEBRANCH
@@ -142,9 +142,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateBranch operation
+    CreateSnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableBranchSpec{operationType=CREATE_BRANCH, operationParams=CreateBranchSpec{branchName=test_branch_4, snapshotId=null, asOfTime=null, maxRefAgeMs=null, minSnapshotsToKeep=5, maxSnapshotAgeMs=432000000}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{branchName=test_branch_4, minSnapshotsToKeep=5, maxSnapshotAgeMs=432000000}}
 
 PREHOOK: query: alter table iceTbl create branch test_branch_4 with snapshot retention 5 snapshots 5 days
 PREHOOK: type: ALTERTABLE_CREATEBRANCH
