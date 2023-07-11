@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists llap_orders
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists llap_orders
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, p2 STRING) STORED BY ICEBERG STORED AS ORC tblproperties('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table ba_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table ba_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table ba_test (ba_key binary, ba_val binary)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -53,8 +55,10 @@ POSTHOOK: Input: default@src
 PREHOOK: query: drop table ba_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ba_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ba_test
 POSTHOOK: query: drop table ba_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ba_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ba_test

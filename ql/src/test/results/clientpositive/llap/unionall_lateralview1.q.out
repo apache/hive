@@ -1,15 +1,21 @@
 PREHOOK: query: drop table if exists unionall_lv_src1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists unionall_lv_src1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists unionall_lv_src2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists unionall_lv_src2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists unionall_lv_dest
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists unionall_lv_dest
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table unionall_lv_src1(id int, dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -103,24 +109,30 @@ POSTHOOK: Input: default@unionall_lv_dest@dt=2019-04-01
 PREHOOK: query: drop table unionall_lv_src1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@unionall_lv_src1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@unionall_lv_src1
 POSTHOOK: query: drop table unionall_lv_src1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@unionall_lv_src1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unionall_lv_src1
 PREHOOK: query: drop table unionall_lv_src2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@unionall_lv_src2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@unionall_lv_src2
 POSTHOOK: query: drop table unionall_lv_src2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@unionall_lv_src2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unionall_lv_src2
 PREHOOK: query: drop table unionall_lv_dest
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@unionall_lv_dest
+PREHOOK: Output: database:default
 PREHOOK: Output: default@unionall_lv_dest
 POSTHOOK: query: drop table unionall_lv_dest
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@unionall_lv_dest
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unionall_lv_dest

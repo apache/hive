@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice(a int, b string, c int) partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as avro tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -82,8 +84,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 555	Changed again	801
 PREHOOK: query: drop table if exists tbl_ice_other
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice_other
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice_other(a int, b string) stored by iceberg
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -131,8 +135,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 555	Changed again	801
 PREHOOK: query: drop table if exists tbl_standard_other
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_standard_other
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_standard_other(a int, b string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

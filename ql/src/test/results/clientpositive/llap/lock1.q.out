@@ -1,7 +1,9 @@
 PREHOOK: query: drop table tstsrc_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tstsrc_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tstsrc_n1 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -135,8 +137,10 @@ POSTHOOK: type: SHOWLOCKS
 PREHOOK: query: drop table tstsrc_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstsrc_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tstsrc_n1
 POSTHOOK: query: drop table tstsrc_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstsrc_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrc_n1

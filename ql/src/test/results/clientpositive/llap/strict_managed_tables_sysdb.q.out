@@ -461,24 +461,34 @@ smt_sysdb_src_skew	EXTERNAL_TABLE
 smt_sysdb_view	VIRTUAL_VIEW
 PREHOOK: query: drop table smt_sysdb_src_buck
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:sys
 POSTHOOK: query: drop table smt_sysdb_src_buck
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:sys
 PREHOOK: query: drop table smt_sysdb_src_skew
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:sys
 POSTHOOK: query: drop table smt_sysdb_src_skew
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:sys
 PREHOOK: query: drop table smt_sysdb_scr_txn
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:sys
 POSTHOOK: query: drop table smt_sysdb_scr_txn
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:sys
 PREHOOK: query: drop table smt_sysdb_src_tmp
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:sys
 POSTHOOK: query: drop table smt_sysdb_src_tmp
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:sys
 PREHOOK: query: drop table smt_sysdb_moretypes
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:sys
 POSTHOOK: query: drop table smt_sysdb_moretypes
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:sys
 PREHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:sys

@@ -70,8 +70,10 @@ POSTHOOK: Output: default@add_part_test_n0@ds=2010-01-02
 PREHOOK: query: DROP TABLE add_part_test_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@add_part_test_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@add_part_test_n0
 POSTHOOK: query: DROP TABLE add_part_test_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@add_part_test_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@add_part_test_n0

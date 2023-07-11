@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS skewtable
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS skewtable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE skewtable (key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -42,8 +44,10 @@ POSTHOOK: Lineage: skewtable.key SCRIPT []
 POSTHOOK: Lineage: skewtable.value SCRIPT []
 PREHOOK: query: DROP TABLE IF EXISTS nonskewtable
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS nonskewtable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE nonskewtable (key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

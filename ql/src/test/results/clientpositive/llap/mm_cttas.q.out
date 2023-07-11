@@ -1,7 +1,9 @@
 PREHOOK: query: drop table intermediate_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table intermediate_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table intermediate_n1(key int) partitioned by (p int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -39,8 +41,10 @@ POSTHOOK: Output: default@intermediate_n1@p=457
 POSTHOOK: Lineage: intermediate_n1 PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: drop table cttas1_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table cttas1_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create temporary table cttas1_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@intermediate_n1
@@ -76,16 +80,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table cttas1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@cttas1_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@cttas1_mm
 POSTHOOK: query: drop table cttas1_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@cttas1_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cttas1_mm
 PREHOOK: query: drop table intermediate_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@intermediate_n1
 POSTHOOK: query: drop table intermediate_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermediate_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermediate_n1

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists analyze_acid_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists analyze_acid_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table analyze_acid_table (id int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -429,10 +431,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists analyze_acid_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@analyze_acid_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_acid_table
 POSTHOOK: query: drop table if exists analyze_acid_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_acid_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: create table tmp_table (a int, b int)
 PREHOOK: type: CREATETABLE
@@ -454,8 +458,10 @@ POSTHOOK: Lineage: tmp_table.a SCRIPT []
 POSTHOOK: Lineage: tmp_table.b SCRIPT []
 PREHOOK: query: drop table if exists analyze_part_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists analyze_part_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table analyze_part_table (a int) partitioned by (b int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -971,15 +977,19 @@ b=3
 PREHOOK: query: drop table if exists analyze_part_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@analyze_part_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_part_table
 POSTHOOK: query: drop table if exists analyze_part_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_part_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_part_table
 PREHOOK: query: drop table if exists analyze_acid_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists analyze_acid_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table analyze_acid_table (id int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1407,15 +1417,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists analyze_acid_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@analyze_acid_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_acid_table
 POSTHOOK: query: drop table if exists analyze_acid_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_acid_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: drop table if exists analyze_part_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists analyze_part_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table analyze_part_table (a int) partitioned by (b int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1931,16 +1945,20 @@ b=3
 PREHOOK: query: drop table if exists analyze_part_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@analyze_part_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_part_table
 POSTHOOK: query: drop table if exists analyze_part_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_part_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_part_table
 PREHOOK: query: drop table tmp_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_table
 POSTHOOK: query: drop table tmp_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_table

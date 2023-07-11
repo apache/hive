@@ -889,10 +889,12 @@ POSTHOOK: Input: default@tcharvchar
 PREHOOK: query: drop table tcharvchar
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tcharvchar
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tcharvchar
 POSTHOOK: query: drop table tcharvchar
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tcharvchar
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tcharvchar
 PREHOOK: query: create table tdatets(t timestamp, d date, dc decimal(10,2)) stored as orc
 PREHOOK: type: CREATETABLE
@@ -1070,10 +1072,12 @@ POSTHOOK: Input: default@tdatets
 PREHOOK: query: drop table tdatets
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tdatets
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tdatets
 POSTHOOK: query: drop table tdatets
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tdatets
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tdatets
 PREHOOK: query: explain prepare p2 from select min(ctinyint), max(cbigint) from alltypesorc where cint > (? + ? + ?) group by ctinyint
 PREHOOK: type: QUERY
@@ -2497,16 +2501,20 @@ POSTHOOK: Input: default@alltypes
 PREHOOK: query: DROP TABLE testParam
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testparam
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testparam
 POSTHOOK: query: DROP TABLE testParam
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testparam
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testparam
 PREHOOK: query: DROP TABLE alltypes
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alltypes
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypes
 POSTHOOK: query: DROP TABLE alltypes
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alltypes
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypes

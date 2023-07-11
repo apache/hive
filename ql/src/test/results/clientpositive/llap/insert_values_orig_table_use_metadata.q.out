@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists acid_ivot_stage
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid_ivot_stage
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table acid_ivot_stage(
     ctinyint TINYINT,
     csmallint SMALLINT,
@@ -247,10 +249,12 @@ POSTHOOK: Input: default@acid_ivot
 PREHOOK: query: drop table acid_ivot
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid_ivot
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: drop table acid_ivot
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid_ivot
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_ivot
 PREHOOK: query: create table acid_ivot(
     ctinyint TINYINT,
@@ -562,10 +566,12 @@ STAGE PLANS:
 PREHOOK: query: drop table acid_ivot
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid_ivot
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: drop table acid_ivot
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid_ivot
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_ivot
 PREHOOK: query: create table acid_ivot like src
 PREHOOK: type: CREATETABLE

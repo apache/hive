@@ -431,18 +431,22 @@ daily	33	daily	33
 PREHOOK: query: DROP TABLE transition
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@transition
+PREHOOK: Output: database:default
 PREHOOK: Output: default@transition
 POSTHOOK: query: DROP TABLE transition
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@transition
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@transition
 PREHOOK: query: DROP TABLE transition2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@transition2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@transition2
 POSTHOOK: query: DROP TABLE transition2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@transition2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@transition2
 PREHOOK: query: SELECT * FROM header_footer_table_4
 PREHOOK: type: QUERY

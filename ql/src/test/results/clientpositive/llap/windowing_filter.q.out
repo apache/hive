@@ -204,8 +204,10 @@ AJ	1
 PREHOOK: query: drop table testtable_n1000
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testtable_n1000
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testtable_n1000
 POSTHOOK: query: drop table testtable_n1000
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testtable_n1000
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testtable_n1000

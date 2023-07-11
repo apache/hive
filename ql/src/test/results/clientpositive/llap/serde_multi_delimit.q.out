@@ -271,48 +271,60 @@ dd
 PREHOOK: query: DROP TABLE test_multidelim
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_multidelim
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_multidelim
 POSTHOOK: query: DROP TABLE test_multidelim
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_multidelim
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_multidelim
 PREHOOK: query: DROP TABLE t1_multi_delimit
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_multi_delimit
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_multi_delimit
 POSTHOOK: query: DROP TABLE t1_multi_delimit
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_multi_delimit
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_multi_delimit
 PREHOOK: query: DROP TABLE t11_csv_serde
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t11_csv_serde
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t11_csv_serde
 POSTHOOK: query: DROP TABLE t11_csv_serde
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t11_csv_serde
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t11_csv_serde
 PREHOOK: query: DROP TABLE t2_multi_delimit
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_multi_delimit
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_multi_delimit
 POSTHOOK: query: DROP TABLE t2_multi_delimit
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_multi_delimit
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_multi_delimit
 PREHOOK: query: DROP TABLE t3_multi_delimit
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t3_multi_delimit
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t3_multi_delimit
 POSTHOOK: query: DROP TABLE t3_multi_delimit
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t3_multi_delimit
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t3_multi_delimit
 PREHOOK: query: DROP TABLE t4_multi_delimit
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t4_multi_delimit
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t4_multi_delimit
 POSTHOOK: query: DROP TABLE t4_multi_delimit
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t4_multi_delimit
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t4_multi_delimit

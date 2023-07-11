@@ -1,15 +1,21 @@
 PREHOOK: query: drop table pcr_t1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table pcr_t2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table pcr_t3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table pcr_t1 (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -4658,31 +4664,39 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: query: drop table pcr_t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_t1
 POSTHOOK: query: drop table pcr_t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_t1
 PREHOOK: query: drop table pcr_t2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_t2
 POSTHOOK: query: drop table pcr_t2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_t2
 PREHOOK: query: drop table pcr_t3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_t3
 POSTHOOK: query: drop table pcr_t3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_t3
 PREHOOK: query: drop table pcr_foo
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_foo
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table pcr_foo (key int, value string) partitioned by (ds int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -4800,10 +4814,12 @@ POSTHOOK: Input: default@pcr_foo@ds=5
 PREHOOK: query: drop table pcr_foo
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_foo
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_foo
 POSTHOOK: query: drop table pcr_foo
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_foo
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_foo
 PREHOOK: query: create table ab(strct struct<a:int, b:string>)
 row format delimited
@@ -4831,8 +4847,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@ab
 PREHOOK: query: drop table foo_field
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table foo_field
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table foo_field (s struct<a:int,b:string>) partitioned by (ds int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -4878,10 +4896,12 @@ POSTHOOK: Input: default@foo_field@ds=7
 PREHOOK: query: drop table foo_field
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo_field
+PREHOOK: Output: database:default
 PREHOOK: Output: default@foo_field
 POSTHOOK: query: drop table foo_field
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@foo_field
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo_field
 PREHOOK: query: explain select key,value from srcpart where cast(hr as double)  = cast(11 as double)
 PREHOOK: type: QUERY

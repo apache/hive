@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE flights_tiny
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE flights_tiny
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table flights_tiny ( 
 ORIGIN_CITY_NAME string, 
 DEST_CITY_NAME string, 

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table tbl_rc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tbl_rc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table tbl_parquet
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tbl_parquet
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tbl_rc (val decimal(10,0))
 row format serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe' stored as rcfile
 PREHOOK: type: CREATETABLE
@@ -225,16 +229,20 @@ STAGE PLANS:
 PREHOOK: query: drop table tbl_rc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_rc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_rc
 POSTHOOK: query: drop table tbl_rc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_rc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_rc
 PREHOOK: query: drop table tbl_parquet
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_parquet
 POSTHOOK: query: drop table tbl_parquet
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_parquet

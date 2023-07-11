@@ -2534,8 +2534,10 @@ HiveProject(r=[$0])
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
 POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1

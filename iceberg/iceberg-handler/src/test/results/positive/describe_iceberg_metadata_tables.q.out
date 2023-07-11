@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists ice_meta_desc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ice_meta_desc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table ice_meta_desc (id int, value string) stored by iceberg stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -790,8 +792,10 @@ readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null
 PREHOOK: query: drop table ice_meta_desc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice_meta_desc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_meta_desc
 POSTHOOK: query: drop table ice_meta_desc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice_meta_desc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_meta_desc

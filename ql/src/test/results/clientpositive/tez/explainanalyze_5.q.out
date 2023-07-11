@@ -1,7 +1,9 @@
 PREHOOK: query: drop table src_stats_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table src_stats_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_stats_n0 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -77,8 +79,10 @@ Stage-2
 
 PREHOOK: query: drop table src_multi2_n7
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table src_multi2_n7
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_multi2_n7 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

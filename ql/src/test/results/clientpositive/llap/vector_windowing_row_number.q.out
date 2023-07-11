@@ -1,7 +1,9 @@
 PREHOOK: query: drop table row_number_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table row_number_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table row_number_test as select (posexplode(split(repeat("w,", 2400), ","))) as (pos, col)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -1394,24 +1396,30 @@ false
 PREHOOK: query: drop table row_numbers_non_vectorized
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@row_numbers_non_vectorized
+PREHOOK: Output: database:default
 PREHOOK: Output: default@row_numbers_non_vectorized
 POSTHOOK: query: drop table row_numbers_non_vectorized
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@row_numbers_non_vectorized
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@row_numbers_non_vectorized
 PREHOOK: query: drop table row_numbers_vectorized
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@row_numbers_vectorized
+PREHOOK: Output: database:default
 PREHOOK: Output: default@row_numbers_vectorized
 POSTHOOK: query: drop table row_numbers_vectorized
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@row_numbers_vectorized
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@row_numbers_vectorized
 PREHOOK: query: drop table row_number_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@row_number_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@row_number_test
 POSTHOOK: query: drop table row_number_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@row_number_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@row_number_test

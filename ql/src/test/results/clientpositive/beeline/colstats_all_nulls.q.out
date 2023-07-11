@@ -78,16 +78,20 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"
 PREHOOK: query: drop table all_nulls
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@all_nulls
+PREHOOK: Output: database:default
 PREHOOK: Output: default@all_nulls
 POSTHOOK: query: drop table all_nulls
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@all_nulls
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@all_nulls
 PREHOOK: query: drop table src_null_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_null_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_null_n2
 POSTHOOK: query: drop table src_null_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_null_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_null_n2

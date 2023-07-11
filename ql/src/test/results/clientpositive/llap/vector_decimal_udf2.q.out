@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE DECIMAL_UDF2_txt (key decimal(14,5), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
@@ -529,16 +533,20 @@ POSTHOOK: Input: default@decimal_udf2_txt
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_udf2_txt
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_udf2_txt
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_udf2_txt
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_udf2_txt
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_udf2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_udf2_n0
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_udf2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_udf2_n0

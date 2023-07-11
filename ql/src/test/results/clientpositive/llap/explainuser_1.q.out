@@ -264,10 +264,12 @@ Stage-0
 PREHOOK: query: drop table src_orc_merge_test_part_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_orc_merge_test_part_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc_merge_test_part_n1
 POSTHOOK: query: drop table src_orc_merge_test_part_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc_merge_test_part_n1
 Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select sum(hash(a.k1,a.v1,a.k2, a.v2))
@@ -3633,18 +3635,22 @@ Stage-0
 PREHOOK: query: drop table src_rc_merge_test_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_rc_merge_test_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_rc_merge_test_n0
 POSTHOOK: query: drop table src_rc_merge_test_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_rc_merge_test_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_rc_merge_test_n0
 PREHOOK: query: drop table tgt_rc_merge_test_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tgt_rc_merge_test_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tgt_rc_merge_test_n0
 POSTHOOK: query: drop table tgt_rc_merge_test_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tgt_rc_merge_test_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tgt_rc_merge_test_n0
 PREHOOK: query: explain select src.key from src cross join src src2
 PREHOOK: type: QUERY
@@ -4769,12 +4775,16 @@ Stage-0
 
 PREHOOK: query: drop table sales_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table sales_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table things_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table things_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE sales_n0 (name STRING, id INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
@@ -4872,18 +4882,22 @@ Stage-0
 PREHOOK: query: drop table sales_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sales_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sales_n0
 POSTHOOK: query: drop table sales_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sales_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sales_n0
 PREHOOK: query: drop table things_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@things_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@things_n0
 POSTHOOK: query: drop table things_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@things_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@things_n0
 PREHOOK: query: explain select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450'
 PREHOOK: type: QUERY

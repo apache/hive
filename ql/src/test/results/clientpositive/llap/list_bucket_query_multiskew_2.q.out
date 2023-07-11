@@ -324,8 +324,10 @@ POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 PREHOOK: query: drop table fact_daily_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@fact_daily_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@fact_daily_n2
 POSTHOOK: query: drop table fact_daily_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@fact_daily_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fact_daily_n2

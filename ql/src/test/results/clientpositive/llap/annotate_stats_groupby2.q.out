@@ -1,7 +1,9 @@
 PREHOOK: query: drop table location
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table location
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table location (state string, country string, votes bigint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -500,8 +502,10 @@ STAGE PLANS:
 PREHOOK: query: drop table location
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@location
+PREHOOK: Output: database:default
 PREHOOK: Output: default@location
 POSTHOOK: query: drop table location
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@location
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@location

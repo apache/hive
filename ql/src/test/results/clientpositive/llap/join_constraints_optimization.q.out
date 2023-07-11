@@ -1100,10 +1100,12 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
 POSTHOOK: query: DROP TABLE t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: CREATE TABLE `t1`(
                      `lo_orderkey` bigint,
@@ -1175,8 +1177,10 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
 POSTHOOK: query: DROP TABLE t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1

@@ -187,25 +187,31 @@ inputHObjs:
 HIVE PRIVILEGE OBJECT { objectName: test_privs2 type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser2 OWNERTYPE: USER}
 outputHObjs:
 HIVE PRIVILEGE OBJECT { objectName: test_privs2 type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser2 OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
 PREHOOK: query: DROP TABLE test_auth_obj_db.test_privs2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test_auth_obj_db@test_privs2
+PREHOOK: Output: database:test_auth_obj_db
 PREHOOK: Output: test_auth_obj_db@test_privs2
 POSTHOOK: query: DROP TABLE test_auth_obj_db.test_privs2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test_auth_obj_db@test_privs2
+POSTHOOK: Output: database:test_auth_obj_db
 POSTHOOK: Output: test_auth_obj_db@test_privs2
 inputHObjs:
 HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
 outputHObjs:
 HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
 PREHOOK: query: DROP TABLE test_auth_obj_db.test_privs
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test_auth_obj_db@test_privs
+PREHOOK: Output: database:test_auth_obj_db
 PREHOOK: Output: test_auth_obj_db@test_privs
 POSTHOOK: query: DROP TABLE test_auth_obj_db.test_privs
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test_auth_obj_db@test_privs
+POSTHOOK: Output: database:test_auth_obj_db
 POSTHOOK: Output: test_auth_obj_db@test_privs
 inputHObjs:
 HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}

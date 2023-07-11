@@ -1,7 +1,9 @@
 PREHOOK: query: drop table combine_3_srcpart_seq_rc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table combine_3_srcpart_seq_rc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table combine_3_srcpart_seq_rc (key int , value string) partitioned by (ds string, hr string) stored as sequencefile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -116,8 +118,10 @@ POSTHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
 15	val_15	2010-08-03	00
 PREHOOK: query: drop table bucket3_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table bucket3_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE combine_3_srcpart_seq_rc_bucket(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS stored as sequencefile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -203,16 +207,20 @@ POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=11
 PREHOOK: query: drop table combine_3_srcpart_seq_rc_bucket
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket
+PREHOOK: Output: database:default
 PREHOOK: Output: default@combine_3_srcpart_seq_rc_bucket
 POSTHOOK: query: drop table combine_3_srcpart_seq_rc_bucket
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@combine_3_srcpart_seq_rc_bucket
 PREHOOK: query: drop table combine_3_srcpart_seq_rc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@combine_3_srcpart_seq_rc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@combine_3_srcpart_seq_rc
 POSTHOOK: query: drop table combine_3_srcpart_seq_rc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@combine_3_srcpart_seq_rc

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE orc_llap_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_llap_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orc_llap_n0(
     ctinyint TINYINT,
     csmallint SMALLINT,
@@ -102,8 +104,10 @@ POSTHOOK: Lineage: orc_llap_n0.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.Fiel
 POSTHOOK: Lineage: orc_llap_n0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: drop table llap_temp_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table llap_temp_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: explain
 select * from orc_llap_n0 where cint > 10 and cbigint is not null
 PREHOOK: type: QUERY
@@ -276,16 +280,20 @@ NULL	-13036	1288927	-1645852809	NULL	-13036.0	yinBY725P7V2	xH7445Rals48VOulSyR5F
 PREHOOK: query: DROP TABLE orc_llap_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_llap_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_llap_n0
 POSTHOOK: query: DROP TABLE orc_llap_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_llap_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap_n0
 PREHOOK: query: drop table llap_temp_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@llap_temp_table
 POSTHOOK: query: drop table llap_temp_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table

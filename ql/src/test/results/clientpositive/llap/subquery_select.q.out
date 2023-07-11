@@ -2605,18 +2605,22 @@ POSTHOOK: Input: default@tempty_n3
 PREHOOK: query: DROP table tempty_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tempty_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tempty_n3
 POSTHOOK: query: DROP table tempty_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tempty_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tempty_n3
 PREHOOK: query: DROP table tnull_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tnull_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tnull_n3
 POSTHOOK: query: DROP table tnull_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tnull_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tnull_n3
 PREHOOK: query: explain SELECT p_size, 1+(SELECT max(p_size) FROM part p
     WHERE p.p_type = part.p_type) from part

@@ -1,15 +1,21 @@
 PREHOOK: query: drop table x
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table x
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table y
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table y
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table z
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table z
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE x (name STRING, id INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
@@ -211,24 +217,30 @@ POSTHOOK: Input: default@z
 PREHOOK: query: drop table x
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@x
+PREHOOK: Output: database:default
 PREHOOK: Output: default@x
 POSTHOOK: query: drop table x
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@x
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x
 PREHOOK: query: drop table y
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@y
+PREHOOK: Output: database:default
 PREHOOK: Output: default@y
 POSTHOOK: query: drop table y
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@y
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@y
 PREHOOK: query: drop table z
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@z
+PREHOOK: Output: database:default
 PREHOOK: Output: default@z
 POSTHOOK: query: drop table z
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@z
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@z

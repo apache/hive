@@ -1069,16 +1069,20 @@ STAGE PLANS:
 PREHOOK: query: drop table table2_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table2_n4
 POSTHOOK: query: drop table table2_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table2_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2_n4
 PREHOOK: query: drop table table1_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1_n8
 POSTHOOK: query: drop table table1_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1_n8

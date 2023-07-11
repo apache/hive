@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists vectortab2k_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists vectortab2k_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists vectortab2korc_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists vectortab2korc_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table vectortab2k_n1(
             t tinyint,
             si smallint,
@@ -111,8 +115,10 @@ POSTHOOK: Lineage: vectortab2korc_n1.ts SIMPLE [(vectortab2k_n1)vectortab2k_n1.F
 POSTHOOK: Lineage: vectortab2korc_n1.ts2 SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:ts2, type:timestamp, comment:null), ]
 PREHOOK: query: drop table if exists varchar_lazy_binary_columnar
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists varchar_lazy_binary_columnar
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table varchar_lazy_binary_columnar(vt varchar(10), vsi varchar(10), vi varchar(20), vb varchar(30), vf varchar(20),vd varchar(20),vs varchar(50)) row format serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe' stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

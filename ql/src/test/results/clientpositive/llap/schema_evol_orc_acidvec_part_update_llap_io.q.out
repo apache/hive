@@ -222,10 +222,12 @@ insert_num	part	a	b	c	d
 PREHOOK: query: DROP TABLE partitioned_update_1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partitioned_update_1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned_update_1_n0
 POSTHOOK: query: DROP TABLE partitioned_update_1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partitioned_update_1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_update_1_n0
 PREHOOK: query: CREATE TABLE partitioned_delete_1_n0(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -395,10 +397,12 @@ insert_num	part	a	b	c	d
 PREHOOK: query: DROP TABLE partitioned_delete_1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partitioned_delete_1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned_delete_1_n0
 POSTHOOK: query: DROP TABLE partitioned_delete_1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partitioned_delete_1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_delete_1_n0
 PREHOOK: query: CREATE TABLE partitioned_delete_2_n0(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -568,8 +572,10 @@ insert_num	part	a	b	c	d
 PREHOOK: query: DROP TABLE partitioned_delete_2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partitioned_delete_2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned_delete_2_n0
 POSTHOOK: query: DROP TABLE partitioned_delete_2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partitioned_delete_2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_delete_2_n0

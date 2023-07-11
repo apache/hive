@@ -1,0 +1,63 @@
+PREHOOK: query: Create database auth_drop_table
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:auth_drop_table
+POSTHOOK: query: Create database auth_drop_table
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:auth_drop_table
+PREHOOK: query: use auth_drop_table
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:auth_drop_table
+POSTHOOK: query: use auth_drop_table
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:auth_drop_table
+PREHOOK: query: create table drop_table_auth_1 (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: auth_drop_table@drop_table_auth_1
+PREHOOK: Output: database:auth_drop_table
+POSTHOOK: query: create table drop_table_auth_1 (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: auth_drop_table@drop_table_auth_1
+POSTHOOK: Output: database:auth_drop_table
+PREHOOK: query: grant All on table drop_table_auth_1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: auth_drop_table@drop_table_auth_1
+POSTHOOK: query: grant All on table drop_table_auth_1 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: auth_drop_table@drop_table_auth_1
+PREHOOK: query: GRANT DROP ON DATABASE auth_drop_table TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT DROP ON DATABASE auth_drop_table TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: show grant user hive_test_user on table drop_table_auth_1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table drop_table_auth_1
+POSTHOOK: type: SHOW_GRANT
+auth_drop_table	drop_table_auth_1			hive_test_user	USER	ALL	false	-1	hive_test_user
+PREHOOK: query: CREATE TEMPORARY TABLE drop_temp_table LIKE drop_table_auth_1
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: auth_drop_table@drop_temp_table
+PREHOOK: Output: database:auth_drop_table
+POSTHOOK: query: CREATE TEMPORARY TABLE drop_temp_table LIKE drop_table_auth_1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: auth_drop_table@drop_temp_table
+POSTHOOK: Output: database:auth_drop_table
+PREHOOK: query: drop table if exists drop_table_auth_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: auth_drop_table@drop_table_auth_1
+PREHOOK: Output: auth_drop_table@drop_table_auth_1
+PREHOOK: Output: database:auth_drop_table
+POSTHOOK: query: drop table if exists drop_table_auth_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: auth_drop_table@drop_table_auth_1
+POSTHOOK: Output: auth_drop_table@drop_table_auth_1
+POSTHOOK: Output: database:auth_drop_table
+PREHOOK: query: drop table if exists drop_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: auth_drop_table@drop_temp_table
+PREHOOK: Output: auth_drop_table@drop_temp_table
+PREHOOK: Output: database:auth_drop_table
+POSTHOOK: query: drop table if exists drop_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: auth_drop_table@drop_temp_table
+POSTHOOK: Output: auth_drop_table@drop_temp_table
+POSTHOOK: Output: database:auth_drop_table

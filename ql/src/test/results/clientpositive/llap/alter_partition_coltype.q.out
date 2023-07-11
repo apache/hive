@@ -402,10 +402,12 @@ ts                  	double
 PREHOOK: query: drop table alter_coltype
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_coltype
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_coltype
 POSTHOOK: query: drop table alter_coltype
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_coltype
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_coltype
 PREHOOK: query: create database pt
 PREHOOK: type: CREATEDATABASE
@@ -604,10 +606,12 @@ POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
 PREHOOK: query: drop table pt.alterdynamic_part_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: pt@alterdynamic_part_table
+PREHOOK: Output: database:pt
 PREHOOK: Output: pt@alterdynamic_part_table
 POSTHOOK: query: drop table pt.alterdynamic_part_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: pt@alterdynamic_part_table
+POSTHOOK: Output: database:pt
 POSTHOOK: Output: pt@alterdynamic_part_table
 PREHOOK: query: drop database pt
 PREHOOK: type: DROPDATABASE

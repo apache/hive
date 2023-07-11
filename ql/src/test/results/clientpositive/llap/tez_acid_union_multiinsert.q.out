@@ -1,27 +1,39 @@
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_5
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_5
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE DEST1_acid_1(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -3434,48 +3446,60 @@ tst1	500	1
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_acid_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_acid_1
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_acid_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_acid_1
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_acid_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_acid_2
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_acid_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_acid_2
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_acid_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_acid_3
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_acid_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_acid_3
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_acid_4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_acid_4
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_acid_4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_acid_4
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_acid_5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_acid_5
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_acid_5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_acid_5
 PREHOOK: query: DROP TABLE IF EXISTS DEST1_acid_6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_acid_6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_acid_6
 POSTHOOK: query: DROP TABLE IF EXISTS DEST1_acid_6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_acid_6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_acid_6

@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE insert_into6a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE insert_into6a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE insert_into6b
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE insert_into6b
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE insert_into6a (key int, value string) PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -339,16 +343,20 @@ ds=2
 PREHOOK: query: DROP TABLE insert_into6a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into6a
+PREHOOK: Output: database:default
 PREHOOK: Output: default@insert_into6a
 POSTHOOK: query: DROP TABLE insert_into6a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_into6a
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into6a
 PREHOOK: query: DROP TABLE insert_into6b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into6b
+PREHOOK: Output: database:default
 PREHOOK: Output: default@insert_into6b
 POSTHOOK: query: DROP TABLE insert_into6b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_into6b
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into6b

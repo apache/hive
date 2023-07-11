@@ -178,10 +178,12 @@ POSTHOOK: Input: ttp@tab2
 PREHOOK: query: drop table ttp.tab2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: ttp@tab2
+PREHOOK: Output: database:ttp
 PREHOOK: Output: ttp@tab2
 POSTHOOK: query: drop table ttp.tab2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: ttp@tab2
+POSTHOOK: Output: database:ttp
 POSTHOOK: Output: ttp@tab2
 PREHOOK: query: describe ttp.tab2
 PREHOOK: type: DESCTABLE
