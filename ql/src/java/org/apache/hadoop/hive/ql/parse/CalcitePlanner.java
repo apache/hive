@@ -2631,6 +2631,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
               unparseTranslator.addIdentifierTranslation((ASTNode) child);
             }
             namedColumns.add(columnName);
+
+            // if leftTableAlias is null, set it to the last tableAlias that contains the
+            // column columnName
+            if (leftTableAlias == null) {
+              Map<String, Map<String, ColumnInfo>> leftRslvMap = leftRR.getRslvMap();
+              for (String tableAlias: leftRR.getTableNames()) {
+                if (!leftRslvMap.containsKey(tableAlias)) {
+                  continue;
+                }
+                if (leftRslvMap.get(tableAlias).containsKey(columnName)) {
+                  leftTableAlias = tableAlias;
+                }
+              }
+            }
+
             ASTNode left = ASTBuilder.qualifiedName(leftTableAlias, columnName);
             ASTNode right = ASTBuilder.qualifiedName(rightTableAlias, columnName);
             equal = (ASTNode) ParseDriver.adaptor.create(HiveParser.EQUAL, "=");
