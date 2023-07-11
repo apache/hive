@@ -62,8 +62,10 @@ Col2	5
 PREHOOK: query: drop table ptestfilter
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ptestfilter
 POSTHOOK: query: drop table ptestfilter
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ptestfilter

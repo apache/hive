@@ -1,0 +1,32 @@
+PREHOOK: query: Create database db_auth_fail_1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db_auth_fail_1
+POSTHOOK: query: Create database db_auth_fail_1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db_auth_fail_1
+PREHOOK: query: use db_auth_fail_1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db_auth_fail_1
+POSTHOOK: query: use db_auth_fail_1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db_auth_fail_1
+PREHOOK: query: create table auth_fail_1 (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db_auth_fail_1
+PREHOOK: Output: db_auth_fail_1@auth_fail_1
+POSTHOOK: query: create table auth_fail_1 (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db_auth_fail_1
+POSTHOOK: Output: db_auth_fail_1@auth_fail_1
+PREHOOK: query: grant All on table auth_fail_1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: db_auth_fail_1@auth_fail_1
+POSTHOOK: query: grant All on table auth_fail_1 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: db_auth_fail_1@auth_fail_1
+PREHOOK: query: show grant user hive_test_user on table auth_fail_1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table auth_fail_1
+POSTHOOK: type: SHOW_GRANT
+db_auth_fail_1	auth_fail_1			hive_test_user	USER	ALL	false	-1	hive_test_user
+Authorization failed:No privilege 'Drop' found for outputs { database:db_auth_fail_1}. Use SHOW GRANT to get more details.

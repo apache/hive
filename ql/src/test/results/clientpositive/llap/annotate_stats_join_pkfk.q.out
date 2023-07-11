@@ -1,15 +1,21 @@
 PREHOOK: query: drop table store_sales_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table store_sales_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table store_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table store_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table customer_address
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table customer_address
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table store_sales_n0
 (
     ss_sold_date_sk           int,
@@ -1510,32 +1516,40 @@ STAGE PLANS:
 PREHOOK: query: drop table store_sales_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_sales_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store_sales_n0
 POSTHOOK: query: drop table store_sales_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_sales_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_sales_n0
 PREHOOK: query: drop table store_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store_n0
 POSTHOOK: query: drop table store_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_n0
 PREHOOK: query: drop table store_bigint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_bigint
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store_bigint
 POSTHOOK: query: drop table store_bigint
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_bigint
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_bigint
 PREHOOK: query: drop table customer_address
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@customer_address
+PREHOOK: Output: database:default
 PREHOOK: Output: default@customer_address
 POSTHOOK: query: drop table customer_address
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@customer_address
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer_address

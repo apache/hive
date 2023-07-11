@@ -335,12 +335,15 @@ Stage-1 INPUT COUNTERS:
 PREHOOK: query: DROP TABLE staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@staging
+PREHOOK: Output: database:default
 PREHOOK: Output: default@staging
 PREHOOK: query: DROP TABLE orc_ppd_staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_ppd_staging
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_ppd_staging
 PREHOOK: query: DROP TABLE orc_ppd
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_ppd
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_ppd

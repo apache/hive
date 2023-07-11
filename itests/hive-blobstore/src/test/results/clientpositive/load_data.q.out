@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE load_data_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE load_data_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE load_data_table(
     a INT,
     b STRING,

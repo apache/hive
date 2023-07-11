@@ -50,6 +50,10 @@ PREHOOK: Output: default@authorization_part_n1
 POSTHOOK: query: grant Drop on table authorization_part_n1 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@authorization_part_n1
+PREHOOK: query: GRANT drop ON DATABASE default TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT drop ON DATABASE default TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: show grant user hive_test_user on table authorization_part_n1
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table authorization_part_n1
@@ -96,8 +100,10 @@ default	authorization_part_n1	[2010_tmp]	[key]	hive_test_user	USER	SELECT	false	
 PREHOOK: query: drop table authorization_part_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@authorization_part_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@authorization_part_n1
 POSTHOOK: query: drop table authorization_part_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@authorization_part_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@authorization_part_n1

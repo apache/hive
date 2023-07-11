@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE insert_into1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE insert_into1_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE insert_into1_n0 (key int, value string)
     clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -751,10 +753,12 @@ POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: DROP TABLE insert_into1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: DROP TABLE insert_into1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_into1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: CREATE TABLE insert_into1_n0 (key int DEFAULT 1, value string)
     clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
@@ -1957,10 +1961,12 @@ POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: DROP TABLE insert_into1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: DROP TABLE insert_into1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_into1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: CREATE TABLE insert_into1_n0 (key int DEFAULT 1, value string, i int)
     clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
@@ -2311,10 +2317,12 @@ POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: DROP TABLE insert_into1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: DROP TABLE insert_into1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_into1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: CREATE TABLE tpart(i int, j int DEFAULT 1001) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
@@ -2725,10 +2733,12 @@ POSTHOOK: Output: default@tpart@ds=1
 PREHOOK: query: DROP TABLE tpart
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tpart
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tpart
 POSTHOOK: query: DROP TABLE tpart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tpart
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tpart
 PREHOOK: query: create table nonacid_n1 (key int, a1 string, value string) stored as orc
 PREHOOK: type: CREATETABLE
@@ -3572,24 +3582,30 @@ POSTHOOK: Input: default@acidtable2
 PREHOOK: query: DROP TABLE acidTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acidtable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acidtable
 POSTHOOK: query: DROP TABLE acidTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acidtable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidtable
 PREHOOK: query: DROP TABLE acidTable2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acidtable2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acidtable2
 POSTHOOK: query: DROP TABLE acidTable2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acidtable2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidtable2
 PREHOOK: query: DROP TABLE nonacid_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nonacid_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@nonacid_n1
 POSTHOOK: query: DROP TABLE nonacid_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nonacid_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nonacid_n1

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists ppd_char_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ppd_char_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table ppd_char_test (id int, a char(10), b char(10), c varchar(10), d varchar(10)) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -544,8 +546,10 @@ POSTHOOK: Input: default@ppd_char_test
 PREHOOK: query: drop table ppd_char_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ppd_char_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ppd_char_test
 POSTHOOK: query: drop table ppd_char_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ppd_char_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ppd_char_test

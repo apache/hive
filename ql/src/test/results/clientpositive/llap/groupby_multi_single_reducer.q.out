@@ -734,40 +734,50 @@ POSTHOOK: Input: default@dest_h3
 PREHOOK: query: DROP TABLE dest_g2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g2
 POSTHOOK: query: DROP TABLE dest_g2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_g2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g2
 PREHOOK: query: DROP TABLE dest_g3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g3
 POSTHOOK: query: DROP TABLE dest_g3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_g3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g3
 PREHOOK: query: DROP TABLE dest_g4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g4
 POSTHOOK: query: DROP TABLE dest_g4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_g4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g4
 PREHOOK: query: DROP TABLE dest_h2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_h2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_h2
 POSTHOOK: query: DROP TABLE dest_h2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_h2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_h2
 PREHOOK: query: DROP TABLE dest_h3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_h3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_h3
 POSTHOOK: query: DROP TABLE dest_h3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_h3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_h3

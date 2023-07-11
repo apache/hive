@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS `dec_n1`
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS `dec_n1`
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE `dec_n1`(name string, value decimal(8,4))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -20,8 +22,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@dec_n1
 PREHOOK: query: DROP TABLE IF EXISTS parq_dec_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS parq_dec_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE parq_dec_n1(name string, value decimal(5,2)) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -120,8 +124,10 @@ Beck	NULL
 Beck	NULL
 PREHOOK: query: DROP TABLE IF EXISTS parq_dec1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS parq_dec1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE parq_dec1(name string, value decimal(4,1)) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -167,24 +173,30 @@ POSTHOOK: Input: default@parq_dec1
 PREHOOK: query: DROP TABLE `dec_n1`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dec_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dec_n1
 POSTHOOK: query: DROP TABLE `dec_n1`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dec_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dec_n1
 PREHOOK: query: DROP TABLE parq_dec_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parq_dec_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parq_dec_n1
 POSTHOOK: query: DROP TABLE parq_dec_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parq_dec_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parq_dec_n1
 PREHOOK: query: DROP TABLE parq_dec1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parq_dec1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parq_dec1
 POSTHOOK: query: DROP TABLE parq_dec1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parq_dec1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parq_dec1

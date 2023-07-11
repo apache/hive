@@ -63,8 +63,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE exttable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exttable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@exttable
 POSTHOOK: query: DROP TABLE exttable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@exttable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exttable

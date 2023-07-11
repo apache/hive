@@ -43,8 +43,10 @@ POSTHOOK: Input: default@jsontable
 PREHOOK: query: DROP TABLE jsontable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@jsontable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@jsontable
 POSTHOOK: query: DROP TABLE jsontable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@jsontable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jsontable

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS avro_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS avro_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE avro_table (avreau_col_1 map<string,string>) STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -34,8 +36,10 @@ POSTHOOK: Input: default@avro_table
 PREHOOK: query: DROP TABLE avro_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_table
 POSTHOOK: query: DROP TABLE avro_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_table

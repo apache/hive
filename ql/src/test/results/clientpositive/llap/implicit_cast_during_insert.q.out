@@ -149,8 +149,10 @@ POSTHOOK: Input: default@implicit_cast_during_insert@p1=0
 PREHOOK: query: drop table implicit_cast_during_insert
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@implicit_cast_during_insert
+PREHOOK: Output: database:default
 PREHOOK: Output: default@implicit_cast_during_insert
 POSTHOOK: query: drop table implicit_cast_during_insert
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@implicit_cast_during_insert
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@implicit_cast_during_insert

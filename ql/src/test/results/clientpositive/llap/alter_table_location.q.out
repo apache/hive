@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists hcat_altertable_16
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists hcat_altertable_16
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table hcat_altertable_16(a int, b string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

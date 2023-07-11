@@ -5677,24 +5677,30 @@ POSTHOOK: Input: default@part_null
 PREHOOK: query: drop table tnull
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tnull
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tnull
 POSTHOOK: query: drop table tnull
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tnull
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tnull
 PREHOOK: query: drop table tempty
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tempty
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tempty
 POSTHOOK: query: drop table tempty
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tempty
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tempty
 PREHOOK: query: drop table part_null
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_null
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_null
 POSTHOOK: query: drop table part_null
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_null
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_null

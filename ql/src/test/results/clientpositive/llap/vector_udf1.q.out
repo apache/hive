@@ -1,7 +1,9 @@
 PREHOOK: query: drop table varchar_udf_1_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_udf_1_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table varchar_udf_1_n2 (c1 string, c2 string, c3 varchar(10), c4 varchar(20),
      d1 string, d2 string, d3 varchar(10), d4 varchar(10)) STORED AS ORC
 PREHOOK: type: CREATETABLE
@@ -3149,8 +3151,10 @@ val_238	val_238
 PREHOOK: query: drop table varchar_udf_1_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_udf_1_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_udf_1_n2
 POSTHOOK: query: drop table varchar_udf_1_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_udf_1_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_udf_1_n2

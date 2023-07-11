@@ -129,8 +129,10 @@ POSTHOOK: Input: default@src
 309
 PREHOOK: query: drop table if exists tmptable_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tmptable_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tmptable_n0(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -367,10 +369,12 @@ tst1	500
 PREHOOK: query: drop table if exists tmptable_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmptable_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmptable_n0
 POSTHOOK: query: drop table if exists tmptable_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmptable_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable_n0
 PREHOOK: query: explain 
   select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  

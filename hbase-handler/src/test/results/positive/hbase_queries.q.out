@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE hbase_table_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE hbase_table_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
@@ -91,8 +93,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_table_1
 PREHOOK: query: DROP TABLE hbase_table_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE hbase_table_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_2(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
@@ -412,8 +416,10 @@ POSTHOOK: Input: default@hbase_table_2
 118	val_118
 PREHOOK: query: DROP TABLE empty_hbase_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE empty_hbase_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE empty_hbase_table(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
@@ -430,8 +436,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@empty_hbase_table
 PREHOOK: query: DROP TABLE empty_normal_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE empty_normal_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE empty_normal_table(key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -698,8 +706,10 @@ POSTHOOK: Input: default@hbase_table_3
 10	1
 PREHOOK: query: DROP TABLE hbase_table_4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE hbase_table_4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_4(key int, value1 string, value2 int, value3 int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
@@ -740,8 +750,10 @@ POSTHOOK: Input: default@hbase_table_4
 100	val_100	101	102
 PREHOOK: query: DROP TABLE hbase_table_5
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE hbase_table_5
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_5(key int, value map<string,string>) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "a:")
@@ -768,8 +780,10 @@ POSTHOOK: Input: default@hbase_table_5
 100	{"b":"val_100","c":"101"}
 PREHOOK: query: DROP TABLE hbase_table_6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE hbase_table_6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_6(key int, value map<string,string>) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
@@ -810,8 +824,10 @@ POSTHOOK: Input: default@hbase_table_6
 100	{"val_100":"100"}
 PREHOOK: query: DROP TABLE hbase_table_7
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE hbase_table_7
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_7(value map<string,string>, key int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
@@ -854,8 +870,10 @@ POSTHOOK: Input: default@hbase_table_7
 {"VAL_100":"101.0","val_100":"100"}	100
 PREHOOK: query: DROP TABLE hbase_table_8
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE hbase_table_8
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_8(key int, value1 string, value2 int, value3 int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
@@ -896,8 +914,10 @@ POSTHOOK: Input: default@hbase_table_8
 100	val_100	101	102
 PREHOOK: query: DROP TABLE IF EXISTS hbase_table_3_like
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_3_like
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE hbase_table_3_like LIKE hbase_table_3
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -943,8 +963,10 @@ POSTHOOK: Input: default@hbase_table_3_like
 10	val_10	1
 PREHOOK: query: DROP TABLE IF EXISTS hbase_table_1_like
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_1_like
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_1_like LIKE hbase_table_1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1004,8 +1026,10 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE IF EXISTS hbase_table_9
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_9
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_9 (id bigint, data map<string, string>, str string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col#s:s,cf:str_col")
@@ -1075,8 +1099,10 @@ POSTHOOK: Input: default@hbase_table_9
 5	{"key1":null,"key2":"avalue"}	1234
 PREHOOK: query: DROP TABLE IF EXISTS hbase_table_10
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_10
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_10 (id bigint, data map<int, int>, str string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col2,cf:str2_col")
@@ -1146,8 +1172,10 @@ POSTHOOK: Input: default@hbase_table_10
 5	{50:null,55:58}	1234
 PREHOOK: query: DROP TABLE IF EXISTS hbase_table_11
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_11
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_11(id INT, map_column STRUCT<s_int:INT,s_string:STRING,s_date:DATE>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
@@ -1181,8 +1209,10 @@ POSTHOOK: Input: default@hbase_table_11
 2	{"s_int":null,"s_string":"s1","s_date":"2018-03-12"}
 PREHOOK: query: DROP TABLE IF EXISTS hbase_table_12
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_12
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_12(id INT, list_column ARRAY <STRING>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
@@ -1217,128 +1247,160 @@ POSTHOOK: Input: default@hbase_table_12
 PREHOOK: query: DROP TABLE hbase_table_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_1
 POSTHOOK: query: DROP TABLE hbase_table_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_1
 PREHOOK: query: DROP TABLE hbase_table_1_like
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_1_like
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_1_like
 POSTHOOK: query: DROP TABLE hbase_table_1_like
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_1_like
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_1_like
 PREHOOK: query: DROP TABLE hbase_table_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_2
 POSTHOOK: query: DROP TABLE hbase_table_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_2
 PREHOOK: query: DROP TABLE hbase_table_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_3
 POSTHOOK: query: DROP TABLE hbase_table_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_3
 PREHOOK: query: DROP TABLE hbase_table_3_like
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_3_like
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_3_like
 POSTHOOK: query: DROP TABLE hbase_table_3_like
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_3_like
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_3_like
 PREHOOK: query: DROP TABLE hbase_table_4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_4
 POSTHOOK: query: DROP TABLE hbase_table_4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_4
 PREHOOK: query: DROP TABLE hbase_table_5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_5
 POSTHOOK: query: DROP TABLE hbase_table_5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_5
 PREHOOK: query: DROP TABLE hbase_table_6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_6
 POSTHOOK: query: DROP TABLE hbase_table_6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_6
 PREHOOK: query: DROP TABLE hbase_table_7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_7
 POSTHOOK: query: DROP TABLE hbase_table_7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_7
 PREHOOK: query: DROP TABLE hbase_table_8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_8
 POSTHOOK: query: DROP TABLE hbase_table_8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_8
 PREHOOK: query: DROP TABLE empty_hbase_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@empty_hbase_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@empty_hbase_table
 POSTHOOK: query: DROP TABLE empty_hbase_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@empty_hbase_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@empty_hbase_table
 PREHOOK: query: DROP TABLE empty_normal_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@empty_normal_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@empty_normal_table
 POSTHOOK: query: DROP TABLE empty_normal_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@empty_normal_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@empty_normal_table
 PREHOOK: query: DROP TABLE hbase_table_9
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_9
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_9
 POSTHOOK: query: DROP TABLE hbase_table_9
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_9
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_9
 PREHOOK: query: DROP TABLE hbase_table_10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_10
 POSTHOOK: query: DROP TABLE hbase_table_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_10
 PREHOOK: query: DROP TABLE hbase_table_11
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_11
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_11
 POSTHOOK: query: DROP TABLE hbase_table_11
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_11
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_11
 PREHOOK: query: DROP TABLE hbase_table_12
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_12
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_12
 POSTHOOK: query: DROP TABLE hbase_table_12
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_12
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_12

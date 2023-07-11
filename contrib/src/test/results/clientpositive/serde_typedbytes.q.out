@@ -1,7 +1,9 @@
 PREHOOK: query: drop table dest1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table dest1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -703,8 +705,10 @@ POSTHOOK: Input: default@dest1
 PREHOOK: query: drop table dest1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1
 POSTHOOK: query: drop table dest1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists vectorization_sum_if_when_a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists vectorization_sum_if_when_a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists vectorization_sum_if_when_b
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists vectorization_sum_if_when_b
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table vectorization_sum_if_when_a (x int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

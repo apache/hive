@@ -32,26 +32,32 @@ POSTHOOK: Lineage: jssarma_nilzma_bad.val EXPRESSION [(pokes)pokes.FieldSchema(n
 PREHOOK: query: drop table jssarma_nilzma_bad
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@jssarma_nilzma_bad
+PREHOOK: Output: database:default
 PREHOOK: Output: default@jssarma_nilzma_bad
 POSTHOOK: query: drop table jssarma_nilzma_bad
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@jssarma_nilzma_bad
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jssarma_nilzma_bad
 PREHOOK: query: drop table pokes
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pokes
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pokes
 POSTHOOK: query: drop table pokes
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pokes
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes
 PREHOOK: query: drop table pokes2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pokes2
 POSTHOOK: query: drop table pokes2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes2
 PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
@@ -87,26 +93,32 @@ POSTHOOK: Lineage: jssarma_nilzma_bad.val EXPRESSION [(pokes)pokes.FieldSchema(n
 PREHOOK: query: drop table jssarma_nilzma_bad
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@jssarma_nilzma_bad
+PREHOOK: Output: database:default
 PREHOOK: Output: default@jssarma_nilzma_bad
 POSTHOOK: query: drop table jssarma_nilzma_bad
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@jssarma_nilzma_bad
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jssarma_nilzma_bad
 PREHOOK: query: drop table pokes
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pokes
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pokes
 POSTHOOK: query: drop table pokes
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pokes
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes
 PREHOOK: query: drop table pokes2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pokes2
 POSTHOOK: query: drop table pokes2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes2
 PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
@@ -142,24 +154,30 @@ POSTHOOK: Lineage: jssarma_nilzma_bad.val EXPRESSION [(pokes)pokes.FieldSchema(n
 PREHOOK: query: drop table jssarma_nilzma_bad
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@jssarma_nilzma_bad
+PREHOOK: Output: database:default
 PREHOOK: Output: default@jssarma_nilzma_bad
 POSTHOOK: query: drop table jssarma_nilzma_bad
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@jssarma_nilzma_bad
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jssarma_nilzma_bad
 PREHOOK: query: drop table pokes
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pokes
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pokes
 POSTHOOK: query: drop table pokes
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pokes
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes
 PREHOOK: query: drop table pokes2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pokes2
 POSTHOOK: query: drop table pokes2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes2

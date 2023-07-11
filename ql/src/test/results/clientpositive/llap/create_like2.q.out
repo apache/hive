@@ -300,42 +300,52 @@ Sort Columns:       	[]
 PREHOOK: query: drop table test_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_mm
 POSTHOOK: query: drop table test_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_mm
 PREHOOK: query: drop table test_external
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_external
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_external
 POSTHOOK: query: drop table test_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_external
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_external
 PREHOOK: query: drop table test_mm1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_mm1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_mm1
 POSTHOOK: query: drop table test_mm1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_mm1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_mm1
 PREHOOK: query: drop table test_external1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_external1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_external1
 POSTHOOK: query: drop table test_external1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_external1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_external1
 PREHOOK: query: drop table test_mm2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_mm2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_mm2
 POSTHOOK: query: drop table test_mm2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_mm2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_mm2
 PREHOOK: query: CREATE EXTERNAL TABLE default.dbs (
   DB_ID            bigint,
@@ -421,16 +431,20 @@ Sort Columns:       	[]
 PREHOOK: query: drop table default.dbs
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dbs
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dbs
 POSTHOOK: query: drop table default.dbs
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dbs
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dbs
 PREHOOK: query: drop table default.dbscopy
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dbscopy
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dbscopy
 POSTHOOK: query: drop table default.dbscopy
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dbscopy
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dbscopy

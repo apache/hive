@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE if exists parquet_stats
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE if exists parquet_stats
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE parquet_stats (
     id int,
     str string

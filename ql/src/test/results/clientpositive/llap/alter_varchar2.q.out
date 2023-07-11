@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists alter_varchar2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists alter_varchar2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table alter_varchar2 (
   c1 varchar(255)
 ) partitioned by (hr int)

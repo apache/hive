@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists hello_acid
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists hello_acid
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table hello_acid (key int, value int)
 partitioned by (load_date date)
 clustered by(key) into 3 buckets

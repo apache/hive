@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists test_truncate
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_truncate
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table test_truncate(a int) partitioned by (b string) stored as avro
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -230,8 +232,10 @@ Sort Columns:       	[]
 PREHOOK: query: drop table if exists test_truncate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_truncate
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_truncate
 POSTHOOK: query: drop table if exists test_truncate
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_truncate
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_truncate

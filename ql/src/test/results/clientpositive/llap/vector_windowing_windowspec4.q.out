@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists smalltable_windowing_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists smalltable_windowing_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table smalltable_windowing_n0(
       i int,
       type string)

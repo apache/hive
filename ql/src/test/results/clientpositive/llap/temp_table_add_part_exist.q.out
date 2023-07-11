@@ -73,10 +73,12 @@ ds=2010-01-03
 PREHOOK: query: DROP TABLE add_part_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@add_part_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@add_part_test
 POSTHOOK: query: DROP TABLE add_part_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@add_part_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@add_part_test
 PREHOOK: query: CREATE DATABASE add_part_test_db
 PREHOOK: type: CREATEDATABASE
@@ -160,10 +162,12 @@ PREHOOK: query: DROP TABLE add_part_test_db.add_part_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: add_part_test_db@add_part_test
 PREHOOK: Output: add_part_test_db@add_part_test
+PREHOOK: Output: database:add_part_test_db
 POSTHOOK: query: DROP TABLE add_part_test_db.add_part_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: add_part_test_db@add_part_test
 POSTHOOK: Output: add_part_test_db@add_part_test
+POSTHOOK: Output: database:add_part_test_db
 PREHOOK: query: DROP DATABASE add_part_test_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:add_part_test_db

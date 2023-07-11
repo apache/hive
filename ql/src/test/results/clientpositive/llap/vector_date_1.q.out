@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists vector_date_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists vector_date_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table vector_date_1 (dt1 date, dt2 date) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1149,8 +1151,10 @@ dt1
 PREHOOK: query: drop table vector_date_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@vector_date_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@vector_date_1
 POSTHOOK: query: drop table vector_date_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@vector_date_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vector_date_1

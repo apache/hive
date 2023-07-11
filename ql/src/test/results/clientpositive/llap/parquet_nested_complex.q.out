@@ -88,16 +88,20 @@ POSTHOOK: Input: default@parquet_nested_complex
 PREHOOK: query: DROP TABLE nestedcomplex_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nestedcomplex_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@nestedcomplex_n0
 POSTHOOK: query: DROP TABLE nestedcomplex_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nestedcomplex_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nestedcomplex_n0
 PREHOOK: query: DROP TABLE parquet_nested_complex
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_nested_complex
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_nested_complex
 POSTHOOK: query: DROP TABLE parquet_nested_complex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_nested_complex
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_nested_complex

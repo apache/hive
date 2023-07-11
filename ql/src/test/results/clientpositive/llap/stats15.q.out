@@ -302,16 +302,20 @@ Storage Desc Params:
 PREHOOK: query: drop table stats_src_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_src_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_src_n0
 POSTHOOK: query: drop table stats_src_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_src_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_src_n0
 PREHOOK: query: drop table stats_part_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_part_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_part_n0
 POSTHOOK: query: drop table stats_part_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_part_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_part_n0

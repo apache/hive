@@ -41,10 +41,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tmp_tmp_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_tmp_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_tmp_n0
 POSTHOOK: query: drop table tmp_tmp_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_tmp_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_tmp_n0
 PREHOOK: query: create table tmp_tmp_n0(key string, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
