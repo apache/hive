@@ -16,38 +16,35 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.branch.create;
+package org.apache.hadoop.hive.ql.ddl.table.snapshotref;
 
 import java.time.ZoneId;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-import static org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec.AlterBranchOperationType.CREATE_BRANCH;
+public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterTableAnalyzer {
+  protected AlterTableType alterTableType;
 
-@DDLSemanticAnalyzerFactory.DDLType(types = HiveParser.TOK_ALTERTABLE_CREATE_BRANCH)
-public class AlterTableCreateBranchAnalyzer extends AbstractAlterTableAnalyzer {
-
-  public AlterTableCreateBranchAnalyzer(QueryState queryState) throws SemanticException {
+  public AlterTableCreateSnapshotRefAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 
@@ -55,11 +52,11 @@ public class AlterTableCreateBranchAnalyzer extends AbstractAlterTableAnalyzer {
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
     Table table = getTable(tableName);
-    validateAlterTableType(table, AlterTableType.CREATE_BRANCH, false);
     DDLUtils.validateTableIsIceberg(table);
     inputs.add(new ReadEntity(table));
+    validateAlterTableType(table, alterTableType, false);
 
-    String branchName = command.getChild(0).getText();
+    String refName = command.getChild(0).getText();
     Long snapshotId = null;
     Long asOfTime = null;
     Long maxRefAgeMs = null;
@@ -80,8 +77,8 @@ public class AlterTableCreateBranchAnalyzer extends AbstractAlterTableAnalyzer {
       case HiveParser.TOK_RETAIN:
         String maxRefAge = childNode.getChild(0).getText();
         String timeUnitOfBranchRetain = childNode.getChild(1).getText();
-        maxRefAgeMs = TimeUnit.valueOf(timeUnitOfBranchRetain.toUpperCase(Locale.ENGLISH))
-            .toMillis(Long.parseLong(maxRefAge));
+        maxRefAgeMs =
+            TimeUnit.valueOf(timeUnitOfBranchRetain.toUpperCase(Locale.ENGLISH)).toMillis(Long.parseLong(maxRefAge));
         break;
       case HiveParser.TOK_WITH_SNAPSHOT_RETENTION:
         minSnapshotsToKeep = Integer.valueOf(childNode.getChild(0).getText());
@@ -93,15 +90,17 @@ public class AlterTableCreateBranchAnalyzer extends AbstractAlterTableAnalyzer {
         }
         break;
       default:
-        throw new SemanticException("Unrecognized token in ALTER CREATE BRANCH statement");
+        throw new SemanticException("Unrecognized token in ALTER " + alterTableType.getName() + " statement");
       }
     }
 
-    AlterTableBranchSpec.CreateBranchSpec
-        createBranchspec = new AlterTableBranchSpec.CreateBranchSpec(branchName, snapshotId, asOfTime,
-        maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs);
-    AlterTableBranchSpec alterTableBranchSpec = new AlterTableBranchSpec(CREATE_BRANCH, createBranchspec);
-    AlterTableCreateBranchDesc desc = new AlterTableCreateBranchDesc(tableName, alterTableBranchSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+    AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createSnapshotRefSpec =
+        new AlterTableSnapshotRefSpec.CreateSnapshotRefSpec(refName, snapshotId, asOfTime,
+            maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs);
+    AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.CreateSnapshotRefSpec> alterTableSnapshotRefSpec
+        = new AlterTableSnapshotRefSpec(alterTableType, createSnapshotRefSpec);
+    AbstractAlterTableDesc alterTableDesc =
+        new AlterTableCreateSnapshotRefDesc(alterTableType, tableName, alterTableSnapshotRefSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTableDesc)));
   }
 }

@@ -16,34 +16,34 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.branch.create;
+package org.apache.hadoop.hive.ql.ddl.table.snapshotref;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
-import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "CreateBranch operation", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableCreateBranchDesc extends AbstractAlterTableDesc {
+@Explain(displayName = "CreateSnapshotRef Operation", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT,
+    Explain.Level.EXTENDED })
+public class AlterTableCreateSnapshotRefDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  private final AlterTableBranchSpec alterTableBranchSpec;
+  protected AlterTableSnapshotRefSpec alterTableSnapshotRefSpec;
 
-  public AlterTableCreateBranchDesc(TableName tableName, AlterTableBranchSpec alterTableBranchSpec)
+  public AlterTableCreateSnapshotRefDesc(AlterTableType alterTableType, TableName tableName, AlterTableSnapshotRefSpec alterTableSnapshotRefSpec)
       throws SemanticException {
-    super(AlterTableType.CREATE_BRANCH, tableName, null, null, false, false, null);
-    this.alterTableBranchSpec = alterTableBranchSpec;
+    super(alterTableType, tableName, null, null, false, false, null);
+    this.alterTableSnapshotRefSpec = alterTableSnapshotRefSpec;
   }
 
-  public AlterTableBranchSpec getAlterTableBranchSpec() {
-    return alterTableBranchSpec;
+  public AlterTableSnapshotRefSpec getAlterTableSnapshotRefSpec() {
+    return alterTableSnapshotRefSpec;
   }
 
-  @Explain(displayName = "spec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "spec", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
   public String getExplainOutput() {
-    return alterTableBranchSpec.toString();
+    return alterTableSnapshotRefSpec.toString();
   }
 }
