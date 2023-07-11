@@ -33,9 +33,9 @@ import static java.util.Objects.requireNonNull;
  * If the value is empty, means no election happening and all instances are leaders,
  * otherwise the instance matching the configured hostname will be selected as a leader.
  */
-public class HostLeaderElection implements LeaderElection<String> {
+public class StaticLeaderElection implements LeaderElection<String> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HostLeaderElection.class);
+  private static final Logger LOG = LoggerFactory.getLogger(StaticLeaderElection.class);
   private volatile boolean isLeader;
   private String name;
   private List<LeadershipStateListener> listeners = new ArrayList<>();
@@ -62,8 +62,7 @@ public class HostLeaderElection implements LeaderElection<String> {
         try {
           listener.takeLeadership(this);
         } catch (Exception e) {
-          LOG.warn("Error while notifying the listener: " +
-              listener + ", isLeader: " + isLeader, e);
+          LOG.warn("Error while notifying the listener: " + listener, e);
         }
       });
     }
@@ -98,8 +97,7 @@ public class HostLeaderElection implements LeaderElection<String> {
         try {
           listener.lossLeadership(this);
         } catch (Exception e) {
-          LOG.warn("Error while notifying the listener: " +
-              listener + ", isLeader: " + isLeader, e);
+          LOG.warn("Error while notifying the listener: " + listener, e);
         }
       });
     }

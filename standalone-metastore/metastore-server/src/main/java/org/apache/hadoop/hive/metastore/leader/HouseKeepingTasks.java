@@ -41,6 +41,8 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
 
   private boolean runOnlyRemoteTasks;
 
+  private List<MetastoreTaskThread> runningTasks;
+
   public HouseKeepingTasks(Configuration configuration, boolean runOnlyRemoteTasks) {
     this.configuration = new Configuration(requireNonNull(configuration,
         "configuration is null"));
@@ -84,6 +86,7 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
     if (metastoreTaskThreadPool != null) {
       throw new IllegalStateException("There should be no running tasks before taking the leadership!");
     }
+    runningTasks = new ArrayList<>();
     metastoreTaskThreadPool = ThreadPool.initialize(configuration);
     if (!runOnlyRemoteTasks) {
       List<MetastoreTaskThread> alwaysTasks = new ArrayList<>(getAlwaysTasks());
@@ -93,7 +96,7 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
         // For backwards compatibility, since some threads used to be hard coded but only run if
         // frequency was > 0
         if (freq > 0) {
-          HiveMetaStore.LOG.info("Scheduling for " + task.getClass().getCanonicalName() + " service.");
+          runningTasks.add(task);
           metastoreTaskThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
         }
       }
@@ -102,10 +105,14 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
       for (MetastoreTaskThread task : remoteOnlyTasks) {
         task.setConf(configuration);
         long freq = task.runFrequency(TimeUnit.MILLISECONDS);
-        HiveMetaStore.LOG.info("Scheduling for " + task.getClass().getCanonicalName() + " service.");
+        runningTasks.add(task);
         metastoreTaskThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
       }
     }
+
+    runningTasks.forEach(task -> {
+      HiveMetaStore.LOG.info("Scheduling for " + task.getClass().getCanonicalName() + " service.");
+    });
   }
 
   @Override
@@ -113,6 +120,13 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
     if (metastoreTaskThreadPool != null) {
       metastoreTaskThreadPool.shutdown();
       metastoreTaskThreadPool = null;
+    }
+
+    if (runningTasks != null && !runningTasks.isEmpty()) {
+      runningTasks.forEach(task -> {
+        HiveMetaStore.LOG.info("Stopped the Housekeeping task: {}", task.getClass().getCanonicalName());
+      });
+      runningTasks.clear();
     }
   }
 

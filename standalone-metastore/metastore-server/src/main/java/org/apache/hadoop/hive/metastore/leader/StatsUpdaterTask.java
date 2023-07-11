@@ -90,6 +90,7 @@ public class StatsUpdaterTask implements LeaderElection.LeadershipStateListener 
       statsUpdater.ifPresent(statsUpdater -> {
         stop.set(true);
         ((Thread) statsUpdater).interrupt();
+        HiveMetaStore.LOG.info("Stopped the stats updater tasks.");
       });
       statsUpdater = null;
       stop = null;

@@ -31,7 +31,7 @@ public class LeaderElectionFactory {
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION);
     switch (method.toLowerCase()) {
       case "host":
-        return new HostLeaderElection();
+        return new StaticLeaderElection();
       case "lock":
         return new LeaseLeaderElection();
       default:

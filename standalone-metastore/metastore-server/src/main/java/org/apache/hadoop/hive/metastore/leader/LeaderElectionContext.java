@@ -156,12 +156,11 @@ public class LeaderElectionContext {
     case "lock":
       return ttype.getTableName();
     default:
-      throw new UnsupportedOperationException("Do not support " + method + " now");
+      throw new UnsupportedOperationException(method + " not supported for leader election");
     }
   }
 
   public static class ContextBuilder {
-
     private Configuration configuration;
     private boolean startAsDaemon;
     private String servHost;

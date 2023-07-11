@@ -37,7 +37,7 @@ public class TestLeaderElection {
 
   @Test
   public void testConfigLeaderElection() throws Exception {
-    LeaderElection election = new HostLeaderElection();
+    LeaderElection election = new StaticLeaderElection();
     String leaderHost = "host1.work";
     Configuration configuration = MetastoreConf.newMetastoreConf();
     election.tryBeLeader(configuration, leaderHost);
