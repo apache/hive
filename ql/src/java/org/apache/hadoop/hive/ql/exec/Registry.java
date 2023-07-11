@@ -146,16 +146,37 @@ public class Registry {
 
   }
 
+  /**
+   * @deprecated From next release, replaced by {@link #registerUDF(String, Class, boolean)}
+   * Deprecated because method unnecessarily accepts and passes FunctionResource vararg param
+   */
+  @Deprecated
   public FunctionInfo registerUDF(String functionName,
       Class<? extends UDF> UDFClass, boolean isOperator, FunctionResource... resources) {
     return registerUDF(functionName, UDFClass, isOperator, functionName.toLowerCase(), resources);
   }
 
+  /**
+   * @deprecated From next release, replaced by {@link #registerUDF(String, Class, boolean, String)}
+   * Deprecated because method unnecessarily accepts FunctionResource vararg param
+   */
+  @Deprecated
   public FunctionInfo registerUDF(String functionName,
       Class<? extends UDF> UDFClass, boolean isOperator, String displayName,
       FunctionResource... resources) {
     FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
     return registerUDF(functionName, functionType, UDFClass, isOperator, displayName);
+  }
+
+  public FunctionInfo registerUDF(String functionName,
+                                  Class<? extends UDF> UDFClass, boolean isOperator) {
+    return registerUDF(functionName, UDFClass, isOperator, functionName.toLowerCase());
+  }
+
+  public FunctionInfo registerUDF(String functionName,
+                                  Class<? extends UDF> UDFClass, boolean isOperator, String displayName) {
+      FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+      return registerUDF(functionName, functionType, UDFClass, isOperator, displayName);
   }
 
   private FunctionInfo registerUDF(String functionName, FunctionType functionType,
