@@ -568,11 +568,20 @@ public class MetastoreConf {
     METASTORE_HOUSEKEEPING_LEADER_ELECTION("metastore.housekeeping.leader.election",
         "metastore.housekeeping.leader.election",
         "host", new StringSetValidator("host", "lock"),
-        "If sets to host, HMS will choose the leader by the configured metastore.housekeeping.leader.hostname.\n" +
-        "When configured to lock, HMS will use hive locks to elect the leader."),
+        "Set to host, HMS will choose the leader by the configured metastore.housekeeping.leader.hostname.\n" +
+        "Set to lock, HMS will use the hive lock to elect the leader."),
     METASTORE_HOUSEKEEPING_LEADER_AUDITTABLE("metastore.housekeeping.leader.auditTable",
         "metastore.housekeeping.leader.auditTable", "",
-        "Audit the Metastore leader changes to the target table when configured."),
+        "Audit the leader election event to a plain json table when configured."),
+    METASTORE_HOUSEKEEPING_LEADER_NEW_AUDIT_FILE("metastore.housekeeping.leader.newAuditFile",
+        "metastore.housekeeping.leader.newAuditFile", false,
+        "Whether to create a new audit file in response to the new election event " +
+        "when the metastore.housekeeping.leader.auditTable is not empty.\n" +
+        "True for creating a new file, false otherwise."),
+    METASTORE_HOUSEKEEPING_LEADER_AUDIT_FILE_LIMIT("metastore.housekeeping.leader.auditFiles.limit",
+        "metastore.housekeeping.leader.auditFiles.limit", 10,
+        "Limit the number of small audit files when metastore.housekeeping.leader.newAuditFile is true.\n" +
+        "If the number of audit files exceeds the limit, then the oldest will be deleted."),
     METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
         "hive.metastore.housekeeping.threads.on", false,
         "Whether to run the tasks under metastore.task.threads.remote on this metastore instance or not.\n" +
