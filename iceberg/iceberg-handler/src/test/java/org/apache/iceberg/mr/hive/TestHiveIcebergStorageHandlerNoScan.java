@@ -1693,7 +1693,22 @@ public class TestHiveIcebergStorageHandlerNoScan {
               testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
     })
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining(" CTLT target table must be a HiveCatalog table");
+        .hasMessageContaining("CTLT target table must be a HiveCatalog table");
+  }
+
+  @Test
+  public void testCreateTemporaryTable() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    String query = String.format("CREATE temporary TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
+        "STRING) STORED BY iceberg %s %s",
+        testTables.locationForCreateTableSQL(identifier),
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+
+    Assertions.assertThatThrownBy(() -> {
+      shell.executeStatement(query);
+    })
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Creation of temporary iceberg tables is not supported");
   }
 
   @Test
