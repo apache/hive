@@ -19,22 +19,19 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 
-public class AlterTableBranchSpec<T> {
+public class AlterTableSnapshotRefSpec<T> {
 
-  public enum AlterBranchOperationType {
-    CREATE_BRANCH
-  }
-
-  private final AlterBranchOperationType operationType;
+  private final AlterTableType operationType;
   private final T operationParams;
 
-  public AlterTableBranchSpec(AlterBranchOperationType type, T value) {
+  public AlterTableSnapshotRefSpec(AlterTableType type, T value) {
     this.operationType = type;
     this.operationParams = value;
   }
 
-  public AlterBranchOperationType getOperationType() {
+  public AlterTableType getOperationType() {
     return operationType;
   }
 
@@ -48,17 +45,17 @@ public class AlterTableBranchSpec<T> {
         .add("operationParams", operationParams).toString();
   }
 
-  public static class CreateBranchSpec {
+  public static class CreateSnapshotRefSpec {
 
-    private final String branchName;
-    private final Long snapshotId;
-    private final Long asOfTime;
-    private final Long maxRefAgeMs;
-    private final Integer minSnapshotsToKeep;
-    private final Long maxSnapshotAgeMs;
+    private String refName;
+    private Long snapshotId;
+    private Long asOfTime;
+    private Long maxRefAgeMs;
+    private Integer minSnapshotsToKeep;
+    private Long maxSnapshotAgeMs;
 
-    public String getBranchName() {
-      return branchName;
+    public String getRefName() {
+      return refName;
     }
 
     public Long getSnapshotId() {
@@ -81,9 +78,9 @@ public class AlterTableBranchSpec<T> {
       return maxSnapshotAgeMs;
     }
 
-    public CreateBranchSpec(String branchName, Long snapShotId, Long asOfTime, Long maxRefAgeMs,
-        Integer minSnapshotsToKeep, Long maxSnapshotAgeMs) {
-      this.branchName = branchName;
+    public CreateSnapshotRefSpec(String refName, Long snapShotId, Long asOfTime, Long maxRefAgeMs,
+                             Integer minSnapshotsToKeep, Long maxSnapshotAgeMs) {
+      this.refName = refName;
       this.snapshotId = snapShotId;
       this.asOfTime = asOfTime;
       this.maxRefAgeMs = maxRefAgeMs;
@@ -92,9 +89,9 @@ public class AlterTableBranchSpec<T> {
     }
 
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("branchName", branchName).add("snapshotId", snapshotId)
+      return MoreObjects.toStringHelper(this).add("branchName", refName).add("snapshotId", snapshotId)
           .add("asOfTime", asOfTime).add("maxRefAgeMs", maxRefAgeMs).add("minSnapshotsToKeep", minSnapshotsToKeep)
-          .add("maxSnapshotAgeMs", maxSnapshotAgeMs).toString();
+          .add("maxSnapshotAgeMs", maxSnapshotAgeMs).omitNullValues().toString();
     }
   }
 }

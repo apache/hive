@@ -16,22 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.branch.create;
+package org.apache.hadoop.hive.ql.ddl.table.snapshotref.tag.create;
 
-import org.apache.hadoop.hive.ql.ddl.DDLOperation;
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
+import org.apache.hadoop.hive.ql.ddl.table.snapshotref.AlterTableCreateSnapshotRefAnalyzer;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-public class AlterTableCreateBranchOperation extends DDLOperation<AlterTableCreateBranchDesc> {
+@DDLSemanticAnalyzerFactory.DDLType(types = HiveParser.TOK_ALTERTABLE_CREATE_TAG)
+public class AlterTableCreateTagAnalyzer extends AlterTableCreateSnapshotRefAnalyzer {
 
-  public AlterTableCreateBranchOperation(DDLOperationContext context, AlterTableCreateBranchDesc desc) {
-    super(context, desc);
-  }
-
-  @Override
-  public int execute() throws Exception {
-    Table table = context.getDb().getTable(desc.getFullTableName());
-    context.getDb().alterTableBranchOperation(table, desc.getAlterTableBranchSpec());
-    return 0;
+  public AlterTableCreateTagAnalyzer(QueryState queryState) throws SemanticException {
+    super(queryState);
+    alterTableType = AlterTableType.CREATE_TAG;
   }
 }

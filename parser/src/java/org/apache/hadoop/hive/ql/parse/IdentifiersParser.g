@@ -985,6 +985,7 @@ nonReserved
     | KW_EXPIRE_SNAPSHOTS
     | KW_SET_CURRENT_SNAPSHOT
     | KW_BRANCH | KW_SNAPSHOTS | KW_RETAIN | KW_RETENTION
+    | KW_TAG
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.
