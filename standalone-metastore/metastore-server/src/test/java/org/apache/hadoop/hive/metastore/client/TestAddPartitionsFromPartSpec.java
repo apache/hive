@@ -265,18 +265,17 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
 
     String rootPath = tableLocation + "/addpartspectest/";
     PartitionSpecProxy partitionSpec = buildPartitionSpec(DB_NAME, tableName, rootPath, partitions);
-    client.add_partitions_pspec(partitionSpec);
+    try {
+      client.add_partitions_pspec(partitionSpec);
+      Assert.fail("MetaException should have been thrown.");
+    } catch (MetaException e) {
+      // Expected exception
+      System.out.println(e);
+    }
 
-    Partition part = client.getPartition(DB_NAME, tableName, "year=2013");
-    Assert.assertNotNull(part);
-    Assert.assertEquals(tableName, part.getTableName());
-    Assert.assertEquals(DB_NAME, part.getDbName());
-    Assert.assertEquals(tableLocation + "/year=2013", part.getSd().getLocation());
-    part = client.getPartition(DB_NAME, tableName, "year=2014");
-    Assert.assertNotNull(part);
-    Assert.assertEquals(tableName, part.getTableName());
-    Assert.assertEquals(DB_NAME, part.getDbName());
-    Assert.assertEquals(tableLocation + "/year=2014", part.getSd().getLocation());
+    List<String> partitionNames = client.listPartitionNames(DB_NAME, tableName, MAX);
+    Assert.assertNotNull(partitionNames);
+    Assert.assertTrue(partitionNames.isEmpty());
   }
 
   // TODO add tests for partitions in other catalogs
