@@ -30,7 +30,7 @@ POSTHOOK: query: SELECT array_intersect(array(),array())
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-NULL
+[]
 PREHOOK: query: SELECT array_intersect(array(null),array(null))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -49,6 +49,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 [1.12,3.34,1.11]
+PREHOOK: query: SELECT array(1,2,3),array_intersect(array(1, 2, 3),array(1,3,4))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array(1,2,3),array_intersect(array(1, 2, 3),array(1,3,4))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1,2,3]	[1,3]
 PREHOOK: query: SELECT array_intersect(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),array(1.1234567890, 3.34567890, null,2.234567))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -107,9 +116,9 @@ POSTHOOK: query: select array_intersect(value,value) from test_null_array
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_null_array
 #### A masked pattern was here ####
-NULL
 ["NULL"]
 ["null"]
+[]
 PREHOOK: query: select value, array_intersect(value,value) from test_null_array
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_null_array
@@ -120,15 +129,4 @@ POSTHOOK: Input: default@test_null_array
 #### A masked pattern was here ####
 ["NULL"]	["NULL"]
 ["null","null"]	["null"]
-[]	NULL
-PREHOOK: query: SELECT array_intersect(array(1, 2, 3, null,3,4),value) from test_null_array
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test_null_array
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT array_intersect(array(1, 2, 3, null,3,4),value) from test_null_array
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_null_array
-#### A masked pattern was here ####
-NULL
-NULL
-[]
+[]	[]

@@ -16,6 +16,8 @@ SELECT array_intersect(array(null),array(null));
 
 SELECT array_intersect(array(1.12, 2.23, 3.34, null,1.11,1.12,2.9),array(1.12,3.34,1.11,1.12));
 
+SELECT array(1,2,3),array_intersect(array(1, 2, 3),array(1,3,4));
+
 SELECT array_intersect(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),array(1.1234567890, 3.34567890, null,2.234567));
 
 SELECT array_intersect(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),array(11234567890, 2234567890, 334567890));
@@ -36,7 +38,5 @@ select value from test_null_array;
 select array_intersect(value,value) from test_null_array;
 
 select value, array_intersect(value,value) from test_null_array;
-
-SELECT array_intersect(array(1, 2, 3, null,3,4),value) from test_null_array;
 
 dfs -rm -r ${system:test.tmp.dir}/test_null_array;
