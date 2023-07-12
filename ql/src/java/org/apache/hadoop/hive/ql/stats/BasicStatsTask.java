@@ -105,7 +105,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
     LOG.info("Executing stats task");
     table = tbl;
-    return aggregateStats(db);
+    return aggregateStats(db, tbl);
   }
 
   @Override
@@ -264,7 +264,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     }
   }
 
-  private int aggregateStats(Hive db) {
+  private int aggregateStats(Hive db, Table tbl) {
 
     StatsAggregator statsAggregator = null;
     int ret = 0;
@@ -313,6 +313,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
         }
         LOG.info("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
+
+        // The table object is assigned to the latest table object.
+        // So that it can be used by ColStatsProcessor.
+        // This is only required for unpartitioned tables.
+        tbl.setTTable(res.getTTable());
 
       } else {
         // Partitioned table:

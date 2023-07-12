@@ -31,6 +31,7 @@ import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.types.Types.NestedField;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -205,6 +206,27 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     checkColStat(identifier.name(), "customer_id", false);
+  }
+
+  @Test
+  public void testColumnStatsAccurate() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, true);
+    shell.executeStatement(insert);
+
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", identifier.name());
+
+    // Assert whether basic stats and column stats are accurate.
+    Assert.assertTrue(hmsTable.getParameters().containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE));
+    Assert.assertTrue(StatsSetupConst.areBasicStatsUptoDate(hmsTable.getParameters()));
+    for (NestedField nestedField : HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns()) {
+      Assert.assertTrue(StatsSetupConst.areColumnStatsUptoDate(hmsTable.getParameters(), nestedField.name()));
+    }
   }
 
   private void checkColStat(String tableName, String colName, boolean accurate) {
