@@ -29,6 +29,22 @@ CREATE INDEX "PCS_STATS_IDX" ON "PART_COL_STATS" USING btree ("DB_NAME","TABLE_N
 -- HIVE-27186
 ALTER TABLE "METASTORE_DB_PROPERTIES" ADD "PROPERTYCONTENT" bytea;
 
+-- HIVE-27457
+UPDATE "SDS"
+    SET "INPUT_FORMAT" = 'org.apache.hadoop.hive.kudu.KuduInputFormat',
+        "OUTPUT_FORMAT" = 'org.apache.hadoop.hive.kudu.KuduOutputFormat'
+    WHERE "SDS"."SD_ID" IN (
+        SELECT "TBL_ID" FROM "TABLE_PARAMS" WHERE "PARAM_VALUE" LIKE '%KuduStorageHandler%'
+    );
+UPDATE "SERDES"
+    SET "SLIB" = 'org.apache.hadoop.hive.kudu.KuduSerDe'
+    WHERE "SERDE_ID" IN (
+        SELECT "SDS"."SERDE_ID"
+            FROM "TBLS"
+            LEFT JOIN "SDS" ON "TBLS"."SD_ID" = "SDS"."SD_ID"
+            WHERE "TBL_ID" IN (SELECT "TBL_ID" FROM "TABLE_PARAMS" WHERE "PARAM_VALUE" LIKE '%KuduStorageHandler%')
+    );
+
 -- These lines need to be last. Insert any changes above.
 UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0-beta-1', "VERSION_COMMENT"='Hive release version 4.0.0-beta-1' where "VER_ID"=1;
 SELECT 'Finished upgrading MetaStore schema from 4.0.0-alpha-2 to 4.0.0-beta-1';
