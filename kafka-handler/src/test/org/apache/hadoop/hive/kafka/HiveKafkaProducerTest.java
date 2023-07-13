@@ -53,7 +53,6 @@ import java.util.stream.IntStream;
 /**
  * Test class for Hive Kafka Producer.
  */
-@org.junit.Ignore("flaky HIVE-23693")
 @SuppressWarnings("unchecked") public class HiveKafkaProducerTest {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveKafkaProducerTest.class);
