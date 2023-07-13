@@ -1941,6 +1941,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       ms.openTransaction();
       ms.alterDataConnector(dcName, newDC);
+      DataConnectorProviderFactory.invalidateDataConnectorFromCache(dcName);
 
         /*
         if (!transactionalListeners.isEmpty()) {
@@ -1999,6 +2000,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     RawStore ms = getMS();
     try {
       connector = getMS().getDataConnector(dcName);
+      DataConnectorProviderFactory.invalidateDataConnectorFromCache(dcName);
     } catch (NoSuchObjectException e) {
       if (!ifNotExists) {
         throw new NoSuchObjectException("DataConnector " + dcName + " doesn't exist");
