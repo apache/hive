@@ -36,4 +36,4 @@ jobs:
           java-version: 8
       - name: 'Build project'
         run: |
-          mvn clean install -DskipTests -Pitests
+          mvn clean install -DskipTests -Pitests,iceberg
