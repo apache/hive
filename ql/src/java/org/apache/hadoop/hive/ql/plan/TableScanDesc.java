@@ -115,8 +115,8 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   public static final String FROM_VERSION =
       "hive.io.version.from";
 
-  public static final String BRANCH_NAME =
-      "hive.io.branch.name";
+  public static final String SNAPSHOT_REF =
+      "hive.io.snapshot.ref";
 
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
@@ -147,7 +147,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   private String asOfTimestamp = null;
 
-  private String branchName = null;
+  private String snapshotRef = null;
 
   public TableScanDesc() {
     this(null, null);
@@ -179,7 +179,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
       asOfTimestamp = tblMetadata.getAsOfTimestamp();
       asOfVersion = tblMetadata.getAsOfVersion();
       versionIntervalFrom = tblMetadata.getVersionIntervalFrom();
-      branchName = tblMetadata.getBranchName();
+      snapshotRef = tblMetadata.getSnapshotRef();
     }
     isTranscationalTable = AcidUtils.isTransactionalTable(this.tableMetadata);
     if (isTranscationalTable) {
@@ -549,9 +549,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return asOfTimestamp;
   }
 
-  @Explain(displayName = "branch name")
-  public String getBranchName() {
-    return branchName;
+  @Explain(displayName = "Snapshot ref")
+  public String getSnapshotRef() {
+    return snapshotRef;
   }
 
   public class TableScanOperatorExplainVectorization extends OperatorExplainVectorization {

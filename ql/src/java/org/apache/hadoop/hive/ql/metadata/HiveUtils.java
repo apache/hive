@@ -109,7 +109,8 @@ public final class HiveUtils {
   static final byte[] tabEscapeBytes = "\\t".getBytes();;
   static final byte[] tabUnescapeBytes = "\t".getBytes();
   static final byte[] ctrlABytes = "\u0001".getBytes();
-  static final Pattern BRANCH = Pattern.compile("branch_(.*)");
+  static final Pattern TAG = Pattern.compile("tag_(.*)");
+  static final Pattern SNAPSHOT_REF = Pattern.compile("(?:branch_|tag_)(.*)");
 
 
   public static final Logger LOG = LoggerFactory.getLogger(HiveUtils.class);
@@ -443,11 +444,16 @@ public final class HiveUtils {
     return new Path(root, dbName);
   }
 
-  public static String getTableBranch(String branchName) {
-    Matcher branch = BRANCH.matcher(branchName);
-    if (branch.matches()) {
-      return branch.group(1);
+  public static String getTableSnapshotRef(String refName) {
+    Matcher ref = SNAPSHOT_REF.matcher(refName);
+    if (ref.matches()) {
+      return ref.group(1);
     }
     return null;
+  }
+
+  public static Boolean checkTableTag(String refName) {
+    Matcher ref = TAG.matcher(refName);
+    return ref.matches();
   }
 }

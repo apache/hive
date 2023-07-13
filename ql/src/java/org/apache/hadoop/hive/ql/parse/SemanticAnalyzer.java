@@ -2399,12 +2399,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         boolean isTableWrittenTo = qb.getParseInfo().isInsertIntoTable(ts.tableHandle.getDbName(),
-            ts.tableHandle.getTableName(), ts.tableHandle.getBranchName());
+            ts.tableHandle.getTableName(), ts.tableHandle.getSnapshotRef());
         isTableWrittenTo |= (qb.getParseInfo().getInsertOverwriteTables().
             get(getUnescapedName((ASTNode) ast.getChild(0), ts.tableHandle.getDbName()).toLowerCase()) != null);
         assert isTableWrittenTo :
             "Inconsistent data structure detected: we are writing to " + ts.tableHandle  + " in " +
                 name + " but it's not in isInsertIntoTable() or getInsertOverwriteTables()";
+        Boolean isTableTag = Optional.ofNullable(ts.tableHandle.getSnapshotRef()).map(HiveUtils::checkTableTag)
+            .orElse(false);
+        assert isTableWrittenTo && !isTableTag : "Don't support write (insert/delete/update/merge) to iceberg tag " +
+            HiveUtils.getTableSnapshotRef(ts.tableHandle.getSnapshotRef());
         // Disallow update and delete on non-acid tables
         final boolean isWriteOperation = updating(name) || deleting(name);
         boolean isFullAcid = AcidUtils.isFullAcidTable(ts.tableHandle) ||
@@ -7387,7 +7391,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("Failed to allocate write Id", ex);
         }
         boolean isReplace = !qb.getParseInfo().isInsertIntoTable(
-            destinationTable.getDbName(), destinationTable.getTableName(), destinationTable.getBranchName());
+            destinationTable.getDbName(), destinationTable.getTableName(), destinationTable.getSnapshotRef());
         ltd = new LoadTableDesc(queryTmpdir, tableDescriptor, dpCtx, acidOp, isReplace, writeId);
         if (writeId != null) {
           ltd.setStmtId(txnMgr.getCurrentStmtId());
@@ -7396,7 +7400,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
         boolean isInsertInto = qb.getParseInfo().isInsertIntoTable(
-            destinationTable.getDbName(), destinationTable.getTableName(), destinationTable.getBranchName());
+            destinationTable.getDbName(), destinationTable.getTableName(), destinationTable.getSnapshotRef());
         LoadFileType loadType;
         if (isDirectInsert) {
           loadType = LoadFileType.IGNORE;
@@ -7416,7 +7420,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         setStatsForNonNativeTable(destinationTable.getDbName(), destinationTable.getTableName());
         // true if it is insert overwrite.
         boolean overwrite = !qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
-            destinationTable.getBranchName());
+            destinationTable.getSnapshotRef());
         createPreInsertDesc(destinationTable, overwrite);
 
         ltd = new LoadTableDesc(queryTmpdir, tableDescriptor, partSpec == null ? ImmutableMap.of() : partSpec);
@@ -8008,11 +8012,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (destType == QBMetaData.DEST_TABLE) {
         genAutoColumnStatsGatheringPipeline(destinationTable, partSpec, input,
             qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
-                destinationTable.getBranchName()), false);
+                destinationTable.getSnapshotRef()), false);
       } else if (destType == QBMetaData.DEST_PARTITION) {
         genAutoColumnStatsGatheringPipeline(destinationTable, destinationPartition.getSpec(), input,
             qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
-                destinationTable.getBranchName()), false);
+                destinationTable.getSnapshotRef()), false);
       } else if (destType == QBMetaData.DEST_LOCAL_FILE || destType == QBMetaData.DEST_DFS_FILE) {
         // CTAS or CMV statement
         genAutoColumnStatsGatheringPipeline(destinationTable, null, input,
@@ -8493,7 +8497,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // If the query here is an INSERT_INTO and the target is an immutable table,
     // verify that our destination is empty before proceeding
     if (!dest_tab.isImmutable() || !qb.getParseInfo().isInsertIntoTable(
-        dest_tab.getDbName(), dest_tab.getTableName(), dest_tab.getBranchName())) {
+        dest_tab.getDbName(), dest_tab.getTableName(), dest_tab.getSnapshotRef())) {
       return;
     }
     try {
