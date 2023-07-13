@@ -5568,13 +5568,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws NoSuchObjectException, MetaException  {
 
     String[] parsedDbName = parseDbName(db_name, conf);
+    String catName = parsedDbName[CAT_NAME].toLowerCase();
+    String dbName = parsedDbName[DB_NAME].toLowerCase();
     String tableName = tbl_name.toLowerCase();
 
-    startTableFunction("get_partitions_pspec", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
+    startTableFunction("get_partitions_pspec", catName, dbName, tableName);
 
     List<PartitionSpec> partitionSpecs = null;
     try {
-      Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
+      Table table = get_table_core(catName, dbName, tableName);
       // get_partitions will parse out the catalog and db names itself
       List<Partition> partitions = get_partitions(db_name, tableName, (short) max_parts);
 
@@ -5585,8 +5587,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       else {
         PartitionSpec pSpec = new PartitionSpec();
         pSpec.setPartitionList(new PartitionListComposingSpec(partitions));
-        pSpec.setCatName(parsedDbName[CAT_NAME]);
-        pSpec.setDbName(parsedDbName[DB_NAME]);
+        pSpec.setCatName(catName);
+        pSpec.setDbName(dbName);
         pSpec.setTableName(tableName);
         pSpec.setRootPath(table.getSd().getLocation());
         partitionSpecs = Arrays.asList(pSpec);
