@@ -339,7 +339,6 @@
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <file>APACHE-2.0</file>
         </license>
-        
       </licenses>
     </dependency>
     <dependency>

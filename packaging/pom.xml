@@ -110,8 +110,8 @@
                   <target>
                     <concat destfile="${project.build.directory}/generated-resources/LICENSE" force="yes">
                       <fileset dir="../">
-                        <include name="LICENSE"></include>
-                        <include name="LICENSE-binary"></include>
+                        <include name="LICENSE"/>
+                        <include name="LICENSE-binary"/>
                       </fileset>
                     </concat>
                   </target>
