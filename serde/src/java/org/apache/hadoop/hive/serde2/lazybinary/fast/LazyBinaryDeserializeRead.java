@@ -204,7 +204,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
   }
 
   /*
-   * Reads the the next field.
+   * Reads the next field.
    *
    * Afterwards, reading is positioned to the next field.
    *
