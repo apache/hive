@@ -27,7 +27,7 @@ import org.apache.hadoop.io.Writable;
  * primitive classes. For example, data will be a BooleanWritable in the
  * LazyBinaryBoolean class.
  * 
- * There is no null flag any more,
+ * There is no null flag anymore,
  * 
  */
 public abstract class LazyBinaryPrimitive<OI extends ObjectInspector, T extends Writable>
