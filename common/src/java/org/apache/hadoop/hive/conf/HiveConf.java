@@ -1292,7 +1292,7 @@ public class HiveConf extends Configuration {
      * @deprecated Use MetastoreConf.BATCH_RETRIEVE_MAX
      */
     @Deprecated
-    METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 300,
+    METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 1000,
         "Maximum number of objects (tables/partitions) can be retrieved from metastore in one batch. \n" +
         "The higher the number, the less the number of round trips is needed to the Hive metastore server, \n" +
         "but it may also cause higher memory requirement at the client side."),
@@ -3020,6 +3020,13 @@ public class HiveConf extends Configuration {
             "when hive.server2.support.dynamic.service.discovery is enabled."),
     HIVE_ZOOKEEPER_KILLQUERY_NAMESPACE("hive.zookeeper.killquery.namespace", "killQueries",
         "When kill query coordination is enabled, uses this namespace for registering queries to kill with zookeeper"),
+
+    HIVE_GETPARTITIONS_MAX_RETRIES("hive.getpartitions.max.retries", 5,
+        "Maximum number of retries for the Hive.GetAllPartitionsOf command when getting partitions in batches.\n "
+        + "If the value is greater than zero it will retry getting partitions until the maximum\n"
+        + "number of attempts is reached or batch size is reduced to 0, whichever is earlier.\n"
+        + "In each retry attempt it will reduce the batch size by a factor of 2 until it reaches zero.\n"
+        + "If the value is set to zero it will retry until the batch size becomes zero as described above."),
 
     // Transactions
     HIVE_TXN_MANAGER("hive.txn.manager",

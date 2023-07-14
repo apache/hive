@@ -117,6 +117,8 @@ import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -4139,27 +4141,42 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
-   * Get all the partitions; unlike {@link #getPartitions(Table)}, does not include auth.
+   * Get all the partitions in batches; unlike {@link #getPartitions(Table)}, does not include auth.
    * @param tbl table for which partitions are needed
    * @return list of partition objects
    */
   public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
+    int batchSize= MetastoreConf.getIntVar(
+            Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    int maxRetries = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_GETPARTITIONS_MAX_RETRIES);
+    return getAllPartitionsOf(tbl, batchSize, 2, maxRetries);
+  }
+
+  public Set<Partition> getAllPartitionsOf(Table tbl, int batchSize, int decayingFactor,
+         int maxRetries) throws HiveException {
     if (!tbl.isPartitioned()) {
       return Sets.newHashSet(new Partition(tbl));
     }
-
-    List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
+    Set<Partition> result = new LinkedHashSet<>();
+    RetryUtilities.ExponentiallyDecayingBatchWork batchTask = new RetryUtilities
+            .ExponentiallyDecayingBatchWork<Void>(batchSize, decayingFactor, maxRetries) {
+      @Override
+      public Void execute(int size) throws HiveException {
+        try {
+          result.clear();
+          new PartitionIterable(Hive.get(), tbl, null, size).forEach(result::add);
+          return null;
+        } catch (HiveException e) {
+          throw e;
+        }
+      }
+    };
     try {
-      tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(), (short)-1);
+      batchTask.run();
     } catch (Exception e) {
-      LOG.error("Failed getAllPartitionsOf", e);
       throw new HiveException(e);
     }
-    Set<Partition> parts = new LinkedHashSet<Partition>(tParts.size());
-    for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
-      parts.add(new Partition(tbl, tpart));
-    }
-    return parts;
+    return result;
   }
 
   /**
