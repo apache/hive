@@ -184,7 +184,7 @@ class AvroDeserializer {
     //no need to re-encode the record.
     if(!noEncodingNeeded.contains(recordReaderId)) {
       SchemaReEncoder reEncoder = null;
-      //Check if the record record is already encoded once. If it does
+      //Check if the record is already encoded once. If it does
       //reuse the encoder.
       if(reEncoderCache.containsKey(recordReaderId)) {
         reEncoder = reEncoderCache.get(recordReaderId); //Reuse the re-encoder
