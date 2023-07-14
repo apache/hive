@@ -88,17 +88,18 @@ public class TestMsckCreatePartitionsInBatches {
 
   @Before
   public void before() throws Exception {
-    createPartitionedTable(catName, dbName, tableName);
+    createPartitionedTable(db, catName, dbName, tableName);
     table = db.getTable(catName, dbName, tableName);
     repairOutput = new ArrayList<String>();
   }
 
   @After
   public void after() throws Exception {
-    cleanUpTableQuietly(catName, dbName, tableName);
+    cleanUpTableQuietly(db, catName, dbName, tableName);
   }
 
-  private Table createPartitionedTable(String catName, String dbName, String tableName) throws Exception {
+  public static Table createPartitionedTable(IMetaStoreClient db, String catName, String dbName, String tableName)
+          throws Exception {
     try {
       db.dropTable(catName, dbName, tableName);
       Table table = new Table();
@@ -124,7 +125,7 @@ public class TestMsckCreatePartitionsInBatches {
     }
   }
 
-  private void cleanUpTableQuietly(String catName, String dbName, String tableName) {
+  public static void cleanUpTableQuietly(IMetaStoreClient db, String catName, String dbName, String tableName) {
     try {
       db.dropTable(catName, dbName, tableName);
     } catch (Exception exception) {
