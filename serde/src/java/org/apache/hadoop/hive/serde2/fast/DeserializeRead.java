@@ -206,7 +206,7 @@ public abstract class DeserializeRead {
   public abstract void set(byte[] bytes, int offset, int length);
 
   /*
-   * Reads the the next field.
+   * Reads the next field.
    *
    * Afterwards, reading is positioned to the next field.
    *

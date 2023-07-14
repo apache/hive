@@ -339,7 +339,7 @@ public final class LazyUtils {
    * Write out a binary representation of a PrimitiveObject to a byte stream.
    *
    * @param out ByteStream.Output, an unsynchronized version of ByteArrayOutputStream, used as a
-   *            backing buffer for the the DataOutputStream
+   *            backing buffer for the DataOutputStream
    * @param o the PrimitiveObject
    * @param oi the PrimitiveObjectInspector
    * @throws IOException on error during the write operation

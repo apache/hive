@@ -552,7 +552,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   }
 
   /*
-   * Reads the the next field.
+   * Reads the next field.
    *
    * Afterwards, reading is positioned to the next field.
    *
