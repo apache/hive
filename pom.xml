@@ -181,7 +181,7 @@
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.0.52.Final</netty.version>
     <parquet.version>1.8.1</parquet.version>
-    <pentaho-aggdesigner.version>5.1.5-jhyde</pentaho-aggdesigner.version>
+    <aggdesigner.version>6.0</aggdesigner.version>
     <pig.version>0.16.0</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
@@ -216,17 +216,6 @@
       <layout>default</layout>
       <releases>
         <enabled>true</enabled>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-    </repository>
-    <repository>
-      <id>conjars</id>
-      <name>Conjars</name>
-      <url>http://conjars.org/repo</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
         <checksumPolicy>warn</checksumPolicy>
       </releases>
     </repository>
@@ -752,9 +741,9 @@
         <version>${hadoop.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.pentaho</groupId>
-        <artifactId>pentaho-aggdesigner-algorithm</artifactId>
-        <version>${pentaho-aggdesigner.version}</version>
+        <groupId>net.hydromatic</groupId>
+        <artifactId>aggdesigner-algorithm</artifactId>
+        <version>${aggdesigner.version}</version>
       </dependency>
       <dependency>
         <groupId>org.scala-lang</groupId>

@@ -369,12 +369,22 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.pentaho</groupId>
+          <artifactId>pentaho-aggdesigner-algorithm</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-druid</artifactId>
       <version>${calcite.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.pentaho</groupId>
+          <artifactId>pentaho-aggdesigner-algorithm</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.calcite.avatica</groupId>
@@ -714,8 +724,8 @@
       <artifactId>janino</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.pentaho</groupId>
-      <artifactId>pentaho-aggdesigner-algorithm</artifactId>
+      <groupId>net.hydromatic</groupId>
+      <artifactId>aggdesigner-algorithm</artifactId>
     </dependency>
   </dependencies>
 
