@@ -44,8 +44,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_nonpartitioned
 PREHOOK: query: explain insert into table stats_nonpartitioned select * from mysource where p == 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mysource
+PREHOOK: Output: default@stats_nonpartitioned
 POSTHOOK: query: explain insert into table stats_nonpartitioned select * from mysource where p == 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mysource
+POSTHOOK: Output: default@stats_nonpartitioned
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
