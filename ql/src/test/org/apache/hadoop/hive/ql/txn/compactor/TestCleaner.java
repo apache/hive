@@ -22,21 +22,7 @@ import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
-import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.GetTableRequest;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
@@ -1115,6 +1101,55 @@ public class TestCleaner extends CompactorTest {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Expected 1 compaction in queue, got: " + rsp.getCompacts(), 1, rsp.getCompactsSize());
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+  }
+
+  @org.junit.Test
+  public void testCompactionHighWatermarkIsHonored() throws Exception {
+    String dbName = "default";
+    String tblName = "trfcp";
+    String partName = "ds=today";
+    Table t = newTable(dbName, tblName, true);
+    Partition p = newPartition(t, "today");
+
+    // minor compaction
+    addBaseFile(t, p, 19L, 19);
+    addDeltaFile(t, p, 20L, 20L, 1);
+    addDeltaFile(t, p, 21L, 21L, 1);
+    addDeltaFile(t, p, 22L, 22L, 1);
+    burnThroughTransactions(dbName, tblName, 22);
+
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setPartitionname(partName);
+    long ctxnid = compactInTxn(rqst);
+    addDeltaFile(t, p, 20, 22, 3, ctxnid);
+
+    // block cleaner with an open txn
+    long openTxnId = openTxn();
+
+    //2nd minor
+    addDeltaFile(t, p, 23L, 23L, 1);
+    addDeltaFile(t, p, 24L, 24L, 1);
+    burnThroughTransactions(dbName, tblName, 2);
+
+    rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setPartitionname(partName);
+    ctxnid = compactInTxn(rqst);
+    addDeltaFile(t, p, 20, 24, 5, ctxnid);
+
+    startCleaner();
+    txnHandler.abortTxn(new AbortTxnRequest(openTxnId));
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(1).getState());
+
+    List<Path> paths = getDirectories(conf, t, p);
+    Assert.assertEquals(addVisibilitySuffix(makeDeltaDirName(20, 22), 23), paths.get(0).getName());
+    Assert.assertEquals("base_19", paths.get(1).getName());
+    Assert.assertEquals(makeDeltaDirName(23, 23), paths.get(2).getName());
+    Assert.assertEquals(addVisibilitySuffix(makeDeltaDirName(20, 24), 27), paths.get(3).getName());
+    Assert.assertEquals(makeDeltaDirName(24, 24), paths.get(4).getName());
   }
 
   private void allocateTableWriteId(String dbName, String tblName, long txnId) throws Exception {

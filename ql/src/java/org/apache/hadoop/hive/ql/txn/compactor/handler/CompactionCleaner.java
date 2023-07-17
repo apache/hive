@@ -292,7 +292,7 @@ class CompactionCleaner extends TaskHandler {
      * should not touch the newer obsolete directories to not violate the retentionTime for those.
      */
     if (ci.highestWriteId < validWriteIdList.getHighWatermark()) {
-      validWriteIdList = validWriteIdList.updateHighWatermark(ci.highestWriteId);
+      validWriteIdList.setHighWatermark(ci.highestWriteId);
     }
     return validWriteIdList;
   }
