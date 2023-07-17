@@ -459,13 +459,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       ColumnStatsDesc columnStatsDesc) {
     Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     String snapshotId = String.format("%s-STATS-%d", tbl.name(), tbl.currentSnapshot().snapshotId());
+    return writeColStats(colStats, tbl, snapshotId);
+  }
+
+  private boolean writeColStats(List<ColumnStatistics> colStats, Table tbl, String snapshotId) {
     try {
-      boolean rewriteStats = removeStatsIfExists(tbl);
+      boolean rewriteStats = removeColStatsIfExists(tbl);
       if (!rewriteStats) {
-        checkAndMergeStats(colStats.get(0), tbl);
+        checkAndMergeColStats(colStats.get(0), tbl);
       }
       byte[] serializeColStats = SerializationUtils.serialize((Serializable) colStats);
-      try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(getStatsPath(tbl).toString()))
+      try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(getColStatsPath(tbl).toString()))
           .createdBy(Constants.HIVE_ENGINE).build()) {
         writer.add(new Blob(tbl.name() + "-" + snapshotId, ImmutableList.of(1), tbl.currentSnapshot().snapshotId(),
             tbl.currentSnapshot().sequenceNumber(), ByteBuffer.wrap(serializeColStats), PuffinCompressionCodec.NONE,
@@ -485,11 +489,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return canSetColStatistics(hmsTable) && canProvideColStatistics(table, table.currentSnapshot().snapshotId());
+    return canSetColStatistics(hmsTable) && canProvideColStats(table, table.currentSnapshot().snapshotId());
   }
 
-  private boolean canProvideColStatistics(Table table, long snapshotId) {
-    Path statsPath = getStatsPath(table, snapshotId);
+  private boolean canProvideColStats(Table table, long snapshotId) {
+    Path statsPath = getColStatsPath(table, snapshotId);
     try {
       FileSystem fs = statsPath.getFileSystem(conf);
       return  fs.exists(statsPath);
@@ -503,7 +507,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    Path statsPath = getStatsPath(table);
+    Path statsPath = getColStatsPath(table);
     LOG.info("Using stats from puffin file at: {}", statsPath);
     return readColStats(table, statsPath).getStatsObj();
   }
@@ -543,16 +547,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, Constants.ICEBERG).toLowerCase();
   }
 
-  private Path getStatsPath(Table table) {
-    return getStatsPath(table, table.currentSnapshot().snapshotId());
+  private Path getColStatsPath(Table table) {
+    return getColStatsPath(table, table.currentSnapshot().snapshotId());
   }
 
-  private Path getStatsPath(Table table, long snapshotId) {
+  private Path getColStatsPath(Table table, long snapshotId) {
     return new Path(table.location() + STATS + table.name() + snapshotId);
   }
 
-  private boolean removeStatsIfExists(Table tbl) throws IOException {
-    Path statsPath = getStatsPath(tbl);
+  private boolean removeColStatsIfExists(Table tbl) throws IOException {
+    Path statsPath = getColStatsPath(tbl);
     FileSystem fs = statsPath.getFileSystem(conf);
     if (fs.exists(statsPath)) {
       // Analyze table and stats updater thread
@@ -561,10 +565,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return false;
   }
 
-  private void checkAndMergeStats(ColumnStatistics statsObjNew, Table tbl) throws InvalidObjectException {
+  private void checkAndMergeColStats(ColumnStatistics statsObjNew, Table tbl) throws InvalidObjectException {
     Long previousSnapshotId = tbl.currentSnapshot().parentId();
-    if (previousSnapshotId != null && canProvideColStatistics(tbl, previousSnapshotId)) {
-      ColumnStatistics statsObjOld = readColStats(tbl, getStatsPath(tbl, previousSnapshotId));
+    if (previousSnapshotId != null && canProvideColStats(tbl, previousSnapshotId)) {
+      ColumnStatistics statsObjOld = readColStats(tbl, getColStatsPath(tbl, previousSnapshotId));
       if (statsObjOld != null && statsObjOld.getStatsObjSize() != 0 && !statsObjNew.getStatsObj().isEmpty()) {
         MetaStoreServerUtils.mergeColStats(statsObjNew, statsObjOld);
       }
