@@ -39,12 +39,12 @@ join test1 t2 using(a)
 join test1 t3 using(b);
 
 -- joins with multiple tables and columns
-select * from test t1
-join test1 t2 using(a)
+select * from test1 t1
+join test t2 using(a)
 join test2 t3 using(b);
 
-explain extended select * from test t1
-join test1 t2 using(a)
+explain extended select * from test1 t1
+join test t2 using(a)
 join test2 t3 using(b);
 
 select * from test t1
