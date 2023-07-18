@@ -129,6 +129,8 @@ public class TestTransactionalDbNotificationListner {
     private static IMetaStoreClient msClient;
     private static IDriver driver;
     private static MessageDeserializer md;
+    private int startTime;
+    private long firstEventId;
 
     static {
         try {
@@ -137,9 +139,6 @@ public class TestTransactionalDbNotificationListner {
             throw new RuntimeException(e);
         }
     }
-
-    private int startTime;
-    private long firstEventId;
 
     @SuppressWarnings("rawtypes")
     @BeforeClass
@@ -173,12 +172,6 @@ public class TestTransactionalDbNotificationListner {
         firstEventId = msClient.getCurrentNotificationEventId().getEventId();
         DummyRawStoreFailEvent.setEventSucceed(true);
     }
-
-    @After
-    public void tearDown() {
-
-    }
-
 
     @Test
     public void openTxn() throws Exception {

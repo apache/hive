@@ -18,10 +18,6 @@
  */
 package org.apache.hive.hcatalog.listener;
 
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -124,6 +120,9 @@ import org.slf4j.LoggerFactory;
 import org.junit.Ignore;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL;
 
 
 public class TestDbNotificationCleanup {
@@ -135,17 +134,7 @@ public class TestDbNotificationCleanup {
     private static IMetaStoreClient msClient;
     private static IDriver driver;
     private static MessageDeserializer md;
-
     private static HiveConf conf;
-
-    static {
-        try {
-            md = MessageFactory.getInstance(JSONMessageEncoder.FORMAT).getDeserializer();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private int startTime;
     private long firstEventId;
     private final String testTempDir = Paths.get(System.getProperty("java.io.tmpdir"), "testDbNotif").toString();
@@ -158,6 +147,15 @@ public class TestDbNotificationCleanup {
 
     @Rule
     public TestRule replV1BackwardCompatibleRule = bcompat;
+
+    static {
+        try {
+            md = MessageFactory.getInstance(JSONMessageEncoder.FORMAT).getDeserializer();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 
     @SuppressWarnings("rawtypes")
@@ -212,12 +210,6 @@ public class TestDbNotificationCleanup {
         }
         conf = null;
     }
-
-    @After
-    public void tearDown() {
-
-    }
-
 
 
     @Test
