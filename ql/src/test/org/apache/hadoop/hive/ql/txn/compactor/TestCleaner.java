@@ -22,7 +22,22 @@ import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
@@ -46,6 +61,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
@@ -1103,7 +1119,7 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
   }
 
-  @org.junit.Test
+  @Test
   public void testCompactionHighWatermarkIsHonored() throws Exception {
     String dbName = "default";
     String tblName = "trfcp";
@@ -1139,17 +1155,26 @@ public class TestCleaner extends CompactorTest {
     startCleaner();
     txnHandler.abortTxn(new AbortTxnRequest(openTxnId));
 
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactRequest req = new ShowCompactRequest();
+    req.setOrder("CC_ID");
+    ShowCompactResponse rsp = txnHandler.showCompact(req);
+    
     Assert.assertEquals(2, rsp.getCompactsSize());
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(1).getState());
 
-    List<Path> paths = getDirectories(conf, t, p);
-    Assert.assertEquals(addVisibilitySuffix(makeDeltaDirName(20, 22), 23), paths.get(0).getName());
-    Assert.assertEquals("base_19", paths.get(1).getName());
-    Assert.assertEquals(makeDeltaDirName(23, 23), paths.get(2).getName());
-    Assert.assertEquals(addVisibilitySuffix(makeDeltaDirName(20, 24), 27), paths.get(3).getName());
-    Assert.assertEquals(makeDeltaDirName(24, 24), paths.get(4).getName());
+    List<String> actualDirs = getDirectories(conf, t, p).stream()
+      .map(Path::getName).sorted()
+      .collect(Collectors.toList());
+    
+    List<String> expectedDirs = Arrays.asList(
+      "base_19",
+      addVisibilitySuffix(makeDeltaDirName(20, 22), 23),
+      addVisibilitySuffix(makeDeltaDirName(20, 24), 27),
+      makeDeltaDirName(23, 23),
+      makeDeltaDirName(24, 24)
+    );
+    Assert.assertEquals("Directories do not match", expectedDirs, actualDirs);
   }
 
   private void allocateTableWriteId(String dbName, String tblName, long txnId) throws Exception {
