@@ -2438,6 +2438,9 @@ public class HiveConf extends Configuration {
 
     HIVEINPUTFORMAT("hive.input.format", "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat",
         "The default input format. Set this to HiveInputFormat if you encounter problems with CombineHiveInputFormat."),
+    HIVE_TEZ_PRINT_PAYLOAD_INSIGHTS("hive.tez.print.payload.details", false,
+        "Whether to print payload/conf insights when creating Tez DAG. It's false by default, as it can be time consuming, \n" +
+        "but can be quite useful when investigating payload size issues."),
     HIVETEZINPUTFORMAT("hive.tez.input.format", "org.apache.hadoop.hive.ql.io.HiveInputFormat",
         "The default input format for tez. Tez groups splits in the AM."),
 

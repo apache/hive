@@ -36,18 +36,21 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FilenameUtils;
@@ -68,6 +71,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -451,13 +455,10 @@ public class DagUtils {
       int numBuckets = edgeProp.getNumBuckets();
       CustomVertexConfiguration vertexConf
               = new CustomVertexConfiguration(numBuckets, tezWork.getVertexType(work));
-      DataOutputBuffer dob = new DataOutputBuffer();
-      vertexConf.write(dob);
+      UserPayload userPayload = createPayloadFromWritable(vertexConf);
       VertexManagerPluginDescriptor desc =
           VertexManagerPluginDescriptor.create(CustomPartitionVertex.class.getName());
-      byte[] userPayloadBytes = dob.getData();
-      ByteBuffer userPayload = ByteBuffer.wrap(userPayloadBytes);
-      desc.setUserPayload(UserPayload.create(userPayload));
+      desc.setUserPayload(userPayload);
       w.setVertexManagerPlugin(desc);
       break;
     }
@@ -487,6 +488,32 @@ public class DagUtils {
         InputDescriptor.create(mergeInputClass.getName()));
   }
 
+  private UserPayload createPayloadFromWritable(Writable conf)
+      throws IOException {
+    DataOutputBuffer dob = new DataOutputBuffer();
+    conf.write(dob);
+    byte[] userPayloadBytes = dob.getData();
+    ByteBuffer userPayload = ByteBuffer.wrap(userPayloadBytes);
+    return UserPayload.create(userPayload);
+  }
+
+  private void printPayloadInsights(JobConf conf, UserPayload userPayload, String context) {
+    boolean needsPayloadInsights = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TEZ_PRINT_PAYLOAD_INSIGHTS);
+    if (!needsPayloadInsights) {
+      return;
+    }
+
+    Map<String, String> allProps = conf.getValByRegex(".*");
+    LOG.info("Payload size for {}: {} bytes, # of keys in conf: {}", context, userPayload.getPayload().capacity(),
+        allProps.keySet().size());
+    List<Entry<String, String>> propsSortedByLength = allProps.entrySet().stream()
+        .sorted(Comparator.comparingInt(e -> e.getValue().length() * -1)).collect(Collectors.toList());
+    for (int i = 0; i < Math.min(propsSortedByLength.size(), 10); i++) { // print info about longest 10 of them
+      Entry<String, String> e = propsSortedByLength.get(i);
+      LOG.info("{}. '{}' size: {}", i + 1, e.getKey(), e.getValue().length());
+    }
+  }
+
   /**
    * Given two vertices and the configuration for the source vertex, createEdge
    * will create an Edge object that connects the two.
@@ -505,13 +532,10 @@ public class DagUtils {
       int numBuckets = edgeProp.getNumBuckets();
       CustomVertexConfiguration vertexConf =
               new CustomVertexConfiguration(numBuckets, tezWork.getVertexType(work));
-      DataOutputBuffer dob = new DataOutputBuffer();
-      vertexConf.write(dob);
+      UserPayload userPayload = createPayloadFromWritable(vertexConf);
       VertexManagerPluginDescriptor desc = VertexManagerPluginDescriptor.create(
           CustomPartitionVertex.class.getName());
-      byte[] userPayloadBytes = dob.getData();
-      ByteBuffer userPayload = ByteBuffer.wrap(userPayloadBytes);
-      desc.setUserPayload(UserPayload.create(userPayload));
+      desc.setUserPayload(userPayload);
       w.setVertexManagerPlugin(desc);
       break;
     }
@@ -569,10 +593,8 @@ public class DagUtils {
           EdgeManagerPluginDescriptor.create(CustomPartitionEdge.class.getName());
       CustomEdgeConfiguration edgeConf =
           new CustomEdgeConfiguration(edgeProp.getNumBuckets(), null);
-      DataOutputBuffer dob = new DataOutputBuffer();
-      edgeConf.write(dob);
-      byte[] userPayload = dob.getData();
-      edgeDesc.setUserPayload(UserPayload.create(ByteBuffer.wrap(userPayload)));
+      UserPayload userPayload = createPayloadFromWritable(edgeConf);
+      edgeDesc.setUserPayload(userPayload);
       return et2Conf.createDefaultCustomEdgeProperty(edgeDesc);
     case CUSTOM_SIMPLE_EDGE:
       assert partitionerClassName != null;
@@ -781,10 +803,7 @@ public class DagUtils {
           new CustomVertexConfiguration(mergeJoinWork.getMergeJoinOperator().getConf()
               .getNumBuckets(), vertexType, mergeJoinWork.getBigTableAlias(),
               mapWorkList.size() + 1, inputToBucketMap);
-      DataOutputBuffer dob = new DataOutputBuffer();
-      vertexConf.write(dob);
-      byte[] userPayload = dob.getData();
-      desc.setUserPayload(UserPayload.create(ByteBuffer.wrap(userPayload)));
+      desc.setUserPayload(createPayloadFromWritable(vertexConf));
       mergeVx.setVertexManagerPlugin(desc);
       return mergeVx;
     } else {
@@ -923,7 +942,7 @@ public class DagUtils {
         .setUserPayload(serializedConf), numTasks, getContainerResource(conf));
 
     map.setTaskEnvironment(getContainerEnvironment(conf, true));
-
+    printPayloadInsights(conf, serializedConf, map.getName());
     assert mapWork.getAliasToWork().keySet().size() == 1;
 
     // Add the actual source input
@@ -975,13 +994,13 @@ public class DagUtils {
     Utilities.createTmpDirs(conf, reduceWork);
 
     // create the vertex
+    UserPayload userPayload = TezUtils.createUserPayloadFromConf(conf);
     Vertex reducer = Vertex.create(reduceWork.getName(),
-        ProcessorDescriptor.create(ReduceTezProcessor.class.getName()).
-            setUserPayload(TezUtils.createUserPayloadFromConf(conf)),
+        ProcessorDescriptor.create(ReduceTezProcessor.class.getName()).setUserPayload(userPayload),
         reduceWork.isAutoReduceParallelism() ?
             reduceWork.getMaxReduceTasks() :
             reduceWork.getNumReduceTasks(), getContainerResource(conf));
-
+    printPayloadInsights(conf, userPayload, reducer.getName());
     reducer.setTaskEnvironment(getContainerEnvironment(conf, false));
     return reducer;
   }
