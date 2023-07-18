@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -119,6 +120,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
@@ -752,20 +754,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             (AlterTableExecuteSpec.ExpireSnapshotsSpec) executeSpec.getOperationParams();
         int numThreads = conf.getInt(HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.varname,
             HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.defaultIntVal);
-        if (numThreads > 0) {
-          LOG.info("Executing expire snapshots on iceberg table {} with {} threads", hmsTable.getCompleteName(),
-              numThreads);
-          final ExecutorService deleteExecutorService =
-              getDeleteExecutorService(hmsTable.getCompleteName(), numThreads);
-          try {
-            icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis())
-                .executeDeleteWith(deleteExecutorService).commit();
-          } finally {
-            deleteExecutorService.shutdown();
-          }
-        } else {
-          icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
-        }
+        expireSnapshot(icebergTable, expireSnapshotsSpec, numThreads);
         break;
       case SET_CURRENT_SNAPSHOT:
         AlterTableExecuteSpec.SetCurrentSnapshotSpec setSnapshotVersionSpec =
@@ -780,7 +769,51 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
-  private static ExecutorService getDeleteExecutorService(String completeName, int numThreads) {
+  private void expireSnapshot(Table icebergTable, AlterTableExecuteSpec.ExpireSnapshotsSpec expireSnapshotsSpec,
+      int numThreads) {
+    ExecutorService deleteExecutorService = null;
+    try {
+      if (numThreads > 0) {
+        LOG.info("Executing expire snapshots on iceberg table {} with {} threads", icebergTable.name(), numThreads);
+        deleteExecutorService = getDeleteExecutorService(icebergTable.name(), numThreads);
+      }
+      if (expireSnapshotsSpec.isExpireByIds()) {
+        expireSnapshotByIds(icebergTable, expireSnapshotsSpec.getIdsToExpire(), deleteExecutorService);
+      } else {
+        expireSnapshotOlderThanTimestamp(icebergTable, expireSnapshotsSpec.getTimestampMillis(), deleteExecutorService);
+      }
+    } finally {
+      if (deleteExecutorService != null) {
+        deleteExecutorService.shutdown();
+      }
+    }
+  }
+
+  private void expireSnapshotOlderThanTimestamp(Table icebergTable, Long timestamp,
+      ExecutorService deleteExecutorService) {
+    ExpireSnapshots expireSnapshots = icebergTable.expireSnapshots().expireOlderThan(timestamp);
+    if (deleteExecutorService != null) {
+      expireSnapshots.executeDeleteWith(deleteExecutorService);
+    }
+    expireSnapshots.commit();
+  }
+
+  private void expireSnapshotByIds(Table icebergTable, String[] idsToExpire,
+      ExecutorService deleteExecutorService) {
+    if (idsToExpire.length != 0) {
+      ExpireSnapshots expireSnapshots = icebergTable.expireSnapshots();
+      for (String id : idsToExpire) {
+        expireSnapshots.expireSnapshotId(Long.parseLong(id));
+      }
+      LOG.info("Expiring snapshot on {} for snapshot Ids: {}", icebergTable.name(), Arrays.toString(idsToExpire));
+      if (deleteExecutorService != null) {
+        expireSnapshots = expireSnapshots.executeDeleteWith(deleteExecutorService);
+      }
+      expireSnapshots.commit();
+    }
+  }
+
+  private ExecutorService getDeleteExecutorService(String completeName, int numThreads) {
     AtomicInteger deleteThreadsIndex = new AtomicInteger(0);
     return Executors.newFixedThreadPool(numThreads, runnable -> {
       Thread thread = new Thread(runnable);
