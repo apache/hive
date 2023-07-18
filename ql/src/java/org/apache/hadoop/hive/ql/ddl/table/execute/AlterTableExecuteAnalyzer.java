@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.execute;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.time.ZoneId;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ROLLBACK;
@@ -53,6 +55,8 @@ import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec
  */
 @DDLType(types = HiveParser.TOK_ALTERTABLE_EXECUTE)
 public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
+
+  private static final Pattern EXPIRE_SNAPSHOT_BY_ID_REGEX = Pattern.compile("\\d+(\\s*,\\s*\\d+)*");
 
   public AlterTableExecuteAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -89,8 +93,13 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
 
       ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
           .getLocalTimeZone();
-      TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(child.getText()), timeZone);
-      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
+      String childText = PlanUtils.stripQuotes(child.getText().trim());
+      if (EXPIRE_SNAPSHOT_BY_ID_REGEX.matcher(childText).matches()) {
+         spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(childText));
+      } else {
+        TimestampTZ time = TimestampTZUtil.parse(childText, timeZone);
+        spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
+      }
       desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
     } else if (HiveParser.KW_SET_CURRENT_SNAPSHOT == executeCommandType.getType()) {
       ASTNode child = (ASTNode) command.getChild(1);
