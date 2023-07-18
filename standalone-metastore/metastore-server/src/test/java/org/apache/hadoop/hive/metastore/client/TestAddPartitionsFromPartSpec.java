@@ -270,7 +270,8 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
       Assert.fail("MetaException should have been thrown.");
     } catch (MetaException e) {
       // Expected exception
-      System.out.println(e);
+      Assert.assertTrue(e.getMessage().contains(
+          "Partition does not belong to target table test_partition_db.test_add_part_table"));
     }
 
     List<String> partitionNames = client.listPartitionNames(DB_NAME, tableName, MAX);
