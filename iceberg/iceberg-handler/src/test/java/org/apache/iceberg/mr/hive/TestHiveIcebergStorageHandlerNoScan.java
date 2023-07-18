@@ -1880,16 +1880,16 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Path noExistedTblPath = new Path(dbManagedLocation + "/" + tableName);
     Path expectedTblPath = new Path(dbExternalLocation + "/" + tableName);
 
-    // Create a database with default location and managed location.
+    // Create a database with default external location and managed location.
     shell.executeStatement("CREATE DATABASE " + dBName);
 
-    // Create a managed iceberg table, and its location should on database managed location.
+    // Create a iceberg table without external keyword, and its location should on database external location.
     shell.executeStatement("CREATE TABLE " + dBName + "." + tableName + " (id int) STORED BY ICEBERG");
 
-    // table location whose parent path is database location should not exist.
+    // table location whose parent path is managed database location should not exist.
     Assert.assertFalse(noExistedTblPath.getFileSystem(shell.getHiveConf()).exists(noExistedTblPath));
 
-    // Check the iceberg table location, whose parent path should be database managed location.
+    // Check the iceberg table location, whose parent path should be database external location.
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(dBName, tableName);
     org.apache.iceberg.Table iceTable = testTables.loadTable(TableIdentifier.of(dBName, tableName));
     Path hmsTblLocation = new Path(hmsTable.getSd().getLocation());
@@ -1898,8 +1898,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Assert.assertTrue(expectedTblPath.toString().equalsIgnoreCase(iceTable.location()));
 
     shell.executeStatement("DROP TABLE " + dBName + "." + tableName);
-    // managed table location should not exist any more if table is dropped.
-    Assert.assertFalse(hmsTblLocation.getFileSystem(shell.getHiveConf()).exists(hmsTblLocation));
+    // external table location should still exist if table is dropped as external.table.purge is default false.
+    Assert.assertTrue(hmsTblLocation.getFileSystem(shell.getHiveConf()).exists(hmsTblLocation));
   }
 
   private String getCurrentSnapshotForHiveCatalogTable(org.apache.iceberg.Table icebergTable) {

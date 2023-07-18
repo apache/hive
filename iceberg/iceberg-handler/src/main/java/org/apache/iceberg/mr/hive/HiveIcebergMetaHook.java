@@ -253,7 +253,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         if (org.apache.commons.lang3.StringUtils.isBlank(transformer)) {
           Map<String, String> params = Optional.ofNullable(hmsTable.getParameters()).orElse(Maps.newHashMap());
           params.put("EXTERNAL", "TRUE");
-          params.put(MetaStoreUtils.EXTERNAL_TABLE_PURGE, "TRUE");
           hmsTable.setParameters(params);
           hmsTable.setTableType(TableType.EXTERNAL_TABLE.toString());
         }
