@@ -222,7 +222,7 @@ public class ColStatsProcessor implements IStatsProcessor {
 
       start = System. currentTimeMillis();
       if (tbl != null && tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
-        boolean success = tbl.getStorageHandler().setColStatistics(tbl, colStats, colStatDesc);
+        boolean success = tbl.getStorageHandler().setColStatistics(tbl, colStats);
         if (!(tbl.isMaterializedView() || tbl.isView() || tbl.isTemporary())) {
           setOrRemoveColumnStatsAccurateProperty(db, tbl, colStatDesc.getColName(), success);
         }

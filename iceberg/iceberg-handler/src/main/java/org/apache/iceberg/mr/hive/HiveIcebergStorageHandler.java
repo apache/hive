@@ -90,7 +90,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
 import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
-import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -455,8 +454,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable, List<ColumnStatistics> colStats,
-      ColumnStatsDesc columnStatsDesc) {
+  public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable, List<ColumnStatistics> colStats) {
     Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     String snapshotId = String.format("%s-STATS-%d", tbl.name(), tbl.currentSnapshot().snapshotId());
     return writeColStats(colStats, tbl, snapshotId);
@@ -519,7 +517,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           Collectors.toMap(Pair::first, blobMetadataByteBufferPair -> SerializationUtils.deserialize(
               ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
       return collect.get(blobMetadata.get(0)).get(0);
-    } catch (IOException e) {
+    } catch (IOException | IndexOutOfBoundsException e) {
       LOG.warn(" Unable to read iceberg col stats from puffin files: ", e);
       return new ColumnStatistics();
     }

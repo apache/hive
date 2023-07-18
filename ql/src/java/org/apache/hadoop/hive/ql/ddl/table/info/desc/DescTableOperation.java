@@ -210,9 +210,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
         if (table.isNonNative() && table.getStorageHandler().canProvideColStatistics(table)) {
           List<ColumnStatisticsObj> colStatistics = table.getStorageHandler().getColStatistics(table);
-          if (!colStatistics.isEmpty()) {
-            colStats.addAll(colStatistics);
-          }
+          colStats.addAll(colStatistics);
         } else {
           colStats.addAll(context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(),
               tableName.getTable().toLowerCase(), colNames, false));

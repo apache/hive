@@ -273,8 +273,7 @@ public interface HiveStorageHandler extends Configurable {
    * @param colStats
    * @return boolean
    */
-  default boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table table,
-      List<ColumnStatistics> colStats, ColumnStatsDesc columnStatisticsDesc) {
+  default boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table table, List<ColumnStatistics> colStats) {
     return false;
   }
 
