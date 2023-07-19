@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.hive</groupId>
   <artifactId>patched-iceberg-core</artifactId>
-  <version>patched-${iceberg.version}-${project.parent.version}</version>
+  <version>patched-1.3.0-4.0.0-beta-1-SNAPSHOT</version>
   <name>Patched Iceberg Core</name>
   <!-- Temporary package until we need unreleased Iceberg changes for development purposes. -->
   <!-- We should periodically clean this package during rebasing to newer Iceberg releases. -->
