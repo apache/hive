@@ -2632,10 +2632,35 @@ public class CalcitePlanner extends SemanticAnalyzer {
             }
             namedColumns.add(columnName);
 
-            // In case of multiple joins, leftTableAlias can be null
-            // as for the second join, the left side is a join token
+            /*
+              In case of multiple joins, leftTableAlias can be null
+              as for the second join, the left side is a join token.
+
+              For example, if we have 3 tables with the following schemas:
+                    t1 - (a), t2 - (a, b), t3 - (a, b, c)
+              and we were trying to run the following query:
+                    select * from t1
+                    join t2 using(a)
+                    join t3 using(a);
+              For the second join, since left side is a join, leftTableAlias is null, and we have
+              to choose the correct alias to use from leftRR. Here we are choosing the rightmost
+              table containing column a, i.e., t2 and not t1.
+
+              And, for the query:
+                    select * from t2
+                    join t1 using(a)
+                    join t3 using(b);
+              For the second join, leftTableAlias is again null, and the rightmost table containing
+              column b is t2 as b is not present in t1.
+             */
             if (leftTableAlias == null) {
-              leftTableAlias = getLeftTableAlias(leftRR, columnName);
+              leftTableAlias = leftRR.getTableAliasContainingColumn(columnName);
+            }
+            // if it's still null, throw an exception as column is not present
+            // in left row resolver
+            if (leftTableAlias == null) {
+              throw new SemanticException("column '" + columnName +
+                  "' not present in any of these tables: " + leftRR.getTableNames());
             }
 
             ASTNode left = ASTBuilder.qualifiedName(leftTableAlias, columnName);
@@ -2800,58 +2825,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       relToHiveColNameCalcitePosMap.put(topRel, buildHiveToCalciteColumnMap(topRR));
       relToHiveRR.put(topRel, topRR);
       return topRel;
-    }
-
-    /**
-     * This method searches for columnName in the left row resolver tables, and returns
-     * the right most tableAlias containing the column.
-     *
-     * For example, if we have 3 tables with the following schemas:
-     * <p><b>t1 - (a), t2 - (a, b), t3 - (a, b, c)</b></p>
-     *
-     * and we were trying to run the following query:
-     * <p>
-     * <b>select * from t1
-     * join t2 using(a)
-     * join t3 using(a);
-     * </b>
-     * </p>
-     * For the second join, this method will return t2 instead of t1 as t2 is the rightmost table
-     * containing column a.
-     *
-     * And, for the query:
-     * <p>
-     * <b>
-     * select * from t2
-     * join t1 using(a)
-     * join t3 using(b);
-     * </b>
-     * </p>
-     *
-     * For the second join, this method will return t2 (which is the first table on the left) as column
-     * b is in t2 and not t1.
-     *
-     * @param leftRR left RowResolver
-     * @param columnName name of the column in the using clause
-     * @return leftTableAlias
-     * @throws SemanticException SemanticException is thrown when columnName is not present
-     * in any table
-     */
-    private String getLeftTableAlias(RowResolver leftRR, String columnName) throws SemanticException {
-      String result = null;
-
-      for (Map.Entry<String, Map<String, ColumnInfo>> entry: leftRR.getRslvMap().entrySet()) {
-        if (entry.getValue().containsKey(columnName)) {
-          result = entry.getKey();
-        }
-      }
-
-      if (result == null) {
-        throw new SemanticException("column '" + columnName +
-            "' not present in any of these tables: " + leftRR.getTableNames());
-      }
-
-      return result;
     }
 
     /**

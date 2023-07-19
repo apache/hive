@@ -25,7 +25,7 @@ select * from test t1
 join test t2 using(a)
 join test t3 using(a);
 
-explain extended select * from test t1
+explain cbo select * from test t1
 join test t2 using(a)
 join test t3 using(a);
 
@@ -34,7 +34,7 @@ select * from test1 t1
 join test1 t2 using(a)
 join test1 t3 using(b);
 
-explain extended select * from test1 t1
+explain cbo select * from test1 t1
 join test1 t2 using(a)
 join test1 t3 using(b);
 
@@ -43,7 +43,7 @@ select * from test1 t1
 join test t2 using(a)
 join test2 t3 using(b);
 
-explain extended select * from test1 t1
+explain cbo select * from test1 t1
 join test t2 using(a)
 join test2 t3 using(b);
 
@@ -52,7 +52,7 @@ join test1 t2 using(a)
 join test2 t3 using(b)
 join test2 t4 using(c);
 
-explain extended select * from test t1
+explain cbo select * from test t1
 join test1 t2 using(a)
 join test2 t3 using(b)
 join test2 t4 using(c);
@@ -62,7 +62,7 @@ join test2 t2 using(a, b)
 join test2 t3 using(c, b)
 join test t4 using(a);
 
-explain extended select * from test1 t1
+explain cbo select * from test1 t1
 join test2 t2 using(a, b)
 join test2 t3 using(c, b)
 join test t4 using(a);
