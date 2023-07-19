@@ -22,7 +22,9 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.orc.TypeDescription;
@@ -63,6 +65,8 @@ public class OrcFileMergeOperator extends
   private Reader reader;
   private FSDataInputStream fdis;
 
+  protected FileSystem inputFS;
+
   /** Kryo ctor. */
   protected OrcFileMergeOperator() {
     super();
@@ -76,6 +80,26 @@ public class OrcFileMergeOperator extends
   public void process(Object row, int tag) throws HiveException {
     Object[] keyValue = (Object[]) row;
     processKeyValuePairs(keyValue[0], keyValue[1]);
+  }
+
+  public FileSystem getInputFileSystem() throws IOException {
+    synchronized (this) {
+      if (inputFS == null) {
+        inputFS = fs;
+        String inputDir = jc.get("mapreduce.input.fileinputformat.inputdir", "");
+        if (!StringUtils.isEmpty(inputDir)) {
+          int schemaIndex = inputDir.indexOf("://");
+          if (schemaIndex >= 0) {
+            String inputScheme = inputDir.substring(0, schemaIndex);
+            if (!inputScheme.equals(fs.getScheme())) {
+              LOG.warn("input fs scheme {} not equal output fs scheme {}", inputScheme, fs.getScheme());
+              inputFS = new Path(inputDir).getFileSystem(jc);
+            }
+          }
+        }
+      }
+      return inputFS;
+    }
   }
 
   private void processKeyValuePairs(Object key, Object value)
@@ -109,7 +133,7 @@ public class OrcFileMergeOperator extends
 
       if (prevPath == null) {
         prevPath = k.getInputPath();
-        reader = OrcFile.createReader(fs, k.getInputPath());
+        reader = OrcFile.createReader(getInputFileSystem(), k.getInputPath());
         LOG.info("ORC merge file input path: " + k.getInputPath());
       }
 
@@ -157,12 +181,12 @@ public class OrcFileMergeOperator extends
         if (reader != null) {
           reader.close();
         }
-        reader = OrcFile.createReader(fs, k.getInputPath());
+        reader = OrcFile.createReader(getInputFileSystem(), k.getInputPath());
       }
 
       // initialize buffer to read the entire stripe
       byte[] buffer = new byte[(int) v.getStripeInformation().getLength()];
-      fdis = fs.open(k.getInputPath());
+      fdis = getInputFileSystem().open(k.getInputPath());
       fdis.readFully(v.getStripeInformation().getOffset(), buffer, 0,
           (int) v.getStripeInformation().getLength());
 
