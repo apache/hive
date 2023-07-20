@@ -101,6 +101,7 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_A
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_LEGACY_CONFIG;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
@@ -111,6 +112,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMEN
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTLT;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
@@ -2256,9 +2258,19 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }
 
-    if (tbl.getParameters() != null) {
-      tbl.getParameters().remove(TABLE_IS_CTAS);
-      tbl.getParameters().remove(TABLE_IS_CTLT);
+    Map<String, String> params = tbl.getParameters();
+    if (params != null) {
+      params.remove(TABLE_IS_CTAS);
+      params.remove(TABLE_IS_CTLT);
+      String txnal = params.get(TABLE_IS_TRANSACTIONAL);
+      boolean create_always_as_external = params.containsKey(CTAS_LEGACY_CONFIG) && params.get(CTAS_LEGACY_CONFIG)
+          .equalsIgnoreCase("true") ? true : false;
+      if (create_always_as_external && (txnal == null || txnal.equalsIgnoreCase("FALSE"))
+          && !"TRUE".equals(params.get("EXTERNAL"))) {
+        params.put("EXTERNAL", "TRUE");
+        tbl.setTableType(TableType.EXTERNAL_TABLE.toString());
+      }
+      params.remove(CTAS_LEGACY_CONFIG);
     }
 
     // If the given table has column statistics, save it here. We will update it later.

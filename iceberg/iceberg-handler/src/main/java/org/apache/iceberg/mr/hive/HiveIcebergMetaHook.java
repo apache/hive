@@ -36,7 +36,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -45,7 +44,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -179,7 +177,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
 
     // Make sure the created iceberg table location on external warehouse location
-    checkAndSetTblLocation(hmsTable);
+    if (Catalogs.hiveCatalog(conf, catalogProperties) && !TableType.EXTERNAL_TABLE.toString()
+        .equals(hmsTable.getTableType())) {
+      hmsTable.getParameters().put(hive_metastoreConstants.CTAS_LEGACY_CONFIG, "true");
+    }
 
     if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
       if (Boolean.parseBoolean(this.catalogProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
@@ -233,37 +234,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     // Set whether the format is ORC, to be used during vectorization.
     setOrcOnlyFilesParam(hmsTable);
-  }
-
-  /**
-   * If iceberg table to be created has neither EXTERNAL keyword nor specified location, we should firstly
-   * check transform MetastoreConf.ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS. If transformer is set,
-   * let it determine table's location; otherwise, we should set table's type to EXTERNAL to make sure
-   * iceberg table on external location.
-   * @param hmsTable table is to be created
-   */
-  private void checkAndSetTblLocation(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    HiveMetaStoreClient hmsClient = null;
-    if (Catalogs.hiveCatalog(conf, catalogProperties) && hmsTable.getSd().getLocation() == null &&
-        !TableType.EXTERNAL_TABLE.toString().equals(hmsTable.getTableType())) {
-      try {
-        hmsClient = new HiveMetaStoreClient(conf);
-        String transformer =
-            hmsClient.getMetaConf(MetastoreConf.ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS.getVarname());
-        if (org.apache.commons.lang3.StringUtils.isBlank(transformer)) {
-          Map<String, String> params = Optional.ofNullable(hmsTable.getParameters()).orElse(Maps.newHashMap());
-          params.put("EXTERNAL", "TRUE");
-          hmsTable.setParameters(params);
-          hmsTable.setTableType(TableType.EXTERNAL_TABLE.toString());
-        }
-      } catch (Exception e) {
-        LOG.warn("Error determining default table path, cause:" + e.getMessage());
-      } finally {
-        if (hmsClient != null) {
-          hmsClient.close();
-        }
-      }
-    }
   }
 
   @Override
