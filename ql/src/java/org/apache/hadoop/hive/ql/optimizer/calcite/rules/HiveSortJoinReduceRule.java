@@ -114,10 +114,12 @@ public class HiveSortJoinReduceRule extends RelOptRule {
     RelNode inputRight = join.getRight();
 
     final RexBuilder rexBuilder = sortLimit.getCluster().getRexBuilder();
-    // We have to retain 0 ~ offset + limit because each task might not access the global offset
     final RexNode inputOffset = rexBuilder.makeExactLiteral(BigDecimal.valueOf(0));
     final int offset = sortLimit.offset == null ? 0 : RexLiteral.intValue(sortLimit.offset);
     final int limit = RexLiteral.intValue(sortLimit.fetch);
+    // LIMIT l OFFSET o without ORDER BY is semantically identical to LIMIT l when o + l <= # of total rows.
+    // However, in a distributed environment, each task processes only a subset of input data and is not aware of the
+    // final number of total rows. So, this rule pushes o + l to the upstream node.
     final RexNode inputLimit = rexBuilder.makeExactLiteral(BigDecimal.valueOf(offset + limit));
 
     // We create a new sort operator on the corresponding input
