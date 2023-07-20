@@ -57,9 +57,9 @@ public class ThriftHttpFilter implements Filter {
       LOG.debug("Is {} filtering Enabled : {}", X_CSRF_TOKEN, csrfFlag);
       LOG.debug("Is {} filtering Enabled : {}", X_XSRF_HEADER, xsrfFlag);
     }
-    if ((csrfFlag && Utils.doXsrfFilter(request, response, null, X_CSRF_TOKEN)) ||
-        (xsrfFlag && Utils.doXsrfFilter(request, response, null, X_XSRF_HEADER)) ||
-        (!xsrfFlag && !csrfFlag)) {
+    if ((!xsrfFlag && !csrfFlag) ||
+        (csrfFlag && Utils.doXsrfFilter(request, response, null, X_CSRF_TOKEN)) ||
+        (xsrfFlag && Utils.doXsrfFilter(request, response, null, X_XSRF_HEADER))) {
       filterChain.doFilter(request, response);
     } else {
       LOG.warn("Request did not have valid XSRF header/CSRF token, rejecting.");
