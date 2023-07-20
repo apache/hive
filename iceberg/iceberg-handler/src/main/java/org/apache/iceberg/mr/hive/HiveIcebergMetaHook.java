@@ -37,7 +37,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -175,12 +174,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     // Set the table type even for non HiveCatalog based tables
     hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
         BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
-
-    // Make sure the created iceberg table location on external warehouse location
-    if (Catalogs.hiveCatalog(conf, catalogProperties) && !TableType.EXTERNAL_TABLE.toString()
-        .equals(hmsTable.getTableType())) {
-      hmsTable.getParameters().put(hive_metastoreConstants.CTAS_LEGACY_CONFIG, "true");
-    }
 
     if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
       if (Boolean.parseBoolean(this.catalogProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
