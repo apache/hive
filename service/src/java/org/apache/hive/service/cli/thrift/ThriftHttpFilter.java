@@ -45,7 +45,7 @@ public class ThriftHttpFilter implements Filter {
 
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
-
+    // As of now no action is needed in this method
   }
 
   @Override
@@ -57,8 +57,8 @@ public class ThriftHttpFilter implements Filter {
       LOG.debug("Is {} filtering Enabled : {}", X_CSRF_TOKEN, csrfFlag);
       LOG.debug("Is {} filtering Enabled : {}", X_XSRF_HEADER, xsrfFlag);
     }
-    if (((csrfFlag && Utils.doXsrfFilter(request, response, null, X_CSRF_TOKEN))) ||
-        ((xsrfFlag && Utils.doXsrfFilter(request, response, null, X_XSRF_HEADER))) ||
+    if ((csrfFlag && Utils.doXsrfFilter(request, response, null, X_CSRF_TOKEN)) ||
+        (xsrfFlag && Utils.doXsrfFilter(request, response, null, X_XSRF_HEADER)) ||
         (!xsrfFlag && !csrfFlag)) {
       filterChain.doFilter(request, response);
     } else {
@@ -68,6 +68,6 @@ public class ThriftHttpFilter implements Filter {
 
   @Override
   public void destroy() {
-
+    // As of now no action is needed in this method
   }
 }
