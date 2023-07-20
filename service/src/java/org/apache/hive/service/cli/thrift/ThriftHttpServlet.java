@@ -113,10 +113,6 @@ public class ThriftHttpServlet extends TServlet {
   private static final String HIVE_DELEGATION_TOKEN_HEADER =  "X-Hive-Delegation-Token";
   private static final String X_FORWARDED_FOR = "X-Forwarded-For";
   private static final String AUTH_TYPE = "auth";
-
-  protected static final String X_CSRF_TOKEN = "X-CSRF-TOKEN";
-  protected static final String X_XSRF_HEADER = "X-XSRF-HEADER";
-
   private JWTValidator jwtValidator;
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
@@ -159,10 +155,6 @@ public class ThriftHttpServlet extends TServlet {
     logTrackingHeaderIfAny(request);
 
     try {
-      if (!approveOnFilter(request, response)) {
-        LOG.warn("Request did not have valid XSRF header/CSRF token, rejecting.");
-        return;
-      }
 
       clientIpAddress = request.getRemoteAddr();
       LOG.debug("Client IP Address: " + clientIpAddress);
@@ -310,34 +302,6 @@ public class ThriftHttpServlet extends TServlet {
       SessionManager.clearProxyUserName();
       SessionManager.clearForwardedAddresses();
     }
-  }
-
-  boolean approveOnFilter(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
-
-    boolean xsrfFlag = this.hiveConf.getBoolean(ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname, false);
-    boolean csrfFlag = this.hiveConf.getBoolean(ConfVars.HIVE_SERVER2_CSRF_FILTER_ENABLED.varname, false);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Is {} filtering Enabled : {}", X_CSRF_TOKEN, csrfFlag);
-      LOG.debug("Is {} filtering Enabled : {}", X_XSRF_HEADER, xsrfFlag);
-    }
-    if (!xsrfFlag && !csrfFlag) {
-      return true;
-    }
-
-    if (csrfFlag && Utils.doXsrfFilter(request, response, null, X_CSRF_TOKEN)) {
-      return true;
-    }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("{} does not exist in request", X_CSRF_TOKEN);
-    }
-    if (xsrfFlag && Utils.doXsrfFilter(request, response, null, X_XSRF_HEADER)) {
-      return true;
-    }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("{} does not exist in request", X_XSRF_HEADER);
-    }
-    return false;
   }
 
   private void logTrackingHeaderIfAny(HttpServletRequest request) {
