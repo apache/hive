@@ -19,7 +19,6 @@
 package org.apache.hive.hcatalog.listener;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -29,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +41,6 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient.NotificationFilter;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -57,7 +54,6 @@ import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -67,8 +63,6 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TxnType;
-import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -83,9 +77,6 @@ import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
-import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
-import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
-import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
@@ -93,7 +84,6 @@ import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
-import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
@@ -129,7 +119,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TestDbNotificationListener {
   private static final Logger LOG = LoggerFactory.getLogger(TestDbNotificationListener.class
-      .getName());
+          .getName());
   private static final int EVENTS_TTL = 30;
   private static final int CLEANUP_SLEEP_TIME = 10;
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
@@ -150,7 +140,7 @@ public class TestDbNotificationListener {
   private final String testTempDir = Paths.get(System.getProperty("java.io.tmpdir"), "testDbNotif").toString();
 
   private static List<String> testsToSkipForReplV1BackwardCompatTesting =
-      new ArrayList<>(Arrays.asList("cleanupNotifs", "cleanupNotificationWithError", "sqlTempTable"));
+          new ArrayList<>(Arrays.asList("cleanupNotifs", "cleanupNotificationWithError", "sqlTempTable"));
   // Make sure we skip backward-compat checking for those tests that don't generate events
 
   private static ReplicationV1CompatRule bcompat = null;
@@ -164,7 +154,7 @@ public class TestDbNotificationListener {
   // before the tests run, and will pick up an initialized value of bcompat.
 
   /* This class is used to verify that HiveMetaStore calls the non-transactional listeners with the
-    * current event ID set by the DbNotificationListener class */
+   * current event ID set by the DbNotificationListener class */
   public static class MockMetaStoreEventListener extends MetaStoreEventListener {
     private static Stack<Pair<EventType, String>> eventsIds = new Stack<>();
 
@@ -173,7 +163,7 @@ public class TestDbNotificationListener {
         Map<String, String> parameters = event.getParameters();
         if (parameters.containsKey(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
           Pair<EventType, String> pair =
-              new Pair<>(eventType, parameters.get(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME));
+                  new Pair<>(eventType, parameters.get(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME));
           eventsIds.push(pair);
         }
       }
@@ -276,7 +266,7 @@ public class TestDbNotificationListener {
   public static void connectToMetastore() throws Exception {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
-        DbNotificationListener.class.getName());
+            DbNotificationListener.class.getName());
     conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS, MockMetaStoreEventListener.class.getName());
     conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_DB_LISTENER_TTL, String.valueOf(EVENTS_TTL) + "s");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
@@ -285,7 +275,7 @@ public class TestDbNotificationListener {
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANUP_SLEEP_TIME, TimeUnit.SECONDS);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class.getName());
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+            "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(new CliSessionState(conf));
     msClient = new HiveMetaStoreClient(conf);
     driver = DriverFactory.newDriver(conf);
@@ -486,11 +476,11 @@ public class TestDbNotificationListener {
     cols.add(col1);
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
-            emptyParameters);
+            new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
+                    emptyParameters);
     Table table =
-        new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
+                    emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
     msClient.createTable(table);
 
     // Get notifications from metastore
@@ -516,8 +506,8 @@ public class TestDbNotificationListener {
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
     table =
-        new Table(tblName2, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, null);
+            new Table(tblName2, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
+                    emptyParameters, null, null, null);
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
       msClient.createTable(table);
@@ -542,18 +532,18 @@ public class TestDbNotificationListener {
     cols.add(col1);
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
-            emptyParameters);
+            new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
+                    emptyParameters);
     Table table =
-        new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd,
-            new ArrayList<FieldSchema>(), emptyParameters, null, null, null);
+            new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd,
+                    new ArrayList<FieldSchema>(), emptyParameters, null, null, null);
 
     // Event 1
     msClient.createTable(table);
     cols.add(col2);
     table =
-        new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd,
-            new ArrayList<FieldSchema>(), emptyParameters, null, null, null);
+            new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd,
+                    new ArrayList<FieldSchema>(), emptyParameters, null, null, null);
     // Event 2
     msClient.alter_table(defaultDbName, tblName, table);
 
@@ -601,11 +591,11 @@ public class TestDbNotificationListener {
     cols.add(col1);
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
-            emptyParameters);
+            new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
+                    emptyParameters);
     Table table =
-        new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, null);
+            new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
+                    emptyParameters, null, null, null);
 
     // Event 1
     msClient.createTable(table);
@@ -641,8 +631,8 @@ public class TestDbNotificationListener {
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
     table =
-        new Table(tblName2, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, null);
+            new Table(tblName2, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
+                    emptyParameters, null, null, null);
     msClient.createTable(table);
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
@@ -668,21 +658,21 @@ public class TestDbNotificationListener {
     cols.add(col1);
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
-            emptyParameters);
+            new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
+                    emptyParameters);
     FieldSchema partCol1 = new FieldSchema("ds", "string", "no comment");
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     List<String> partCol1Vals = Arrays.asList("today");
     partCols.add(partCol1);
     Table table =
-        new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
-            emptyParameters, null, null, null);
+            new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
+                    emptyParameters, null, null, null);
 
     // Event 1
     msClient.createTable(table);
     Partition partition =
-        new Partition(partCol1Vals, defaultDbName, tblName, startTime, startTime, sd,
-            emptyParameters);
+            new Partition(partCol1Vals, defaultDbName, tblName, startTime, startTime, sd,
+                    emptyParameters);
     // Event 2
     msClient.add_partition(partition);
 
@@ -712,8 +702,8 @@ public class TestDbNotificationListener {
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
     partition =
-        new Partition(Arrays.asList("tomorrow"), defaultDbName, tblName2, startTime, startTime, sd,
-            emptyParameters);
+            new Partition(Arrays.asList("tomorrow"), defaultDbName, tblName2, startTime, startTime, sd,
+                    emptyParameters);
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
       msClient.add_partition(partition);
@@ -737,26 +727,26 @@ public class TestDbNotificationListener {
     cols.add(col1);
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
-            emptyParameters);
+            new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
+                    emptyParameters);
     FieldSchema partCol1 = new FieldSchema("ds", "string", "no comment");
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     List<String> partCol1Vals = Arrays.asList("today");
     partCols.add(partCol1);
     Table table =
-        new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
-            emptyParameters, null, null, null);
+            new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
+                    emptyParameters, null, null, null);
 
     // Event 1
     msClient.createTable(table);
     Partition partition =
-        new Partition(partCol1Vals, defaultDbName, tblName, startTime, startTime, sd,
-            emptyParameters);
+            new Partition(partCol1Vals, defaultDbName, tblName, startTime, startTime, sd,
+                    emptyParameters);
     // Event 2
     msClient.add_partition(partition);
     Partition newPart =
-        new Partition(Arrays.asList("today"), defaultDbName, tblName, startTime, startTime + 1, sd,
-            emptyParameters);
+            new Partition(Arrays.asList("today"), defaultDbName, tblName, startTime, startTime + 1, sd,
+                    emptyParameters);
     // Event 3
     msClient.alter_partition(defaultDbName, tblName, newPart, null);
 
@@ -806,21 +796,21 @@ public class TestDbNotificationListener {
     cols.add(col1);
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
-            emptyParameters);
+            new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
+                    emptyParameters);
     FieldSchema partCol1 = new FieldSchema("ds", "string", "no comment");
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     List<String> partCol1Vals = Arrays.asList("today");
     partCols.add(partCol1);
     Table table =
-        new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
-            emptyParameters, null, null, null);
+            new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
+                    emptyParameters, null, null, null);
 
     // Event 1
     msClient.createTable(table);
     Partition partition =
-        new Partition(partCol1Vals, defaultDbName, tblName, startTime, startTime, sd,
-            emptyParameters);
+            new Partition(partCol1Vals, defaultDbName, tblName, startTime, startTime, sd,
+                    emptyParameters);
     // Event 2
     msClient.add_partition(partition);
     // Event 3
@@ -855,8 +845,8 @@ public class TestDbNotificationListener {
     // a failed event should not create a new notification
     List<String> newpartCol1Vals = Arrays.asList("tomorrow");
     partition =
-        new Partition(newpartCol1Vals, defaultDbName, tblName, startTime, startTime, sd,
-            emptyParameters);
+            new Partition(newpartCol1Vals, defaultDbName, tblName, startTime, startTime, sd,
+                    emptyParameters);
     msClient.add_partition(partition);
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
@@ -879,44 +869,44 @@ public class TestDbNotificationListener {
     partCols.add(new FieldSchema("part", "int", ""));
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd1 =
-        new StorageDescriptor(cols, Paths.get(testTempDir, "1").toString(), "input", "output", false, 0, serde, null,
-            null, emptyParameters);
+            new StorageDescriptor(cols, Paths.get(testTempDir, "1").toString(), "input", "output", false, 0, serde, null,
+                    null, emptyParameters);
     Table tab1 = new Table("tab1", dbName, "me", startTime, startTime, 0, sd1, partCols,
-        emptyParameters, null, null, null);
+            emptyParameters, null, null, null);
     msClient.createTable(tab1);
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize()); // add_table
 
     StorageDescriptor sd2 =
-        new StorageDescriptor(cols, Paths.get(testTempDir, "2").toString(), "input", "output", false, 0, serde, null,
-            null, emptyParameters);
+            new StorageDescriptor(cols, Paths.get(testTempDir, "2").toString(), "input", "output", false, 0, serde, null,
+                    null, emptyParameters);
     Table tab2 = new Table("tab2", dbName, "me", startTime, startTime, 0, sd2, partCols,
-        emptyParameters, null, null, null); // add_table
+            emptyParameters, null, null, null); // add_table
     msClient.createTable(tab2);
     rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
     assertEquals(1, rsp.getEventsSize());
 
     StorageDescriptor sd1part =
-        new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=1").toString(), "input", "output", false, 0,
-            serde, null, null, emptyParameters);
+            new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=1").toString(), "input", "output", false, 0,
+                    serde, null, null, emptyParameters);
     StorageDescriptor sd2part =
-        new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=2").toString(), "input", "output", false, 0,
-            serde, null, null, emptyParameters);
+            new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=2").toString(), "input", "output", false, 0,
+                    serde, null, null, emptyParameters);
     StorageDescriptor sd3part =
-        new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=3").toString(), "input", "output", false, 0,
-            serde, null, null, emptyParameters);
+            new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=3").toString(), "input", "output", false, 0,
+                    serde, null, null, emptyParameters);
     Partition part1 = new Partition(Arrays.asList("1"), "default", tab1.getTableName(),
-        startTime, startTime, sd1part, emptyParameters);
+            startTime, startTime, sd1part, emptyParameters);
     Partition part2 = new Partition(Arrays.asList("2"), "default", tab1.getTableName(),
-        startTime, startTime, sd2part, emptyParameters);
+            startTime, startTime, sd2part, emptyParameters);
     Partition part3 = new Partition(Arrays.asList("3"), "default", tab1.getTableName(),
-        startTime, startTime, sd3part, emptyParameters);
+            startTime, startTime, sd3part, emptyParameters);
     msClient.add_partitions(Arrays.asList(part1, part2, part3));
     rsp = msClient.getNextNotification(firstEventId + 2, 0, null);
     assertEquals(1, rsp.getEventsSize()); // add_partition
 
     msClient.exchange_partition(ImmutableMap.of("part", "1"),
-        dbName, tab1.getTableName(), dbName, tab2.getTableName());
+            dbName, tab1.getTableName(), dbName, tab2.getTableName());
 
     rsp = msClient.getNextNotification(firstEventId + 3, 0, null);
     assertEquals(2, rsp.getEventsSize());
@@ -977,8 +967,8 @@ public class TestDbNotificationListener {
     String funcResource = Paths.get(testTempDir, "somewhere").toString();
     String funcResource2 = Paths.get(testTempDir, "somewhere2").toString();
     Function func =
-        new Function(funcName, defaultDbName, funcClass, ownerName, PrincipalType.USER, startTime,
-            FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR, funcResource)));
+            new Function(funcName, defaultDbName, funcClass, ownerName, PrincipalType.USER, startTime,
+                    FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR, funcResource)));
     // Event 1
     msClient.createFunction(func);
 
@@ -1011,9 +1001,9 @@ public class TestDbNotificationListener {
     // a failed event should not create a new notification
     DummyRawStoreFailEvent.setEventSucceed(false);
     func =
-        new Function(funcName2, defaultDbName, funcClass2, ownerName, PrincipalType.USER,
-            startTime, FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR,
-                funcResource2)));
+            new Function(funcName2, defaultDbName, funcClass2, ownerName, PrincipalType.USER,
+                    startTime, FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR,
+                    funcResource2)));
     try {
       msClient.createFunction(func);
       fail("Error: create function should've failed");
@@ -1036,8 +1026,8 @@ public class TestDbNotificationListener {
     String funcResource = Paths.get(testTempDir, "somewhere").toString();
     String funcResource2 = Paths.get(testTempDir, "somewhere2").toString();
     Function func =
-        new Function(funcName, defaultDbName, funcClass, ownerName, PrincipalType.USER, startTime,
-            FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR, funcResource)));
+            new Function(funcName, defaultDbName, funcClass, ownerName, PrincipalType.USER, startTime,
+                    FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR, funcResource)));
     // Event 1
     msClient.createFunction(func);
     // Event 2
@@ -1064,9 +1054,9 @@ public class TestDbNotificationListener {
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
     func =
-        new Function(funcName2, defaultDbName, funcClass2, ownerName, PrincipalType.USER,
-            startTime, FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR,
-                funcResource2)));
+            new Function(funcName2, defaultDbName, funcClass2, ownerName, PrincipalType.USER,
+                    startTime, FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR,
+                    funcResource2)));
     msClient.createFunction(func);
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
@@ -1093,11 +1083,11 @@ public class TestDbNotificationListener {
     cols.add(col1);
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
-            emptyParameters);
+            new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
+                    emptyParameters);
     Table table =
-        new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, null);
+            new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
+                    emptyParameters, null, null, null);
     // Event 1
     msClient.createTable(table);
 
@@ -1155,8 +1145,8 @@ public class TestDbNotificationListener {
     cols.add(col1);
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
-            emptyParameters);
+            new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
+                    emptyParameters);
     FieldSchema partCol1 = new FieldSchema("ds", "string", "no comment");
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     List<String> partCol1Vals = Arrays.asList("today");
@@ -1165,13 +1155,13 @@ public class TestDbNotificationListener {
 
     partCols.add(partCol1);
     Table table =
-        new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
-            emptyParameters, null, null, null);
+            new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
+                    emptyParameters, null, null, null);
     // Event 1
     msClient.createTable(table);
     Partition partition =
-        new Partition(partCol1Vals, defaultDbName, tblName, startTime, startTime, sd,
-            emptyParameters);
+            new Partition(partCol1Vals, defaultDbName, tblName, startTime, startTime, sd,
+                    emptyParameters);
     // Event 2
     msClient.add_partition(partition);
     FireEventRequestData data = new FireEventRequestData();
@@ -1186,7 +1176,7 @@ public class TestDbNotificationListener {
     rqst.setPartitionVals(partCol1Vals);
     // Event 3
     verifyInsertEventReceived(defaultDbName, tblName, Arrays.asList(partKeyVals), rqst,
-        firstEventId + 3, 1);
+            firstEventId + 3, 1);
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 3);
@@ -1197,13 +1187,13 @@ public class TestDbNotificationListener {
     // fire multiple insert events on partition
     // add some more partitions
     partition =
-        new Partition(Arrays.asList("yesterday"), defaultDbName, tblName, startTime, startTime, sd,
-            emptyParameters);
+            new Partition(Arrays.asList("yesterday"), defaultDbName, tblName, startTime, startTime, sd,
+                    emptyParameters);
     // Event 4
     msClient.add_partition(partition);
     partition =
-        new Partition(Arrays.asList("tomorrow"), defaultDbName, tblName, startTime, startTime, sd,
-            emptyParameters);
+            new Partition(Arrays.asList("tomorrow"), defaultDbName, tblName, startTime, startTime, sd,
+                    emptyParameters);
     // Event 5
     msClient.add_partition(partition);
     data = new FireEventRequestData();
@@ -1239,8 +1229,8 @@ public class TestDbNotificationListener {
     rqst.setTableName(tblName);
 
     verifyInsertEventReceived(defaultDbName, tblName, Arrays
-        .asList(Arrays.asList("yesterday"), Arrays.asList("today"),
-            Arrays.asList("tomorrow")), rqst, firstEventId + 6, 3);
+            .asList(Arrays.asList("yesterday"), Arrays.asList("today"),
+                    Arrays.asList("tomorrow")), rqst, firstEventId + 6, 3);
 
     // negative test. partition values must be set when firing bulk insert events
     data.getInsertDatas().get(1).unsetPartitionVal();
@@ -1251,15 +1241,15 @@ public class TestDbNotificationListener {
       threwException = true;
       Assert.assertTrue(ex instanceof  MetaException);
       Assert.assertTrue(ex.getMessage()
-          .contains("Partition values must be set when firing multiple insert events"));
+              .contains("Partition values must be set when firing multiple insert events"));
     }
     Assert.assertTrue("bulk insert event API didn't "
-        + "throw exception when partition values were not set", threwException);
+            + "throw exception when partition values were not set", threwException);
   }
 
   private void verifyInsertEventReceived(String defaultDbName, String tblName,
-      List<List<String>> partKeyVals, FireEventRequest rqst, long expectedStartEventId,
-      int expectedNumOfEvents) throws Exception {
+                                         List<List<String>> partKeyVals, FireEventRequest rqst, long expectedStartEventId,
+                                         int expectedNumOfEvents) throws Exception {
     FireEventResponse response = msClient.fireListenerEvent(rqst);
     assertTrue("Event id must be set in the fireEvent response", response.isSetEventIds());
     Assert.assertNotNull(response.getEventIds());
@@ -1480,7 +1470,7 @@ public class TestDbNotificationListener {
     driver.run("insert into table " + tblName + " partition (ds) values (42, 'todaytwo')");
     // Event 22, 23, 24
     driver.run("insert overwrite table " + tblName + " partition(ds='todaytwo') select c from "
-        + tblName + " where 'ds'='today'");
+            + tblName + " where 'ds'='today'");
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
