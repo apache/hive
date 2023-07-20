@@ -452,7 +452,7 @@ public final class HiveUtils {
     return null;
   }
 
-  public static Boolean checkTableTag(String refName) {
+  public static Boolean isTableTag(String refName) {
     Matcher ref = TAG.matcher(refName);
     return ref.matches();
   }

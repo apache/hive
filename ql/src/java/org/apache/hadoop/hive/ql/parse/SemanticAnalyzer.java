@@ -2405,10 +2405,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         assert isTableWrittenTo :
             "Inconsistent data structure detected: we are writing to " + ts.tableHandle  + " in " +
                 name + " but it's not in isInsertIntoTable() or getInsertOverwriteTables()";
-        Boolean isTableTag = Optional.ofNullable(ts.tableHandle.getSnapshotRef()).map(HiveUtils::checkTableTag)
+        Boolean isTableTag = Optional.ofNullable(ts.tableHandle.getSnapshotRef()).map(HiveUtils::isTableTag)
             .orElse(false);
-        assert isTableWrittenTo && !isTableTag : "Don't support write (insert/delete/update/merge) to iceberg tag " +
-            HiveUtils.getTableSnapshotRef(ts.tableHandle.getSnapshotRef());
+        if (isTableTag) {
+          throw new UnsupportedOperationException("Don't support write (insert/delete/update/merge) to iceberg tag " +
+              HiveUtils.getTableSnapshotRef(ts.tableHandle.getSnapshotRef()));
+        }
         // Disallow update and delete on non-acid tables
         final boolean isWriteOperation = updating(name) || deleting(name);
         boolean isFullAcid = AcidUtils.isFullAcidTable(ts.tableHandle) ||

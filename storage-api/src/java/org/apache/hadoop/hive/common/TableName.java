@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.common;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * A container for a fully qualified table name, i.e. catalogname.databasename.tablename.  Also
@@ -31,8 +32,7 @@ public class TableName implements Serializable {
   /** Exception message thrown. */
   private static final String ILL_ARG_EXCEPTION_MSG =
       "Table name must be either <tablename>, <dbname>.<tablename> " + "or <catname>.<dbname>.<tablename>";
-  public static final String BRANCH_NAME_PREFIX = "branch_";
-  public static final String TAG_NAME_PREFIX = "tag_";
+  public static final Pattern SNAPSHOT_REF = Pattern.compile("(?:branch_|tag_)(.*)");
 
   /** Names of the related DB objects. */
   private final String cat;
@@ -92,7 +92,7 @@ public class TableName implements Serializable {
       if (names.length == 2) {
         return new TableName(defaultCatalog, names[0], names[1], null);
       } else if (names.length == 3) {
-        if (names[2].startsWith(BRANCH_NAME_PREFIX) || names[2].startsWith(TAG_NAME_PREFIX)) {
+        if (SNAPSHOT_REF.matcher(names[2]).matches()) {
           return new TableName(defaultCatalog, names[0], names[1], names[2]);
         } else {
           return new TableName(names[0], names[1], names[2], null);
