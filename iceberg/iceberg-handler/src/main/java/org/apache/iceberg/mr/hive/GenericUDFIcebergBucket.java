@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -155,6 +156,16 @@ public class GenericUDFIcebergBucket extends GenericUDF {
         evaluator = arg -> {
           DoubleWritable val = (DoubleWritable) converter.convert(arg.get());
           result.set(doubleTransform.apply(val.get()));
+        };
+        break;
+
+      case DATE:
+        converter = new PrimitiveObjectInspectorConverter.DateConverter(argumentOI,
+          PrimitiveObjectInspectorFactory.writableDateObjectInspector);
+        Transform<Integer, Integer> dateTransform = Transforms.bucket(Types.DateType.get(), numBuckets);
+        evaluator = arg -> {
+          DateWritableV2 val = (DateWritableV2) converter.convert(arg.get());
+          result.set(dateTransform.apply(val.get().toEpochDay()));
         };
         break;
 
