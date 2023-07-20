@@ -5459,6 +5459,7 @@ public class ObjectStore implements RawStore, Configurable {
     oldSd.getSerDeInfo().setSerializationLib(
         newSd.getSerDeInfo().getSerializationLib());
     oldSd.getSerDeInfo().setParameters(newSd.getSerDeInfo().getParameters());
+    oldSd.getSerDeInfo().setDescription(newSd.getSerDeInfo().getDescription());
     oldSd.setSkewedColNames(newSd.getSkewedColNames());
     oldSd.setSkewedColValues(newSd.getSkewedColValues());
     oldSd.setSkewedColValueLocationMaps(newSd.getSkewedColValueLocationMaps());
