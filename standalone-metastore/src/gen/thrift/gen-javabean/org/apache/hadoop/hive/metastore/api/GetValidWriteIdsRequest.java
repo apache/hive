@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetValidWriteIdsRequestTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> fullTableNames; // required
-  // isset id assignments
-  private static final int __WRITEID_ISSET_ID = 0;
-  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.WRITE_ID};
+  public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
 
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -37,17 +35,24 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   private @org.apache.thrift.annotation.Nullable java.lang.String validTxnList; // optional
+
+  // isset id assignments
+  private static final int __WRITEID_ISSET_ID = 0;
   private long writeId; // optional
+  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.WRITE_ID};
   private byte __isset_bitfield = 0;
-  public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public GetValidWriteIdsRequest() {
+  }
+
+  public GetValidWriteIdsRequest deepCopy() {
+    return new GetValidWriteIdsRequest(this);
+  }
+
   public GetValidWriteIdsRequest(
     java.util.List<java.lang.String> fullTableNames)
   {
     this();
     this.fullTableNames = fullTableNames;
-  }
-
-  public GetValidWriteIdsRequest() {
   }
 
   /**
@@ -65,20 +70,16 @@ package org.apache.hadoop.hive.metastore.api;
     this.writeId = other.writeId;
   }
 
+  public long getWriteId() {
+    return this.writeId;
+  }
+
   @Override
   public void clear() {
     this.fullTableNames = null;
     this.validTxnList = null;
     setWriteIdIsSet(false);
     this.writeId = 0;
-  }
-
-  public GetValidWriteIdsRequest deepCopy() {
-    return new GetValidWriteIdsRequest(this);
-  }
-
-  public long getWriteId() {
-    return this.writeId;
   }
 
   public int getFullTableNamesSize() {
@@ -143,6 +144,15 @@ package org.apache.hadoop.hive.metastore.api;
     if (!value) {
       this.validTxnList = null;
     }
+  }
+
+  @Override
+  public boolean equals(java.lang.Object that) {
+    if (that == null)
+      return false;
+    if (that instanceof GetValidWriteIdsRequest)
+      return this.equals((GetValidWriteIdsRequest)that);
+    return false;
   }
 
   public void setWriteId(long writeId) {
@@ -225,6 +235,11 @@ package org.apache.hadoop.hive.metastore.api;
     throw new java.lang.IllegalStateException();
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
+  }
+
   public boolean equals(GetValidWriteIdsRequest that) {
     if (that == null)
       return false;
@@ -259,15 +274,6 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     return true;
-  }
-
-  @Override
-  public boolean equals(java.lang.Object that) {
-    if (that == null)
-      return false;
-    if (that instanceof GetValidWriteIdsRequest)
-      return this.equals((GetValidWriteIdsRequest)that);
-    return false;
   }
 
   @Override
@@ -330,6 +336,24 @@ package org.apache.hadoop.hive.metastore.api;
     return 0;
   }
 
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    scheme(iprot).read(iprot, this);
+  }
+
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+    scheme(oprot).write(oprot, this);
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+    try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
   @Override
   public java.lang.String toString() {
     java.lang.StringBuilder sb = new java.lang.StringBuilder("GetValidWriteIdsRequest(");
@@ -362,29 +386,6 @@ package org.apache.hadoop.hive.metastore.api;
     return sb.toString();
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public _Fields fieldForId(int fieldId) {
-    return _Fields.findByThriftId(fieldId);
-  }
-
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-    scheme(iprot).read(iprot, this);
-  }
-
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-    scheme(oprot).write(oprot, this);
-  }
-
-  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
-    try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bitfield = 0;
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
-      throw new java.io.IOException(te);
-    }
-  }
-
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     if (!isSetFullTableNames()) {
@@ -414,6 +415,14 @@ package org.apache.hadoop.hive.metastore.api;
       for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
         byName.put(field.getFieldName(), field);
       }
+    }
+
+    private final short _thriftId;
+    private final java.lang.String _fieldName;
+
+    _Fields(short thriftId, java.lang.String fieldName) {
+      _thriftId = thriftId;
+      _fieldName = fieldName;
     }
 
     /**
@@ -449,14 +458,6 @@ package org.apache.hadoop.hive.metastore.api;
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByName(java.lang.String name) {
       return byName.get(name);
-    }
-
-    private final short _thriftId;
-    private final java.lang.String _fieldName;
-
-    _Fields(short thriftId, java.lang.String fieldName) {
-      _thriftId = thriftId;
-      _fieldName = fieldName;
     }
 
     public short getThriftFieldId() {
