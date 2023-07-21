@@ -6954,6 +6954,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Non-native acid tables should handle their own bucketing for updates/deletes
       if ((updating(dest) || deleting(dest)) && !AcidUtils.isNonNativeAcidTable(dest_tab, true)) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
+        sortCols = getPartitionColsFromBucketColsForUpdateDelete(input, false);
+        createSortOrderForUpdateDelete(sortCols, order, nullOrder);
         enforceBucketing = true;
       }
     }
