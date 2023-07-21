@@ -54,6 +54,7 @@ array_join
 array_max
 array_min
 array_slice
+array_union
 ascii
 asin
 assert_true
@@ -677,6 +678,7 @@ array_join
 array_max
 array_min
 array_slice
+array_union
 ascii
 asin
 assert_true
