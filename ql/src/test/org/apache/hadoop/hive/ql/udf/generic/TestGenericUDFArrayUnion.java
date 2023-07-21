@@ -104,13 +104,16 @@ public class TestGenericUDFArrayUnion {
     // Empty input arrays
     runAndVerify(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
     // Int & float arrays
-    UDFArgumentTypeException exception = Assert.assertThrows(UDFArgumentTypeException.class, () -> udf.initialize(new ObjectInspector[] { floatObjectInspector, intObjectInspector }));
+    UDFArgumentTypeException exception = Assert.assertThrows(UDFArgumentTypeException.class,
+        () -> udf.initialize(new ObjectInspector[] { floatObjectInspector, intObjectInspector }));
     Assert.assertEquals(GenericUDFArrayUnion.ERROR_NOT_COMPARABLE,exception.getMessage());
     // float and string arrays
-    exception = Assert.assertThrows(UDFArgumentTypeException.class, () -> udf.initialize(new ObjectInspector[] { floatObjectInspector, stringObjectInspector }));
+    exception = Assert.assertThrows(UDFArgumentTypeException.class,
+        () -> udf.initialize(new ObjectInspector[] { floatObjectInspector, stringObjectInspector }));
     Assert.assertEquals(GenericUDFArrayUnion.ERROR_NOT_COMPARABLE,exception.getMessage());
     // long and double arrays
-    exception = Assert.assertThrows(UDFArgumentTypeException.class, () -> udf.initialize(new ObjectInspector[] { longObjectInspector, doubleObjectInspector }));
+    exception = Assert.assertThrows(UDFArgumentTypeException.class,
+        () -> udf.initialize(new ObjectInspector[] { longObjectInspector, doubleObjectInspector }));
     Assert.assertEquals(GenericUDFArrayUnion.ERROR_NOT_COMPARABLE,exception.getMessage());
   }
 
@@ -124,7 +127,7 @@ public class TestGenericUDFArrayUnion {
 
     Object i1 = asList(new Text("aa1"), new Text("dd"), new Text("cc"), new Text("bb"));
     Object i2 = asList(new Text("aa2"), new Text("cc"), new Text("ba"), new Text("dd"));
-    Object i3 = asList(new Text("aa3"), new Text("cc"), new Text("dd"), new Text("ee"), new Text("bb"));
+    Object i3 = asList(new Text("aa3"), new Text("cc"), new Text("dd"), new Text("ee"));
     Object i4 = asList(new Text("aa4"), new Text("cc"), new Text("ddd"), new Text("bb"));
     List<Object> inputList = new ArrayList<>();
     inputList.add(i1);
@@ -151,16 +154,20 @@ public class TestGenericUDFArrayUnion {
                         PrimitiveObjectInspectorFactory.writableIntObjectInspector)))) };
     udf.initialize(inputOIs);
 
-    Object i1 = asList(new Text("a"), new DoubleWritable(3.1415), new DateWritableV2(Date.of(2015, 5, 26)),
+    Object i1 = asList(new Text("a"), new DoubleWritable(3.1415),
+        new DateWritableV2(Date.of(2015, 5, 26)),
         asList(new IntWritable(1), new IntWritable(3), new IntWritable(2), new IntWritable(4)));
 
-    Object i2 = asList(new Text("b"), new DoubleWritable(3.14), new DateWritableV2(Date.of(2015, 5, 26)),
+    Object i2 = asList(new Text("b"), new DoubleWritable(3.14),
+        new DateWritableV2(Date.of(2015, 5, 26)),
         asList(new IntWritable(1), new IntWritable(3), new IntWritable(2), new IntWritable(4)));
 
-    Object i3 = asList(new Text("a"), new DoubleWritable(3.1415), new DateWritableV2(Date.of(2015, 5, 25)),
+    Object i3 = asList(new Text("a"), new DoubleWritable(3.1415),
+        new DateWritableV2(Date.of(2015, 5, 25)),
         asList(new IntWritable(1), new IntWritable(3), new IntWritable(2), new IntWritable(5)));
 
-    Object i4 = asList(new Text("a"), new DoubleWritable(3.1415), new DateWritableV2(Date.of(2015, 5, 25)),
+    Object i4 = asList(new Text("a"), new DoubleWritable(3.1415),
+        new DateWritableV2(Date.of(2015, 5, 25)),
         asList(new IntWritable(1), new IntWritable(3), new IntWritable(2), new IntWritable(4)));
 
     List<Object> inputList = new ArrayList<>();

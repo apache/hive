@@ -59,7 +59,8 @@ public class GenericUDFArrayUnion extends AbstractGenericUDFArrayBase {
     return defaultOI;
   }
 
-  @Override public Object evaluate(DeferredObject[] arguments) throws HiveException {
+  @Override
+  public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object array = arguments[ARRAY_IDX].get();
     Object array2 = arguments[ARRAY2_IDX].get();
     if (array == null || array2 == null) {
