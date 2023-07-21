@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import java.math.BigDecimal;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelCollation;
@@ -26,7 +27,9 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexLiteral;
+import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -94,14 +97,13 @@ public class HiveSortJoinReduceRule extends RelOptRule {
     }
 
     // Finally, if we do not reduce the input size, we bail out
-    final int offset = sortLimit.offset == null ? 0 : RexLiteral.intValue(sortLimit.offset);
-    final RelMetadataQuery mq = call.getMetadataQuery();
-    if (offset + RexLiteral.intValue(sortLimit.fetch)
-            >= mq.getRowCount(reducedInput)) {
+    final long offset = sortLimit.offset == null ? 0 : RexLiteral.intValue(sortLimit.offset);
+    final long offsetPlusLimit = offset + RexLiteral.intValue(sortLimit.fetch);
+    if (offsetPlusLimit > Integer.MAX_VALUE) {
       return false;
     }
-
-    return true;
+    final RelMetadataQuery mq = call.getMetadataQuery();
+    return offsetPlusLimit < mq.getRowCount(reducedInput);
   }
 
   @Override
@@ -111,10 +113,19 @@ public class HiveSortJoinReduceRule extends RelOptRule {
     RelNode inputLeft = join.getLeft();
     RelNode inputRight = join.getRight();
 
+    final RexBuilder rexBuilder = sortLimit.getCluster().getRexBuilder();
+    final RexNode inputOffset = rexBuilder.makeExactLiteral(BigDecimal.valueOf(0));
+    final int offset = sortLimit.offset == null ? 0 : RexLiteral.intValue(sortLimit.offset);
+    final int limit = RexLiteral.intValue(sortLimit.fetch);
+    // LIMIT l OFFSET o without ORDER BY is semantically identical to LIMIT l when o + l <= # of total rows.
+    // However, in a distributed environment, each task processes only a subset of input data and is not aware of the
+    // final number of total rows. So, this rule pushes o + l to the upstream node.
+    final RexNode inputLimit = rexBuilder.makeExactLiteral(BigDecimal.valueOf(offset + limit));
+
     // We create a new sort operator on the corresponding input
     if (join.getJoinType() == JoinRelType.LEFT) {
       inputLeft = sortLimit.copy(sortLimit.getTraitSet(), inputLeft,
-              sortLimit.getCollation(), sortLimit.offset, sortLimit.fetch);
+              sortLimit.getCollation(), inputOffset, inputLimit);
       ((HiveSortLimit) inputLeft).setRuleCreated(true);
     } else {
       // Adjust right collation
@@ -123,7 +134,7 @@ public class HiveSortJoinReduceRule extends RelOptRule {
                   RelCollations.shift(sortLimit.getCollation(),
                       -join.getLeft().getRowType().getFieldCount()));
       inputRight = sortLimit.copy(sortLimit.getTraitSet().replace(rightCollation), inputRight,
-              rightCollation, sortLimit.offset, sortLimit.fetch);
+              rightCollation, inputOffset, inputLimit);
       ((HiveSortLimit) inputRight).setRuleCreated(true);
     }
     // We copy the join and the top sort operator
