@@ -165,7 +165,7 @@ public class GenericUDFIcebergBucket extends GenericUDF {
         Transform<Integer, Integer> dateTransform = Transforms.bucket(Types.DateType.get(), numBuckets);
         evaluator = arg -> {
           DateWritableV2 val = (DateWritableV2) converter.convert(arg.get());
-          result.set(dateTransform.apply(val.get().toEpochDay()));
+          result.set(dateTransform.apply(val.getDays()));
         };
         break;
 
