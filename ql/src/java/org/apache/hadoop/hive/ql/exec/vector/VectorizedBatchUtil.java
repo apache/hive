@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -69,6 +70,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
 
 public class VectorizedBatchUtil {
   private static final Logger LOG = LoggerFactory.getLogger(VectorizedBatchUtil.class);
@@ -998,5 +1001,17 @@ public class VectorizedBatchUtil {
       int index = (batch.selectedInUse ? batch.selected[i] : i);
       debugDisplayOneRow(batch, index, prefix);
     }
+  }
+
+  /**
+   * Reset all columns other than Partition columns
+   * @param rowBatch VectorizedRowBatch to reset
+   */
+  public static void resetNonPartitionColumns(VectorizedRowBatch rowBatch) {
+    List<Integer> columnsToReset = IntStream.concat(
+            IntStream.range(0, rowBatch.getDataColumnCount()),
+            IntStream.range(rowBatch.getDataColumnCount() + rowBatch.getPartitionColumnCount(), rowBatch.cols.length)
+    ).boxed().collect(toList());
+    rowBatch.reset(columnsToReset);
   }
 }
