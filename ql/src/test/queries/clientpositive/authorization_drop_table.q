@@ -1,25 +1,96 @@
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
+set hive.security.authorization.enabled=true;
+
+-- Drop table command for non-existing DB
+
+DROP TABLE auth_db.auth_permanent_table;
+
+-- Drop table command for non-existing DB
+
+DROP TABLE IF EXISTS auth_db.auth_permanent_table;
+
+-- Drop non-existing table with DB Drop Privileges
+
 set hive.security.authorization.enabled=false;
 
-Create database auth_drop_table;
-
-use auth_drop_table;
-
-create table drop_table_auth_1 (key int, value string) partitioned by (ds string);
-
-grant All on table drop_table_auth_1 to user hive_test_user;
-
-GRANT DROP ON DATABASE auth_drop_table TO USER hive_test_user;
-
-show grant user hive_test_user on table drop_table_auth_1;
-
-CREATE TEMPORARY TABLE drop_temp_table LIKE drop_table_auth_1;
+CREATE DATABASE auth_db;
+GRANT DROP ON DATABASE auth_db TO USER hive_test_user;
 
 set hive.security.authorization.enabled=true;
 
--- Drop table works fine as user has privs for both DB and table
-drop table if exists drop_table_auth_1;
+DROP TABLE auth_db.auth_permanent_table;
 
--- Dropping temporary table does not require authorization
-drop table if exists drop_temp_table;
+-- Drop non-existing table with IF EXISTS clause with DB Drop Privileges
 
+DROP TABLE IF EXISTS auth_db.auth_permanent_table;
+
+--- Create tables for test
+
+set hive.security.authorization.enabled=false;
+
+create table auth_db.drop_table_auth_1 (key int, value string) partitioned by (ds string);
+create table auth_db.drop_table_auth_2 (key int, value string);
+CREATE TEMPORARY TABLE auth_temp_table_1(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE;
+CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE;
+
+GRANT All on table auth_db.drop_table_auth_1 to user hive_test_user;
+GRANT All on table auth_db.drop_table_auth_2 to user hive_test_user;
+
+-- Drop existing regular table
+
+set hive.security.authorization.enabled=true;
+DROP TABLE auth_db.drop_table_auth_1;
+
+-- Drop existing regular table with IF EXISTS
+
+DROP TABLE IF EXISTS auth_db.drop_table_auth_2;
+
+-- Drop temporary table
+
+DROP TABLE auth_db.auth_temp_table_1;
+
+-- Drop temporary table with IF EXISTS
+
+DROP TABLE IF EXISTS auth_db.auth_temp_table_2;
+
+
+-- Drop non-existing table from current database
+
+set hive.security.authorization.enabled=false;
+
+CREATE DATABASE auth_db_1;
+use auth_db_1;
+GRANT DROP ON DATABASE auth_db_1 TO USER hive_test_user;
+
+create table drop_table_auth_3 (key int, value string) partitioned by (ds string);
+create table drop_table_auth_4 (key int, value string);
+CREATE TEMPORARY TABLE auth_temp_table_1(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE;
+CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE;
+
+
+GRANT All on table auth_db_1.drop_table_auth_4 to user hive_test_user;
+GRANT All on table auth_db_1.drop_table_auth_3 to user hive_test_user;
+
+set hive.security.authorization.enabled=true;
+
+DROP TABLE auth_temp_table;
+
+-- Drop non-existing table with IF EXISTS from current database
+
+DROP TABLE IF EXISTS auth_temp_table;
+
+-- Drop existing regular table from current database
+
+DROP TABLE drop_table_auth_3;
+
+-- Drop existing regular table with IF EXISTS from current database
+
+DROP TABLE IF EXISTS drop_table_auth_4;
+
+-- Drop temporary table from current database
+
+DROP TABLE auth_temp_table_1;
+
+-- Drop temporary table with IF EXISTS from current database
+
+DROP TABLE IF EXISTS auth_temp_table_2;
