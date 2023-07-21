@@ -6931,7 +6931,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean enforceBucketing = false;
     List<ExprNodeDesc> partnCols = new ArrayList<>();
     List<ExprNodeDesc> sortCols = new ArrayList<>();
-    List<Integer> sortOrders = new ArrayList<>();
     boolean multiFileSpray = false;
     int numFiles = 1;
     int totalFiles = 1;
