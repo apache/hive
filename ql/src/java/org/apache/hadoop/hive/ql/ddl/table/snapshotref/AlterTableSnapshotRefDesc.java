@@ -25,15 +25,15 @@ import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 
-@Explain(displayName = "CreateSnapshotRef Operation", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT,
+@Explain(displayName = "SnapshotRef Operation", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
-public class AlterTableCreateSnapshotRefDesc extends AbstractAlterTableDesc {
+public class AlterTableSnapshotRefDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
   protected AlterTableSnapshotRefSpec alterTableSnapshotRefSpec;
 
-  public AlterTableCreateSnapshotRefDesc(AlterTableType alterTableType, TableName tableName, AlterTableSnapshotRefSpec alterTableSnapshotRefSpec)
-      throws SemanticException {
+  public AlterTableSnapshotRefDesc(AlterTableType alterTableType, TableName tableName, AlterTableSnapshotRefSpec
+      alterTableSnapshotRefSpec) throws SemanticException {
     super(alterTableType, tableName, null, null, false, false, null);
     this.alterTableSnapshotRefSpec = alterTableSnapshotRefSpec;
   }

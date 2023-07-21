@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.iceberg.ManageSnapshots;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
@@ -62,5 +63,16 @@ public class IcebergBranchExec {
     }
 
     manageSnapshots.commit();
+  }
+
+  public static void dropBranch(Table table, AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropBranchSpec) {
+    String branchName = dropBranchSpec.getRefName();
+    Boolean ifExists = dropBranchSpec.getIfExists();
+
+    SnapshotRef snapshotRef = table.refs().get(branchName);
+    if (snapshotRef != null || !ifExists) {
+      LOG.info("Dropping branch {} on iceberg table {}", branchName, table.name());
+      table.manageSnapshots().removeBranch(branchName).commit();
+    }
   }
 }
