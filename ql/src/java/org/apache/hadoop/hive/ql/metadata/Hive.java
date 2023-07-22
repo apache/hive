@@ -1354,7 +1354,7 @@ public class Hive {
 
       if (isIcebergTable(tbl)) {
         EnvironmentContext envContext = new EnvironmentContext();
-        if (!TableType.EXTERNAL_TABLE.equals(tbl.getTableType())) {
+        if (TableType.MANAGED_TABLE.equals(tbl.getTableType())) {
           envContext.putToProperties(CTAS_LEGACY_CONFIG, Boolean.TRUE.toString());
         }
         if (isIcebergStatsSource(conf)) {

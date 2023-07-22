@@ -2262,7 +2262,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       params.remove(TABLE_IS_CTAS);
       params.remove(TABLE_IS_CTLT);
       if (MetaStoreServerUtils.getBooleanEnvProp(envContext, CTAS_LEGACY_CONFIG) &&
-          !Boolean.parseBoolean(params.get("EXTERNAL"))) {
+          TableType.MANAGED_TABLE.toString().equals(tbl.getTableType())) {
         params.put("EXTERNAL", "TRUE");
         tbl.setTableType(TableType.EXTERNAL_TABLE.toString());
       }
