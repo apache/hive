@@ -2,9 +2,6 @@ set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.autho
 
 create table drop_table_auth_fail_2 (key int, value string);
 
-GRANT All on table drop_table_auth_fail_2 to user hive_test_user;
-
-
 -- Drop existing regular table with IF EXISTS WITHOUT DB Drop Privileges
 
 set hive.security.authorization.enabled=true;
