@@ -60,18 +60,6 @@ POSTHOOK: query: CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@auth_temp_table_2
-PREHOOK: query: GRANT All on table auth_db.drop_table_auth_1 to user hive_test_user
-PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: auth_db@drop_table_auth_1
-POSTHOOK: query: GRANT All on table auth_db.drop_table_auth_1 to user hive_test_user
-POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: auth_db@drop_table_auth_1
-PREHOOK: query: GRANT All on table auth_db.drop_table_auth_2 to user hive_test_user
-PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: auth_db@drop_table_auth_2
-POSTHOOK: query: GRANT All on table auth_db.drop_table_auth_2 to user hive_test_user
-POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: auth_db@drop_table_auth_2
 PREHOOK: query: DROP TABLE auth_db.drop_table_auth_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: auth_db@drop_table_auth_1
@@ -152,18 +140,6 @@ POSTHOOK: query: CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: auth_db_1@auth_temp_table_2
 POSTHOOK: Output: database:auth_db_1
-PREHOOK: query: GRANT All on table auth_db_1.drop_table_auth_4 to user hive_test_user
-PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: auth_db_1@drop_table_auth_4
-POSTHOOK: query: GRANT All on table auth_db_1.drop_table_auth_4 to user hive_test_user
-POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: auth_db_1@drop_table_auth_4
-PREHOOK: query: GRANT All on table auth_db_1.drop_table_auth_3 to user hive_test_user
-PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: auth_db_1@drop_table_auth_3
-POSTHOOK: query: GRANT All on table auth_db_1.drop_table_auth_3 to user hive_test_user
-POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: auth_db_1@drop_table_auth_3
 PREHOOK: query: DROP TABLE auth_temp_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:auth_db_1

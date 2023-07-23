@@ -33,9 +33,6 @@ create table auth_db.drop_table_auth_2 (key int, value string);
 CREATE TEMPORARY TABLE auth_temp_table_1(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE;
 CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE;
 
-GRANT All on table auth_db.drop_table_auth_1 to user hive_test_user;
-GRANT All on table auth_db.drop_table_auth_2 to user hive_test_user;
-
 -- Drop existing regular table
 
 set hive.security.authorization.enabled=true;
@@ -66,10 +63,6 @@ create table drop_table_auth_3 (key int, value string) partitioned by (ds string
 create table drop_table_auth_4 (key int, value string);
 CREATE TEMPORARY TABLE auth_temp_table_1(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE;
 CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE;
-
-
-GRANT All on table auth_db_1.drop_table_auth_4 to user hive_test_user;
-GRANT All on table auth_db_1.drop_table_auth_3 to user hive_test_user;
 
 set hive.security.authorization.enabled=true;
 
