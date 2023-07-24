@@ -708,6 +708,10 @@ public enum ETypeConverter {
             }
 
             @Override
+            public boolean hasDictionarySupport() {
+              return false;
+            }
+            @Override
             public void addInt(final int value) {
               addDecimal(value);
             }
