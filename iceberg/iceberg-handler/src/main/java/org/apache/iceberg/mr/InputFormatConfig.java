@@ -62,7 +62,7 @@ public class InputFormatConfig {
   public static final boolean CONFIG_SERIALIZATION_DISABLED_DEFAULT = true;
   public static final String OPERATION_TYPE_PREFIX = "iceberg.mr.operation.type.";
   public static final String OUTPUT_TABLES = "iceberg.mr.output.tables";
-  public static final String OUTPUT_TABLE_BRANCH = "iceberg.mr.output.table.branch";
+  public static final String OUTPUT_TABLE_SNAPSHOT_REF = "iceberg.mr.output.table.snapshot.ref";
   public static final String COMMIT_TABLE_THREAD_POOL_SIZE = "iceberg.mr.commit.table.thread.pool.size";
   public static final int COMMIT_TABLE_THREAD_POOL_SIZE_DEFAULT = 10;
   public static final String COMMIT_FILE_THREAD_POOL_SIZE = "iceberg.mr.commit.file.thread.pool.size";

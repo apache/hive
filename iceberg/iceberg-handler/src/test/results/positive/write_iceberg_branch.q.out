@@ -57,7 +57,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: ice01
-          branch name: branch_test1
+          Snapshot ref: branch_test1
           Select Operator
             expressions: a (type: int), b (type: string), c (type: int)
             outputColumnNames: _col0, _col1, _col2
@@ -235,8 +235,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ice01
-                  branch name: branch_test1
                   filterExpr: (a = 22) (type: boolean)
+                  Snapshot ref: branch_test1
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (a = 22) (type: boolean)
@@ -333,8 +333,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ice01
-                  branch name: branch_test1
                   filterExpr: (c = 66) (type: boolean)
+                  Snapshot ref: branch_test1
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c = 66) (type: boolean)
@@ -483,8 +483,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ice01
-                  branch name: branch_test1
                   filterExpr: a is not null (type: boolean)
+                  Snapshot ref: branch_test1
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -854,7 +854,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ice01
-                  branch name: branch_test1
+                  Snapshot ref: branch_test1
                   Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: a (type: int), b (type: string), c (type: int)

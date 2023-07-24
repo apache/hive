@@ -433,7 +433,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     FilesForCommit writeResults = collectResults(
         numTasks, executor, outputTable.table.location(), jobContext, io, true);
-    String branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_BRANCH);
+    String branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
     if (!conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false)) {
       if (writeResults.isEmpty()) {
         LOG.info(
@@ -459,7 +459,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       AppendFiles write = table.newAppend();
       results.dataFiles().forEach(write::appendFile);
       if (StringUtils.isNotEmpty(branchName)) {
-        write.toBranch(HiveUtils.getTableBranch(branchName));
+        write.toBranch(HiveUtils.getTableSnapshotRef(branchName));
       }
       write.commit();
     } else {
@@ -467,7 +467,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       results.dataFiles().forEach(write::addRows);
       results.deleteFiles().forEach(write::addDeletes);
       if (StringUtils.isNotEmpty(branchName)) {
-        write.toBranch(HiveUtils.getTableBranch(branchName));
+        write.toBranch(HiveUtils.getTableSnapshotRef(branchName));
       }
       write.commit();
     }
@@ -493,7 +493,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       ReplacePartitions overwrite = table.newReplacePartitions();
       results.dataFiles().forEach(overwrite::addFile);
       if (StringUtils.isNotEmpty(branchName)) {
-        overwrite.toBranch(HiveUtils.getTableBranch(branchName));
+        overwrite.toBranch(HiveUtils.getTableSnapshotRef(branchName));
       }
       overwrite.commit();
       LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
@@ -502,7 +502,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       DeleteFiles deleteFiles = table.newDelete();
       deleteFiles.deleteFromRowFilter(Expressions.alwaysTrue());
       if (StringUtils.isNotEmpty(branchName)) {
-        deleteFiles.toBranch(HiveUtils.getTableBranch(branchName));
+        deleteFiles.toBranch(HiveUtils.getTableSnapshotRef(branchName));
       }
       deleteFiles.commit();
       LOG.info("Cleared table contents as part of empty overwrite for unpartitioned table. " +

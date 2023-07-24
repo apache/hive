@@ -682,12 +682,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     String location = commitProperties.getProperty(Catalogs.LOCATION);
-    String branchName = commitProperties.getProperty(Catalogs.BRANCH_NAME);
+    String snapshotRef = commitProperties.getProperty(Catalogs.SNAPSHOT_REF);
     Configuration configuration = SessionState.getSessionConf();
     if (location != null) {
       HiveTableUtil.cleanupTableObjectFile(location, configuration);
     }
-    List<JobContext> jobContextList = generateJobContext(configuration, tableName, branchName, overwrite);
+    List<JobContext> jobContextList = generateJobContext(configuration, tableName, snapshotRef, overwrite);
     if (jobContextList.isEmpty()) {
       return;
     }
@@ -856,14 +856,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public org.apache.hadoop.hive.ql.metadata.Table checkAndSetTableMetaRef(
       org.apache.hadoop.hive.ql.metadata.Table hmsTable, String tableMetaRef) throws SemanticException {
-    String branch = HiveUtils.getTableBranch(tableMetaRef);
-    if (branch != null) {
+    String refName = HiveUtils.getTableSnapshotRef(tableMetaRef);
+    if (refName != null) {
       Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-      if (tbl.snapshot(branch) != null) {
-        hmsTable.setBranchName(tableMetaRef);
+      if (tbl.snapshot(refName) != null) {
+        hmsTable.setSnapshotRef(tableMetaRef);
         return hmsTable;
       }
-      throw new SemanticException(String.format("Cannot use branch (does not exist): %s", branch));
+      throw new SemanticException(String.format("Cannot use snapshotRef (does not exist): %s", refName));
     }
     if (IcebergMetadataTables.isValidMetaTable(tableMetaRef)) {
       hmsTable.setMetaTable(tableMetaRef);
@@ -1375,7 +1375,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         // for multi-table inserts, this hook method will be called sequentially for each target table
         jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
         if (branchName != null) {
-          jobConf.set(InputFormatConfig.OUTPUT_TABLE_BRANCH, branchName);
+          jobConf.set(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF, branchName);
         }
 
         jobContextList.add(new JobContextImpl(jobConf, jobID, null));

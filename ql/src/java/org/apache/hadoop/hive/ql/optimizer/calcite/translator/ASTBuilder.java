@@ -31,7 +31,6 @@ import org.apache.calcite.util.TimeString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -83,8 +82,8 @@ public class ASTBuilder {
         .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
     if (hTbl.getHiveTableMD().getMetaTable() != null) {
       tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getMetaTable());
-    } else if (hTbl.getHiveTableMD().getBranchName() != null) {
-      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getBranchName());
+    } else if (hTbl.getHiveTableMD().getSnapshotRef() != null) {
+      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getSnapshotRef());
     }
 
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(tableNameBuilder);
