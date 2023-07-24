@@ -457,16 +457,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable, List<ColumnStatistics> colStats) {
     Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     String snapshotId = String.format("%s-STATS-%d", tbl.name(), tbl.currentSnapshot().snapshotId());
-    return writeColStats(colStats, tbl, snapshotId);
+    return writeColStats(colStats.get(0), tbl, snapshotId);
   }
 
-  private boolean writeColStats(List<ColumnStatistics> colStats, Table tbl, String snapshotId) {
+  private boolean writeColStats(ColumnStatistics tableColStats, Table tbl, String snapshotId) {
     try {
       boolean rewriteStats = removeColStatsIfExists(tbl);
       if (!rewriteStats) {
-        checkAndMergeColStats(colStats.get(0), tbl);
+        checkAndMergeColStats(tableColStats, tbl);
       }
-      byte[] serializeColStats = SerializationUtils.serialize((Serializable) colStats);
+      // Currently, we are only serializing table level stats.
+      byte[] serializeColStats = SerializationUtils.serialize(tableColStats);
       try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(getColStatsPath(tbl).toString()))
           .createdBy(Constants.HIVE_ENGINE).build()) {
         writer.add(new Blob(tbl.name() + "-" + snapshotId, ImmutableList.of(1), tbl.currentSnapshot().snapshotId(),
@@ -513,10 +514,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private ColumnStatistics readColStats(Table table, Path statsPath) {
     try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath.toString())).build()) {
       List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
-      Map<BlobMetadata, List<ColumnStatistics>> collect = Streams.stream(reader.readAll(blobMetadata)).collect(
+      Map<BlobMetadata, ColumnStatistics> collect = Streams.stream(reader.readAll(blobMetadata)).collect(
           Collectors.toMap(Pair::first, blobMetadataByteBufferPair -> SerializationUtils.deserialize(
               ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
-      return collect.get(blobMetadata.get(0)).get(0);
+      return collect.get(blobMetadata.get(0));
     } catch (IOException | IndexOutOfBoundsException e) {
       LOG.warn(" Unable to read iceberg col stats from puffin files: ", e);
       return new ColumnStatistics();
