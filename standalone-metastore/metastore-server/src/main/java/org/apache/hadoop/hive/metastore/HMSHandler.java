@@ -4055,6 +4055,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private List<Partition> add_partitions_core(final RawStore ms, String catName,
                                               String dbName, String tblName, List<Partition> parts, final boolean ifNotExists)
       throws TException {
+    if (dbName == null || tblName == null) {
+      throw new MetaException("The database and table name cannot be null.");
+    }
+
     boolean success = false;
     // Ensures that the list doesn't have dups, and keeps track of directories we have created.
     final Map<PartValEqWrapperLite, Boolean> addedPartitions = new ConcurrentHashMap<>();
