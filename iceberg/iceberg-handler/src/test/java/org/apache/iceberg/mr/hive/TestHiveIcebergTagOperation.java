@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
@@ -130,6 +131,47 @@ public class TestHiveIcebergTagOperation extends HiveIcebergStorageHandlerWithEn
         e = e.getCause();
       }
       Assert.assertTrue(e.getMessage().contains("Not an iceberg table"));
+    }
+  }
+
+  @Test
+  public void testQueryIcebergTag() throws IOException, InterruptedException {
+    Table table = testTables.createTableWithVersions(shell, "customers",
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    long firstSnapshotId = table.history().get(0).snapshotId();
+    table.manageSnapshots().createTag("testtag", firstSnapshotId).commit();
+    List<Object[]> rows =
+        shell.executeStatement("SELECT * FROM default.customers.tag_testtag");
+
+    Assert.assertEquals(3, rows.size());
+
+    try {
+      shell.executeStatement("insert into default.customers.tag_testtag values (0L, \"Alice\", \"Brown\")");
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Don't support write (insert/delete/update/merge) to iceberg tag"));
+    }
+
+    try {
+      shell.executeStatement("delete from default.customers.tag_testtag where customer_id=0L");
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Don't support write (insert/delete/update/merge) to iceberg tag"));
+    }
+
+    try {
+      shell.executeStatement("update default.customers.tag_testtag set customer_id=0L where customer_id=0L");
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Don't support write (insert/delete/update/merge) to iceberg tag"));
     }
   }
 }

@@ -998,8 +998,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       jobConf.set(TableScanDesc.FROM_VERSION, scanDesc.getVersionIntervalFrom());
     }
 
-    if (scanDesc.getBranchName() != null) {
-      jobConf.set(TableScanDesc.BRANCH_NAME, scanDesc.getBranchName());
+    if (scanDesc.getSnapshotRef() != null) {
+      jobConf.set(TableScanDesc.SNAPSHOT_REF, scanDesc.getSnapshotRef());
     }
   }
 
