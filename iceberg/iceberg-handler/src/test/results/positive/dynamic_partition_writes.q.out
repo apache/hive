@@ -14,6 +14,10 @@ PREHOOK: query: drop table if exists tbl_target_mixed
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists tbl_target_mixed
 POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists tbl_bucket_date
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_bucket_date
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: create external table tbl_src (a int, b string, c bigint) stored by iceberg stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -551,3 +555,44 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"USD","c_bucket":2}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:   ,2:USD,3:
        }	{1:   ,2:USD,3:
        }	NULL	[3]	NULL	0	{"a":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":6,"upper_bound":6},"c":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":10,"upper_bound":10},"ccy":{"column_size":12,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":"USD","upper_bound":"USD"}}
+PREHOOK: query: create external table tbl_bucket_date (id string, date_time_date date, year_partition int) 
+    partitioned by spec (year_partition, bucket(1, date_time_date))
+stored by iceberg stored as parquet 
+tblproperties ('parquet.compression'='snappy','format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_bucket_date
+POSTHOOK: query: create external table tbl_bucket_date (id string, date_time_date date, year_partition int) 
+    partitioned by spec (year_partition, bucket(1, date_time_date))
+stored by iceberg stored as parquet 
+tblproperties ('parquet.compression'='snappy','format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_bucket_date
+PREHOOK: query: insert into tbl_bucket_date values (88669, '2018-05-27', 2018), (40568, '2018-02-12', 2018), (40568, '2018-07-03', 2018)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_bucket_date
+POSTHOOK: query: insert into tbl_bucket_date values (88669, '2018-05-27', 2018), (40568, '2018-02-12', 2018), (40568, '2018-07-03', 2018)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_bucket_date
+PREHOOK: query: update tbl_bucket_date set date_time_date = '2018-07-02' where date_time_date = '2018-07-03'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_bucket_date
+PREHOOK: Output: default@tbl_bucket_date
+PREHOOK: Output: default@tbl_bucket_date
+POSTHOOK: query: update tbl_bucket_date set date_time_date = '2018-07-02' where date_time_date = '2018-07-03'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_bucket_date
+POSTHOOK: Output: default@tbl_bucket_date
+POSTHOOK: Output: default@tbl_bucket_date
+PREHOOK: query: select count(*) from tbl_bucket_date where date_time_date = '2018-07-02'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_bucket_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_bucket_date where date_time_date = '2018-07-02'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_bucket_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
