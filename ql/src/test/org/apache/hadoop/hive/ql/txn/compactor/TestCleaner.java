@@ -1155,10 +1155,7 @@ public class TestCleaner extends CompactorTest {
     startCleaner();
     txnHandler.abortTxn(new AbortTxnRequest(openTxnId));
 
-    ShowCompactRequest req = new ShowCompactRequest();
-    req.setOrder("CC_ID");
-    ShowCompactResponse rsp = txnHandler.showCompact(req);
-    
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(2, rsp.getCompactsSize());
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(1).getState());

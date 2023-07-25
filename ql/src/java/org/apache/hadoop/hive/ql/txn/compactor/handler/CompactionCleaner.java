@@ -90,7 +90,7 @@ class CompactionCleaner extends TaskHandler {
       // when min_history_level is finally dropped, than every HMS will commit compaction the new way
       // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
       return readyToClean.stream().map(ci -> {
-        long cleanerWaterMark = (ci.minOpenWriteId > 0) ? ci.nextTxnId + 1 : minTxnIdSeenOpen;
+        long cleanerWaterMark = (ci.minOpenWriteId >= 0) ? ci.nextTxnId + 1 : minTxnIdSeenOpen;
         LOG.info("Cleaning based on min open txn id: {}", cleanerWaterMark);
         return ThrowingRunnable.unchecked(() -> clean(ci, cleanerWaterMark, metricsEnabled));
       }).collect(Collectors.toList());
