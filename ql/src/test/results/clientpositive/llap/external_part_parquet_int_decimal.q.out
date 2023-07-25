@@ -1,5 +1,5 @@
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###   34965846 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: CREATE EXTERNAL TABLE `web_sales`(
   `ws_sold_time_sk` int,
   `ws_ship_date_sk` int,
@@ -40,7 +40,7 @@ ROW FORMAT SERDE
 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-PREHOOK: Input: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@web_sales
 POSTHOOK: query: CREATE EXTERNAL TABLE `web_sales`(
@@ -83,7 +83,7 @@ ROW FORMAT SERDE
 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Input: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@web_sales
 PREHOOK: query: MSCK REPAIR TABLE web_sales
@@ -98,12 +98,12 @@ PREHOOK: query: select * from web_sales limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@web_sales
 PREHOOK: Input: default@web_sales@ws_sold_date_sk=2451825
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from web_sales limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 POSTHOOK: Input: default@web_sales@ws_sold_date_sk=2451825
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 36228	2451934	193496	11011037	1079649	2308	2682120	8857028	895855	5556	2265368	758	5	1	18	1435	720421	38	24.97	50.18	16.05	1296.94	609.90	948.86	1906.84	29.76	237.86	877.04	372.04	401.80	1249.08	1278.84	-576.82	2451825
 36228	2451890	52490	11011037	1079649	2308	2682120	8857028	895855	5556	2265368	1313	1	6	17	795	720421	99	17.28	49.93	7.98	4153.05	790.02	1710.72	4943.07	39.50	0.00	2076.03	790.02	829.52	2866.05	2905.55	-920.70	2451825
 36228	2451897	192200	11011037	1079649	2308	2682120	8857028	895855	5556	2265368	2015	20	18	3	901	720421	77	23.79	62.09	27.31	2678.06	2102.87	1831.83	4780.93	39.74	1535.09	955.57	567.78	607.52	1523.35	1563.09	-1264.05	2451825

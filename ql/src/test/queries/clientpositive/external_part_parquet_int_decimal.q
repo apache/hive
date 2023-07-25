@@ -1,10 +1,10 @@
+dfs ${system:test.dfs.mkdir} -p ${system:test.tmp.dir}/hive27213/ws_sold_date_sk=2451825;
+dfs  -copyFromLocal ../../data/files/web_sales.parquet ${system:test.tmp.dir}/hive27213/ws_sold_date_sk=2451825;
+dfs -ls ${system:test.tmp.dir}/hive27213/ws_sold_date_sk=2451825;
+
 set hive.support.concurrency=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-
-dfs ${system:test.dfs.mkdir}  hdfs:///tmp/test/ws_sold_date_sk=2451825;
-dfs  -copyFromLocal ../../data/files/web_sales.parquet hdfs:///tmp/test/ws_sold_date_sk=2451825;
-dfs  -ls hdfs:///tmp/test/ws_sold_date_sk=2451825/;
 
 CREATE EXTERNAL TABLE `web_sales`(
   `ws_sold_time_sk` int,
@@ -44,7 +44,7 @@ PARTITIONED BY (
   `ws_sold_date_sk` int)
 ROW FORMAT SERDE
 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-STORED AS PARQUET LOCATION 'hdfs:///tmp/test/';
+STORED AS PARQUET LOCATION '${system:test.tmp.dir}/hive27213/';
 
 MSCK REPAIR TABLE web_sales;
 
