@@ -4439,8 +4439,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
 
     String catName = partSpecs.get(0).isSetCatName() ? partSpecs.get(0).getCatName() : getDefaultCatalog(conf);
-    String dbName = partSpecs.get(0).getDbName();
-    String tableName = partSpecs.get(0).getTableName();
+    String dbName = normalizeIdentifier(partSpecs.get(0).getDbName());
+    String tableName = normalizeIdentifier(partSpecs.get(0).getTableName());
     startTableFunction("add_partitions_pspec", catName, dbName, tableName);
 
     Integer ret = null;
@@ -4456,6 +4456,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       List<Partition> partitionsToAdd = new ArrayList<>(partitionSpecProxy.size());
       while (partitionIterator.hasNext()) {
         final Partition part = partitionIterator.getCurrent();
+        // Normalize dbName and tblName of each part
+        // to follow the case-insensitive behavior of replaced add_partitions_pspec_core
+        part.setDbName(normalizeIdentifier(part.getDbName()));
+        part.setTableName(normalizeIdentifier(part.getTableName()));
+
         partitionsToAdd.add(part);
         partitionIterator.next();
       }
