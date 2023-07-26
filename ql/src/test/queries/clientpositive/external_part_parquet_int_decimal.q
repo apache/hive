@@ -1,11 +1,6 @@
 dfs ${system:test.dfs.mkdir} -p ${system:test.tmp.dir}/hive27213/ws_sold_date_sk=2451825;
 dfs  -copyFromLocal ../../data/files/web_sales.parquet ${system:test.tmp.dir}/hive27213/ws_sold_date_sk=2451825;
 dfs -ls ${system:test.tmp.dir}/hive27213/ws_sold_date_sk=2451825;
-
-set hive.support.concurrency=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
-set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-
 CREATE EXTERNAL TABLE `web_sales`(
   `ws_sold_time_sk` int,
   `ws_ship_date_sk` int,
