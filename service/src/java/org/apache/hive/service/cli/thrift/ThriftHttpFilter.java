@@ -29,6 +29,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.FilterChain;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class ThriftHttpFilter implements Filter {
@@ -36,6 +37,9 @@ public class ThriftHttpFilter implements Filter {
   public static final Logger LOG = LoggerFactory.getLogger(ThriftHttpFilter.class.getName());
   protected static final String X_CSRF_TOKEN = "X-CSRF-TOKEN";
   protected static final String X_XSRF_HEADER = "X-XSRF-HEADER";
+
+  protected static final String ERROR_MESSAGE = "Request did not have valid XSRF header/CSRF token, rejecting.";
+
   protected HiveConf hiveConf;
 
   public ThriftHttpFilter(HiveConf hiveConf) {
@@ -62,7 +66,8 @@ public class ThriftHttpFilter implements Filter {
         (xsrfFlag && Utils.doXsrfFilter(request, response, null, X_XSRF_HEADER))) {
       filterChain.doFilter(request, response);
     } else {
-      LOG.warn("Request did not have valid XSRF header/CSRF token, rejecting.");
+      LOG.warn(ERROR_MESSAGE);
+      ((HttpServletResponse)response).sendError(HttpServletResponse.SC_FORBIDDEN, ERROR_MESSAGE);
     }
   }
 
