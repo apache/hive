@@ -80,9 +80,9 @@ Stage-3
                 <-Map 1 [SIMPLE_EDGE] vectorized
                   PARTITION_ONLY_SHUFFLE [RS_13]
                     PartitionCols:_col1
-                    Select Operator [SEL_12] (rows=22 width=91)
+                    Select Operator [SEL_12] (rows=22 width=87)
                       Output:["_col0","_col1"]
-                      TableScan [TS_0] (rows=22 width=91)
+                      TableScan [TS_0] (rows=22 width=87)
                         default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
@@ -94,7 +94,7 @@ Stage-3
                     PARTITION_ONLY_SHUFFLE [RS_16]
                       Group By Operator [GBY_15] (rows=1 width=400)
                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"]
-                        Select Operator [SEL_14] (rows=22 width=91)
+                        Select Operator [SEL_14] (rows=22 width=87)
                           Output:["a","ccy"]
                            Please refer to the previous Select Operator [SEL_12]
 
@@ -174,9 +174,9 @@ Stage-3
                 <-Map 1 [SIMPLE_EDGE] vectorized
                   PARTITION_ONLY_SHUFFLE [RS_13]
                     PartitionCols:iceberg_bucket(_col1, 2)
-                    Select Operator [SEL_12] (rows=22 width=91)
+                    Select Operator [SEL_12] (rows=22 width=87)
                       Output:["_col0","_col1"]
-                      TableScan [TS_0] (rows=22 width=91)
+                      TableScan [TS_0] (rows=22 width=87)
                         default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
@@ -188,7 +188,7 @@ Stage-3
                     PARTITION_ONLY_SHUFFLE [RS_16]
                       Group By Operator [GBY_15] (rows=1 width=400)
                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"]
-                        Select Operator [SEL_14] (rows=22 width=91)
+                        Select Operator [SEL_14] (rows=22 width=87)
                           Output:["a","ccy"]
                            Please refer to the previous Select Operator [SEL_12]
 
@@ -268,9 +268,9 @@ Stage-3
                 <-Map 1 [SIMPLE_EDGE] vectorized
                   PARTITION_ONLY_SHUFFLE [RS_13]
                     PartitionCols:_col1, iceberg_bucket(_col2, 3)
-                    Select Operator [SEL_12] (rows=22 width=99)
+                    Select Operator [SEL_12] (rows=22 width=94)
                       Output:["_col0","_col1","_col2"]
-                      TableScan [TS_0] (rows=22 width=99)
+                      TableScan [TS_0] (rows=22 width=94)
                         default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
@@ -282,7 +282,7 @@ Stage-3
                     PARTITION_ONLY_SHUFFLE [RS_16]
                       Group By Operator [GBY_15] (rows=1 width=568)
                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)"]
-                        Select Operator [SEL_14] (rows=22 width=99)
+                        Select Operator [SEL_14] (rows=22 width=94)
                           Output:["a","ccy","c"]
                            Please refer to the previous Select Operator [SEL_12]
 
@@ -407,7 +407,7 @@ Stage-3
                       Output:["_col0","_col1","_col2"]
                       Filter Operator [FIL_14] (rows=4 width=99)
                         predicate:(b = 'EUR')
-                        TableScan [TS_0] (rows=22 width=99)
+                        TableScan [TS_0] (rows=22 width=94)
                           default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
               Reducer 3 vectorized
               File Output Operator [FS_24]
@@ -465,7 +465,7 @@ Stage-3
                         Output:["_col0","_col1","_col2"]
                         Filter Operator [FIL_12] (rows=1 width=99)
                           predicate:((c = 100L) and (b = 'USD'))
-                          TableScan [TS_0] (rows=22 width=99)
+                          TableScan [TS_0] (rows=22 width=94)
                             default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
                     PARTITION_ONLY_SHUFFLE [RS_17]
                       Group By Operator [GBY_16] (rows=1 width=568)

@@ -208,9 +208,12 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         table.setParameters(tableProps);
       } else {
         cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
-        colStats.addAll(
-            context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(),
-                tableName.getTable().toLowerCase(), colNames, false));
+        if (table.isNonNative() && table.getStorageHandler().canProvideColStatistics(table)) {
+          colStats.addAll(table.getStorageHandler().getColStatistics(table));
+        } else {
+          colStats.addAll(context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(),
+              tableName.getTable().toLowerCase(), colNames, false));
+        }
       }
     } else {
       List<String> partitions = new ArrayList<String>();

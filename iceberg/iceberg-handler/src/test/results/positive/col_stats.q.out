@@ -96,7 +96,7 @@ avg_col_len         	3.4444444444444446
 max_col_len         	5                   
 num_trues           	                    
 num_falses          	                    
-bit_vector          	HL                  
+bit_vector          	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: update tbl_ice_puffin set b='two' where b='one' or b='three'

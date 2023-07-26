@@ -63,6 +63,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 public class ColStatsProcessor implements IStatsProcessor {
   private static transient final Logger LOG = LoggerFactory.getLogger(ColStatsProcessor.class);
 
