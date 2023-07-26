@@ -4439,8 +4439,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
 
     String catName = partSpecs.get(0).isSetCatName() ? partSpecs.get(0).getCatName() : getDefaultCatalog(conf);
-    String dbName = normalizeIdentifier(partSpecs.get(0).getDbName());
-    String tableName = normalizeIdentifier(partSpecs.get(0).getTableName());
+    String dbName = partSpecs.get(0).getDbName();
+    String tableName = partSpecs.get(0).getTableName();
     startTableFunction("add_partitions_pspec", catName, dbName, tableName);
 
     Integer ret = null;
@@ -4450,6 +4450,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (!partSpecs.get(0).isSetCatName()) {
         partSpecs.forEach(ps -> ps.setCatName(catName));
       }
+      dbName = normalizeIdentifier(dbName);
+      tableName = normalizeIdentifier(tableName);
+
       PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(partSpecs);
       final PartitionSpecProxy.PartitionIterator partitionIterator = partitionSpecProxy
               .getPartitionIterator();
