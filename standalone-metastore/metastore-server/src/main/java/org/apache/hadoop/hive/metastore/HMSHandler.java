@@ -4747,84 +4747,90 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean pathCreated = false;
     RawStore ms = getMS();
     ms.openTransaction();
-
-    Table destinationTable =
-        ms.getTable(
-            parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME], destTableName, null);
-    if (destinationTable == null) {
-      throw new MetaException( "The destination table " +
-          TableName.getQualified(parsedDestDbName[CAT_NAME],
-              parsedDestDbName[DB_NAME], destTableName) + " not found");
-    }
-    Table sourceTable =
-        ms.getTable(
-            parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME], sourceTableName, null);
-    if (sourceTable == null) {
-      throw new MetaException("The source table " +
-          TableName.getQualified(parsedSourceDbName[CAT_NAME],
-              parsedSourceDbName[DB_NAME], sourceTableName) + " not found");
-    }
-
-    List<String> partVals = MetaStoreUtils.getPvals(sourceTable.getPartitionKeys(),
-        partitionSpecs);
-    List<String> partValsPresent = new ArrayList<> ();
-    List<FieldSchema> partitionKeysPresent = new ArrayList<> ();
+    Table sourceTable = null;
+    Table destinationTable = null;
     int i = 0;
-    for (FieldSchema fs: sourceTable.getPartitionKeys()) {
-      String partVal = partVals.get(i);
-      if (partVal != null && !partVal.equals("")) {
-        partValsPresent.add(partVal);
-        partitionKeysPresent.add(fs);
-      }
-      i++;
-    }
-    // Passed the unparsed DB name here, as get_partitions_ps expects to parse it
-    List<Partition> partitionsToExchange = get_partitions_ps(sourceDbName, sourceTableName,
-        partVals, (short)-1);
-    if (partitionsToExchange == null || partitionsToExchange.isEmpty()) {
-      throw new MetaException("No partition is found with the values " + partitionSpecs
-          + " for the table " + sourceTableName);
-    }
-    boolean sameColumns = MetaStoreUtils.compareFieldColumns(
-        sourceTable.getSd().getCols(), destinationTable.getSd().getCols());
-    boolean samePartitions = MetaStoreUtils.compareFieldColumns(
-        sourceTable.getPartitionKeys(), destinationTable.getPartitionKeys());
-    if (!sameColumns || !samePartitions) {
-      throw new MetaException("The tables have different schemas." +
-          " Their partitions cannot be exchanged.");
-    }
-    Path sourcePath = new Path(sourceTable.getSd().getLocation(),
-        Warehouse.makePartName(partitionKeysPresent, partValsPresent));
-    Path destPath = new Path(destinationTable.getSd().getLocation(),
-        Warehouse.makePartName(partitionKeysPresent, partValsPresent));
+    Path sourcePath = null;
+    Path destPath = null;
     List<Partition> destPartitions = new ArrayList<>();
-
+    List<Partition> partitionsToExchange = new ArrayList<>();
     Map<String, String> transactionalListenerResponsesForAddPartition = Collections.emptyMap();
-    List<Map<String, String>> transactionalListenerResponsesForDropPartition =
-        Lists.newArrayListWithCapacity(partitionsToExchange.size());
+    List<Map<String, String>> transactionalListenerResponsesForDropPartition = new ArrayList<>();
+    try {
+      destinationTable =
+          ms.getTable(
+              parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME], destTableName, null);
+      if (destinationTable == null) {
+        throw new MetaException( "The destination table " +
+            TableName.getQualified(parsedDestDbName[CAT_NAME],
+                parsedDestDbName[DB_NAME], destTableName) + " not found");
+      }
+      sourceTable =
+          ms.getTable(
+              parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME], sourceTableName, null);
+      if (sourceTable == null) {
+        throw new MetaException("The source table " +
+            TableName.getQualified(parsedSourceDbName[CAT_NAME],
+                parsedSourceDbName[DB_NAME], sourceTableName) + " not found");
+      }
 
-    // Check if any of the partitions already exists in destTable.
-    List<String> destPartitionNames = ms.listPartitionNames(parsedDestDbName[CAT_NAME],
-        parsedDestDbName[DB_NAME], destTableName, (short) -1);
-    if (destPartitionNames != null && !destPartitionNames.isEmpty()) {
-      for (Partition partition : partitionsToExchange) {
-        String partToExchangeName =
-            Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues());
-        if (destPartitionNames.contains(partToExchangeName)) {
-          throw new MetaException("The partition " + partToExchangeName
-              + " already exists in the table " + destTableName);
+      List<String> partVals = MetaStoreUtils.getPvals(sourceTable.getPartitionKeys(),
+          partitionSpecs);
+      List<String> partValsPresent = new ArrayList<> ();
+      List<FieldSchema> partitionKeysPresent = new ArrayList<> ();
+      for (FieldSchema fs: sourceTable.getPartitionKeys()) {
+        String partVal = partVals.get(i);
+        if (partVal != null && !partVal.equals("")) {
+          partValsPresent.add(partVal);
+          partitionKeysPresent.add(fs);
+        }
+        i++;
+      }
+      // Passed the unparsed DB name here, as get_partitions_ps expects to parse it
+      partitionsToExchange = get_partitions_ps(sourceDbName, sourceTableName,
+          partVals, (short)-1);
+      if (partitionsToExchange == null || partitionsToExchange.isEmpty()) {
+        throw new MetaException("No partition is found with the values " + partitionSpecs
+            + " for the table " + sourceTableName);
+      }
+      boolean sameColumns = MetaStoreUtils.compareFieldColumns(
+          sourceTable.getSd().getCols(), destinationTable.getSd().getCols());
+      boolean samePartitions = MetaStoreUtils.compareFieldColumns(
+          sourceTable.getPartitionKeys(), destinationTable.getPartitionKeys());
+      if (!sameColumns || !samePartitions) {
+        throw new MetaException("The tables have different schemas." +
+            " Their partitions cannot be exchanged.");
+      }
+      sourcePath = new Path(sourceTable.getSd().getLocation(),
+          Warehouse.makePartName(partitionKeysPresent, partValsPresent));
+      destPath = new Path(destinationTable.getSd().getLocation(),
+          Warehouse.makePartName(partitionKeysPresent, partValsPresent));
+
+      transactionalListenerResponsesForDropPartition =
+          Lists.newArrayListWithCapacity(partitionsToExchange.size());
+
+      // Check if any of the partitions already exists in destTable.
+      List<String> destPartitionNames = ms.listPartitionNames(parsedDestDbName[CAT_NAME],
+          parsedDestDbName[DB_NAME], destTableName, (short) -1);
+      if (destPartitionNames != null && !destPartitionNames.isEmpty()) {
+        for (Partition partition : partitionsToExchange) {
+          String partToExchangeName =
+              Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues());
+          if (destPartitionNames.contains(partToExchangeName)) {
+            throw new MetaException("The partition " + partToExchangeName
+                + " already exists in the table " + destTableName);
+          }
         }
       }
-    }
 
-    Database srcDb = ms.getDatabase(parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME]);
-    Database destDb = ms.getDatabase(parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME]);
-    if (!HiveMetaStore.isRenameAllowed(srcDb, destDb)) {
-      throw new MetaException("Exchange partition not allowed for " +
-          TableName.getQualified(parsedSourceDbName[CAT_NAME],
-              parsedSourceDbName[DB_NAME], sourceTableName) + " Dest db : " + destDbName);
-    }
-    try {
+      Database srcDb = ms.getDatabase(parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME]);
+      Database destDb = ms.getDatabase(parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME]);
+      if (!HiveMetaStore.isRenameAllowed(srcDb, destDb)) {
+        throw new MetaException("Exchange partition not allowed for " +
+            TableName.getQualified(parsedSourceDbName[CAT_NAME],
+                parsedSourceDbName[DB_NAME], sourceTableName) + " Dest db : " + destDbName);
+      }
+
       for (Partition partition: partitionsToExchange) {
         Partition destPartition = new Partition(partition);
         destPartition.setDbName(parsedDestDbName[DB_NAME]);
