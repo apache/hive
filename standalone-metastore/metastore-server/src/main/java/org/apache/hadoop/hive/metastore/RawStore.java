@@ -399,7 +399,7 @@ public interface RawStore extends Configurable {
       throws InvalidObjectException, MetaException;
 
   /**
-   * Add a list of partitions to a table.
+   * @deprecated use {@link #addPartitions(String, String, String, List)} instead.
    * @param catName catalog name.
    * @param dbName database name.
    * @param tblName table name.
@@ -410,6 +410,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException The passed in partition spec or table specification is invalid.
    * @throws MetaException error writing to RDBMS.
    */
+  @Deprecated
   boolean addPartitions(String catName, String dbName, String tblName,
                         PartitionSpecProxy partitionSpec, boolean ifNotExists)
       throws InvalidObjectException, MetaException;
