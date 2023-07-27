@@ -1,7 +1,4 @@
-dfs ${system:test.dfs.mkdir} -p ${system:test.tmp.dir}/hive27213/ws_sold_date_sk=2451825;
-dfs  -copyFromLocal ../../data/files/web_sales.parquet ${system:test.tmp.dir}/hive27213/ws_sold_date_sk=2451825;
-dfs -ls ${system:test.tmp.dir}/hive27213/ws_sold_date_sk=2451825;
-CREATE EXTERNAL TABLE `web_sales`(
+CREATE TABLE `web_sales`(
   `ws_sold_time_sk` int,
   `ws_ship_date_sk` int,
   `ws_item_sk` int,
@@ -34,14 +31,7 @@ CREATE EXTERNAL TABLE `web_sales`(
   `ws_net_paid_inc_tax` decimal(7,2),
   `ws_net_paid_inc_ship` decimal(7,2),
   `ws_net_paid_inc_ship_tax` decimal(7,2),
-  `ws_net_profit` decimal(7,2))
-PARTITIONED BY (
-  `ws_sold_date_sk` int)
-ROW FORMAT SERDE
-'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-STORED AS PARQUET LOCATION '${system:test.tmp.dir}/hive27213/';
-
-MSCK REPAIR TABLE web_sales;
-
-
+  `ws_net_profit` decimal(7,2),
+  `ws_sold_date_sk` int) STORED AS PARQUET ;
+LOAD DATA LOCAL INPATH '../../data/files/web_sales.parquet' INTO TABLE web_sales;
 select * from web_sales limit 20;
