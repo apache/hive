@@ -347,31 +347,25 @@ final class HMSBenchmarks {
     String tableName = data.tableName;
 
     BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
-    List<Partition> newPartitions = new ArrayList<>();
     try {
       return bench.measure(
+          () -> addManyPartitionsNoException(client, dbName, tableName, null,
+              Collections.singletonList("d"), count),
           () -> throwingSupplierWrapper(() -> {
-            addManyPartitionsNoException(client, dbName, tableName, null,
-                Collections.singletonList("d"), count);
-            newPartitions.addAll(client.getPartitions(dbName, tableName));
+            List<Partition> newPartitions = client.getPartitions(dbName, tableName);
             newPartitions.forEach(p -> {
               p.getParameters().put("new_param", "param_val");
               p.getSd().setCols(Arrays.asList(new FieldSchema("new_col", "string", null)));
-              p.getSd().setLocation(p.getValues().toString());
             });
-            return newPartitions;
-          }),
-          () -> throwingSupplierWrapper(() -> {
             client.alterPartitions(dbName, tableName, newPartitions);
             return null;
-         }),
-          null
+          }),
+          () -> throwingSupplierWrapper(() ->
+              client.dropPartitions(dbName, tableName, null))
       );
-
     } finally {
       throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
     }
-
   }
 
   static DescriptiveStatistics benchmarkGetPartitionNames(@NotNull MicroBenchmark bench,
