@@ -819,7 +819,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private void startPartitionFunction(String function, String catName, String db, String tbl,
                                       Map<String, String> partName) {
     startFunction(function, " : tbl=" +
-        TableName.getQualified(catName, db, tbl) + "partition=" + partName);
+        TableName.getQualified(catName, db, tbl) + " partition=" + partName);
   }
 
   private void endFunction(String function, boolean successful, Exception e) {
@@ -4057,7 +4057,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private List<Partition> add_partitions_core(final RawStore ms, String catName,
                                               String dbName, String tblName, List<Partition> parts, final boolean ifNotExists)
       throws TException {
-    logAndAudit("add_partitions");
+    if (dbName == null || tblName == null) {
+      throw new MetaException("The database and table name cannot be null.");
+    }
+
     boolean success = false;
     // Ensures that the list doesn't have dups, and keeps track of directories we have created.
     final Map<PartValEqWrapperLite, Boolean> addedPartitions = new ConcurrentHashMap<>();
@@ -4370,23 +4373,28 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (request.getParts().isEmpty()) {
       return result;
     }
+    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
+    String dbName = request.getDbName();
+    String tblName = request.getTblName();
+    startTableFunction("add_partitions_req", catName, dbName, tblName);
+
+    Exception ex = null;
     try {
       if (!request.isSetCatName()) {
-        request.setCatName(getDefaultCatalog(conf));
+        request.setCatName(catName);
       }
-      // Make sure all of the partitions have the catalog set as well
-      request.getParts().forEach(p -> {
-        if (!p.isSetCatName()) {
-          p.setCatName(getDefaultCatalog(conf));
-        }
-      });
-      List<Partition> parts = add_partitions_core(getMS(), request.getCatName(), request.getDbName(),
-          request.getTblName(), request.getParts(), request.isIfNotExists());
+      // Make sure all the partitions have the catalog set as well
+      request.getParts().forEach(p -> p.setCatName(catName));
+      List<Partition> parts = add_partitions_core(getMS(),
+          catName, dbName, tblName, request.getParts(), request.isIfNotExists());
       if (request.isNeedResult()) {
         result.setPartitions(parts);
       }
     } catch (Exception e) {
+      ex = e;
       throw handleException(e).throwIfInstance(TException.class).defaultMetaException();
+    } finally {
+      endFunction("add_partitions_req", ex == null, ex, tblName);
     }
     return result;
   }
@@ -4394,26 +4402,25 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public int add_partitions(final List<Partition> parts) throws MetaException,
       InvalidObjectException, AlreadyExistsException {
-    startFunction("add_partition");
     if (parts == null) {
       throw new MetaException("Partition list cannot be null.");
     }
     if (parts.isEmpty()) {
       return 0;
     }
+    String catName = parts.get(0).isSetCatName() ? parts.get(0).getCatName() : getDefaultCatalog(conf);
+    String dbName = parts.get(0).getDbName();
+    String tableName = parts.get(0).getTableName();
+    startTableFunction("add_partitions", catName, dbName, tableName);
 
     Integer ret = null;
     Exception ex = null;
     try {
       // Old API assumed all partitions belong to the same table; keep the same assumption
       if (!parts.get(0).isSetCatName()) {
-        String defaultCat = getDefaultCatalog(conf);
-        for (Partition p : parts) {
-          p.setCatName(defaultCat);
-        }
+        parts.forEach(p -> p.setCatName(catName));
       }
-      ret = add_partitions_core(getMS(), parts.get(0).getCatName(), parts.get(0).getDbName(),
-          parts.get(0).getTableName(), parts, false).size();
+      ret = add_partitions_core(getMS(), catName, dbName, tableName, parts, false).size();
       assert ret == parts.size();
     } catch (Exception e) {
       ex = e;
@@ -4421,8 +4428,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
           .defaultMetaException();
     } finally {
-      String tableName = parts.get(0).getTableName();
-      endFunction("add_partition", ret != null, ex, tableName);
+      endFunction("add_partitions", ret != null, ex, tableName);
     }
     return ret;
   }
@@ -4430,107 +4436,49 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public int add_partitions_pspec(final List<PartitionSpec> partSpecs)
       throws TException {
-    logAndAudit("add_partitions_pspec");
-
     if (partSpecs.isEmpty()) {
       return 0;
     }
 
+    String catName = partSpecs.get(0).isSetCatName() ? partSpecs.get(0).getCatName() : getDefaultCatalog(conf);
     String dbName = partSpecs.get(0).getDbName();
     String tableName = partSpecs.get(0).getTableName();
-    // If the catalog name isn't set, we need to go through and set it.
-    String catName;
-    if (!partSpecs.get(0).isSetCatName()) {
-      catName = getDefaultCatalog(conf);
-      partSpecs.forEach(ps -> ps.setCatName(catName));
-    } else {
-      catName = partSpecs.get(0).getCatName();
-    }
+    startTableFunction("add_partitions_pspec", catName, dbName, tableName);
 
-    return add_partitions_pspec_core(getMS(), catName, dbName, tableName, partSpecs, false);
-  }
-
-  private int add_partitions_pspec_core(RawStore ms, String catName, String dbName,
-                                        String tblName, List<PartitionSpec> partSpecs,
-                                        boolean ifNotExists)
-      throws TException {
-    boolean success = false;
-    if (dbName == null || tblName == null) {
-      throw new MetaException("The database and table name cannot be null.");
-    }
-    // Ensures that the list doesn't have dups, and keeps track of directories we have created.
-    final Map<PartValEqWrapperLite, Boolean> addedPartitions = new ConcurrentHashMap<>();
-    PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(partSpecs);
-    final PartitionSpecProxy.PartitionIterator partitionIterator = partitionSpecProxy
-        .getPartitionIterator();
-    Table tbl = null;
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    Database db = null;
-    Lock tableLock = getTableLockFor(dbName, tblName);
-    tableLock.lock();
+    Integer ret = null;
+    Exception ex = null;
     try {
-      ms.openTransaction();
-      try {
-        db = ms.getDatabase(catName, dbName);
-      } catch (NoSuchObjectException notExists) {
-        throw new InvalidObjectException("Unable to add partitions because "
-            + "database or table " + dbName + "." + tblName + " does not exist");
+      // If the catalog name isn't set, we need to go through and set it.
+      if (!partSpecs.get(0).isSetCatName()) {
+        partSpecs.forEach(ps -> ps.setCatName(catName));
       }
-      if (db.getType() == DatabaseType.REMOTE) {
-        throw new MetaException("Operation add_partitions_pspec not supported on tables in REMOTE database");
-      }
-      tbl = ms.getTable(catName, dbName, tblName, null);
-      if (tbl == null) {
-        throw new InvalidObjectException("Unable to add partitions because "
-            + "database or table " + dbName + "." + tblName + " does not exist");
-      }
-      firePreEvent(new PreAddPartitionEvent(tbl, partitionSpecProxy, this));
-      Set<PartValEqWrapperLite> partsToAdd = new HashSet<>(partitionSpecProxy.size());
+      dbName = normalizeIdentifier(dbName);
+      tableName = normalizeIdentifier(tableName);
+
+      PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(partSpecs);
+      final PartitionSpecProxy.PartitionIterator partitionIterator = partitionSpecProxy
+              .getPartitionIterator();
       List<Partition> partitionsToAdd = new ArrayList<>(partitionSpecProxy.size());
-      List<FieldSchema> partitionKeys = tbl.getPartitionKeys();
       while (partitionIterator.hasNext()) {
-        // Iterate through the partitions and validate them. If one of the partitions is
-        // incorrect, an exception will be thrown before the threads which create the partition
-        // folders are submitted. This way we can be sure that no partition or partition folder
-        // will be created if the list contains an invalid partition.
         final Partition part = partitionIterator.getCurrent();
-        if (validatePartition(part, catName, tblName, dbName, partsToAdd, ms, ifNotExists,
-            partitionKeys)) {
-          partitionsToAdd.add(part);
-        }
+        // Normalize dbName and tblName of each part
+        // to follow the case-insensitive behavior of replaced add_partitions_pspec_core
+        part.setDbName(normalizeIdentifier(part.getDbName()));
+        part.setTableName(normalizeIdentifier(part.getTableName()));
+
+        partitionsToAdd.add(part);
         partitionIterator.next();
       }
-
-      createPartitionFolders(partitionsToAdd, tbl, addedPartitions);
-
-      ms.addPartitions(catName, dbName, tblName, partitionSpecProxy, ifNotExists);
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.ADD_PARTITION,
-                new AddPartitionEvent(tbl, partitionSpecProxy, true, this));
-      }
-
-      success = ms.commitTransaction();
-      return addedPartitions.size();
+      ret = add_partitions_core(getMS(), catName, dbName, tableName, partitionsToAdd, false).size();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e)
+          .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
+          .defaultMetaException();
     } finally {
-      try {
-        if (!success) {
-          ms.rollbackTransaction();
-          cleanupPartitionFolders(addedPartitions, db);
-        }
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.ADD_PARTITION,
-              new AddPartitionEvent(tbl, partitionSpecProxy, true, this),
-              null,
-              transactionalListenerResponses, ms);
-        }
-      } finally {
-        tableLock.unlock();
-      }
+      endFunction("add_partitions_pspec", ret != null, ex, tableName);
     }
+    return ret;
   }
 
   private boolean startAddPartition(
@@ -5634,13 +5582,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws NoSuchObjectException, MetaException  {
 
     String[] parsedDbName = parseDbName(db_name, conf);
+    String catName = parsedDbName[CAT_NAME];
+    String dbName = parsedDbName[DB_NAME];
     String tableName = tbl_name.toLowerCase();
 
-    startTableFunction("get_partitions_pspec", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
+    startTableFunction("get_partitions_pspec", catName, dbName, tableName);
 
     List<PartitionSpec> partitionSpecs = null;
     try {
-      Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
+      Table table = get_table_core(catName, dbName, tableName);
       // get_partitions will parse out the catalog and db names itself
       List<Partition> partitions = get_partitions(db_name, tableName, (short) max_parts);
 
@@ -5651,8 +5601,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       else {
         PartitionSpec pSpec = new PartitionSpec();
         pSpec.setPartitionList(new PartitionListComposingSpec(partitions));
-        pSpec.setCatName(parsedDbName[CAT_NAME]);
-        pSpec.setDbName(parsedDbName[DB_NAME]);
+        pSpec.setCatName(normalizeIdentifier(catName));
+        pSpec.setDbName(normalizeIdentifier(dbName));
         pSpec.setTableName(tableName);
         pSpec.setRootPath(table.getSd().getLocation());
         partitionSpecs = Arrays.asList(pSpec);
