@@ -188,11 +188,11 @@ public class JSONMessageFactory extends MessageFactory {
 
   static String createFunctionObjJson(Function functionObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(functionObj, "UTF-8");
+    return serializer.toString(functionObj);
   }
 
   static String createIndexObjJson(Index indexObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(indexObj, "UTF-8");
+    return serializer.toString(indexObj);
   }
 }

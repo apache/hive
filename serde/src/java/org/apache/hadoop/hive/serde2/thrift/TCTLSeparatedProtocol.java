@@ -308,6 +308,11 @@ public class TCTLSeparatedProtocol extends TProtocol implements
         defaultMapSeparator, defaultRowSeparator, true, 4096);
   }
 
+  @Override
+  public int getMinSerializedSize(byte b) throws TException {
+    return -1;
+  }
+
   public TCTLSeparatedProtocol(TTransport trans, int buffer_size) {
     this(trans, defaultPrimarySeparator, defaultSecondarySeparator,
         defaultMapSeparator, defaultRowSeparator, true, buffer_size);

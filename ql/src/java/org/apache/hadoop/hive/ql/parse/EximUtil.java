@@ -257,9 +257,9 @@ public class EximUtil {
     if (METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION != null) {
       jgen.writeStringField("fcversion",METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION);
     }
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     try {
-      jgen.writeStringField("db", serializer.toString(dbObj, "UTF-8"));
+      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+      jgen.writeStringField("db", serializer.toString(dbObj));
     } catch (TException e) {
       throw new SemanticException(
           ErrorMsg.ERROR_SERIALIZE_METASTORE
@@ -320,9 +320,9 @@ public class EximUtil {
       // regen if we do so.
     }
     if ((tableHandle != null) && (!replicationSpec.isNoop())){
-      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       try {
-        jgen.writeStringField("table", serializer.toString(tableHandle.getTTable(), "UTF-8"));
+        TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+        jgen.writeStringField("table", serializer.toString(tableHandle.getTTable()));
         jgen.writeFieldName("partitions");
         jgen.writeStartArray();
         if (partitions != null) {
@@ -337,7 +337,7 @@ public class EximUtil {
                 tptn.putToParameters("EXTERNAL", "FALSE");
               }
             }
-            jgen.writeString(serializer.toString(tptn, "UTF-8"));
+            jgen.writeString(serializer.toString(tptn));
             jgen.flush();
           }
         }
