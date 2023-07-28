@@ -1039,7 +1039,8 @@ public final class Utilities {
     return src;
   }
 
-  private static final String tmpPrefix = "_tmp.";
+  private static final String hadoopTmpPrefix = "_tmp.";
+  private static final String tmpPrefix = "-tmp.";
   private static final String taskTmpPrefix = "_task_tmp.";
 
   public static Path toTaskTempPath(Path orig) {
@@ -1070,7 +1071,7 @@ public final class Utilities {
     String name = file.getPath().getName();
     // in addition to detecting hive temporary files, we also check hadoop
     // temporary folders that used to show up in older releases
-    return (name.startsWith("_task") || name.startsWith(tmpPrefix));
+    return (name.startsWith("_task") || name.startsWith(tmpPrefix) || name.startsWith(hadoopTmpPrefix));
   }
 
   /**
@@ -1393,7 +1394,7 @@ public final class Utilities {
   }
 
 
-  private static boolean shouldAvoidRename(FileSinkDesc conf, Configuration hConf) {
+  public static boolean shouldAvoidRename(FileSinkDesc conf, Configuration hConf) {
     // we are avoiding rename/move only if following conditions are met
     //  * execution engine is tez
     //  * if it is select query
@@ -4555,7 +4556,7 @@ public final class Utilities {
     if (isDelete) {
       deltaDir = AcidUtils.deleteDeltaSubdir(writeId, writeId, stmtId);
     }
-    Path manifestPath = new Path(manifestRoot, "_tmp." + deltaDir);
+    Path manifestPath = new Path(manifestRoot, Utilities.toTempPath(deltaDir));
 
     if (isInsertOverwrite) {
       // When doing a multi-statement insert overwrite query with dynamic partitioning, the

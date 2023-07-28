@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,11 +36,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
@@ -1309,6 +1312,22 @@ public final class GenMapRedUtils {
     // 2. Constructing a conditional task consisting of a move task and a map reduce task
     //
     Path inputDirName = fsInputDesc.getMergeInputDirName();
+
+    // For external CTAS queries, there is an optimisation which avoids rename/copy of
+    // files from -tmp to -ext. In such cases, the input dir must be -tmp.
+    try {
+      if (fsInputDesc.getTable() != null) {
+        FileSystem fs = inputDirName.getFileSystem(conf);
+        if (fsInputDesc.isCTASorCM() && TableType.EXTERNAL_TABLE.equals(fsInputDesc.getTable().getTableType())
+            && BlobStorageUtils.isBlobStorageFileSystem(conf, fs)
+            && !Utilities.shouldAvoidRename(fsInputDesc, conf)) {
+          fsInputDesc.changeToTmpPath(true);
+        }
+      }
+    } catch (IOException e) {
+      throw new SemanticException("Unable to get filesystem from path due to: ", e);
+    }
+
     MapWork cplan;
     Serializable work;
 
