@@ -113,7 +113,6 @@ public class ThriftHttpServlet extends TServlet {
   private static final String HIVE_DELEGATION_TOKEN_HEADER =  "X-Hive-Delegation-Token";
   private static final String X_FORWARDED_FOR = "X-Forwarded-For";
   private static final String AUTH_TYPE = "auth";
-
   private JWTValidator jwtValidator;
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
@@ -153,17 +152,9 @@ public class ThriftHttpServlet extends TServlet {
     String clientUserName = null;
     String clientIpAddress;
     boolean requireNewCookie = false;
-
     logTrackingHeaderIfAny(request);
 
     try {
-      if (hiveConf.getBoolean(ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname,false)){
-        boolean continueProcessing = Utils.doXsrfFilter(request,response,null,null);
-        if (!continueProcessing){
-          LOG.warn("Request did not have valid XSRF header, rejecting.");
-          return;
-        }
-      }
 
       clientIpAddress = request.getRemoteAddr();
       LOG.debug("Client IP Address: " + clientIpAddress);
