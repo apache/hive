@@ -124,7 +124,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class ThriftCLIService extends AbstractService implements TCLIService.Iface, Runnable {
 
-  public static final Logger LOG = LoggerFactory.getLogger(ThriftCLIService.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(ThriftCLIService.class);
 
   protected CLIService cliService;
   private static final TStatus OK_STATUS = new TStatus(TStatusCode.SUCCESS_STATUS);
@@ -259,7 +259,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         resp.setDelegationToken(token);
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Error obtaining delegation token", e);
+        LOG.error("Failed to get delegation token [request: {}]", req, e);
         TStatus tokenErrorStatus = HiveSQLException.toTStatus(e);
         tokenErrorStatus.setSqlState("42000");
         resp.setStatus(tokenErrorStatus);
@@ -281,7 +281,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
             hiveAuthFactory, req.getDelegationToken());
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Error canceling delegation token", e);
+        LOG.error("Failed to cancel delegation token [request: {}]", req, e);
         resp.setStatus(HiveSQLException.toTStatus(e));
       }
     }
@@ -300,7 +300,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
             hiveAuthFactory, req.getDelegationToken());
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Error obtaining renewing token", e);
+        LOG.error("Failed to renew delegation token [request: {}]", e);
         resp.setStatus(HiveSQLException.toTStatus(e));
       }
     }
@@ -318,7 +318,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public TOpenSessionResp OpenSession(TOpenSessionReq req) throws TException {
     LOG.info("Client protocol version: " + req.getClient_protocol());
     TOpenSessionResp resp = new TOpenSessionResp();
+    String userName = null;
     try {
+      userName = getUserName(req);
       SessionHandle sessionHandle = getSessionHandle(req, resp);
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
       Map<String, String> configurationMap = new HashMap<String, String>();
@@ -337,7 +339,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         context.setSessionHandle(sessionHandle);
       }
     } catch (Exception e) {
-      LOG.warn("Error opening session: ", e);
+      // Do not log request as it contains password information
+      LOG.error("Login attempt failed for user : {}", userName, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -363,7 +366,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
           try {
             cliService.setApplicationName(sh, e.getValue());
           } catch (Exception ex) {
-            LOG.warn("Error setting application name", ex);
+            LOG.error("Failed setting application name", ex);
             resp = new TSetClientInfoResp(HiveSQLException.toTStatus(ex));
           }
         }
@@ -392,7 +395,6 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         clientIpAddress = TSetIpAddressProcessor.getUserIpAddress();
       }
     }
-    LOG.debug("Client's IP Address: " + clientIpAddress);
     return clientIpAddress;
   }
 
@@ -428,7 +430,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
     userName = getShortName(userName);
     String effectiveClientUser = getProxyUser(userName, req.getConfiguration(), getIpAddress());
-    LOG.debug("Client's username: " + effectiveClientUser);
+    LOG.debug("Client's username: {}", effectiveClientUser);
     return effectiveClientUser;
   }
 
@@ -463,6 +465,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       throws HiveSQLException, LoginException, IOException {
     String userName = getUserName(req);
     String ipAddress = getIpAddress();
+    LOG.info("Creating Hive session handle for user [{}] from IP {}", userName, ipAddress);
     TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION,
         req.getClient_protocol());
     SessionHandle sessionHandle;
@@ -480,7 +483,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   }
 
   private double getProgressedPercentage(OperationHandle opHandle) throws HiveSQLException {
-    checkArgument(OperationType.EXECUTE_STATEMENT.equals(opHandle.getOperationType()));
+    checkArgument(OperationType.EXECUTE_STATEMENT == opHandle.getOperationType());
+
     Operation operation = cliService.getSessionManager().getOperationManager().getOperation(opHandle);
     SessionState state = operation.getParentSession().getSessionState();
     ProgressMonitor monitor = state.getProgressMonitor();
@@ -527,7 +531,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         context.setSessionHandle(null);
       }
     } catch (Exception e) {
-      LOG.warn("Error closing session: ", e);
+      LOG.error("Failed to close the session", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -543,7 +547,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setInfoValue(getInfoValue.toTGetInfoValue());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting info: ", e);
+      LOG.error("Failed to get info", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -568,7 +572,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       // Note: it's rather important that this (and other methods) catch Exception, not Throwable;
       // in combination with HiveSessionProxy.invoke code, perhaps unintentionally, it used
       // to also catch all errors; and now it allows OOMs only to propagate.
-      LOG.warn("Error executing statement: ", e);
+      LOG.error("Failed to execute statement [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -582,7 +586,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(operationHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting type info: ", e);
+      LOG.error("Failed to get type info [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -596,7 +600,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting catalogs: ", e);
+      LOG.error("Failed getting catalogs [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -611,7 +615,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting schemas: ", e);
+      LOG.error("Failed to get schemas [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -627,7 +631,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting tables: ", e);
+      LOG.error("Failed to get tables [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -641,7 +645,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting table types: ", e);
+      LOG.error("Failed to get table types [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -660,7 +664,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting columns: ", e);
+      LOG.error("Failed to get column types [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -676,7 +680,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting functions: ", e);
+      LOG.error("Failed to get function: [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -695,7 +699,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setTaskStatus(operationStatus.getTaskStatus());
       resp.setOperationStarted(operationStatus.getOperationStarted());
       resp.setOperationCompleted(operationStatus.getOperationCompleted());
-      resp.setHasResultSet(operationStatus.getHasResultSet());
+      if (operationStatus.isHasResultSetIsSet()) {
+        resp.setHasResultSet(operationStatus.getHasResultSet());
+      }
       JobProgressUpdate progressUpdate = operationStatus.jobProgressUpdate();
       ProgressMonitorStatusMapper mapper = ProgressMonitorStatusMapper.DEFAULT;
       if ("tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
@@ -726,7 +732,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       }
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting operation status: ", e);
+      LOG.error("Failed to get operation status [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -739,7 +745,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       cliService.cancelOperation(new OperationHandle(req.getOperationHandle()));
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error cancelling operation: ", e);
+      LOG.error("Failed to get cancel operation [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -752,7 +758,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       cliService.closeOperation(new OperationHandle(req.getOperationHandle()));
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error closing operation: ", e);
+      LOG.error("Failed to close operation [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -767,7 +773,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setSchema(schema.toTTableSchema());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting result set metadata: ", e);
+      LOG.error("Failed to get result set metadata [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -792,7 +798,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setHasMoreRows(false);
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error fetching results: ", e);
+      LOG.error("Failed fetch results [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -809,7 +815,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-     LOG.warn("Error getting functions: ", e);
+     LOG.error("Failed to get primary keys [request: {}]", req, e);
      resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -827,9 +833,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
           resp.setOperationHandle(opHandle.toTOperationHandle());
           resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting functions: ", e);
-	  resp.setStatus(HiveSQLException.toTStatus(e));
-	}
+      LOG.error("Failed to get cross reference [request: {}]", req, e);
+      resp.setStatus(HiveSQLException.toTStatus(e));
+    }
     return resp;
   }
 
@@ -838,6 +844,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     try {
       return new TGetQueryIdResp(cliService.getQueryId(req.getOperationHandle()));
     } catch (HiveSQLException e) {
+      LOG.error("Failed to get query ID [request: {}]", req, e);
       throw new TException(e);
     }
   }
@@ -861,12 +868,12 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     if (cliService.getHiveConf().getVar(
         ConfVars.HIVE_SERVER2_TRANSPORT_MODE).equalsIgnoreCase("http")) {
       proxyUser = SessionManager.getProxyUserName();
-      LOG.debug("Proxy user from query string: " + proxyUser);
+      LOG.debug("Proxy user from query string: {}", proxyUser);
     }
 
     if (proxyUser == null && sessionConf != null && sessionConf.containsKey(HiveAuthConstants.HS2_PROXY_USER)) {
       String proxyUserFromThriftBody = sessionConf.get(HiveAuthConstants.HS2_PROXY_USER);
-      LOG.debug("Proxy user from thrift body: " + proxyUserFromThriftBody);
+      LOG.debug("Proxy user from thrift body: {}", proxyUserFromThriftBody);
       proxyUser = proxyUserFromThriftBody;
     }
 
@@ -887,7 +894,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
     // Verify proxy user privilege of the realUser for the proxyUser
     HiveAuthFactory.verifyProxyAccess(realUser, proxyUser, ipAddress, hiveConf);
-    LOG.debug("Verified proxy user: " + proxyUser);
+    LOG.debug("Verified proxy user: {}", proxyUser);
     return proxyUser;
   }
 }

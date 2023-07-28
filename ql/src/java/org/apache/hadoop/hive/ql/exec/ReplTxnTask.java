@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -60,8 +62,19 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
           return 0;
         }
       } catch (InvalidTableException e) {
-        LOG.info("Table does not exist so, ignoring the operation as it might be a retry(idempotent) case.");
-        return 0;
+        // In scenarios like import to mm tables, the alloc write id event is generated before create table event.
+        try {
+          Database database = Hive.get().getDatabase(work.getDbName());
+          if (!replicationSpec.allowReplacementInto(database.getParameters())) {
+            // if the event is already replayed, then no need to replay it again.
+            LOG.debug("ReplTxnTask: Event is skipped as it is already replayed. Event Id: " +
+                    replicationSpec.getReplicationState() + "Event Type: " + work.getOperationType());
+            return 0;
+          }
+        } catch (HiveException e1) {
+          LOG.error("Get database failed with exception " + e1.getMessage());
+          return 1;
+        }
       } catch (HiveException e) {
         LOG.error("Get table failed with exception " + e.getMessage());
         return 1;
@@ -85,10 +98,16 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         }
         return 0;
       case REPL_COMMIT_TXN:
-        for (long txnId : work.getTxnIds()) {
-          txnManager.replCommitTxn(replPolicy, txnId);
-          LOG.info("Replayed CommitTxn Event for policy " + replPolicy + " with srcTxn " + txnId);
-        }
+        // Currently only one commit txn per event is supported.
+        assert (work.getTxnIds().size() == 1);
+
+        long txnId = work.getTxnIds().get(0);
+        CommitTxnRequest commitTxnRequest = new CommitTxnRequest(txnId);
+        commitTxnRequest.setReplPolicy(work.getReplPolicy());
+        commitTxnRequest.setWriteEventInfos(work.getWriteEventInfos());
+        txnManager.replCommitTxn(commitTxnRequest);
+        LOG.info("Replayed CommitTxn Event for replPolicy: " + replPolicy + " with srcTxn: " + txnId +
+                "WriteEventInfos: " + work.getWriteEventInfos());
         return 0;
       case REPL_ALLOC_WRITE_ID:
         assert work.getTxnToWriteIdList() != null;

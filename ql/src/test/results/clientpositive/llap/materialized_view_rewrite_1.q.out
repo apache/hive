@@ -242,7 +242,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 3 Data size: 315 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col2 (type: varchar(256)), _col3 (type: float), _col4 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
@@ -259,7 +259,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: varchar(256)), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -389,7 +389,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: varchar(256)), _col2 (type: float), _col3 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
@@ -405,7 +405,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -614,7 +614,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 3 
             Map Operator Tree:
@@ -635,7 +635,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Union 2 
             Vertex: Union 2
@@ -943,10 +943,10 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
                         Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: varchar(256))
@@ -1054,10 +1054,10 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
                         Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: varchar(256))
@@ -1166,10 +1166,10 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
                         Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: varchar(256))

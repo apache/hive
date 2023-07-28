@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
  * The processor context for partition pruner. This contains the table alias
  * that is being currently processed.
  */
+@Deprecated
 public class ExprPrunerInfo implements NodeProcessorCtx {
 
   /**

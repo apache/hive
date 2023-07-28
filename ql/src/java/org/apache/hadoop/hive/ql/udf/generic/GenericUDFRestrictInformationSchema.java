@@ -97,12 +97,11 @@ public class GenericUDFRestrictInformationSchema extends GenericUDF {
             LOG.warn("Error instantiating hive.security.metastore.authorization.manager", e);
           }
         }
-
-        if (enableHS2PolicyProvider || enableMetastorePolicyProvider) {
-          enabled = new BooleanWritable(true);
-        } else {
-          enabled = new BooleanWritable(false);
-        }
+      }
+      if (enableHS2PolicyProvider || enableMetastorePolicyProvider) {
+        enabled = new BooleanWritable(true);
+      } else {
+        enabled = new BooleanWritable(false);
       }
     }
 

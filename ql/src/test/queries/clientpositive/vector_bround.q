@@ -1,6 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.fetch.task.conversion=none;
+-- SORT_QUERY_RESULTS
 
 create table test_vector_bround(v0 double, v1 double) stored as orc;
 insert into table test_vector_bround

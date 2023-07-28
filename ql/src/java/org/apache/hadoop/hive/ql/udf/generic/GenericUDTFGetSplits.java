@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.llap.SubmitWorkInfo;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
+import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapSigner;
 import org.apache.hadoop.hive.llap.security.LlapSigner.Signable;
 import org.apache.hadoop.hive.llap.security.LlapSigner.SignedMessage;
@@ -74,6 +75,8 @@ import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -91,6 +94,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SplitLocationInfo;
+import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -246,6 +250,17 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     // hive compiler is going to remove inner order by. disable that optimization until then.
     HiveConf.setBoolVar(conf, ConfVars.HIVE_REMOVE_ORDERBY_IN_SUBQUERY, false);
 
+    if(num == 0) {
+      //Schema only
+      try {
+        List<FieldSchema> fieldSchemas = ParseUtils.parseQueryAndGetSchema(conf, query);
+        Schema schema = new Schema(convertSchema(fieldSchemas));
+        return new PlanFragment(null, schema, null);
+      } catch (IOException | ParseException e) {
+        throw new HiveException(e);
+      }
+    }
+
     try {
       jc = DagUtils.getInstance().createConfiguration(conf);
     } catch (IOException e) {
@@ -274,10 +289,6 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         HiveConf.getBoolVar(conf, ConfVars.LLAP_EXTERNAL_SPLITS_ORDER_BY_FORCE_SINGLE_SPLIT);
       List<Task<?>> roots = plan.getRootTasks();
       Schema schema = convertSchema(plan.getResultSchema());
-      if(num == 0) {
-        //Schema only
-        return new PlanFragment(null, schema, null);
-      }
       boolean fetchTask = plan.getFetchTask() != null;
       TezWork tezWork;
       if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
@@ -432,7 +443,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       }
 
       // This assumes LLAP cluster owner is always the HS2 user.
-      String llapUser = UserGroupInformation.getLoginUser().getShortUserName();
+      String llapUser = LlapRegistryService.currentUser();
 
       String queryUser = null;
       byte[] tokenBytes = null;
@@ -665,16 +676,18 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     }
   }
 
-  private Schema convertSchema(Object obj) throws HiveException {
-    org.apache.hadoop.hive.metastore.api.Schema schema = (org.apache.hadoop.hive.metastore.api.Schema) obj;
+  private List<FieldDesc> convertSchema(List<FieldSchema> fieldSchemas) {
     List<FieldDesc> colDescs = new ArrayList<FieldDesc>();
-    for (FieldSchema fs : schema.getFieldSchemas()) {
+    for (FieldSchema fs : fieldSchemas) {
       String colName = fs.getName();
       String typeString = fs.getType();
       colDescs.add(new FieldDesc(colName, TypeInfoUtils.getTypeInfoFromTypeString(typeString)));
     }
-    Schema Schema = new Schema(colDescs);
-    return Schema;
+    return colDescs;
+  }
+
+  private Schema convertSchema(org.apache.hadoop.hive.metastore.api.Schema schema) {
+    return new Schema(convertSchema(schema.getFieldSchemas()));
   }
 
   private String getTempTableStorageFormatString(HiveConf conf) {

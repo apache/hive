@@ -10,11 +10,11 @@ PREHOOK: Input: database:druid_test_dst
 POSTHOOK: query: use druid_test_dst
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:druid_test_dst
-PREHOOK: query: create table test_base_table(`timecolumn` timestamp, `interval_marker` string, `num_l` double)
+PREHOOK: query: create external table test_base_table(`timecolumn` timestamp, `interval_marker` string, `num_l` double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:druid_test_dst
 PREHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: query: create table test_base_table(`timecolumn` timestamp, `interval_marker` string, `num_l` double)
+POSTHOOK: query: create external table test_base_table(`timecolumn` timestamp, `interval_marker` string, `num_l` double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:druid_test_dst
 POSTHOOK: Output: druid_test_dst@test_base_table
@@ -84,7 +84,7 @@ POSTHOOK: Output: druid_test_dst@test_base_table
 POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
 POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
 POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
-PREHOOK: query: CREATE TABLE druid_test_table_1
+PREHOOK: query: CREATE EXTERNAL TABLE druid_test_table_1
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 AS
@@ -94,7 +94,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: druid_test_dst@test_base_table
 PREHOOK: Output: database:druid_test_dst
 PREHOOK: Output: druid_test_dst@druid_test_table_1
-POSTHOOK: query: CREATE TABLE druid_test_table_1
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_test_table_1
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 AS
@@ -121,13 +121,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2015-03-09 23:59:59.0 US/Pacific	i2-end	1.0
 2015-03-10 00:00:00.0 US/Pacific	i3-start	2.0
 2015-03-10 23:59:59.0 US/Pacific	i3-end	2.0
-PREHOOK: query: CREATE TABLE druid_test_table_2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
+PREHOOK: query: CREATE EXTERNAL TABLE druid_test_table_2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:druid_test_dst
 PREHOOK: Output: druid_test_dst@druid_test_table_2
-POSTHOOK: query: CREATE TABLE druid_test_table_2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_test_table_2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 POSTHOOK: type: CREATETABLE
@@ -195,7 +195,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2015-03-09 23:59:59.0 US/Pacific	i2-end	1.0
 2015-03-10 00:00:00.0 US/Pacific	i3-start	2.0
 2015-03-10 23:59:59.0 US/Pacific	i3-end	2.0
-PREHOOK: query: CREATE TABLE druid_test_table_utc
+PREHOOK: query: CREATE EXTERNAL TABLE druid_test_table_utc
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 AS
@@ -205,7 +205,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: druid_test_dst@test_base_table
 PREHOOK: Output: database:druid_test_dst
 PREHOOK: Output: druid_test_dst@druid_test_table_utc
-POSTHOOK: query: CREATE TABLE druid_test_table_utc
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_test_table_utc
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 AS
@@ -232,13 +232,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2015-03-09 23:59:59.0 UTC	i2-end	1.0
 2015-03-10 00:00:00.0 UTC	i3-start	2.0
 2015-03-10 23:59:59.0 UTC	i3-end	2.0
-PREHOOK: query: CREATE TABLE druid_test_table_utc2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
+PREHOOK: query: CREATE EXTERNAL TABLE druid_test_table_utc2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:druid_test_dst
 PREHOOK: Output: druid_test_dst@druid_test_table_utc2
-POSTHOOK: query: CREATE TABLE druid_test_table_utc2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_test_table_utc2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 POSTHOOK: type: CREATETABLE

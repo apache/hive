@@ -110,7 +110,7 @@ public class PTFDeserializer {
     TableFunctionEvaluator tEval = def.getTFunction();
     WindowingTableFunctionResolver tResolver =
         (WindowingTableFunctionResolver) constructResolver(def.getResolverClassName());
-    tResolver.initialize(ptfDesc, def, tEval);
+    tResolver.initialize(hConf, ptfDesc, def, tEval);
 
 
     /*
@@ -171,7 +171,7 @@ public class PTFDeserializer {
     TableFunctionEvaluator tEval = def.getTFunction();
     // TableFunctionResolver tResolver = FunctionRegistry.getTableFunctionResolver(def.getName());
     TableFunctionResolver tResolver = constructResolver(def.getResolverClassName());
-    tResolver.initialize(ptfDesc, def, tEval);
+    tResolver.initialize(hConf, ptfDesc, def, tEval);
 
     /*
      * 3. give Evaluator chance to setup for RawInput execution; setup RawInput shape

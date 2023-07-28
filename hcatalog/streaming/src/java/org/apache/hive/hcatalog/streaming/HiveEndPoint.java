@@ -60,8 +60,11 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Information about the hive end point (i.e. table or partition) to write to.
@@ -75,6 +78,10 @@ public class HiveEndPoint {
   public final String database;
   public final String table;
   public final ArrayList<String> partitionVals;
+  // Tracks connection count for UGIs, so that no premature FileSystem.closeAllForUGI can occur, and we avoid causing
+  // ClosedChannelException in a multithreaded (writing multiple partitions at a time) setup.
+  private final static HashMap<UserGroupInformation, Long> ugiConnectionRefCount = new HashMap<>();
+  private final static Lock refCountLock = new ReentrantLock();
 
 
   static final private Logger LOG = LoggerFactory.getLogger(HiveEndPoint.class.getName());
@@ -332,6 +339,9 @@ public class HiveEndPoint {
       if (createPart && !endPoint.partitionVals.isEmpty()) {
         createPartitionIfNotExists(endPoint, msClient, conf);
       }
+      if (this.ugi != null) {
+        incRefForUgi(ugi);
+      }
     }
 
     /**
@@ -394,10 +404,12 @@ public class HiveEndPoint {
                 return null;
               }
             });
-        try {
-          FileSystem.closeAllForUGI(ugi);
-        } catch (IOException exception) {
-          LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+        if (decRefForUgi(ugi) == 0) {
+          try {
+              FileSystem.closeAllForUGI(ugi);
+          } catch (IOException exception) {
+            LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+          }
         }
       } catch (IOException e) {
         LOG.error("Error closing connection to " + endPt, e);
@@ -1043,11 +1055,6 @@ public class HiveEndPoint {
                   }
                 }
         );
-        try {
-          FileSystem.closeAllForUGI(ugi);
-        } catch (IOException exception) {
-          LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
-        }
       } catch (IOException e) {
         throw new ImpersonationFailed("Failed closing Txn Batch as user '" + username +
                 "' on  endPoint :" + endPt, e);
@@ -1105,6 +1112,39 @@ public class HiveEndPoint {
       LOG.debug("Overriding HiveConf setting : " + var + " = " + value);
     }
     conf.setBoolVar(var, value);
+  }
+
+  private static void incRefForUgi(UserGroupInformation ugi) {
+    refCountLock.lock();
+    try {
+      Long prevCount = ugiConnectionRefCount.putIfAbsent(ugi, 1L);
+      if (prevCount != null) {
+        ugiConnectionRefCount.put(ugi, prevCount + 1L);
+      }
+    } finally {
+      refCountLock.unlock();
+    }
+  }
+
+  private static long decRefForUgi(UserGroupInformation ugi) {
+    refCountLock.lock();
+    try {
+      Long prevCount = ugiConnectionRefCount.get(ugi);
+      if (prevCount == null) {
+        throw new IllegalStateException("Cannot decrement connection count on missing counter for UGI: " + ugi);
+      }
+      long newCount = prevCount - 1L;
+      if (newCount > 0) {
+        ugiConnectionRefCount.put(ugi, newCount);
+      } else if (newCount == 0) {
+        ugiConnectionRefCount.remove(ugi);
+      } else {
+        throw new IllegalStateException("Negative connection count for UGI: " + ugi);
+      }
+      return newCount;
+    } finally {
+      refCountLock.unlock();
+    }
   }
 
 }  // class HiveEndPoint

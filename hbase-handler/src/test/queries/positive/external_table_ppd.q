@@ -1,6 +1,6 @@
 DROP TABLE t_hbase;
 
-CREATE TABLE t_hbase(key STRING,
+CREATE EXTERNAL TABLE t_hbase(key STRING,
                      tinyint_col TINYINT,
                      smallint_col SMALLINT,
                      int_col INT,
@@ -11,7 +11,8 @@ CREATE TABLE t_hbase(key STRING,
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:binarykey#-,cf:binarybyte#-,cf:binaryshort#-,:key#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
 TBLPROPERTIES ("hbase.table.name" = "t_hive",
-               "hbase.table.default.storage.type" = "binary");
+               "hbase.table.default.storage.type" = "binary",
+               "external.table.purge" = "true");
 
 DESCRIBE FORMATTED t_hbase;
 

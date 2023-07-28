@@ -510,4 +510,15 @@ public class FileUtils {
 
     return new Path(scheme, authority, pathUri.getPath());
   }
+
+  public static Path getTransformedPath(String name, String subDir, String root) {
+   if (root != null) {
+      Path newPath = new Path(root);
+      if (subDir != null) {
+        newPath = new Path(newPath, subDir);
+      }
+      return new Path(newPath, name);
+    }
+    return null;
+  }
 }

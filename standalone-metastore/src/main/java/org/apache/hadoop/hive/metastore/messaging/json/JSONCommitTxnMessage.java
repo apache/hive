@@ -18,8 +18,14 @@
  */
 
 package org.apache.hadoop.hive.metastore.messaging.json;
+import com.google.common.collect.Lists;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.codehaus.jackson.annotate.JsonProperty;
+
+import java.util.List;
 
 /**
  * JSON implementation of CommitTxnMessage
@@ -38,6 +44,12 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
   @JsonProperty
   private String servicePrincipal;
 
+  @JsonProperty
+  private List<Long> writeIds;
+
+  @JsonProperty
+  private List<String> databases, tables, partitions, tableObjs, partitionObjs, files;
+
   /**
    * Default constructor, needed for Jackson.
    */
@@ -49,6 +61,13 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
     this.txnid = txnid;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.databases = null;
+    this.tables = null;
+    this.writeIds = null;
+    this.partitions = null;
+    this.tableObjs = null;
+    this.partitionObjs = null;
+    this.files = null;
   }
 
   @Override
@@ -74,6 +93,82 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
   @Override
   public String getServer() {
     return server;
+  }
+
+  @Override
+  public List<Long> getWriteIds() {
+    return writeIds;
+  }
+
+  @Override
+  public List<String> getDatabases() {
+    return databases;
+  }
+
+  @Override
+  public List<String> getTables() {
+    return tables;
+  }
+
+  @Override
+  public List<String> getPartitions() {
+    return partitions;
+  }
+
+  @Override
+  public Table getTableObj(int idx) throws Exception {
+    return tableObjs == null ? null :  (Table) JSONMessageFactory.getTObj(tableObjs.get(idx), Table.class);
+  }
+
+  @Override
+  public Partition getPartitionObj(int idx) throws Exception {
+    return (partitionObjs == null ? null : (partitionObjs.get(idx) == null ? null :
+            (Partition)JSONMessageFactory.getTObj(partitionObjs.get(idx), Partition.class)));
+  }
+
+  @Override
+  public String getFiles(int idx) {
+    return files == null ? null : files.get(idx);
+  }
+
+  @Override
+  public List<String> getFilesList() {
+    return files;
+  }
+
+  @Override
+  public void addWriteEventInfo(List<WriteEventInfo> writeEventInfoList) {
+    if (this.databases == null) {
+      this.databases = Lists.newArrayList();
+    }
+    if (this.tables == null) {
+      this.tables = Lists.newArrayList();
+    }
+    if (this.writeIds == null) {
+      this.writeIds = Lists.newArrayList();
+    }
+    if (this.tableObjs == null) {
+      this.tableObjs = Lists.newArrayList();
+    }
+    if (this.partitions == null) {
+      this.partitions = Lists.newArrayList();
+    }
+    if (this.partitionObjs == null) {
+      this.partitionObjs = Lists.newArrayList();
+    }
+    if (this.files == null) {
+      this.files = Lists.newArrayList();
+    }
+
+    for (WriteEventInfo writeEventInfo : writeEventInfoList) {
+      this.databases.add(writeEventInfo.getDatabase());
+      this.tables.add(writeEventInfo.getTable());
+      this.writeIds.add(writeEventInfo.getWriteId());
+      this.partitions.add(writeEventInfo.getPartition());
+      this.tableObjs.add(writeEventInfo.getTableObj());
+      this.partitionObjs.add(writeEventInfo.getPartitionObj());
+      this.files.add(writeEventInfo.getFiles());
+    }
   }
 
   @Override

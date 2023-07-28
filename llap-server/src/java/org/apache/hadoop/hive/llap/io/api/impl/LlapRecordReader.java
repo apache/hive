@@ -289,8 +289,72 @@ class LlapRecordReader
     executor.submit(rp.getReadCallable());
   }
 
+  private boolean hasSchemaEvolutionStringFamilyTruncateIssue(SchemaEvolution evolution) {
+    return hasStringFamilyTruncateTypeIssue(evolution, evolution.getReaderSchema());
+  }
+
+  // We recurse through the types.
+  private boolean hasStringFamilyTruncateTypeIssue(SchemaEvolution evolution,
+      TypeDescription readerType) {
+    TypeDescription fileType = evolution.getFileType(readerType);
+    if (fileType == null) {
+      return false;
+    }
+    switch (fileType.getCategory()) {
+    case BOOLEAN:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+    case DOUBLE:
+    case FLOAT:
+    case STRING:
+    case TIMESTAMP:
+    case BINARY:
+    case DATE:
+    case DECIMAL:
+      // We are only looking for the CHAR/VARCHAR truncate issue.
+      return false;
+    case CHAR:
+    case VARCHAR:
+      if (readerType.getCategory().equals(TypeDescription.Category.CHAR) ||
+          readerType.getCategory().equals(TypeDescription.Category.VARCHAR)) {
+        return (fileType.getMaxLength() > readerType.getMaxLength());
+      }
+      return false;
+    case UNION:
+    case MAP:
+    case LIST:
+    case STRUCT:
+      {
+        List<TypeDescription> readerChildren = readerType.getChildren();
+        final int childCount = readerChildren.size();
+        for (int i = 0; i < childCount; ++i) {
+          if (hasStringFamilyTruncateTypeIssue(evolution, readerChildren.get(i))) {
+            return true;
+          }
+        }
+      }
+      return false;
+    default:
+      throw new IllegalArgumentException("Unknown type " + fileType);
+    }
+  }
+
   private boolean checkOrcSchemaEvolution() {
     SchemaEvolution evolution = rp.getSchemaEvolution();
+
+    /*
+     * FUTURE: When SchemaEvolution.isOnlyImplicitConversion becomes available:
+     *  1) Replace the hasSchemaEvolutionStringFamilyTruncateIssue call with
+     *     !isOnlyImplicitConversion.
+     *  2) Delete hasSchemaEvolutionStringFamilyTruncateIssue code.
+     */
+    if (evolution.hasConversion() && hasSchemaEvolutionStringFamilyTruncateIssue(evolution)) {
+
+      // We do not support data type conversion when reading encoded ORC data.
+      return false;
+    }
     // TODO: should this just use physical IDs?
     for (int i = 0; i < includes.getReaderLogicalColumnIds().size(); ++i) {
       int projectedColId = includes.getReaderLogicalColumnIds().get(i);

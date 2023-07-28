@@ -415,7 +415,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc,robot
             druid.fieldTypes timestamp with local time zone,string
-            druid.query.json {"queryType":"scan","dataSource":"wikipedia","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"or","fields":[{"type":"in","dimension":"__time","values":["2010-01-01T00:00:00.000Z","2011-01-01T00:00:00.000Z"],"extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"US/Pacific"}},{"type":"selector","dimension":"robot","value":"user1"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","robot"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"wikipedia","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"or","fields":[{"type":"in","dimension":"__time","values":["2010-01-01T08:00:00.000Z","2011-01-01T08:00:00.000Z"],"extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"selector","dimension":"robot","value":"user1"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","robot"],"resultFormat":"compactedList"}
             druid.query.type scan
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator

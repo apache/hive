@@ -168,7 +168,6 @@ public class KeyWrapperFactory {
     }
   }
 
-  transient Object[] singleEleArray = new Object[1];
   transient StringObjectInspector soi_new, soi_copy;
 
   class TextKeyWrapper extends KeyWrapper {
@@ -180,6 +179,7 @@ public class KeyWrapperFactory {
     int hashcode;
     Object key;
     boolean isCopy;
+    transient Object[] singleEleArray = new Object[1];
 
     public TextKeyWrapper(boolean isCopy) {
       this(-1, null, isCopy);

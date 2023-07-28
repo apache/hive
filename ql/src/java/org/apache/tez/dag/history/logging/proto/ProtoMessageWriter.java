@@ -26,24 +26,24 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
+import org.apache.hadoop.io.SequenceFile.Writer;
 
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
 
 public class ProtoMessageWriter<T extends MessageLite> implements Closeable {
   private final Path filePath;
-  private final SequenceFile.Writer writer;
+  private final Writer writer;
   private final ProtoMessageWritable<T> writable;
 
   ProtoMessageWriter(Configuration conf, Path filePath, Parser<T> parser) throws IOException {
     this.filePath = filePath;
     this.writer = SequenceFile.createWriter(
         conf,
-        SequenceFile.Writer.file(filePath),
-        SequenceFile.Writer.keyClass(NullWritable.class),
-        SequenceFile.Writer.valueClass(ProtoMessageWritable.class),
-        SequenceFile.Writer.appendIfExists(true),
-        SequenceFile.Writer.compression(CompressionType.RECORD));
+        Writer.file(filePath),
+        Writer.keyClass(NullWritable.class),
+        Writer.valueClass(ProtoMessageWritable.class),
+        Writer.compression(CompressionType.RECORD));
     this.writable = new ProtoMessageWritable<>(parser);
   }
 

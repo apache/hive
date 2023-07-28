@@ -1,0 +1,537 @@
+PREHOOK: query: DROP TABLE if exists teradata_binary_table_64kb
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE if exists teradata_binary_table_64kb
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE if exists teradata_binary_table_1mb
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE if exists teradata_binary_table_1mb
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE if exists teradata_binary_table_64kb_insert
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE if exists teradata_binary_table_64kb_insert
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE if exists teradata_binary_table_1mb_insert
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE if exists teradata_binary_table_1mb_insert
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE `teradata_binary_table_64kb`(
+  `test_tinyint` tinyint,
+  `test_smallint` smallint,
+  `test_int` int,
+  `test_bigint` bigint,
+  `test_double` double,
+  `test_decimal` decimal(15,2),
+  `test_date` date,
+  `test_timestamp` timestamp,
+  `test_char` char(1),
+  `test_varchar` varchar(40),
+  `test_binary` binary
+ )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileOutputFormat'
+TBLPROPERTIES (
+  'teradata.timestamp.precision'='0',
+  'teradata.char.charset'='LATIN',
+  'teradata.row.length'='64KB'
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@teradata_binary_table_64kb
+POSTHOOK: query: CREATE TABLE `teradata_binary_table_64kb`(
+  `test_tinyint` tinyint,
+  `test_smallint` smallint,
+  `test_int` int,
+  `test_bigint` bigint,
+  `test_double` double,
+  `test_decimal` decimal(15,2),
+  `test_date` date,
+  `test_timestamp` timestamp,
+  `test_char` char(1),
+  `test_varchar` varchar(40),
+  `test_binary` binary
+ )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileOutputFormat'
+TBLPROPERTIES (
+  'teradata.timestamp.precision'='0',
+  'teradata.char.charset'='LATIN',
+  'teradata.row.length'='64KB'
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@teradata_binary_table_64kb
+PREHOOK: query: CREATE TABLE `teradata_binary_table_1mb`(
+  `test_tinyint` tinyint,
+  `test_smallint` smallint,
+  `test_int` int,
+  `test_bigint` bigint,
+  `test_double` double,
+  `test_decimal` decimal(15,2),
+  `test_date` date,
+  `test_timestamp` timestamp,
+  `test_char` char(1),
+  `test_varchar` varchar(40),
+  `test_binary` binary
+ )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileOutputFormat'
+TBLPROPERTIES (
+  'teradata.timestamp.precision'='6',
+  'teradata.char.charset'='UNICODE',
+  'teradata.row.length'='1MB'
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@teradata_binary_table_1mb
+POSTHOOK: query: CREATE TABLE `teradata_binary_table_1mb`(
+  `test_tinyint` tinyint,
+  `test_smallint` smallint,
+  `test_int` int,
+  `test_bigint` bigint,
+  `test_double` double,
+  `test_decimal` decimal(15,2),
+  `test_date` date,
+  `test_timestamp` timestamp,
+  `test_char` char(1),
+  `test_varchar` varchar(40),
+  `test_binary` binary
+ )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileOutputFormat'
+TBLPROPERTIES (
+  'teradata.timestamp.precision'='6',
+  'teradata.char.charset'='UNICODE',
+  'teradata.row.length'='1MB'
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@teradata_binary_table_1mb
+PREHOOK: query: CREATE TABLE `teradata_binary_table_64kb_insert`(
+  `test_tinyint` tinyint,
+  `test_decimal` decimal(15,2),
+  `test_date` date,
+  `test_timestamp` timestamp
+ )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileOutputFormat'
+TBLPROPERTIES (
+  'teradata.timestamp.precision'='0',
+  'teradata.char.charset'='LATIN',
+  'teradata.row.length'='64KB'
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@teradata_binary_table_64kb_insert
+POSTHOOK: query: CREATE TABLE `teradata_binary_table_64kb_insert`(
+  `test_tinyint` tinyint,
+  `test_decimal` decimal(15,2),
+  `test_date` date,
+  `test_timestamp` timestamp
+ )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileOutputFormat'
+TBLPROPERTIES (
+  'teradata.timestamp.precision'='0',
+  'teradata.char.charset'='LATIN',
+  'teradata.row.length'='64KB'
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@teradata_binary_table_64kb_insert
+PREHOOK: query: CREATE TABLE `teradata_binary_table_1mb_insert`(
+  `test_tinyint` tinyint,
+  `test_int` int
+ )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileOutputFormat'
+TBLPROPERTIES (
+  'teradata.timestamp.precision'='6',
+  'teradata.char.charset'='UNICODE',
+  'teradata.row.length'='1MB'
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@teradata_binary_table_1mb_insert
+POSTHOOK: query: CREATE TABLE `teradata_binary_table_1mb_insert`(
+  `test_tinyint` tinyint,
+  `test_int` int
+ )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.TeradataBinaryFileOutputFormat'
+TBLPROPERTIES (
+  'teradata.timestamp.precision'='6',
+  'teradata.char.charset'='UNICODE',
+  'teradata.row.length'='1MB'
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@teradata_binary_table_1mb_insert
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/teradata_binary_file/teradata_binary_table.deflate' OVERWRITE INTO TABLE teradata_binary_table_64kb
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@teradata_binary_table_64kb
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/teradata_binary_file/teradata_binary_table.deflate' OVERWRITE INTO TABLE teradata_binary_table_64kb
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@teradata_binary_table_64kb
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/teradata_binary_file/td_data_with_1mb_rowsize.teradata.gz' OVERWRITE INTO TABLE teradata_binary_table_1mb
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@teradata_binary_table_1mb
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/teradata_binary_file/td_data_with_1mb_rowsize.teradata.gz' OVERWRITE INTO TABLE teradata_binary_table_1mb
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@teradata_binary_table_1mb
+PREHOOK: query: SELECT * from teradata_binary_table_64kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from teradata_binary_table_64kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+10	34	139997714	32307660	18.6717	59.99	2018-08-23	2018-07-23 01:45:55	A	NULL	NULL
+10	28	89082024	53367308	5.9069	27.90	2018-08-23	2018-07-23 19:45:36	A	NULL	NULL
+10	31	65499801	9495835	5.9064	29.99	2018-08-23	2018-07-23 09:15:10	A	NULL	NULL
+10	20	144923884	123337561	20.1037	50.50	2018-08-23	2018-07-23 22:49:52	A	NULL	NULL
+10	9	118474716	110462827	18.6697	29.99	2018-08-23	2018-07-23 10:13:03	A	NULL	NULL
+10	4	116098596	555556155	20.1017	29.99	2018-07-23	2018-07-23 13:12:10	X	SELF_SERVICE	SELF_SERVICE
+10	10	84492975	100052093	15.4913	29.99	2018-08-23	2018-07-23 17:56:32	A	NULL	NULL
+10	31	101314613	45413087	5.9064	29.99	2018-08-23	2018-07-23 11:26:24	A	NULL	NULL
+10	1	156962113	554297748	NULL	29.99	2018-08-23	2018-07-23 11:31:31	A	NULL	NULL
+10	10	92560875	380929783	20.1011	20.91	2018-07-30	2018-07-23 05:02:42	S	RCHARGE_FAILURE	RCHARGE_FAILURE
+10	5	154490193	186062438	20.1037	29.99	2018-07-23	2018-07-23 10:17:20	X	NULL	NULL
+10	31	2954435	34009387	0.0214	24.23	2018-08-23	2018-07-23 15:46:21	A	NULL	NULL
+10	4	156942563	55362740	0.0024	29.99	2018-08-23	2018-07-23 08:16:49	A	NULL	NULL
+10	31	90527523	126581551	7.5689	59.99	2018-08-23	2018-07-23 03:40:28	A	NULL	NULL
+10	1	118477496	598803186	NULL	29.99	2018-08-23	2018-07-23 10:45:28	A	NULL	NULL
+10	75	137653654	38440942	20.1037	29.99	2018-08-23	2018-07-23 19:01:04	A	NULL	NULL
+10	2	142697304	106829658	20.1008	24.21	2018-07-23	2018-07-23 05:22:17	S	RCHARGE_FAILURE	RCHARGE_FAILURE
+10	14	134043823	264156349	20.1008	24.21	2018-08-23	2018-07-23 12:12:48	A	NULL	NULL
+10	7	91359485	7008957	20.1011	20.91	2018-08-23	2018-07-23 23:42:04	A	NULL	NULL
+10	1	118512426	222159750	NULL	29.99	2018-08-23	2018-07-23 17:06:25	A	NULL	NULL
+10	5	155168873	135968937	18.6697	59.99	2018-07-30	2018-07-23 18:01:35	S	RCHARGE_FAILURE	RCHARGE_FAILURE
+10	4	151084943	38355275	20.1017	29.99	2018-08-23	2018-07-23 04:12:32	A	NULL	NULL
+10	6	118452556	90264779	20.1017	59.99	2018-08-23	2018-07-23 05:18:44	A	NULL	NULL
+10	31	53127101	18622653	0.0115	49.95	2018-08-23	2018-07-23 07:38:05	A	NULL	NULL
+10	1	118479736	216825119	NULL	29.99	2018-08-23	2018-07-23 11:11:51	A	NULL	NULL
+10	4	142708764	21984202	30.5785	27.50	2018-08-23	2018-07-23 10:36:22	A	NULL	NULL
+10	4	142713364	33598449	20.1017	29.99	2018-07-23	2018-07-23 12:49:24	X	SELF_SERVICE	SELF_SERVICE
+10	22	103578546	152144452	20.1017	29.99	2018-08-23	2018-07-23 11:18:44	A	NULL	NULL
+10	22	111233194	69051	20.1017	29.99	2018-08-23	2018-07-23 08:58:16	A	NULL	NULL
+10	12	132376034	2651098	20.1017	29.99	2018-08-23	2018-07-23 06:01:44	A	NULL	NULL
+10	11	135778714	29866847	18.6717	59.99	2018-08-23	2018-07-23 02:35:58	A	NULL	NULL
+10	10	118525066	34556421	5.9064	29.99	2018-08-23	2018-07-23 21:15:29	A	NULL	NULL
+10	7	144897784	532208226	20.1017	29.99	2018-08-23	2018-07-23 14:35:42	A	NULL	NULL
+10	34	87091713	93626084	5.9064	29.99	2018-08-23	2018-07-23 08:56:25	A	NULL	NULL
+10	21	129323704	14298869	30.5516	55.03	2018-08-23	2018-07-23 05:48:14	A	NULL	NULL
+10	31	112813163	36762074	5.9064	29.99	2018-08-23	2018-07-23 18:07:23	A	NULL	NULL
+10	1	156980833	58308375	NULL	59.99	2018-08-23	2018-07-23 14:54:17	A	NULL	NULL
+10	5	150357953	101207194	20.1017	29.99	2018-08-14	2018-07-23 13:53:14	S	NULL	NULL
+10	1	118462836	668498576	NULL	55.03	2018-08-23	2018-07-23 07:44:11	A	NULL	NULL
+10	7	129423664	312394041	20.1017	29.99	2018-08-23	2018-07-23 20:40:42	A	NULL	NULL
+10	10	122518074	5448199	20.1017	29.99	2018-08-23	2018-07-23 01:30:03	A	NULL	NULL
+10	3	113469566	593079639	20.1037	29.99	2018-08-23	2018-07-23 19:39:05	A	NULL	NULL
+10	4	144878314	88960410	18.6689	55.03	2018-08-23	2018-07-23 11:43:56	A	NULL	NULL
+10	8	146831593	168164335	30.5786	28.03	2018-08-23	2018-07-23 11:34:36	A	NULL	NULL
+10	4	91358385	23752815	29.9896	27.21	2018-08-23	2018-07-23 23:20:30	A	NULL	NULL
+10	3	118533306	286487393	30.5529	44.02	2019-07-23	2018-07-23 23:48:14	A	NULL	NULL
+10	7	103618686	339052539	18.6697	59.99	2018-08-23	2018-07-23 18:26:54	A	NULL	NULL
+10	11	92556375	196464425	29.9896	27.21	2018-08-23	2018-07-23 03:15:07	A	NULL	NULL
+10	11	137563254	239883707	18.6697	59.99	2018-08-23	2018-07-23 02:01:31	A	NULL	NULL
+10	2	116078336	61997052	20.1017	29.99	2018-07-23	2018-07-23 00:55:05	X	SELF_SERVICE	SELF_SERVICE
+PREHOOK: query: SELECT * from teradata_binary_table_1mb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from teradata_binary_table_1mb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+-6	0	-99999	-1	NULL	0.00	2011-01-02	2009-02-28 12:34:56	数	AABBCC	
+5	3200	-9999	NULL	3.14159	314000000.00	NULL	2011-02-28 12:34:56	 	ABC	NULL
+-127	32000	-9	1234567890123456789	2.01E10	3.14	2011-01-02	2022-02-28 12:34:56	数	ありがとうございます	�7��c�
+-1	-32000	0	123456789012345678	2.0108E10	314.15	0001-12-31	NULL	A	thank you	�7��c�  
+127	32767	1	999000	2.034E12	0.04	2099-01-02	NULL	I		�7��c�
+2	-32767	9	987654321098765432	2.019876E12	NULL	2011-01-02	NULL	あ	test	NULL
+3	32	99	-1234567890123456789	2.0E12	3140000000000.00	2999-12-31	0001-12-28 12:34:56	?	***	�7��c�
+-127	32000	100	1234567890123456789	2.01E10	3.14	2011-01-02	2022-02-28 12:34:56	数	ありがとうございます	�7��c�
+-1	-32000	101	123456789012345678	2.0108E10	314.15	2009-09-09	NULL	A	thank you	�7��c�  
+127	32767	102	999000	2.034E12	0.04	2011-01-02	NULL	I		�7��c�
+2	-32767	103	987654321098765432	2.019876E12	NULL	2011-01-02	NULL	あ	test	NULL
+3	32	104	-1234567890123456789	2.01E10	3.14	2011-01-02	0001-12-28 12:34:56	?	*	�7��c�
+-4	320	105	0	2.01E10	3.14	2011-01-02	2010-02-28 12:34:56	NULL	||ありがとうございます||	�7��c�
+5	3200	106	NULL	3.14159	3.14	2011-01-02	2011-02-28 12:34:56	 	ABC	NULL
+-6	0	107	-1	NULL	0.00	2011-01-02	2009-02-28 12:34:56	数	AABBCC	
+7	NULL	108	65536	2.01E-8	NULL	NULL	2099-02-28 12:34:56	数	NULL	�7��c�
+NULL	1	109	256	1.01E18	12.00	2011-01-02	2999-12-31 12:34:56	数	NULL	�7��c�
+-4	320	999	0	2.01E10	3.14	2011-01-02	2010-02-28 12:34:56	NULL	||ありがとうございます||	�7��c�
+NULL	1	1234	256	1.01E18	12.00	2000-01-02	2999-12-31 12:34:56	数	NULL	�7��c�
+7	NULL	999999	65536	2.01E-8	NULL	NULL	2099-02-28 12:34:56	数	NULL	�7��c�
+PREHOOK: query: SELECT COUNT(*) FROM teradata_binary_table_64kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM teradata_binary_table_64kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+50
+PREHOOK: query: SELECT COUNT(*) FROM teradata_binary_table_1mb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM teradata_binary_table_1mb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+20
+PREHOOK: query: SELECT max(date_format(test_timestamp, 'y')) FROM teradata_binary_table_64kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT max(date_format(test_timestamp, 'y')) FROM teradata_binary_table_64kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+2018
+PREHOOK: query: SELECT max(date_format(test_date, 'y')) FROM teradata_binary_table_64kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT max(date_format(test_date, 'y')) FROM teradata_binary_table_64kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+2019
+PREHOOK: query: SELECT max(Floor(test_decimal)) FROM teradata_binary_table_64kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT max(Floor(test_decimal)) FROM teradata_binary_table_64kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+59
+PREHOOK: query: SELECT max(date_format(test_timestamp, 'y')) FROM teradata_binary_table_1mb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT max(date_format(test_timestamp, 'y')) FROM teradata_binary_table_1mb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+2999
+PREHOOK: query: SELECT max(date_format(test_date, 'y')) FROM teradata_binary_table_1mb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT max(date_format(test_date, 'y')) FROM teradata_binary_table_1mb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+2999
+PREHOOK: query: SELECT max(Floor(test_decimal)) FROM teradata_binary_table_1mb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT max(Floor(test_decimal)) FROM teradata_binary_table_1mb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+3140000000000
+PREHOOK: query: SELECT test_tinyint, MAX(test_decimal) FROM teradata_binary_table_64kb GROUP BY test_tinyint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT test_tinyint, MAX(test_decimal) FROM teradata_binary_table_64kb GROUP BY test_tinyint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_64kb
+#### A masked pattern was here ####
+10	59.99
+PREHOOK: query: SELECT test_tinyint, MAX(test_decimal) FROM teradata_binary_table_1mb GROUP BY test_tinyint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT test_tinyint, MAX(test_decimal) FROM teradata_binary_table_1mb GROUP BY test_tinyint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_1mb
+#### A masked pattern was here ####
+NULL	12.00
+-127	3.14
+-6	0.00
+-4	3.14
+-1	314.15
+2	NULL
+3	3140000000000.00
+5	314000000.00
+7	NULL
+127	0.04
+PREHOOK: query: INSERT OVERWRITE TABLE teradata_binary_table_64kb_insert
+SELECT test_tinyint, test_decimal, test_date, test_timestamp FROM teradata_binary_table_64kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@teradata_binary_table_64kb
+PREHOOK: Output: default@teradata_binary_table_64kb_insert
+POSTHOOK: query: INSERT OVERWRITE TABLE teradata_binary_table_64kb_insert
+SELECT test_tinyint, test_decimal, test_date, test_timestamp FROM teradata_binary_table_64kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@teradata_binary_table_64kb
+POSTHOOK: Output: default@teradata_binary_table_64kb_insert
+POSTHOOK: Lineage: teradata_binary_table_64kb_insert.test_date SIMPLE [(teradata_binary_table_64kb)teradata_binary_table_64kb.FieldSchema(name:test_date, type:date, comment:from deserializer), ]
+POSTHOOK: Lineage: teradata_binary_table_64kb_insert.test_decimal SIMPLE [(teradata_binary_table_64kb)teradata_binary_table_64kb.FieldSchema(name:test_decimal, type:decimal(15,2), comment:from deserializer), ]
+POSTHOOK: Lineage: teradata_binary_table_64kb_insert.test_timestamp SIMPLE [(teradata_binary_table_64kb)teradata_binary_table_64kb.FieldSchema(name:test_timestamp, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: teradata_binary_table_64kb_insert.test_tinyint SIMPLE [(teradata_binary_table_64kb)teradata_binary_table_64kb.FieldSchema(name:test_tinyint, type:tinyint, comment:from deserializer), ]
+PREHOOK: query: INSERT OVERWRITE TABLE teradata_binary_table_1mb_insert
+SELECT 1, 15
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@teradata_binary_table_1mb_insert
+POSTHOOK: query: INSERT OVERWRITE TABLE teradata_binary_table_1mb_insert
+SELECT 1, 15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@teradata_binary_table_1mb_insert
+POSTHOOK: Lineage: teradata_binary_table_1mb_insert.test_int SIMPLE []
+POSTHOOK: Lineage: teradata_binary_table_1mb_insert.test_tinyint EXPRESSION []
+PREHOOK: query: DESC FORMATTED teradata_binary_table_64kb_insert
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@teradata_binary_table_64kb_insert
+POSTHOOK: query: DESC FORMATTED teradata_binary_table_64kb_insert
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@teradata_binary_table_64kb_insert
+# col_name            	data_type           	comment             
+test_tinyint        	tinyint             	from deserializer   
+test_decimal        	decimal(15,2)       	from deserializer   
+test_date           	date                	from deserializer   
+test_timestamp      	timestamp           	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	0                   
+	teradata.char.charset	LATIN               
+	teradata.row.length 	64KB                
+	teradata.timestamp.precision	0                   
+	totalSize           	1800                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.TeradataBinaryFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.TeradataBinaryFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESC FORMATTED teradata_binary_table_1mb_insert
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@teradata_binary_table_1mb_insert
+POSTHOOK: query: DESC FORMATTED teradata_binary_table_1mb_insert
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@teradata_binary_table_1mb_insert
+# col_name            	data_type           	comment             
+test_tinyint        	tinyint             	from deserializer   
+test_int            	int                 	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"test_int\":\"true\",\"test_tinyint\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	0                   
+	teradata.char.charset	UNICODE             
+	teradata.row.length 	1MB                 
+	teradata.timestamp.precision	6                   
+	totalSize           	11                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.TeradataBinaryFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.TeradataBinaryFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DROP TABLE if exists teradata_binary_table_64kb
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@teradata_binary_table_64kb
+PREHOOK: Output: default@teradata_binary_table_64kb
+POSTHOOK: query: DROP TABLE if exists teradata_binary_table_64kb
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@teradata_binary_table_64kb
+POSTHOOK: Output: default@teradata_binary_table_64kb
+PREHOOK: query: DROP TABLE if exists teradata_binary_table_1mb
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@teradata_binary_table_1mb
+PREHOOK: Output: default@teradata_binary_table_1mb
+POSTHOOK: query: DROP TABLE if exists teradata_binary_table_1mb
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@teradata_binary_table_1mb
+POSTHOOK: Output: default@teradata_binary_table_1mb
+PREHOOK: query: DROP TABLE if exists teradata_binary_table_64kb_insert
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@teradata_binary_table_64kb_insert
+PREHOOK: Output: default@teradata_binary_table_64kb_insert
+POSTHOOK: query: DROP TABLE if exists teradata_binary_table_64kb_insert
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@teradata_binary_table_64kb_insert
+POSTHOOK: Output: default@teradata_binary_table_64kb_insert
+PREHOOK: query: DROP TABLE if exists teradata_binary_table_1mb_insert
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@teradata_binary_table_1mb_insert
+PREHOOK: Output: default@teradata_binary_table_1mb_insert
+POSTHOOK: query: DROP TABLE if exists teradata_binary_table_1mb_insert
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@teradata_binary_table_1mb_insert
+POSTHOOK: Output: default@teradata_binary_table_1mb_insert

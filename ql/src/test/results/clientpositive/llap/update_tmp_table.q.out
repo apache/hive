@@ -50,7 +50,6 @@ POSTHOOK: query: select * from acid_utt order by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_utt
 #### A masked pattern was here ####
-NULL	0ruyd6Y50JpdGRf6HqD
 -1073279343	oj1YrV5Wa
 -1073051226	A34p7oRr2WvUJNf
 -1072910839	0iqrc5
@@ -60,3 +59,4 @@ NULL	0ruyd6Y50JpdGRf6HqD
 -1071363017	Anj0oF
 -1070551679	iUR3Q
 -1069736047	k17Am8uPHWk02cEf1jet
+NULL	0ruyd6Y50JpdGRf6HqD

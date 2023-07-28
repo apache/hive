@@ -413,7 +413,7 @@ public class LlapZookeeperRegistryImpl
   @Override
   protected String getZkPathUser(Configuration conf) {
     // External LLAP clients would need to set LLAP_ZK_REGISTRY_USER to the LLAP daemon user (hive),
-    // rather than relying on RegistryUtils.currentUser().
-    return HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, RegistryUtils.currentUser());
+    // rather than relying on LlapRegistryService.currentUser().
+    return HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, LlapRegistryService.currentUser());
   }
 }

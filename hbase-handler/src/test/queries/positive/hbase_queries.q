@@ -1,8 +1,8 @@
 DROP TABLE hbase_table_1;
-CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
+CREATE EXTERNAL TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
-TBLPROPERTIES ("hbase.table.name" = "hbase_table_0");
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0", "external.table.purge" = "true");
 
 DESCRIBE EXTENDED hbase_table_1;
 
@@ -52,9 +52,10 @@ ON (x.key = Y.key)
 ORDER BY key,value;
 
 DROP TABLE empty_hbase_table;
-CREATE TABLE empty_hbase_table(key int, value string) 
+CREATE EXTERNAL TABLE empty_hbase_table(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string");
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("external.table.purge" = "true");
 
 DROP TABLE empty_normal_table;
 CREATE TABLE empty_normal_table(key int, value string);
@@ -64,11 +65,12 @@ select * from (select count(1) c from empty_normal_table union all select count(
 select * from (select count(1) c from src union all select count(1) as c from empty_hbase_table) x order by c;
 select * from (select count(1) c from src union all select count(1) as c from hbase_table_1) x order by c;
 
-CREATE TABLE hbase_table_3(key int, value string, count int) 
+CREATE EXTERNAL TABLE hbase_table_3(key int, value string, count int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "cf:val,cf2:count"
-);
+)
+TBLPROPERTIES ("external.table.purge" = "true");
 
 EXPLAIN 
 INSERT OVERWRITE TABLE hbase_table_3
@@ -92,11 +94,12 @@ select * from hbase_table_3 order by key, value limit 5;
 select key, count from hbase_table_3 order by key, count desc limit 5;
 
 DROP TABLE hbase_table_4;
-CREATE TABLE hbase_table_4(key int, value1 string, value2 int, value3 int) 
+CREATE EXTERNAL TABLE hbase_table_4(key int, value1 string, value2 int, value3 int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "a:b,a:c,d:e"
-);
+)
+TBLPROPERTIES ("external.table.purge" = "true");
 
 INSERT OVERWRITE TABLE hbase_table_4 SELECT key, value, key+1, key+2 
 FROM src WHERE key=98 OR key=100;
@@ -112,22 +115,24 @@ TBLPROPERTIES ("hbase.table.name" = "hbase_table_4");
 SELECT * FROM hbase_table_5 ORDER BY key;
 
 DROP TABLE hbase_table_6;
-CREATE TABLE hbase_table_6(key int, value map<string,string>) 
+CREATE EXTERNAL TABLE hbase_table_6(key int, value map<string,string>) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = ":key,cf:"
-);
+)
+TBLPROPERTIES ("external.table.purge" = "true");
 INSERT OVERWRITE TABLE hbase_table_6 SELECT key, map(value, key) FROM src
 WHERE key=98 OR key=100;
 
 SELECT * FROM hbase_table_6 ORDER BY key;
 
 DROP TABLE hbase_table_7;
-CREATE TABLE hbase_table_7(value map<string,string>, key int) 
+CREATE EXTERNAL TABLE hbase_table_7(value map<string,string>, key int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "cf:,:key"
-);
+)
+TBLPROPERTIES ("external.table.purge" = "true");
 INSERT OVERWRITE TABLE hbase_table_7 
 SELECT map(value, key, upper(value), key+1), key FROM src
 WHERE key=98 OR key=100;
@@ -137,11 +142,12 @@ SELECT * FROM hbase_table_7 ORDER BY key;
 set hive.hbase.wal.enabled=false;
 
 DROP TABLE hbase_table_8;
-CREATE TABLE hbase_table_8(key int, value1 string, value2 int, value3 int) 
+CREATE EXTERNAL TABLE hbase_table_8(key int, value1 string, value2 int, value3 int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "a:b,a:c,d:e"
-);
+)
+TBLPROPERTIES ("external.table.purge" = "true");
 
 INSERT OVERWRITE TABLE hbase_table_8 SELECT key, value, key+1, key+2 
 FROM src WHERE key=98 OR key=100;
@@ -165,9 +171,10 @@ SELECT COUNT(*) FROM hbase_table_1_like;
 SHOW CREATE TABLE hbase_table_1_like;
 
 DROP TABLE IF EXISTS hbase_table_9;
-CREATE TABLE hbase_table_9 (id bigint, data map<string, string>, str string)
+CREATE EXTERNAL TABLE hbase_table_9 (id bigint, data map<string, string>, str string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col#s:s,cf:str_col");
+with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col#s:s,cf:str_col")
+TBLPROPERTIES ("external.table.purge" = "true");
 
 insert overwrite table hbase_table_9 select 1 as id, map('abcd', null) as data , null as str from src limit 1;
 insert into table hbase_table_9 select 2 as id, map('efgh', null) as data , '1234' as str from src limit 1;
@@ -177,9 +184,10 @@ insert into table hbase_table_9 select 5 as id, map('key1',null, 'key2', 'avalue
 select * from hbase_table_9;
 
 DROP TABLE IF EXISTS hbase_table_10;
-CREATE TABLE hbase_table_10 (id bigint, data map<int, int>, str string)
+CREATE EXTERNAL TABLE hbase_table_10 (id bigint, data map<int, int>, str string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col2,cf:str2_col");
+with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col2,cf:str2_col")
+TBLPROPERTIES ("external.table.purge" = "true");
 set hive.cbo.enable=false;
 insert overwrite table hbase_table_10 select 1 as id, map(10, cast(null as int)) as data , null as str from src limit 1;
 insert into table hbase_table_10 select 2 as id, map(20, cast(null as int)) as data , '1234' as str from src limit 1;
@@ -190,16 +198,18 @@ select * from hbase_table_10;
 
 
 DROP TABLE IF EXISTS hbase_table_11;
-CREATE TABLE hbase_table_11(id INT, map_column STRUCT<s_int:INT,s_string:STRING,s_date:DATE>)
+CREATE EXTERNAL TABLE hbase_table_11(id INT, map_column STRUCT<s_int:INT,s_string:STRING,s_date:DATE>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id');
+WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
+TBLPROPERTIES ("external.table.purge" = "true");
 INSERT INTO hbase_table_11 SELECT 2,NAMED_STRUCT("s_int",CAST(NULL AS INT),"s_string","s1","s_date",CAST('2018-03-12' AS DATE)) FROM src LIMIT 1;
 select * from hbase_table_11;
 
 DROP TABLE IF EXISTS hbase_table_12;
-CREATE TABLE hbase_table_12(id INT, list_column ARRAY <STRING>)
+CREATE EXTERNAL TABLE hbase_table_12(id INT, list_column ARRAY <STRING>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id');
+WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
+TBLPROPERTIES ("external.table.purge" = "true");
 INSERT INTO hbase_table_12 SELECT 2, ARRAY("a", CAST (NULL AS STRING),  "b") FROM src LIMIT 1;
 select * from hbase_table_12;
 

@@ -1,8 +1,8 @@
-PREHOOK: query: create table tti(i int , j int, constraint ch1 check i > j)
+PREHOOK: query: create table tti(i int , j int, constraint ch1 check (i > j))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tti
-POSTHOOK: query: create table tti(i int , j int, constraint ch1 check i > j)
+POSTHOOK: query: create table tti(i int , j int, constraint ch1 check (i > j))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tti

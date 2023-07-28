@@ -279,10 +279,10 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 159 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: bigint), _col1 (type: date), _col3 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), VALUE._col1 (type: date), KEY.reducesinkkey0 (type: bigint), VALUE._col2 (type: string)
@@ -352,10 +352,10 @@ STAGE PLANS:
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: date), _col1 (type: bigint), _col2 (type: string)
                         Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: date), KEY._col1 (type: bigint), KEY._col2 (type: string)
@@ -505,10 +505,10 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -582,10 +582,10 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -668,10 +668,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: date)
                           Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)

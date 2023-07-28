@@ -64,6 +64,10 @@ public class VectorUDFMapIndexStringScalar extends VectorUDFMapIndexBaseScalar {
   @Override
   protected Object getKeyByIndex(ColumnVector cv, int index) {
     BytesColumnVector bytesCV = (BytesColumnVector) cv;
+    if (cv.isRepeating) {
+      return ArrayUtils.subarray(bytesCV.vector[0], bytesCV.start[index],
+          bytesCV.start[index] + bytesCV.length[0]);
+    }
     return ArrayUtils.subarray(bytesCV.vector[index], bytesCV.start[index],
         bytesCV.start[index] + bytesCV.length[index]);
   }

@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -41,7 +42,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
-import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.OpTraitsRulesProcFactory;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -76,6 +76,8 @@ public class AnnotateWithOpTraits extends Transform {
         OpTraitsRulesProcFactory.getMultiParentRule());
     opRules.put(new RuleRegExp("GBY", GroupByOperator.getOperatorName() + "%"),
         OpTraitsRulesProcFactory.getGroupByRule());
+    opRules.put(new RuleRegExp("PTF", PTFOperator.getOperatorName() + "%"),
+        OpTraitsRulesProcFactory.getPTFRule());
     opRules.put(new RuleRegExp("SEL", SelectOperator.getOperatorName() + "%"),
         OpTraitsRulesProcFactory.getSelectRule());
 

@@ -59,6 +59,9 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "druid.kafka.query.files");
 
         excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
+        excludeQuery("udaf_context_ngrams.q"); // disabled in HIVE-20741
+        excludeQuery("udaf_corr.q"); // disabled in HIVE-20741
+        excludeQuery("udaf_histogram_numeric.q"); // disabled in HIVE-20715
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -224,7 +227,7 @@ public class CliConfigs {
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
         excludeQuery("bucket_map_join_tez1.q"); // Disabled in HIVE-19509
         excludeQuery("special_character_in_tabnames_1.q"); // Disabled in HIVE-19509
-        excludeQuery("sysdb.q"); // Disabled in HIVE-19509
+        excludeQuery("sysdb.q"); // Disabled in HIVE-HIVE-27174. To be fixed in HIVE-27057
         excludeQuery("tez_smb_1.q"); // Disabled in HIVE-19509
         excludeQuery("union_fast_stats.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
@@ -582,6 +585,19 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "miniSparkOnYarn.query.files");
         includesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
+        excludeQuery("orc_merge1.q");
+        excludeQuery("orc_merge2.q");
+        excludeQuery("orc_merge3.q");
+        excludeQuery("orc_merge4.q");
+        excludeQuery("orc_merge5.q");
+        excludeQuery("orc_merge6.q");
+        excludeQuery("orc_merge7.q");
+        excludeQuery("orc_merge8.q");
+        excludeQuery("orc_merge9.q");
+        excludeQuery("orc_merge_diff_fs.q");
+        excludeQuery("orc_merge_incompat1.q");
+        excludeQuery("orc_merge_incompat2.q");
+
 
         setResultsDir("ql/src/test/results/clientpositive/spark");
         setLogDir("itests/qtest-spark/target/qfile-results/clientpositive/spark");

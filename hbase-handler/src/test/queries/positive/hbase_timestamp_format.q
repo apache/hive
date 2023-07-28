@@ -1,8 +1,8 @@
 
-create table hbase_str(rowkey string,mytime string,mystr string)
+create external table hbase_str(rowkey string,mytime string,mystr string)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ('hbase.columns.mapping' = 'm:mytime,m:mystr')
-  TBLPROPERTIES ('hbase.table.name' = 'hbase_ts');
+  TBLPROPERTIES ('hbase.table.name' = 'hbase_ts', 'external.table.purge' = 'true');
 
 describe hbase_str;
 insert overwrite table hbase_str select key, '2001-02-03-04.05.06.123456', value from src limit 3;

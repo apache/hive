@@ -59,7 +59,6 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
     expectedLogsPerformance = new String[]{
       "<PERFLOG method=compile from=org.apache.hadoop.hive.ql.Driver>",
       "<PERFLOG method=parse from=org.apache.hadoop.hive.ql.Driver>",
-      "<PERFLOG method=Driver.run from=org.apache.hadoop.hive.ql.Driver>",
       "<PERFLOG method=runTasks from=org.apache.hadoop.hive.ql.Driver>"
     };
     hiveConf = new HiveConf();

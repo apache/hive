@@ -128,7 +128,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
             Map Operator Tree:
@@ -148,7 +148,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -172,7 +172,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
@@ -275,16 +275,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	No                  	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
@@ -333,7 +334,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
             Map Operator Tree:
@@ -353,7 +354,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -377,7 +378,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
@@ -507,16 +508,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
@@ -624,7 +626,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 7 
             Map Operator Tree:
@@ -644,7 +646,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 8 
             Map Operator Tree:
@@ -665,7 +667,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -689,7 +691,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
@@ -826,16 +828,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)

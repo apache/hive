@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +32,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -46,17 +46,25 @@ import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.Entity;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -71,21 +79,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import java.io.IOException;
-import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
-
 
 /**
  * Utilities that are shared by all of the ACID input and output formats. They
@@ -1907,6 +1901,28 @@ public class AcidUtils {
     return null;
   }
 
+  //Get the first level acid directory (if any) from a given path
+  public static String getFirstLevelAcidDirPath(Path dataPath, FileSystem fileSystem) throws IOException {
+    if (dataPath == null) {
+      return null;
+    }
+    String firstLevelAcidDir = getAcidSubDir(dataPath);
+    if (firstLevelAcidDir != null) {
+      return firstLevelAcidDir;
+    }
+
+    String acidDirPath = getFirstLevelAcidDirPath(dataPath.getParent(), fileSystem);
+    if (acidDirPath == null) {
+      return null;
+    }
+
+    // We need the path for directory so no need to append file name
+    if (fileSystem.isDirectory(dataPath)) {
+      return acidDirPath + Path.SEPARATOR + dataPath.getName();
+    }
+    return acidDirPath;
+  }
+
   public static boolean isAcidEnabled(HiveConf hiveConf) {
     String txnMgr = hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
     boolean concurrency =  hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
@@ -1976,5 +1992,203 @@ public class AcidUtils {
   public static void setNonTransactional(Map<String, String> tblProps) {
     tblProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false");
     tblProps.remove(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+  }
+
+  private static boolean needsLock(Entity entity) {
+    switch (entity.getType()) {
+      case TABLE:
+        return isLockableTable(entity.getTable());
+      case PARTITION:
+        return isLockableTable(entity.getPartition().getTable());
+      default:
+        return true;
+    }
+  }
+
+  private static Table getTable(WriteEntity we) {
+    Table t = we.getTable();
+    if (t == null) {
+      throw new IllegalStateException("No table info for " + we);
+    }
+    return t;
+  }
+
+  private static boolean isLockableTable(Table t) {
+    if (t.isTemporary()) {
+      return false;
+    }
+    switch (t.getTableType()) {
+      case MANAGED_TABLE:
+      case MATERIALIZED_VIEW:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Create lock components from write/read entities.
+   * @param outputs write entities
+   * @param inputs read entities
+   * @param conf
+   * @return list with lock components
+   */
+  public static List<LockComponent> makeLockComponents(Set<WriteEntity> outputs, Set<ReadEntity> inputs,
+                                                       HiveConf conf) {
+    List<LockComponent> lockComponents = new ArrayList<>();
+    // For each source to read, get a shared lock
+    for (ReadEntity input : inputs) {
+      if (!input.needsLock() || input.isUpdateOrDelete() || !AcidUtils.needsLock(input)) {
+        // We don't want to acquire read locks during update or delete as we'll be acquiring write
+        // locks instead. Also, there's no need to lock temp tables since they're session wide
+        continue;
+      }
+      LockComponentBuilder compBuilder = new LockComponentBuilder();
+      compBuilder.setShared();
+      compBuilder.setOperationType(DataOperationType.SELECT);
+
+      Table t = null;
+      switch (input.getType()) {
+        case DATABASE:
+          compBuilder.setDbName(input.getDatabase().getName());
+          break;
+
+        case TABLE:
+          t = input.getTable();
+          compBuilder.setDbName(t.getDbName());
+          compBuilder.setTableName(t.getTableName());
+          break;
+
+        case PARTITION:
+        case DUMMYPARTITION:
+          compBuilder.setPartitionName(input.getPartition().getName());
+          t = input.getPartition().getTable();
+          compBuilder.setDbName(t.getDbName());
+          compBuilder.setTableName(t.getTableName());
+          break;
+
+        default:
+          // This is a file or something we don't hold locks for.
+          continue;
+      }
+      if (t != null) {
+        compBuilder.setIsTransactional(AcidUtils.isTransactionalTable(t));
+      }
+      LockComponent comp = compBuilder.build();
+      LOG.debug("Adding lock component to lock request " + comp.toString());
+      lockComponents.add(comp);
+    }
+    // For each source to write to, get the appropriate lock type.  If it's
+    // an OVERWRITE, we need to get an exclusive lock.  If it's an insert (no
+    // overwrite) than we need a shared.  If it's update or delete then we
+    // need a SEMI-SHARED.
+    for (WriteEntity output : outputs) {
+      LOG.debug("output is null " + (output == null));
+      if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR || !AcidUtils
+              .needsLock(output)) {
+        // We don't lock files or directories. We also skip locking temp tables.
+        continue;
+      }
+      LockComponentBuilder compBuilder = new LockComponentBuilder();
+      Table t = null;
+      switch (output.getType()) {
+        case DATABASE:
+          compBuilder.setDbName(output.getDatabase().getName());
+          break;
+
+        case TABLE:
+        case DUMMYPARTITION:   // in case of dynamic partitioning lock the table
+          t = output.getTable();
+          compBuilder.setDbName(t.getDbName());
+          compBuilder.setTableName(t.getTableName());
+          break;
+
+        case PARTITION:
+          compBuilder.setPartitionName(output.getPartition().getName());
+          t = output.getPartition().getTable();
+          compBuilder.setDbName(t.getDbName());
+          compBuilder.setTableName(t.getTableName());
+          break;
+
+        default:
+          // This is a file or something we don't hold locks for.
+          continue;
+      }
+      switch (output.getWriteType()) {
+        /* base this on HiveOperation instead?  this and DDL_NO_LOCK is peppered all over the code...
+         Seems much cleaner if each stmt is identified as a particular HiveOperation (which I'd think
+         makes sense everywhere).  This however would be problematic for merge...*/
+        case DDL_EXCLUSIVE:
+          compBuilder.setExclusive();
+          compBuilder.setOperationType(DataOperationType.NO_TXN);
+          break;
+        case INSERT_OVERWRITE:
+          t = AcidUtils.getTable(output);
+          if (AcidUtils.isTransactionalTable(t)) {
+            if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK)) {
+              compBuilder.setExclusive();
+            } else {
+              compBuilder.setSemiShared();
+            }
+            compBuilder.setOperationType(DataOperationType.UPDATE);
+          } else {
+            compBuilder.setExclusive();
+            compBuilder.setOperationType(DataOperationType.NO_TXN);
+          }
+          break;
+        case INSERT:
+          assert t != null;
+          if (AcidUtils.isTransactionalTable(t)) {
+            compBuilder.setShared();
+          } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
+            final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
+                    "Thought all the non native tables have an instance of storage handler"
+            );
+            LockType lockType = storageHandler.getLockType(output);
+            if (null == LockType.findByValue(lockType.getValue())) {
+              throw new IllegalArgumentException(String
+                      .format("Lock type [%s] for Database.Table [%s.%s] is unknown", lockType, t.getDbName(),
+                              t.getTableName()));
+            }
+            compBuilder.setLock(lockType);
+          } else {
+              if (conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE)) {
+                  compBuilder.setExclusive();
+              } else {  // this is backward compatible for non-ACID resources, w/o ACID semantics
+                  compBuilder.setShared();
+              }
+          }
+          compBuilder.setOperationType(DataOperationType.INSERT);
+          break;
+        case DDL_SHARED:
+          compBuilder.setShared();
+          compBuilder.setOperationType(DataOperationType.NO_TXN);
+          break;
+
+        case UPDATE:
+          compBuilder.setSemiShared();
+          compBuilder.setOperationType(DataOperationType.UPDATE);
+          break;
+        case DELETE:
+          compBuilder.setSemiShared();
+          compBuilder.setOperationType(DataOperationType.DELETE);
+          break;
+
+        case DDL_NO_LOCK:
+          continue; // No lock required here
+
+        default:
+          throw new RuntimeException("Unknown write type " + output.getWriteType().toString());
+      }
+      if (t != null) {
+        compBuilder.setIsTransactional(AcidUtils.isTransactionalTable(t));
+      }
+
+      compBuilder.setIsDynamicPartitionWrite(output.isDynamicPartitionWrite());
+      LockComponent comp = compBuilder.build();
+      LOG.debug("Adding lock component to lock request " + comp.toString());
+      lockComponents.add(comp);
+    }
+    return lockComponents;
   }
 }

@@ -58,9 +58,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 vector_date_1.dt1	vector_date_1.dt2
-NULL	NULL
 1999-12-31	2000-01-01
 2001-01-01	2001-06-01
+NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -160,7 +160,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -227,9 +227,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	dt2	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	2000-01-01	true	true	true	true	true	true	true	true
 2001-01-01	2001-06-01	true	true	true	true	true	true	true	true
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -329,7 +329,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -396,9 +396,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	dt2	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	2000-01-01	false	false	false	false	false	false	false	false
 2001-01-01	2001-06-01	false	false	false	false	false	false	false	false
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1,
@@ -498,7 +498,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -565,9 +565,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	true	true	true	true	true	true	true	true
 2001-01-01	true	true	true	true	true	true	true	true
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1,
@@ -667,7 +667,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -734,9 +734,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	false	false	false	false	false	false	false	false
 2001-01-01	false	false	false	false	false	false	false	false
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1, dt2
@@ -840,7 +840,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false

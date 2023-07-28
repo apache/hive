@@ -145,7 +145,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -173,7 +173,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -237,11 +237,11 @@ POSTHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 return_rank
 1
-2
-2
-2
-5
-5
+1
+1
+4
+4
+6
 7
 PREHOOK: query: explain vectorization detail
 select avg(cast(ws.key as int)) over (partition by min(ws.value) order by sum(ws.c_int)) as return_rank
@@ -383,7 +383,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -411,7 +411,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         partition by: _col1
                         raw input shape:
                         window functions:
@@ -1071,7 +1071,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1099,7 +1099,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: (UDFToDouble(_col1) / UDFToDouble(_col2)) ASC NULLS FIRST
+                        order by: (UDFToDouble(_col1) / UDFToDouble(_col2)) ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:

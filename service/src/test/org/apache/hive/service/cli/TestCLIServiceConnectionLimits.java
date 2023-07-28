@@ -329,7 +329,7 @@ public class TestCLIServiceConnectionLimits {
   private CLIService getService(HiveConf conf) {
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    CLIService service = new CLIService(null);
+    CLIService service = new CLIService(null, true);
     service.init(conf);
     service.start();
     return service;

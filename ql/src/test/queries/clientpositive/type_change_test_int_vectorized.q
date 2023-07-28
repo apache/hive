@@ -1,5 +1,3 @@
--- set this to 'decimal_64' after resolving HIVE-19792
-set hive.vectorized.input.format.supports.enabled=none;
 -- Create a base table to be used for loading data: Begin
 drop table if exists testAltCol;
 create table testAltCol

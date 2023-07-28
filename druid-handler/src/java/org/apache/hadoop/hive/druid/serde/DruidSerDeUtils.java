@@ -29,9 +29,6 @@ public final class DruidSerDeUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(DruidSerDeUtils.class);
 
-  protected static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-  protected static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
   protected static final String FLOAT_TYPE = "FLOAT";
   protected static final String DOUBLE_TYPE = "DOUBLE";
   protected static final String LONG_TYPE = "LONG";

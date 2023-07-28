@@ -12,8 +12,6 @@ using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
-using boost::shared_ptr;
-
 using namespace  ::Apache::Hadoop::Hive;
 
 class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
@@ -847,6 +845,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("flushCache\n");
   }
 
+  void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst) {
+    // Your implementation goes here
+    printf("add_write_notification_log\n");
+  }
+
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
     // Your implementation goes here
     printf("cm_recycle\n");
@@ -1061,11 +1064,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
 
 int main(int argc, char **argv) {
   int port = 9090;
-  shared_ptr<ThriftHiveMetastoreHandler> handler(new ThriftHiveMetastoreHandler());
-  shared_ptr<TProcessor> processor(new ThriftHiveMetastoreProcessor(handler));
-  shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+  ::std::shared_ptr<ThriftHiveMetastoreHandler> handler(new ThriftHiveMetastoreHandler());
+  ::std::shared_ptr<TProcessor> processor(new ThriftHiveMetastoreProcessor(handler));
+  ::std::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+  ::std::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+  ::std::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
   TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
   server.serve();

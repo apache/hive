@@ -360,28 +360,37 @@ STAGE PLANS:
                         projectedOutputColumnNums: [20]
                         selectExpressions: StringGroupConcatColCol(col 18:string, col 19:string)(children: StringGroupColConcatStringScalar(col 19:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 18:string)(children: CastLongToString(col 14:int)(children: CastDoubleToLong(col 16:double)(children: DoubleColAddDoubleScalar(col 17:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 16:double, val 3.0)(children: CastLongToDouble(col 15:int)(children: LongColSubtractLongScalar(col 14:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 14:int) -> 15:int) -> 16:double) -> 17:double) -> 16:double) -> 14:int) -> 18:string) -> 19:string) -> 18:string, CastLongToString(col 14:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 14:int) -> 19:string) -> 20:string
                     Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      Group By Vectorization:
-                          className: VectorGroupByOperator
-                          groupByMode: HASH
-                          keyExpressions: col 20:string
-                          native: false
-                          vectorProcessingMode: HASH
-                          projectedOutputColumnNums: []
+                    Top N Key Operator
+                      sort order: +
                       keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkStringOperator
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      top n: 50
+                      Top N Key Vectorization:
+                          className: VectorTopNKeyOperator
+                          keyExpressions: col 20:string
+                          native: true
+                      Group By Operator
+                        Group By Vectorization:
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            keyExpressions: col 20:string
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: []
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkStringOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -479,7 +488,6 @@ POSTHOOK: query: SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2korc_n0
 #### A masked pattern was here ####
-NULL
 Quarter 1-1970
 Quarter 1-1971
 Quarter 1-1972
@@ -529,3 +537,4 @@ Quarter 1-2015
 Quarter 1-2016
 Quarter 1-2017
 Quarter 1-2018
+Quarter 1-2019

@@ -24,13 +24,13 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
 
+import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.dateInspectorFromStats;
+
 public class DateColumnStatsMerger extends ColumnStatsMerger {
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
-    DateColumnStatsDataInspector aggregateData =
-        (DateColumnStatsDataInspector) aggregateColStats.getStatsData().getDateStats();
-    DateColumnStatsDataInspector newData =
-        (DateColumnStatsDataInspector) newColStats.getStatsData().getDateStats();
+    DateColumnStatsDataInspector aggregateData = dateInspectorFromStats(aggregateColStats);
+    DateColumnStatsDataInspector newData = dateInspectorFromStats(newColStats);
     Date lowValue = aggregateData.getLowValue().compareTo(newData.getLowValue()) < 0 ? aggregateData
         .getLowValue() : newData.getLowValue();
     aggregateData.setLowValue(lowValue);

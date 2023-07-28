@@ -132,7 +132,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
         deletePath = createTargetPath(targetPath, tgtFs);
       }
-      Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
+      //For acid table incremental replication, just copy the content of staging directory to destination.
+      //No need to clean it.
+      if (work.isNeedCleanTarget()) {
+        Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
+      }
       // Set isManaged to false as this is not load data operation for which it is needed.
       if (!Hive.moveFile(conf, sourcePath, targetPath, true, false, false)) {
         try {
@@ -307,10 +311,15 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             }
           }
           else {
+            FileSystem targetFs = targetPath.getFileSystem(conf);
+            if (!targetFs.exists(targetPath.getParent())){
+              targetFs.mkdirs(targetPath.getParent());
+            }
             moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
           }
         }
       }
+
       // Multi-file load is for dynamic partitions when some partitions do not
       // need to merge and they can simply be moved to the target directory.
       // This is also used for MM table conversion.

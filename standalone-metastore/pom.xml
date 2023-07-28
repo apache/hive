@@ -25,12 +25,13 @@
 
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-standalone-metastore</artifactId>
-  <version>3.1.3</version>
+  <version>3.2.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Hive Standalone Metastore</name>
 
   <properties>
-    <hive.version.shortname>3.1.0</hive.version.shortname>
+    <hive.version>3.2.0-SNAPSHOT</hive.version>
+    <hive.version.shortname>3.2.0</hive.version.shortname>
 
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -40,6 +41,7 @@
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
     <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
+    <maven.setversion.plugin.version>2.13.0</maven.setversion.plugin.version>
 
     <!-- Test Properties -->
     <log4j.conf.dir>${project.basedir}/src/test/resources</log4j.conf.dir>
@@ -68,6 +70,7 @@
     <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
     <derby.version>10.10.2.0</derby.version>
+    <postgres.version>42.5.1</postgres.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>19.0</guava.version>
@@ -77,18 +80,22 @@
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.11</junit.version>
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.9.3</libthrift.version>
+    <libthrift.version>0.13.0</libthrift.version>
     <log4j2.version>2.17.1</log4j2.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <orc.version>1.5.1</orc.version>
     <protobuf.version>2.5.0</protobuf.version>
     <sqlline.version>1.3.0</sqlline.version>
-    <storage-api.version>2.7.0</storage-api.version>
+    <storage-api.version>2.6.1-SNAPSHOT</storage-api.version>
+    <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
+    <pac4j-core.version>4.5.5</pac4j-core.version>
+    <nimbus-jose-jwt.version>9.20</nimbus-jose-jwt.version>
 
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
-    <thrift.args>-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb</thrift.args>
+    <thrift.args>-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
+    </thrift.args>
 
   </properties>
 
@@ -105,6 +112,10 @@
         <exclusion>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-storage-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -213,6 +224,10 @@
         <exclusion>
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -342,7 +357,28 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>9.3-1102-jdbc41</version>
+      <version>${postgres.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>${httpcomponents.core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>nimbus-jose-jwt</artifactId>
+      <version>${nimbus-jose-jwt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-core</artifactId>
+      <version>${pac4j-core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-jre8-standalone</artifactId>
+      <version>2.32.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -521,6 +557,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven.checkstyle.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>${maven.setversion.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -717,6 +758,7 @@
             <exclude>**/gen/**</exclude>
             <exclude>**/patchprocess/**</exclude>
             <exclude>**/metastore_db/**</exclude>
+            <exclude>**/test/resources/**/*.json</exclude>
           </excludes>
         </configuration>
       </plugin>

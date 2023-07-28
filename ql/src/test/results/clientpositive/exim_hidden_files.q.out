@@ -15,11 +15,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@exim_employee_n6
 POSTHOOK: Output: default@exim_employee_n6@emp_country=in
-PREHOOK: query: export table exim_employee_n6 to 'ql/test/data/exports/exim_employee'
+PREHOOK: query: export table exim_employee_n6 to 'ql/test/data/exports/exim_employee_n6'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_employee_n6@emp_country=in
 #### A masked pattern was here ####
-POSTHOOK: query: export table exim_employee_n6 to 'ql/test/data/exports/exim_employee'
+POSTHOOK: query: export table exim_employee_n6 to 'ql/test/data/exports/exim_employee_n6'
 POSTHOOK: type: EXPORT
 POSTHOOK: Input: default@exim_employee_n6@emp_country=in
 #### A masked pattern was here ####
@@ -43,11 +43,11 @@ PREHOOK: Input: database:importer
 POSTHOOK: query: use importer
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:importer
-PREHOOK: query: import from 'ql/test/data/exports/exim_employee'
+PREHOOK: query: import from 'ql/test/data/exports/exim_employee_n6'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
 PREHOOK: Output: database:importer
-POSTHOOK: query: import from 'ql/test/data/exports/exim_employee'
+POSTHOOK: query: import from 'ql/test/data/exports/exim_employee_n6'
 POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
 POSTHOOK: Output: database:importer

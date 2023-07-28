@@ -315,6 +315,7 @@ POSTHOOK: query: select ctinyint,avg(cdouble + 1) from alltypesparquet group by 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
+-45	326.44444444444446
 -46	3033.55
 -47	-574.6428571428571
 -48	1672.909090909091
@@ -334,7 +335,6 @@ POSTHOOK: Input: default@alltypesparquet
 -62	245.69387755102042
 -63	2178.7272727272725
 -64	373.52941176470586
-NULL	9370.0945309795
 PREHOOK: query: explain vectorization detail
 select distinct(ctinyint) from alltypesparquet limit 20
 PREHOOK: type: QUERY
@@ -548,6 +548,7 @@ POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesparquet 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
+-45	24
 -46	24
 -47	22
 -48	29
@@ -567,7 +568,6 @@ POSTHOOK: Input: default@alltypesparquet
 -62	27
 -63	19
 -64	24
-NULL	2932
 PREHOOK: query: explain vectorization detail
 select ctinyint,cdouble from alltypesparquet order by ctinyint limit 0
 PREHOOK: type: QUERY

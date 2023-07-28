@@ -107,6 +107,7 @@ public class TestMsckDropPartitionsInBatches {
     Set<PartitionResult> partsNotInFs = new HashSet<>();
     for (int i = 0; i < numOfParts; i++) {
       PartitionResult result = new PartitionResult();
+      result.setTableName(tableName);
       result.setPartitionName("city=dummyCity_" + String.valueOf(i));
       partsNotInFs.add(result);
     }

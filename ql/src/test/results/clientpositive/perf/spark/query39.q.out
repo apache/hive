@@ -306,10 +306,10 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col3, _col4, _col5, _col6
                   Statistics: Num rows: 25012152 Data size: 395187961 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: CASE WHEN (((_col3 / _col4) = 0)) THEN (false) ELSE (((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (_col3 / _col4)) > 1.0D)) END (type: boolean)
+                    predicate: CASE WHEN (((UDFToDouble(_col3) / _col4) = 0)) THEN (false) ELSE (((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (UDFToDouble(_col3) / _col4)) > 1.0D)) END (type: boolean)
                     Statistics: Num rows: 12506076 Data size: 197593980 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), (_col3 / _col4) (type: double), CASE WHEN (((_col3 / _col4) = 0)) THEN (null) ELSE ((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (_col3 / _col4))) END (type: double)
+                      expressions: _col0 (type: int), _col1 (type: int), (UDFToDouble(_col3) / _col4) (type: double), CASE WHEN (((UDFToDouble(_col3) / _col4) = 0)) THEN (null) ELSE ((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (UDFToDouble(_col3) / _col4))) END (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 12506076 Data size: 197593980 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
@@ -386,10 +386,10 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col3, _col4, _col5, _col6
                   Statistics: Num rows: 25012152 Data size: 395187961 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: CASE WHEN (((_col3 / _col4) = 0)) THEN (false) ELSE (((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (_col3 / _col4)) > 1.0D)) END (type: boolean)
+                    predicate: CASE WHEN (((UDFToDouble(_col3) / _col4) = 0)) THEN (false) ELSE (((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (UDFToDouble(_col3) / _col4)) > 1.0D)) END (type: boolean)
                     Statistics: Num rows: 12506076 Data size: 197593980 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), (_col3 / _col4) (type: double), CASE WHEN (((_col3 / _col4) = 0)) THEN (null) ELSE ((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (_col3 / _col4))) END (type: double)
+                      expressions: _col0 (type: int), _col1 (type: int), (UDFToDouble(_col3) / _col4) (type: double), CASE WHEN (((UDFToDouble(_col3) / _col4) = 0)) THEN (null) ELSE ((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (UDFToDouble(_col3) / _col4))) END (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 12506076 Data size: 197593980 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator

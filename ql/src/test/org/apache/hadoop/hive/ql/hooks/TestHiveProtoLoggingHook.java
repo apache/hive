@@ -64,7 +64,7 @@ public class TestHiveProtoLoggingHook {
   public void setup() throws Exception {
     conf = new HiveConf();
     tmpFolder = folder.newFolder().getAbsolutePath();
-    conf.set(HiveProtoLoggingHook.HIVE_EVENTS_BASE_PATH, tmpFolder);
+    conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
     QueryState state = new QueryState.Builder().withHiveConf(conf).build();
     @SuppressWarnings("serial")
     QueryPlan queryPlan = new QueryPlan(HiveOperation.QUERY) {};

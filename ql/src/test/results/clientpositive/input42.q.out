@@ -12,6 +12,9 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1151,6 +1154,9 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND `key` < 200
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1672,6 +1678,9 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND RAND(100) < 0.1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

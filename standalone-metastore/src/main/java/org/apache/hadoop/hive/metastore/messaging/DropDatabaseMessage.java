@@ -19,9 +19,13 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
+import org.apache.hadoop.hive.metastore.api.Database;
+
 public abstract class DropDatabaseMessage extends EventMessage {
 
   protected DropDatabaseMessage() {
     super(EventType.DROP_DATABASE);
   }
+
+  public abstract Database getDatabaseObject() throws Exception;
 }

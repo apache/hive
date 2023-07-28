@@ -2,15 +2,17 @@ PREHOOK: query: DROP TABLE hbase_table
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` timestamp)
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table (key string, value string, `time` timestamp)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+  TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
-POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` timestamp)
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table (key string, value string, `time` timestamp)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+  TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table
@@ -69,15 +71,17 @@ POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table
 POSTHOOK: Output: default@hbase_table
-PREHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` bigint)
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table (key string, value string, `time` bigint)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+  TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
-POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` bigint)
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table (key string, value string, `time` bigint)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+  TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table
@@ -125,15 +129,17 @@ POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table
 POSTHOOK: Output: default@hbase_table
-PREHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` bigint)
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table (key string, value string, `time` bigint)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+  TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
-POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` bigint)
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table (key string, value string, `time` bigint)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+  TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table
@@ -379,15 +385,17 @@ POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table
 POSTHOOK: Output: default@hbase_table
-PREHOOK: query: CREATE TABLE hbase_table(key string, value map<string, string>, `time` timestamp)
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table(key string, value map<string, string>, `time` timestamp)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:,:timestamp")
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
-POSTHOOK: query: CREATE TABLE hbase_table(key string, value map<string, string>, `time` timestamp)
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table(key string, value map<string, string>, `time` timestamp)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:,:timestamp")
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table

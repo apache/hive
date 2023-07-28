@@ -16,18 +16,33 @@ PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK TABLE default.repairtable_n1
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=1/p2=11	repairtable_n1:p1=1/p2=12	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n1
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=1/p2=11	repairtable_n1:p1=1/p2=12	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
+#### A masked pattern was here ####
 PREHOOK: query: show partitions default.repairtable_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n1
 POSTHOOK: query: show partitions default.repairtable_n1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n1
+p1=1/p2=11
+p1=1/p2=12
+p1=2/p2=21
+p1=2/p2=210
+p1=2/p2=22
+p1=2/p2=23
+p1=2/p2=24
+p1=2/p2=25
+p1=2/p2=26
+p1=2/p2=27
+p1=2/p2=28
+p1=2/p2=29
 #### A masked pattern was here ####
 PREHOOK: query: MSCK TABLE default.repairtable_n1 DROP PARTITIONS
 PREHOOK: type: MSCK
@@ -35,36 +50,65 @@ PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK TABLE default.repairtable_n1 DROP PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions missing from filesystem:	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions missing from filesystem:	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=21
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=210
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=22
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=23
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=24
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=25
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=26
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=27
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=28
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=29
 PREHOOK: query: show partitions default.repairtable_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n1
 POSTHOOK: query: show partitions default.repairtable_n1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n1
+p1=1/p2=11
+p1=1/p2=12
 PREHOOK: query: MSCK TABLE default.repairtable_n1
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK TABLE default.repairtable_n1
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n1
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
+#### A masked pattern was here ####
 PREHOOK: query: show partitions default.repairtable_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n1
 POSTHOOK: query: show partitions default.repairtable_n1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n1
+p1=1/p2=11
+p1=1/p2=12
+p1=2/p2=21
+p1=2/p2=210
+p1=2/p2=22
+p1=2/p2=23
+p1=2/p2=24
+p1=2/p2=25
+p1=2/p2=26
+p1=2/p2=27
+p1=2/p2=28
+p1=2/p2=29
 #### A masked pattern was here ####
 PREHOOK: query: MSCK TABLE default.repairtable_n1 DROP PARTITIONS
 PREHOOK: type: MSCK
@@ -72,36 +116,65 @@ PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK TABLE default.repairtable_n1 DROP PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions missing from filesystem:	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions missing from filesystem:	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=21
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=210
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=22
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=23
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=24
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=25
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=26
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=27
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=28
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=29
 PREHOOK: query: show partitions default.repairtable_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n1
 POSTHOOK: query: show partitions default.repairtable_n1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n1
+p1=1/p2=11
+p1=1/p2=12
 PREHOOK: query: MSCK TABLE default.repairtable_n1
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK TABLE default.repairtable_n1
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n1
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
+#### A masked pattern was here ####
 PREHOOK: query: show partitions default.repairtable_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n1
 POSTHOOK: query: show partitions default.repairtable_n1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n1
+p1=1/p2=11
+p1=1/p2=12
+p1=2/p2=21
+p1=2/p2=210
+p1=2/p2=22
+p1=2/p2=23
+p1=2/p2=24
+p1=2/p2=25
+p1=2/p2=26
+p1=2/p2=27
+p1=2/p2=28
+p1=2/p2=29
 #### A masked pattern was here ####
 PREHOOK: query: MSCK TABLE default.repairtable_n1 DROP PARTITIONS
 PREHOOK: type: MSCK
@@ -109,36 +182,57 @@ PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK TABLE default.repairtable_n1 DROP PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions missing from filesystem:	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions missing from filesystem:	repairtable_n1:p1=2/p2=21	repairtable_n1:p1=2/p2=210	repairtable_n1:p1=2/p2=22	repairtable_n1:p1=2/p2=23	repairtable_n1:p1=2/p2=24	repairtable_n1:p1=2/p2=25	repairtable_n1:p1=2/p2=26	repairtable_n1:p1=2/p2=27	repairtable_n1:p1=2/p2=28	repairtable_n1:p1=2/p2=29
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=21
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=210
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=22
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=23
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=24
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=25
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=26
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=27
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=28
+Repair: Dropped partition from metastore default.repairtable_n1:p1=2/p2=29
 PREHOOK: query: show partitions default.repairtable_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n1
 POSTHOOK: query: show partitions default.repairtable_n1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n1
+p1=1/p2=11
+p1=1/p2=12
 PREHOOK: query: MSCK TABLE default.repairtable_n1
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK TABLE default.repairtable_n1
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=3/p2=31	repairtable_n1:p1=3/p2=32
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n1
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=3/p2=31	repairtable_n1:p1=3/p2=32
+#### A masked pattern was here ####
 PREHOOK: query: show partitions default.repairtable_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n1
 POSTHOOK: query: show partitions default.repairtable_n1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n1
+p1=1/p2=11
+p1=1/p2=12
+p1=3/p2=31
+p1=3/p2=32
 #### A masked pattern was here ####
 PREHOOK: query: MSCK TABLE default.repairtable_n1 ADD PARTITIONS
 PREHOOK: type: MSCK
@@ -146,36 +240,57 @@ PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK TABLE default.repairtable_n1 ADD PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=4/p2=41	repairtable_n1:p1=4/p2=42
+Partitions missing from filesystem:	repairtable_n1:p1=3/p2=31	repairtable_n1:p1=3/p2=32
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 ADD PARTITIONS
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 ADD PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=4/p2=41	repairtable_n1:p1=4/p2=42
+Partitions missing from filesystem:	repairtable_n1:p1=3/p2=31	repairtable_n1:p1=3/p2=32
+#### A masked pattern was here ####
 PREHOOK: query: show partitions default.repairtable_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n1
 POSTHOOK: query: show partitions default.repairtable_n1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n1
+p1=1/p2=11
+p1=1/p2=12
+p1=3/p2=31
+p1=3/p2=32
+p1=4/p2=41
+p1=4/p2=42
 PREHOOK: query: MSCK TABLE default.repairtable_n1 DROP PARTITIONS
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK TABLE default.repairtable_n1 DROP PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=5/p2=51	repairtable_n1:p1=5/p2=52
+Partitions missing from filesystem:	repairtable_n1:p1=3/p2=31	repairtable_n1:p1=3/p2=32
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=5/p2=51	repairtable_n1:p1=5/p2=52
+Partitions missing from filesystem:	repairtable_n1:p1=3/p2=31	repairtable_n1:p1=3/p2=32
+Repair: Dropped partition from metastore default.repairtable_n1:p1=3/p2=31
+Repair: Dropped partition from metastore default.repairtable_n1:p1=3/p2=32
 PREHOOK: query: show partitions default.repairtable_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n1
 POSTHOOK: query: show partitions default.repairtable_n1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n1
+p1=1/p2=11
+p1=1/p2=12
+p1=4/p2=41
+p1=4/p2=42
 #### A masked pattern was here ####
 PREHOOK: query: MSCK TABLE default.repairtable_n1 SYNC PARTITIONS
 PREHOOK: type: MSCK
@@ -183,15 +298,26 @@ PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK TABLE default.repairtable_n1 SYNC PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=5/p2=51	repairtable_n1:p1=5/p2=52
+Partitions missing from filesystem:	repairtable_n1:p1=4/p2=41	repairtable_n1:p1=4/p2=42
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 SYNC PARTITIONS
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n1
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 SYNC PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n1
+Partitions not in metastore:	repairtable_n1:p1=5/p2=51	repairtable_n1:p1=5/p2=52
+Partitions missing from filesystem:	repairtable_n1:p1=4/p2=41	repairtable_n1:p1=4/p2=42
+#### A masked pattern was here ####
+Repair: Dropped partition from metastore default.repairtable_n1:p1=4/p2=41
+Repair: Dropped partition from metastore default.repairtable_n1:p1=4/p2=42
 PREHOOK: query: show partitions default.repairtable_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n1
 POSTHOOK: query: show partitions default.repairtable_n1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n1
+p1=1/p2=11
+p1=1/p2=12
+p1=5/p2=51
+p1=5/p2=52

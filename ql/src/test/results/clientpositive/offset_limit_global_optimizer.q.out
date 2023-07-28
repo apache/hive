@@ -16,6 +16,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+FROM `default`.`srcpart`
+ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+LIMIT 10
+OFFSET 400
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -34,7 +39,7 @@ STAGE PLANS:
               Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                null sort order: aaaa
+                null sort order: zzzz
                 sort order: ++++
                 Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
@@ -329,6 +334,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+FROM `default`.`srcpart`
+ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+LIMIT 10
+OFFSET 490
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -347,7 +357,7 @@ STAGE PLANS:
               Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                null sort order: aaaa
+                null sort order: zzzz
                 sort order: ++++
                 Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
@@ -642,6 +652,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+FROM `default`.`srcpart`
+ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+LIMIT 20
+OFFSET 490
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -660,7 +675,7 @@ STAGE PLANS:
               Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                null sort order: aaaa
+                null sort order: zzzz
                 sort order: ++++
                 Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
@@ -965,6 +980,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+FROM `default`.`srcpart`
+ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+LIMIT 600
+OFFSET 490
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -983,7 +1003,7 @@ STAGE PLANS:
               Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                null sort order: aaaa
+                null sort order: zzzz
                 sort order: ++++
                 Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
@@ -1886,7 +1906,7 @@ STAGE PLANS:
               Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                null sort order: aaaa
+                null sort order: zzzz
                 sort order: ++++
                 Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
@@ -2199,7 +2219,7 @@ STAGE PLANS:
               Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                null sort order: aaaa
+                null sort order: zzzz
                 sort order: ++++
                 Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
@@ -2512,7 +2532,7 @@ STAGE PLANS:
               Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                null sort order: aaaa
+                null sort order: zzzz
                 sort order: ++++
                 Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
@@ -2835,7 +2855,7 @@ STAGE PLANS:
               Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                null sort order: aaaa
+                null sort order: zzzz
                 sort order: ++++
                 Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 tag: -1

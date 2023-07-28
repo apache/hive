@@ -44,6 +44,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1_n4
 POSTHOOK: Input: default@test_table2_n4
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -81,7 +90,7 @@ STAGE PLANS:
                         BucketMapJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                           tag: -1
@@ -270,6 +279,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1_n4
 POSTHOOK: Input: default@test_table2_n4
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key` IS NOT NULL AND `key2` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key` IS NOT NULL AND `key2` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`key2` = `t2`.`key2`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -307,7 +325,7 @@ STAGE PLANS:
                         BucketMapJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                           tag: -1
@@ -444,6 +462,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1_n4
 POSTHOOK: Input: default@test_table2_n4
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key2` IS NOT NULL AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key2` IS NOT NULL AND `key` IS NOT NULL) AS `t2` ON `t0`.`key2` = `t2`.`key2` AND `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -481,7 +508,7 @@ STAGE PLANS:
                         BucketMapJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                           tag: -1
@@ -618,6 +645,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1_n4
 POSTHOOK: Input: default@test_table2_n4
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`value` = `t2`.`value`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -805,7 +841,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   tag: -1

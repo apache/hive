@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,6 +202,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
       this.setStarted();
       if (hiveHistory != null) {
         hiveHistory.logPlanProgress(queryPlan);
+      }
+
+      if (conf != null) {
+        LOG.debug("Task getting executed using mapred tag : " + conf.get(MRJobConfig.JOB_TAGS));
       }
       int retval = execute(driverContext);
       this.setDone();

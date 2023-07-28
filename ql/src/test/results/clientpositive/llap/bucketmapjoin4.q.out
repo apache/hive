@@ -128,6 +128,13 @@ on a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n17
 POSTHOOK: Output: default@bucketmapjoin_tmp_result_n8
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`
+FROM `default`.`srcbucket_mapjoin_n17`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`srcbucket_mapjoin_n17`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -548,6 +555,13 @@ on a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n17
 POSTHOOK: Output: default@bucketmapjoin_tmp_result_n8
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`
+FROM `default`.`srcbucket_mapjoin_n17`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`srcbucket_mapjoin_n17`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

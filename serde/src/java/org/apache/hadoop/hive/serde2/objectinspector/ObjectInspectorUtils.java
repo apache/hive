@@ -944,6 +944,25 @@ public final class ObjectInspectorUtils {
     return 0;
   }
 
+  public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2,
+                            ObjectInspector[] oi2, boolean[] columnSortOrderIsDesc) {
+    assert (o1.length == oi1.length);
+    assert (o2.length == oi2.length);
+    assert (o1.length == o2.length);
+
+    for (int i = 0; i < o1.length; i++) {
+      int r = compare(o1[i], oi1[i], o2[i], oi2[i]);
+      if (r != 0) {
+        if (columnSortOrderIsDesc[i]) {
+          return r;
+        } else {
+          return -r;
+        }
+      }
+    }
+    return 0;
+  }
+
   /**
    * Whether comparison is supported for this type.
    * Currently all types that references any map are not comparable.

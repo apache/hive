@@ -106,7 +106,9 @@ public class TestDruidStorageHandler {
   public void before() throws Throwable {
     tableWorkingPath = temporaryFolder.newFolder().getAbsolutePath();
     segmentsTable = derbyConnectorRule.metadataTablesConfigSupplier().get().getSegmentsTable();
-    Mockito.when(tableMock.getParameters()).thenReturn(new HashMap<>());
+    HashMap<String, String> params = new HashMap<>();
+    params.put("external.table.purge", "TRUE");
+    Mockito.when(tableMock.getParameters()).thenReturn(params);
     Mockito.when(tableMock.getPartitionKeysSize()).thenReturn(0);
     StorageDescriptor storageDes = Mockito.mock(StorageDescriptor.class);
     Mockito.when(storageDes.getBucketColsSize()).thenReturn(0);

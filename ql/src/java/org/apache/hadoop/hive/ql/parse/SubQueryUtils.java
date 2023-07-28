@@ -24,6 +24,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -132,11 +133,17 @@ public class SubQueryUtils {
         ASTNode child = (ASTNode) node.getChild(0);
         if (child == subQuery) {
           ASTNode sqOpType = (ASTNode) subQuery.getChild(0).getChild(0);
+          ASTNode newSqOpType;
+          // We create a new ASTNode below because its current token is likely an
+          // ImmutableCommonToken, whose type cannot be modified.
           if (sqOpType.getType() == HiveParser.KW_EXISTS) {
-            sqOpType.getToken().setType(HiveParser.TOK_SUBQUERY_OP_NOTEXISTS);
+            newSqOpType = new ASTNode(new CommonToken(
+                HiveParser.TOK_SUBQUERY_OP_NOTEXISTS, "TOK_SUBQUERY_OP_NOTEXISTS"));
           } else {
-            sqOpType.getToken().setType(HiveParser.TOK_SUBQUERY_OP_NOTIN);
+            newSqOpType = new ASTNode(new CommonToken(
+                HiveParser.TOK_SUBQUERY_OP_NOTIN, "TOK_SUBQUERY_OP_NOTIN"));
           }
+          subQuery.getChild(0).setChild(0, newSqOpType);
           ASTNode parent = getParentInWhereClause(node);
           if (parent == null) {
             root = subQuery;

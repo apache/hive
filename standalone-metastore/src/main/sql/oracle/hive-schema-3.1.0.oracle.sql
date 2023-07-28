@@ -1,6 +1,10 @@
 -- Table SEQUENCE_TABLE is an internal table required by DataNucleus.
 -- NOTE: Some versions of SchemaTool do not automatically generate this table.
 -- See http://www.datanucleus.org/servlet/jira/browse/NUCRDBMS-416
+
+-- HIVE-21336 safeguards from failures from indices being too long
+ALTER SESSION SET NLS_LENGTH_SEMANTICS=BYTE;
+
 CREATE TABLE SEQUENCE_TABLE
 (
    SEQUENCE_NAME VARCHAR2(255) NOT NULL,
@@ -1155,7 +1159,6 @@ CREATE TABLE RUNTIME_STATS (
 );
 
 CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
-
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

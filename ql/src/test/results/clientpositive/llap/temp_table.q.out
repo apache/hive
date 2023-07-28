@@ -164,14 +164,40 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@foo
 key                 	string              	                    
 value               	string              	                    
-PREHOOK: query: DESCRIBE bar
+PREHOOK: query: DESCRIBE FORMATTED bar
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@bar
-POSTHOOK: query: DESCRIBE bar
+POSTHOOK: query: DESCRIBE FORMATTED bar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@bar
+# col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	253                 
+	rawDataSize         	2703                
+	totalSize           	2956                
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: explain select * from foo order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@foo

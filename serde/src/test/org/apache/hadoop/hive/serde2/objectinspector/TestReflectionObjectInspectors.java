@@ -31,8 +31,13 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.mutable.MutableObject;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaConstantStringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 import junit.framework.TestCase;
 
@@ -42,6 +47,7 @@ import junit.framework.TestCase;
  */
 public class TestReflectionObjectInspectors extends TestCase {
 
+  @Test
   public void testReflectionObjectInspectors() throws Throwable {
     try {
       ObjectInspector oi1 = ObjectInspectorFactory
@@ -110,6 +116,24 @@ public class TestReflectionObjectInspectors extends TestCase {
     }
   }
 
+  @Test
+  public void testObjectInspectorMaxCacheSize() {
+    int maxSize = 10240;
+    for (int i = 0; i < maxSize; i++) {
+      ObjectInspectorFactory
+        .getStandardUnionObjectInspector(Lists.newArrayList(new JavaConstantStringObjectInspector("" + i)));
+    }
+    assertTrue("Got: " + ObjectInspectorFactory.cachedStandardUnionObjectInspector.size(),
+      ObjectInspectorFactory.cachedStandardUnionObjectInspector.size() <= maxSize);
+    for (int i = 0; i < 1000; i++) {
+      ObjectInspectorFactory.getStandardUnionObjectInspector(Lists.newArrayList(new
+        JavaConstantStringObjectInspector("" + (10240 + i))));
+    }
+    assertTrue("Got: " + ObjectInspectorFactory.cachedStandardUnionObjectInspector.size(), ObjectInspectorFactory
+      .cachedStandardUnionObjectInspector.size() <= maxSize);
+  }
+
+  @Test
   public void testObjectInspectorThreadSafety() throws InterruptedException {
     final int workerCount = 5; // 5 workers to run getReflectionObjectInspector concurrently
     final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(workerCount);
@@ -129,7 +153,7 @@ public class TestReflectionObjectInspectors extends TestCase {
         try {
           for (int i = 0; i < 20; i++) { // repeat 20 times
             for (final ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions> t: types) {
-              ObjectInspectorFactory.objectInspectorCache.clear();
+              ObjectInspectorFactory.objectInspectorCache.asMap().clear();
               for (int k = 0; k < workerCount; k++) {
                 results[k] = executorService.schedule(new Callable<ObjectInspector>() {
                   @Override

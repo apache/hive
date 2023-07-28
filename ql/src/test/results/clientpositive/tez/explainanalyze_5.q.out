@@ -315,16 +315,16 @@ Stage-3
               Reducer 2
               File Output Operator [FS_8]
                 table:{"name:":"default.acid_uami_n2"}
-                Select Operator [SEL_4] (rows=10/2 width=316)
+                Select Operator [SEL_4] (rows=4/2 width=328)
                   Output:["_col0","_col1","_col2","_col3"]
                 <-Map 1 [SIMPLE_EDGE]
                   SHUFFLE [RS_3]
                     PartitionCols:UDFToInteger(_col0)
-                    Select Operator [SEL_2] (rows=10/2 width=316)
+                    Select Operator [SEL_2] (rows=4/2 width=328)
                       Output:["_col0","_col1","_col3"]
-                      Filter Operator [FIL_9] (rows=10/2 width=316)
+                      Filter Operator [FIL_9] (rows=4/2 width=328)
                         predicate:((de = 109.23) or (de = 119.23))
-                        TableScan [TS_0] (rows=85/4 width=316)
+                        TableScan [TS_0] (rows=4/4 width=328)
                           default@acid_uami_n2,acid_uami_n2, ACID table,Tbl:COMPLETE,Col:NONE,Output:["i","de","vc"]
 
 PREHOOK: query: select * from acid_uami_n2 order by de

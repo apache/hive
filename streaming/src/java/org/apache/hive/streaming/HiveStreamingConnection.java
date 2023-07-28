@@ -158,6 +158,7 @@ public class HiveStreamingConnection implements StreamingConnection {
   private Table tableObject = null;
   private String metastoreUri;
   private ConnectionStats connectionStats;
+  private Runnable onShutdownRunner;
 
   private HiveStreamingConnection(Builder builder) throws StreamingException {
     this.database = builder.database.toLowerCase();
@@ -330,9 +331,10 @@ public class HiveStreamingConnection implements StreamingConnection {
         throw new StreamingException("Record writer cannot be null for streaming connection");
       }
       HiveStreamingConnection streamingConnection = new HiveStreamingConnection(this);
+      streamingConnection.onShutdownRunner = streamingConnection::close;
       // assigning higher priority than FileSystem shutdown hook so that streaming connection gets closed first before
       // filesystem close (to avoid ClosedChannelException)
-      ShutdownHookManager.addShutdownHook(streamingConnection::close,  FileSystem.SHUTDOWN_HOOK_PRIORITY + 1);
+      ShutdownHookManager.addShutdownHook(streamingConnection.onShutdownRunner,  FileSystem.SHUTDOWN_HOOK_PRIORITY + 1);
       Thread.setDefaultUncaughtExceptionHandler((t, e) -> streamingConnection.close());
       return streamingConnection;
     }
@@ -551,8 +553,14 @@ public class HiveStreamingConnection implements StreamingConnection {
     } finally {
       getMSC().close();
       getHeatbeatMSC().close();
+      //remove shutdown hook entry added while creating this connection via HiveStreamingConnection.Builder#connect()
+      if (!ShutdownHookManager.isShutdownInProgress()) {
+        ShutdownHookManager.removeShutdownHook(this.onShutdownRunner);
+      }
     }
-    LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
+    }
   }
 
   @Override
@@ -1037,7 +1045,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Overriding HiveConf setting : " + var + " = " + value);
     }
-    conf.setBoolVar(var, true);
+    conf.setBoolVar(var, value);
   }
 
   private static void setHiveConf(HiveConf conf, String var) {

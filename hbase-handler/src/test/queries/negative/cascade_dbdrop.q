@@ -11,10 +11,10 @@ CREATE DATABASE hbaseDB;
 -- Exit Code < 0 on syntax/usage error
 -- Exit Code > 0 operation failed
 
-CREATE TABLE hbaseDB.hbase_table_0(key int, value string)
+CREATE EXTERNAL TABLE hbaseDB.hbase_table_0(key int, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
-TBLPROPERTIES ("hbase.table.name" = "hbase_table_0");
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0", "external.table.purge" = "true");
 
 dfs -ls target/tmp/hbase/data/default/hbase_table_0;
 

@@ -349,25 +349,25 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 196 Data size: 257552 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 196 Data size: 257552 Basic stats: PARTIAL Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                     outputColumnNames: key, value, ds, hr
-                    Statistics: Num rows: 196 Data size: 257552 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 196 Data size: 257552 Basic stats: PARTIAL Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), hr (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                        Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
                         tag: -1
                         value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                         auto parallelism: true
@@ -484,17 +484,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -773,25 +773,25 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 196 Data size: 257552 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 196 Data size: 257552 Basic stats: PARTIAL Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                     outputColumnNames: key, value, ds, hr
-                    Statistics: Num rows: 196 Data size: 257552 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 196 Data size: 257552 Basic stats: PARTIAL Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), hr (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                        Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
                         tag: -1
                         value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                         auto parallelism: true
@@ -908,17 +908,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1193,25 +1193,25 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 117 Data size: 121232 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 117 Data size: 121232 Basic stats: PARTIAL Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string)
                     outputColumnNames: key, value, ds
-                    Statistics: Num rows: 117 Data size: 121232 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 117 Data size: 121232 Basic stats: PARTIAL Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), '11' (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 1150 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 117 Data size: 166072 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string), '11' (type: string)
                         null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), '11' (type: string)
-                        Statistics: Num rows: 1 Data size: 1150 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 117 Data size: 166072 Basic stats: PARTIAL Column stats: PARTIAL
                         tag: -1
                         value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                         auto parallelism: true
@@ -1279,17 +1279,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), '11' (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 1150 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 58 Data size: 81584 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), '11' (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 1150 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 58 Data size: 81584 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 1 Data size: 1150 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 58 Data size: 81584 Basic stats: PARTIAL Column stats: PARTIAL
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat

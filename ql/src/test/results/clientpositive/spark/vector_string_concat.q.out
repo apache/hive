@@ -476,7 +476,6 @@ POSTHOOK: query: SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2korc_n0
 #### A masked pattern was here ####
-NULL
 Quarter 1-1970
 Quarter 1-1971
 Quarter 1-1972
@@ -526,3 +525,4 @@ Quarter 1-2015
 Quarter 1-2016
 Quarter 1-2017
 Quarter 1-2018
+Quarter 1-2019

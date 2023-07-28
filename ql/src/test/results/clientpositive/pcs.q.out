@@ -120,7 +120,7 @@ STAGE PLANS:
                 Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
@@ -1156,7 +1156,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string), '2008-04-08' (type: string)
-                      null sort order: aaa
+                      null sort order: zzz
                       sort order: +++
                       Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       tag: -1
@@ -1181,7 +1181,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string), '2008-04-08' (type: string)
-                      null sort order: aaa
+                      null sort order: zzz
                       sort order: +++
                       Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       tag: -1

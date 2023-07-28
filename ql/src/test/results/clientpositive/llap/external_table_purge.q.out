@@ -1,0 +1,635 @@
+PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_1
+test.comment=Table should have data
+PREHOOK: query: select count(*) from etp_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: drop table etp_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: drop table etp_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: default@etp_1
+PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_1
+test.comment=Table should have data
+PREHOOK: query: select count(*) from etp_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: alter table etp_1 set tblproperties ('external.table.purge'='true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: alter table etp_1 set tblproperties ('external.table.purge'='true')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: default@etp_1
+PREHOOK: query: drop table etp_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: drop table etp_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: default@etp_1
+PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_1
+test.comment=Table should have no data
+PREHOOK: query: select count(*) from etp_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: drop table etp_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: drop table etp_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: default@etp_1
+PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###' tblproperties ('external.table.purge'='false')
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###' tblproperties ('external.table.purge'='false')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_1
+PREHOOK: query: show create table etp_1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@etp_1
+POSTHOOK: query: show create table etp_1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@etp_1
+CREATE EXTERNAL TABLE `etp_1`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'external.table.purge'='false', 
+#### A masked pattern was here ####
+test.comment=Table should have data
+PREHOOK: query: select count(*) from etp_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: drop table etp_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: drop table etp_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: default@etp_1
+PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_1
+PREHOOK: query: show create table etp_1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@etp_1
+POSTHOOK: query: show create table etp_1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@etp_1
+CREATE EXTERNAL TABLE `etp_1`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'external.table.purge'='true', 
+#### A masked pattern was here ####
+test.comment=Table should have data
+PREHOOK: query: select count(*) from etp_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: drop table etp_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: drop table etp_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: default@etp_1
+PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_1
+test.comment=Table should have no data
+PREHOOK: query: select count(*) from etp_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: drop table etp_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_1
+PREHOOK: Output: default@etp_1
+POSTHOOK: query: drop table etp_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: default@etp_1
+PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: alter table etp_2 add partition (p1='part1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+PREHOOK: query: alter table etp_2 add partition (p1='part2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part2
+test.comment=Table should have full data
+PREHOOK: query: select count(*) from etp_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_2
+PREHOOK: Input: default@etp_2@p1=part1
+PREHOOK: Input: default@etp_2@p1=part2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Input: default@etp_2@p1=part1
+POSTHOOK: Input: default@etp_2@p1=part2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1000
+PREHOOK: query: alter table etp_2 drop partition (p1='part1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@etp_2
+PREHOOK: Output: default@etp_2@p1=part1
+POSTHOOK: query: alter table etp_2 drop partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+PREHOOK: query: alter table etp_2 add partition (p1='part1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+test.comment=Table should have full data
+PREHOOK: query: select count(*) from etp_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_2
+PREHOOK: Input: default@etp_2@p1=part1
+PREHOOK: Input: default@etp_2@p1=part2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Input: default@etp_2@p1=part1
+POSTHOOK: Input: default@etp_2@p1=part2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1000
+PREHOOK: query: drop table etp_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_2
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: drop table etp_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: alter table etp_2 set tblproperties ('external.table.purge'='true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@etp_2
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 set tblproperties ('external.table.purge'='true')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: alter table etp_2 add partition (p1='part1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+PREHOOK: query: alter table etp_2 add partition (p1='part2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part2
+test.comment=Table should have full data
+PREHOOK: query: select count(*) from etp_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_2
+PREHOOK: Input: default@etp_2@p1=part1
+PREHOOK: Input: default@etp_2@p1=part2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Input: default@etp_2@p1=part1
+POSTHOOK: Input: default@etp_2@p1=part2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1000
+PREHOOK: query: alter table etp_2 drop partition (p1='part1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@etp_2
+PREHOOK: Output: default@etp_2@p1=part1
+POSTHOOK: query: alter table etp_2 drop partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+PREHOOK: query: alter table etp_2 add partition (p1='part1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+test.comment=Table should have partial data
+PREHOOK: query: select count(*) from etp_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_2
+PREHOOK: Input: default@etp_2@p1=part1
+PREHOOK: Input: default@etp_2@p1=part2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Input: default@etp_2@p1=part1
+POSTHOOK: Input: default@etp_2@p1=part2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: drop table etp_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_2
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: drop table etp_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: alter table etp_2 add partition (p1='part1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+PREHOOK: query: alter table etp_2 add partition (p1='part2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part2
+test.comment=Table should have no data
+PREHOOK: query: select count(*) from etp_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_2
+PREHOOK: Input: default@etp_2@p1=part1
+PREHOOK: Input: default@etp_2@p1=part2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Input: default@etp_2@p1=part1
+POSTHOOK: Input: default@etp_2@p1=part2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: drop table etp_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_2
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: drop table etp_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###' tblproperties ('external.table.purge'='false')
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###' tblproperties ('external.table.purge'='false')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: show create table etp_2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@etp_2
+POSTHOOK: query: show create table etp_2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@etp_2
+CREATE EXTERNAL TABLE `etp_2`(
+  `c1` string, 
+  `c2` string)
+PARTITIONED BY ( 
+  `p1` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'external.table.purge'='false', 
+#### A masked pattern was here ####
+PREHOOK: query: alter table etp_2 add partition (p1='part1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+PREHOOK: query: alter table etp_2 add partition (p1='part2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part2
+test.comment=Table should have full data
+PREHOOK: query: select count(*) from etp_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_2
+PREHOOK: Input: default@etp_2@p1=part1
+PREHOOK: Input: default@etp_2@p1=part2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Input: default@etp_2@p1=part1
+POSTHOOK: Input: default@etp_2@p1=part2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1000
+PREHOOK: query: drop table etp_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_2
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: drop table etp_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: show create table etp_2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@etp_2
+POSTHOOK: query: show create table etp_2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@etp_2
+CREATE EXTERNAL TABLE `etp_2`(
+  `c1` string, 
+  `c2` string)
+PARTITIONED BY ( 
+  `p1` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'external.table.purge'='true', 
+#### A masked pattern was here ####
+PREHOOK: query: alter table etp_2 add partition (p1='part1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+PREHOOK: query: alter table etp_2 add partition (p1='part2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part2
+test.comment=Table should have full data
+PREHOOK: query: select count(*) from etp_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_2
+PREHOOK: Input: default@etp_2@p1=part1
+PREHOOK: Input: default@etp_2@p1=part2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Input: default@etp_2@p1=part1
+POSTHOOK: Input: default@etp_2@p1=part2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1000
+PREHOOK: query: alter table etp_2 drop partition (p1='part1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@etp_2
+PREHOOK: Output: default@etp_2@p1=part1
+POSTHOOK: query: alter table etp_2 drop partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+PREHOOK: query: alter table etp_2 add partition (p1='part1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+test.comment=Table should have partial data
+PREHOOK: query: select count(*) from etp_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_2
+PREHOOK: Input: default@etp_2@p1=part1
+PREHOOK: Input: default@etp_2@p1=part2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Input: default@etp_2@p1=part1
+POSTHOOK: Input: default@etp_2@p1=part2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: drop table etp_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_2
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: drop table etp_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@etp_2
+PREHOOK: query: alter table etp_2 add partition (p1='part1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part1
+PREHOOK: query: alter table etp_2 add partition (p1='part2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: alter table etp_2 add partition (p1='part2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@etp_2
+POSTHOOK: Output: default@etp_2@p1=part2
+test.comment=Table should have no data
+PREHOOK: query: select count(*) from etp_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@etp_2
+PREHOOK: Input: default@etp_2@p1=part1
+PREHOOK: Input: default@etp_2@p1=part2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from etp_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Input: default@etp_2@p1=part1
+POSTHOOK: Input: default@etp_2@p1=part2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: drop table etp_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@etp_2
+PREHOOK: Output: default@etp_2
+POSTHOOK: query: drop table etp_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: default@etp_2

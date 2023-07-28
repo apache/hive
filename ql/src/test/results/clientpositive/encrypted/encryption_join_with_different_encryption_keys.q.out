@@ -60,6 +60,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_key_1
 POSTHOOK: Input: default@table_key_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`table_key_1`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`table_key_2`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

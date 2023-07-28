@@ -68,10 +68,7 @@ public class ASTBuilder {
   public static ASTNode table(final RelNode scan) {
     HiveTableScan hts = null;
     if (scan instanceof HiveJdbcConverter) {
-      HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
-      JdbcHiveTableScan jdbcHiveTableScan = jdbcConverter.getTableScan();
-
-      hts = jdbcHiveTableScan.getHiveTableScan();
+      hts = ((HiveJdbcConverter) scan).getTableScan().getHiveTableScan();
     } else if (scan instanceof DruidQuery) {
       hts = (HiveTableScan) ((DruidQuery) scan).getTableScan();
     } else {
@@ -115,14 +112,29 @@ public class ASTBuilder {
     } else if (scan instanceof HiveJdbcConverter) {
       HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
       final String query = jdbcConverter.generateSql();
-      LOGGER.info("The HiveJdbcConverter generated sql message is: " + System.lineSeparator() + query);
+      LOGGER.debug("Generated SQL query: " + System.lineSeparator() + query);
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
           .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY + "\"")
           .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
-
+      // Whether we can split the query
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
-          .add(HiveParser.StringLiteral, "\"" + Constants.HIVE_JDBC_QUERY + "\"")
-          .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
+          .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_SPLIT_QUERY + "\"")
+          .add(HiveParser.StringLiteral, "\"" + jdbcConverter.splittingAllowed() + "\""));
+      // Adding column names used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY_FIELD_NAMES + "\"")
+          .add(HiveParser.StringLiteral,
+              "\"" + scan.getRowType().getFieldNames().stream().map(Object::toString)
+                  .collect(Collectors.joining(",")) + "\""
+          ));
+      // Adding column types used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY_FIELD_TYPES + "\"")
+          .add(HiveParser.StringLiteral,
+              "\"" + scan.getRowType().getFieldList().stream()
+                  .map(e -> TypeConverter.convert(e.getType()).getTypeName())
+                  .collect(Collectors.joining(",")) + "\""
+          ));
     }
 
     if (hts.isInsideView()) {

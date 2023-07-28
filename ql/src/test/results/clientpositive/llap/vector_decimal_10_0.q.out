@@ -107,7 +107,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -151,8 +151,8 @@ POSTHOOK: query: SELECT `dec` FROM `DECIMAL` order by `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal
 #### A masked pattern was here ####
-NULL
 1000000000
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT `dec` FROM `decimal_txt` order by `dec`
 PREHOOK: type: QUERY
@@ -227,7 +227,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -271,8 +271,8 @@ POSTHOOK: query: SELECT `dec` FROM `decimal_txt` order by `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_txt
 #### A masked pattern was here ####
-NULL
 1000000000
+NULL
 PREHOOK: query: DROP TABLE DECIMAL_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_txt

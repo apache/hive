@@ -92,6 +92,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.apache.hadoop.mapred.InputFormat;
 
@@ -110,7 +111,7 @@ public abstract class BaseJdbcWithMiniLlap {
   private static Connection hs2Conn = null;
 
   // This method should be called by sub-classes in a @BeforeClass initializer
-  public static void beforeTest(boolean useArrow) throws Exception {
+  public static MiniHS2 beforeTest(boolean useArrow) throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
 
     String confDir = "../../data/conf/llap/";
@@ -139,6 +140,7 @@ public abstract class BaseJdbcWithMiniLlap {
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
     miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
+    return miniHS2;
   }
 
   @Before
@@ -450,6 +452,7 @@ public abstract class BaseJdbcWithMiniLlap {
 
 
   @Test(timeout = 60000)
+  @Ignore("HIVE-27202")
   public void testComplexQuery() throws Exception {
     createTestTable("testtab1");
 

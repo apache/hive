@@ -360,9 +360,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select key as k from src intersect all select key as k1 from src	 
-View Expanded Text: 	select `src`.`key` as `k` from `default`.`src` intersect all select `src`.`key` as `k1` from `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select key as k from src intersect all select key as k1 from src	 
+Expanded Query:     	select `src`.`key` as `k` from `default`.`src` intersect all select `src`.`key` as `k1` from `default`.`src`	 
 PREHOOK: query: create table masking_test_n9 as select cast(key as int) as key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src

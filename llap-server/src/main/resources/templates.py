@@ -6,10 +6,9 @@ yarnfile = """
   "configuration": {
     "properties": {
       "yarn.service.rolling-log.include-pattern": ".*\\\\.done",
-      "yarn.component.placement.policy" : "%(placement)d",
-      "yarn.container.health.threshold.percent": "%(health_percent)d",
-      "yarn.container.health.threshold.window.secs": "%(health_time_window)d",
-      "yarn.container.health.threshold.init.delay.secs": "%(health_init_delay)d"%(service_appconfig_global_append)s
+      "yarn.service.container-health-threshold.percent": "%(health_percent)d",
+      "yarn.service.container-health-threshold.window-secs": "%(health_time_window)d",
+      "yarn.service.container-health-threshold.init-delay-secs": "%(health_init_delay)d"%(service_appconfig_global_append)s
     }
   },
   "components": [
@@ -24,6 +23,17 @@ yarnfile = """
       "resource": {
         "cpus": 1,
         "memory": "%(container.mb)d"
+      },
+      "placement_policy": {
+        "constraints": [
+          {
+            "type": "ANTI_AFFINITY",
+            "scope": "NODE",
+            "target_tags": [
+              "llap"
+            ]
+          }
+        ]
       },
       "configuration": {
         "env": {

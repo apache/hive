@@ -86,10 +86,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 13 Data size: 4140 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 13 Data size: 4140 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (pageid is not null and postid is not null and type is not null and userid is not null) (type: boolean)
-              Statistics: Num rows: 13 Data size: 4140 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 13 Data size: 4140 Basic stats: PARTIAL Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

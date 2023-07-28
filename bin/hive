@@ -356,6 +356,7 @@ fi
 # include the log4j jar that is used for hive into the classpath
 CLASSPATH="${CLASSPATH}:${LOG_JAR_CLASSPATH}"
 export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${LOG_JAR_CLASSPATH}"
+export JVM_PID="$$"
 
 if [ "$TORUN" = "" ] ; then
   echo "Service $SERVICE not found"

@@ -214,7 +214,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
             RexCall constStruct = (RexCall) call.getOperands().get(i);
             boolean allTrue = true;
             boolean addOperand = true;
-            for (int j = 0; i < constStruct.getOperands().size(); j++) {
+            for (int j = 0; j < constStruct.getOperands().size(); j++) {
               RexNode operand = constStruct.getOperands().get(j);
               if (operand instanceof RexLiteral) {
                 RexLiteral literal = (RexLiteral) operand;

@@ -56,22 +56,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
-            Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: employeeid (type: int)
               outputColumnNames: employeeid
-              Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(employeeid, 'hll')
                 keys: 2000.0D (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: 2000.0D (type: double)
                   sort order: +
                   Map-reduce partition columns: 2000.0D (type: double)
-                  Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
@@ -79,14 +79,14 @@ STAGE PLANS:
           keys: 2000.0D (type: double)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), 2000.0D (type: double)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -126,25 +126,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
-            Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
             Statistics Aggregation Key Prefix: default.employee_part/
             GatherStats: true
             Select Operator
               expressions: employeeid (type: int)
               outputColumnNames: employeeid
-              Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(employeeid, 'hll')
                 keys: 2000.0D (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: 2000.0D (type: double)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: 2000.0D (type: double)
-                  Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
                   tag: -1
                   value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
                   auto parallelism: false
@@ -209,17 +209,17 @@ STAGE PLANS:
           keys: 2000.0D (type: double)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), 2000.0D (type: double)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -325,22 +325,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
-            Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: employeeid (type: int)
               outputColumnNames: employeeid
-              Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(employeeid, 'hll')
                 keys: 4000.0D (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: 4000.0D (type: double)
                   sort order: +
                   Map-reduce partition columns: 4000.0D (type: double)
-                  Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
@@ -348,14 +348,14 @@ STAGE PLANS:
           keys: 4000.0D (type: double)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), 4000.0D (type: double)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -395,25 +395,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
-            Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
             Statistics Aggregation Key Prefix: default.employee_part/
             GatherStats: true
             Select Operator
               expressions: employeeid (type: int)
               outputColumnNames: employeeid
-              Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(employeeid, 'hll')
                 keys: 4000.0D (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: 4000.0D (type: double)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: 4000.0D (type: double)
-                  Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
                   tag: -1
                   value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
                   auto parallelism: false
@@ -478,17 +478,17 @@ STAGE PLANS:
           keys: 4000.0D (type: double)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), 4000.0D (type: double)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 350 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat

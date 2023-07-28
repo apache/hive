@@ -267,6 +267,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
           Lists.newArrayList(fsParent.getSchema().getSignature());
       final ArrayList<ExprNodeDesc> descs = Lists.newArrayList();
       final List<String> colNames = Lists.newArrayList();
+      PrimitiveCategory timestampType = null;
       int timestampPos = -1;
       for (int i = 0; i < parentCols.size(); i++) {
         ColumnInfo ci = parentCols.get(i);
@@ -274,11 +275,13 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
         descs.add(columnDesc);
         colNames.add(columnDesc.getExprString());
         if (columnDesc.getTypeInfo().getCategory() == ObjectInspector.Category.PRIMITIVE
-                && ((PrimitiveTypeInfo) columnDesc.getTypeInfo()).getPrimitiveCategory() == PrimitiveCategory.TIMESTAMPLOCALTZ) {
+                && (((PrimitiveTypeInfo) columnDesc.getTypeInfo()).getPrimitiveCategory() == PrimitiveCategory.TIMESTAMP ||
+            ((PrimitiveTypeInfo) columnDesc.getTypeInfo()).getPrimitiveCategory() == PrimitiveCategory.TIMESTAMPLOCALTZ)) {
           if (timestampPos != -1) {
-            throw new SemanticException("Multiple columns with timestamp with local time-zone type on query result; "
-                    + "could not resolve which one is the timestamp with local time-zone column");
+            throw new SemanticException("Multiple columns with timestamp/timestamp with local time-zone type on query result; "
+                    + "could not resolve which one is the right column");
           }
+          timestampType = ((PrimitiveTypeInfo) columnDesc.getTypeInfo()).getPrimitiveCategory();
           timestampPos = i;
         }
       }
@@ -327,8 +330,8 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       }
 
 
-      // Timestamp column type in Druid is timestamp with local time-zone, as it represents
-      // a specific instant in time. Thus, we have this value and we need to extract the
+      // Timestamp column type in Druid is either timestamp or timestamp with local time-zone, i.e.,
+      // a specific instant in time. Thus, for the latest, we have this value and we need to extract the
       // granularity to split the data when we are storing it in Druid. However, Druid stores
       // the data in UTC. Thus, we need to apply the following logic on the data to extract
       // the granularity correctly:
@@ -341,18 +344,20 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
 
       // #1 - Read the column value
       ExprNodeDesc expr = new ExprNodeColumnDesc(parentCols.get(timestampPos));
-      // #2 - UTC epoch for instant
-      ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(
-          TypeInfoFactory.longTypeInfo, new GenericUDFEpochMilli(), Lists.newArrayList(expr));
-      // #3 - Cast to timestamp
-      ExprNodeGenericFuncDesc f2 = new ExprNodeGenericFuncDesc(
-          TypeInfoFactory.timestampTypeInfo, new GenericUDFTimestamp(), Lists.newArrayList(f1));
+      if (timestampType == PrimitiveCategory.TIMESTAMPLOCALTZ) {
+        // #2 - UTC epoch for instant
+        expr = new ExprNodeGenericFuncDesc(
+            TypeInfoFactory.longTypeInfo, new GenericUDFEpochMilli(), Lists.newArrayList(expr));
+        // #3 - Cast to timestamp
+        expr = new ExprNodeGenericFuncDesc(
+            TypeInfoFactory.timestampTypeInfo, new GenericUDFTimestamp(), Lists.newArrayList(expr));
+      }
       // #4 - We apply the granularity function
-      ExprNodeGenericFuncDesc f3 = new ExprNodeGenericFuncDesc(
+      expr = new ExprNodeGenericFuncDesc(
           TypeInfoFactory.timestampTypeInfo,
           new GenericUDFBridge(udfName, false, udfClass.getName()),
-          Lists.newArrayList(f2));
-      descs.add(f3);
+          Lists.newArrayList(expr));
+      descs.add(expr);
       colNames.add(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
       // Add granularity to the row schema
       final ColumnInfo ci = new ColumnInfo(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME, TypeInfoFactory.timestampTypeInfo,

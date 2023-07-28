@@ -92,7 +92,7 @@ STAGE PLANS:
                   input alias: ptf_1
                   arguments: 'LATE.LATE+', 'LATE', (_col5 > 15.0), 'origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath'
                   name: matchpath
-                  order by: _col2 ASC NULLS FIRST, _col3 ASC NULLS FIRST, _col4 ASC NULLS FIRST
+                  order by: _col2 ASC NULLS LAST, _col3 ASC NULLS LAST, _col4 ASC NULLS LAST
                   output shape: tpath: int
                   partition by: _col6
                   raw input shape:
@@ -214,7 +214,7 @@ STAGE PLANS:
                   input alias: ptf_1
                   arguments: 'LATE.LATE+', 'LATE', (_col5 > 15.0), 'origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath'
                   name: matchpath
-                  order by: _col6 ASC NULLS FIRST, _col2 ASC NULLS FIRST, _col3 ASC NULLS FIRST, _col4 ASC NULLS FIRST
+                  order by: _col6 ASC NULLS LAST, _col2 ASC NULLS LAST, _col3 ASC NULLS LAST, _col4 ASC NULLS LAST
                   output shape: tpath: int
                   partition by: 0
                   raw input shape:
@@ -333,7 +333,7 @@ STAGE PLANS:
                   input alias: ptf_1
                   arguments: 'LATE.LATE+', 'LATE', (_col5 > 15.0), 'origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath'
                   name: matchpath
-                  order by: _col6 ASC NULLS FIRST, _col2 ASC NULLS FIRST, _col3 ASC NULLS FIRST, _col4 ASC NULLS FIRST
+                  order by: _col6 ASC NULLS LAST, _col2 ASC NULLS LAST, _col3 ASC NULLS LAST, _col4 ASC NULLS LAST
                   output shape: tpath: int
                   partition by: 0
                   raw input shape:

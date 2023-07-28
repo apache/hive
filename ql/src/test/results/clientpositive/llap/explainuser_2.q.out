@@ -335,124 +335,126 @@ Stage-0
     limit:100
     Stage-1
       Reducer 5 vectorized, llap
-      File Output Operator [FS_126]
-        Limit [LIM_125] (rows=12 width=285)
+      File Output Operator [FS_127]
+        Limit [LIM_126] (rows=12 width=285)
           Number of rows:100
-          Select Operator [SEL_124] (rows=12 width=285)
+          Select Operator [SEL_125] (rows=12 width=285)
             Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           <-Reducer 4 [SIMPLE_EDGE] vectorized, llap
-            SHUFFLE [RS_123]
-              Group By Operator [GBY_122] (rows=12 width=285)
+            SHUFFLE [RS_124]
+              Group By Operator [GBY_123] (rows=12 width=285)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["count(VALUE._col0)","count(VALUE._col1)","count(VALUE._col2)"],keys:KEY._col0, KEY._col1, KEY._col2
               <-Reducer 3 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_49]
                   PartitionCols:_col0, _col1, _col2
                   Group By Operator [GBY_48] (rows=12 width=285)
                     Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["count(_col11)","count(_col21)","count(_col3)"],keys:_col10, _col20, _col2
-                    Merge Join Operator [MERGEJOIN_97] (rows=9275 width=534)
-                      Conds:RS_44._col1, _col3=RS_45._col15, _col17(Inner),Output:["_col2","_col3","_col10","_col11","_col20","_col21"]
-                    <-Reducer 10 [SIMPLE_EDGE] llap
-                      SHUFFLE [RS_45]
-                        PartitionCols:_col15, _col17
-                        Select Operator [SEL_40] (rows=420 width=447)
-                          Output:["_col4","_col5","_col14","_col15","_col17"]
-                          Merge Join Operator [MERGEJOIN_96] (rows=420 width=447)
-                            Conds:RS_37._col4, _col2=RS_38._col4, _col2(Inner),Output:["_col0","_col1","_col14","_col15","_col17"]
-                          <-Reducer 11 [SIMPLE_EDGE] llap
-                            SHUFFLE [RS_38]
-                              PartitionCols:_col4, _col2
-                              Merge Join Operator [MERGEJOIN_95] (rows=10 width=356)
-                                Conds:RS_121._col0=RS_109._col0(Inner),Output:["_col2","_col3","_col4","_col5"]
-                              <-Map 6 [SIMPLE_EDGE] vectorized, llap
-                                SHUFFLE [RS_109]
-                                  PartitionCols:_col0
-                                  Select Operator [SEL_106] (rows=25 width=178)
-                                    Output:["_col0"]
-                                    Filter Operator [FIL_103] (rows=25 width=178)
-                                      predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
-                                      TableScan [TS_3] (rows=500 width=178)
-                                        default@src,d3,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-                              <-Map 15 [SIMPLE_EDGE] vectorized, llap
-                                SHUFFLE [RS_121]
-                                  PartitionCols:_col0
-                                  Select Operator [SEL_120] (rows=7 width=531)
-                                    Output:["_col0","_col2","_col3","_col4","_col5"]
-                                    Filter Operator [FIL_119] (rows=7 width=534)
-                                      predicate:((v1 = 'srv1') and k1 is not null and k2 is not null and k3 is not null and v2 is not null and v3 is not null)
-                                      TableScan [TS_18] (rows=85 width=534)
-                                        default@sr,sr,Tbl:COMPLETE,Col:COMPLETE,Output:["k1","v1","k2","v2","k3","v3"]
-                          <-Reducer 9 [SIMPLE_EDGE] llap
-                            SHUFFLE [RS_37]
-                              PartitionCols:_col4, _col2
-                              Merge Join Operator [MERGEJOIN_94] (rows=42 width=352)
-                                Conds:RS_34._col1=RS_118._col1(Inner),Output:["_col0","_col1","_col2","_col4"]
-                              <-Map 14 [SIMPLE_EDGE] vectorized, llap
-                                SHUFFLE [RS_118]
-                                  PartitionCols:_col1
-                                  Select Operator [SEL_117] (rows=2 width=180)
-                                    Output:["_col1"]
-                                    Filter Operator [FIL_116] (rows=2 width=175)
-                                      predicate:((key = 'src1key') and value is not null)
-                                      TableScan [TS_15] (rows=25 width=175)
-                                        default@src1,src1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-                              <-Reducer 8 [SIMPLE_EDGE] llap
-                                SHUFFLE [RS_34]
-                                  PartitionCols:_col1
-                                  Merge Join Operator [MERGEJOIN_93] (rows=42 width=352)
-                                    Conds:RS_31._col3=RS_115._col1(Inner),Output:["_col0","_col1","_col2","_col4"]
-                                  <-Map 13 [SIMPLE_EDGE] vectorized, llap
-                                    SHUFFLE [RS_115]
-                                      PartitionCols:_col1
-                                      Select Operator [SEL_114] (rows=6 width=185)
-                                        Output:["_col1"]
-                                        Filter Operator [FIL_113] (rows=6 width=178)
-                                          predicate:((key = 'srcpartkey') and value is not null)
-                                          TableScan [TS_12] (rows=2000 width=178)
-                                            default@srcpart,srcpart,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-                                  <-Reducer 7 [SIMPLE_EDGE] llap
-                                    SHUFFLE [RS_31]
-                                      PartitionCols:_col3
-                                      Merge Join Operator [MERGEJOIN_92] (rows=7 width=443)
-                                        Conds:RS_112._col0=RS_108._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
-                                      <-Map 6 [SIMPLE_EDGE] vectorized, llap
-                                        SHUFFLE [RS_108]
-                                          PartitionCols:_col0
-                                          Select Operator [SEL_105] (rows=2 width=178)
-                                            Output:["_col0"]
-                                            Filter Operator [FIL_102] (rows=2 width=178)
-                                              predicate:((value = 'd1value') and key is not null)
-                                               Please refer to the previous TableScan [TS_3]
-                                      <-Map 12 [SIMPLE_EDGE] vectorized, llap
-                                        SHUFFLE [RS_112]
-                                          PartitionCols:_col0
-                                          Select Operator [SEL_111] (rows=7 width=531)
-                                            Output:["_col0","_col1","_col2","_col3","_col4"]
-                                            Filter Operator [FIL_110] (rows=7 width=534)
-                                              predicate:((v3 = 'ssv3') and k1 is not null and k2 is not null and k3 is not null and v1 is not null and v2 is not null)
-                                              TableScan [TS_6] (rows=85 width=534)
-                                                default@ss_n1,ss_n1,Tbl:COMPLETE,Col:COMPLETE,Output:["k1","v1","k2","v2","k3","v3"]
-                    <-Reducer 2 [SIMPLE_EDGE] llap
-                      SHUFFLE [RS_44]
-                        PartitionCols:_col1, _col3
-                        Merge Join Operator [MERGEJOIN_91] (rows=265 width=269)
-                          Conds:RS_100._col0=RS_107._col0(Inner),Output:["_col1","_col2","_col3"]
-                        <-Map 6 [SIMPLE_EDGE] vectorized, llap
-                          SHUFFLE [RS_107]
-                            PartitionCols:_col0
-                            Select Operator [SEL_104] (rows=25 width=178)
-                              Output:["_col0"]
-                              Filter Operator [FIL_101] (rows=25 width=178)
-                                predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
-                                 Please refer to the previous TableScan [TS_3]
-                        <-Map 1 [SIMPLE_EDGE] vectorized, llap
-                          SHUFFLE [RS_100]
-                            PartitionCols:_col0
-                            Select Operator [SEL_99] (rows=170 width=356)
-                              Output:["_col0","_col1","_col2","_col3"]
-                              Filter Operator [FIL_98] (rows=170 width=356)
-                                predicate:(k1 is not null and v2 is not null and v3 is not null)
-                                TableScan [TS_0] (rows=170 width=356)
-                                  default@cs,cs,Tbl:COMPLETE,Col:COMPLETE,Output:["k1","v2","k3","v3"]
+                    Top N Key Operator [TNK_91] (rows=9275 width=534)
+                      keys:_col10, _col20, _col2,sort order:+++,top n:100
+                      Merge Join Operator [MERGEJOIN_98] (rows=9275 width=534)
+                        Conds:RS_44._col1, _col3=RS_45._col15, _col17(Inner),Output:["_col2","_col3","_col10","_col11","_col20","_col21"]
+                      <-Reducer 10 [SIMPLE_EDGE] llap
+                        SHUFFLE [RS_45]
+                          PartitionCols:_col15, _col17
+                          Select Operator [SEL_40] (rows=420 width=447)
+                            Output:["_col4","_col5","_col14","_col15","_col17"]
+                            Merge Join Operator [MERGEJOIN_97] (rows=420 width=447)
+                              Conds:RS_37._col4, _col2=RS_38._col4, _col2(Inner),Output:["_col0","_col1","_col14","_col15","_col17"]
+                            <-Reducer 11 [SIMPLE_EDGE] llap
+                              SHUFFLE [RS_38]
+                                PartitionCols:_col4, _col2
+                                Merge Join Operator [MERGEJOIN_96] (rows=10 width=356)
+                                  Conds:RS_122._col0=RS_110._col0(Inner),Output:["_col2","_col3","_col4","_col5"]
+                                <-Map 6 [SIMPLE_EDGE] vectorized, llap
+                                  SHUFFLE [RS_110]
+                                    PartitionCols:_col0
+                                    Select Operator [SEL_107] (rows=25 width=178)
+                                      Output:["_col0"]
+                                      Filter Operator [FIL_104] (rows=25 width=178)
+                                        predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
+                                        TableScan [TS_3] (rows=500 width=178)
+                                          default@src,d3,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                <-Map 15 [SIMPLE_EDGE] vectorized, llap
+                                  SHUFFLE [RS_122]
+                                    PartitionCols:_col0
+                                    Select Operator [SEL_121] (rows=7 width=531)
+                                      Output:["_col0","_col2","_col3","_col4","_col5"]
+                                      Filter Operator [FIL_120] (rows=7 width=534)
+                                        predicate:((v1 = 'srv1') and k1 is not null and k2 is not null and k3 is not null and v2 is not null and v3 is not null)
+                                        TableScan [TS_18] (rows=85 width=534)
+                                          default@sr,sr,Tbl:COMPLETE,Col:COMPLETE,Output:["k1","v1","k2","v2","k3","v3"]
+                            <-Reducer 9 [SIMPLE_EDGE] llap
+                              SHUFFLE [RS_37]
+                                PartitionCols:_col4, _col2
+                                Merge Join Operator [MERGEJOIN_95] (rows=42 width=352)
+                                  Conds:RS_34._col1=RS_119._col1(Inner),Output:["_col0","_col1","_col2","_col4"]
+                                <-Map 14 [SIMPLE_EDGE] vectorized, llap
+                                  SHUFFLE [RS_119]
+                                    PartitionCols:_col1
+                                    Select Operator [SEL_118] (rows=2 width=180)
+                                      Output:["_col1"]
+                                      Filter Operator [FIL_117] (rows=2 width=175)
+                                        predicate:((key = 'src1key') and value is not null)
+                                        TableScan [TS_15] (rows=25 width=175)
+                                          default@src1,src1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                <-Reducer 8 [SIMPLE_EDGE] llap
+                                  SHUFFLE [RS_34]
+                                    PartitionCols:_col1
+                                    Merge Join Operator [MERGEJOIN_94] (rows=42 width=352)
+                                      Conds:RS_31._col3=RS_116._col1(Inner),Output:["_col0","_col1","_col2","_col4"]
+                                    <-Map 13 [SIMPLE_EDGE] vectorized, llap
+                                      SHUFFLE [RS_116]
+                                        PartitionCols:_col1
+                                        Select Operator [SEL_115] (rows=6 width=185)
+                                          Output:["_col1"]
+                                          Filter Operator [FIL_114] (rows=6 width=178)
+                                            predicate:((key = 'srcpartkey') and value is not null)
+                                            TableScan [TS_12] (rows=2000 width=178)
+                                              default@srcpart,srcpart,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                    <-Reducer 7 [SIMPLE_EDGE] llap
+                                      SHUFFLE [RS_31]
+                                        PartitionCols:_col3
+                                        Merge Join Operator [MERGEJOIN_93] (rows=7 width=443)
+                                          Conds:RS_113._col0=RS_109._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
+                                        <-Map 6 [SIMPLE_EDGE] vectorized, llap
+                                          SHUFFLE [RS_109]
+                                            PartitionCols:_col0
+                                            Select Operator [SEL_106] (rows=2 width=178)
+                                              Output:["_col0"]
+                                              Filter Operator [FIL_103] (rows=2 width=178)
+                                                predicate:((value = 'd1value') and key is not null)
+                                                 Please refer to the previous TableScan [TS_3]
+                                        <-Map 12 [SIMPLE_EDGE] vectorized, llap
+                                          SHUFFLE [RS_113]
+                                            PartitionCols:_col0
+                                            Select Operator [SEL_112] (rows=7 width=531)
+                                              Output:["_col0","_col1","_col2","_col3","_col4"]
+                                              Filter Operator [FIL_111] (rows=7 width=534)
+                                                predicate:((v3 = 'ssv3') and k1 is not null and k2 is not null and k3 is not null and v1 is not null and v2 is not null)
+                                                TableScan [TS_6] (rows=85 width=534)
+                                                  default@ss_n1,ss_n1,Tbl:COMPLETE,Col:COMPLETE,Output:["k1","v1","k2","v2","k3","v3"]
+                      <-Reducer 2 [SIMPLE_EDGE] llap
+                        SHUFFLE [RS_44]
+                          PartitionCols:_col1, _col3
+                          Merge Join Operator [MERGEJOIN_92] (rows=265 width=269)
+                            Conds:RS_101._col0=RS_108._col0(Inner),Output:["_col1","_col2","_col3"]
+                          <-Map 6 [SIMPLE_EDGE] vectorized, llap
+                            SHUFFLE [RS_108]
+                              PartitionCols:_col0
+                              Select Operator [SEL_105] (rows=25 width=178)
+                                Output:["_col0"]
+                                Filter Operator [FIL_102] (rows=25 width=178)
+                                  predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
+                                   Please refer to the previous TableScan [TS_3]
+                          <-Map 1 [SIMPLE_EDGE] vectorized, llap
+                            SHUFFLE [RS_101]
+                              PartitionCols:_col0
+                              Select Operator [SEL_100] (rows=170 width=356)
+                                Output:["_col0","_col1","_col2","_col3"]
+                                Filter Operator [FIL_99] (rows=170 width=356)
+                                  predicate:(k1 is not null and v2 is not null and v3 is not null)
+                                  TableScan [TS_0] (rows=170 width=356)
+                                    default@cs,cs,Tbl:COMPLETE,Col:COMPLETE,Output:["k1","v2","k3","v3"]
 
 PREHOOK: query: explain
 SELECT x.key, z.value, y.value
@@ -1068,105 +1070,107 @@ Stage-0
     limit:100
     Stage-1
       Reducer 7 vectorized, llap
-      File Output Operator [FS_142]
-        Limit [LIM_141] (rows=100 width=10)
+      File Output Operator [FS_144]
+        Limit [LIM_143] (rows=100 width=10)
           Number of rows:100
-          Select Operator [SEL_140] (rows=732 width=10)
+          Select Operator [SEL_142] (rows=732 width=10)
             Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           <-Reducer 6 [SIMPLE_EDGE] vectorized, llap
-            SHUFFLE [RS_139]
-              Group By Operator [GBY_138] (rows=732 width=10)
+            SHUFFLE [RS_141]
+              Group By Operator [GBY_140] (rows=732 width=10)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["count(VALUE._col0)","count(VALUE._col1)","count(VALUE._col2)"],keys:KEY._col0, KEY._col1, KEY._col2
               <-Map 5 [SIMPLE_EDGE] vectorized, llap
-                SHUFFLE [RS_137]
+                SHUFFLE [RS_139]
                   PartitionCols:_col0, _col1, _col2
-                  Group By Operator [GBY_136] (rows=1464 width=10)
+                  Group By Operator [GBY_138] (rows=1464 width=10)
                     Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["count(_col11)","count(_col21)","count(_col3)"],keys:_col10, _col20, _col2
-                    Map Join Operator [MAPJOIN_135] (rows=1464 width=10)
-                      Conds:RS_118._col1, _col3=SEL_134._col15, _col17(Inner),Output:["_col2","_col3","_col10","_col11","_col20","_col21"]
-                    <-Map 2 [BROADCAST_EDGE] vectorized, llap
-                      BROADCAST [RS_118]
-                        PartitionCols:_col1, _col3
-                        Map Join Operator [MAPJOIN_117] (rows=275 width=10)
-                          Conds:RS_114._col0=SEL_116._col0(Inner),Output:["_col1","_col2","_col3"]
-                        <-Map 1 [BROADCAST_EDGE] vectorized, llap
-                          BROADCAST [RS_114]
-                            PartitionCols:_col0
-                            Select Operator [SEL_113] (rows=170 width=34)
-                              Output:["_col0","_col1","_col2","_col3"]
-                              Filter Operator [FIL_112] (rows=170 width=34)
-                                predicate:(k1 is not null and v2 is not null and v3 is not null)
-                                TableScan [TS_0] (rows=170 width=34)
-                                  default@cs,cs,Tbl:COMPLETE,Col:NONE,Output:["k1","v2","k3","v3"]
-                        <-Select Operator [SEL_116] (rows=250 width=10)
-                            Output:["_col0"]
-                            Filter Operator [FIL_115] (rows=250 width=10)
-                              predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
-                              TableScan [TS_3] (rows=500 width=10)
-                                default@src,d3,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-                    <-Select Operator [SEL_134] (rows=1331 width=10)
-                        Output:["_col4","_col5","_col14","_col15","_col17"]
-                        Map Join Operator [MAPJOIN_133] (rows=1331 width=10)
-                          Conds:MAPJOIN_132._col4, _col2=RS_128._col4, _col2(Inner),Output:["_col0","_col1","_col14","_col15","_col17"]
-                        <-Map 10 [BROADCAST_EDGE] vectorized, llap
-                          BROADCAST [RS_128]
-                            PartitionCols:_col4, _col2
-                            Map Join Operator [MAPJOIN_127] (rows=275 width=10)
-                              Conds:RS_124._col0=SEL_126._col0(Inner),Output:["_col2","_col3","_col4","_col5"]
-                            <-Map 9 [BROADCAST_EDGE] vectorized, llap
-                              BROADCAST [RS_124]
-                                PartitionCols:_col0
-                                Select Operator [SEL_123] (rows=42 width=34)
-                                  Output:["_col0","_col2","_col3","_col4","_col5"]
-                                  Filter Operator [FIL_122] (rows=42 width=34)
-                                    predicate:((v1 = 'srv1') and k1 is not null and k2 is not null and k3 is not null and v2 is not null and v3 is not null)
-                                    TableScan [TS_18] (rows=85 width=34)
-                                      default@sr,sr,Tbl:COMPLETE,Col:NONE,Output:["k1","v1","k2","v2","k3","v3"]
-                            <-Select Operator [SEL_126] (rows=250 width=10)
-                                Output:["_col0"]
-                                Filter Operator [FIL_125] (rows=250 width=10)
-                                  predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
-                                  TableScan [TS_21] (rows=500 width=10)
-                                    default@src,d2,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-                        <-Map Join Operator [MAPJOIN_132] (rows=1210 width=10)
-                            Conds:MAPJOIN_131._col1=RS_121._col1(Inner),Output:["_col0","_col1","_col2","_col4"]
-                          <-Map 8 [BROADCAST_EDGE] vectorized, llap
-                            BROADCAST [RS_121]
-                              PartitionCols:_col1
-                              Select Operator [SEL_120] (rows=12 width=7)
-                                Output:["_col1"]
-                                Filter Operator [FIL_119] (rows=12 width=7)
-                                  predicate:((key = 'src1key') and value is not null)
-                                  TableScan [TS_15] (rows=25 width=7)
-                                    default@src1,src1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-                          <-Map Join Operator [MAPJOIN_131] (rows=1100 width=10)
-                              Conds:RS_111._col3=SEL_130._col1(Inner),Output:["_col0","_col1","_col2","_col4"]
-                            <-Map 4 [BROADCAST_EDGE] vectorized, llap
-                              BROADCAST [RS_111]
-                                PartitionCols:_col3
-                                Map Join Operator [MAPJOIN_110] (rows=275 width=10)
-                                  Conds:RS_107._col0=SEL_109._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
-                                <-Map 3 [BROADCAST_EDGE] vectorized, llap
-                                  BROADCAST [RS_107]
-                                    PartitionCols:_col0
-                                    Select Operator [SEL_106] (rows=42 width=34)
-                                      Output:["_col0","_col1","_col2","_col3","_col4"]
-                                      Filter Operator [FIL_105] (rows=42 width=34)
-                                        predicate:((v3 = 'ssv3') and k1 is not null and k2 is not null and k3 is not null and v1 is not null and v2 is not null)
-                                        TableScan [TS_6] (rows=85 width=34)
-                                          default@ss_n1,ss_n1,Tbl:COMPLETE,Col:NONE,Output:["k1","v1","k2","v2","k3","v3"]
-                                <-Select Operator [SEL_109] (rows=250 width=10)
-                                    Output:["_col0"]
-                                    Filter Operator [FIL_108] (rows=250 width=10)
-                                      predicate:((value = 'd1value') and key is not null)
-                                      TableScan [TS_9] (rows=500 width=10)
-                                        default@src,d1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-                            <-Select Operator [SEL_130] (rows=1000 width=10)
-                                Output:["_col1"]
-                                Filter Operator [FIL_129] (rows=1000 width=10)
-                                  predicate:((key = 'srcpartkey') and value is not null)
-                                  TableScan [TS_12] (rows=2000 width=10)
-                                    default@srcpart,srcpart,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                    Top N Key Operator [TNK_137] (rows=1464 width=10)
+                      keys:_col10, _col20, _col2,sort order:+++,top n:100
+                      Map Join Operator [MAPJOIN_136] (rows=1464 width=10)
+                        Conds:RS_119._col1, _col3=SEL_135._col15, _col17(Inner),Output:["_col2","_col3","_col10","_col11","_col20","_col21"]
+                      <-Map 2 [BROADCAST_EDGE] vectorized, llap
+                        BROADCAST [RS_119]
+                          PartitionCols:_col1, _col3
+                          Map Join Operator [MAPJOIN_118] (rows=275 width=10)
+                            Conds:RS_115._col0=SEL_117._col0(Inner),Output:["_col1","_col2","_col3"]
+                          <-Map 1 [BROADCAST_EDGE] vectorized, llap
+                            BROADCAST [RS_115]
+                              PartitionCols:_col0
+                              Select Operator [SEL_114] (rows=170 width=34)
+                                Output:["_col0","_col1","_col2","_col3"]
+                                Filter Operator [FIL_113] (rows=170 width=34)
+                                  predicate:(k1 is not null and v2 is not null and v3 is not null)
+                                  TableScan [TS_0] (rows=170 width=34)
+                                    default@cs,cs,Tbl:COMPLETE,Col:NONE,Output:["k1","v2","k3","v3"]
+                          <-Select Operator [SEL_117] (rows=250 width=10)
+                              Output:["_col0"]
+                              Filter Operator [FIL_116] (rows=250 width=10)
+                                predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
+                                TableScan [TS_3] (rows=500 width=10)
+                                  default@src,d3,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                      <-Select Operator [SEL_135] (rows=1331 width=10)
+                          Output:["_col4","_col5","_col14","_col15","_col17"]
+                          Map Join Operator [MAPJOIN_134] (rows=1331 width=10)
+                            Conds:MAPJOIN_133._col4, _col2=RS_129._col4, _col2(Inner),Output:["_col0","_col1","_col14","_col15","_col17"]
+                          <-Map 10 [BROADCAST_EDGE] vectorized, llap
+                            BROADCAST [RS_129]
+                              PartitionCols:_col4, _col2
+                              Map Join Operator [MAPJOIN_128] (rows=275 width=10)
+                                Conds:RS_125._col0=SEL_127._col0(Inner),Output:["_col2","_col3","_col4","_col5"]
+                              <-Map 9 [BROADCAST_EDGE] vectorized, llap
+                                BROADCAST [RS_125]
+                                  PartitionCols:_col0
+                                  Select Operator [SEL_124] (rows=42 width=34)
+                                    Output:["_col0","_col2","_col3","_col4","_col5"]
+                                    Filter Operator [FIL_123] (rows=42 width=34)
+                                      predicate:((v1 = 'srv1') and k1 is not null and k2 is not null and k3 is not null and v2 is not null and v3 is not null)
+                                      TableScan [TS_18] (rows=85 width=34)
+                                        default@sr,sr,Tbl:COMPLETE,Col:NONE,Output:["k1","v1","k2","v2","k3","v3"]
+                              <-Select Operator [SEL_127] (rows=250 width=10)
+                                  Output:["_col0"]
+                                  Filter Operator [FIL_126] (rows=250 width=10)
+                                    predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
+                                    TableScan [TS_21] (rows=500 width=10)
+                                      default@src,d2,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                          <-Map Join Operator [MAPJOIN_133] (rows=1210 width=10)
+                              Conds:MAPJOIN_132._col1=RS_122._col1(Inner),Output:["_col0","_col1","_col2","_col4"]
+                            <-Map 8 [BROADCAST_EDGE] vectorized, llap
+                              BROADCAST [RS_122]
+                                PartitionCols:_col1
+                                Select Operator [SEL_121] (rows=12 width=7)
+                                  Output:["_col1"]
+                                  Filter Operator [FIL_120] (rows=12 width=7)
+                                    predicate:((key = 'src1key') and value is not null)
+                                    TableScan [TS_15] (rows=25 width=7)
+                                      default@src1,src1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                            <-Map Join Operator [MAPJOIN_132] (rows=1100 width=10)
+                                Conds:RS_112._col3=SEL_131._col1(Inner),Output:["_col0","_col1","_col2","_col4"]
+                              <-Map 4 [BROADCAST_EDGE] vectorized, llap
+                                BROADCAST [RS_112]
+                                  PartitionCols:_col3
+                                  Map Join Operator [MAPJOIN_111] (rows=275 width=10)
+                                    Conds:RS_108._col0=SEL_110._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
+                                  <-Map 3 [BROADCAST_EDGE] vectorized, llap
+                                    BROADCAST [RS_108]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_107] (rows=42 width=34)
+                                        Output:["_col0","_col1","_col2","_col3","_col4"]
+                                        Filter Operator [FIL_106] (rows=42 width=34)
+                                          predicate:((v3 = 'ssv3') and k1 is not null and k2 is not null and k3 is not null and v1 is not null and v2 is not null)
+                                          TableScan [TS_6] (rows=85 width=34)
+                                            default@ss_n1,ss_n1,Tbl:COMPLETE,Col:NONE,Output:["k1","v1","k2","v2","k3","v3"]
+                                  <-Select Operator [SEL_110] (rows=250 width=10)
+                                      Output:["_col0"]
+                                      Filter Operator [FIL_109] (rows=250 width=10)
+                                        predicate:((value = 'd1value') and key is not null)
+                                        TableScan [TS_9] (rows=500 width=10)
+                                          default@src,d1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                              <-Select Operator [SEL_131] (rows=1000 width=10)
+                                  Output:["_col1"]
+                                  Filter Operator [FIL_130] (rows=1000 width=10)
+                                    predicate:((key = 'srcpartkey') and value is not null)
+                                    TableScan [TS_12] (rows=2000 width=10)
+                                      default@srcpart,srcpart,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain
 SELECT x.key, z.value, y.value

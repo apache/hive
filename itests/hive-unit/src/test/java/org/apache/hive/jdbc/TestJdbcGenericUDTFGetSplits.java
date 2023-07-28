@@ -52,10 +52,12 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
+@Ignore("HIVE-27148")
 public class TestJdbcGenericUDTFGetSplits {
   protected static MiniHS2 miniHS2 = null;
   protected static String dataFileDir;

@@ -270,28 +270,37 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [9]
                     Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      Group By Vectorization:
-                          className: VectorGroupByOperator
-                          groupByMode: HASH
-                          keyExpressions: col 9:int
-                          native: false
-                          vectorProcessingMode: HASH
-                          projectedOutputColumnNums: []
+                    Top N Key Operator
+                      sort order: +
                       keys: ss_ticket_number (type: int)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 85 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkLongOperator
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 20
+                      Top N Key Vectorization:
+                          className: VectorTopNKeyOperator
+                          keyExpressions: col 9:int
+                          native: true
+                      Group By Operator
+                        Group By Vectorization:
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            keyExpressions: col 9:int
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: []
+                        keys: ss_ticket_number (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 85 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkLongOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 85 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:

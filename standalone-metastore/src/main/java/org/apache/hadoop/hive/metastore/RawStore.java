@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -88,7 +90,6 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.thrift.TException;
 
 public interface RawStore extends Configurable {
@@ -1188,8 +1189,9 @@ public interface RawStore extends Configurable {
   /**
    * Add a notification entry.  This should only be called from inside the metastore
    * @param event the notification to add
+   * @throws MetaException error accessing RDBMS
    */
-  void addNotificationEvent(NotificationEvent event);
+  void addNotificationEvent(NotificationEvent event) throws MetaException;
 
   /**
    * Remove older notification events.
@@ -1650,11 +1652,34 @@ public interface RawStore extends Configurable {
   /** Removes outdated statistics. */
   int deleteRuntimeStats(int maxRetainSecs) throws MetaException;
 
-  List<FullTableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException;
+  List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException;
 
-  List<FullTableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException;
+  List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException;
 
   Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName,
       String tableName) throws MetaException, NoSuchObjectException;
+
+  /**
+   * Remove older notification events.
+   * @param olderThan Remove any events older than a given number of seconds
+   */
+  void cleanWriteNotificationEvents(int olderThan);
+
+  /**
+   * Get all write events for a specific transaction .
+   * @param txnId get all the events done by this transaction
+   * @param dbName the name of db for which dump is being taken
+   * @param tableName the name of the table for which the dump is being taken
+   */
+  List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException;
+
+  /**
+   * Checking if table is part of a materialized view.
+   * @param catName catalog the table is in
+   * @param dbName database the table is in
+   * @param tblName table name
+   * @return list of materialized views that uses the table
+   */
+  List<String> isPartOfMaterializedView(String catName, String dbName, String tblName);
 
 }

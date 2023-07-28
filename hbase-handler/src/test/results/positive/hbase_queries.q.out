@@ -2,17 +2,17 @@ PREHOOK: query: DROP TABLE hbase_table_1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hbase_table_1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
-TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0", "external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_1
-POSTHOOK: query: CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
-TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0", "external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_1
@@ -409,15 +409,17 @@ PREHOOK: query: DROP TABLE empty_hbase_table
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE empty_hbase_table
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE empty_hbase_table(key int, value string) 
+PREHOOK: query: CREATE EXTERNAL TABLE empty_hbase_table(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@empty_hbase_table
-POSTHOOK: query: CREATE TABLE empty_hbase_table(key int, value string) 
+POSTHOOK: query: CREATE EXTERNAL TABLE empty_hbase_table(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@empty_hbase_table
@@ -481,19 +483,21 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 155
 500
-PREHOOK: query: CREATE TABLE hbase_table_3(key int, value string, count int) 
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_3(key int, value string, count int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "cf:val,cf2:count"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_3
-POSTHOOK: query: CREATE TABLE hbase_table_3(key int, value string, count int) 
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_3(key int, value string, count int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "cf:val,cf2:count"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_3
@@ -685,19 +689,21 @@ PREHOOK: query: DROP TABLE hbase_table_4
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hbase_table_4
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table_4(key int, value1 string, value2 int, value3 int) 
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_4(key int, value1 string, value2 int, value3 int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "a:b,a:c,d:e"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_4
-POSTHOOK: query: CREATE TABLE hbase_table_4(key int, value1 string, value2 int, value3 int) 
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_4(key int, value1 string, value2 int, value3 int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "a:b,a:c,d:e"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_4
@@ -753,19 +759,21 @@ PREHOOK: query: DROP TABLE hbase_table_6
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hbase_table_6
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table_6(key int, value map<string,string>) 
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_6(key int, value map<string,string>) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = ":key,cf:"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_6
-POSTHOOK: query: CREATE TABLE hbase_table_6(key int, value map<string,string>) 
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_6(key int, value map<string,string>) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = ":key,cf:"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_6
@@ -793,19 +801,21 @@ PREHOOK: query: DROP TABLE hbase_table_7
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hbase_table_7
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table_7(value map<string,string>, key int) 
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_7(value map<string,string>, key int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "cf:,:key"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_7
-POSTHOOK: query: CREATE TABLE hbase_table_7(value map<string,string>, key int) 
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_7(value map<string,string>, key int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "cf:,:key"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_7
@@ -835,19 +845,21 @@ PREHOOK: query: DROP TABLE hbase_table_8
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hbase_table_8
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table_8(key int, value1 string, value2 int, value3 int) 
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_8(key int, value1 string, value2 int, value3 int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "a:b,a:c,d:e"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_8
-POSTHOOK: query: CREATE TABLE hbase_table_8(key int, value1 string, value2 int, value3 int) 
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_8(key int, value1 string, value2 int, value3 int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "a:b,a:c,d:e"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_8
@@ -977,15 +989,17 @@ PREHOOK: query: DROP TABLE IF EXISTS hbase_table_9
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_9
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table_9 (id bigint, data map<string, string>, str string)
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_9 (id bigint, data map<string, string>, str string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col#s:s,cf:str_col")
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_9
-POSTHOOK: query: CREATE TABLE hbase_table_9 (id bigint, data map<string, string>, str string)
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_9 (id bigint, data map<string, string>, str string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col#s:s,cf:str_col")
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_9
@@ -1046,15 +1060,17 @@ PREHOOK: query: DROP TABLE IF EXISTS hbase_table_10
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_10
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table_10 (id bigint, data map<int, int>, str string)
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_10 (id bigint, data map<int, int>, str string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col2,cf:str2_col")
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_10
-POSTHOOK: query: CREATE TABLE hbase_table_10 (id bigint, data map<int, int>, str string)
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_10 (id bigint, data map<int, int>, str string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col2,cf:str2_col")
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_10
@@ -1115,15 +1131,17 @@ PREHOOK: query: DROP TABLE IF EXISTS hbase_table_11
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_11
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table_11(id INT, map_column STRUCT<s_int:INT,s_string:STRING,s_date:DATE>)
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_11(id INT, map_column STRUCT<s_int:INT,s_string:STRING,s_date:DATE>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_11
-POSTHOOK: query: CREATE TABLE hbase_table_11(id INT, map_column STRUCT<s_int:INT,s_string:STRING,s_date:DATE>)
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_11(id INT, map_column STRUCT<s_int:INT,s_string:STRING,s_date:DATE>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_11
@@ -1148,15 +1166,17 @@ PREHOOK: query: DROP TABLE IF EXISTS hbase_table_12
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_12
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table_12(id INT, list_column ARRAY <STRING>)
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_12(id INT, list_column ARRAY <STRING>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_12
-POSTHOOK: query: CREATE TABLE hbase_table_12(id INT, list_column ARRAY <STRING>)
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_12(id INT, list_column ARRAY <STRING>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_12

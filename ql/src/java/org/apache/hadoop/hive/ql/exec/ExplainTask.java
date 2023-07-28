@@ -45,9 +45,11 @@ import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -55,6 +57,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailL
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
+import org.apache.hadoop.hive.ql.plan.ExplainLockDesc;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -218,11 +221,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public JSONObject getJSONPlan(PrintStream out, ExplainWork work)
       throws Exception {
     return getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
-                       work.isFormatted(), work.getExtended(), work.isAppendTaskType());
+                       work.isFormatted(), work.getExtended(), work.isAppendTaskType(), work.getOptimizedSQL());
   }
 
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
-      boolean jsonOutput, boolean isExtended, boolean appendTaskType) throws Exception {
+      boolean jsonOutput, boolean isExtended, boolean appendTaskType, String optimizedSQL) throws Exception {
 
     // If the user asked for a formatted output, dump the json output
     // in the output stream
@@ -230,6 +233,15 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (jsonOutput) {
       out = null;
+    }
+
+    if (optimizedSQL != null) {
+      if (jsonOutput) {
+        outJSONObject.put("optimizedSQL", optimizedSQL);
+      } else {
+        out.print("OPTIMIZED SQL: ");
+        out.println(optimizedSQL);
+      }
     }
 
     List<Task> ordered = StageIDsRearranger.getExplainOrder(conf, tasks);
@@ -285,6 +297,44 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     return jsonOutput ? outJSONObject : null;
+  }
+
+  private JSONObject getLocks(PrintStream out, ExplainWork work) {
+
+    JSONObject jsonObject = new JSONObject(new LinkedHashMap<>());
+
+    boolean jsonOutput = work.isFormatted();
+    if (jsonOutput) {
+      out = null;
+    }
+    if (work.getParseContext() != null) {
+      List<LockComponent> lockComponents = AcidUtils.makeLockComponents(work.getOutputs(), work.getInputs(), conf);
+      if (null != out) {
+        out.print("LOCK INFORMATION:\n");
+      }
+      List<ExplainLockDesc> locks = new ArrayList<>(lockComponents.size());
+
+      for (LockComponent component : lockComponents) {
+        ExplainLockDesc lockDesc = new ExplainLockDesc(component);
+
+        if (null != out) {
+          out.print(lockDesc.getFullName());
+          out.print(" -> ");
+          out.print(lockDesc.getLockType());
+          out.print('\n');
+        } else {
+          locks.add(lockDesc);
+        }
+
+      }
+
+      if (jsonOutput) {
+        jsonObject.put("LOCK INFORMATION:", locks);
+      }
+    } else {
+      System.err.println("No parse context!");
+    }
+    return jsonObject;
   }
 
   private List<String> toString(Collection<?> objects) {
@@ -344,6 +394,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       } else if (work.getDependency()) {
         JSONObject jsonDependencies = getJSONDependencies(work);
         out.print(jsonDependencies);
+      }  else if (work.isLocks()) {
+        JSONObject jsonLocks = getLocks(out, work);
+        if (work.isFormatted()) {
+          out.print(jsonLocks);
+        }
       } else {
         if (work.isUserLevelExplain()) {
           // Because of the implementation of the JsonParserFactory, we are sure

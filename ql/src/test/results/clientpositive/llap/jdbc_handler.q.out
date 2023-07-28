@@ -37,7 +37,7 @@ POSTHOOK: Input: default@src
 0	0	0
 PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table
 (
- kkey bigint
+ kkey int
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -54,7 +54,7 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@ext_simple_derby_table
 POSTHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table
 (
- kkey bigint
+ kkey int
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -98,14 +98,14 @@ STAGE PLANS:
         TableScan
           alias: ext_simple_derby_table
           properties:
-            hive.sql.generated.query SELECT *
+            hive.sql.query SELECT "kkey"
 FROM "SIMPLE_DERBY_TABLE"
 WHERE 100 < "kkey"
-            hive.sql.query SELECT *
-FROM "SIMPLE_DERBY_TABLE"
-WHERE 100 < "kkey"
+            hive.sql.query.fieldNames kkey
+            hive.sql.query.fieldTypes int
+            hive.sql.query.split true
           Select Operator
-            expressions: kkey (type: bigint)
+            expressions: kkey (type: int)
             outputColumnNames: _col0
             ListSink
 

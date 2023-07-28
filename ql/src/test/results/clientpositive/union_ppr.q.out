@@ -52,7 +52,7 @@ STAGE PLANS:
                     Statistics: Num rows: 666 Data size: 7074 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string), '2008-04-08' (type: string), _col3 (type: string)
-                      null sort order: aaaa
+                      null sort order: zzzz
                       sort order: ++++
                       Statistics: Num rows: 666 Data size: 7074 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -77,7 +77,7 @@ STAGE PLANS:
                     Statistics: Num rows: 666 Data size: 7074 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string), '2008-04-08' (type: string), _col3 (type: string)
-                      null sort order: aaaa
+                      null sort order: zzzz
                       sort order: ++++
                       Statistics: Num rows: 666 Data size: 7074 Basic stats: COMPLETE Column stats: NONE
                       tag: -1

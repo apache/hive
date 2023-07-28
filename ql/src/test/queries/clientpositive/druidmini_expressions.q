@@ -1,7 +1,8 @@
 --! qt:dataset:alltypesorc
+SET hive.ctas.external.tables=true;
 
 SET hive.vectorized.execution.enabled=false;
-CREATE TABLE druid_table_n0
+CREATE EXTERNAL TABLE druid_table_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -126,12 +127,15 @@ explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) a
 SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_n0  order by date_1, date_2 limit 3;
 
   -- Boolean Values
+-- Expected results of this query are wrong due to https://issues.apache.org/jira/browse/CALCITE-2319
+-- It should get fixed once we upgrade calcite
+ EXPLAIN SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2;
  SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2;
-  
+
   -- Expected results of this query are wrong due to https://issues.apache.org/jira/browse/CALCITE-2319
   -- It should get fixed once we upgrade calcite
  SELECT ctinyint > 2, count(*) from druid_table_n0 GROUP BY ctinyint > 2;
-  
+
  EXPLAIN SELECT ctinyint > 2, count(*) from druid_table_n0 GROUP BY ctinyint > 2;
 
 DROP TABLE druid_table_n0;

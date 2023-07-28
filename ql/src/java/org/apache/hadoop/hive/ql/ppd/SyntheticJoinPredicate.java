@@ -26,6 +26,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -119,13 +125,19 @@ public class SyntheticJoinPredicate extends Transform {
   private static class SyntheticContext implements NodeProcessorCtx {
 
     ParseContext parseContext;
+    boolean extended;
 
     public SyntheticContext(ParseContext pCtx) {
       parseContext = pCtx;
+      extended = parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING_EXTENDED);
     }
 
     public ParseContext getParseContext() {
       return parseContext;
+    }
+
+    public boolean isExtended() {
+      return extended;
     }
   }
 
@@ -133,6 +145,8 @@ public class SyntheticJoinPredicate extends Transform {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
+
+      SyntheticContext sCtx = (SyntheticContext) procCtx;
 
       @SuppressWarnings("unchecked")
       CommonJoinOperator<JoinDesc> join = (CommonJoinOperator<JoinDesc>) nd;
@@ -161,9 +175,6 @@ public class SyntheticJoinPredicate extends Transform {
           continue;
         }
 
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Synthetic predicate: " + srcPos + " --> " + targetPos);
-        }
         ReduceSinkOperator target = (ReduceSinkOperator) parents.get(targetPos);
         List<ExprNodeDesc> sourceKeys = source.getConf().getKeyCols();
         List<ExprNodeDesc> targetKeys = target.getConf().getKeyCols();
@@ -175,8 +186,10 @@ public class SyntheticJoinPredicate extends Transform {
         ExprNodeDesc syntheticExpr = null;
 
         for (int i = 0; i < sourceKeys.size(); ++i) {
-          List<ExprNodeDesc> inArgs = new ArrayList<ExprNodeDesc>();
-          inArgs.add(sourceKeys.get(i));
+          final ExprNodeDesc sourceKey = sourceKeys.get(i);
+
+          List<ExprNodeDesc> inArgs = new ArrayList<>();
+          inArgs.add(sourceKey);
 
           ExprNodeDynamicListDesc dynamicExpr =
               new ExprNodeDynamicListDesc(targetKeys.get(i).getTypeInfo(), target, i);
@@ -186,17 +199,36 @@ public class SyntheticJoinPredicate extends Transform {
           ExprNodeDesc syntheticInExpr =
               ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo("in")
                   .getGenericUDF(), inArgs);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Synthetic predicate in " + join + ": " + srcPos + " --> " + targetPos + " (" + syntheticInExpr + ")");
+          }
 
+          List<ExprNodeDesc> andArgs = new ArrayList<>();
           if (syntheticExpr != null) {
-            List<ExprNodeDesc> andArgs = new ArrayList<ExprNodeDesc>();
             andArgs.add(syntheticExpr);
-            andArgs.add(syntheticInExpr);
+          }
+          andArgs.add(syntheticInExpr);
 
+          if(sCtx.isExtended()) {
+            // Backtrack
+            List<ExprNodeDesc> newExprs = createDerivatives(target.getParentOperators().get(0), targetKeys.get(i), sourceKey);
+            if (!newExprs.isEmpty()) {
+              if (LOG.isDebugEnabled()) {
+                for (ExprNodeDesc expr : newExprs) {
+                  LOG.debug("Additional synthetic predicate in " + join + ": " + srcPos + " --> " + targetPos + " (" + expr + ")");
+                }
+              }
+              andArgs.addAll(newExprs);
+            }
+          }
+
+          if (andArgs.size() < 2) {
+            syntheticExpr = syntheticInExpr;
+          } else {
+            // Create AND expression
             syntheticExpr =
                 ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo("and")
                     .getGenericUDF(), andArgs);
-          } else {
-            syntheticExpr = syntheticInExpr;
           }
         }
 
@@ -240,6 +272,129 @@ public class SyntheticJoinPredicate extends Transform {
         result[pos] = vector.traverse(pos);
       }
       return result;
+    }
+
+    private List<ExprNodeDesc> createDerivatives(final Operator<?> currentOp,
+        final ExprNodeDesc currentNode, final ExprNodeDesc sourceKey) throws SemanticException {
+      List<ExprNodeDesc> resultExprs = new ArrayList<>();
+      return createDerivatives(resultExprs, currentOp, currentNode, sourceKey) ? resultExprs : new ArrayList<>();
+    }
+
+    private boolean createDerivatives(final List<ExprNodeDesc> resultExprs, final Operator<?> op,
+        final ExprNodeDesc currentNode, final ExprNodeDesc sourceKey) throws SemanticException {
+      // 1. Obtain join operator upstream
+      Operator<?> currentOp = op;
+      while (!(currentOp instanceof CommonJoinOperator)) {
+        if (currentOp.getParentOperators() == null || currentOp.getParentOperators().size() != 1) {
+          // Cannot backtrack
+          currentOp = null;
+          break;
+        }
+        if (!(currentOp instanceof FilterOperator) &&
+            !(currentOp instanceof SelectOperator) &&
+            !(currentOp instanceof ReduceSinkOperator) &&
+            !(currentOp instanceof GroupByOperator)) {
+          // Operator not supported
+          currentOp = null;
+          break;
+        }
+        // Move the pointer
+        currentOp = currentOp.getParentOperators().get(0);
+      }
+      if (currentOp == null) {
+        // We did not find any join, we are done
+        return true;
+      }
+      CommonJoinOperator<JoinDesc> joinOp = (CommonJoinOperator) currentOp;
+
+      // 2. Backtrack expression to join output
+      final ExprNodeDesc joinExprNode = ExprNodeDescUtils.backtrack(currentNode, op, joinOp);
+      if (joinExprNode == null || !(joinExprNode instanceof ExprNodeColumnDesc)) {
+        // TODO: We can extend to other expression types
+        // We are done
+        return true;
+      }
+      final String columnRefJoinInput = ((ExprNodeColumnDesc)joinExprNode).getColumn();
+
+      // 3. Find input position in join for expression obtained
+      String columnOutputName = null;
+      for (Map.Entry<String, ExprNodeDesc> e : joinOp.getColumnExprMap().entrySet()) {
+        if (e.getValue() == joinExprNode) {
+          columnOutputName = e.getKey();
+          break;
+        }
+      }
+      if (columnOutputName == null) {
+        // Maybe the join is pruning columns, though it should not.
+        // In any case, we are done
+        return true;
+      }
+      final int srcPos = joinOp.getConf().getReversedExprs().get(columnOutputName);
+      final int[][] targets = getTargets(joinOp);
+      final ReduceSinkOperator rsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(srcPos);
+
+      // 4. Find expression in input RS operator.
+      final Operator<?> rsOpInput = rsOp.getParentOperators().get(0);
+      final ExprNodeDesc rsOpInputExprNode = rsOp.getColumnExprMap().get(columnRefJoinInput);
+      if (rsOpInputExprNode == null) {
+        // Unexpected, we just bail out and we do not infer additional predicates
+        return false;
+      }
+      int posInRSOpKeys = -1;
+      for (int i = 0; i < rsOp.getConf().getKeyCols().size(); i++) {
+        if (rsOpInputExprNode.isSame(rsOp.getConf().getKeyCols().get(i))) {
+          posInRSOpKeys = i;
+          break;
+        }
+      }
+
+      // 5. If it is part of the key, we can create a new semijoin.
+      // In addition, we can do the same for siblings
+      if (posInRSOpKeys >= 0) {
+        // We pass the tests, we add it to the args for the AND expression
+        addParentReduceSink(resultExprs, rsOp, posInRSOpKeys, sourceKey);
+        for (int targetPos: targets[srcPos]) {
+          if (srcPos == targetPos) {
+            continue;
+          }
+          final ReduceSinkOperator otherRsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(targetPos);
+          final Operator<?> otherRsOpInput = otherRsOp.getParentOperators().get(0);
+          // We pass the tests, we add it to the args for the AND expression
+          addParentReduceSink(resultExprs, otherRsOp, posInRSOpKeys, sourceKey);
+          // We propagate to operator below
+          boolean success = createDerivatives(
+              resultExprs, otherRsOpInput, otherRsOp.getConf().getKeyCols().get(posInRSOpKeys), sourceKey);
+          if (!success) {
+            // Something went wrong, bail out
+            return false;
+          }
+        }
+      }
+
+      // 6. Whether it was part of the key or of the value, if we reach here, we can at least
+      // continue propagating to operators below
+      boolean success = createDerivatives(
+          resultExprs, rsOpInput, rsOpInputExprNode, sourceKey);
+      if (!success) {
+        // Something went wrong, bail out
+        return false;
+      }
+
+      // 7. We are done, success
+      return true;
+    }
+
+    private void addParentReduceSink(final List<ExprNodeDesc> andArgs, final ReduceSinkOperator rsOp,
+        final int keyIndex, final ExprNodeDesc sourceKey) throws SemanticException {
+      ExprNodeDynamicListDesc dynamicExpr =
+          new ExprNodeDynamicListDesc(rsOp.getConf().getKeyCols().get(keyIndex).getTypeInfo(), rsOp, keyIndex);
+      // Create synthetic IN expression
+      List<ExprNodeDesc> inArgs = new ArrayList<>();
+      inArgs.add(sourceKey);
+      inArgs.add(dynamicExpr);
+      ExprNodeDesc newNode = ExprNodeGenericFuncDesc.newInstance(
+          FunctionRegistry.getFunctionInfo("in").getGenericUDF(), inArgs);
+      andArgs.add(newNode);
     }
   }
 
@@ -285,4 +440,5 @@ public class SyntheticJoinPredicate extends Transform {
       }
     }
   }
+
 }

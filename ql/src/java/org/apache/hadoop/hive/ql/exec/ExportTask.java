@@ -55,7 +55,7 @@ public class ExportTask extends Task<ExportWork> implements Serializable {
       TableExport tableExport = new TableExport(exportPaths, work.getTableSpec(),
           work.getReplicationSpec(), db, null, conf, work.getMmContext());
       if (!tableExport.write()) {
-        throw new SemanticException(ErrorMsg.EXIM_FOR_NON_NATIVE.getMsg());
+        throw new SemanticException(ErrorMsg.INCOMPATIBLE_SCHEMA.getMsg());
       }
     } catch (Exception e) {
       LOG.error("failed", e);

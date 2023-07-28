@@ -1489,10 +1489,15 @@ public final class GenMapRedUtils {
     boolean truncate = false;
     if (mvWork.getLoadTableWork() != null) {
       statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
-      String tableName = mvWork.getLoadTableWork().getTable().getTableName();
       truncate = mvWork.getLoadTableWork().getReplace();
+      String tableName = mvWork.getLoadTableWork().getTable().getTableName();
       try {
-        table = Hive.get().getTable(SessionState.get().getCurrentDatabase(), tableName);
+        // For partitioned CTAS, the table has not been created, but we can retrieve it
+        // from the loadTableWork. For rest of query types, we just retrieve it from
+        // metastore.
+        table = mvWork.getLoadTableWork().getMdTable() != null ?
+            mvWork.getLoadTableWork().getMdTable() :
+            Hive.get().getTable(SessionState.get().getCurrentDatabase(), tableName);
       } catch (HiveException e) {
         throw new RuntimeException("unexpected; table should be present already..: " + tableName, e);
       }
@@ -1985,9 +1990,16 @@ public final class GenMapRedUtils {
         // it must be on the same file system as the current destination
         Context baseCtx = parseCtx.getContext();
 
-        // Create the required temporary file in the HDFS location if the destination
-        // path of the FileSinkOperator table is a blobstore path.
-        Path tmpDir = baseCtx.getTempDirForFinalJobPath(fileSinkDesc.getDestPath());
+        Path tmpDir = null;
+        if (hconf.getBoolVar(ConfVars.HIVE_USE_SCRATCHDIR_FOR_STAGING)) {
+          tmpDir = baseCtx.getTempDirForInterimJobPath(fileSinkDesc.getDestPath());
+        } else {
+          tmpDir = baseCtx.getTempDirForFinalJobPath(fileSinkDesc.getDestPath());
+        }
+        DynamicPartitionCtx dpCtx = fileSinkDesc.getDynPartCtx();
+        if (dpCtx != null && dpCtx.getSPPath() != null) {
+          tmpDir = new Path(tmpDir, dpCtx.getSPPath());
+        }
 
         // Change all the linked file sink descriptors
         if (fileSinkDesc.isLinkedFileSink()) {

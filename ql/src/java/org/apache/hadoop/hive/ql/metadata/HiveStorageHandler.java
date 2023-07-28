@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -171,5 +172,32 @@ public interface HiveStorageHandler extends Configurable {
 
   default LockType getLockType(WriteEntity writeEntity){
     return LockType.EXCLUSIVE;
+  }
+
+  /**
+   * Return some basic statistics (numRows, numFiles, totalSize) calculated by the underlying storage handler
+   * implementation.
+   * @param partish a partish wrapper class
+   * @return map of basic statistics, can be null
+   */
+  default Map<String, String> getBasicStatistics(Partish partish) {
+    return null;
+  }
+
+  /**
+   * Check if the storage handler can provide basic statistics.
+   * @return true if the storage handler can supply the basic statistics
+   */
+  default boolean canProvideBasicStatistics() {
+    return false;
+  }
+
+  /**
+   * Check if CTAS operations should behave in a direct-insert manner.
+   *
+   * @return whether direct insert CTAS is required.
+   */
+  default boolean directInsert() {
+    return false;
   }
 }

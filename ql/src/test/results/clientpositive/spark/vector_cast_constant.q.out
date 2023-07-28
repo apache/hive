@@ -203,13 +203,13 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                 Statistics: Num rows: 524 Data size: 155436 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), (_col1 / _col2) (type: double), (_col3 / _col4) (type: double), CAST( (_col5 / _col6) AS decimal(6,4)) (type: decimal(6,4))
+                  expressions: _col0 (type: int), (UDFToDouble(_col1) / _col2) (type: double), (_col3 / _col4) (type: double), CAST( (_col5 / _col6) AS decimal(6,4)) (type: decimal(6,4))
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 7, 8, 11]
-                      selectExpressions: LongColDivideLongColumn(col 1:bigint, col 2:bigint) -> 7:double, DoubleColDivideLongColumn(col 3:double, col 4:bigint) -> 8:double, CastDecimalToDecimal(col 10:decimal(32,20))(children: DecimalColDivideDecimalColumn(col 5:decimal(12,0), col 9:decimal(19,0))(children: CastLongToDecimal(col 6:bigint) -> 9:decimal(19,0)) -> 10:decimal(32,20)) -> 11:decimal(6,4)
+                      projectedOutputColumnNums: [0, 8, 7, 11]
+                      selectExpressions: DoubleColDivideLongColumn(col 7:double, col 2:bigint)(children: CastLongToDouble(col 1:bigint) -> 7:double) -> 8:double, DoubleColDivideLongColumn(col 3:double, col 4:bigint) -> 7:double, CastDecimalToDecimal(col 10:decimal(32,20))(children: DecimalColDivideDecimalColumn(col 5:decimal(12,0), col 9:decimal(19,0))(children: CastLongToDecimal(col 6:bigint) -> 9:decimal(19,0)) -> 10:decimal(32,20)) -> 11:decimal(6,4)
                   Statistics: Num rows: 524 Data size: 155436 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)

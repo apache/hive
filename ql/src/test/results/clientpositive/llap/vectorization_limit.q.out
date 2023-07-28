@@ -181,7 +181,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -393,7 +393,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -443,6 +443,7 @@ POSTHOOK: query: select ctinyint,avg(cdouble + 1) as cavg from alltypesorc group
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-45	326.44444444444446
 -46	3033.55
 -47	-574.6428571428571
 -48	1672.909090909091
@@ -462,7 +463,6 @@ POSTHOOK: Input: default@alltypesorc
 -62	245.69387755102042
 -63	2178.7272727272725
 -64	373.52941176470586
-NULL	9370.0945309795
 PREHOOK: query: explain vectorization detail
 select distinct(ctinyint) as cdistinct from alltypesorc order by cdistinct limit 20
 PREHOOK: type: QUERY
@@ -505,31 +505,40 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [0]
                     Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      Group By Vectorization:
-                          className: VectorGroupByOperator
-                          groupByMode: HASH
-                          keyExpressions: col 0:tinyint
-                          native: false
-                          vectorProcessingMode: HASH
-                          projectedOutputColumnNums: []
+                    Top N Key Operator
+                      sort order: +
                       keys: ctinyint (type: tinyint)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: tinyint)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: tinyint)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [0]
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [0]
-                            valueColumnNums: []
-                        Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.3
+                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 20
+                      Top N Key Vectorization:
+                          className: VectorTopNKeyOperator
+                          keyExpressions: col 0:tinyint
+                          native: true
+                      Group By Operator
+                        Group By Vectorization:
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            keyExpressions: col 0:tinyint
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: []
+                        keys: ctinyint (type: tinyint)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 131 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: tinyint)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: tinyint)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              keyColumnNums: [0]
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              partitionColumnNums: [0]
+                              valueColumnNums: []
+                          Statistics: Num rows: 131 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.3
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -552,7 +561,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -574,19 +583,19 @@ STAGE PLANS:
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 131 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-                  Statistics: Num rows: 20 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 20 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -606,6 +615,7 @@ POSTHOOK: query: select distinct(ctinyint) as cdistinct from alltypesorc order b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-45
 -46
 -47
 -48
@@ -625,7 +635,6 @@ POSTHOOK: Input: default@alltypesorc
 -62
 -63
 -64
-NULL
 PREHOOK: query: explain vectorization detail
 select ctinyint, count(distinct(cdouble)) as count_distinct from alltypesorc group by ctinyint order by ctinyint, count_distinct limit 20
 PREHOOK: type: QUERY
@@ -768,7 +777,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -818,6 +827,7 @@ POSTHOOK: query: select ctinyint, count(distinct(cdouble)) as count_distinct fro
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-45	24
 -46	24
 -47	22
 -48	29
@@ -837,7 +847,6 @@ POSTHOOK: Input: default@alltypesorc
 -62	27
 -63	19
 -64	24
-NULL	2932
 PREHOOK: query: explain vectorization detail
 select ctinyint,cdouble from alltypesorc order by ctinyint,cdouble limit 0
 PREHOOK: type: QUERY
@@ -1001,7 +1010,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false

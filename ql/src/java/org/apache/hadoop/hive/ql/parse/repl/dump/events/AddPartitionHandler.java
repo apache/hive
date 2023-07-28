@@ -85,14 +85,19 @@ class AddPartitionHandler extends AbstractEventHandler {
         withinContext.hiveConf);
 
     Iterator<PartitionFiles> partitionFilesIter = apm.getPartitionFilesIter().iterator();
-    for (Partition qlPtn : qlPtns) {
-      Iterable<String> files = partitionFilesIter.next().getFiles();
-      if (files != null) {
-        // encoded filename/checksum of files, write into _files
-        try (BufferedWriter fileListWriter = writer(withinContext, qlPtn)) {
-          for (String file : files) {
-            fileListWriter.write(file);
-            fileListWriter.newLine();
+
+    // We expect one to one mapping between partitions and file iterators. For external table, this
+    // list would be empty. So, it is enough to check hasNext outside the loop.
+    if (partitionFilesIter.hasNext()) {
+      for (Partition qlPtn : qlPtns) {
+        Iterable<String> files = partitionFilesIter.next().getFiles();
+        if (files != null) {
+          // encoded filename/checksum of files, write into _files
+          try (BufferedWriter fileListWriter = writer(withinContext, qlPtn)) {
+            for (String file : files) {
+              fileListWriter.write(file);
+              fileListWriter.newLine();
+            }
           }
         }
       }

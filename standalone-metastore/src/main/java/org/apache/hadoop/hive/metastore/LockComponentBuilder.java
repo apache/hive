@@ -118,4 +118,10 @@ public class LockComponentBuilder {
     component.setLevel(level);
     return component;
   }
+
+
+  public LockComponent setLock(LockType type) {
+    component.setType(type);
+    return component;
+  }
 }

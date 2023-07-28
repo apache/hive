@@ -140,10 +140,11 @@ class HiveHBaseInputFormatUtil {
     if (scanCache != null) {
       scan.setCaching(Integer.parseInt(scanCache));
     }
-    String scanCacheBlocks = jobConf.get(HBaseSerDe.HBASE_SCAN_CACHEBLOCKS);
-    if (scanCacheBlocks != null) {
-      scan.setCacheBlocks(Boolean.parseBoolean(scanCacheBlocks));
-    }
+
+    boolean scanCacheBlocks =
+        jobConf.getBoolean(HBaseSerDe.HBASE_SCAN_CACHEBLOCKS, false);
+    scan.setCacheBlocks(scanCacheBlocks);
+
     String scanBatch = jobConf.get(HBaseSerDe.HBASE_SCAN_BATCH);
     if (scanBatch != null) {
       scan.setBatch(Integer.parseInt(scanBatch));

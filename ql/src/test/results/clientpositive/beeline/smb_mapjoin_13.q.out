@@ -102,7 +102,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     tag: -1
                     TopN: 10
@@ -287,7 +287,7 @@ STAGE PLANS:
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                     tag: -1

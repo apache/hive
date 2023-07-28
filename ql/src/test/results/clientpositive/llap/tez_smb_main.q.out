@@ -632,7 +632,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 4 (CUSTOM_EDGE)
+        Map 1 <- Map 4 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -770,7 +770,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 4 (CUSTOM_EDGE)
+        Map 1 <- Map 4 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -899,7 +899,7 @@ POSTHOOK: Input: default@tab_n11@ds=2008-04-08
 POSTHOOK: Input: default@tab_part_n12
 POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
 #### A masked pattern was here ####
-9
+40
 PREHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n11
@@ -1522,7 +1522,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 2 (CUSTOM_EDGE)
+        Map 1 <- Map 2 (BROADCAST_EDGE)
         Map 3 <- Map 1 (CUSTOM_EDGE)
         Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -1654,7 +1654,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 2 (CUSTOM_EDGE)
+        Map 1 <- Map 2 (BROADCAST_EDGE)
         Map 3 <- Map 1 (CUSTOM_EDGE)
         Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -1777,7 +1777,7 @@ POSTHOOK: Input: default@tab_n11@ds=2008-04-08
 POSTHOOK: Input: default@tab_part_n12
 POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
 #### A masked pattern was here ####
-9
+40
 PREHOOK: query: explain
 select count(*) from (select s1.key as key, s1.value as value from tab_n11 s1 join tab_n11 s3 on s1.key=s3.key
 UNION  ALL

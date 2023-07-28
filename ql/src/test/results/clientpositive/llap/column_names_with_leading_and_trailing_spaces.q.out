@@ -119,5 +119,5 @@ POSTHOOK: query: select * from space order by ` left`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@space
 #### A masked pattern was here ####
-NULL	2	NULL
 1	2	3
+NULL	2	NULL

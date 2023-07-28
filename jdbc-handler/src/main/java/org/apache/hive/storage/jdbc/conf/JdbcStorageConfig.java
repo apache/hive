@@ -14,14 +14,16 @@
  */
 package org.apache.hive.storage.jdbc.conf;
 
+import org.apache.hadoop.hive.conf.Constants;
+
 public enum JdbcStorageConfig {
-  DATABASE_TYPE("database.type", true),
-  JDBC_URL("jdbc.url", true),
-  JDBC_DRIVER_CLASS("jdbc.driver", true),
-  QUERY("query", false),
-  TABLE("table", false),
-  JDBC_FETCH_SIZE("jdbc.fetch.size", false),
-  COLUMN_MAPPING("column.mapping", false);
+  DATABASE_TYPE(Constants.JDBC_DATABASE_TYPE, true),
+  JDBC_URL(Constants.JDBC_URL, true),
+  JDBC_DRIVER_CLASS(Constants.JDBC_DRIVER, true),
+  QUERY(Constants.JDBC_QUERY, false),
+  TABLE(Constants.JDBC_TABLE, false),
+  JDBC_FETCH_SIZE(Constants.JDBC_CONFIG_PREFIX + ".jdbc.fetch.size", false),
+  COLUMN_MAPPING(Constants.JDBC_CONFIG_PREFIX + ".column.mapping", false);
 
   private String propertyName;
   private boolean required = false;
@@ -32,16 +34,9 @@ public enum JdbcStorageConfig {
     this.required = required;
   }
 
-
-  JdbcStorageConfig(String propertyName) {
-    this.propertyName = propertyName;
-  }
-
-
   public String getPropertyName() {
-    return JdbcStorageConfigManager.CONFIG_PREFIX + "." + propertyName;
+    return propertyName;
   }
-
 
   public boolean isRequired() {
     return required;

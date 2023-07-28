@@ -1,6 +1,6 @@
---! qt:disabled:HIVE-24816
---! qt:dataset:druid_table_alltypesorc
-SET hive.vectorized.execution.enabled=true ;
+--! qt:dataset:HIVE-24816
+
+SET hive.vectorized.execution.enabled=false;
 SET hive.ctas.external.tables=true;
 SET hive.external.table.purge.default = true;
 CREATE EXTERNAL TABLE druid_table_n2

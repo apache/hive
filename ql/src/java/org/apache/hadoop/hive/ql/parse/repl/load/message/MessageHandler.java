@@ -46,8 +46,8 @@ public interface MessageHandler {
   UpdatedMetaDataTracker getUpdatedMetadata();
 
   class Context {
-    public String dbName;
-    public final String tableName, location;
+    public String location;
+    public final String tableName, dbName;
     public final Task<? extends Serializable> precursor;
     public DumpMetaData dmd;
     final HiveConf hiveConf;
@@ -100,6 +100,10 @@ public interface MessageHandler {
 
     public HiveTxnManager getTxnMgr() {
       return nestedContext.getHiveTxnManager();
+    }
+
+    public void setLocation(String location) {
+      this.location = location;
     }
   }
 }

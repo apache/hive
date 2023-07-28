@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
+import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -440,5 +441,64 @@ public class OperatorUtils {
       }
     }
     return null;
+  }
+
+  public static Set<Operator<?>>
+  findWorkOperatorsAndSemiJoinEdges(Operator<?> start,
+                                    final Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo,
+                                    Set<ReduceSinkOperator> semiJoinOps, Set<TerminalOperator<?>> terminalOps) {
+    Set<Operator<?>> found = new HashSet<>();
+    findWorkOperatorsAndSemiJoinEdges(start,
+            found, rsToSemiJoinBranchInfo, semiJoinOps, terminalOps);
+    return found;
+  }
+
+  private static void
+  findWorkOperatorsAndSemiJoinEdges(Operator<?> start, Set<Operator<?>> found,
+                                    final Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo,
+                                    Set<ReduceSinkOperator> semiJoinOps, Set<TerminalOperator<?>> terminalOps) {
+    found.add(start);
+
+    if (start.getParentOperators() != null) {
+      for (Operator<?> parent : start.getParentOperators()) {
+        if (parent instanceof ReduceSinkOperator) {
+          continue;
+        }
+        if (!found.contains(parent)) {
+          findWorkOperatorsAndSemiJoinEdges(parent, found, rsToSemiJoinBranchInfo, semiJoinOps, terminalOps);
+        }
+      }
+    }
+    if (start instanceof TerminalOperator) {
+      // This could be RS1 in semijoin edge which looks like,
+      // SEL->GBY1->RS1->GBY2->RS2
+      boolean semiJoin = false;
+      if (start.getChildOperators().size() == 1) {
+        Operator<?> gb2 = start.getChildOperators().get(0);
+        if (gb2 instanceof GroupByOperator && gb2.getChildOperators().size() == 1) {
+          Operator<?> rs2 = gb2.getChildOperators().get(0);
+          if (rs2 instanceof ReduceSinkOperator && (rsToSemiJoinBranchInfo.get(rs2) != null)) {
+            // Semijoin edge found. Add all the operators to the set
+            found.add(start);
+            found.add(gb2);
+            found.add(rs2);
+            semiJoinOps.add((ReduceSinkOperator)rs2);
+            semiJoin = true;
+          }
+        }
+      }
+      if (!semiJoin) {
+        terminalOps.add((TerminalOperator)start);
+      }
+      return;
+    }
+    if (start.getChildOperators() != null) {
+      for (Operator<?> child : start.getChildOperators()) {
+        if (!found.contains(child)) {
+          findWorkOperatorsAndSemiJoinEdges(child, found, rsToSemiJoinBranchInfo, semiJoinOps, terminalOps);
+        }
+      }
+    }
+    return;
   }
 }

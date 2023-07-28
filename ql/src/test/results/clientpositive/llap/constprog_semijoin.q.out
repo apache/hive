@@ -288,29 +288,29 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_12]
-        Merge Join Operator [MERGEJOIN_17] (rows=1 width=185)
-          Conds:RS_20.100, true=RS_24._col0, _col1(Left Semi),Output:["_col0","_col1","_col2"]
+      File Output Operator [FS_13]
+        Merge Join Operator [MERGEJOIN_18] (rows=1 width=185)
+          Conds:RS_21.100, true=RS_25._col0, _col1(Left Semi),Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
-          SHUFFLE [RS_20]
+          SHUFFLE [RS_21]
             PartitionCols:100, true
-            Select Operator [SEL_19] (rows=1 width=193)
+            Select Operator [SEL_20] (rows=1 width=193)
               Output:["_col0","_col1","_col2"]
-              Filter Operator [FIL_18] (rows=1 width=185)
+              Filter Operator [FIL_19] (rows=1 width=185)
                 predicate:false
                 TableScan [TS_0] (rows=10 width=185)
                   default@table1_n10,table1_n10,Tbl:COMPLETE,Col:COMPLETE,Output:["id","val","val1"]
         <-Map 3 [SIMPLE_EDGE] vectorized, llap
-          SHUFFLE [RS_24]
+          SHUFFLE [RS_25]
             PartitionCols:_col0, _col1
-            Group By Operator [GBY_23] (rows=1 width=8)
+            Group By Operator [GBY_24] (rows=1 width=8)
               Output:["_col0","_col1"],keys:_col0, _col1
-              Select Operator [SEL_22] (rows=1 width=8)
+              Select Operator [SEL_23] (rows=1 width=8)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_21] (rows=1 width=4)
-                  predicate:(id = 100)
-                  TableScan [TS_3] (rows=5 width=4)
-                    default@table3_n0,table3_n0,Tbl:COMPLETE,Col:COMPLETE,Output:["id"]
+                Filter Operator [FIL_22] (rows=1 width=8)
+                  predicate:false
+                  TableScan [TS_3] (rows=5 width=3)
+                    default@table3_n0,table3_n0,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid <> 100
 PREHOOK: type: QUERY
@@ -398,29 +398,29 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_12]
-        Merge Join Operator [MERGEJOIN_17] (rows=1 width=185)
-          Conds:RS_20.100, true=RS_24._col0, _col1(Left Semi),Output:["_col0","_col1","_col2"]
+      File Output Operator [FS_13]
+        Merge Join Operator [MERGEJOIN_18] (rows=1 width=185)
+          Conds:RS_21.100, true=RS_25._col0, _col1(Left Semi),Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
-          SHUFFLE [RS_20]
+          SHUFFLE [RS_21]
             PartitionCols:100, true
-            Select Operator [SEL_19] (rows=1 width=193)
+            Select Operator [SEL_20] (rows=1 width=193)
               Output:["_col0","_col1","_col2"]
-              Filter Operator [FIL_18] (rows=1 width=185)
+              Filter Operator [FIL_19] (rows=1 width=185)
                 predicate:false
                 TableScan [TS_0] (rows=10 width=185)
                   default@table1_n10,table1_n10,Tbl:COMPLETE,Col:COMPLETE,Output:["id","val","val1"]
         <-Map 3 [SIMPLE_EDGE] vectorized, llap
-          SHUFFLE [RS_24]
+          SHUFFLE [RS_25]
             PartitionCols:_col0, _col1
-            Group By Operator [GBY_23] (rows=1 width=8)
+            Group By Operator [GBY_24] (rows=1 width=8)
               Output:["_col0","_col1"],keys:_col0, _col1
-              Select Operator [SEL_22] (rows=1 width=8)
+              Select Operator [SEL_23] (rows=1 width=8)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_21] (rows=1 width=4)
-                  predicate:(id = 100)
-                  TableScan [TS_3] (rows=5 width=4)
-                    default@table3_n0,table3_n0,Tbl:COMPLETE,Col:COMPLETE,Output:["id"]
+                Filter Operator [FIL_22] (rows=1 width=8)
+                  predicate:false
+                  TableScan [TS_3] (rows=5 width=3)
+                    default@table3_n0,table3_n0,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
 PREHOOK: type: QUERY

@@ -95,7 +95,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -139,9 +139,9 @@ POSTHOOK: query: select a, a like "%bar" from foo order by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
-NULL	NULL
 some bar	true
 some foo	false
+NULL	NULL
 PREHOOK: query: select a, a like "%bar" from foo order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@foo
@@ -150,6 +150,6 @@ POSTHOOK: query: select a, a like "%bar" from foo order by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
-NULL	NULL
 some bar	true
 some foo	false
+NULL	NULL

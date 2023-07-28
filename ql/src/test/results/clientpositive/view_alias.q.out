@@ -43,9 +43,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select key, '12' from src	 
-View Expanded Text: 	select `src`.`key`, '12' from `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select key, '12' from src	 
+Expanded Query:     	select `src`.`key`, '12' from `default`.`src`	 
 PREHOOK: query: select * from v_n6 order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -110,9 +109,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select key as _c1, '12' from src	 
-View Expanded Text: 	select `src`.`key` as `_c1`, '12' from `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select key as _c1, '12' from src	 
+Expanded Query:     	select `src`.`key` as `_c1`, '12' from `default`.`src`	 
 PREHOOK: query: select * from v_n6 order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -179,9 +177,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select *, '12' from src	 
-View Expanded Text: 	select `src`.`key`, `src`.`value`, '12' from `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select *, '12' from src	 
+Expanded Query:     	select `src`.`key`, `src`.`value`, '12' from `default`.`src`	 
 PREHOOK: query: select * from v_n6 order by `_c2` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -248,9 +245,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select *, '12' as _c121 from src	 
-View Expanded Text: 	select `src`.`key`, `src`.`value`, '12' as `_c121` from `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select *, '12' as _c121 from src	 
+Expanded Query:     	select `src`.`key`, `src`.`value`, '12' as `_c121` from `default`.`src`	 
 PREHOOK: query: select * from v_n6 order by `_c121` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -315,9 +311,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select key, count(*) from src group by key	 
-View Expanded Text: 	select `src`.`key`, count(*) from `default`.`src` group by `src`.`key`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select key, count(*) from src group by key	 
+Expanded Query:     	select `src`.`key`, count(*) from `default`.`src` group by `src`.`key`	 
 PREHOOK: query: select * from v_n6 order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -430,9 +425,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select '010', a_n9.*, 121, b_n7.*, 234 from a_n9 join b_n7 on a_n9.ca_n9 = b_n7.cb_n7	 
-View Expanded Text: 	select '010', `a_n9`.`ca_n9`, `a_n9`.`caa_n9`, 121, `b_n7`.`cb_n7`, `b_n7`.`cbb_n7`, 234 from `default`.`a_n9` join `default`.`b_n7` on `a_n9`.`ca_n9` = `b_n7`.`cb_n7`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select '010', a_n9.*, 121, b_n7.*, 234 from a_n9 join b_n7 on a_n9.ca_n9 = b_n7.cb_n7	 
+Expanded Query:     	select '010', `a_n9`.`ca_n9`, `a_n9`.`caa_n9`, 121, `b_n7`.`cb_n7`, `b_n7`.`cbb_n7`, 234 from `default`.`a_n9` join `default`.`b_n7` on `a_n9`.`ca_n9` = `b_n7`.`cb_n7`	 
 PREHOOK: query: select * from v_n6 order by `_c3` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n9

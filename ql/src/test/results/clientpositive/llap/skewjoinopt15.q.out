@@ -268,14 +268,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n109
 POSTHOOK: Input: default@t2_n66
 #### A masked pattern was here ####
-NULL	NULL	4	14
-NULL	NULL	5	15
 2	12	2	22
 3	13	3	13
 8	18	8	18
 8	18	8	18
 8	28	8	18
 8	28	8	18
+NULL	NULL	4	14
+NULL	NULL	5	15
 PREHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n109 a JOIN T2_n66 b ON a.key = b.key
 PREHOOK: type: QUERY

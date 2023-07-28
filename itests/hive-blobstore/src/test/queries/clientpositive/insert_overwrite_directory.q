@@ -1,5 +1,6 @@
 SET hive.blobstore.optimizations.enabled=true;
 SET hive.blobstore.use.blobstore.as.scratchdir=true;
+-- SORT_BEFORE_DIFF
 
 -- Create a simple source table;
 DROP TABLE table1;

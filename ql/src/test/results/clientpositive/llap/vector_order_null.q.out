@@ -903,7 +903,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: za
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -951,9 +951,9 @@ x.a	x.b
 1	A
 2	A
 2	B
-NULL	NULL
 2	NULL
 3	NULL
+NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b desc nulls last, a
 PREHOOK: type: QUERY
@@ -1029,7 +1029,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: za
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: -+
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1077,9 +1077,9 @@ x.a	x.b
 2	B
 1	A
 2	A
-NULL	NULL
 2	NULL
 3	NULL
+NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a asc nulls last, b desc
 PREHOOK: type: QUERY

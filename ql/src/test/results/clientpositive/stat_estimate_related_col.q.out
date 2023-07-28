@@ -620,7 +620,7 @@ STAGE PLANS:
             alias: t8
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((b = 1) or (b = 2)) and (b = 2)) (type: boolean)
+              predicate: (b = 2) (type: boolean)
               Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
@@ -690,26 +690,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t8
-            Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 40/1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((b = 1) or (b = 2)) and ((b = 1) or (b = 3)) and (b = 2)) (type: boolean)
-              Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: a (type: int)
-                outputColumnNames: _col1
-                Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: sum(_col1)
-                  keys: 2 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+              predicate: false (type: boolean)
+              Statistics: Num rows: 1/0 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: sum(a)
+                keys: b (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1/0 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1/0 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1/0 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
@@ -780,7 +776,7 @@ STAGE PLANS:
             alias: t8
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((a = 3) or (a = 4)) and ((b = 1) or (b = 2)) and (a = 3) and (b = 2)) (type: boolean)
+              predicate: ((a = 3) and (b = 2)) (type: boolean)
               Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE

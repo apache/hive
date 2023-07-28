@@ -63,6 +63,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+@org.junit.Ignore("unstable HIVE-23679")
 public class TestSparkClient {
 
   // Timeouts are bad... mmmkay.

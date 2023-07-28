@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
+import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -257,6 +258,14 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONAllocWriteIdMessage.class);
     } catch (Exception e) {
       throw new IllegalArgumentException("Could not construct AllocWriteIdMessage", e);
+    }
+  }
+
+  public AcidWriteMessage getAcidWriteMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAcidWriteMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AcidWriteMessage", e);
     }
   }
 }

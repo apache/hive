@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
@@ -84,9 +85,9 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.thrift.TException;
 
 /**
@@ -811,7 +812,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void addNotificationEvent(NotificationEvent event) {
+  public void addNotificationEvent(NotificationEvent event) throws MetaException {
     objectStore.addNotificationEvent(event);
   }
 
@@ -1188,13 +1189,28 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<FullTableName> getTableNamesWithStats() throws MetaException,
+  public void cleanWriteNotificationEvents(int olderThan) {
+    objectStore.cleanWriteNotificationEvents(olderThan);
+  }
+
+  @Override
+  public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
+      return objectStore.isPartOfMaterializedView(catName, dbName, tblName);
+  }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
+    return objectStore.getAllWriteEventInfo(txnId, dbName, tableName);
+  }
+
+  @Override
+  public List<TableName> getTableNamesWithStats() throws MetaException,
       NoSuchObjectException {
     return null;
   }
 
   @Override
-  public List<FullTableName> getAllTableNamesForStats() throws MetaException,
+  public List<TableName> getAllTableNamesForStats() throws MetaException,
       NoSuchObjectException {
     return null;
   }

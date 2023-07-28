@@ -14,6 +14,8 @@ POSTHOOK: query: explain extended select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1_n12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT MAX(`ds`) AS `$f0`
+FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -114,6 +116,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1_n12
 POSTHOOK: Input: default@test1_n12@ds=1
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT MAX(`ds`) AS `$f0`
+FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -261,6 +265,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1_n12
 POSTHOOK: Input: default@test1_n12@ds=1
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(DISTINCT `ds`) AS `$f0`
+FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -409,6 +415,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1_n12
 POSTHOOK: Input: default@test1_n12@ds=1
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(`ds`) AS `$f0`
+FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -568,6 +576,14 @@ POSTHOOK: Input: default@test1_n12
 POSTHOOK: Input: default@test1_n12@ds=1
 POSTHOOK: Input: default@test1_n12@ds=2
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `ds`
+FROM `default`.`test1_n12`
+WHERE `ds` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT *
+FROM (SELECT MAX(`ds`) AS `$f0`
+FROM `default`.`test1_n12`) AS `t1`
+WHERE `$f0` IS NOT NULL) AS `t2` ON `t0`.`ds` = `t2`.`$f0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -984,6 +1000,9 @@ POSTHOOK: Input: default@test2_n8@ds=1/hr=1
 POSTHOOK: Input: default@test2_n8@ds=1/hr=2
 POSTHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `ds`, COUNT(DISTINCT `hr`) AS `$f1`
+FROM `default`.`test2_n8`
+GROUP BY `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1242,6 +1261,9 @@ POSTHOOK: Input: default@test2_n8@ds=1/hr=1
 POSTHOOK: Input: default@test2_n8@ds=1/hr=2
 POSTHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `ds`, COUNT(`hr`) AS `$f1`
+FROM `default`.`test2_n8`
+GROUP BY `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1500,6 +1522,8 @@ POSTHOOK: Input: default@test1_n12
 POSTHOOK: Input: default@test1_n12@ds=1
 POSTHOOK: Input: default@test1_n12@ds=2
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT MAX(`ds`) AS `$f0`
+FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1755,6 +1779,9 @@ POSTHOOK: Input: default@test2_n8@ds=1/hr=1
 POSTHOOK: Input: default@test2_n8@ds=1/hr=2
 POSTHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `ds`, COUNT(DISTINCT `hr`) AS `$f1`
+FROM `default`.`test2_n8`
+GROUP BY `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

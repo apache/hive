@@ -32,9 +32,6 @@ POSTHOOK: query: SELECT key FROM DECIMAL_5_n0 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_5_n0
 #### A masked pattern was here ####
-NULL
-NULL
-NULL
 -4400.00000
 -1255.49000
 -1.12200
@@ -70,6 +67,9 @@ NULL
 124.00000
 125.20000
 200.00000
+NULL
+NULL
+NULL
 PREHOOK: query: SELECT DISTINCT key FROM DECIMAL_5_n0 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_5_n0
@@ -78,7 +78,6 @@ POSTHOOK: query: SELECT DISTINCT key FROM DECIMAL_5_n0 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_5_n0
 #### A masked pattern was here ####
-NULL
 -4400.00000
 -1255.49000
 -1.12200
@@ -105,6 +104,7 @@ NULL
 124.00000
 125.20000
 200.00000
+NULL
 PREHOOK: query: SELECT cast(key as decimal) FROM DECIMAL_5_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_5_n0

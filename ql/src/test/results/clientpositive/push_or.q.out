@@ -42,6 +42,10 @@ POSTHOOK: Input: default@push_or
 POSTHOOK: Input: default@push_or@ds=2000-04-08
 POSTHOOK: Input: default@push_or@ds=2000-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`push_or`
+WHERE `ds` = '2000-04-09' OR `key` = 5
+ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -64,7 +68,7 @@ STAGE PLANS:
                 Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col2 (type: string)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                   tag: -1

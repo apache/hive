@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 /**
  * Walks the operator tree in DFS fashion.
  */
+@Deprecated
 public class TezWalker extends DefaultGraphWalker {
 
   /**

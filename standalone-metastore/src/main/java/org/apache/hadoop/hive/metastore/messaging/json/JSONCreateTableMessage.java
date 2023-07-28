@@ -72,7 +72,7 @@ public class JSONCreateTableMessage extends CreateTableMessage {
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
-    this.files = Lists.newArrayList(fileIter);
+    this.files = (fileIter != null) ? Lists.newArrayList(fileIter) : Lists.newArrayList();
   }
 
   @Override

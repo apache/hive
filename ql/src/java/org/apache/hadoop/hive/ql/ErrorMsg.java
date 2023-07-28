@@ -199,8 +199,8 @@ public enum ErrorMsg {
   NEED_TABLE_SPECIFICATION(10117, "Table name could be determined; It should be specified "),
   PARTITION_EXISTS(10118, "Partition already exists"),
   TABLE_DATA_EXISTS(10119, "Table exists and contains data files"),
-  INCOMPATIBLE_SCHEMA(10120, "The existing table is not compatible with the import spec. "),
-  EXIM_FOR_NON_NATIVE(10121, "Export/Import cannot be done for a non-native table. "),
+  INCOMPATIBLE_SCHEMA(10120, "The existing table is not compatible with the Export/Import spec. "),
+  EXIM_FOR_NON_NATIVE(10121, "Export/Import cannot be done for a non-native table."),
   INSERT_INTO_BUCKETIZED_TABLE(10122, "Bucketized tables do not support INSERT INTO:"),
   PARTSPEC_DIFFER_FROM_SCHEMA(10125, "Partition columns in partition specification are "
       + "not the same as that defined in the table schema. "
@@ -386,6 +386,9 @@ public enum ErrorMsg {
   MASKING_FILTERING_ON_ACID_NOT_SUPPORTED(10287,
       "Detected {0}.{1} has row masking/column filtering enabled, " +
       "which is not supported for query involving ACID operations", true),
+  MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES(10288,
+      "Querying directly materialized view contents is not supported since we detected {0}.{1} " +
+          "used by materialized view has row masking/column filtering enabled", true),
 
   UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
@@ -502,7 +505,8 @@ public enum ErrorMsg {
   //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
   //method in HiveMetaStoreClient
   REPL_EVENTS_MISSING_IN_METASTORE(20016, "Notification events are missing in the meta store."),
-  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(20017, "Target database is bootstrapped from some other path."),
+  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(20017, "Load path {0} not valid as target database is bootstrapped " +
+          "from some other path : {1}."),
   REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20018, "File is missing from both source and cm path."),
   REPL_LOAD_PATH_NOT_FOUND(20019, "Load path does not exist."),
   REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20020,

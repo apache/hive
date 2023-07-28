@@ -69,7 +69,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: (_col0 / _col1) (type: double)
+                  expressions: (UDFToDouble(_col0) / _col1) (type: double)
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

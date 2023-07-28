@@ -213,6 +213,7 @@ TOK_TABCOLLIST;
 TOK_TABCOL;
 TOK_TABLECOMMENT;
 TOK_TABLEPARTCOLS;
+TOK_TABLEPARTCOLNAMES;
 TOK_TABLEROWFORMAT;
 TOK_TABLEROWFORMATFIELD;
 TOK_TABLEROWFORMATCOLLITEMS;
@@ -759,6 +760,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
   public void setHiveConf(Configuration hiveConf) {
     this.hiveConf = hiveConf;
   }
+  protected boolean nullsLast() {
+    if(hiveConf == null){
+      return false;
+    }
+    return HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST);
+  }
 }
 
 @rulecatch {
@@ -794,6 +801,7 @@ explainOption
     | KW_AUTHORIZATION
     | KW_ANALYZE
     | KW_REOPTIMIZATION
+    | KW_LOCKS
     | (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
     ;
 
@@ -1075,7 +1083,7 @@ createTableStatement
          tablePropertiesPrefixed?
        | (LPAREN columnNameTypeOrConstraintList RPAREN)?
          tableComment?
-         tablePartition?
+         createTablePartitionSpec?
          tableBuckets?
          tableSkewed?
          tableRowFormat?
@@ -1088,7 +1096,7 @@ createTableStatement
          ^(TOK_LIKETABLE $likeName?)
          columnNameTypeOrConstraintList?
          tableComment?
-         tablePartition?
+         createTablePartitionSpec?
          tableBuckets?
          tableSkewed?
          tableRowFormat?
@@ -1566,7 +1574,8 @@ showStatement
 @init { pushMsg("show statement", state); }
 @after { popMsg(state); }
     : KW_SHOW (KW_DATABASES|KW_SCHEMAS) (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWDATABASES showStmtIdentifier?)
-    | KW_SHOW KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? showStmtIdentifier?)
+    | KW_SHOW (isExtended=KW_EXTENDED)? KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (filter=showTablesFilterExpr)?
+    -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? $filter? $isExtended?)
     | KW_SHOW KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_MATERIALIZED KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWMATERIALIZEDVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tableName ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?
@@ -1595,6 +1604,15 @@ showStatement
         (KW_PLAN rp_name=identifier -> ^(TOK_SHOW_RP $rp_name))
         | (KW_PLANS -> ^(TOK_SHOW_RP))
       )
+    ;
+
+showTablesFilterExpr
+@init { pushMsg("show tables filter expr", state); }
+@after { popMsg(state); }
+    : KW_WHERE identifier EQUAL StringLiteral
+    -> ^(TOK_TABLE_TYPE identifier StringLiteral)
+    | KW_LIKE showStmtIdentifier|showStmtIdentifier
+    -> showStmtIdentifier
     ;
 
 lockStatement
@@ -1913,26 +1931,6 @@ createViewStatement
         )
     ;
 
-createMaterializedViewStatement
-@init {
-    pushMsg("create materialized view statement", state);
-}
-@after { popMsg(state); }
-    : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
-        rewriteDisabled? tableComment? tableRowFormat? tableFileFormat? tableLocation?
-        tablePropertiesPrefixed? KW_AS selectStatementWithCTE
-    -> ^(TOK_CREATE_MATERIALIZED_VIEW $name
-         ifNotExists?
-         rewriteDisabled?
-         tableComment?
-         tableRowFormat?
-         tableFileFormat?
-         tableLocation?
-         tablePropertiesPrefixed?
-         selectStatementWithCTE
-        )
-    ;
-
 viewPartition
 @init { pushMsg("view partition specification", state); }
 @after { popMsg(state); }
@@ -1944,6 +1942,27 @@ dropViewStatement
 @init { pushMsg("drop view statement", state); }
 @after { popMsg(state); }
     : KW_DROP KW_VIEW ifExists? viewName -> ^(TOK_DROPVIEW viewName ifExists?)
+    ;
+
+createMaterializedViewStatement
+@init {
+    pushMsg("create materialized view statement", state);
+}
+@after { popMsg(state); }
+    : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
+        rewriteDisabled? tableComment? viewPartition? tableRowFormat? tableFileFormat? tableLocation?
+        tablePropertiesPrefixed? KW_AS selectStatementWithCTE
+    -> ^(TOK_CREATE_MATERIALIZED_VIEW $name
+         ifNotExists?
+         rewriteDisabled?
+         tableComment?
+         tableRowFormat?
+         tableFileFormat?
+         tableLocation?
+         viewPartition?
+         tablePropertiesPrefixed?
+         selectStatementWithCTE
+        )
     ;
 
 dropMaterializedViewStatement
@@ -1973,11 +1992,26 @@ tableComment
       KW_COMMENT comment=StringLiteral  -> ^(TOK_TABLECOMMENT $comment)
     ;
 
-tablePartition
-@init { pushMsg("table partition specification", state); }
+createTablePartitionSpec
+@init { pushMsg("create table partition specification", state); }
 @after { popMsg(state); }
-    : KW_PARTITIONED KW_BY LPAREN columnNameTypeConstraint (COMMA columnNameTypeConstraint)* RPAREN
+    : KW_PARTITIONED KW_BY LPAREN (opt1 = createTablePartitionColumnTypeSpec | opt2 = createTablePartitionColumnSpec) RPAREN
+    -> {$opt1.tree != null}? $opt1
+    -> $opt2
+    ;
+
+createTablePartitionColumnTypeSpec
+@init { pushMsg("create table partition specification", state); }
+@after { popMsg(state); }
+    : columnNameTypeConstraint (COMMA columnNameTypeConstraint)*
     -> ^(TOK_TABLEPARTCOLS columnNameTypeConstraint+)
+    ;
+
+createTablePartitionColumnSpec
+@init { pushMsg("create table partition specification", state); }
+@after { popMsg(state); }
+    : columnName (COMMA columnName)*
+    -> ^(TOK_TABLEPARTCOLNAMES columnName+)
     ;
 
 tableBuckets
@@ -2255,7 +2289,7 @@ pkUkConstraint
 checkConstraint
 @init { pushMsg("CHECK constraint", state); }
 @after { popMsg(state); }
-    : KW_CHECK expression
+    : KW_CHECK LPAREN expression RPAREN
     -> ^(TOK_CHECK_CONSTRAINT expression)
     ;
 
@@ -2334,7 +2368,9 @@ columnNameOrder
 @init { pushMsg("column name order", state); }
 @after { popMsg(state); }
     : identifier orderSpec=orderSpecification? nullSpec=nullOrdering?
-    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
+    -> {$orderSpec.tree == null && $nullSpec.tree == null && nullsLast()}?
+            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST identifier))
+    -> {$orderSpec.tree == null && $nullSpec.tree == null && !nullsLast()}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST identifier))
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec identifier))
@@ -2364,7 +2400,9 @@ columnRefOrder
 @init { pushMsg("column order", state); }
 @after { popMsg(state); }
     : expression orderSpec=orderSpecification? nullSpec=nullOrdering?
-    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
+    -> {$orderSpec.tree == null && $nullSpec.tree == null && nullsLast()}?
+            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST expression))
+    -> {$orderSpec.tree == null && $nullSpec.tree == null && !nullsLast()}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST expression))
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec expression))
@@ -2935,8 +2973,8 @@ mergeStatement
 @init { pushMsg("MERGE statement", state); }
 @after { popMsg(state); }
    :
-   KW_MERGE KW_INTO tableName (KW_AS? identifier)? KW_USING joinSourcePart KW_ON expression whenClauses ->
-    ^(TOK_MERGE ^(TOK_TABREF tableName identifier?) joinSourcePart expression whenClauses)
+   KW_MERGE QUERY_HINT? KW_INTO tableName (KW_AS? identifier)? KW_USING joinSourcePart KW_ON expression whenClauses
+     -> ^(TOK_MERGE ^(TOK_TABREF tableName identifier?) joinSourcePart expression QUERY_HINT? whenClauses)
    ;
 /*
 Allow 0,1 or 2 WHEN MATCHED clauses and 0 or 1 WHEN NOT MATCHED

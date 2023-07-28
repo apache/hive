@@ -2,17 +2,17 @@ PREHOOK: query: drop table if exists hb_target
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists hb_target
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table hb_target(key int, val string)
+PREHOOK: query: create external table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
-tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk')
+tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk', 'external.table.purge' = 'true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hb_target
-POSTHOOK: query: create table hb_target(key int, val string)
+POSTHOOK: query: create external table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
-tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk')
+tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk', 'external.table.purge' = 'true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hb_target
@@ -33,17 +33,17 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hb_target
 POSTHOOK: Output: default@hb_target
 #### A masked pattern was here ####
-PREHOOK: query: create table hb_target(key int, val string)
+PREHOOK: query: create external table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
-tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk')
+tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk', 'external.table.purge' = 'true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hb_target
-POSTHOOK: query: create table hb_target(key int, val string)
+POSTHOOK: query: create external table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
-tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk')
+tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk', 'external.table.purge' = 'true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hb_target

@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -70,6 +72,10 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       execContext = new ExecMapperContext(jc);
       // create map and fetch operators
       MapWork mrwork = Utilities.getMapWork(job);
+      for (PartitionDesc part : mrwork.getAliasToPartnInfo().values()) {
+        TableDesc tableDesc = part.getTableDesc();
+        Utilities.copyJobSecretToTableProperties(tableDesc);
+      }
 
       CompilationOpContext runtimeCtx = new CompilationOpContext();
       if (mrwork.getVectorMode()) {

@@ -62,6 +62,7 @@ public class OperationManager extends AbstractService {
       new ConcurrentHashMap<OperationHandle, Operation>();
   private final ConcurrentHashMap<String, Operation> queryIdOperation =
       new ConcurrentHashMap<String, Operation>();
+  private final ConcurrentHashMap<String, String> queryTagToIdMap = new ConcurrentHashMap<>();
 
   //Following fields for displaying queries on WebUI
   private Object webuiLock = new Object();
@@ -201,11 +202,32 @@ public class OperationManager extends AbstractService {
     }
   }
 
+  public void updateQueryTag(String queryId, String queryTag) {
+    Operation operation = queryIdOperation.get(queryId);
+    if (operation != null) {
+      String queryIdTemp = queryTagToIdMap.get(queryTag);
+      if (queryIdTemp != null) {
+        throw new RuntimeException("tag " + queryTag + " is already applied for query " + queryIdTemp);
+      }
+      queryTagToIdMap.put(queryTag, queryId);
+      LOG.info("Query " + queryId + " is updated with tag " + queryTag);
+      return;
+    }
+    LOG.info("Query id is missing during query tag updation");
+  }
+
   private Operation removeOperation(OperationHandle opHandle) {
     Operation operation = handleToOperation.remove(opHandle);
+    if (operation == null) {
+      throw new RuntimeException("Operation does not exist: " + opHandle);
+    }
     String queryId = getQueryId(operation);
     queryIdOperation.remove(queryId);
-    LOG.info("Removed queryId: {} corresponding to operation: {}", queryId, opHandle);
+    String queryTag = operation.getQueryTag();
+    if (queryTag != null) {
+      queryTagToIdMap.remove(queryTag);
+    }
+    LOG.info("Removed queryId: {} corresponding to operation: {} with tag: {}", queryId, opHandle, queryTag);
     if (operation instanceof SQLOperation) {
       removeSafeQueryInfo(opHandle);
     }
@@ -285,9 +307,6 @@ public class OperationManager extends AbstractService {
   public void closeOperation(OperationHandle opHandle) throws HiveSQLException {
     LOG.info("Closing operation: " + opHandle);
     Operation operation = removeOperation(opHandle);
-    if (operation == null) {
-      throw new HiveSQLException("Operation does not exist: " + opHandle);
-    }
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
       try {
@@ -421,5 +440,13 @@ public class OperationManager extends AbstractService {
 
   public Operation getOperationByQueryId(String queryId) {
     return queryIdOperation.get(queryId);
+  }
+
+  public Operation getOperationByQueryTag(String queryTag) {
+    String queryId = queryTagToIdMap.get(queryTag);
+    if (queryId != null) {
+      return getOperationByQueryId(queryId);
+    }
+    return null;
   }
 }

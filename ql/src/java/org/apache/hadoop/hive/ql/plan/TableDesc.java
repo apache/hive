@@ -54,6 +54,8 @@ public class TableDesc implements Serializable, Cloneable {
   private java.util.Properties properties;
   private Map<String, String> jobProperties;
   private Map<String, String> jobSecrets;
+  public static final String SECRET_PREFIX = "TABLE_SECRET";
+  public static final String SECRET_DELIMIT = "#";
 
   public TableDesc() {
   }
@@ -184,6 +186,9 @@ public class TableDesc implements Serializable, Cloneable {
     return (properties.getProperty(hive_metastoreConstants.META_TABLE_STORAGE) != null);
   }
 
+  public boolean isSetBucketingVersion() {
+    return properties.getProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION) != null;
+  }
   public int getBucketingVersion() {
     return Utilities.getBucketingVersion(
         properties.getProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION));

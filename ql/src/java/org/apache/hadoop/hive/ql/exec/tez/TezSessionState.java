@@ -355,7 +355,8 @@ public class TezSessionState {
 
     setupSessionAcls(tezConfig, conf);
 
-    final TezClient session = TezClient.newBuilder("HIVE-" + sessionId, tezConfig)
+    String tezJobNameFormat = HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME);
+    final TezClient session = TezClient.newBuilder(String.format(tezJobNameFormat, sessionId), tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
         .setCredentials(llapCredentials).setServicePluginDescriptor(servicePluginsDescriptor)
         .build();

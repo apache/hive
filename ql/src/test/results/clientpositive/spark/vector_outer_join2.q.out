@@ -94,11 +94,11 @@ POSTHOOK: query: select * from small_alltypesorc1a_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc1a_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
-NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
-NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
-NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
-NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
+-51	NULL	-1064981602	-1444011153	-51.0	NULL	aY3tpnr6wfvmWMG0U881	2Ol4N3Ha0815Ej54lA2N	1969-12-31 16:00:08.451	NULL	false	false
+-51	NULL	-1065775394	-1331703092	-51.0	NULL	aD88uS2N8DmqPlvjOa7F46i7	Ut8ka2o8iokF504065PYS	1969-12-31 16:00:08.451	NULL	false	true
+-51	NULL	-1066684273	2034191923	-51.0	NULL	2W4Kg220OcCy065HG60k6e	D7GOQhc3qbAR6	1969-12-31 16:00:08.451	NULL	false	false
+-51	NULL	-1067683781	1750003656	-51.0	NULL	IbgbUvP5	47x2I874	1969-12-31 16:00:08.451	NULL	false	true
+-51	NULL	-1071480828	-1401575336	-51.0	NULL	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA	1969-12-31 16:00:08.451	NULL	true	true
 PREHOOK: query: select * from small_alltypesorc2a_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc2a_n0
@@ -120,11 +120,11 @@ POSTHOOK: query: select * from small_alltypesorc3a_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc3a_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	-13166	626923679	NULL	NULL	-13166.0	821UdmGbkEf4j	NULL	1969-12-31 15:59:55.089	1969-12-31 16:00:15.69	true	NULL
-NULL	-14426	626923679	NULL	NULL	-14426.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.505	1969-12-31 16:00:13.309	true	NULL
-NULL	-14847	626923679	NULL	NULL	-14847.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:00.612	1969-12-31 15:59:43.704	true	NULL
-NULL	-15632	528534767	NULL	NULL	-15632.0	cvLH6Eat2yFsyy7p	NULL	NULL	1969-12-31 15:59:53.593	true	NULL
-NULL	-15830	253665376	NULL	NULL	-15830.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:02.582	1969-12-31 16:00:00.518	true	NULL
+-64	-10462	626923679	NULL	-64.0	-10462.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:02.496	1969-12-31 16:00:00.164	true	NULL
+-64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL
+-64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL
+-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
+-64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL
 PREHOOK: query: select * from small_alltypesorc4a_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc4a_n0
@@ -206,26 +206,26 @@ POSTHOOK: query: select * from small_alltypesorc_a_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+-51	NULL	-1064981602	-1444011153	-51.0	NULL	aY3tpnr6wfvmWMG0U881	2Ol4N3Ha0815Ej54lA2N	1969-12-31 16:00:08.451	NULL	false	false
+-51	NULL	-1065775394	-1331703092	-51.0	NULL	aD88uS2N8DmqPlvjOa7F46i7	Ut8ka2o8iokF504065PYS	1969-12-31 16:00:08.451	NULL	false	true
+-51	NULL	-1066684273	2034191923	-51.0	NULL	2W4Kg220OcCy065HG60k6e	D7GOQhc3qbAR6	1969-12-31 16:00:08.451	NULL	false	false
+-51	NULL	-1067683781	1750003656	-51.0	NULL	IbgbUvP5	47x2I874	1969-12-31 16:00:08.451	NULL	false	true
+-51	NULL	-1071480828	-1401575336	-51.0	NULL	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA	1969-12-31 16:00:08.451	NULL	true	true
 -60	-200	NULL	NULL	-60.0	-200.0	NULL	NULL	1969-12-31 16:00:11.996	1969-12-31 15:59:55.451	NULL	NULL
 -61	-7196	NULL	NULL	-61.0	-7196.0	NULL	8Mlns2Tl6E0g	1969-12-31 15:59:44.823	1969-12-31 15:59:58.174	NULL	false
 -61	-7196	NULL	NULL	-61.0	-7196.0	NULL	fUJIN	1969-12-31 16:00:11.842	1969-12-31 15:59:58.174	NULL	false
 -62	-7196	NULL	NULL	-62.0	-7196.0	NULL	jf1Cw6qhkNToQuud	1969-12-31 16:00:12.388	1969-12-31 15:59:58.174	NULL	false
 -62	-7196	NULL	NULL	-62.0	-7196.0	NULL	yLiOchx5PfDTFdcMduBTg	1969-12-31 16:00:02.373	1969-12-31 15:59:58.174	NULL	false
+-64	-10462	626923679	NULL	-64.0	-10462.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:02.496	1969-12-31 16:00:00.164	true	NULL
+-64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL
+-64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL
 -64	-7196	NULL	-1615920595	-64.0	-7196.0	NULL	X5rDjl	1969-12-31 16:00:11.912	1969-12-31 15:59:58.174	NULL	false
 -64	-7196	NULL	-1639157869	-64.0	-7196.0	NULL	IJ0Oj7qAiqNGsN7gn	1969-12-31 16:00:01.785	1969-12-31 15:59:58.174	NULL	false
 -64	-7196	NULL	-527203677	-64.0	-7196.0	NULL	JBE4H5RoK412Cs260I72	1969-12-31 15:59:50.184	1969-12-31 15:59:58.174	NULL	true
 -64	-7196	NULL	406535485	-64.0	-7196.0	NULL	E011i	1969-12-31 15:59:56.048	1969-12-31 15:59:58.174	NULL	false
 -64	-7196	NULL	658026952	-64.0	-7196.0	NULL	4tAur	1969-12-31 15:59:53.866	1969-12-31 15:59:58.174	NULL	true
-NULL	-13166	626923679	NULL	NULL	-13166.0	821UdmGbkEf4j	NULL	1969-12-31 15:59:55.089	1969-12-31 16:00:15.69	true	NULL
-NULL	-14426	626923679	NULL	NULL	-14426.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.505	1969-12-31 16:00:13.309	true	NULL
-NULL	-14847	626923679	NULL	NULL	-14847.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:00.612	1969-12-31 15:59:43.704	true	NULL
-NULL	-15632	528534767	NULL	NULL	-15632.0	cvLH6Eat2yFsyy7p	NULL	NULL	1969-12-31 15:59:53.593	true	NULL
-NULL	-15830	253665376	NULL	NULL	-15830.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:02.582	1969-12-31 16:00:00.518	true	NULL
-NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
-NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
-NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
-NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
-NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
+-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
+-64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL
 PREHOOK: query: explain vectorization detail
 select count(*), sum(t1.c_cbigint) from (select c.cbigint as c_cbigint
 from small_alltypesorc_a_n0 c
@@ -266,7 +266,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
-                  Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -277,7 +277,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -307,7 +307,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: hd
-                  Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -318,7 +318,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3]
-                    Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -355,7 +355,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -366,7 +366,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join 0 to 1
@@ -384,7 +384,7 @@ STAGE PLANS:
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 22 Data size: 4874 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 22 Data size: 4984 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Left Outer Join 0 to 1
@@ -402,7 +402,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 24 Data size: 5361 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 5482 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count(), sum(_col1)
                           Group By Vectorization:
@@ -508,4 +508,4 @@ left outer join small_alltypesorc_a_n0 hd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-34	-26289186744
+24	-3110813706

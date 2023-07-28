@@ -19,13 +19,10 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedDbName;
-import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -36,7 +33,6 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,29 +43,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
-import javax.jdo.JDOCanRetryException;
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
-import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
-import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
-import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
-import javax.sql.DataSource;
 
 import com.google.common.base.Strings;
 
@@ -82,7 +70,9 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -159,12 +149,12 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
-import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.model.FetchGroups;
 import org.apache.hadoop.hive.metastore.model.MCatalog;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
@@ -206,6 +196,7 @@ import org.apache.hadoop.hive.metastore.model.MWMPool;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MWMTrigger;
+import org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -213,18 +204,9 @@ import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
-import org.datanucleus.AbstractNucleusContext;
-import org.datanucleus.ClassLoaderResolver;
-import org.datanucleus.ClassLoaderResolverImpl;
-import org.datanucleus.NucleusContext;
-import org.datanucleus.api.jdo.JDOPersistenceManager;
-import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
-import org.datanucleus.store.scostore.Store;
-import org.datanucleus.util.WeakValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -246,14 +228,9 @@ import com.google.common.collect.Sets;
  * filestore.
  */
 public class ObjectStore implements RawStore, Configurable {
-  private static Properties prop = null;
-  private static PersistenceManagerFactory pmf = null;
-  private static boolean forTwoMetastoreTesting = false;
 
   private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
       "yyyy_MM_dd_HH_mm_ss");
-
-  private static Lock pmfPropLock = new ReentrantLock();
   /**
   * Verify the schema only once per JVM since the db connection info is static
   */
@@ -339,65 +316,43 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   @SuppressWarnings("nls")
   public void setConf(Configuration conf) {
-    // Although an instance of ObjectStore is accessed by one thread, there may
-    // be many threads with ObjectStore instances. So the static variables
-    // pmf and prop need to be protected with locks.
-    pmfPropLock.lock();
-    try {
-      isInitialized = false;
-      this.conf = conf;
-      configureSSL(conf);
-      Properties propsFromConf = getDataSourceProps(conf);
-      boolean propsChanged = !propsFromConf.equals(prop);
+    isInitialized = false;
+    this.conf = conf;
+    configureSSL(conf);
+    PersistenceManagerProvider.updatePmfProperties(conf);
 
-      if (propsChanged) {
-        if (pmf != null){
-          clearOutPmfClassLoaderCache(pmf);
-          if (!forTwoMetastoreTesting) {
-            // close the underlying connection pool to avoid leaks
-            pmf.close();
-          }
-        }
-        pmf = null;
-        prop = null;
-      }
+    assert (!isActiveTransaction());
+    shutdown();
+    // Always want to re-create pm as we don't know if it were created by the
+    // most recent instance of the pmf
+    pm = null;
+    directSql = null;
+    expressionProxy = null;
+    openTrasactionCalls = 0;
+    currentTransaction = null;
+    transactionStatus = TXN_STATUS.NO_STATE;
 
-      assert(!isActiveTransaction());
-      shutdown();
-      // Always want to re-create pm as we don't know if it were created by the
-      // most recent instance of the pmf
-      pm = null;
-      directSql = null;
-      expressionProxy = null;
-      openTrasactionCalls = 0;
-      currentTransaction = null;
-      transactionStatus = TXN_STATUS.NO_STATE;
+    initialize();
 
-      initialize(propsFromConf);
+    String partitionValidationRegex =
+        MetastoreConf.getVar(this.conf, ConfVars.PARTITION_NAME_WHITELIST_PATTERN);
+    if (partitionValidationRegex != null && !partitionValidationRegex.isEmpty()) {
+      partitionValidationPattern = Pattern.compile(partitionValidationRegex);
+    } else {
+      partitionValidationPattern = null;
+    }
 
-      String partitionValidationRegex =
-          MetastoreConf.getVar(this.conf, ConfVars.PARTITION_NAME_WHITELIST_PATTERN);
-      if (partitionValidationRegex != null && !partitionValidationRegex.isEmpty()) {
-        partitionValidationPattern = Pattern.compile(partitionValidationRegex);
-      } else {
-        partitionValidationPattern = null;
-      }
+    // Note, if metrics have not been initialized this will return null, which means we aren't
+    // using metrics.  Thus we should always check whether this is non-null before using.
+    MetricRegistry registry = Metrics.getRegistry();
+    if (registry != null) {
+      directSqlErrors = Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS);
+    }
 
-      // Note, if metrics have not been initialized this will return null, which means we aren't
-      // using metrics.  Thus we should always check whether this is non-null before using.
-      MetricRegistry registry = Metrics.getRegistry();
-      if (registry != null) {
-        directSqlErrors = Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS);
-      }
-
-      if (!isInitialized) {
-        throw new RuntimeException(
-        "Unable to create persistence manager. Check dss.log for details");
-      } else {
-        LOG.info("Initialized ObjectStore");
-      }
-    } finally {
-      pmfPropLock.unlock();
+    if (!isInitialized) {
+      throw new RuntimeException("Unable to create persistence manager. Check log for details");
+    } else {
+      LOG.debug("Initialized ObjectStore");
     }
   }
 
@@ -410,78 +365,13 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @SuppressWarnings("nls")
-  private void initialize(Properties dsProps) {
-    int retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS);
-    long retryInterval = MetastoreConf.getTimeVar(conf,
-        ConfVars.HMS_HANDLER_INTERVAL, TimeUnit.MILLISECONDS);
-    int numTries = retryLimit;
-
-    while (numTries > 0){
-      try {
-        initializeHelper(dsProps);
-        return; // If we reach here, we succeed.
-      } catch (Exception e){
-        numTries--;
-        boolean retriable = isRetriableException(e);
-        if ((numTries > 0) && retriable){
-          LOG.info("Retriable exception while instantiating ObjectStore, retrying. " +
-              "{} tries left", numTries, e);
-          try {
-            Thread.sleep(retryInterval);
-          } catch (InterruptedException ie) {
-            // Restore the interrupted status, since we do not want to catch it.
-            LOG.debug("Interrupted while sleeping before retrying.", ie);
-            Thread.currentThread().interrupt();
-          }
-          // If we're here, we'll proceed down the next while loop iteration.
-        } else {
-          // we've reached our limit, throw the last one.
-          if (retriable){
-            LOG.warn("Exception retry limit reached, not retrying any longer.",
-              e);
-          } else {
-            LOG.debug("Non-retriable exception during ObjectStore initialize.", e);
-          }
-          throw e;
-        }
-      }
-    }
-  }
-
-  private static final Set<Class<? extends Throwable>> retriableExceptionClasses =
-      new HashSet<>(Arrays.asList(JDOCanRetryException.class));
-  /**
-   * Helper function for initialize to determine if we should retry an exception.
-   * We return true if the exception is of a known type of retriable exceptions, or if one
-   * of its recursive .getCause returns a known type of retriable exception.
-   */
-  private boolean isRetriableException(Throwable e) {
-    if (e == null){
-      return false;
-    }
-    if (retriableExceptionClasses.contains(e.getClass())){
-      return true;
-    }
-    for (Class<? extends Throwable> c : retriableExceptionClasses){
-      if (c.isInstance(e)){
-        return true;
-      }
-    }
-
-    if (e.getCause() == null){
-      return false;
-    }
-    return isRetriableException(e.getCause());
-  }
-
-  /**
-   * private helper to do initialization routine, so we can retry if needed if it fails.
-   * @param dsProps
-   */
-  private void initializeHelper(Properties dsProps) {
-    LOG.info("ObjectStore, initialize called");
-    prop = dsProps;
-    pm = getPersistenceManager();
+  private void initialize() {
+    LOG.debug("ObjectStore, initialize called");
+    // if this method fails, PersistenceManagerProvider will retry for the configured number of times
+    // before giving up
+    pm = PersistenceManagerProvider.getPersistenceManager();
+    LOG.info("RawStore: {}, with PersistenceManager: {}" +
+        " created in the thread with id: {}", this, pm, Thread.currentThread().getId());
     try {
       String productName = MetaStoreDirectSql.getProductName(pm);
       sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName), conf);
@@ -494,13 +384,11 @@ public class ObjectStore implements RawStore, Configurable {
       dbType = determineDatabaseProduct();
       expressionProxy = createExpressionProxy(conf);
       if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
-        String schema = prop.getProperty("javax.jdo.mapping.Schema");
+        String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
         schema = org.apache.commons.lang.StringUtils.defaultIfBlank(schema, null);
         directSql = new MetaStoreDirectSql(pm, conf, schema);
       }
     }
-    LOG.debug("RawStore: {}, with PersistenceManager: {}" +
-        " created in the thread with id: {}", this, pm, Thread.currentThread().getId());
   }
 
   private DatabaseProduct determineDatabaseProduct() {
@@ -563,140 +451,15 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  /**
-   * Properties specified in hive-default.xml override the properties specified
-   * in jpox.properties.
-   */
-  @SuppressWarnings("nls")
-  private static Properties getDataSourceProps(Configuration conf) {
-    Properties prop = new Properties();
-    correctAutoStartMechanism(conf);
-
-    // First, go through and set all our values for datanucleus and javax.jdo parameters.  This
-    // has to be a separate first step because we don't set the default values in the config object.
-    for (ConfVars var : MetastoreConf.dataNucleusAndJdoConfs) {
-      String confVal = MetastoreConf.getAsString(conf, var);
-      String varName = var.getVarname();
-      Object prevVal = prop.setProperty(varName, confVal);
-      if (MetastoreConf.isPrintable(varName)) {
-        LOG.debug("Overriding {} value {} from jpox.properties with {}",
-          varName, prevVal, confVal);
-      }
-    }
-
-    // Now, we need to look for any values that the user set that MetastoreConf doesn't know about.
-    // TODO Commenting this out for now, as it breaks because the conf values aren't getting properly
-    // interpolated in case of variables.  See HIVE-17788.
-    /*
-    for (Map.Entry<String, String> e : conf) {
-      if (e.getKey().startsWith("datanucleus.") || e.getKey().startsWith("javax.jdo.")) {
-        // We have to handle this differently depending on whether it is a value known to
-        // MetastoreConf or not.  If it is, we need to get the default value if a value isn't
-        // provided.  If not, we just set whatever the user has set.
-        Object prevVal = prop.setProperty(e.getKey(), e.getValue());
-        if (LOG.isDebugEnabled() && MetastoreConf.isPrintable(e.getKey())) {
-          LOG.debug("Overriding " + e.getKey() + " value " + prevVal
-              + " from  jpox.properties with " + e.getValue());
-        }
-      }
-    }
-    */
-
-    // Password may no longer be in the conf, use getPassword()
-    try {
-      String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
-      if (org.apache.commons.lang.StringUtils.isNotEmpty(passwd)) {
-        // We can get away with the use of varname here because varname == hiveName for PWD
-        prop.setProperty(ConfVars.PWD.getVarname(), passwd);
-      }
-    } catch (IOException err) {
-      throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);
-    }
-
-    if (LOG.isDebugEnabled()) {
-      for (Entry<Object, Object> e : prop.entrySet()) {
-        if (MetastoreConf.isPrintable(e.getKey().toString())) {
-          LOG.debug("{} = {}", e.getKey(), e.getValue());
-        }
-      }
-    }
-
-    return prop;
-  }
-
-  /**
-   * Update conf to set datanucleus.autoStartMechanismMode=ignored.
-   * This is necessary to able to use older version of hive against
-   * an upgraded but compatible metastore schema in db from new version
-   * of hive
-   * @param conf
-   */
-  private static void correctAutoStartMechanism(Configuration conf) {
-    final String autoStartKey = "datanucleus.autoStartMechanismMode";
-    final String autoStartIgnore = "ignored";
-    String currentAutoStartVal = conf.get(autoStartKey);
-    if (!autoStartIgnore.equalsIgnoreCase(currentAutoStartVal)) {
-      LOG.warn("{} is set to unsupported value {} . Setting it to value: {}", autoStartKey,
-        conf.get(autoStartKey), autoStartIgnore);
-    }
-    conf.set(autoStartKey, autoStartIgnore);
-  }
-
-  private static synchronized PersistenceManagerFactory getPMF() {
-    if (pmf == null) {
-
-      Configuration conf = MetastoreConf.newMetastoreConf();
-      DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
-      if (dsp == null) {
-        pmf = JDOHelper.getPersistenceManagerFactory(prop);
-      } else {
-        try {
-          DataSource ds = dsp.create(conf);
-          Map<Object, Object> dsProperties = new HashMap<>();
-          //Any preexisting datanucleus property should be passed along
-          dsProperties.putAll(prop);
-          dsProperties.put("datanucleus.ConnectionFactory", ds);
-          dsProperties.put("javax.jdo.PersistenceManagerFactoryClass",
-              "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
-          pmf = JDOHelper.getPersistenceManagerFactory(dsProperties);
-        } catch (SQLException e) {
-          LOG.warn("Could not create PersistenceManagerFactory using " +
-              "connection pool properties, will fall back", e);
-          pmf = JDOHelper.getPersistenceManagerFactory(prop);
-        }
-      }
-      DataStoreCache dsc = pmf.getDataStoreCache();
-      if (dsc != null) {
-        String objTypes = MetastoreConf.getVar(conf, ConfVars.CACHE_PINOBJTYPES);
-        LOG.info("Setting MetaStore object pin classes with hive.metastore.cache.pinobjtypes=\"{}\"", objTypes);
-        if (org.apache.commons.lang.StringUtils.isNotEmpty(objTypes)) {
-          String[] typeTokens = objTypes.toLowerCase().split(",");
-          for (String type : typeTokens) {
-            type = type.trim();
-            if (PINCLASSMAP.containsKey(type)) {
-              dsc.pinAll(true, PINCLASSMAP.get(type));
-            } else {
-              LOG.warn("{} is not one of the pinnable object types: {}", type,
-                org.apache.commons.lang.StringUtils.join(PINCLASSMAP.keySet(), " "));
-            }
-          }
-        }
-      } else {
-        LOG.warn("PersistenceManagerFactory returned null DataStoreCache object. Unable to initialize object pin types defined by hive.metastore.cache.pinobjtypes");
-      }
-    }
-    return pmf;
-  }
-
   @InterfaceAudience.LimitedPrivate({"HCATALOG"})
   @InterfaceStability.Evolving
   public PersistenceManager getPersistenceManager() {
-    return getPMF().getPersistenceManager();
+    return PersistenceManagerProvider.getPersistenceManager();
   }
 
   @Override
   public void shutdown() {
-    LOG.debug("RawStore: {}, with PersistenceManager: {} will be shutdown", this, pm);
+    LOG.info("RawStore: {}, with PersistenceManager: {} will be shutdown", this, pm);
     if (pm != null) {
       pm.close();
       pm = null;
@@ -943,6 +706,7 @@ public class ObjectStore implements RawStore, Configurable {
       mCat.setDescription(cat.getDescription());
     }
     mCat.setLocationUri(cat.getLocationUri());
+    mCat.setCreateTime(cat.getCreateTime());
     return mCat;
   }
 
@@ -951,6 +715,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (mCat.getDescription() != null) {
       cat.setDescription(mCat.getDescription());
     }
+    cat.setCreateTime(mCat.getCreateTime());
     return cat;
   }
 
@@ -968,6 +733,7 @@ public class ObjectStore implements RawStore, Configurable {
     mdb.setOwnerName(db.getOwnerName());
     PrincipalType ownerType = db.getOwnerType();
     mdb.setOwnerType((null == ownerType ? PrincipalType.USER.name() : ownerType.name()));
+    mdb.setCreateTime(db.getCreateTime());
     try {
       openTransaction();
       pm.makePersistent(mdb);
@@ -1061,6 +827,7 @@ public class ObjectStore implements RawStore, Configurable {
     PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
     db.setOwnerType(principalType);
     db.setCatalogName(catName);
+    db.setCreateTime(mdb.getCreateTime());
     return db;
   }
 
@@ -1422,7 +1189,7 @@ public class ObjectStore implements RawStore, Configurable {
           deleteTableColumnStatistics(catName, dbName, tableName, null);
         } catch (NoSuchObjectException e) {
           LOG.info("Found no table level column statistics associated with {} to delete",
-              getCatalogQualifiedTableName(catName, dbName, tableName));
+              TableName.getQualified(catName, dbName, tableName));
         }
 
         List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
@@ -1469,6 +1236,41 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return success;
+  }
+
+  @Override
+  public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
+
+    boolean committed = false;
+    Query query = null;
+    List<String> mViewList = new ArrayList<>();
+
+    try {
+      openTransaction();
+
+      query = pm.newQuery("select from org.apache.hadoop.hive.metastore.model.MCreationMetadata");
+
+      List<MCreationMetadata> creationMetadata = (List<MCreationMetadata>)query.execute();
+      Iterator<MCreationMetadata> iter = creationMetadata.iterator();
+
+      while (iter.hasNext())
+      {
+        MCreationMetadata p = iter.next();
+        Set<MTable> tables = p.getTables();
+        for (MTable table : tables) {
+          if (dbName.equals(table.getDatabase().getName())  && tblName.equals(table.getTableName())) {
+            LOG.info("Cannot drop table " + table.getTableName() +
+                    " as it is being used by MView " + p.getTblName());
+            mViewList.add(p.getDbName() + "." + p.getTblName());
+          }
+        }
+      }
+
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return mViewList;
   }
 
   private List<MConstraint> listAllTableConstraintsWithOptionalConstraintName(
@@ -1560,17 +1362,17 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<FullTableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
-    return new GetListHelper<FullTableName>(null, null, null, true, false) {
+  public List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
+    return new GetListHelper<TableName>(null, null, null, true, false) {
       @Override
-      protected List<FullTableName> getSqlResult(
-          GetHelper<List<FullTableName>> ctx) throws MetaException {
+      protected List<TableName> getSqlResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
         return directSql.getTableNamesWithStats();
       }
 
       @Override
-      protected List<FullTableName> getJdoResult(
-          GetHelper<List<FullTableName>> ctx) throws MetaException {
+      protected List<TableName> getJdoResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
         throw new UnsupportedOperationException("UnsupportedOperationException"); // TODO: implement?
       }
     }.run(false);
@@ -1605,20 +1407,20 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<FullTableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
-    return new GetListHelper<FullTableName>(null, null, null, true, false) {
+  public List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
+    return new GetListHelper<TableName>(null, null, null, true, false) {
       @Override
-      protected List<FullTableName> getSqlResult(
-          GetHelper<List<FullTableName>> ctx) throws MetaException {
+      protected List<TableName> getSqlResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
         return directSql.getAllTableNamesForStats();
       }
 
       @Override
-      protected List<FullTableName> getJdoResult(
-          GetHelper<List<FullTableName>> ctx) throws MetaException {
+      protected List<TableName> getJdoResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
         boolean commited = false;
         Query query = null;
-        List<FullTableName> result = new ArrayList<>();
+        List<TableName> result = new ArrayList<>();
         openTransaction();
         try {
           String paramStr = "", whereStr = "";
@@ -1637,7 +1439,7 @@ public class ObjectStore implements RawStore, Configurable {
               query, MetaStoreDirectSql.STATS_TABLE_TYPES);
           pm.retrieveAll(tbls);
           for (MTable tbl : tbls) {
-            result.add(new FullTableName(
+            result.add(new TableName(
                 tbl.getDatabase().getCatalogName(), tbl.getDatabase().getName(), tbl.getTableName()));
           }
           commited = commitTransaction();
@@ -1789,6 +1591,13 @@ public class ObjectStore implements RawStore, Configurable {
         LOG.debug("getTableMeta with filter " + filterBuilder.toString() + " params: " +
             StringUtils.join(parameterVals, ", "));
       }
+      // Add the fetch group here which retrieves the database object along with the MTable
+      // objects. If we don't prefetch the database object, we could end up in a situation where
+      // the database gets dropped while we are looping through the tables throwing a
+      // JDOObjectNotFoundException. This causes HMS to go into a retry loop which greatly degrades
+      // performance of this function when called with dbNames="*" and tableNames="*" (fetch all
+      // tables in all databases, essentially a full dump)
+      pm.getFetchPlan().addGroup(FetchGroups.FETCH_DATABASE_ON_MTABLE);
       query = pm.newQuery(MTable.class, filterBuilder.toString());
       Collection<MTable> tables = (Collection<MTable>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
       for (MTable table : tables) {
@@ -1799,6 +1608,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
+      pm.getFetchPlan().removeGroup(FetchGroups.FETCH_DATABASE_ON_MTABLE);
       rollbackAndCleanup(commited, query);
     }
     return metas;
@@ -1880,7 +1690,7 @@ public class ObjectStore implements RawStore, Configurable {
           "java.lang.String table, java.lang.String db, java.lang.String catname");
       query.setUnique(true);
       LOG.debug("Executing getMTable for " +
-          getCatalogQualifiedTableName(catName, db, table));
+          TableName.getQualified(catName, db, table));
       mtbl = (MTable) query.execute(table, db, catName);
       pm.retrieve(mtbl);
       // Retrieving CD can be expensive and unnecessary, so do it only when required.
@@ -1951,7 +1761,7 @@ public class ObjectStore implements RawStore, Configurable {
         String dbNameIfExists = (String) dbExistsQuery.execute(db, catName);
         if (org.apache.commons.lang.StringUtils.isEmpty(dbNameIfExists)) {
           throw new UnknownDBException("Could not find database " +
-              getCatalogQualifiedDbName(catName, db));
+              DatabaseName.getQualified(catName, db));
         }
       } else {
         for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
@@ -2032,7 +1842,7 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (NoSuchObjectException e) {
       LOG.error("Could not convert to MTable", e);
       throw new InvalidObjectException("Database " +
-          getCatalogQualifiedDbName(catName, tbl.getDbName()) + " doesn't exist.");
+          DatabaseName.getQualified(catName, tbl.getDbName()) + " doesn't exist.");
     }
 
     // If the table has property EXTERNAL set, update table type
@@ -2501,15 +2311,20 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public Partition getPartition(String catName, String dbName, String tableName,
       List<String> part_vals) throws NoSuchObjectException, MetaException {
-    openTransaction();
-    Partition part = convertToPart(getMPartition(catName, dbName, tableName, part_vals));
-    commitTransaction();
-    if(part == null) {
-      throw new NoSuchObjectException("partition values="
-          + part_vals.toString());
+    Partition part;
+    boolean committed = false;
+    try {
+      openTransaction();
+      part = convertToPart(getMPartition(catName, dbName, tableName, part_vals));
+      committed = commitTransaction();
+      if (part == null) {
+        throw new NoSuchObjectException("partition values=" + part_vals.toString());
+      }
+      part.setValues(part_vals);
+      return part;
+    } finally {
+      rollbackAndCleanup(committed, (Query)null);
     }
-    part.setValues(part_vals);
-    return part;
   }
 
   private MPartition getMPartition(String catName, String dbName, String tableName, List<String> part_vals)
@@ -2955,7 +2770,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
 
     LOG.info("Table: {} filter: \"{}\" cols: {}",
-        getCatalogQualifiedTableName(catName, dbName, tableName), filter, cols);
+        TableName.getQualified(catName, dbName, tableName), filter, cols);
     List<String> partitionNames = null;
     List<Partition> partitions = null;
     Table tbl = getTable(catName, dbName, tableName);
@@ -2983,7 +2798,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     if (partitionNames == null && partitions == null) {
       throw new MetaException("Cannot obtain list of partitions by filter:\"" + filter +
-          "\" for " + getCatalogQualifiedTableName(catName, dbName, tableName));
+          "\" for " + TableName.getQualified(catName, dbName, tableName));
     }
 
     if (!ascending) {
@@ -3175,7 +2990,7 @@ public class ObjectStore implements RawStore, Configurable {
     tableName = normalizeIdentifier(tableName);
     Table table = getTable(catName, dbName, tableName);
     if (table == null) {
-      throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbName, tableName)
+      throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tableName)
           + " table not found");
     }
     String partNameMatcher = MetaStoreUtils.makePartNameMatcher(table, part_vals);
@@ -3928,7 +3743,7 @@ public class ObjectStore implements RawStore, Configurable {
     MTable mtable = getMTable(catName, dbName, tblName);
     if (mtable == null) {
       throw new NoSuchObjectException("Specified catalog.database.table does not exist : "
-          + getCatalogQualifiedTableName(catName, dbName, tblName));
+          + TableName.getQualified(catName, dbName, tblName));
     }
     return mtable;
   }
@@ -4733,7 +4548,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (getPrimaryKeyConstraintName(parentTable.getDatabase().getCatalogName(),
           parentTable.getDatabase().getName(), parentTable.getTableName()) != null) {
         throw new MetaException(" Primary key already exists for: " +
-            getCatalogQualifiedTableName(catName, tableDB, tableName));
+            TableName.getQualified(catName, tableDB, tableName));
       }
       if (pks.get(i).getPk_name() == null) {
         if (pks.get(i).getKey_seq() == 1) {
@@ -8194,7 +8009,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     try {
       LOG.info("Updating table level column statistics for table={}" +
-        " colName={}", getCatalogQualifiedTableName(table), colName);
+        " colName={}", Warehouse.getCatalogQualifiedTableName(table), colName);
       validateTableCols(table, Lists.newArrayList(colName));
 
       if (oldStats != null) {
@@ -8222,7 +8037,7 @@ public class ObjectStore implements RawStore, Configurable {
     String colName = mStatsObj.getColName();
 
     LOG.info("Updating partition level column statistics for table=" +
-        getCatalogQualifiedTableName(catName, dbName, tableName) +
+        TableName.getQualified(catName, dbName, tableName) +
         " partName=" + partName + " colName=" + colName);
 
     boolean foundCol = false;
@@ -8752,7 +8567,7 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistent(mStatsObj);
         } else {
           throw new NoSuchObjectException("Column stats doesn't exist for table="
-              + getCatalogQualifiedTableName(catName, dbName, tableName) +
+              + TableName.getQualified(catName, dbName, tableName) +
               " partition=" + partName + " col=" + colName);
         }
       } else {
@@ -8766,7 +8581,7 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistentAll(mStatsObjColl);
         } else {
           throw new NoSuchObjectException("Column stats don't exist for table="
-              + getCatalogQualifiedTableName(catName, dbName, tableName) + " partition" + partName);
+              + TableName.getQualified(catName, dbName, tableName) + " partition" + partName);
         }
       }
       ret = commitTransaction();
@@ -8797,7 +8612,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<MTableColumnStatistics> mStatsObjColl;
       if (mTable == null) {
         throw new NoSuchObjectException("Table " +
-            getCatalogQualifiedTableName(catName, dbName, tableName)
+            TableName.getQualified(catName, dbName, tableName)
             + "  for which stats deletion is requested doesn't exist");
       }
       query = pm.newQuery(MTableColumnStatistics.class);
@@ -9517,6 +9332,64 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public void cleanWriteNotificationEvents(int olderThan) {
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      long tmp = System.currentTimeMillis() / 1000 - olderThan;
+      int tooOld = (tmp > Integer.MAX_VALUE) ? 0 : (int) tmp;
+      query = pm.newQuery(MTxnWriteNotificationLog.class, "eventTime < tooOld");
+      query.declareParameters("java.lang.Integer tooOld");
+      Collection<MTxnWriteNotificationLog> toBeRemoved = (Collection) query.execute(tooOld);
+      if (CollectionUtils.isNotEmpty(toBeRemoved)) {
+        pm.deletePersistentAll(toBeRemoved);
+      }
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
+    List<WriteEventInfo> writeEventInfoList = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      List<String> parameterVals = new ArrayList<>();
+      StringBuilder filterBuilder = new StringBuilder(" txnId == " + Long.toString(txnId));
+      if (dbName != null && !"*".equals(dbName)) { // * means get all database, so no need to add filter
+        appendSimpleCondition(filterBuilder, "database", new String[]{dbName}, parameterVals);
+      }
+      if (tableName != null && !"*".equals(tableName)) {
+        appendSimpleCondition(filterBuilder, "table", new String[]{tableName}, parameterVals);
+      }
+      query = pm.newQuery(MTxnWriteNotificationLog.class, filterBuilder.toString());
+      query.setOrdering("database,table ascending");
+      List<MTxnWriteNotificationLog> mplans = (List<MTxnWriteNotificationLog>)query.executeWithArray(
+              parameterVals.toArray(new String[parameterVals.size()]));
+      pm.retrieveAll(mplans);
+      commited = commitTransaction();
+      if (mplans != null && mplans.size() > 0) {
+        writeEventInfoList = Lists.newArrayList();
+        for (MTxnWriteNotificationLog mplan : mplans) {
+          WriteEventInfo writeEventInfo = new WriteEventInfo(mplan.getWriteId(), mplan.getDatabase(),
+                  mplan.getTable(), mplan.getFiles());
+          writeEventInfo.setPartition(mplan.getPartition());
+          writeEventInfo.setPartitionObj(mplan.getPartObject());
+          writeEventInfo.setTableObj(mplan.getTableObject());
+          writeEventInfoList.add(writeEventInfo);
+        }
+      }
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return writeEventInfoList;
+  }
+
   private void prepareQuotes() throws SQLException {
     if (dbType == DatabaseProduct.MYSQL) {
       assert pm.currentTransaction().isActive();
@@ -9603,7 +9476,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addNotificationEvent(NotificationEvent entry) {
+  public void addNotificationEvent(NotificationEvent entry) throws MetaException {
     boolean commited = false;
     Query query = null;
     try {
@@ -9627,8 +9500,9 @@ public class ObjectStore implements RawStore, Configurable {
       }
       pm.makePersistent(translateThriftToDb(entry));
       commited = commitTransaction();
-    } catch (Exception e) {
-      LOG.error("couldnot get lock for update", e);
+    } catch (MetaException e) {
+      LOG.error("Couldn't get lock for update", e);
+      throw e;
     } finally {
       rollbackAndCleanup(commited, query);
     }
@@ -9748,113 +9622,6 @@ public class ObjectStore implements RawStore, Configurable {
   public FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type) {
     throw new UnsupportedOperationException();
   }
-
-  /**
-   * Removed cached classloaders from DataNucleus
-   * DataNucleus caches classloaders in NucleusContext.
-   * In UDFs, this can result in classloaders not getting GCed resulting in PermGen leaks.
-   * This is particularly an issue when using embedded metastore with HiveServer2,
-   * since the current classloader gets modified with each new add jar,
-   * becoming the classloader for downstream classes, which DataNucleus ends up using.
-   * The NucleusContext cache gets freed up only on calling a close on it.
-   * We're not closing NucleusContext since it does a bunch of other things which we don't want.
-   * We're not clearing the cache HashMap by calling HashMap#clear to avoid concurrency issues.
-   */
-  public static void unCacheDataNucleusClassLoaders() {
-    PersistenceManagerFactory pmf = ObjectStore.getPMF();
-    clearOutPmfClassLoaderCache(pmf);
-  }
-
-  private static void clearOutPmfClassLoaderCache(PersistenceManagerFactory pmf) {
-    if ((pmf == null) || (!(pmf instanceof JDOPersistenceManagerFactory))) {
-      return;
-    }
-    // NOTE : This is hacky, and this section of code is fragile depending on DN code varnames
-    // so it's likely to stop working at some time in the future, especially if we upgrade DN
-    // versions, so we actively need to find a better way to make sure the leak doesn't happen
-    // instead of just clearing out the cache after every call.
-    JDOPersistenceManagerFactory jdoPmf = (JDOPersistenceManagerFactory) pmf;
-    NucleusContext nc = jdoPmf.getNucleusContext();
-    try {
-      Field pmCache = pmf.getClass().getDeclaredField("pmCache");
-      pmCache.setAccessible(true);
-      Set<JDOPersistenceManager> pmSet = (Set<JDOPersistenceManager>)pmCache.get(pmf);
-      for (JDOPersistenceManager pm : pmSet) {
-        org.datanucleus.ExecutionContext ec = pm.getExecutionContext();
-        if (ec instanceof org.datanucleus.ExecutionContextThreadedImpl) {
-          ClassLoaderResolver clr = ((org.datanucleus.ExecutionContextThreadedImpl)ec).getClassLoaderResolver();
-          clearClr(clr);
-        }
-      }
-      org.datanucleus.plugin.PluginManager pluginManager = jdoPmf.getNucleusContext().getPluginManager();
-      Field registryField = pluginManager.getClass().getDeclaredField("registry");
-      registryField.setAccessible(true);
-      org.datanucleus.plugin.PluginRegistry registry = (org.datanucleus.plugin.PluginRegistry)registryField.get(pluginManager);
-      if (registry instanceof org.datanucleus.plugin.NonManagedPluginRegistry) {
-        org.datanucleus.plugin.NonManagedPluginRegistry nRegistry = (org.datanucleus.plugin.NonManagedPluginRegistry)registry;
-        Field clrField = nRegistry.getClass().getDeclaredField("clr");
-        clrField.setAccessible(true);
-        ClassLoaderResolver clr = (ClassLoaderResolver)clrField.get(nRegistry);
-        clearClr(clr);
-      }
-      if (nc instanceof org.datanucleus.PersistenceNucleusContextImpl) {
-        org.datanucleus.PersistenceNucleusContextImpl pnc = (org.datanucleus.PersistenceNucleusContextImpl)nc;
-        org.datanucleus.store.types.TypeManagerImpl tm = (org.datanucleus.store.types.TypeManagerImpl)pnc.getTypeManager();
-        Field clrField = tm.getClass().getDeclaredField("clr");
-        clrField.setAccessible(true);
-        ClassLoaderResolver clr = (ClassLoaderResolver)clrField.get(tm);
-        clearClr(clr);
-        Field storeMgrField = pnc.getClass().getDeclaredField("storeMgr");
-        storeMgrField.setAccessible(true);
-        org.datanucleus.store.rdbms.RDBMSStoreManager storeMgr = (org.datanucleus.store.rdbms.RDBMSStoreManager)storeMgrField.get(pnc);
-        Field backingStoreField = storeMgr.getClass().getDeclaredField("backingStoreByMemberName");
-        backingStoreField.setAccessible(true);
-        Map<String, Store> backingStoreByMemberName = (Map<String, Store>)backingStoreField.get(storeMgr);
-        for (Store store : backingStoreByMemberName.values()) {
-          org.datanucleus.store.rdbms.scostore.BaseContainerStore baseStore = (org.datanucleus.store.rdbms.scostore.BaseContainerStore)store;
-          clrField = org.datanucleus.store.rdbms.scostore.BaseContainerStore.class.getDeclaredField("clr");
-          clrField.setAccessible(true);
-          clr = (ClassLoaderResolver)clrField.get(baseStore);
-          clearClr(clr);
-        }
-      }
-      Field classLoaderResolverMap = AbstractNucleusContext.class.getDeclaredField(
-          "classLoaderResolverMap");
-      classLoaderResolverMap.setAccessible(true);
-      Map<String,ClassLoaderResolver> loaderMap =
-          (Map<String, ClassLoaderResolver>) classLoaderResolverMap.get(nc);
-      for (ClassLoaderResolver clr : loaderMap.values()){
-        clearClr(clr);
-      }
-      classLoaderResolverMap.set(nc, new HashMap<String, ClassLoaderResolver>());
-      LOG.debug("Removed cached classloaders from DataNucleus NucleusContext");
-    } catch (Exception e) {
-      LOG.warn("Failed to remove cached classloaders from DataNucleus NucleusContext", e);
-    }
-  }
-
-  private static void clearClr(ClassLoaderResolver clr) throws Exception {
-    if (clr != null){
-      if (clr instanceof ClassLoaderResolverImpl){
-        ClassLoaderResolverImpl clri = (ClassLoaderResolverImpl) clr;
-        long resourcesCleared = clearFieldMap(clri,"resources");
-        long loadedClassesCleared = clearFieldMap(clri,"loadedClasses");
-        long unloadedClassesCleared = clearFieldMap(clri, "unloadedClasses");
-        LOG.debug("Cleared ClassLoaderResolverImpl: {}, {}, {}",
-            resourcesCleared, loadedClassesCleared, unloadedClassesCleared);
-      }
-    }
-  }
-  private static long clearFieldMap(ClassLoaderResolverImpl clri, String mapFieldName) throws Exception {
-    Field mapField = ClassLoaderResolverImpl.class.getDeclaredField(mapFieldName);
-    mapField.setAccessible(true);
-
-    Map<String,Class> map = (Map<String, Class>) mapField.get(clri);
-    long sz = map.size();
-    mapField.set(clri, Collections.synchronizedMap(new WeakValueMap()));
-    return sz;
-  }
-
 
   @Override
   public List<SQLPrimaryKey> getPrimaryKeys(String catName, String db_name, String tbl_name)
@@ -10915,20 +10682,6 @@ public class ObjectStore implements RawStore, Configurable {
         queryWrapper.close();
       }
     }
-  }
-
-  /**
-   * To make possible to run multiple metastore in unit test
-   * @param twoMetastoreTesting if we are using multiple metastore in unit test
-   */
-  @VisibleForTesting
-  public static void setTwoMetastoreTesting(boolean twoMetastoreTesting) {
-    forTwoMetastoreTesting = twoMetastoreTesting;
-  }
-
-  @VisibleForTesting
-  Properties getProp() {
-    return prop;
   }
 
   private void checkForConstraintException(Exception e, String msg) throws AlreadyExistsException {

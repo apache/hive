@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggreg
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 
+@Deprecated
 class AggregateDefinition {
 
   private String name;

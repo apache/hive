@@ -136,6 +136,8 @@ POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416946
 POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416947
 POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416948
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `d_date`
+FROM `default`.`date_dim_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

@@ -62,8 +62,8 @@ public class TestHiveAuthorizerShowFilters {
   static final List<String> AllTables = getSortedList(tableName1, tableName2);
   static final List<String> AllDbs = getSortedList("default", dbName1, dbName2);
 
-  private static List<HivePrivilegeObject> filterArguments = null;
-  private static List<HivePrivilegeObject> filteredResults = new ArrayList<HivePrivilegeObject>();
+  private static List<HivePrivilegeObject> filterArguments = new ArrayList<>();
+  private static List<HivePrivilegeObject> filteredResults = new ArrayList<>();
 
   /**
    * This factory creates a mocked HiveAuthorizer class. The mocked class is
@@ -78,7 +78,7 @@ public class TestHiveAuthorizerShowFilters {
       public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
           HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
         // capture arguments in static
-        filterArguments = listObjs;
+        filterArguments.addAll(listObjs);
         // return static variable with results, if it is set to some set of
         // values
         // otherwise return the arguments
@@ -137,7 +137,7 @@ public class TestHiveAuthorizerShowFilters {
 
   @Before
   public void setup() {
-    filterArguments = null;
+    filterArguments.clear();
     filteredResults.clear();
   }
 

@@ -73,19 +73,24 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: key (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: key (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -206,19 +211,24 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: key (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: key (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -313,19 +323,24 @@ STAGE PLANS:
                     expressions: length(key) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: _col0 (type: int)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -400,19 +415,24 @@ STAGE PLANS:
                     expressions: abs(length(key)) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: _col0 (type: int)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -488,19 +508,24 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: key (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: key (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -596,19 +621,24 @@ STAGE PLANS:
                     expressions: value (type: string)
                     outputColumnNames: value
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: value (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: value (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1218,20 +1248,25 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      bucketGroup: true
+                    Top N Key Operator
+                      sort order: +
                       keys: key (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        bucketGroup: true
+                        keys: key (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1327,19 +1362,24 @@ STAGE PLANS:
                     expressions: value (type: string)
                     outputColumnNames: value
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: value (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: value (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1541,20 +1581,25 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      bucketGroup: true
+                    Top N Key Operator
+                      sort order: +
                       keys: key (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        bucketGroup: true
+                        keys: key (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1650,19 +1695,24 @@ STAGE PLANS:
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: ++
                       keys: key (type: string), value (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string), _col1 (type: string)
-                        sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: key (type: string), value (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col2 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: string)
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                          Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 

@@ -74,6 +74,7 @@ import org.slf4j.LoggerFactory;
  * each query should call clear() at end of use to remove temporary folders
  */
 public class Context {
+
   private boolean isHDFSCleanup;
   private Path resFile;
   private Path resDir;
@@ -103,6 +104,7 @@ public class Context {
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
   protected boolean cboSucceeded;
+  protected String optimizedSql;
   protected String cmd = "";
   private TokenRewriteStream tokenRewriteStream;
   // Holds the qualified name to tokenRewriteStream for the views
@@ -1003,6 +1005,14 @@ public class Context {
     this.cboInfo = cboInfo;
   }
 
+  public String getOptimizedSql() {
+    return this.optimizedSql;
+  }
+
+  public void setOptimizedSql(String newSql) {
+    this.optimizedSql = newSql;
+  }
+
   public boolean isCboSucceeded() {
     return cboSucceeded;
   }
@@ -1091,6 +1101,10 @@ public class Context {
 
   public String getExecutionId() {
     return executionId;
+  }
+
+  public void setPlanMapper(PlanMapper planMapper) {
+    this.planMapper = planMapper;
   }
 
   public PlanMapper getPlanMapper() {

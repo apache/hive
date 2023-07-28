@@ -74,7 +74,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   protected String fullyQualifiedTableName;
   protected Map<String, List<RecordUpdater>> updaters = new HashMap<>();
   protected Map<String, Path> partitionPaths = new HashMap<>();
-  protected Set<String> addedPartitions = new HashSet<>();
+  protected Set<String> updatedPartitions = new HashSet<>();
   // input OI includes table columns + partition columns
   protected StructObjectInspector inputRowObjectInspector;
   // output OI strips off the partition columns and retains other columns
@@ -142,7 +142,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     try {
       URI uri = new URI(location);
       this.fs = FileSystem.newInstance(uri, conf);
-      LOG.info("Created new filesystem instance: {}", System.identityHashCode(this.fs));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Created new filesystem instance: {}", System.identityHashCode(this.fs));
+      }
     } catch (URISyntaxException e) {
       throw new StreamingException("Unable to create URI from location: " + location, e);
     } catch (IOException e) {
@@ -162,7 +164,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     try {
       this.acidOutputFormat = (AcidOutputFormat<?, ?>) ReflectionUtils
         .newInstance(JavaUtils.loadClass(outFormatName), conf);
-    } catch (ClassNotFoundException e) {
+    } catch (Exception e) {
       String shadePrefix = conf.getVar(HiveConf.ConfVars.HIVE_CLASSLOADER_SHADE_PREFIX);
       if (shadePrefix != null && !shadePrefix.trim().isEmpty()) {
         try {
@@ -197,7 +199,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     this.autoFlush = conf.getBoolVar(HiveConf.ConfVars.HIVE_STREAMING_AUTO_FLUSH_ENABLED);
     this.memoryUsageThreshold = conf.getFloatVar(HiveConf.ConfVars.HIVE_HEAP_MEMORY_MONITOR_USAGE_THRESHOLD);
     this.ingestSizeThreshold = conf.getSizeVar(HiveConf.ConfVars.HIVE_STREAMING_AUTO_FLUSH_CHECK_INTERVAL_SIZE);
-    LOG.info("Memory monitorings settings - autoFlush: {} memoryUsageThreshold: {} ingestSizeThreshold: {}",
+    LOG.info("Memory monitoring settings - autoFlush: {} memoryUsageThreshold: {} ingestSizeThreshold: {}",
       autoFlush, memoryUsageThreshold, ingestSizeBytes);
     this.heapMemoryMonitor = new HeapMemoryMonitor(memoryUsageThreshold);
     MemoryUsage tenuredMemUsage = heapMemoryMonitor.getTenuredGenMemoryUsage();
@@ -329,9 +331,13 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   @Override
   public void flush() throws StreamingIOFailure {
     try {
-      logStats("Stats before flush:");
+      if (LOG.isDebugEnabled()) {
+        logStats("Stats before flush:");
+      }
       for (Map.Entry<String, List<RecordUpdater>> entry : updaters.entrySet()) {
-        LOG.info("Flushing record updater for partitions: {}", entry.getKey());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Flushing record updater for partitions: {}", entry.getKey());
+        }
         for (RecordUpdater updater : entry.getValue()) {
           if (updater != null) {
             updater.flush();
@@ -339,7 +345,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
         }
       }
       ingestSizeBytes = 0;
-      logStats("Stats after flush:");
+      if (LOG.isDebugEnabled()) {
+        logStats("Stats after flush:");
+      }
     } catch (IOException e) {
       throw new StreamingIOFailure("Unable to flush recordUpdater", e);
     }
@@ -347,12 +355,17 @@ public abstract class AbstractRecordWriter implements RecordWriter {
 
   @Override
   public void close() throws StreamingIOFailure {
+    heapMemoryMonitor.close();
     boolean haveError = false;
     String partition = null;
-    logStats("Stats before close:");
+    if (LOG.isDebugEnabled()) {
+      logStats("Stats before close:");
+    }
     for (Map.Entry<String, List<RecordUpdater>> entry : updaters.entrySet()) {
       partition = entry.getKey();
-      LOG.info("Closing updater for partitions: {}", partition);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Closing updater for partitions: {}", partition);
+      }
       for (RecordUpdater updater : entry.getValue()) {
         if (updater != null) {
           try {
@@ -367,7 +380,15 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       entry.getValue().clear();
     }
     updaters.clear();
-    logStats("Stats after close:");
+    updatedPartitions.clear();
+    if (LOG.isDebugEnabled()) {
+      logStats("Stats after close:");
+    }
+    try {
+      this.fs.close();
+    } catch (IOException e) {
+      throw new StreamingIOFailure("Error while closing FileSystem", e);
+    }
     if (haveError) {
       throw new StreamingIOFailure("Encountered errors while closing (see logs) " + getWatermark(partition));
     }
@@ -432,8 +453,10 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
     if (lowMemoryCanary != null) {
       if (lowMemoryCanary.get() && ingestSizeBytes > ingestSizeThreshold) {
-        LOG.info("Low memory canary is set and ingestion size (buffered) threshold '{}' exceeded. " +
-          "Flushing all record updaters..", LlapUtil.humanReadableByteCount(ingestSizeThreshold));
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Low memory canary is set and ingestion size (buffered) threshold '{}' exceeded. " +
+            "Flushing all record updaters..", LlapUtil.humanReadableByteCount(ingestSizeThreshold));
+        }
         flush();
         conn.getConnectionStats().incrementAutoFlushCount();
         lowMemoryCanary.set(false);
@@ -444,8 +467,10 @@ public abstract class AbstractRecordWriter implements RecordWriter {
         MemoryUsage heapUsage = mxBean.getHeapMemoryUsage();
         float memUsedFraction = ((float) heapUsage.getUsed() / (float) heapUsage.getMax());
         if (memUsedFraction > memoryUsageThreshold) {
-          LOG.info("Memory usage threshold '{}' and ingestion size (buffered) threshold '{}' exceeded. " +
-            "Flushing all record updaters..", memUsedFraction, LlapUtil.humanReadableByteCount(ingestSizeThreshold));
+          if (LOG.isDebugEnabled()) {
+            LOG.info("Memory usage threshold '{}' and ingestion size (buffered) threshold '{}' exceeded. " +
+              "Flushing all record updaters..", memUsedFraction, LlapUtil.humanReadableByteCount(ingestSizeThreshold));
+          }
           flush();
           conn.getConnectionStats().incrementAutoFlushCount();
         }
@@ -453,9 +478,12 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
   }
 
+  /**
+   * @return the list of newly added or updated partitions.
+   */
   @Override
   public Set<String> getPartitions() {
-    return addedPartitions;
+    return updatedPartitions;
   }
 
   protected RecordUpdater createRecordUpdater(final Path partitionPath, int bucketId, Long minWriteId,
@@ -494,14 +522,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
           destLocation = new Path(table.getSd().getLocation());
         } else {
           PartitionInfo partitionInfo = conn.createPartitionIfNotExists(partitionValues);
-          // collect the newly added partitions. connection.commitTransaction() will report the dynamically added
-          // partitions to TxnHandler
-          if (!partitionInfo.isExists()) {
-            addedPartitions.add(partitionInfo.getName());
-            LOG.info("Created partition {} for table {}", partitionInfo.getName(), fullyQualifiedTableName);
-          } else {
-            LOG.info("Partition {} already exists for table {}", partitionInfo.getName(), fullyQualifiedTableName);
-          }
+          // collect the newly added/updated partitions. connection.commitTransaction() will report the dynamically
+          // added partitions to TxnHandler
+          updatedPartitions.add(partitionInfo.getName());
           destLocation = new Path(partitionInfo.getPartitionLocation());
         }
         partitionPaths.put(key, destLocation);
@@ -550,7 +573,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       oldGenUsage = "used/max => " + LlapUtil.humanReadableByteCount(memoryUsage.getUsed()) + "/" +
         LlapUtil.humanReadableByteCount(memoryUsage.getMax());
     }
-    LOG.info("{} [record-updaters: {}, partitions: {}, buffered-records: {} total-records: {} " +
+    LOG.debug("{} [record-updaters: {}, partitions: {}, buffered-records: {} total-records: {} " +
         "buffered-ingest-size: {}, total-ingest-size: {} tenured-memory-usage: {}]", prefix, openRecordUpdaters,
       partitionPaths.size(), bufferedRecords, conn.getConnectionStats().getRecordsWritten(),
       LlapUtil.humanReadableByteCount(ingestSizeBytes),

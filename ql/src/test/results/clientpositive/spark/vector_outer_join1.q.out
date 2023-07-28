@@ -120,11 +120,11 @@ POSTHOOK: query: select * from small_alltypesorc3a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc3a
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
-NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
-NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
-NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
-NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
+NULL	-16306	384405526	-1645852809	NULL	-16306.0	b5SoK8	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:11.105	true	false
+NULL	-16307	559926362	-1645852809	NULL	-16307.0	nA8bdtWfPPQyP2hL5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.072	false	false
+NULL	-16309	-826497289	-1645852809	NULL	-16309.0	54o058c3mK6ewOQ5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:10.761	false	false
+NULL	-16310	206154150	1864027286	NULL	-16310.0	5Hy1y6	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:00.821	false	true
+NULL	-16379	-894716315	1864027286	NULL	-16379.0	2ArdYqML3654nUjGJk3	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:47.059	true	true
 PREHOOK: query: select * from small_alltypesorc4a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc4a
@@ -211,11 +211,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 -64	-7196	NULL	658026952	-64.0	-7196.0	NULL	4tAur	1969-12-31 15:59:53.866	1969-12-31 15:59:58.174	NULL	true
 -64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
 -64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL
-NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
-NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
-NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
-NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
-NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
+NULL	-16306	384405526	-1645852809	NULL	-16306.0	b5SoK8	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:11.105	true	false
+NULL	-16307	559926362	-1645852809	NULL	-16307.0	nA8bdtWfPPQyP2hL5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.072	false	false
+NULL	-16309	-826497289	-1645852809	NULL	-16309.0	54o058c3mK6ewOQ5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:10.761	false	false
+NULL	-16310	206154150	1864027286	NULL	-16310.0	5Hy1y6	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:00.821	false	true
+NULL	-16379	-894716315	1864027286	NULL	-16379.0	2ArdYqML3654nUjGJk3	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:47.059	true	true
 PREHOOK: query: explain vectorization detail
 select * 
 from small_alltypesorc_a c
@@ -250,7 +250,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
-                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -261,7 +261,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -296,7 +296,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -307,7 +307,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join 0 to 1
@@ -327,13 +327,13 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
                       input vertices:
                         1 Map 2
-                      Statistics: Num rows: 16 Data size: 3831 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 16 Data size: 3891 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 16 Data size: 3831 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 16 Data size: 3891 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -391,11 +391,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 -64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL	-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
 -64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL	-64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL
 -64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL	-64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL
-NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false	NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
-NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false	NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
-NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false	NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
-NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false	NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
-NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false	NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
+NULL	-16306	384405526	-1645852809	NULL	-16306.0	b5SoK8	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:11.105	true	false	NULL	-16306	384405526	-1645852809	NULL	-16306.0	b5SoK8	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:11.105	true	false
+NULL	-16307	559926362	-1645852809	NULL	-16307.0	nA8bdtWfPPQyP2hL5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.072	false	false	NULL	-16307	559926362	-1645852809	NULL	-16307.0	nA8bdtWfPPQyP2hL5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.072	false	false
+NULL	-16309	-826497289	-1645852809	NULL	-16309.0	54o058c3mK6ewOQ5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:10.761	false	false	NULL	-16309	-826497289	-1645852809	NULL	-16309.0	54o058c3mK6ewOQ5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:10.761	false	false
+NULL	-16310	206154150	1864027286	NULL	-16310.0	5Hy1y6	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:00.821	false	true	NULL	-16310	206154150	1864027286	NULL	-16310.0	5Hy1y6	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:00.821	false	true
+NULL	-16379	-894716315	1864027286	NULL	-16379.0	2ArdYqML3654nUjGJk3	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:47.059	true	true	NULL	-16379	-894716315	1864027286	NULL	-16379.0	2ArdYqML3654nUjGJk3	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:47.059	true	true
 PREHOOK: query: explain vectorization detail
 select c.ctinyint 
 from small_alltypesorc_a c
@@ -430,7 +430,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: hd
-                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -441,7 +441,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -476,7 +476,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -487,7 +487,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join 0 to 1
@@ -505,13 +505,13 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 2
-                      Statistics: Num rows: 16 Data size: 3831 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 16 Data size: 3891 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 16 Data size: 3831 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 16 Data size: 3891 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -700,7 +700,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
-                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -711,7 +711,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -741,7 +741,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: hd
-                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -752,7 +752,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -789,7 +789,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -800,7 +800,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 2]
-                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3538 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join 0 to 1
@@ -818,7 +818,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 16 Data size: 3831 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 16 Data size: 3891 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Left Outer Join 0 to 1
@@ -836,7 +836,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 17 Data size: 4214 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 17 Data size: 4280 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count(), sum(_col0)
                           Group By Vectorization:

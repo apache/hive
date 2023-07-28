@@ -36,6 +36,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,6 +72,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
@@ -161,6 +163,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -463,9 +466,8 @@ public class Hive {
       metaStoreClient.close();
       metaStoreClient = null;
     }
-    if (syncMetaStoreClient != null) {
-      syncMetaStoreClient.close();
-    }
+    // syncMetaStoreClient is wrapped on metaStoreClient. So, it is enough to close it once.
+    syncMetaStoreClient = null;
     if (owner != null) {
       owner = null;
     }
@@ -1205,6 +1207,18 @@ public class Hive {
   }
 
   /**
+   * Get tables for the specified database that match the provided regex pattern and table type.
+   * @param dbName
+   * @param pattern
+   * @param tableType
+   * @return List of table objects
+   * @throws HiveException
+   */
+  public List<Table> getTableObjectsByType(String dbName, String pattern, TableType tableType) throws HiveException {
+    return getTableObjects(dbName, pattern, tableType);
+  }
+
+  /**
    * Get all materialized view names for the specified database.
    * @param dbName
    * @return List of materialized view table names
@@ -1222,6 +1236,17 @@ public class Hive {
    */
   public List<Table> getAllMaterializedViewObjects(String dbName) throws HiveException {
     return getTableObjects(dbName, ".*", TableType.MATERIALIZED_VIEW);
+  }
+
+  /**
+   * Get materialized views for the specified database that match the provided regex pattern.
+   * @param dbName
+   * @param pattern
+   * @return List of materialized view table objects
+   * @throws HiveException
+   */
+  public List<Table> getMaterializedViewObjectsByPattern(String dbName, String pattern) throws HiveException {
+    return getTableObjects(dbName, pattern, TableType.MATERIALIZED_VIEW);
   }
 
   private List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
@@ -1375,82 +1400,21 @@ public class Hive {
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_INCREMENTAL);
     final boolean tryIncrementalRebuild =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL);
-    final long defaultDiff =
+    final long defaultTimeWindow =
         HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW,
             TimeUnit.MILLISECONDS);
-    final long currentTime = System.currentTimeMillis();
     try {
       // Final result
       List<RelOptMaterialization> result = new ArrayList<>();
       List<Table> materializedViewTables = getTableObjects(dbName, materializedViewNames);
       for (Table materializedViewTable : materializedViewTables) {
-        // Check if materialization defined its own invalidation time window
-        String timeWindowString = materializedViewTable.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
-        long diff = org.apache.commons.lang.StringUtils.isEmpty(timeWindowString) ? defaultDiff :
-            HiveConf.toTime(timeWindowString,
-                HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
-                TimeUnit.MILLISECONDS);
-        CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
-        boolean outdated = false;
-        if (diff < 0L) {
-          // We only consider the materialized view to be outdated if forceOutdated = true, i.e.,
-          // if it is a rebuild. Otherwise, it passed the test and we use it as it is.
-          outdated = forceMVContentsUpToDate;
-        } else {
-          // Check whether the materialized view is invalidated
-          if (forceMVContentsUpToDate || diff == 0L || creationMetadata.getMaterializationTime() < currentTime - diff) {
-            if (currentTxnWriteIds == null) {
-              LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                  " ignored for rewriting as we could not obtain current txn ids");
-              continue;
-            }
-            if (creationMetadata.getValidTxnList() == null ||
-                creationMetadata.getValidTxnList().isEmpty()) {
-              LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                  " ignored for rewriting as we could not obtain materialization txn ids");
-              continue;
-            }
-            boolean ignore = false;
-            ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
-                creationMetadata.getValidTxnList());
-            for (String qName : tablesUsed) {
-              // Note. If the materialized view does not contain a table that is contained in the query,
-              // we do not need to check whether that specific table is outdated or not. If a rewriting
-              // is produced in those cases, it is because that additional table is joined with the
-              // existing tables with an append-columns only join, i.e., PK-FK + not null.
-              if (!creationMetadata.getTablesUsed().contains(qName)) {
-                continue;
-              }
-              ValidWriteIdList tableCurrentWriteIds = currentTxnWriteIds.getTableValidWriteIdList(qName);
-              if (tableCurrentWriteIds == null) {
-                // Uses non-transactional table, cannot be considered
-                LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                    " ignored for rewriting as it is outdated and cannot be considered for " +
-                    " rewriting because it uses non-transactional table " + qName);
-                ignore = true;
-                break;
-              }
-              ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(qName);
-              if (tableWriteIds == null) {
-                // This should not happen, but we ignore for safety
-                LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                    " ignored for rewriting as details about txn ids for table " + qName +
-                    " could not be found in " + mvTxnWriteIds);
-                ignore = true;
-                break;
-              }
-              if (!outdated && !TxnIdUtils.checkEquivalentWriteIds(tableCurrentWriteIds, tableWriteIds)) {
-                LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                    " contents are outdated");
-                outdated = true;
-              }
-            }
-            if (ignore) {
-              continue;
-            }
-          }
+        final Boolean outdated = isOutdatedMaterializedView(materializedViewTable, currentTxnWriteIds,
+            defaultTimeWindow, tablesUsed, forceMVContentsUpToDate);
+        if (outdated == null) {
+          continue;
         }
 
+        final CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
         if (outdated) {
           // The MV is outdated, see whether we should consider it for rewriting or not
           boolean ignore = false;
@@ -1534,6 +1498,82 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  /**
+   * Utility method that returns whether a materialized view is outdated (true), not outdated
+   * (false), or it cannot be determined (null). The latest case may happen e.g. when the
+   * materialized view definition uses external tables.
+   */
+  public static Boolean isOutdatedMaterializedView(Table materializedViewTable, final ValidTxnWriteIdList currentTxnWriteIds,
+      long defaultTimeWindow, List<String> tablesUsed, boolean forceMVContentsUpToDate) {
+    // Check if materialization defined its own invalidation time window
+    String timeWindowString = materializedViewTable.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
+    long timeWindow = org.apache.commons.lang.StringUtils.isEmpty(timeWindowString) ? defaultTimeWindow :
+        HiveConf.toTime(timeWindowString,
+            HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
+            TimeUnit.MILLISECONDS);
+    CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
+    boolean outdated = false;
+    if (timeWindow < 0L) {
+      // We only consider the materialized view to be outdated if forceOutdated = true, i.e.,
+      // if it is a rebuild. Otherwise, it passed the test and we use it as it is.
+      outdated = forceMVContentsUpToDate;
+    } else {
+      // Check whether the materialized view is invalidated
+      if (forceMVContentsUpToDate || timeWindow == 0L || creationMetadata.getMaterializationTime() < System.currentTimeMillis() - timeWindow) {
+        if (currentTxnWriteIds == null) {
+          LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+              " ignored for rewriting as we could not obtain current txn ids");
+          return null;
+        }
+        if (creationMetadata.getValidTxnList() == null ||
+            creationMetadata.getValidTxnList().isEmpty()) {
+          LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+              " ignored for rewriting as we could not obtain materialization txn ids");
+          return null;
+        }
+        boolean ignore = false;
+        ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
+            creationMetadata.getValidTxnList());
+        for (String qName : tablesUsed) {
+          // Note. If the materialized view does not contain a table that is contained in the query,
+          // we do not need to check whether that specific table is outdated or not. If a rewriting
+          // is produced in those cases, it is because that additional table is joined with the
+          // existing tables with an append-columns only join, i.e., PK-FK + not null.
+          if (!creationMetadata.getTablesUsed().contains(qName)) {
+            continue;
+          }
+          ValidWriteIdList tableCurrentWriteIds = currentTxnWriteIds.getTableValidWriteIdList(qName);
+          if (tableCurrentWriteIds == null) {
+            // Uses non-transactional table, cannot be considered
+            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " ignored for rewriting as it is outdated and cannot be considered for " +
+                " rewriting because it uses non-transactional table " + qName);
+            ignore = true;
+            break;
+          }
+          ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(qName);
+          if (tableWriteIds == null) {
+            // This should not happen, but we ignore for safety
+            LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " ignored for rewriting as details about txn ids for table " + qName +
+                " could not be found in " + mvTxnWriteIds);
+            ignore = true;
+            break;
+          }
+          if (!outdated && !TxnIdUtils.checkEquivalentWriteIds(tableCurrentWriteIds, tableWriteIds)) {
+            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " contents are outdated");
+            outdated = true;
+          }
+        }
+        if (ignore) {
+          return null;
+        }
+      }
+    }
+    return outdated;
   }
 
   /**
@@ -1758,8 +1798,8 @@ public class Hive {
            * See: HIVE-1707 and HIVE-2117 for background
            */
           FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
-          FileSystem loadPathFS = loadPath.getFileSystem(getConf());
-          if (FileUtils.equalsFileSystem(oldPartPathFS,loadPathFS)) {
+          FileSystem tblPathFS = tblDataLocationPath.getFileSystem(getConf());
+          if (FileUtils.equalsFileSystem(oldPartPathFS, tblPathFS)) {
             newPartPath = oldPartPath;
           }
         }
@@ -1769,8 +1809,14 @@ public class Hive {
 
       PerfLogger perfLogger = SessionState.getPerfLogger();
       perfLogger.PerfLogBegin("MoveTask", "FileMoves");
-      List<Path> newFiles = Collections.synchronizedList(new ArrayList<Path>());
+      List<Path> newFiles = null;
 
+      // If config is set, table is not temporary and partition being inserted exists, capture
+      // the list of files added. For not yet existing partitions (insert overwrite to new partition
+      // or dynamic partition inserts), the add partition event will capture the list of files added.
+      if (areEventsForDmlNeeded(tbl, oldPart)) {
+        newFiles = Collections.synchronizedList(new ArrayList<Path>());
+      }
 
       // Note: the stats for ACID tables do not have any coordination with either Hive ACID logic
       //       like txn commits, time outs, etc.; nor the lower level sync in metastore pertaining
@@ -1783,8 +1829,8 @@ public class Hive {
           Utilities.FILE_OP_LOGGER.trace("not moving " + loadPath + " to " + newPartPath + " (MM)");
         }
         assert !isAcidIUDoperation;
-        if (areEventsForDmlNeeded(tbl, oldPart)) {
-          newFiles = listFilesCreatedByQuery(loadPath, writeId, stmtId);
+        if (newFiles != null) {
+          listFilesCreatedByQuery(loadPath, writeId, stmtId, isMmTableWrite ? isInsertOverwrite : false, newFiles);
         }
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("maybe deleting stuff from " + oldPartPath
@@ -1833,8 +1879,15 @@ public class Hive {
       // or dynamic partition inserts), the add partition event will capture the list of files added.
       // Generate an insert event only if inserting into an existing partition
       // When inserting into a new partition, the add partition event takes care of insert event
-      if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && (null != oldPart)) {
-        fireInsertEvent(tbl, partSpec, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
+      if ((null != oldPart) && (null != newFiles)) {
+        if (isTxnTable) {
+          addWriteNotificationLog(tbl, partSpec, newFiles, writeId);
+        } else {
+          fireInsertEvent(tbl, partSpec, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
+        }
+      } else {
+        LOG.debug("No new files were created, and is not a replace, or we're inserting into a "
+                + "partition that does not exist yet. Skipping generating INSERT event.");
       }
 
       // column stats will be inaccurate
@@ -1904,6 +1957,12 @@ public class Hive {
           }
           throw e;
         }
+
+        // For acid table, add the acid_write event with file list at the time of load itself. But
+        // it should be done after partition is created.
+        if (isTxnTable && (null != newFiles)) {
+          addWriteNotificationLog(tbl, partSpec, newFiles, writeId);
+        }
       } else {
         setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart);
       }
@@ -1956,50 +2015,47 @@ public class Hive {
   }
 
   private boolean areEventsForDmlNeeded(Table tbl, Partition oldPart) {
-    return conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPart != null;
+    // For Acid IUD, add partition is a meta data only operation. So need to add the new files added
+    // information into the TXN_WRITE_NOTIFICATION_LOG table.
+    return conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() &&
+            ((null != oldPart) || AcidUtils.isTransactionalTable(tbl));
   }
 
-  private List<Path> listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId) throws HiveException {
-    List<Path> newFiles = new ArrayList<Path>();
-    final String filePrefix = AcidUtils.deltaSubdir(writeId, writeId, stmtId);
-    FileStatus[] srcs;
-    FileSystem srcFs;
+  private void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles) throws IOException {
+    // list out all the files/directory in the path
+    FileStatus[] acidFiles;
+    acidFiles = srcFs.listStatus(acidDir);
+    if (acidFiles == null) {
+      LOG.debug("No files added by this query in: " + acidDir);
+      return;
+    }
+    for (FileStatus acidFile : acidFiles) {
+      // need to list out only files, ignore folders.
+      if (!acidFile.isDirectory()) {
+        newFiles.add(acidFile.getPath());
+      } else {
+        listFilesInsideAcidDirectory(acidFile.getPath(), srcFs, newFiles);
+      }
+    }
+  }
+
+  private void listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId,
+                                             boolean isInsertOverwrite, List<Path> newFiles) throws HiveException {
+    Path acidDir = new Path(loadPath, AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
     try {
-      srcFs = loadPath.getFileSystem(conf);
-      srcs = srcFs.listStatus(loadPath);
+      FileSystem srcFs = loadPath.getFileSystem(conf);
+      if (srcFs.exists(acidDir) && srcFs.isDirectory(acidDir)){
+        // list out all the files in the path
+        listFilesInsideAcidDirectory(acidDir, srcFs, newFiles);
+      } else {
+        LOG.info("directory does not exist: " + acidDir);
+        return;
+      }
     } catch (IOException e) {
       LOG.error("Error listing files", e);
       throw new HiveException(e);
     }
-    if (srcs == null) {
-      LOG.info("No sources specified: " + loadPath);
-      return newFiles;
-    }
-    PathFilter subdirFilter = null;
-
-    // Note: just like the move path, we only do one level of recursion.
-    for (FileStatus src : srcs) {
-      if (src.isDirectory()) {
-        if (subdirFilter == null) {
-          subdirFilter = new PathFilter() {
-            @Override
-            public boolean accept(Path path) {
-              return path.getName().startsWith(filePrefix);
-            }
-          };
-        }
-        try {
-          for (FileStatus srcFile : srcFs.listStatus(src.getPath(), subdirFilter)) {
-            newFiles.add(srcFile.getPath());
-          }
-        } catch (IOException e) {
-          throw new HiveException(e);
-        }
-      } else if (src.getPath().getName().startsWith(filePrefix)) {
-        newFiles.add(src.getPath());
-      }
-    }
-    return newFiles;
+    return;
   }
 
   private void setStatsPropAndAlterPartition(boolean hasFollowingStatsTask, Table tbl,
@@ -2342,12 +2398,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
       boolean isSkewedStoreAsSubdir, boolean isAcidIUDoperation, boolean hasFollowingStatsTask,
       Long writeId, int stmtId, boolean isInsertOverwrite) throws HiveException {
 
-    List<Path> newFiles = Collections.synchronizedList(new ArrayList<Path>());
+    List<Path> newFiles = null;
     Table tbl = getTable(tableName);
     assert tbl.getPath() != null : "null==getPath() for " + tbl.getTableName();
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
     boolean isMmTable = AcidUtils.isInsertOnlyTable(tbl);
     boolean isFullAcidTable = AcidUtils.isFullAcidTable(tbl);
+
+    if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
+      newFiles = Collections.synchronizedList(new ArrayList<Path>());
+    }
 
     // Note: this assumes both paths are qualified; which they are, currently.
     if ((isMmTable || isFullAcidTable) && loadPath.equals(tbl.getPath())) {
@@ -2360,7 +2420,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
         Utilities.FILE_OP_LOGGER.debug(
             "not moving " + loadPath + " to " + tbl.getPath() + " (MM)");
       }
-      newFiles = listFilesCreatedByQuery(loadPath, writeId, stmtId);
+
+      //new files list is required only for event notification.
+      if (newFiles != null) {
+        listFilesCreatedByQuery(loadPath, writeId, stmtId, isMmTable ? isInsertOverwrite : false, newFiles);
+      }
     } else {
       // Either a non-MM query, or a load into MM table from an external source.
       Path tblPath = tbl.getPath();
@@ -2428,11 +2492,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     alterTable(tbl, environmentContext);
 
-    if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
-      fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
+    if (AcidUtils.isTransactionalTable(tbl)) {
+      addWriteNotificationLog(tbl, null, newFiles, writeId);
     } else {
-      fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), null);
-
+      fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
     }
   }
 
@@ -2684,6 +2747,48 @@ private void constructOneLBLocationMap(FileStatus fSta,
     tpart.getSd().setLocation(partPath);
   }
 
+  private void addWriteNotificationLog(Table tbl, Map<String, String> partitionSpec,
+                                       List<Path> newFiles, Long writeId) throws HiveException {
+    if (!conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
+      LOG.debug("write notification log is ignored as dml event logging is disabled");
+      return;
+    }
+
+    if (tbl.isTemporary()) {
+      LOG.debug("write notification log is ignored as " + tbl.getTableName() + " is temporary : " + writeId);
+      return;
+    }
+
+    if (newFiles == null || newFiles.isEmpty()) {
+      LOG.debug("write notification log is ignored as file list is empty");
+      return;
+    }
+
+    LOG.debug("adding write notification log for operation " + writeId + " table " + tbl.getCompleteName() +
+                        "partition " + partitionSpec + " list of files " + newFiles);
+
+    try {
+      FileSystem fileSystem = tbl.getDataLocation().getFileSystem(conf);
+      Long txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
+
+      InsertEventRequestData insertData = new InsertEventRequestData();
+      insertData.setReplace(true);
+
+      WriteNotificationLogRequest rqst = new WriteNotificationLogRequest(txnId, writeId,
+              tbl.getDbName(), tbl.getTableName(), insertData);
+      addInsertFileInformation(newFiles, fileSystem, insertData);
+
+      if (partitionSpec != null && !partitionSpec.isEmpty()) {
+        for (FieldSchema fs : tbl.getPartitionKeys()) {
+          rqst.addToPartitionVals(partitionSpec.get(fs.getName()));
+        }
+      }
+      getSynchronizedMSC().addWriteNotificationLog(rqst);
+    } catch (IOException | TException e) {
+      throw new HiveException(e);
+    }
+  }
+
   private void fireInsertEvent(Table tbl, Map<String, String> partitionSpec, boolean replace, List<Path> newFiles)
       throws HiveException {
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
@@ -2760,6 +2865,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       InsertEventRequestData insertData) throws IOException {
     insertData.addToFilesAdded(p.toString());
     FileChecksum cksum = fileSystem.getFileChecksum(p);
+    String acidDirPath = AcidUtils.getFirstLevelAcidDirPath(p.getParent(), fileSystem);
     // File checksum is not implemented for local filesystem (RawLocalFileSystem)
     if (cksum != null) {
       String checksumString =
@@ -2768,6 +2874,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } else {
       // Add an empty checksum string for filesystems that don't generate one
       insertData.addToFilesAddedChecksum("");
+    }
+
+    // acid dir will be present only for acid write operations.
+    if (acidDirPath != null) {
+      insertData.addToSubDirectoryList(acidDirPath);
     }
   }
 
@@ -3556,10 +3667,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } else if (isSrcLocal) {
       destFs.copyFromLocalFile(sourcePath, destFilePath);
     } else {
-      FileUtils.copy(sourceFs, sourcePath, destFs, destFilePath,
+      if (!FileUtils.copy(sourceFs, sourcePath, destFs, destFilePath,
           true,   // delete source
           false,  // overwrite destination
-          conf);
+          conf)) {
+        LOG.error("Copy failed for source: " + sourcePath + " to destination: " + destFilePath);
+        throw new IOException("File copy failed.");
+      }
     }
     return destFilePath;
   }
@@ -3620,6 +3734,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
       getMSC().recycleDirToCmPath(request);
     } catch (Exception e) {
       throw new HiveException(e);
+    }
+  }
+
+  private static void deleteAndRename(FileSystem destFs, Path destFile, FileStatus srcStatus, Path destPath)
+          throws IOException {
+    if (destFs.exists(destFile)) {
+      // rename cannot overwrite non empty destination directory, so deleting the destination before renaming.
+      destFs.delete(destFile);
+      LOG.info("Deleting destination file" + destFile.toUri());
+    }
+    if(!destFs.rename(srcStatus.getPath(), destFile)) {
+      throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest:"
+              + destPath + " returned false");
     }
   }
 
@@ -3708,38 +3835,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
                   "Unable to move source " + srcStatus.getPath() + " to destination " + destFile;
 
               if (null == pool) {
-                boolean success = false;
-                if (destFs instanceof DistributedFileSystem) {
-                  ((DistributedFileSystem)destFs).rename(srcStatus.getPath(), destFile, Options.Rename.OVERWRITE);
-                  success = true;
-                } else {
-                  destFs.delete(destFile, false);
-                  success = destFs.rename(srcStatus.getPath(), destFile);
-                }
-                if(!success) {
-                  throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest:"
-                      + destf + " returned false");
-                }
+                deleteAndRename(destFs, destFile, srcStatus, destf);
               } else {
                 futures.add(pool.submit(new Callable<Void>() {
                   @Override
                   public Void call() throws HiveException {
                     SessionState.setCurrentSessionState(parentSession);
-                    final String group = srcStatus.getGroup();
                     try {
-                      boolean success = false;
-                      if (destFs instanceof DistributedFileSystem) {
-                        ((DistributedFileSystem)destFs).rename(srcStatus.getPath(), destFile, Options.Rename.OVERWRITE);
-                        success = true;
-                      } else {
-                        destFs.delete(destFile, false);
-                        success = destFs.rename(srcStatus.getPath(), destFile);
-                      }
-                      if (!success) {
-                        throw new IOException(
-                            "rename for src path: " + srcStatus.getPath() + " to dest path:"
-                                + destFile + " returned false");
-                      }
+                      deleteAndRename(destFs, destFile, srcStatus, destf);
                     } catch (Exception e) {
                       throw getHiveException(e, poolMsg);
                     }
@@ -3841,7 +3944,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       try {
         srcs = srcFs.getFileStatus(srcf);
-        String runningUser = UserGroupInformation.getLoginUser().getUserName();
+        String runningUser = UserGroupInformation.getLoginUser().getShortUserName();
         boolean isOwned = FileUtils.isOwnerOfFileHierarchy(srcFs, srcs, configuredOwner, false);
         if (configuredOwner.equals(runningUser)) {
           // Check if owner has write permission, else it will have to copy
@@ -4193,6 +4296,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       PathFilter pathFilter, HiveConf conf, boolean purge, boolean isNeedRecycle) throws IOException, HiveException {
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);
+    }
+    if (!fs.exists(path)) {
+      return;
     }
     FileStatus[] statuses = fs.listStatus(path, pathFilter);
     if (statuses == null || statuses.length == 0) {

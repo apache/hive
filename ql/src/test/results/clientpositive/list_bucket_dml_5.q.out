@@ -25,6 +25,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+OPTIMIZED SQL: SELECT `key`, `value`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -421,6 +424,9 @@ POSTHOOK: Input: default@list_bucketing_dynamic_part_n1
 POSTHOOK: Input: default@list_bucketing_dynamic_part_n1@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@list_bucketing_dynamic_part_n1@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST('103' AS STRING) AS `key`, CAST('val_103' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM `default`.`list_bucketing_dynamic_part_n1`
+WHERE `ds` = '2008-04-08' AND `key` = '103' AND `value` = 'val_103'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

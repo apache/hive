@@ -190,8 +190,8 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           }
         } else {
           LOG.debug("Column " + column + " is not a partition column");
-          semiJoin = semiJoin && !disableSemiJoinOptDueToExternalTable(parseContext.getConf(), ts, ctx);
-          if (semiJoin && ts.getConf().getFilterExpr() != null) {
+          if (semiJoin && !disableSemiJoinOptDueToExternalTable(parseContext.getConf(), ts, ctx)
+                  && ts.getConf().getFilterExpr() != null) {
             LOG.debug("Initiate semijoin reduction for " + column + " ("
                 + ts.getConf().getFilterExpr().getExprString());
 

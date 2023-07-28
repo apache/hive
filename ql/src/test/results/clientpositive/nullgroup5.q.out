@@ -85,11 +85,11 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: y
-            Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
               Union
                 Statistics: Num rows: 121 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator

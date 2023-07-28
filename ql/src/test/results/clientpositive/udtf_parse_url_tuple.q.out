@@ -216,12 +216,12 @@ POSTHOOK: query: select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@url_t
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 facebook.com	/path1/p.php	k1=v1&k2=v2	Ref1	http	/path1/p.php?k1=v1&k2=v2	facebook.com	NULL	v1
 sites.google.com	/a/example.com/site/page	NULL	NULL	ftp	/a/example.com/site/page	sites.google.com	NULL	NULL
 www.socs.uts.edu.au	/MosaicDocs-old/url-primer.html	k1=tps	chapter1	https	/MosaicDocs-old/url-primer.html?k1=tps	www.socs.uts.edu.au:80	NULL	tps
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain
 select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1', 'host', 'query', 'QUERY:nonExistCol') b as ho, pa, qu, re, pr, fi, au, us, qk1, err1, err2, err3 order by a.key
 PREHOOK: type: QUERY

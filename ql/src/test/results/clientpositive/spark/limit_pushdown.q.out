@@ -451,6 +451,7 @@ POSTHOOK: query: select distinct(cdouble) as dis from alltypesorc order by dis l
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-16243.0
 -16269.0
 -16274.0
 -16277.0
@@ -470,7 +471,6 @@ POSTHOOK: Input: default@alltypesorc
 -16372.0
 -16373.0
 -16379.0
-NULL
 PREHOOK: query: explain
 select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
@@ -551,6 +551,7 @@ POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc grou
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-45	24
 -46	24
 -47	22
 -48	29
@@ -570,7 +571,6 @@ POSTHOOK: Input: default@alltypesorc
 -62	27
 -63	19
 -64	24
-NULL	2932
 PREHOOK: query: explain 
 select ctinyint, count(cdouble) from (select ctinyint, cdouble from alltypesorc group by ctinyint, cdouble) t1 group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
@@ -651,6 +651,7 @@ POSTHOOK: query: select ctinyint, count(cdouble) from (select ctinyint, cdouble 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-45	24
 -46	24
 -47	22
 -48	29
@@ -670,7 +671,6 @@ POSTHOOK: Input: default@alltypesorc
 -62	27
 -63	19
 -64	24
-NULL	2932
 PREHOOK: query: explain
 select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
@@ -746,6 +746,7 @@ POSTHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-45	3	24
 -46	3	19
 -47	3	23
 -48	3	27
@@ -765,7 +766,6 @@ POSTHOOK: Input: default@alltypesorc
 -62	3	23
 -63	3	16
 -64	3	13
-NULL	3065	3
 PREHOOK: query: explain
 select key,value from src order by key limit 0
 PREHOOK: type: QUERY

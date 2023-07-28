@@ -66,6 +66,8 @@ POSTHOOK: query: EXPLAIN EXTENDED INSERT OVERWRITE DIRECTORY '### test.blobstore
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: ### test.blobstore.path ###/table1.dir
+OPTIMIZED SQL: SELECT `id`, `key`
+FROM `default`.`table1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4

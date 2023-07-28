@@ -334,14 +334,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n57
 POSTHOOK: Input: default@t2_n35
 #### A masked pattern was here ####
-NULL	NULL	4	14
-NULL	NULL	5	15
 2	12	2	22
 3	13	3	13
 8	18	8	18
 8	18	8	18
 8	28	8	18
 8	28	8	18
+NULL	NULL	4	14
+NULL	NULL	5	15
 PREHOOK: query: create table DEST1_n58(key1 STRING, val1 STRING, key2 STRING, val2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -694,11 +694,11 @@ ORDER BY key1, key2, val1, val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n58
 #### A masked pattern was here ####
-NULL	NULL	4	14
-NULL	NULL	5	15
 2	12	2	22
 3	13	3	13
 8	18	8	18
 8	18	8	18
 8	28	8	18
 8	28	8	18
+NULL	NULL	4	14
+NULL	NULL	5	15

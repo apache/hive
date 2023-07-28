@@ -2,7 +2,7 @@ DROP VIEW IF EXISTS VIEW_HBASE_TABLE_TEST_2;
 DROP VIEW IF EXISTS VIEW_HBASE_TABLE_TEST_1;
 DROP TABLE IF EXISTS HBASE_TABLE_TEST_2;
 DROP TABLE IF EXISTS HBASE_TABLE_TEST_1;
-CREATE TABLE HBASE_TABLE_TEST_1(
+CREATE EXTERNAL TABLE HBASE_TABLE_TEST_1(
   cvalue string ,
   pk string,
  ccount int   )
@@ -17,11 +17,12 @@ WITH SERDEPROPERTIES (
   'serialization.format'='1')
 TBLPROPERTIES (
   'hbase.table.name'='hbase_table_test_1',
-  'serialization.null.format'=''  );
+  'serialization.null.format'='',
+  'external.table.purge' = 'true');
 
 CREATE VIEW VIEW_HBASE_TABLE_TEST_1 AS SELECT hbase_table_test_1.cvalue,hbase_table_test_1.pk,hbase_table_test_1.ccount FROM hbase_table_test_1 WHERE hbase_table_test_1.ccount IS NOT NULL;
 
-CREATE TABLE HBASE_TABLE_TEST_2(
+CREATE EXTERNAL TABLE HBASE_TABLE_TEST_2(
   cvalue string ,
     pk string ,
    ccount int  )
@@ -36,7 +37,8 @@ WITH SERDEPROPERTIES (
   'serialization.format'='1')
 TBLPROPERTIES (
   'hbase.table.name'='hbase_table_test_2',
-  'serialization.null.format'='');
+  'serialization.null.format'='',
+  'external.table.purge' = 'true');
 
 CREATE VIEW VIEW_HBASE_TABLE_TEST_2 AS SELECT hbase_table_test_2.cvalue,hbase_table_test_2.pk,hbase_table_test_2.ccount
 FROM hbase_table_test_2 WHERE  hbase_table_test_2.pk >='3-0000h-0' AND hbase_table_test_2.pk <= '3-0000h-g' AND

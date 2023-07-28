@@ -62,10 +62,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	select a, b, c from cmv_basetable_n4	 
-View Expanded Text: 	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`b`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
-View Rewrite Enabled:	No                  	 
+# Materialized View Information	 	 
+Original Query:     	select a, b, c from cmv_basetable_n4	 
+Expanded Query:     	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`b`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	Unknown             	 
 PREHOOK: query: select * from cmv_mat_view_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view_n4
@@ -123,10 +124,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	select a, c from cmv_basetable_n4	 
-View Expanded Text: 	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
-View Rewrite Enabled:	No                  	 
+# Materialized View Information	 	 
+Original Query:     	select a, c from cmv_basetable_n4	 
+Expanded Query:     	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	Unknown             	 
 PREHOOK: query: select * from cmv_mat_view2_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2_n1

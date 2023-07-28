@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 SET hive.blobstore.optimizations.enabled=true;
 SET hive.exec.dynamic.partition.mode=nonstrict;
 

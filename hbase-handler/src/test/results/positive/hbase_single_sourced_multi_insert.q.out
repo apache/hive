@@ -6,15 +6,17 @@ POSTHOOK: query: CREATE TABLE src_x1(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_x1
-PREHOOK: query: CREATE TABLE src_x2(key string, value string)
+PREHOOK: query: CREATE EXTERNAL TABLE src_x2(key string, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:value")
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_x2
-POSTHOOK: query: CREATE TABLE src_x2(key string, value string)
+POSTHOOK: query: CREATE EXTERNAL TABLE src_x2(key string, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:value")
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_x2

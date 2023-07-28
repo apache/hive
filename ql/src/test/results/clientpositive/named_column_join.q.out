@@ -304,9 +304,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from t_n8 t1 join t_n8 t2 using (a,b)	 
-View Expanded Text: 	select `t1`.`a`, `t1`.`b` from `default`.`t_n8` `t1` join `default`.`t_n8` `t2` using (`a`,`b`)	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from t_n8 t1 join t_n8 t2 using (a,b)	 
+Expanded Query:     	select `t1`.`a`, `t1`.`b` from `default`.`t_n8` `t1` join `default`.`t_n8` `t2` using (`a`,`b`)	 
 PREHOOK: query: select * from v_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_n8
@@ -371,9 +370,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from t_n8 t1 right outer join t_n8 t2 using (b,a)	 
-View Expanded Text: 	select `t2`.`b`, `t2`.`a` from `default`.`t_n8` `t1` right outer join `default`.`t_n8` `t2` using (`b`,`a`)	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from t_n8 t1 right outer join t_n8 t2 using (b,a)	 
+Expanded Query:     	select `t2`.`b`, `t2`.`a` from `default`.`t_n8` `t1` right outer join `default`.`t_n8` `t2` using (`b`,`a`)	 
 PREHOOK: query: select * from v_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_n8

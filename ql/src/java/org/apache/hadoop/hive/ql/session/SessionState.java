@@ -27,12 +27,11 @@ import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.AccessController;
+import java.net.URLClassLoader;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -63,13 +62,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.MapRedStats;
-import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -236,6 +236,8 @@ public class SessionState {
   private TezSessionState tezSessionState;
 
   private String currentDatabase;
+
+  private String currentCatalog;
 
   private final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
       "hive.internal.ss.authz.settings.applied.marker";
@@ -412,9 +414,7 @@ public class SessionState {
     // classloader as parent can pollute the session. See HIVE-11878
     parentLoader = SessionState.class.getClassLoader();
     // Make sure that each session has its own UDFClassloader. For details see {@link UDFClassLoader}
-    AddToClassPathAction addAction = new AddToClassPathAction(
-        parentLoader, Collections.emptyList(), true);
-    final ClassLoader currentLoader = AccessController.doPrivileged(addAction);
+    final ClassLoader currentLoader = Utilities.createUDFClassLoader((URLClassLoader) parentLoader, new String[]{});
     this.sessionConf.setClassLoader(currentLoader);
     resourceDownloader = new ResourceDownloader(conf,
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
@@ -1305,21 +1305,6 @@ public class SessionState {
     }
   }
 
-  static void registerJars(List<String> newJars) throws IllegalArgumentException {
-    LogHelper console = getConsole();
-    try {
-      AddToClassPathAction addAction = new AddToClassPathAction(
-          Thread.currentThread().getContextClassLoader(), newJars);
-      final ClassLoader newLoader = AccessController.doPrivileged(addAction);
-      Thread.currentThread().setContextClassLoader(newLoader);
-      SessionState.get().getConf().setClassLoader(newLoader);
-      console.printInfo("Added " + newJars + " to class path");
-    } catch (Exception e) {
-      String message = "Unable to register " + newJars;
-      throw new IllegalArgumentException(message, e);
-    }
-  }
-
   /**
    * Load the jars under the path specified in hive.aux.jars.path property. Add
    * the jars to the classpath so the local task can refer to them.
@@ -1330,17 +1315,17 @@ public class SessionState {
     if (ArrayUtils.isEmpty(jarPaths)) {
       return;
     }
-    AddToClassPathAction addAction = new AddToClassPathAction(
-        SessionState.get().getConf().getClassLoader(), Arrays.asList(jarPaths)
-        );
-    final ClassLoader currentCLoader = AccessController.doPrivileged(addAction);
+
+    URLClassLoader currentCLoader =
+        (URLClassLoader) SessionState.get().getConf().getClassLoader();
+    currentCLoader =
+        (URLClassLoader) Utilities.addToClassPath(currentCLoader, jarPaths);
     sessionConf.setClassLoader(currentCLoader);
     Thread.currentThread().setContextClassLoader(currentCLoader);
   }
 
   /**
    * Reload the jars under the path specified in hive.reloadable.aux.jars.path property.
-   *
    * @throws IOException
    */
   public void loadReloadableAuxJars() throws IOException {
@@ -1355,7 +1340,7 @@ public class SessionState {
     Set<String> jarPaths = FileUtils.getJarFilesByPath(renewableJarPath, sessionConf);
 
     // load jars under the hive.reloadable.aux.jars.path
-    if (!jarPaths.isEmpty()) {
+    if(!jarPaths.isEmpty()){
       reloadedAuxJars.addAll(jarPaths);
     }
 
@@ -1365,14 +1350,30 @@ public class SessionState {
     }
 
     if (reloadedAuxJars != null && !reloadedAuxJars.isEmpty()) {
-      AddToClassPathAction addAction = new AddToClassPathAction(
-          SessionState.get().getConf().getClassLoader(), reloadedAuxJars);
-      final ClassLoader currentCLoader = AccessController.doPrivileged(addAction);
+      URLClassLoader currentCLoader =
+          (URLClassLoader) SessionState.get().getConf().getClassLoader();
+      currentCLoader =
+          (URLClassLoader) Utilities.addToClassPath(currentCLoader,
+              reloadedAuxJars.toArray(new String[0]));
       sessionConf.setClassLoader(currentCLoader);
       Thread.currentThread().setContextClassLoader(currentCLoader);
     }
     preReloadableAuxJars.clear();
     preReloadableAuxJars.addAll(reloadedAuxJars);
+  }
+
+  static void registerJars(List<String> newJars) throws IllegalArgumentException {
+    LogHelper console = getConsole();
+    try {
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      ClassLoader newLoader = Utilities.addToClassPath(loader, newJars.toArray(new String[0]));
+      Thread.currentThread().setContextClassLoader(newLoader);
+      SessionState.get().getConf().setClassLoader(newLoader);
+      console.printInfo("Added " + newJars + " to class path");
+    } catch (Exception e) {
+      String message = "Unable to register " + newJars;
+      throw new IllegalArgumentException(message, e);
+    }
   }
 
   static boolean unregisterJar(List<String> jarsToUnregister) {
@@ -1736,6 +1737,17 @@ public class SessionState {
     this.currentDatabase = currentDatabase;
   }
 
+  public String getCurrentCatalog() {
+    if (currentCatalog == null) {
+      currentCatalog = MetaStoreUtils.getDefaultCatalog(getConf());
+    }
+    return currentCatalog;
+  }
+
+  public void setCurrentCatalog(String currentCatalog) {
+    this.currentCatalog = currentCatalog;
+  }
+
   public void close() throws IOException {
     for (Closeable cleanupItem : cleanupItems) {
       try {
@@ -1802,7 +1814,7 @@ public class SessionState {
         }
         Class<?> clazz = Class.forName(realStoreImpl);
         if (ObjectStore.class.isAssignableFrom(clazz)) {
-          ObjectStore.unCacheDataNucleusClassLoaders();
+          PersistenceManagerProvider.clearOutPmfClassLoaderCache();
         }
       }
     } catch (Exception e) {

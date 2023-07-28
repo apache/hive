@@ -40,6 +40,7 @@ public class MoveWork implements Serializable {
   private LoadMultiFilesDesc loadMultiFilesWork;
   private boolean checkFileFormat;
   private boolean srcLocal;
+  private boolean needCleanTarget;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -63,6 +64,7 @@ public class MoveWork implements Serializable {
   private MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
     this.inputs = inputs;
     this.outputs = outputs;
+    this.needCleanTarget = true;
   }
 
   public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -93,6 +95,7 @@ public class MoveWork implements Serializable {
     srcLocal = o.isSrcLocal();
     inputs = o.getInputs();
     outputs = o.getOutputs();
+    needCleanTarget = o.needCleanTarget;
   }
 
   @Explain(displayName = "tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -153,5 +156,12 @@ public class MoveWork implements Serializable {
   public void setSrcLocal(boolean srcLocal) {
     this.srcLocal = srcLocal;
   }
-  
+
+  public boolean isNeedCleanTarget() {
+    return needCleanTarget;
+  }
+
+  public void setNeedCleanTarget(boolean needCleanTarget) {
+    this.needCleanTarget = needCleanTarget;
+  }
 }

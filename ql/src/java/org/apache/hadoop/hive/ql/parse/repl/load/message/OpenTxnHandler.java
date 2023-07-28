@@ -47,7 +47,12 @@ public class OpenTxnHandler extends AbstractMessageHandler {
                 msg.getTxnIds(), ReplTxnWork.OperationType.REPL_OPEN_TXN, context.eventOnlyReplicationSpec()),
         context.hiveConf
     );
-    updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
+
+    // For warehouse level dump, don't update the metadata of database as we don't know this txn is for which database.
+    // Anyways, if this event gets executed again, it is taken care of.
+    if (!context.isDbNameEmpty()) {
+      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
+    }
     context.log.debug("Added Open txn task : {}", openTxnTask.getId());
     return Collections.singletonList(openTxnTask);
   }

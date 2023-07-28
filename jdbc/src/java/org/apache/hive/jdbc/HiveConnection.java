@@ -175,9 +175,13 @@ public class HiveConnection implements java.sql.Connection {
     // sess_var_list -> sessConfMap
     // hive_conf_list -> hiveConfMap
     // hive_var_list -> hiveVarMap
-    host = Utils.getCanonicalHostName(connParams.getHost());
-    port = connParams.getPort();
     sessConfMap = connParams.getSessionVars();
+    if (isKerberosAuthMode()) {
+      host = Utils.getCanonicalHostName(connParams.getHost());
+    } else {
+      host = connParams.getHost();
+    }
+    port = connParams.getPort();
     isEmbeddedMode = connParams.isEmbeddedMode();
 
     if (sessConfMap.containsKey(JdbcConnectionParams.FETCH_SIZE)) {
@@ -214,10 +218,15 @@ public class HiveConnection implements java.sql.Connection {
       executeInitSql();
     } else {
       int maxRetries = 1;
+      long retryInterval = 1000L;
       try {
         String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
         if (StringUtils.isNotBlank(strRetries)) {
           maxRetries = Integer.parseInt(strRetries);
+        }
+        String strRetryInterval = sessConfMap.get(JdbcConnectionParams.RETRY_INTERVAL);
+        if(StringUtils.isNotBlank(strRetryInterval)){
+          retryInterval = Long.parseLong(strRetryInterval);
         }
       } catch(NumberFormatException e) { // Ignore the exception
       }
@@ -251,7 +260,11 @@ public class HiveConnection implements java.sql.Connection {
             }
             // Update with new values
             jdbcUriString = connParams.getJdbcUriString();
-            host = Utils.getCanonicalHostName(connParams.getHost());
+            if (isKerberosAuthMode()) {
+              host = Utils.getCanonicalHostName(connParams.getHost());
+            } else {
+              host = connParams.getHost();
+            }
             port = connParams.getPort();
           } else {
             errMsg = warnMsg;
@@ -261,7 +274,12 @@ public class HiveConnection implements java.sql.Connection {
           if (numRetries >= maxRetries) {
             throw new SQLException(errMsg + e.getMessage(), " 08S01", e);
           } else {
-            LOG.warn(warnMsg + e.getMessage() + " Retrying " + numRetries + " of " + maxRetries);
+            LOG.warn(warnMsg + e.getMessage() + " Retrying " + numRetries + " of " + maxRetries+" with retry interval "+retryInterval+"ms");
+            try {
+              Thread.sleep(retryInterval);
+            } catch (InterruptedException ex) {
+              //Ignore
+            }
           }
         }
       }

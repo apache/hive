@@ -262,8 +262,8 @@ from vector_interval_2 order by str1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1-2	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   str1,
@@ -460,8 +460,8 @@ from vector_interval_2 order by str1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1-2	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   str3,
@@ -682,8 +682,8 @@ from vector_interval_2 order by str3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1 2:3:4	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   str3,
@@ -880,8 +880,8 @@ from vector_interval_2 order by str3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1 2:3:4	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where

@@ -173,7 +173,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (UDFToShort(UDFToByte(-92)) + _col1) ASC NULLS FIRST, floor(_col3) DESC NULLS LAST
+                  order by: (UDFToShort(UDFToByte(-92)) + _col1) ASC NULLS LAST, floor(_col3) DESC NULLS LAST
                   partition by: (UDFToShort(UDFToByte(-92)) + _col1)
                   raw input shape:
                   window functions:

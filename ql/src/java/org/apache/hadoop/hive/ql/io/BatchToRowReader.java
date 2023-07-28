@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.llap.DebugUtils;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -69,6 +70,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.RecordReader;
 
 /**
@@ -89,6 +91,8 @@ public abstract class BatchToRowReader<StructType, UnionType>
   private final boolean[] included;
   private int rowInBatch = 0;
 
+  private final int rowIdIdx;
+
   public BatchToRowReader(RecordReader<NullWritable, VectorizedRowBatch> vrbReader,
       VectorizedRowBatchCtx vrbCtx, List<Integer> includedCols) {
     this.vrbReader = vrbReader;
@@ -104,6 +108,11 @@ public abstract class BatchToRowReader<StructType, UnionType>
     } else {
       Arrays.fill(included, true);
     }
+    // Create struct for ROW__ID virtual column and extract index
+    this.rowIdIdx = vrbCtx.findVirtualColumnNum(VirtualColumn.ROWID);
+    if (this.rowIdIdx >= 0) {
+      included[rowIdIdx] = true;
+    }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Including the columns " + DebugUtils.toString(included));
     }
@@ -113,9 +122,11 @@ public abstract class BatchToRowReader<StructType, UnionType>
   protected abstract StructType createStructObject(Object previous, List<TypeInfo> childrenTypes);
   protected abstract void setStructCol(StructType structObj, int i, Object value);
   protected abstract Object getStructCol(StructType structObj, int i);
+  protected abstract int getStructLength(StructType structObj);
   protected abstract UnionType createUnionObject(List<TypeInfo> childrenTypes, Object previous);
   protected abstract void setUnion(UnionType unionObj, byte tag, Object object);
   protected abstract Object getUnionField(UnionType unionObj);
+  protected abstract void populateRecordIdentifier(StructType o);
 
   @Override
   public NullWritable createKey() {
@@ -138,17 +149,26 @@ public abstract class BatchToRowReader<StructType, UnionType>
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public boolean next(NullWritable key, Object previous) throws IOException {
     if (!ensureBatch()) {
       return false;
     }
-    @SuppressWarnings("unchecked")
-    StructType value = (StructType)previous;
+
+    if (this.rowIdIdx >= 0) {
+      populateRecordIdentifier(null);
+    }
+
+    StructType value = (StructType) previous;
     for (int i = 0; i < schema.size(); ++i) {
-      if (!included[i]) continue; // TODO: shortcut for last col below length?
+      if (!included[i] || i >= getStructLength(value)) continue;
       try {
         setStructCol(value, i,
             nextValue(batch.cols[i], rowInBatch, schema.get(i), getStructCol(value, i)));
+        if (i == rowIdIdx) {
+          // Populate key
+          populateRecordIdentifier((StructType) getStructCol(value, i));
+        }
       } catch (Throwable t) {
         LOG.error("Error at row " + rowInBatch + "/" + batch.size + ", column " + i
             + "/" + schema.size() + " " + batch.cols[i], t);

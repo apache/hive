@@ -744,7 +744,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
-                  Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,0)/DECIMAL_64, 1:value_dec:decimal(14,0)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -754,7 +754,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 3:decimal(14,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(14,0)/DECIMAL_64) -> 3:decimal(14,0))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: dec (type: decimal(14,0))
                       outputColumnNames: _col0
@@ -762,7 +762,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         Spark Hash Table Sink Vectorization:
                             className: VectorSparkHashTableSinkOperator
@@ -879,7 +879,112 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+45.00	45
+45.00	45
+45.00	45
+45.00	45
+45.00	45
+6.00	6
+6.00	6
+6.00	6
+6.00	6
+6.00	6
+6.00	6
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+70.00	70
+70.00	70
+70.00	70
+70.00	70
+70.00	70
+70.00	70
+70.00	70
+79.00	79
+79.00	79
+79.00	79
+79.00	79
+79.00	79
+79.00	79
 89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
 PREHOOK: query: select count(*) from (select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_small
@@ -890,7 +995,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
-1
+106
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
@@ -921,7 +1026,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
-                  Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,0)/DECIMAL_64, 1:value_dec:decimal(14,0)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -931,7 +1036,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 3:decimal(14,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(14,0)/DECIMAL_64) -> 3:decimal(14,0))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: dec (type: decimal(14,0)), value_dec (type: decimal(14,0))
                       outputColumnNames: _col0, _col1
@@ -939,7 +1044,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         Spark Hash Table Sink Vectorization:
                             className: VectorSparkHashTableSinkOperator
@@ -1056,7 +1161,112 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
+14.00	33.66	14	10
+14.00	33.66	14	22
+14.00	33.66	14	34
+14.00	33.66	14	39
+14.00	33.66	14	42
+14.00	33.66	14	45
+14.00	33.66	14	46
+14.00	33.66	14	49
+14.00	33.66	14	5
+17.00	14.26	17	1
+17.00	14.26	17	14
+17.00	14.26	17	16
+17.00	14.26	17	19
+17.00	14.26	17	2
+17.00	14.26	17	22
+17.00	14.26	17	29
+17.00	14.26	17	3
+17.00	14.26	17	4
+17.00	14.26	17	44
+45.00	23.55	45	1
+45.00	23.55	45	2
+45.00	23.55	45	22
+45.00	23.55	45	24
+45.00	23.55	45	42
+6.00	29.78	6	16
+6.00	29.78	6	28
+6.00	29.78	6	30
+6.00	29.78	6	34
+6.00	29.78	6	36
+6.00	29.78	6	44
+62.00	21.02	62	15
+62.00	21.02	62	15
+62.00	21.02	62	21
+62.00	21.02	62	21
+62.00	21.02	62	22
+62.00	21.02	62	25
+62.00	21.02	62	29
+62.00	21.02	62	3
+62.00	21.02	62	34
+62.00	21.02	62	47
+62.00	21.02	62	47
+62.00	21.02	62	49
+64.00	37.76	64	0
+64.00	37.76	64	10
+64.00	37.76	64	10
+64.00	37.76	64	13
+64.00	37.76	64	23
+64.00	37.76	64	25
+64.00	37.76	64	26
+64.00	37.76	64	27
+64.00	37.76	64	27
+64.00	37.76	64	30
+64.00	37.76	64	32
+64.00	37.76	64	34
+64.00	37.76	64	35
+64.00	37.76	64	38
+64.00	37.76	64	40
+64.00	37.76	64	43
+64.00	37.76	64	5
+64.00	37.76	64	50
+70.00	24.59	70	2
+70.00	24.59	70	25
+70.00	24.59	70	27
+70.00	24.59	70	28
+70.00	24.59	70	3
+70.00	24.59	70	32
+70.00	24.59	70	44
+79.00	15.12	79	1
+79.00	15.12	79	15
+79.00	15.12	79	25
+79.00	15.12	79	30
+79.00	15.12	79	35
+79.00	15.12	79	35
+89.00	15.09	89	1
 89.00	15.09	89	15
+89.00	15.09	89	23
+89.00	15.09	89	27
+89.00	15.09	89	28
+89.00	15.09	89	29
+89.00	15.09	89	30
+89.00	15.09	89	32
+89.00	15.09	89	39
+89.00	15.09	89	40
+89.00	15.09	89	45
+89.00	15.09	89	7
+9.00	48.96	9	12
+9.00	48.96	9	15
+9.00	48.96	9	2
+9.00	48.96	9	2
+9.00	48.96	9	2
+9.00	48.96	9	20
+9.00	48.96	9	20
+9.00	48.96	9	21
+9.00	48.96	9	21
+9.00	48.96	9	26
+9.00	48.96	9	27
+9.00	48.96	9	34
+9.00	48.96	9	38
+9.00	48.96	9	41
+9.00	48.96	9	42
+9.00	48.96	9	45
+9.00	48.96	9	48
+9.00	48.96	9	49
+9.00	48.96	9	5
+9.00	48.96	9	7
+9.00	48.96	9	7
 PREHOOK: query: select count(*) from (select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_small
@@ -1067,7 +1277,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
-1
+106
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
@@ -1098,7 +1308,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
-                  Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,0), 1:value_dec:decimal(14,0), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -1108,7 +1318,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,0))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: dec (type: decimal(14,0))
                       outputColumnNames: _col0
@@ -1116,7 +1326,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         Spark Hash Table Sink Vectorization:
                             className: VectorSparkHashTableSinkOperator
@@ -1235,7 +1445,112 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+14.00	14
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+17.00	17
+45.00	45
+45.00	45
+45.00	45
+45.00	45
+45.00	45
+6.00	6
+6.00	6
+6.00	6
+6.00	6
+6.00	6
+6.00	6
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+62.00	62
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+64.00	64
+70.00	70
+70.00	70
+70.00	70
+70.00	70
+70.00	70
+70.00	70
+70.00	70
+79.00	79
+79.00	79
+79.00	79
+79.00	79
+79.00	79
+79.00	79
 89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+89.00	89
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
+9.00	9
 PREHOOK: query: select count(*) from (select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_small
@@ -1246,7 +1561,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
-1
+106
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
@@ -1277,7 +1592,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
-                  Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,0), 1:value_dec:decimal(14,0), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -1287,7 +1602,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,0))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: dec (type: decimal(14,0)), value_dec (type: decimal(14,0))
                       outputColumnNames: _col0, _col1
@@ -1295,7 +1610,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 4966 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         Spark Hash Table Sink Vectorization:
                             className: VectorSparkHashTableSinkOperator
@@ -1414,7 +1729,112 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
+14.00	33.66	14	10
+14.00	33.66	14	22
+14.00	33.66	14	34
+14.00	33.66	14	39
+14.00	33.66	14	42
+14.00	33.66	14	45
+14.00	33.66	14	46
+14.00	33.66	14	49
+14.00	33.66	14	5
+17.00	14.26	17	1
+17.00	14.26	17	14
+17.00	14.26	17	16
+17.00	14.26	17	19
+17.00	14.26	17	2
+17.00	14.26	17	22
+17.00	14.26	17	29
+17.00	14.26	17	3
+17.00	14.26	17	4
+17.00	14.26	17	44
+45.00	23.55	45	1
+45.00	23.55	45	2
+45.00	23.55	45	22
+45.00	23.55	45	24
+45.00	23.55	45	42
+6.00	29.78	6	16
+6.00	29.78	6	28
+6.00	29.78	6	30
+6.00	29.78	6	34
+6.00	29.78	6	36
+6.00	29.78	6	44
+62.00	21.02	62	15
+62.00	21.02	62	15
+62.00	21.02	62	21
+62.00	21.02	62	21
+62.00	21.02	62	22
+62.00	21.02	62	25
+62.00	21.02	62	29
+62.00	21.02	62	3
+62.00	21.02	62	34
+62.00	21.02	62	47
+62.00	21.02	62	47
+62.00	21.02	62	49
+64.00	37.76	64	0
+64.00	37.76	64	10
+64.00	37.76	64	10
+64.00	37.76	64	13
+64.00	37.76	64	23
+64.00	37.76	64	25
+64.00	37.76	64	26
+64.00	37.76	64	27
+64.00	37.76	64	27
+64.00	37.76	64	30
+64.00	37.76	64	32
+64.00	37.76	64	34
+64.00	37.76	64	35
+64.00	37.76	64	38
+64.00	37.76	64	40
+64.00	37.76	64	43
+64.00	37.76	64	5
+64.00	37.76	64	50
+70.00	24.59	70	2
+70.00	24.59	70	25
+70.00	24.59	70	27
+70.00	24.59	70	28
+70.00	24.59	70	3
+70.00	24.59	70	32
+70.00	24.59	70	44
+79.00	15.12	79	1
+79.00	15.12	79	15
+79.00	15.12	79	25
+79.00	15.12	79	30
+79.00	15.12	79	35
+79.00	15.12	79	35
+89.00	15.09	89	1
 89.00	15.09	89	15
+89.00	15.09	89	23
+89.00	15.09	89	27
+89.00	15.09	89	28
+89.00	15.09	89	29
+89.00	15.09	89	30
+89.00	15.09	89	32
+89.00	15.09	89	39
+89.00	15.09	89	40
+89.00	15.09	89	45
+89.00	15.09	89	7
+9.00	48.96	9	12
+9.00	48.96	9	15
+9.00	48.96	9	2
+9.00	48.96	9	2
+9.00	48.96	9	2
+9.00	48.96	9	20
+9.00	48.96	9	20
+9.00	48.96	9	21
+9.00	48.96	9	21
+9.00	48.96	9	26
+9.00	48.96	9	27
+9.00	48.96	9	34
+9.00	48.96	9	38
+9.00	48.96	9	41
+9.00	48.96	9	42
+9.00	48.96	9	45
+9.00	48.96	9	48
+9.00	48.96	9	49
+9.00	48.96	9	5
+9.00	48.96	9	7
+9.00	48.96	9	7
 PREHOOK: query: select count(*) from (select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_small
@@ -1425,4 +1845,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
-1
+106

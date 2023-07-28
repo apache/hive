@@ -140,6 +140,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n5
 POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -228,6 +231,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n5
 POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x1`, `y` AS `y1`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -316,6 +322,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n5
 POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `y`, COUNT(*) AS `$f1`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
+GROUP BY `y`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -461,6 +471,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n5
 POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x`, COUNT(*) AS `c`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
+GROUP BY CAST(484 AS INTEGER)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

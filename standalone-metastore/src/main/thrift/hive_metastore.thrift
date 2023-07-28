@@ -329,9 +329,10 @@ struct GrantRevokeRoleResponse {
 struct Catalog {
   1: string name,                    // Name of the catalog
   2: optional string description,    // description of the catalog
-  3: string locationUri              // default storage location.  When databases are created in
-                                     // this catalog, if they do not specify a location, they will
-                                     // be placed in this location.
+  3: string locationUri,              // default storage location.  When databases are created in
+                                      // this catalog, if they do not specify a location, they will
+                                      // be placed in this location.
+  4: optional i32 createTime          // creation time of catalog in seconds since epoch
 }
 
 struct CreateCatalogRequest {
@@ -368,7 +369,8 @@ struct Database {
   5: optional PrincipalPrivilegeSet privileges,
   6: optional string ownerName,
   7: optional PrincipalType ownerType,
-  8: optional string catalogName
+  8: optional string catalogName,
+  9: optional i32 createTime               // creation time of database in seconds since epoch
 }
 
 // This object holds the information needed by SerDes
@@ -409,6 +411,15 @@ struct StorageDescriptor {
   10: map<string, string> parameters, // any user supplied key value hash
   11: optional SkewedInfo skewedInfo, // skewed information
   12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
+}
+
+struct CreationMetadata {
+    1: required string catName
+    2: required string dbName,
+    3: required string tblName,
+    4: required set<string> tablesUsed,
+    5: optional string validTxnList,
+    6: optional i64 materializationTime
 }
 
 // table information
@@ -864,9 +875,21 @@ struct AbortTxnsRequest {
     1: required list<i64> txn_ids,
 }
 
+struct WriteEventInfo {
+    1: required i64    writeId,
+    2: required string database,
+    3: required string table,
+    4: required string files,
+    5: optional string partition,
+    6: optional string tableObj, // repl txn task does not need table object for commit
+    7: optional string partitionObj,
+}
+
 struct CommitTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
+    // Information related to write operations done in this transaction.
+    3: optional list<WriteEventInfo> writeEventInfos,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -898,6 +921,12 @@ struct GetValidWriteIdsResponse {
     1: required list<TableValidWriteIds> tblValidWriteIds,
 }
 
+// Map for allocated write id against the txn for which it is allocated
+struct TxnToWriteId {
+    1: required i64 txnId,
+    2: required i64 writeId,
+}
+
 // Request msg to allocate table write ids for the given list of txns
 struct AllocateTableWriteIdsRequest {
     1: required string dbName,
@@ -908,12 +937,6 @@ struct AllocateTableWriteIdsRequest {
     4: optional string replPolicy,
     // The list is assumed to be sorted by both txnids and write ids. The write id list is assumed to be contiguous.
     5: optional list<TxnToWriteId> srcTxnToWriteIdList,
-}
-
-// Map for allocated write id against the txn for which it is allocated
-struct TxnToWriteId {
-    1: required i64 txnId,
-    2: required i64 writeId,
 }
 
 struct AllocateTableWriteIdsResponse {
@@ -1055,14 +1078,6 @@ struct BasicTxnInfo {
     6: optional string partitionname
 }
 
-struct CreationMetadata {
-    1: required string catName
-    2: required string dbName,
-    3: required string tblName,
-    4: required set<string> tablesUsed,
-    5: optional string validTxnList,
-    6: optional i64 materializationTime
-}
 
 struct NotificationEventRequest {
     1: required i64 lastEvent,
@@ -1103,10 +1118,16 @@ struct InsertEventRequestData {
     2: required list<string> filesAdded,
     // Checksum of files (hex string of checksum byte payload)
     3: optional list<string> filesAddedChecksum,
+    // Used by acid operation to create the sub directory
+    4: optional list<string> subDirectoryList,
+    // partition value which was inserted (used in case of bulk insert events)
+    5: optional list<string> partitionVal
 }
 
 union FireEventRequestData {
     1: InsertEventRequestData insertData
+    // used to fire insert events on multiple partitions
+    2: list<InsertEventRequestData> insertDatas
 }
 
 struct FireEventRequest {
@@ -1116,14 +1137,28 @@ struct FireEventRequest {
     // subevent as I assume they'll be used across most event types.
     3: optional string dbName,
     4: optional string tableName,
+    // ignored if event request data contains multiple insert event datas
     5: optional list<string> partitionVals,
     6: optional string catName,
 }
 
 struct FireEventResponse {
+    1: list<i64> eventIds
+}
+
+struct WriteNotificationLogRequest {
+    1: required i64 txnId,
+    2: required i64 writeId,
+    3: required string db,
+    4: required string table,
+    5: required InsertEventRequestData fileInfo,
+    6: optional list<string> partitionVals,
+}
+
+struct WriteNotificationLogResponse {
     // NOP for now, this is just a place holder for future responses
 }
-    
+
 struct MetadataPpdResult {
   1: optional binary metadata,
   2: optional binary includeBitset
@@ -2102,6 +2137,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
+  WriteNotificationLogResponse add_write_notification_log(1:WriteNotificationLogRequest rqst)
 
   // Repl Change Management api
   CmRecycleResponse cm_recycle(1:CmRecycleRequest request) throws(1:MetaException o1)

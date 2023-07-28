@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 
 import com.google.common.base.Joiner;
@@ -124,6 +125,7 @@ public class MetaStoreUtils {
   private static final Charset ENCODING = StandardCharsets.UTF_8;
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreUtils.class);
 
+  public static final String USER_NAME_HTTP_HEADER = "x-actor-username";
   // The following two are public for any external users who wish to use them.
   /**
    * This character is used to mark a database name as having a catalog name prepended.  This
@@ -145,6 +147,8 @@ public class MetaStoreUtils {
    * Mark a database as being empty (as distinct from null).
    */
   public static final String DB_EMPTY_MARKER = "!";
+
+  public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
 
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
@@ -270,7 +274,7 @@ public class MetaStoreUtils {
     }
     if (colStatsMap.size() < 1) {
       LOG.debug("No stats data found for: tblName= {}, partNames= {}, colNames= {}",
-          Warehouse.getCatalogQualifiedTableName(catName, dbName, tableName), partNames, colNames);
+          TableName.getQualified(catName, dbName, tableName), partNames, colNames);
       return new ArrayList<ColumnStatisticsObj>();
     }
     return aggrPartitionStats(colStatsMap, partNames, areAllPartsFound,
@@ -565,8 +569,31 @@ public class MetaStoreUtils {
     return isExternal(params);
   }
 
+  /**
+   * Determines whether an table needs to be purged or not.
+   *
+   * @param table table of interest
+   *
+   * @return true if external table needs to be purged
+   */
+  public static boolean isExternalTablePurge(Table table) {
+    if (table == null) {
+      return false;
+    }
+    Map<String, String> params = table.getParameters();
+    if (params == null) {
+      return false;
+    }
+
+    return isPropertyTrue(params, EXTERNAL_TABLE_PURGE);
+  }
+
   public static boolean isExternal(Map<String, String> tableParams){
-    return "TRUE".equalsIgnoreCase(tableParams.get("EXTERNAL"));
+    return isPropertyTrue(tableParams, "EXTERNAL");
+  }
+
+  public static boolean isPropertyTrue(Map<String, String> tableParams, String prop) {
+    return "TRUE".equalsIgnoreCase(tableParams.get(prop));
   }
 
   // check if stats need to be (re)calculated
@@ -1153,6 +1180,29 @@ public class MetaStoreUtils {
       LOG.error("Bad URL " + onestr + ", ignoring path");
     }
     return oneurl;
+  }
+
+  /**
+   * The config parameter can be like "path", "/path", "/path/", "path/*", "/path1/path2/*" and so on.
+   * httpPath should end up as "/*", "/path/*" or "/path1/../pathN/*"
+   * @param httpPath
+   * @return
+   */
+  public static String getHttpPath(String httpPath) {
+    if (httpPath == null || httpPath.equals("")) {
+      httpPath = "/*";
+    } else {
+      if (!httpPath.startsWith("/")) {
+        httpPath = "/" + httpPath;
+      }
+      if (httpPath.endsWith("/")) {
+        httpPath = httpPath + "*";
+      }
+      if (!httpPath.endsWith("/*")) {
+        httpPath = httpPath + "/*";
+      }
+    }
+    return httpPath;
   }
 
   /**
@@ -1825,34 +1875,4 @@ public class MetaStoreUtils {
     return catName;
   }
 
-
-  public static class FullTableName {
-    public final String catalog, db, table;
-
-    public FullTableName(String catalog, String db, String table) {
-      assert catalog != null && db != null && table != null : catalog + ", " + db + ", " + table;
-      this.catalog = catalog;
-      this.db = db;
-      this.table = table;
-    }
-
-    @Override
-    public String toString() {
-      return catalog + MetaStoreUtils.CATALOG_DB_SEPARATOR + db + "." + table;
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      return prime * (prime * (prime + catalog.hashCode()) + db.hashCode()) + table.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) return true;
-      if (obj == null || getClass() != obj.getClass()) return false;
-      FullTableName other = (FullTableName) obj;
-      return catalog.equals(other.catalog) && db.equals(other.db) && table.equals(other.table);
-    }
-  }
 }

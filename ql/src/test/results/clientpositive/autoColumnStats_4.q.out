@@ -204,6 +204,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	2                   
+	numRows             	10                  
+	rawDataSize         	0                   
 	totalSize           	1899                
 	transactional       	true                
 	transactional_properties	default             
@@ -247,6 +249,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{}                  
 	bucketing_version   	2                   
 	numFiles            	4                   
+	numRows             	8                   
+	rawDataSize         	0                   
 	totalSize           	3275                
 	transactional       	true                
 	transactional_properties	default             

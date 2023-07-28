@@ -215,12 +215,10 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   @Override
   public void preCreateTable(Table table) throws MetaException {
-    // Do safety checks
-    if (MetaStoreUtils.isExternalTable(table) && !StringUtils
-            .isEmpty(table.getSd().getLocation())) {
+    if(!StringUtils
+        .isEmpty(table.getSd().getLocation())) {
       throw new MetaException("LOCATION may not be specified for Druid");
     }
-
     if (table.getPartitionKeysSize() != 0) {
       throw new MetaException("PARTITIONED BY may not be specified for Druid");
     }
@@ -228,25 +226,17 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       throw new MetaException("CLUSTERED BY may not be specified for Druid");
     }
     String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
-    if (MetaStoreUtils.isExternalTable(table)) {
-      if (dataSourceName == null) {
-        throw new MetaException(
-            String.format("Datasource name should be specified using [%s] for external tables "
-                + "using Druid", Constants.DRUID_DATA_SOURCE));
-      }
-      // If it is an external table, we are done
+    if(dataSourceName != null){
+      // Already Existing datasource in Druid.
       return;
     }
-    // It is not an external table
-    // We need to check that datasource was not specified by user
-    if (dataSourceName != null) {
-      throw new MetaException(
-          String.format("Datasource name cannot be specified using [%s] for managed tables "
-              + "using Druid", Constants.DRUID_DATA_SOURCE));
-    }
-    // We need to check the Druid metadata
+
+    // create dataSourceName based on Hive Table name
     dataSourceName = Warehouse.getQualifiedName(table);
     try {
+      // NOTE: This just created druid_segments table in Druid metastore.
+      // This is needed for the case when hive is started before any of druid services
+      // and druid_segments table has not been created yet.
       getConnector().createSegmentTable();
     } catch (Exception e) {
       LOG.error("Exception while trying to create druid segments table", e);
@@ -255,6 +245,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     Collection<String> existingDataSources = DruidStorageHandlerUtils
             .getAllDataSourceNames(getConnector(), getDruidMetadataStorageTablesConfig());
     LOG.debug("pre-create data source with name {}", dataSourceName);
+    // Check for existence of for the datasource we are going to create in druid_segments table.
     if (existingDataSources.contains(dataSourceName)) {
       throw new MetaException(String.format("Data source [%s] already existing", dataSourceName));
     }
@@ -263,38 +254,17 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   @Override
   public void rollbackCreateTable(Table table) {
-    if (MetaStoreUtils.isExternalTable(table)) {
-      return;
-    }
-    final Path segmentDescriptorDir = getSegmentDescriptorDir();
-    try {
-      List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
-              .getCreatedSegments(segmentDescriptorDir, getConf());
-      for (DataSegment dataSegment : dataSegmentList) {
-        try {
-          deleteSegment(dataSegment);
-        } catch (SegmentLoadingException e) {
-          LOG.error(String.format("Error while trying to clean the segment [%s]", dataSegment), e);
-        }
-      }
-    } catch (IOException e) {
-      LOG.error("Exception while rollback", e);
-      throw Throwables.propagate(e);
-    } finally {
-      cleanWorkingDir();
-    }
+    cleanWorkingDir();
   }
 
   @Override
   public void commitCreateTable(Table table) throws MetaException {
-    if (MetaStoreUtils.isExternalTable(table)) {
-      // For external tables, we do not need to do anything else
-      return;
-    }
     if(isKafkaStreamingTable(table)){
       updateKafkaIngestion(table);
     }
-    this.commitInsertTable(table, true);
+    // For CTAS queries when user has explicitly specified the datasource.
+    // We will append the data to existing druid datasource.
+    this.commitInsertTable(table, false);
   }
 
   private void updateKafkaIngestion(Table table){
@@ -762,9 +732,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   @Override
   public void commitDropTable(Table table, boolean deleteData) {
-    if (MetaStoreUtils.isExternalTable(table)) {
-      return;
-    }
     if(isKafkaStreamingTable(table)) {
       // Stop Kafka Ingestion first
       final String overlordAddress = Preconditions.checkNotNull(HiveConf
@@ -775,12 +742,15 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
               "Druid Datasource name is null");
       stopKafkaIngestion(overlordAddress, dataSourceName);
     }
+
     String dataSourceName = Preconditions
             .checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE),
                     "DataSource name is null !"
             );
-
-    if (deleteData == true) {
+    // TODO: Move MetaStoreUtils.isExternalTablePurge(table) calls to a common place for all StorageHandlers
+    // deleteData flag passed down to StorageHandler should be true only if
+    // MetaStoreUtils.isExternalTablePurge(table) returns true.
+    if (deleteData == true && MetaStoreUtils.isExternalTablePurge(table)) {
       LOG.info("Dropping with purge all the data for data source {}", dataSourceName);
       List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
               .getDataSegmentList(getConnector(), getDruidMetadataStorageTablesConfig(), dataSourceName);
@@ -806,9 +776,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   public void commitInsertTable(Table table, boolean overwrite) throws MetaException {
     LOG.debug("commit insert into table {} overwrite {}", table.getTableName(),
             overwrite);
-    if (MetaStoreUtils.isExternalTable(table)) {
-      throw new MetaException("Cannot insert data into external table backed by Druid");
-    }
     try {
       // Check if there segments to load
       final Path segmentDescriptorDir = getSegmentDescriptorDir();

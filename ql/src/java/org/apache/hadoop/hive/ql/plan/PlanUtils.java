@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -977,6 +978,14 @@ public final class PlanUtils {
       HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(jobConf, handlerClass);
       if (storageHandler != null) {
         storageHandler.configureJobConf(tableDesc, jobConf);
+      }
+      if (tableDesc.getJobSecrets() != null) {
+        for (Map.Entry<String, String> entry : tableDesc.getJobSecrets().entrySet()) {
+          String key = TableDesc.SECRET_PREFIX + TableDesc.SECRET_DELIMIT +
+                  tableDesc.getTableName() + TableDesc.SECRET_DELIMIT + entry.getKey();
+          jobConf.getCredentials().addSecretKey(new Text(key), entry.getValue().getBytes());
+        }
+        tableDesc.getJobSecrets().clear();
       }
     } catch (HiveException e) {
       throw new RuntimeException(e);

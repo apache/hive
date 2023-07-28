@@ -48,7 +48,6 @@ POSTHOOK: Input: default@acid_dap@ds=tomorrow
 -1070883071	0ruyd6Y50JpdGRf6HqD	today
 -1070551679	iUR3Q	today
 -1069736047	k17Am8uPHWk02cEf1jet	today
-6981	NULL	tomorrow
 6981	1FNNhmiFLGw425NA13g	tomorrow
 6981	4KhrrQ0nJ7bMNTvhSCA	tomorrow
 6981	K630vaVf	tomorrow
@@ -58,6 +57,7 @@ POSTHOOK: Input: default@acid_dap@ds=tomorrow
 6981	o4lvY20511w0EOX3P3I82p63	tomorrow
 6981	o5mb0QP5Y48Qd4vdB0	tomorrow
 6981	sF2CRfgt2K	tomorrow
+6981	NULL	tomorrow
 PREHOOK: query: delete from acid_dap
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dap

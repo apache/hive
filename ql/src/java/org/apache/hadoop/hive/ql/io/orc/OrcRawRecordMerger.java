@@ -724,10 +724,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       }
     }
     if (rowOffset > 0) {
-      minKey = new RecordIdentifier(0, bucketProperty, rowOffset - 1);
+      minKey = new RecordIdentifier(tfp.syntheticWriteId, bucketProperty, rowOffset - 1);
     }
     if (!isTail) {
-      maxKey = new RecordIdentifier(0, bucketProperty, rowOffset + rowLength - 1);
+      maxKey = new RecordIdentifier(tfp.syntheticWriteId, bucketProperty, rowOffset + rowLength - 1);
     }
     return new KeyInterval(minKey, maxKey);
   }

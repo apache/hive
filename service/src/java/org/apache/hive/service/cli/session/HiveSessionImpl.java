@@ -874,6 +874,11 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   @Override
+  public void updateQueryTag(String queryId, String queryTag) throws HiveSQLException {
+    sessionManager.getOperationManager().updateQueryTag(queryId, queryTag);
+  }
+
+  @Override
   public void closeOperation(OperationHandle opHandle) throws HiveSQLException {
     acquire(true, false);
     try {

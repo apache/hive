@@ -86,6 +86,7 @@ import static org.apache.hadoop.hive.ql.plan.HiveOperation.UNLOCKTABLE;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -100,8 +101,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -156,9 +160,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
             .collect(Collectors.toSet());
   }
 
-  public static final String HIVE_EVENTS_BASE_PATH = "hive.hook.proto.base-directory";
-  public static final String HIVE_HOOK_PROTO_QUEUE_CAPACITY = "hive.hook.proto.queue.capacity";
-  public static final int HIVE_HOOK_PROTO_QUEUE_CAPACITY_DEFAULT = 64;
+  private static final int HIVE_HOOK_PROTO_QUEUE_CAPACITY_DEFAULT = 64;
   private static final int WAIT_TIME = 5;
 
   public enum EventType {
@@ -180,16 +182,23 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     private final DatePartitionedLogger<HiveHookEventProto> logger;
     private final ExecutorService eventHandler;
     private final ExecutorService logWriter;
+    private int logFileCount = 0;
+    private ProtoMessageWriter<HiveHookEventProto> writer;
+    private LocalDate writerDate;
+    private boolean eventPerFile;
 
     EventLogger(HiveConf conf, Clock clock) {
       this.clock = clock;
       // randomUUID is slow, since its cryptographically secure, only first query will take time.
       this.logFileName = "hive_" + UUID.randomUUID().toString();
-      String baseDir = conf.get(HIVE_EVENTS_BASE_PATH);
-      if (baseDir == null) {
-        LOG.error(HIVE_EVENTS_BASE_PATH + " is not set, logging disabled.");
+      String baseDir = conf.getVar(ConfVars.HIVE_PROTO_EVENTS_BASE_PATH);
+      if (StringUtils.isBlank(baseDir)) {
+        baseDir = null;
+        LOG.error(ConfVars.HIVE_PROTO_EVENTS_BASE_PATH.varname + " is not set, logging disabled.");
       }
 
+      eventPerFile = conf.getBoolVar(ConfVars.HIVE_PROTO_FILE_PER_EVENT);
+      LOG.info("Event per file enabled: {}", eventPerFile);
       DatePartitionedLogger<HiveHookEventProto> tmpLogger = null;
       try {
         if (baseDir != null) {
@@ -206,7 +215,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
         return;
       }
 
-      int queueCapacity = conf.getInt(HIVE_HOOK_PROTO_QUEUE_CAPACITY,
+      int queueCapacity = conf.getInt(ConfVars.HIVE_PROTO_EVENTS_QUEUE_CAPACITY.varname,
           HIVE_HOOK_PROTO_QUEUE_CAPACITY_DEFAULT);
 
       ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
@@ -233,6 +242,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
           LOG.warn("Got interrupted exception while waiting for events to be flushed", e);
         }
       }
+      IOUtils.closeQuietly(writer);
     }
 
     void handle(HookContext hookContext) {
@@ -284,12 +294,33 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     private static final int MAX_RETRIES = 2;
     private void writeEvent(HiveHookEventProto event) {
       for (int retryCount = 0; retryCount <= MAX_RETRIES; ++retryCount) {
-        try (ProtoMessageWriter<HiveHookEventProto> writer = logger.getWriter(logFileName)) {
+        try {
+          if (writer == null || !logger.getNow().toLocalDate().equals(writerDate)) {
+            if (writer != null) {
+              // Day change over case, reset the logFileCount.
+              logFileCount = 0;
+              IOUtils.closeQuietly(writer);
+            }
+            // increment log file count, if creating a new writer.
+            writer = logger.getWriter(logFileName + "_" + ++logFileCount);
+            writerDate = logger.getDateFromDir(writer.getPath().getParent().getName());
+          }
           writer.writeProto(event);
-          // This does not work hence, opening and closing file for every event.
-          // writer.hflush();
+          if (eventPerFile) {
+            if (writer != null) {
+              LOG.debug("Event per file enabled. Closing proto event file: {}", writer.getPath());
+              IOUtils.closeQuietly(writer);
+            }
+            // rollover to next file
+            writer = logger.getWriter(logFileName + "_" + ++logFileCount);
+          } else {
+            writer.hflush();
+          }
           return;
         } catch (IOException e) {
+          // Something wrong with writer, lets close and reopen.
+          IOUtils.closeQuietly(writer);
+          writer = null;
           if (retryCount < MAX_RETRIES) {
             LOG.warn("Error writing proto message for query {}, eventType: {}, retryCount: {}," +
                 " error: {} ", event.getHiveQueryId(), event.getEventType(), retryCount,
@@ -460,7 +491,8 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
           plan.getFetchTask(), // FetchTask
           null, // analyzer
           config, // explainConfig
-          null // cboInfo
+          null, // cboInfo,
+          plan.getOptimizedQueryString()
       );
       ExplainTask explain = (ExplainTask) TaskFactory.get(work, conf);
       explain.initialize(hookContext.getQueryState(), plan, null, null);

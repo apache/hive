@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  * consists of name, list of parameter types.
  * 
  **/
-
+@Deprecated
 public class InputSignature {
   private final String name;
   private final ArrayList<TypeInfo> typeArray;

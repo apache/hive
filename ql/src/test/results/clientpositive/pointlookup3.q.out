@@ -60,6 +60,10 @@ POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `key` = 2
+ORDER BY `key`, `value`, `ds1`, `ds2`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -82,7 +86,7 @@ STAGE PLANS:
                 Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                  null sort order: aaaa
+                  null sort order: zzzz
                   sort order: ++++
                   Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
@@ -245,6 +249,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
+FROM (SELECT `key`, `value`, `ds1`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds2` = '2001-04-08' AND (`ds1` = '2000-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `key` = 2)
+ORDER BY `key`, `value`, `ds1`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -267,7 +276,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
@@ -380,6 +389,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, `t4`.`ds11`, CAST('2001-04-08' AS STRING) AS `ds21`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds1` AS `ds11`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds2` = '2001-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -525,7 +543,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col3 (type: int), _col4 (type: string)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
               tag: -1
@@ -614,6 +632,15 @@ POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds11`, `t4`.`ds21`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds2` AS `ds21`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -809,7 +836,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col3 (type: int), _col4 (type: string)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
               tag: -1
@@ -901,6 +928,14 @@ POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`, `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' OR `ds1` = '2000-04-09') AS `t0`
+INNER JOIN (SELECT `key`, `value`, `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `key` = 1 OR `key` = 2) AS `t2` ON `t0`.`ds1` = '2000-04-08' AND `t2`.`key` = 1 OR `t0`.`ds1` = '2000-04-09' AND `t2`.`key` = 2
+ORDER BY `t2`.`key`, `t2`.`value`, `t0`.`ds1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1138,7 +1173,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col4 (type: int), _col5 (type: string), _col2 (type: string)
-              null sort order: aaa
+              null sort order: zzz
               sort order: +++
               Statistics: Num rows: 1200 Data size: 20400 Basic stats: COMPLETE Column stats: NONE
               tag: -1
@@ -1475,7 +1510,7 @@ STAGE PLANS:
                 Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                  null sort order: aaaa
+                  null sort order: zzzz
                   sort order: ++++
                   Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
@@ -1660,7 +1695,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
@@ -1773,6 +1808,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, `t4`.`ds11`, CAST('2001-04-08' AS STRING) AS `ds21`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds1` AS `ds11`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds2` = '2001-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1918,7 +1962,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col3 (type: int), _col4 (type: string)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
               tag: -1
@@ -2007,6 +2051,15 @@ POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds11`, `t4`.`ds21`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds2` AS `ds21`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2202,7 +2255,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col3 (type: int), _col4 (type: string)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
               tag: -1
@@ -2531,7 +2584,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col4 (type: int), _col5 (type: string), _col2 (type: string)
-              null sort order: aaa
+              null sort order: zzz
               sort order: +++
               Statistics: Num rows: 300 Data size: 5100 Basic stats: COMPLETE Column stats: NONE
               tag: -1

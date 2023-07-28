@@ -45,10 +45,13 @@ import com.google.protobuf.Parser;
  * @param <T> The proto message type.
  */
 public class DatePartitionedLogger<T extends MessageLite> {
-  private static final Logger LOG = LoggerFactory.getLogger(DatePartitionedLogger.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(DatePartitionedLogger.class);
   // Everyone has permission to write, but with sticky set so that delete is restricted.
   // This is required, since the path is same for all users and everyone writes into it.
   private static final FsPermission DIR_PERMISSION = FsPermission.createImmutable((short)01777);
+
+  // Since the directories have broad permissions restrict the file read access.
+  private static final FsPermission FILE_UMASK = FsPermission.createImmutable((short)0066);
 
   private final Parser<T> parser;
   private final Path basePath;
@@ -57,11 +60,12 @@ public class DatePartitionedLogger<T extends MessageLite> {
 
   public DatePartitionedLogger(Parser<T> parser, Path baseDir, Configuration conf, Clock clock)
       throws IOException {
-    this.conf = conf;
+    this.conf = new Configuration(conf);
     this.clock = clock;
     this.parser = parser;
     createDirIfNotExists(baseDir);
     this.basePath = baseDir.getFileSystem(conf).resolvePath(baseDir);
+    FsPermission.setUMask(this.conf, FILE_UMASK);
   }
 
   private void createDirIfNotExists(Path path) throws IOException {
@@ -99,6 +103,10 @@ public class DatePartitionedLogger<T extends MessageLite> {
     Path path = new Path(basePath, getDirForDate(date));
     createDirIfNotExists(path);
     return new Path(path, fileName);
+  }
+
+  public Path getPathForSubdir(String dirName, String fileName) {
+    return new Path(new Path(basePath, dirName), fileName);
   }
 
   /**
@@ -144,11 +152,11 @@ public class DatePartitionedLogger<T extends MessageLite> {
    * Returns new or changed files in the given directory. The offsets are used to find
    * changed files.
    */
-  public List<Path> scanForChangedFiles(String subDir, Map<String, Long> currentOffsets)
+  public List<FileStatus> scanForChangedFiles(String subDir, Map<String, Long> currentOffsets)
       throws IOException {
     Path dirPath = new Path(basePath, subDir);
     FileSystem fileSystem = basePath.getFileSystem(conf);
-    List<Path> newFiles = new ArrayList<>();
+    List<FileStatus> newFiles = new ArrayList<>();
     if (!fileSystem.exists(dirPath)) {
       return newFiles;
     }
@@ -157,7 +165,7 @@ public class DatePartitionedLogger<T extends MessageLite> {
       Long offset = currentOffsets.get(fileName);
       // If the offset was never added or offset < fileSize.
       if (offset == null || offset < status.getLen()) {
-        newFiles.add(new Path(dirPath, fileName));
+        newFiles.add(status);
       }
     }
     return newFiles;

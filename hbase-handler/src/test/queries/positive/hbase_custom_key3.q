@@ -1,9 +1,10 @@
-CREATE TABLE hbase_ck_5(key struct<col1:string,col2:string,col3:string>, value string)
+CREATE EXTERNAL TABLE hbase_ck_5(key struct<col1:string,col2:string,col3:string>, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
     "hbase.table.name" = "hbase_custom3",
     "hbase.columns.mapping" = ":key,cf:string",
-    "hbase.composite.key.factory"="org.apache.hadoop.hive.hbase.SampleHBaseKeyFactory3");
+    "hbase.composite.key.factory"="org.apache.hadoop.hive.hbase.SampleHBaseKeyFactory3")
+TBLPROPERTIES ("external.table.purge" = "true");
 
 from src tablesample (5 rows)
 insert into table hbase_ck_5 select

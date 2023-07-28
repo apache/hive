@@ -70,6 +70,6 @@ public enum DatabaseProduct {
    * Whether the RDBMS has a bug in join and filter operation order described in DERBY-6358.
    */
   public static boolean hasJoinOperationOrderBug(DatabaseProduct dbType) {
-    return dbType == DERBY || dbType == ORACLE;
+    return dbType == DERBY || dbType == ORACLE || dbType == POSTGRES;
   }
 }

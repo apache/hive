@@ -31,7 +31,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames $f0
             druid.fieldTypes bigint
-            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","filter":{"type":"or","fields":[{"type":"and","fields":[{"type":"bound","dimension":"__time","lower":"2009-12-31T16:00:00.000Z","lowerStrict":false,"ordering":"lexicographic","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"US/Pacific"}},{"type":"bound","dimension":"__time","upper":"2012-02-29T16:00:00.000Z","upperStrict":false,"ordering":"lexicographic","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"US/Pacific"}}]},{"type":"bound","dimension":"added","upper":"0.0","upperStrict":false,"ordering":"numeric"}]},"aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","filter":{"type":"or","fields":[{"type":"and","fields":[{"type":"bound","dimension":"__time","lower":"2010-01-01T00:00:00.000Z","lowerStrict":false,"ordering":"lexicographic","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"bound","dimension":"__time","upper":"2012-03-01T00:00:00.000Z","upperStrict":false,"ordering":"lexicographic","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}}]},{"type":"bound","dimension":"added","upper":"0.0","upperStrict":false,"ordering":"numeric"}]},"aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
             druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -95,7 +95,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames $f0,$f1
             druid.fieldTypes float,double
-            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","aggregations":[{"type":"doubleMax","name":"$f0","fieldName":"added"},{"type":"doubleSum","name":"$f1","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","aggregations":[{"type":"doubleMax","name":"$f0","fieldName":"added"},{"type":"doubleSum","name":"$f1","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
             druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -131,7 +131,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames extract,$f1,$f2
             druid.fieldTypes timestamp with local time zone,float,double
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"US/Pacific"}}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -191,57 +191,26 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_1_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: druid_table_1_n3
-            properties:
-              druid.fieldNames vc,added,variation
-              druid.fieldTypes timestamp with local time zone,float,float
-              druid.query.json {"queryType":"scan","dataSource":"wikipedia","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","added","variation"],"resultFormat":"compactedList"}
-              druid.query.type scan
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: floor_quarter(vc) (type: timestamp with local time zone), added (type: float), variation (type: float)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Group By Operator
-                aggregations: max(_col1), sum(_col2)
-                keys: _col0 (type: timestamp with local time zone)
-                mode: hash
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: timestamp with local time zone)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: timestamp with local time zone)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col1 (type: float), _col2 (type: double)
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations: max(VALUE._col0), sum(VALUE._col1)
-          keys: KEY._col0 (type: timestamp with local time zone)
-          mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: druid_table_1_n3
+          properties:
+            druid.fieldNames timestamp,$f1,$f2
+            druid.fieldTypes timestamp with local time zone,float,double
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":{"type":"period","period":"P3M","timeZone":"US/Pacific"},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: timestamp (type: timestamp with local time zone), $f1 (type: float), $f2 (type: double)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT floor_month(`__time`), max(added), sum(variation)

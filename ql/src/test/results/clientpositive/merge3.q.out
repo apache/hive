@@ -63,6 +63,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@merge_src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge_src2
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`merge_src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -2387,6 +2389,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`merge_src_part`
+WHERE `ds` IS NOT NULL
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

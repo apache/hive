@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMEN
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
+import static org.apache.hadoop.hive.metastore.api.FireEventRequestData._Fields.INSERT_DATA;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
@@ -57,6 +58,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,14 +77,18 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 
+import com.sun.istack.NotNull;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.FireEventRequestData._Fields;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
+import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
@@ -178,11 +186,23 @@ import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.ServerContext;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServerEventHandler;
+import org.apache.thrift.server.TServlet;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -222,6 +242,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static HadoopThriftAuthBridge.Server saslServer;
   private static MetastoreDelegationTokenManager delegationTokenManager;
   private static boolean useSasl;
+  private static ThriftServer thriftServer;
 
   static final String NO_FILTER_STRING = "";
   static final int UNLIMITED_MAX_PARTITIONS = -1;
@@ -696,9 +717,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       RawStore ms = threadLocalMS.get();
       if (ms == null) {
         ms = newRawStoreForConf(conf);
-        ms.verifySchema();
+        try {
+          ms.verifySchema();
+        } catch (MetaException e) {
+          ms.shutdown();
+          throw e;
+        }
         threadLocalMS.set(ms);
         ms = threadLocalMS.get();
+        LOG.info("Created RawStore: " + ms + " from thread id: " + Thread.currentThread().getId());
       }
       return ms;
     }
@@ -736,6 +763,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       } catch (NoSuchObjectException e) {
         Catalog cat = new Catalog(DEFAULT_CATALOG_NAME, wh.getWhRoot().toString());
+        long time = System.currentTimeMillis() / 1000;
+        cat.setCreateTime((int) time);
         cat.setDescription(Warehouse.DEFAULT_CATALOG_COMMENT);
         ms.createCatalog(cat);
       }
@@ -746,10 +775,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.getDatabase(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
       } catch (NoSuchObjectException e) {
         Database db = new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT,
-          wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null);
+            wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null);
         db.setOwnerName(PUBLIC);
         db.setOwnerType(PrincipalType.ROLE);
         db.setCatalogName(DEFAULT_CATALOG_NAME);
+        long time = System.currentTimeMillis() / 1000;
+        db.setCreateTime((int) time);
         ms.createDatabase(db);
       }
     }
@@ -921,7 +952,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private void startTableFunction(String function, String catName, String db, String tbl) {
       startFunction(function, " : tbl=" +
-          getCatalogQualifiedTableName(catName, db, tbl));
+          TableName.getQualified(catName, db, tbl));
     }
 
     private void startMultiTableFunction(String function, String db, List<String> tbls) {
@@ -932,13 +963,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void startPartitionFunction(String function, String cat, String db, String tbl,
                                         List<String> partVals) {
       startFunction(function, " : tbl=" +
-          getCatalogQualifiedTableName(cat, db, tbl) + "[" + join(partVals, ",") + "]");
+          TableName.getQualified(cat, db, tbl) + "[" + join(partVals, ",") + "]");
     }
 
     private void startPartitionFunction(String function, String catName, String db, String tbl,
                                         Map<String, String> partName) {
       startFunction(function, " : tbl=" +
-          getCatalogQualifiedTableName(catName, db, tbl) + "partition=" + partName);
+          TableName.getQualified(catName, db, tbl) + "partition=" + partName);
     }
 
     private void endFunction(String function, boolean successful, Exception e) {
@@ -1025,13 +1056,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             }
             madeDir = true;
           }
-
+          // set the create time of catalog
+          long time = System.currentTimeMillis() / 1000;
+          catalog.setCreateTime((int) time);
           ms.openTransaction();
           ms.createCatalog(catalog);
 
           // Create a default database inside the catalog
-          Database db = new Database(DEFAULT_DATABASE_NAME, "Default database for catalog " +
-                           catalog.getName(), catalog.getLocationUri(), Collections.emptyMap());
+          Database db = new Database(DEFAULT_DATABASE_NAME,
+              "Default database for catalog " + catalog.getName(), catalog.getLocationUri(),
+              Collections.emptyMap());
           db.setCatalogName(catalog.getName());
           create_database_core(ms, db);
 
@@ -1254,7 +1288,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       Path dbPath = wh.determineDatabasePath(cat, db);
       db.setLocationUri(dbPath.toString());
-
+      long time = System.currentTimeMillis()/1000;
+      db.setCreateTime((int) time);
       boolean success = false;
       boolean madeDir = false;
       Map<String, String> transactionalListenersResponses = Collections.emptyMap();
@@ -1540,7 +1575,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // If the table is not external and it might not be in a subdirectory of the database
               // add it's locations to the list of paths to delete
               Path tablePath = null;
-              if (table.getSd().getLocation() != null && !isExternal(table)) {
+              boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, deleteData);
+              if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
                 tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
                 if (!wh.isWritable(tablePath.getParent())) {
                   throw new MetaException("Database metadata not deleted since table: " +
@@ -1556,7 +1592,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // For each partition in each table, drop the partitions and get a list of
               // partitions' locations which might need to be deleted
               partitionPaths = dropPartitionsAndGetLocations(ms, catName, name, table.getTableName(),
-                  tablePath, table.getPartitionKeys(), deleteData && !isExternal(table));
+                  tablePath, table.getPartitionKeys(), tableDataShouldBeDeleted);
 
               // Drop the table but not its data
               drop_table(MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
@@ -2484,7 +2520,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws NoSuchObjectException, MetaException, IOException, InvalidObjectException,
         InvalidInputException {
       boolean success = false;
-      boolean isExternal = false;
+      boolean tableDataShouldBeDeleted = false;
       Path tblPath = null;
       List<Path> partPaths = null;
       Table tbl = null;
@@ -2500,6 +2536,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (tbl == null) {
           throw new NoSuchObjectException(name + " doesn't exist");
         }
+
+        // Check if table is part of a materialized view.
+        // If it is, it cannot be dropped.
+        List<String> isPartOfMV = ms.isPartOfMaterializedView(catName, dbname, name);
+        if (!isPartOfMV.isEmpty()) {
+          throw new MetaException(String.format("Cannot drop table as it is used in the following materialized" +
+                  " views %s%n", isPartOfMV));
+        }
+
         if (tbl.getSd() == null) {
           throw new MetaException("Table metadata is corrupted");
         }
@@ -2507,7 +2552,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
 
-        isExternal = isExternal(tbl);
+        tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
         if (tbl.getSd().getLocation() != null) {
           tblPath = new Path(tbl.getSd().getLocation());
           if (!wh.isWritable(tblPath.getParent())) {
@@ -2520,13 +2565,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         // Drop the partitions and get a list of locations which need to be deleted
         partPaths = dropPartitionsAndGetLocations(ms, catName, dbname, name, tblPath,
-            tbl.getPartitionKeys(), deleteData && !isExternal);
+            tbl.getPartitionKeys(), tableDataShouldBeDeleted);
 
         // Drop any constraints on the table
         ms.dropConstraint(catName, dbname, name, null, true);
 
         if (!ms.dropTable(catName, dbname, name)) {
-          String tableName = getCatalogQualifiedTableName(catName, dbname, name);
+          String tableName = TableName.getQualified(catName, dbname, name);
           throw new MetaException(indexName == null ? "Unable to drop table " + tableName:
               "Unable to drop index table " + tableName + " for index " + indexName);
         } else {
@@ -2542,7 +2587,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (deleteData && !isExternal) {
+        } else if (tableDataShouldBeDeleted) {
           // Data needs deletion. Check if trash may be skipped.
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths, ifPurge, db);
@@ -2560,6 +2605,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       return success;
+    }
+
+    private boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
+      if (deleteData && isExternal(tbl)) {
+        // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
+        return isExternalTablePurge(tbl);
+      }
+      return deleteData;
     }
 
     /**
@@ -2879,6 +2932,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return MetaStoreUtils.isExternalTable(table);
     }
 
+    private boolean isExternalTablePurge(Table table) {
+      return MetaStoreUtils.isPropertyTrue(table.getParameters(), MetaStoreUtils.EXTERNAL_TABLE_PURGE);
+    }
+
     @Override
     @Deprecated
     public Table get_table(final String dbname, final String name) throws MetaException,
@@ -2947,7 +3004,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         t = getMS().getTable(catName, dbname, name);
         if (t == null) {
-          throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbname, name) +
+          throw new NoSuchObjectException(TableName.getQualified(catName, dbname, name) +
             " table not found");
         }
       } catch (Exception e) {
@@ -3378,7 +3435,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         tbl = ms.getTable(catName, dbName, tblName);
         if (tbl == null) {
           throw new InvalidObjectException("Unable to add partitions because "
-              + getCatalogQualifiedTableName(catName, dbName, tblName) +
+              + TableName.getQualified(catName, dbName, tblName) +
               " does not exist");
         }
 
@@ -3393,7 +3450,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         for (final Partition part : parts) {
           if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
             throw new MetaException("Partition does not belong to target table " +
-                getCatalogQualifiedTableName(catName, dbName, tblName) + ": " +
+                TableName.getQualified(catName, dbName, tblName) + ": " +
                     part);
           }
 
@@ -3946,14 +4003,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.getTable(parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME], destTableName);
       if (destinationTable == null) {
         throw new MetaException( "The destination table " +
-            getCatalogQualifiedTableName(parsedDestDbName[CAT_NAME],
+            TableName.getQualified(parsedDestDbName[CAT_NAME],
                 parsedDestDbName[DB_NAME], destTableName) + " not found");
       }
       Table sourceTable =
           ms.getTable(parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME], sourceTableName);
       if (sourceTable == null) {
         throw new MetaException("The source table " +
-            getCatalogQualifiedTableName(parsedSourceDbName[CAT_NAME],
+            TableName.getQualified(parsedSourceDbName[CAT_NAME],
                 parsedSourceDbName[DB_NAME], sourceTableName) + " not found");
       }
 
@@ -4013,7 +4070,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Database destDb = ms.getDatabase(parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME]);
       if (!isRenameAllowed(srcDb, destDb)) {
         throw new MetaException("Exchange partition not allowed for " +
-                getCatalogQualifiedTableName(parsedSourceDbName[CAT_NAME],
+                TableName.getQualified(parsedSourceDbName[CAT_NAME],
                 parsedSourceDbName[DB_NAME], sourceTableName) + " Dest db : " + destDbName);
       }
       try {
@@ -4110,7 +4167,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean isArchived = false;
       Path archiveParentDir = null;
       boolean mustPurge = false;
-      boolean isExternalTbl = false;
+      boolean tableDataShouldBeDeleted = false;
       boolean isSourceOfReplication = false;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
 
@@ -4128,7 +4185,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.openTransaction();
         part = ms.getPartition(catName, db_name, tbl_name, part_vals);
         tbl = get_table_core(catName, db_name, tbl_name);
-        isExternalTbl = isExternal(tbl);
+        tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
         firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
         mustPurge = isMustPurge(envContext, tbl);
 
@@ -4166,7 +4223,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && ((partPath != null) || (archiveParentDir != null))) {
-          if (!isExternalTbl) {
+          if (tableDataShouldBeDeleted) {
             if (mustPurge) {
               LOG.info("dropPartition() will purge " + partPath + " directly, skipping trash.");
             }
@@ -4359,7 +4416,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (deleteData && !isExternal(tbl)) {
+        } else if (checkTableDataShouldBeDeleted(tbl, deleteData)) {
           LOG.info( mustPurge?
                       "dropPartition() will purge partition-directories directly, skipping trash."
                     :  "dropPartition() will move partition-directories to trash-directory.");
@@ -4471,7 +4528,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // metastore api call)
         Table t = getMS().getTable(catName, dbName, tblName);
         if (t == null) {
-          throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbName, tblName)
+          throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName)
               + " table not found");
         }
         firePreEvent(new PreReadTableEvent(t, this));
@@ -4962,8 +5019,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public String getVersion() throws TException {
-      endFunction(startFunction("getVersion"), true, null);
-      return "3.0";
+      String version = MetastoreVersionInfo.getVersion();
+      endFunction(startFunction("getVersion"), version != null, null);
+      return version;
     }
 
     @Override
@@ -5000,7 +5058,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void alter_table_core(final String catName, final String dbname, final String name,
                                   final Table newTable, final EnvironmentContext envContext)
         throws InvalidOperationException, MetaException {
-      startFunction("alter_table", ": " + getCatalogQualifiedTableName(catName, dbname, name)
+      startFunction("alter_table", ": " + TableName.getQualified(catName, dbname, name)
           + " newtbl=" + newTable.getTableName());
 
       // Update the time if it hasn't been specified.
@@ -5391,7 +5449,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Partition p = ms.getPartition(catName, db_name, tbl_name, partVals);
 
       if (p == null) {
-        throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, db_name, tbl_name)
+        throw new NoSuchObjectException(TableName.getQualified(catName, db_name, tbl_name)
             + " partition (" + part_name + ") not found");
       }
       return p;
@@ -5403,7 +5461,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       String[] parsedDbName = parseDbName(db_name, conf);
       startFunction("get_partition_by_name", ": tbl=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
           + " part=" + part_name);
       Partition ret = null;
       Exception ex = null;
@@ -5430,7 +5488,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws TException {
       String[] parsedDbName = parseDbName(db_name, conf);
       startFunction("append_partition_by_name", ": tbl="
-          + getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+          + TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tbl_name) + " part=" + part_name);
 
       Partition ret = null;
@@ -5485,7 +5543,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final EnvironmentContext envContext) throws TException {
       String[] parsedDbName = parseDbName(db_name, conf);
       startFunction("drop_partition_by_name", ": tbl=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
           + " part=" + part_name);
 
       boolean ret = false;
@@ -5625,7 +5683,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       tableName = tableName.toLowerCase();
       colName = colName.toLowerCase();
       startFunction("get_column_statistics_by_table", ": table=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
               tableName) + " column=" + colName);
       ColumnStatistics statsObj = null;
       try {
@@ -5647,7 +5705,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String dbName = request.getDbName().toLowerCase();
       String tblName = request.getTblName().toLowerCase();
       startFunction("get_table_statistics_req", ": table=" +
-          getCatalogQualifiedTableName(catName, dbName, tblName));
+          TableName.getQualified(catName, dbName, tblName));
       TableStatsResult result = null;
       List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
       for (String colName : request.getColNames()) {
@@ -5672,7 +5730,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       colName = colName.toLowerCase();
       String convertedPartName = lowerCaseConvertPartName(partName);
       startFunction("get_column_statistics_by_partition", ": table=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tableName) + " partition=" + convertedPartName + " column=" + colName);
       ColumnStatistics statsObj = null;
 
@@ -5700,7 +5758,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String dbName = request.getDbName().toLowerCase();
       String tblName = request.getTblName().toLowerCase();
       startFunction("get_partitions_statistics_req", ": table=" +
-          getCatalogQualifiedTableName(catName, dbName, tblName));
+          TableName.getQualified(catName, dbName, tblName));
 
       PartitionsStatsResult result = null;
       List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
@@ -5745,7 +5803,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<ColumnStatisticsObj> statsObjs =  colStats.getStatsObj();
 
       startFunction("write_column_statistics", ":  table=" +
-          Warehouse.getCatalogQualifiedTableName(catName, dbName, tableName));
+          TableName.getQualified(catName, dbName, tableName));
       for (ColumnStatisticsObj statsObj:statsObjs) {
         colName = statsObj.getColName().toLowerCase();
         statsObj.setColName(colName);
@@ -5831,7 +5889,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       String convertedPartName = lowerCaseConvertPartName(partName);
       startFunction("delete_column_statistics_by_partition",": table=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
           " partition=" + convertedPartName + " column=" + colName);
       boolean ret = false;
 
@@ -5857,7 +5915,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         colName = colName.toLowerCase();
       }
       startFunction("delete_column_statistics_by_table", ": table=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) + " column=" +
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) + " column=" +
           colName);
 
       boolean ret = false;
@@ -7194,6 +7252,55 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public void commit_txn(CommitTxnRequest rqst) throws TException {
+      // in replication flow, the write notification log table will be updated here.
+      if (rqst.isSetWriteEventInfos()) {
+        long targetTxnId = getTxnHandler().getTargetTxnId(rqst.getReplPolicy(), rqst.getTxnid());
+        if (targetTxnId < 0) {
+          //looks like a retry
+          return;
+        }
+        for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
+          String[] filesAdded = ReplChangeManager.getListFromSeparatedString(writeEventInfo.getFiles());
+          List<String> partitionValue = null;
+          Partition ptnObj = null;
+          String root;
+          Table tbl = getTblObject(writeEventInfo.getDatabase(), writeEventInfo.getTable());
+
+          if (writeEventInfo.getPartition() != null && !writeEventInfo.getPartition().isEmpty()) {
+            partitionValue = Warehouse.getPartValuesFromPartName(writeEventInfo.getPartition());
+            ptnObj = getPartitionObj(writeEventInfo.getDatabase(), writeEventInfo.getTable(), partitionValue, tbl);
+            root = ptnObj.getSd().getLocation();
+          } else {
+            root = tbl.getSd().getLocation();
+          }
+
+          InsertEventRequestData insertData = new InsertEventRequestData();
+          insertData.setReplace(true);
+
+          // The files in the commit txn message during load will have files with path corresponding to source
+          // warehouse. Need to transform them to target warehouse using table or partition object location.
+          for (String file : filesAdded) {
+            String[] decodedPath = ReplChangeManager.decodeFileUri(file);
+            String name = (new Path(decodedPath[0])).getName();
+            Path newPath = FileUtils.getTransformedPath(name, decodedPath[3], root);
+            insertData.addToFilesAdded(newPath.toUri().toString());
+            insertData.addToSubDirectoryList(decodedPath[3]);
+            try {
+              insertData.addToFilesAddedChecksum(ReplChangeManager.checksumFor(newPath, newPath.getFileSystem(conf)));
+            } catch (IOException e) {
+              LOG.error("failed to get checksum for the file " + newPath + " with error: " + e.getMessage());
+              throw new TException(e.getMessage());
+            }
+          }
+
+          WriteNotificationLogRequest wnRqst = new WriteNotificationLogRequest(targetTxnId,
+                  writeEventInfo.getWriteId(), writeEventInfo.getDatabase(), writeEventInfo.getTable(), insertData);
+          if (partitionValue != null) {
+            wnRqst.setPartitionVals(partitionValue);
+          }
+          addTxnWriteNotificationLog(tbl, ptnObj, wnRqst);
+        }
+      }
       getTxnHandler().commitTxn(rqst);
       if (listeners != null && !listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
@@ -7221,6 +7328,42 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                         rqst.getTableName(), this));
       }
       return response;
+    }
+
+    private void addTxnWriteNotificationLog(Table tableObj, Partition ptnObj, WriteNotificationLogRequest rqst)
+            throws MetaException {
+      String partition = ""; //Empty string is an invalid partition name. Can be used for non partitioned table.
+      if (ptnObj != null) {
+        partition = Warehouse.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals());
+      }
+      AcidWriteEvent event = new AcidWriteEvent(partition, tableObj, ptnObj, rqst);
+      getTxnHandler().addWriteNotificationLog(event);
+      if (listeners != null && !listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ACID_WRITE, event);
+      }
+    }
+
+    private Table getTblObject(String db, String table) throws MetaException, NoSuchObjectException {
+      GetTableRequest req = new GetTableRequest(db, table);
+      req.setCapabilities(new ClientCapabilities(Lists.newArrayList(ClientCapability.TEST_CAPABILITY)));
+      return get_table_req(req).getTable();
+    }
+
+    private Partition getPartitionObj(String db, String table, List<String> partitionVals, Table tableObj)
+            throws MetaException, NoSuchObjectException {
+      if (tableObj.isSetPartitionKeys() && !tableObj.getPartitionKeys().isEmpty()) {
+        return get_partition(db, table, partitionVals);
+      }
+      return null;
+    }
+
+    @Override
+    public WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
+            throws TException {
+      Table tableObj = getTblObject(rqst.getDb(), rqst.getTable());
+      Partition ptnObj = getPartitionObj(rqst.getDb(), rqst.getTable(), rqst.getPartitionVals(), tableObj);
+      addTxnWriteNotificationLog(tableObj, ptnObj, rqst);
+      return new WriteNotificationLogResponse();
     }
 
     @Override
@@ -7329,7 +7472,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String dbName = request.getDbName().toLowerCase();
       String tblName = request.getTblName().toLowerCase();
       startFunction("get_aggr_stats_for", ": table=" +
-          getCatalogQualifiedTableName(catName, dbName, tblName));
+          TableName.getQualified(catName, dbName, tblName));
 
       List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
       for (String colName : request.getColNames()) {
@@ -7461,7 +7604,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws MetaException, InvalidObjectException {
       Table t = getMS().getTable(catName, dbName, tableName);
       if (t == null) {
-        throw new InvalidObjectException(getCatalogQualifiedTableName(catName, dbName, tableName)
+        throw new InvalidObjectException(TableName.getQualified(catName, dbName, tableName)
             + " table not found");
       }
       return t;
@@ -7532,22 +7675,60 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public FireEventResponse fire_listener_event(FireEventRequest rqst) throws TException {
       switch (rqst.getData().getSetField()) {
-      case INSERT_DATA:
-        String catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
-        InsertEvent event =
-            new InsertEvent(catName, rqst.getDbName(), rqst.getTableName(), rqst.getPartitionVals(),
-                rqst.getData().getInsertData(), rqst.isSuccessful(), this);
-
-        /*
-         * The transactional listener response will be set already on the event, so there is not need
-         * to pass the response to the non-transactional listener.
-         */
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.INSERT, event);
-        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.INSERT, event);
-
-        return new FireEventResponse();
-
-      default:
+        case INSERT_DATA:
+        case INSERT_DATAS:
+        String catName =
+            rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
+        String dbName = rqst.getDbName();
+        String tblName = rqst.getTableName();
+        boolean isSuccessful = rqst.isSuccessful();
+        List<InsertEvent> events = new ArrayList<>();
+        if (rqst.getData().isSetInsertData()) {
+          events.add(new InsertEvent(catName, dbName, tblName,
+              rqst.getPartitionVals(),
+              rqst.getData().getInsertData(), isSuccessful, this));
+        } else {
+          // this is a bulk fire insert event operation
+          // we use the partition values field from the InsertEventRequestData object
+          // instead of the FireEventRequest object
+          for (InsertEventRequestData insertData : rqst.getData().getInsertDatas()) {
+            if (!insertData.isSetPartitionVal()) {
+              throw new MetaException(
+                  "Partition values must be set when firing multiple insert events");
+            }
+            events.add(new InsertEvent(catName, dbName, tblName,
+                insertData.getPartitionVal(),
+                insertData, isSuccessful, this));
+          }
+        }
+        FireEventResponse response = new FireEventResponse();
+        for (InsertEvent event : events) {
+          /*
+           * The transactional listener response will be set already on the event, so there is not need
+           * to pass the response to the non-transactional listener.
+           */
+          MetaStoreListenerNotifier
+              .notifyEvent(transactionalListeners, EventType.INSERT, event);
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.INSERT, event);
+          if (event.getParameters() != null && event.getParameters()
+              .containsKey(
+                  MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
+            response.addToEventIds(Long.valueOf(event.getParameters()
+                .get(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)));
+          } else {
+            String msg = "Insert event id not generated for ";
+            if (event.getPartitionObj() != null) {
+              msg += "partition " + Arrays
+                  .toString(event.getPartitionObj().getValues().toArray()) + " of ";
+            }
+            msg +=
+                " of table " + event.getTableObj().getDbName() + "." + event.getTableObj()
+                    .getTableName();
+            LOG.warn(msg);
+          }
+        }
+        return response;
+        default:
         throw new TException("Event type " + rqst.getData().getSetField().toString()
             + " not currently supported.");
       }
@@ -8774,6 +8955,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
+  /*
+  Interface to encapsulate Http and binary thrift server for
+  HiveMetastore
+   */
+  private interface ThriftServer {
+    public void start() throws Throwable;
+    public boolean isRunning();
+  }
+
   /**
    * @param args
    */
@@ -8887,6 +9077,194 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     startMetaStore(port, bridge, conf, null, null, null);
   }
 
+  public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
+                                    Configuration conf, Lock startLock, Condition startCondition,
+                                    AtomicBoolean startedServing) throws Throwable {
+    isMetaStoreRemote = true;
+    String transportMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "binary");
+    boolean isHttpTransport = transportMode.equalsIgnoreCase("http");
+    if (isHttpTransport) {
+      thriftServer = startHttpMetastore(port, conf);
+    } else {
+      thriftServer = startBinaryMetaStore(port, bridge, conf);
+    }
+
+    if (startLock != null) {
+      signalOtherThreadsToStart(thriftServer, startLock, startCondition, startedServing);
+    }
+    thriftServer.start();
+  }
+
+
+  // TODO: Is it worth trying to use a server that supports HTTP/2?
+  //  Does the Thrift http client support this?
+
+  private static ThriftServer startHttpMetastore(int port, Configuration conf)
+          throws Exception {
+    LOG.info("Attempting to start http metastore server on port: {}", port);
+    // This check is likely pointless, especially with the current state of the http
+    // servlet which respects whatever comes in. Putting this in place for the moment
+    // only to enable testing on an otherwise secure cluster.
+    LOG.info(" Checking if security is enabled");
+    if (UserGroupInformation.isSecurityEnabled()) {
+      LOG.info("Logging in via keytab while starting HTTP metastore");
+      // Handle renewal
+      String kerberosName = SecurityUtil.getServerPrincipal(MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL), "0.0.0.0");
+      String keyTabFile = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
+      UserGroupInformation.loginUserFromKeytab(kerberosName, keyTabFile);
+    } else {
+      LOG.info("Security is not enabled. Not logging in via keytab");
+    }
+
+    long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
+    int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
+    int maxWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MAX_THREADS);
+    // Server thread pool
+    // Start with minWorkerThreads, expand till maxWorkerThreads and reject
+    // subsequent requests
+    final String threadPoolNamePrefix = "HiveMetastore-HttpHandler-Pool";
+    ExecutorService executorService = new ThreadPoolExecutor(
+            minWorkerThreads, maxWorkerThreads, 60, TimeUnit.SECONDS,
+            new SynchronousQueue<>(), new ThreadFactory() {
+      @Override
+      public Thread newThread(@NotNull Runnable r) {
+        Thread newThread = new Thread(r);
+        newThread.setName(threadPoolNamePrefix + ": Thread-" + newThread.getId());
+        return newThread;
+      }
+    });
+    ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);
+    // HTTP Server
+    org.eclipse.jetty.server.Server server = new Server(threadPool);
+    server.setStopAtShutdown(true);
+
+    ServerConnector connector;
+    final HttpConfiguration httpServerConf = new HttpConfiguration();
+    httpServerConf.setRequestHeaderSize(
+            MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_REQUEST_HEADER_SIZE));
+    httpServerConf.setResponseHeaderSize(
+            MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_RESPONSE_HEADER_SIZE));
+
+    final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
+
+    final boolean useSsl  = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
+    String schemeName = useSsl ? "https" : "http";
+    if (useSsl) {
+      String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
+      if (keyStorePath.isEmpty()) {
+        throw new IllegalArgumentException(ConfVars.SSL_KEYSTORE_PATH.toString()
+                + " Not configured for SSL connection");
+      }
+      String keyStorePassword =
+              MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
+      String keyStoreType =
+              MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_TYPE).trim();
+      String keyStoreAlgorithm =
+              MetastoreConf.getVar(conf, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
+
+      SslContextFactory sslContextFactory = new SslContextFactory();
+      String[] excludedProtocols = MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
+      LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
+      sslContextFactory.addExcludeProtocols(excludedProtocols);
+      LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = "
+              + Arrays.toString(sslContextFactory.getExcludeProtocols()));
+      sslContextFactory.setKeyStorePath(keyStorePath);
+      sslContextFactory.setKeyStorePassword(keyStorePassword);
+      sslContextFactory.setKeyStoreType(keyStoreType);
+      sslContextFactory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm);
+      connector = new ServerConnector(server, sslContextFactory, http);
+    } else {
+      connector = new ServerConnector(server, http);
+    }
+    connector.setPort(port);
+    connector.setReuseAddress(true);
+    // TODO: What should the idle timeout be for the metastore? Currently it is 30 minutes
+    long maxIdleTimeout = MetastoreConf.getTimeVar(conf, ConfVars.METASTORE_THRIFT_HTTP_MAX_IDLE_TIME,
+            TimeUnit.MILLISECONDS);
+    connector.setIdleTimeout(maxIdleTimeout);
+    // TODO: AcceptQueueSize needs to be higher for HMS
+    connector.setAcceptQueueSize(maxWorkerThreads);
+    // TODO: Connection keepalive configuration?
+
+    server.addConnector(connector);
+    TProcessor processor;
+    boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
+    final TProtocolFactory protocolFactory;
+    if (useCompactProtocol) {
+      protocolFactory = new TCompactProtocol.Factory();
+    } else {
+      protocolFactory = new TBinaryProtocol.Factory();
+    }
+
+    HMSHandler baseHandler = new HMSHandler("new db based metaserver",
+            conf);
+    IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+    processor = new ThriftHiveMetastore.Processor<>(handler);
+    LOG.info("Starting DB backed MetaStore Server with generic processor");
+    TServlet thriftHttpServlet = new HmsThriftHttpServlet(processor, protocolFactory, conf);
+
+    boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
+    HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
+
+    String httpPath =
+            MetaStoreUtils.getHttpPath(
+                    MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_HTTP_PATH));
+
+    ServletContextHandler context = new ServletContextHandler(
+            ServletContextHandler.NO_SECURITY | ServletContextHandler.NO_SESSIONS);
+
+    // Tons of stuff skipped as compared the HS2.
+    // Sesions, XSRF, Compression, path configuration, etc.
+    constraintHttpMethods(context, false);
+    server.setHandler(context);
+
+    context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
+
+
+    return new ThriftServer() {
+      @Override
+      public void start() throws Throwable {
+        HMSHandler.LOG.debug("Starting HTTPServer for HMS");
+        server.setStopAtShutdown(true);
+        server.start();
+        HMSHandler.LOG.info("Started the new HTTPServer for metastore on port [" + port
+                + "]...");
+        HMSHandler.LOG.info("Options.minWorkerThreads = "
+                + minWorkerThreads);
+        HMSHandler.LOG.info("Options.maxWorkerThreads = "
+                + maxWorkerThreads);
+        HMSHandler.LOG.info("Enable SSL = " + useSsl);
+      }
+
+      @Override
+      public boolean isRunning() {
+        return server != null && server.isRunning();
+      }
+    };
+  }
+
+  private static void constraintHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {
+    Constraint c = new Constraint();
+    c.setAuthenticate(true);
+
+    ConstraintMapping cmt = new ConstraintMapping();
+    cmt.setConstraint(c);
+    cmt.setMethod("TRACE");
+    cmt.setPathSpec("/*");
+
+    ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+    if (!allowOptionsMethod) {
+      ConstraintMapping cmo = new ConstraintMapping();
+      cmo.setConstraint(c);
+      cmo.setMethod("OPTIONS");
+      cmo.setPathSpec("/*");
+      securityHandler.setConstraintMappings(new ConstraintMapping[] {cmt, cmo});
+    } else {
+      securityHandler.setConstraintMappings(new ConstraintMapping[] {cmt});
+    }
+    ctxHandler.setSecurityHandler(securityHandler);
+  }
+
   /**
    * Start Metastore based on a passed {@link HadoopThriftAuthBridge}
    *
@@ -8896,9 +9274,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    *          configuration overrides
    * @throws Throwable
    */
-  public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
-      Configuration conf, Lock startLock, Condition startCondition,
-      AtomicBoolean startedServing) throws Throwable {
+  public static ThriftServer startBinaryMetaStore(int port, HadoopThriftAuthBridge bridge,
+                                                  Configuration conf) throws Throwable {
     try {
       isMetaStoreRemote = true;
       // Server will create new threads up to max as necessary. After an idle
@@ -9038,19 +9415,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       };
 
       tServer.setServerEventHandler(tServerEventHandler);
-      HMSHandler.LOG.info("Started the new metaserver on port [" + port
-          + "]...");
-      HMSHandler.LOG.info("Options.minWorkerThreads = "
-          + minWorkerThreads);
-      HMSHandler.LOG.info("Options.maxWorkerThreads = "
-          + maxWorkerThreads);
-      HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
-      HMSHandler.LOG.info("Enable SSL = " + useSSL);
+      return new ThriftServer() {
+        @Override
+        public void start() throws Throwable {
+          tServer.serve();
+          HMSHandler.LOG.info("Started the new metaserver on port [" + port
+                  + "]...");
+          HMSHandler.LOG.info("Options.minWorkerThreads = "
+                  + minWorkerThreads);
+          HMSHandler.LOG.info("Options.maxWorkerThreads = "
+                  + maxWorkerThreads);
+          HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
+          HMSHandler.LOG.info("Enable SSL = " + useSSL);
+        }
 
-      if (startLock != null) {
-        signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
-      }
-      tServer.serve();
+        @Override
+        public boolean isRunning() {
+          return tServer != null && tServer.isServing();
+        }
+      };
     } catch (Throwable x) {
       x.printStackTrace();
       HMSHandler.LOG.error(StringUtils.stringifyException(x));
@@ -9078,7 +9461,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  private static void signalOtherThreadsToStart(final TServer server, final Lock startLock,
+  private static void signalOtherThreadsToStart(final ThriftServer thriftServer, final Lock startLock,
                                                 final Condition startCondition,
                                                 final AtomicBoolean startedServing) {
     // A simple thread to wait until the server has started and then signal the other threads to
@@ -9092,7 +9475,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           } catch (InterruptedException e) {
             LOG.warn("Signalling thread was interrupted: " + e.getMessage());
           }
-        } while (!server.isServing());
+        } while (!thriftServer.isRunning());
         startLock.lock();
         try {
           startedServing.set(true);
@@ -9218,7 +9601,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   private static void startRemoteOnlyTasks(Configuration conf) throws Exception {
-    if(!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
+    if(!MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON)) {
       return;
     }
 

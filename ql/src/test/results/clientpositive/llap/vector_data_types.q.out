@@ -183,10 +183,6 @@ POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	374	65560	4294967516	65.43	22.48	true	oscar quirinius	2013-03-01 09:11:58.703316	16.86	mathematics
-NULL	409	65536	4294967490	46.97	25.92	false	fred miller	2013-03-01 09:11:58.703116	33.45	history
-NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703111	18.80	mathematics
 -3	275	65622	4294967302	71.78	8.49	false	wendy robinson	2013-03-01 09:11:58.703294	95.39	undecided
 -3	344	65733	4294967363	0.56	11.96	true	rachel thompson	2013-03-01 09:11:58.703276	88.46	wind surfing
 -3	376	65548	4294967431	96.78	43.23	false	fred ellison	2013-03-01 09:11:58.703233	75.39	education
@@ -203,6 +199,10 @@ NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703
 -2	461	65648	4294967425	58.52	24.85	false	rachel thompson	2013-03-01 09:11:58.703318	85.62	zync studies
 -1	268	65778	4294967418	56.33	44.73	true	calvin falkner	2013-03-01 09:11:58.70322	7.37	history
 -1	281	65643	4294967323	15.1	45.0	false	irene nixon	2013-03-01 09:11:58.703223	80.96	undecided
+-1	300	65663	4294967343	71.26	34.62	true	calvin ovid	2013-03-01 09:11:58.703262	78.56	study skills
+-1	348	65556	4294967413	35.17	9.51	false	bob young	2013-03-01 09:11:58.70328	45.81	quiet hour
+-1	372	65680	4294967490	15.45	18.09	false	ethan laertes	2013-03-01 09:11:58.70311	65.88	opthamology
+-1	417	65685	4294967492	28.89	5.19	true	mike white	2013-03-01 09:11:58.703275	90.69	forestry
 PREHOOK: query: SELECT SUM(HASH(*))
 FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i) as q
 PREHOOK: type: QUERY
@@ -322,10 +322,6 @@ POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	374	65560	4294967516	65.43	22.48	true	oscar quirinius	2013-03-01 09:11:58.703316	16.86	mathematics
-NULL	409	65536	4294967490	46.97	25.92	false	fred miller	2013-03-01 09:11:58.703116	33.45	history
-NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703111	18.80	mathematics
 -3	275	65622	4294967302	71.78	8.49	false	wendy robinson	2013-03-01 09:11:58.703294	95.39	undecided
 -3	344	65733	4294967363	0.56	11.96	true	rachel thompson	2013-03-01 09:11:58.703276	88.46	wind surfing
 -3	376	65548	4294967431	96.78	43.23	false	fred ellison	2013-03-01 09:11:58.703233	75.39	education
@@ -342,6 +338,10 @@ NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703
 -2	461	65648	4294967425	58.52	24.85	false	rachel thompson	2013-03-01 09:11:58.703318	85.62	zync studies
 -1	268	65778	4294967418	56.33	44.73	true	calvin falkner	2013-03-01 09:11:58.70322	7.37	history
 -1	281	65643	4294967323	15.1	45.0	false	irene nixon	2013-03-01 09:11:58.703223	80.96	undecided
+-1	300	65663	4294967343	71.26	34.62	true	calvin ovid	2013-03-01 09:11:58.703262	78.56	study skills
+-1	348	65556	4294967413	35.17	9.51	false	bob young	2013-03-01 09:11:58.70328	45.81	quiet hour
+-1	372	65680	4294967490	15.45	18.09	false	ethan laertes	2013-03-01 09:11:58.70311	65.88	opthamology
+-1	417	65685	4294967492	28.89	5.19	true	mike white	2013-03-01 09:11:58.703275	90.69	forestry
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION 
 SELECT SUM(HASH(*))
 FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i) as q

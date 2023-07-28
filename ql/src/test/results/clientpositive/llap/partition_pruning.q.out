@@ -102,6 +102,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@daysales
 POSTHOOK: Input: default@daysales@dt=2001-01-01
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`daysales`
+WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -180,6 +183,9 @@ POSTHOOK: Input: default@daysales
 POSTHOOK: Input: default@daysales@dt=2001-01-01
 POSTHOOK: Input: default@daysales@dt=2001-01-03
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`daysales`
+WHERE NVL(`dt` = '2001-01-01' OR `customer` = 3, FALSE)
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -304,6 +310,9 @@ POSTHOOK: Input: default@daysales
 POSTHOOK: Input: default@daysales@dt=2001-01-01
 POSTHOOK: Input: default@daysales@dt=2001-01-03
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`daysales`
+WHERE NVL(`dt` = '2001-01-01' OR `customer` = 3, FALSE)
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

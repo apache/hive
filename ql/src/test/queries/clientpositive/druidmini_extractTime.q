@@ -1,6 +1,6 @@
 --! qt:disabled:HIVE-24816
---! qt:dataset:druid_table_alltypesorc
-SET hive.vectorized.execution.enabled=true ;
+
+SET hive.vectorized.execution.enabled=false;
 SET hive.ctas.external.tables=true;
 SET hive.external.table.purge.default = true;
 CREATE EXTERNAL TABLE druid_table
@@ -183,7 +183,7 @@ SELECT CAST(`__time` AS DATE) AS `x_date` FROM druid_table ORDER BY `x_date` LIM
 create table test_extract_from_string_base_table(`timecolumn` timestamp, `date_c` string, `timestamp_c` string,  `metric_c` double);
 insert into test_extract_from_string_base_table values ('2015-03-08 00:00:00', '2015-03-10', '2015-03-08 05:30:20', 5.0);
 
-CREATE TABLE druid_test_extract_from_string_table
+CREATE EXTERNAL TABLE druid_test_extract_from_string_table
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 AS select

@@ -18,6 +18,13 @@ INSERT OVERWRITE DIRECTORY 'target/warehouse/union_merge.out' SELECT unioninput.
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: target/warehouse/union_merge.out
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` < 100
+UNION ALL
+SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` > 100
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -249,6 +256,13 @@ INSERT OVERWRITE DIRECTORY 'target/warehouse/union_merge.out' SELECT unioninput.
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: target/warehouse/union_merge.out
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` < 100
+UNION ALL
+SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` > 100
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4

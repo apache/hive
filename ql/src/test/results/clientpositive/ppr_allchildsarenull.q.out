@@ -24,6 +24,9 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(`key` AS INTEGER) AS `user_id`, `value`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND (`value` LIKE 'aaa%' OR `value` LIKE 'vvv%')
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -232,6 +235,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(`key` AS INTEGER) AS `user_id`, `value`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND (`value` LIKE 'aaa%' OR `value` LIKE 'vvv%')
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

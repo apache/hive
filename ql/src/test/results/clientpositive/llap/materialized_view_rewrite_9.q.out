@@ -135,10 +135,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
                         Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col4 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -257,10 +257,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
                         Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col4 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -372,10 +372,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
                         Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col4 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)

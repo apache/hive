@@ -17,15 +17,18 @@ USE test_db;
 CREATE TABLE foo_n4(a INT);
 CREATE TABLE bar_n0(a INT);
 CREATE TABLE baz(a INT);
+CREATE VIEW test_view_n100 AS SELECT * FROM foo_n4;
 
 -- SHOW TABLES basic syntax tests
 USE default;
 SHOW TABLES FROM test_db;
-SHOW TABLES FROM default;
+SHOW EXTENDED TABLES FROM test_db;
 SHOW TABLES IN test_db;
-SHOW TABLES IN default;
+SHOW EXTENDED TABLES IN test_db;
 SHOW TABLES IN test_db "test*";
 SHOW TABLES IN test_db LIKE "nomatch";
+SHOW TABLES IN test_db WHERE `table_type` = "MANAGED_TABLE";
+SHOW EXTENDED TABLES IN test_db WHERE `table_type` = "VIRTUAL_VIEW";
 
 -- SHOW TABLE EXTENDED basic syntax tests and wildcard
 SHOW TABLE EXTENDED IN test_db LIKE foo_n4;

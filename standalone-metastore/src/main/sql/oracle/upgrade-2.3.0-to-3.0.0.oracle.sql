@@ -1,5 +1,8 @@
 SELECT 'Upgrading MetaStore schema from 2.3.0 to 3.0.0' AS Status from dual;
 
+-- HIVE-21336 safeguards from failures from indices being too long
+ALTER SESSION SET NLS_LENGTH_SEMANTICS=BYTE;
+
 --@041-HIVE-16556.oracle.sql;
 CREATE TABLE METASTORE_DB_PROPERTIES
 (
@@ -335,8 +338,8 @@ INSERT INTO TXN_TO_WRITE_ID (T2W_DATABASE, T2W_TABLE, T2W_TXNID, T2W_WRITEID)
 UPDATE TXN_COMPONENTS SET TC_WRITEID = TC_TXNID;
 UPDATE COMPLETED_TXN_COMPONENTS SET CTC_WRITEID = CTC_TXNID;
 
+ALTER TABLE TBLS ADD OWNER_TYPE VARCHAR2(10) NULL;
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.0.0', VERSION_COMMENT='Hive release version 3.0.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0' AS Status from dual;
-
-ALTER TABLE TBLS ADD OWNER_TYPE VARCHAR2(10) NULL;

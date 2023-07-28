@@ -416,11 +416,11 @@ order by a.csmallint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	6
 -13036	1
 -8915	1
 -3799	1
 10782	1
+NULL	6
 PREHOOK: query: explain
 select
   *
@@ -848,8 +848,8 @@ order by a.csmallint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	6
 -13036	1
 -8915	1
 -3799	1
 10782	1
+NULL	6

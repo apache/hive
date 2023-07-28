@@ -359,7 +359,7 @@ public final class MetaDataFormatUtils {
     getStorageDescriptorInfo(tableInfo, table.getTTable().getSd());
 
     if (table.isView() || table.isMaterializedView()) {
-      tableInfo.append(LINE_DELIM).append("# View Information").append(LINE_DELIM);
+      tableInfo.append(LINE_DELIM).append(table.isView() ? "# View Information" : "# Materialized View Information").append(LINE_DELIM);
       getViewInfo(tableInfo, table);
     }
 
@@ -367,9 +367,13 @@ public final class MetaDataFormatUtils {
   }
 
   private static void getViewInfo(StringBuilder tableInfo, Table tbl) {
-    formatOutput("View Original Text:", tbl.getViewOriginalText(), tableInfo);
-    formatOutput("View Expanded Text:", tbl.getViewExpandedText(), tableInfo);
-    formatOutput("View Rewrite Enabled:", tbl.isRewriteEnabled() ? "Yes" : "No", tableInfo);
+    formatOutput("Original Query:", tbl.getViewOriginalText(), tableInfo);
+    formatOutput("Expanded Query:", tbl.getViewExpandedText(), tableInfo);
+    if (tbl.isMaterializedView()) {
+      formatOutput("Rewrite Enabled:", tbl.isRewriteEnabled() ? "Yes" : "No", tableInfo);
+      formatOutput("Outdated for Rewriting:", tbl.isOutdatedForRewriting() == null ? "Unknown"
+          : tbl.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
+    }
   }
 
   private static void getStorageDescriptorInfo(StringBuilder tableInfo,

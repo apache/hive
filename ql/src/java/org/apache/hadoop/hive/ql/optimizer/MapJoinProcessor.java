@@ -231,9 +231,8 @@ public class MapJoinProcessor extends Transform {
       newWork.getMapWork().setBaseSrc(null);
       newWork.getMapWork().setMapAliases(null);
     } catch (Exception e) {
-      e.printStackTrace();
       throw new SemanticException("Failed to generate new mapJoin operator " +
-          "by exception : " + e.getMessage());
+          "by exception : ", e);
     }
   }
 

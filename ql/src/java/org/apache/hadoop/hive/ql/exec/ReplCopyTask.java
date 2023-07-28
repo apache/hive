@@ -151,10 +151,11 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           continue;
         }
         String destFileName = srcFile.getCmPath().getName();
-        Path destFile = new Path(toPath, destFileName);
+        Path destRoot = CopyUtils.getCopyDestination(srcFile, toPath);
+        Path destFile = new Path(destRoot, destFileName);
         if (dstFs.exists(destFile)) {
           String destFileWithSourceName = srcFile.getSourcePath().getName();
-          Path newDestFile = new Path(toPath, destFileWithSourceName);
+          Path newDestFile = new Path(destRoot, destFileWithSourceName);
           boolean result = dstFs.rename(destFile, newDestFile);
           if (!result) {
             throw new IllegalStateException(

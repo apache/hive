@@ -25,6 +25,7 @@ import java.util.Random;
  * every row in data and has a random value
  * 
  **/
+@Deprecated
 public class RandomDimension extends Dimension {
 
   Random r;
