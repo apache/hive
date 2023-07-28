@@ -136,23 +136,26 @@
       <includes>
         <include>DEVNOTES</include>
         <include>README.txt</include>
-        <include>LICENSE</include>
         <include>NOTICE</include>
         <include>CHANGELOG</include>
         <include>RELEASE_NOTES.txt</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>
-
     <fileSet>
-      <directory>${project.parent.basedir}/binary-package-licenses</directory>
+      <directory>${project.build.directory}/generated-resources</directory>
+      <includes>
+        <include>/LICENSE</include>
+        <include>/licenses.xml</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/generated-resources/licenses</directory>
       <includes>
         <include>/*</include>
       </includes>
-      <excludes>
-        <exclude>/README</exclude>
-      </excludes>
-      <outputDirectory>binary-package-licenses</outputDirectory>
+      <outputDirectory>licenses</outputDirectory>
     </fileSet>
 
     <fileSet>

@@ -70,17 +70,6 @@
     </fileSet>
 
     <fileSet>
-      <directory>${project.basedir}/binary-package-licenses</directory>
-      <includes>
-        <include>/*</include>
-      </includes>
-      <excludes>
-        <exclude>/README</exclude>
-      </excludes>
-      <outputDirectory>binary-package-licenses</outputDirectory>
-    </fileSet>
-
-    <fileSet>
       <fileMode>755</fileMode>
       <directory>${project.basedir}/src/main/scripts</directory>
       <includes>
