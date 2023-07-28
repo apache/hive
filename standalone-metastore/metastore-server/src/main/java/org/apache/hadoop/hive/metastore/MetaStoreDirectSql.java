@@ -965,7 +965,7 @@ class MetaStoreDirectSql {
       List<? extends Object> paramsForFilter, List<String> joinsForFilter, Integer max)
       throws MetaException {
     return getPartitionFieldsViaSqlFilter(catName, dbName, tblName,
-        Arrays.asList("PART_ID"), sqlFilter, paramsForFilter, joinsForFilter, max);
+        Arrays.asList("\"PART_ID\""), sqlFilter, paramsForFilter, joinsForFilter, max);
   }
 
   /**
