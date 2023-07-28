@@ -454,8 +454,15 @@ public class PartitionPruner extends Transform {
       if (!doEvalClientSide) {
         perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
         try {
-          hasUnknownPartitions = Hive.get().getPartitionsByExpr(
-              tab, compactExpr, conf, partitions);
+          boolean useNewApi = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPILER_PARTITION_SPEC_API);
+          if(useNewApi) {
+            hasUnknownPartitions =
+                Hive.get().getPartitionsByPartSpec(tab, (ExprNodeGenericFuncDesc) compactExpr, conf, partitions);
+
+          } else {
+            hasUnknownPartitions =
+                Hive.get().getPartitionsByExpr(tab, compactExpr, conf, partitions);
+          }
         } catch (IMetaStoreClient.IncompatibleMetastoreException ime) {
           // TODO: backward compat for Hive <= 0.12. Can be removed later.
           LOG.warn("Metastore doesn't support getPartitionsByExpr", ime);

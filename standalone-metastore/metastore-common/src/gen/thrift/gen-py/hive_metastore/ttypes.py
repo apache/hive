@@ -26930,6 +26930,8 @@ class GetPartitionsFilterSpec(object):
     Attributes:
      - filterMode
      - filters
+     - filterExpr
+     - defaultPartName
 
     """
 
@@ -26937,6 +26939,8 @@ class GetPartitionsFilterSpec(object):
     def __init__(self, filterMode=None, filters=None,):
         self.filterMode = filterMode
         self.filters = filters
+        self.filterExpr = filterExpr
+        self.defaultPartName = defaultPartName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -26962,6 +26966,21 @@ class GetPartitionsFilterSpec(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.LIST:
+                    self.filterExpr = []
+                    (_etype1035, _size1032) = iprot.readListBegin()
+                    for _i1036 in xrange(_size1032):
+                        _elem1037 = iprot.readByte()
+                        self.filterExpr.append(_elem1037)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.STRING:
+                    self.defaultPartName = iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -26982,6 +27001,17 @@ class GetPartitionsFilterSpec(object):
             for iter1209 in self.filters:
                 oprot.writeString(iter1209.encode('utf-8') if sys.version_info[0] == 2 else iter1209)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.filterExpr is not None:
+            oprot.writeFieldBegin('filterExpr', TType.LIST, 9)
+            oprot.writeListBegin(TType.BYTE, len(self.filterExpr))
+            for iter1039 in self.filterExpr:
+                oprot.writeByte(iter1039)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.defaultPartName is not None:
+            oprot.writeFieldBegin('defaultPartName', TType.STRING, 10)
+            oprot.writeString(self.defaultPartName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()

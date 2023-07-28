@@ -66,6 +66,9 @@ public class Partition implements Serializable {
   private Table table;
   private org.apache.hadoop.hive.metastore.api.Partition tPartition;
 
+  private String relativePath = null;
+
+
   /**
    * These fields are cached. The information comes from tPartition.
    */
@@ -219,7 +222,11 @@ public class Partition implements Serializable {
       if (tPartition.getSd() == null) {
         return null;
       } else {
-        return new Path(tPartition.getSd().getLocation());
+        String pathLocation = tPartition.getSd().getLocation();
+        if(relativePath != null) {
+          pathLocation += relativePath;
+        }
+        return new Path(pathLocation);
       }
     } else {
       if (table.getTTable() == null || table.getTTable().getSd() == null) {
@@ -334,6 +341,10 @@ public class Partition implements Serializable {
 
   public List<String> getBucketCols() {
     return tPartition.getSd().getBucketCols();
+  }
+
+  public void setRelativePath(String relativePath) {
+    this.relativePath = relativePath;
   }
 
   public List<Order> getSortCols() {

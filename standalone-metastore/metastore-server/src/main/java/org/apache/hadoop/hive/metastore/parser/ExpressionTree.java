@@ -476,6 +476,7 @@ public class ExpressionTree {
       // Date/Timestamp data type value is considered as string hence pushing down to JDO.
       if (!ColumnType.StringTypes.contains(colType) && !ColumnType.DATE_TYPE_NAME.equalsIgnoreCase(colType)
           && !ColumnType.TIMESTAMP_TYPE_NAME.equalsIgnoreCase(colType)
+          && !ColumnType.BIGINT_TYPE_NAME.equalsIgnoreCase(colType)
           && (!isIntegralSupported || !ColumnType.IntegralTypes.contains(colType))) {
         filterBuilder.setError("Filtering is supported only on partition keys of type " +
             "string" + (isIntegralSupported ? ", or integral types" : ""));

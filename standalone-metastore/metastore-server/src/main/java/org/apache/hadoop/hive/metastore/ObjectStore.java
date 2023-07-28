@@ -4784,11 +4784,6 @@ public class ObjectStore implements RawStore, Configurable {
         inputExcludePattern = partitionsProjectSpec.getExcludeParamKeyPattern();
       }
     }
-    if (fieldList == null || fieldList.isEmpty()) {
-      // no fields are requested. Fallback to regular getPartitions implementation to return all the fields
-      return getPartitionsInternal(table.getCatName(), table.getDbName(), table.getTableName(), -1,
-          true, true);
-    }
 
     // anonymous class below requires final String objects
     final String includeParamKeyPattern = inputIncludePattern;
@@ -4797,39 +4792,43 @@ public class ObjectStore implements RawStore, Configurable {
     return new GetListHelper<Partition>(table.getCatName(), table.getDbName(), table.getTableName(),
         fieldList, true, true) {
       private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
-      private ExpressionTree tree;
+      private String defaultPartitionName;
+      private byte[] byteFilterExpr;
+
+      private ExpressionTree initExpressionTree() throws MetaException {
+        defaultPartitionName = filterSpec.getDefaultPartName();
+        List<Byte> filterExpr = filterSpec.getFilterExpr();
+        byteFilterExpr = ArrayUtils.toPrimitive(filterExpr.toArray(new Byte[filterExpr.size()]));
+        return PartFilterExprUtil.makeExpressionTree(expressionProxy, byteFilterExpr,
+            getDefaultPartitionName(defaultPartitionName), conf);
+      }
 
       @Override
       protected boolean canUseDirectSql(GetHelper<List<Partition>> ctx) throws MetaException {
-        if (filterSpec.isSetFilterMode() && filterSpec.getFilterMode().equals(PartitionFilterMode.BY_EXPR)) {
-          // if the filter mode is BY_EXPR initialize the filter and generate the expression tree
-          // if there are more than one filter string we AND them together
-          initExpressionTree();
-          return directSql.generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
-                  table.getPartitionKeys(), tree, null, filter);
-        }
-        // BY_VALUES and BY_NAMES are always supported
         return true;
-      }
-
-      private void initExpressionTree() throws MetaException {
-        StringBuilder filterBuilder = new StringBuilder();
-        int len = filterSpec.getFilters().size();
-        List<String> filters = filterSpec.getFilters();
-        for (int i = 0; i < len; i++) {
-          filterBuilder.append('(');
-          filterBuilder.append(filters.get(i));
-          filterBuilder.append(')');
-          if (i + 1 < len) {
-            filterBuilder.append(" AND ");
-          }
-        }
-        String filterStr = filterBuilder.toString();
-        tree = PartFilterExprUtil.parseFilterTree(filterStr);
       }
 
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
+        //if expr mode, generate filter
+        if (filterSpec.isSetFilterMode() && filterSpec.getFilterMode().equals(PartitionFilterMode.BY_EXPR)) {
+          ExpressionTree exprTree = initExpressionTree();
+          if (exprTree != null) {
+            SqlFilterForPushdown filter = new SqlFilterForPushdown();
+            if (directSql.generateSqlFilterForPushdown(ctx.catName, ctx.dbName, ctx.tblName,
+                ctx.getTable().getPartitionKeys(), exprTree, defaultPartitionName, filter)) {
+              return directSql
+                  .getPartitionsUsingProjectionAndFilterSpec(ctx.getTable(), ctx.partitionFields,
+                  includeParamKeyPattern, excludeParamKeyPattern, filterSpec, filter);
+            }
+          }
+          // We couldn't do SQL filter pushdown. Get names via normal means.
+          List<String> partNames = new LinkedList<>();
+          getPartitionNamesPrunedByExprNoTxn(ctx.catName, ctx.dbName,
+              ctx.tblName, ctx.getTable().getPartitionKeys(), byteFilterExpr,
+              defaultPartitionName, (short)-1 , partNames);
+          return directSql.getPartitionsViaSqlFilter(catName, dbName, tblName, partNames);
+        }
         return directSql
             .getPartitionsUsingProjectionAndFilterSpec(ctx.getTable(), ctx.partitionFields,
                 includeParamKeyPattern, excludeParamKeyPattern, filterSpec, filter);
@@ -4841,41 +4840,44 @@ public class ObjectStore implements RawStore, Configurable {
         // For single-valued fields we can use setResult() to implement projection of fields but
         // JDO doesn't support multi-valued fields in setResult() so currently JDO implementation
         // fallbacks to full-partition fetch if the requested fields contain multi-valued fields
-        List<String> fieldNames = PartitionProjectionEvaluator.getMPartitionFieldNames(ctx.partitionFields);
-          Map<String, Object> params = new HashMap<>();
-          String jdoFilter = null;
-          if (filterSpec.isSetFilterMode()) {
-            // generate the JDO filter string
-            switch(filterSpec.getFilterMode()) {
-            case BY_EXPR:
-              if (tree == null) {
-                // tree could be null when directSQL is disabled
-                initExpressionTree();
-              }
-              jdoFilter =
-                  makeQueryFilterString(table.getCatName(), table.getDbName(), table, tree, params,
-                      true);
+        List<String> fieldNames = ctx.partitionFields;
+        Map<String, Object> params = new HashMap<>();
+        String jdoFilter = null;
+        if (filterSpec.isSetFilterMode()) {
+          // generate the JDO filter string
+          switch (filterSpec.getFilterMode()) {
+          case BY_EXPR:
+            ExpressionTree exprTree = initExpressionTree();
+            if (exprTree == null) {
+              // We couldn't do JDOQL filter pushdown. Get names via normal means.
+              List<String> partNames = new ArrayList<>();
+              getPartitionNamesPrunedByExprNoTxn(catName, dbName, tblName, ctx.getTable().getPartitionKeys(),
+                  byteFilterExpr, defaultPartitionName, (short) -1, partNames);
+              return getPartitionsViaOrmFilter(catName, dbName, tblName, partNames, true);
+            } else {
+              jdoFilter = makeQueryFilterString(table.getCatName(), table.getDbName(), table, exprTree, params, true);
               if (jdoFilter == null) {
                 throw new MetaException("Could not generate JDO filter from given expression");
               }
               break;
-            case BY_NAMES:
-              jdoFilter = getJDOFilterStrForPartitionNames(table.getCatName(), table.getDbName(),
-                  table.getTableName(), filterSpec.getFilters(), params);
-              break;
-            case BY_VALUES:
-              jdoFilter = getJDOFilterStrForPartitionVals(table, filterSpec.getFilters(), params);
-              break;
-            default:
-              throw new MetaException("Unsupported filter mode " + filterSpec.getFilterMode());
             }
-          } else {
-            // filter mode is not set create simple JDOFilterStr and params
-            jdoFilter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3";
-            params.put("t1", normalizeIdentifier(tblName));
-            params.put("t2", normalizeIdentifier(dbName));
-            params.put("t3", normalizeIdentifier(catName));
+          case BY_NAMES:
+            jdoFilter = getJDOFilterStrForPartitionNames(table.getCatName(), table.getDbName(), table.getTableName(),
+                filterSpec.getFilters(), params);
+            break;
+          case BY_VALUES:
+            jdoFilter = getJDOFilterStrForPartitionVals(table, filterSpec.getFilters(), params);
+            break;
+          default:
+            throw new MetaException("Unsupported filter mode " + filterSpec.getFilterMode());
           }
+        } else {
+          // filter mode is not set create simple JDOFilterStr and params
+          jdoFilter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3";
+          params.put("t1", normalizeIdentifier(tblName));
+          params.put("t2", normalizeIdentifier(dbName));
+          params.put("t3", normalizeIdentifier(catName));
+        }
         try {
           return convertToParts(listMPartitionsWithProjection(fieldNames, jdoFilter, params));
         } catch (MetaException me) {

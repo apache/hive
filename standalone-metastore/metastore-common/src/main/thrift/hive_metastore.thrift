@@ -2230,8 +2230,10 @@ enum PartitionFilterMode {
 }
 
 struct GetPartitionsFilterSpec {
-   7: optional PartitionFilterMode filterMode,
-   8: optional list<string> filters //used as list of partitionNames or list of values or expressions depending on mode
+    7: optional PartitionFilterMode filterMode,
+    8: optional list<string> filters //used as list of partitionNames or list of values
+    9: optional list<byte> filterExpr //used as list of expressions for BY_EXPR mode
+    10: optional string defaultPartName //used in BY_EXPR mode to rewrite expression
 }
 
 struct GetPartitionsResponse {

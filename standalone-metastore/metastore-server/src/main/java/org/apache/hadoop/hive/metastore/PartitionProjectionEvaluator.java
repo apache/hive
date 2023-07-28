@@ -410,7 +410,8 @@ public class PartitionProjectionEvaluator {
                   // string to a boolean value
                   if (node.fieldName.equals("sd.compressed") || node.fieldName.equals("sd.storedAsSubDirectories")) {
                     value = MetastoreDirectSqlUtils.extractSqlBoolean(value);
-                  } else if (node.fieldName.equals("lastAccessTime") || node.fieldName.equals("createTime")) {
+                  } else if (node.fieldName.equals("lastAccessTime") || node.fieldName.equals("createTime")
+                      || node.fieldName.equals("sd.numBuckets")) {
                     value = MetastoreDirectSqlUtils.extractSqlInt(value);
                   }
                   MetaStoreServerUtils.setNestedProperty(partition, node.fieldName, value, true);

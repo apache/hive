@@ -7420,10 +7420,14 @@ class GetPartitionsFilterSpec
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FILTERMODE = 7
   FILTERS = 8
+  FILTEREXPR = 9
+  DEFAULTPARTNAME = 10
 
   FIELDS = {
     FILTERMODE => {:type => ::Thrift::Types::I32, :name => 'filterMode', :optional => true, :enum_class => ::PartitionFilterMode},
-    FILTERS => {:type => ::Thrift::Types::LIST, :name => 'filters', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    FILTERS => {:type => ::Thrift::Types::LIST, :name => 'filters', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    FILTEREXPR => {:type => ::Thrift::Types::LIST, :name => 'filterExpr', :element => {:type => ::Thrift::Types::BYTE}, :optional => true},
+    DEFAULTPARTNAME => {:type => ::Thrift::Types::STRING, :name => 'defaultPartName', :optional => true}
   }
 
   def struct_fields; FIELDS; end

@@ -742,10 +742,6 @@ class MetaStoreDirectSql {
     final String catName = tbl.getCatName();
     List<Long> partitionIds = null;
     if (filterSpec.isSetFilterMode()) {
-      List<String> filters = filterSpec.getFilters();
-      if (filters == null || filters.isEmpty()) {
-        throw new MetaException("Invalid filter expressions in the filter spec");
-      }
       switch(filterSpec.getFilterMode()) {
       case BY_EXPR:
         partitionIds =
@@ -762,7 +758,8 @@ class MetaStoreDirectSql {
       case BY_VALUES:
         // we are going to use the SQL regex pattern in the LIKE clause below. So the default string
         // is _% and not .*
-        String partNameMatcher = MetaStoreUtils.makePartNameMatcher(tbl, filters, "_%");
+        String partNameMatcher = MetaStoreUtils.makePartNameMatcher(tbl, filterSpec.getFilters(),
+            "_%");
         String partNamesLikeFilter =
             "" + PARTITIONS + ".\"PART_NAME\" LIKE (?)";
         partitionIds =
@@ -786,6 +783,14 @@ class MetaStoreDirectSql {
     Boolean isView = isViewTable(tbl);
     if (isView == null) {
       isView = isViewTable(catName, dbName, tblName);
+    }
+    if(partitionFields == null || partitionFields.isEmpty()) {
+      return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
+        @Override
+        public List<Partition> run(List<Long> input) throws MetaException {
+          return getPartitionsFromPartitionIds(catName, dbName, tblName, null, input, Collections.emptyList());
+        }
+      });
     }
     PartitionProjectionEvaluator projectionEvaluator =
         new PartitionProjectionEvaluator(pm, fieldnameToTableName, partitionFields,

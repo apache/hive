@@ -83,6 +83,7 @@ import com.google.common.collect.ImmutableList;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -109,16 +110,9 @@ import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
-import org.apache.hadoop.hive.metastore.api.GetTableRequest;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
-import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -132,78 +126,6 @@ import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.DataConnector;
-import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FireEventRequest;
-import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
-import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
-import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
-import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.Materialization;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
-import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
-import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
-import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
-import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
-import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchRequest;
-import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
-import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -4518,6 +4440,65 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return req;
   }
 
+  public boolean getPartitionsByPartSpec(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
+      List<Partition> result) throws HiveException, TException {
+    GetPartitionsFilterSpec filterSpec = new GetPartitionsFilterSpec();
+    filterSpec.setFilterMode(PartitionFilterMode.BY_EXPR);
+    filterSpec.setFilterExpr(Arrays.asList(
+        ArrayUtils.toObject(SerializationUtilities.serializeObjectToKryo(expr))));
+    filterSpec.setDefaultPartName(HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME));
+    // create projection spec
+    GetProjectionsSpec projSpec = new GetProjectionsSpec();
+    projSpec.setFieldList(Arrays.asList("dbName", "tableName", "catName", "parameters", "values","sd"));
+    projSpec.setIncludeParamKeyPattern("%");
+    GetPartitionsRequest request = new GetPartitionsRequest();
+    request.setTblName(tbl.getTableName());
+    request.setDbName(tbl.getDbName());
+    request.setProjectionSpec(projSpec);
+    request.setFilterSpec(filterSpec);
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.perfLogBegin("fetch partitions", "get_partitions_by_spec");
+    GetPartitionsResponse response = getMSC().getPartitionsWithSpecs(request);
+    perfLogger.perfLogEnd("fetch partitions", "get_partitions_by_spec");
+
+    perfLogger.perfLogBegin("convert partition spec to partitions", "get_partitions_by_spec");
+    result.addAll(convertFromPartSpec(response, tbl));
+    perfLogger.perfLogEnd("convert partition spec to partitions", "get_partitions_by_spec");
+    return false;
+  }
+
+  private List<Partition> convertFromPartSpec(GetPartitionsResponse response, Table tbl)
+      throws HiveException {
+    if(!response.getPartitionSpecIterator().hasNext()) {
+      return Collections.emptyList();
+    }
+    List<Partition> results = new ArrayList<>();
+    List<org.apache.hadoop.hive.metastore.api.Partition> metastorePart = new ArrayList<>();
+
+    PartitionSpec partitionSpec = response.getPartitionSpecIterator().next();
+
+    if (partitionSpec.getSharedSDPartitionSpec() != null
+        && partitionSpec.getSharedSDPartitionSpec().getPartitions() != null) {
+      for (PartitionWithoutSD partitionWithoutSD : partitionSpec.getSharedSDPartitionSpec().getPartitions()) {
+        org.apache.hadoop.hive.metastore.api.Partition part = new org.apache.hadoop.hive.metastore.api.Partition();
+        part.setTableName(partitionSpec.getTableName());
+        part.setDbName(partitionSpec.getDbName());
+        part.setCatName(partitionSpec.getCatName());
+        part.setCreateTime(partitionWithoutSD.getCreateTime());
+        part.setLastAccessTime(partitionWithoutSD.getLastAccessTime());
+        part.setParameters(partitionWithoutSD.getParameters());
+        part.setPrivileges(partitionWithoutSD.getPrivileges());
+        part.setSd(partitionSpec.getSharedSDPartitionSpec().getSd());
+        part.setValues(partitionWithoutSD.getValues());
+        part.setWriteId(partitionSpec.getWriteId());
+        Partition hivePart = new Partition(tbl, part);
+        assert (partitionWithoutSD.getRelativePath() != null);
+        hivePart.setRelativePath(partitionWithoutSD.getRelativePath());
+        results.add(hivePart);
+      }
+    }
+    return results;
+  }
   /**
    * Get a number of Partitions by filter.
    * @param tbl The table containing the partitions.

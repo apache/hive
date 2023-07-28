@@ -798,7 +798,7 @@ public class MetaStoreUtils {
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME,
         Joiner.on(",").join(sd.getBucketCols()));
     }
-    if (sd.getSerdeInfo() != null) {
+    if (sd.getSerdeInfo() != null && sd.getSerdeInfo().getParameters() != null) {
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
         schema.put(param.getKey(), (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
       }

@@ -2708,6 +2708,8 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.serde2.avro.AvroSerDe",
         "The comma-separated list of SerDe classes that are considered when enhancing table-properties \n" +
             "during logical optimization."),
+    HIVE_COMPILER_PARTITION_SPEC_API("hive.compiler.partition.spec.api", true,
+        "Use partition spec API instead of get_partition_by_expr"),
 
     HIVE_OPTIMIZE_SCAN_PROBEDECODE("hive.optimize.scan.probedecode", true,
         "Whether to find suitable table scan operators that could reduce the number of decoded rows at runtime by probing extra available information. \n"

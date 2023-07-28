@@ -13,13 +13,16 @@ package org.apache.hadoop.hive.metastore.api;
 
   private static final org.apache.thrift.protocol.TField FILTER_MODE_FIELD_DESC = new org.apache.thrift.protocol.TField("filterMode", org.apache.thrift.protocol.TType.I32, (short)7);
   private static final org.apache.thrift.protocol.TField FILTERS_FIELD_DESC = new org.apache.thrift.protocol.TField("filters", org.apache.thrift.protocol.TType.LIST, (short)8);
+  private static final org.apache.thrift.protocol.TField FILTER_EXPR_FIELD_DESC = new org.apache.thrift.protocol.TField("filterExpr", org.apache.thrift.protocol.TType.LIST, (short)9);
+  private static final org.apache.thrift.protocol.TField DEFAULT_PART_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("defaultPartName", org.apache.thrift.protocol.TType.STRING, (short)10);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new GetPartitionsFilterSpecStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetPartitionsFilterSpecTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable PartitionFilterMode filterMode; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> filters; // optional
-
+  private @org.apache.thrift.annotation.Nullable java.util.List<Byte> filterExpr; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String defaultPartName; // optional
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
@@ -27,7 +30,9 @@ package org.apache.hadoop.hive.metastore.api;
      * @see PartitionFilterMode
      */
     FILTER_MODE((short)7, "filterMode"),
-    FILTERS((short)8, "filters");
+    FILTERS((short)8, "filters"),
+    FILTER_EXPR((short)9, "filterExpr"),
+    DEFAULT_PART_NAME((short)10, "defaultPartName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -47,6 +52,10 @@ package org.apache.hadoop.hive.metastore.api;
           return FILTER_MODE;
         case 8: // FILTERS
           return FILTERS;
+        case 9: // FILTER_EXPR
+          return FILTER_EXPR;
+        case 10: // DEFAULT_PART_NAME
+          return DEFAULT_PART_NAME;
         default:
           return null;
       }
@@ -88,7 +97,7 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.FILTER_MODE,_Fields.FILTERS};
+  private static final _Fields optionals[] = {_Fields.FILTER_MODE,_Fields.FILTERS,_Fields.FILTER_EXPR,_Fields.DEFAULT_PART_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -97,6 +106,11 @@ package org.apache.hadoop.hive.metastore.api;
     tmpMap.put(_Fields.FILTERS, new org.apache.thrift.meta_data.FieldMetaData("filters", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.FILTER_EXPR, new org.apache.thrift.meta_data.FieldMetaData("filterExpr", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BYTE))));
+    tmpMap.put(_Fields.DEFAULT_PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("defaultPartName", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetPartitionsFilterSpec.class, metaDataMap);
   }
@@ -115,6 +129,13 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.List<java.lang.String> __this__filters = new java.util.ArrayList<java.lang.String>(other.filters);
       this.filters = __this__filters;
     }
+    if (other.isSetFilterExpr()) {
+      java.util.List<Byte> __this__filterExpr = new java.util.ArrayList<Byte>(other.filterExpr);
+      this.filterExpr = __this__filterExpr;
+    }
+    if (other.isSetDefaultPartName()) {
+      this.defaultPartName = other.defaultPartName;
+    }
   }
 
   public GetPartitionsFilterSpec deepCopy() {
@@ -125,6 +146,8 @@ package org.apache.hadoop.hive.metastore.api;
   public void clear() {
     this.filterMode = null;
     this.filters = null;
+    this.filterExpr = null;
+    this.defaultPartName = null;
   }
 
   /**
@@ -199,6 +222,67 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public int getFilterExprSize() {
+    return (this.filterExpr == null) ? 0 : this.filterExpr.size();
+  }
+
+  public java.util.Iterator<Byte> getFilterExprIterator() {
+    return (this.filterExpr == null) ? null : this.filterExpr.iterator();
+  }
+
+  public void addToFilterExpr(byte elem) {
+    if (this.filterExpr == null) {
+      this.filterExpr = new java.util.ArrayList<Byte>();
+    }
+    this.filterExpr.add(elem);
+  }
+
+  public @org.apache.thrift.annotation.Nullable java.util.List<Byte> getFilterExpr() {
+    return this.filterExpr;
+  }
+
+  public void setFilterExpr(@org.apache.thrift.annotation.Nullable java.util.List<Byte> filterExpr) {
+    this.filterExpr = filterExpr;
+  }
+
+  public void unsetFilterExpr() {
+    this.filterExpr = null;
+  }
+
+  /** Returns true if field filterExpr is set (has been assigned a value) and false otherwise */
+  public boolean isSetFilterExpr() {
+    return this.filterExpr != null;
+  }
+
+  public void setFilterExprIsSet(boolean value) {
+    if (!value) {
+      this.filterExpr = null;
+    }
+  }
+
+  public String getDefaultPartName() {
+    return this.defaultPartName;
+  }
+
+  public void setDefaultPartName(String defaultPartName) {
+    this.defaultPartName = defaultPartName;
+  }
+
+  public void unsetDefaultPartName() {
+    this.defaultPartName = null;
+  }
+
+  /** Returns true if field defaultPartName is set (has been assigned a value) and false otherwise */
+  public boolean isSetDefaultPartName() {
+    return this.defaultPartName != null;
+  }
+
+  public void setDefaultPartNameIsSet(boolean value) {
+    if (!value) {
+      this.defaultPartName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case FILTER_MODE:
@@ -217,6 +301,22 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case FILTER_EXPR:
+      if (value == null) {
+        unsetFilterExpr();
+      } else {
+        setFilterExpr((java.util.List<Byte>)value);
+      }
+      break;
+
+    case DEFAULT_PART_NAME:
+      if (value == null) {
+        unsetDefaultPartName();
+      } else {
+        setDefaultPartName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -228,6 +328,12 @@ package org.apache.hadoop.hive.metastore.api;
 
     case FILTERS:
       return getFilters();
+
+    case FILTER_EXPR:
+      return getFilterExpr();
+
+    case DEFAULT_PART_NAME:
+      return getDefaultPartName();
 
     }
     throw new java.lang.IllegalStateException();
@@ -244,6 +350,10 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetFilterMode();
     case FILTERS:
       return isSetFilters();
+    case FILTER_EXPR:
+      return isSetFilterExpr();
+    case DEFAULT_PART_NAME:
+      return isSetDefaultPartName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -279,6 +389,24 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_filterExpr = true && this.isSetFilterExpr();
+    boolean that_present_filterExpr = true && that.isSetFilterExpr();
+    if (this_present_filterExpr || that_present_filterExpr) {
+      if (!(this_present_filterExpr && that_present_filterExpr))
+        return false;
+      if (!this.filterExpr.equals(that.filterExpr))
+        return false;
+    }
+
+    boolean this_present_defaultPartName = true && this.isSetDefaultPartName();
+    boolean that_present_defaultPartName = true && that.isSetDefaultPartName();
+    if (this_present_defaultPartName || that_present_defaultPartName) {
+      if (!(this_present_defaultPartName && that_present_defaultPartName))
+        return false;
+      if (!this.defaultPartName.equals(that.defaultPartName))
+        return false;
+    }
+
     return true;
   }
 
@@ -293,6 +421,14 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetFilters()) ? 131071 : 524287);
     if (isSetFilters())
       hashCode = hashCode * 8191 + filters.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetFilterExpr()) ? 131071 : 524287);
+    if (isSetFilterExpr())
+      hashCode = hashCode * 8191 + filterExpr.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetDefaultPartName()) ? 131071 : 524287);
+    if (isSetDefaultPartName())
+      hashCode = hashCode * 8191 + defaultPartName.hashCode();
 
     return hashCode;
   }
@@ -321,6 +457,26 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetFilters()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.filters, other.filters);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetFilterExpr()).compareTo(other.isSetFilterExpr());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFilterExpr()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.filterExpr, other.filterExpr);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetDefaultPartName()).compareTo(other.isSetDefaultPartName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDefaultPartName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.defaultPartName, other.defaultPartName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -362,6 +518,26 @@ package org.apache.hadoop.hive.metastore.api;
         sb.append("null");
       } else {
         sb.append(this.filters);
+      }
+      first = false;
+    }
+    if (isSetFilterExpr()) {
+      if (!first) sb.append(", ");
+      sb.append("filterExpr:");
+      if (this.filterExpr == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.filterExpr);
+      }
+      first = false;
+    }
+    if (isSetDefaultPartName()) {
+      if (!first) sb.append(", ");
+      sb.append("defaultPartName:");
+      if (this.defaultPartName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.defaultPartName);
       }
       first = false;
     }
@@ -434,6 +610,32 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 9: // FILTER_EXPR
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list1171 = iprot.readListBegin();
+                struct.filterExpr = new java.util.ArrayList<Byte>(_list1171.size);
+                byte _elem1172;
+                for (int _i1173 = 0; _i1173 < _list1171.size; ++_i1173)
+                {
+                  _elem1172 = iprot.readByte();
+                  struct.filterExpr.add(_elem1172);
+                }
+                iprot.readListEnd();
+              }
+              struct.setFilterExprIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 10: // DEFAULT_PART_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.defaultPartName = iprot.readString();
+              struct.setDefaultPartNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -468,6 +670,27 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.filterExpr != null) {
+        if (struct.isSetFilterExpr()) {
+          oprot.writeFieldBegin(FILTER_EXPR_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.BYTE, struct.filterExpr.size()));
+            for (byte _iter1372 : struct.filterExpr)
+            {
+              oprot.writeByte(_iter1372);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.defaultPartName != null) {
+        if (struct.isSetDefaultPartName()) {
+          oprot.writeFieldBegin(DEFAULT_PART_NAME_FIELD_DESC);
+          oprot.writeString(struct.defaultPartName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -492,25 +715,43 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetFilters()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetFilterExpr()) {
+        optionals.set(2);
+      }
+      if (struct.isSetDefaultPartName()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetFilterMode()) {
         oprot.writeI32(struct.filterMode.getValue());
       }
       if (struct.isSetFilters()) {
         {
           oprot.writeI32(struct.filters.size());
-          for (java.lang.String _iter1372 : struct.filters)
+          for (String _iter1176 : struct.filters)
           {
-            oprot.writeString(_iter1372);
+            oprot.writeString(_iter1176);
           }
         }
+      }
+      if (struct.isSetFilterExpr()) {
+        {
+          oprot.writeI32(struct.filterExpr.size());
+          for (byte _iter1177 : struct.filterExpr)
+          {
+            oprot.writeByte(_iter1177);
+          }
+        }
+      }
+      if (struct.isSetDefaultPartName()) {
+        oprot.writeString(struct.defaultPartName);
       }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetPartitionsFilterSpec struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.filterMode = org.apache.hadoop.hive.metastore.api.PartitionFilterMode.findByValue(iprot.readI32());
         struct.setFilterModeIsSet(true);
@@ -527,6 +768,23 @@ package org.apache.hadoop.hive.metastore.api;
           }
         }
         struct.setFiltersIsSet(true);
+      }
+      if (incoming.get(2)) {
+        {
+           org.apache.thrift.protocol.TList _list1181 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.BYTE, iprot.readI32());
+           struct.filterExpr = new java.util.ArrayList<Byte>(_list1181.size);
+           byte _elem1182;
+           for (int _i1183 = 0; _i1183 < _list1181.size; ++_i1183)
+           {
+             _elem1182 = iprot.readByte();
+             struct.filterExpr.add(_elem1182);
+           }
+        }
+        struct.setFilterExprIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.defaultPartName = iprot.readString();
+        struct.setDefaultPartNameIsSet(true);
       }
     }
   }
