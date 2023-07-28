@@ -1965,6 +1965,15 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         if ($result->success !== null) {
             return $result->success;
         }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
+        }
+        if ($result->o3 !== null) {
+            throw $result->o3;
+        }
         throw new \Exception("get_table_objects_by_name failed: unknown result");
     }
 

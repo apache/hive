@@ -31,18 +31,57 @@ class ThriftHiveMetastore_get_table_objects_by_name_result
                 'class' => '\metastore\Table',
                 ),
         ),
+        1 => array(
+            'var' => 'o1',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\MetaException',
+        ),
+        2 => array(
+            'var' => 'o2',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\InvalidOperationException',
+        ),
+        3 => array(
+            'var' => 'o3',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\UnknownDBException',
+        ),
     );
 
     /**
      * @var \metastore\Table[]
      */
     public $success = null;
+    /**
+     * @var \metastore\MetaException
+     */
+    public $o1 = null;
+    /**
+     * @var \metastore\InvalidOperationException
+     */
+    public $o2 = null;
+    /**
+     * @var \metastore\UnknownDBException
+     */
+    public $o3 = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['success'])) {
                 $this->success = $vals['success'];
+            }
+            if (isset($vals['o1'])) {
+                $this->o1 = $vals['o1'];
+            }
+            if (isset($vals['o2'])) {
+                $this->o2 = $vals['o2'];
+            }
+            if (isset($vals['o3'])) {
+                $this->o3 = $vals['o3'];
             }
         }
     }
@@ -83,6 +122,30 @@ class ThriftHiveMetastore_get_table_objects_by_name_result
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 1:
+                    if ($ftype == TType::STRUCT) {
+                        $this->o1 = new \metastore\MetaException();
+                        $xfer += $this->o1->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 2:
+                    if ($ftype == TType::STRUCT) {
+                        $this->o2 = new \metastore\InvalidOperationException();
+                        $xfer += $this->o2->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 3:
+                    if ($ftype == TType::STRUCT) {
+                        $this->o3 = new \metastore\UnknownDBException();
+                        $xfer += $this->o3->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -107,6 +170,21 @@ class ThriftHiveMetastore_get_table_objects_by_name_result
                 $xfer += $iter738->write($output);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->o1 !== null) {
+            $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+            $xfer += $this->o1->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->o2 !== null) {
+            $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+            $xfer += $this->o2->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->o3 !== null) {
+            $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
+            $xfer += $this->o3->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

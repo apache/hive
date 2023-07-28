@@ -243,6 +243,9 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @param string $dbname
      * @param string[] $tbl_names
      * @return \metastore\Table[]
+     * @throws \metastore\MetaException
+     * @throws \metastore\InvalidOperationException
+     * @throws \metastore\UnknownDBException
      */
     public function get_table_objects_by_name($dbname, array $tbl_names);
     /**
