@@ -267,6 +267,7 @@ public class Hive {
   private SynchronizedMetaStoreClient syncMetaStoreClient;
   private UserGroupInformation owner;
   private boolean isAllowClose = true;
+  private final static int DEFAULT_BATCH_DECAYING_FACTOR = 2;
 
   // metastore calls timing information
   private final ConcurrentHashMap<String, Long> metaCallTimeMap = new ConcurrentHashMap<>();
@@ -4149,7 +4150,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (!tbl.isPartitioned()) {
       return Sets.newHashSet(new Partition(tbl));
     }
-    
+
     List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
     try {
       tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(), (short)-1);
@@ -4170,12 +4171,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    */
   public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
-    int defaultDecayingFactor = 2;
     int batchSize= MetastoreConf.getIntVar(
             Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     if (batchSize > 0) {
-      return getAllPartitionsInBatches(tbl, batchSize, defaultDecayingFactor, HiveConf
-              .getIntVar(conf, HiveConf.ConfVars.HIVE_GETPARTITIONS_MAX_RETRIES));
+      return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
+              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES));
     } else {
       return getAllPartitions(tbl);
     }
