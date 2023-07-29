@@ -67,3 +67,11 @@ join test2 t2 using(a, b)
 join test2 t3 using(c, b)
 join test t4 using(a);
 
+-- joins without table alias
+select * from test1
+join test using(a)
+join test2 using(b);
+
+explain cbo select * from test1
+join test using(a)
+join test2 using(b);
