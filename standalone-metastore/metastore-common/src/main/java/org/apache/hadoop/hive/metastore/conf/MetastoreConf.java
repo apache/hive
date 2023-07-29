@@ -1174,6 +1174,14 @@ public class MetastoreConf {
       "command should handle partition retention. If enabled, and if a specific partition's age exceeded\n" +
       "retention period the partition will be dropped along with data"),
 
+    GETPARTITIONS_BATCH_MAX_RETRIES("metastore.getpartitions.batch.max.retries",
+      "hive.getpartitions.batch.max.retries", 5,
+      "Maximum number of retries for the Hive.GetAllPartitionsOf() when getting partitions in batches.\n "
+      + "If the value is greater than zero it will retry getting partitions until the maximum\n"
+      + "number of attempts is reached or batch size is reduced to 0, whichever is earlier.\n"
+      + "In each retry attempt it will reduce the batch size by a factor of 2 until it reaches zero.\n"
+      + "If the value is set to zero it will retry until the batch size becomes zero as described above."),
+
 
     // Partition management task params
     PARTITION_MANAGEMENT_TASK_FREQUENCY("metastore.partition.management.task.frequency",

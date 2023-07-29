@@ -117,6 +117,8 @@ import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -265,6 +267,7 @@ public class Hive {
   private SynchronizedMetaStoreClient syncMetaStoreClient;
   private UserGroupInformation owner;
   private boolean isAllowClose = true;
+  private final static int DEFAULT_BATCH_DECAYING_FACTOR = 2;
 
   // metastore calls timing information
   private final ConcurrentHashMap<String, Long> metaCallTimeMap = new ConcurrentHashMap<>();
@@ -4143,7 +4146,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tbl table for which partitions are needed
    * @return list of partition objects
    */
-  public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
+  public Set<Partition> getAllPartitions(Table tbl) throws HiveException {
     if (!tbl.isPartitioned()) {
       return Sets.newHashSet(new Partition(tbl));
     }
@@ -4160,6 +4163,49 @@ private void constructOneLBLocationMap(FileStatus fSta,
       parts.add(new Partition(tbl, tpart));
     }
     return parts;
+  }
+
+  /**
+   * Get all the partitions. Do it in batches if batchSize is more than 0 else get it in one call.
+   * @param tbl table for which partitions are needed
+   * @return list of partition objects
+   */
+  public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
+    int batchSize= MetastoreConf.getIntVar(
+            Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    if (batchSize > 0) {
+      return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
+              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES));
+    } else {
+      return getAllPartitions(tbl);
+    }
+  }
+
+  public Set<Partition> getAllPartitionsInBatches(Table tbl, int batchSize, int decayingFactor,
+         int maxRetries) throws HiveException {
+    if (!tbl.isPartitioned()) {
+      return Sets.newHashSet(new Partition(tbl));
+    }
+    Set<Partition> result = new LinkedHashSet<>();
+    RetryUtilities.ExponentiallyDecayingBatchWork batchTask = new RetryUtilities
+            .ExponentiallyDecayingBatchWork<Void>(batchSize, decayingFactor, maxRetries) {
+      @Override
+      public Void execute(int size) throws HiveException {
+        try {
+          result.clear();
+          new PartitionIterable(Hive.get(), tbl, null, size).forEach(result::add);
+          return null;
+        } catch (HiveException e) {
+          throw e;
+        }
+      }
+    };
+    try {
+      batchTask.run();
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return result;
   }
 
   /**
