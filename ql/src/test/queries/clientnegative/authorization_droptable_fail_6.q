@@ -6,4 +6,4 @@ CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2 STRING) STORED A
 -- Drop temporary table with IF EXISTS WITHOUT DB Drop Privileges
 
 set hive.security.authorization.enabled=true;
-DROP TABLE auth_temp_table_2;
+DROP TABLE IF EXISTS auth_temp_table_2;
