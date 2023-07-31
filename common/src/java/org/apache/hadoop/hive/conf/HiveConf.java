@@ -4426,7 +4426,9 @@ public class HiveConf extends Configuration {
             "This parameter enables a number of optimizations when running on blobstores:\n" +
             "(1) If hive.blobstore.use.blobstore.as.scratchdir is false, force the last Hive job to write to the blobstore.\n" +
             "This is a performance optimization that forces the final FileSinkOperator to write to the blobstore.\n" +
-            "See HIVE-15121 for details.");
+            "See HIVE-15121 for details."),
+    HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS("hive.sql.decimalOperations.allowPrecisionLoss", true,
+            "It defaults to true, which means the new behavior described here(HIVE-15331);  if set to false, hive uses previous rules. see HIVE-27553 for details\n");
 
     public final String varname;
     public final String altName;
