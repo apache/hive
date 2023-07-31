@@ -47,8 +47,6 @@ import org.apache.hadoop.hive.metastore.txn.impl.TopCompactionMetricsDataPerType
 import org.apache.hadoop.hive.metastore.txn.impl.UpdateCompactionMetricsDataFunction;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.ParameterizedCommand;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SimpleQuery;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SimpleUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -264,7 +262,7 @@ class CompactionTxnHandler extends TxnHandler {
       throw new MetaException("FindNextCompactRequest is null");
     }
     long poolTimeout = MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_WORKER_POOL_TIMEOUT, TimeUnit.MILLISECONDS);
-    return new SimpleQuery<>(new NextCompactionHandler(rqst, dataSourceWrapper, getDbTime(), poolTimeout)).call(dataSourceWrapper);
+    return new NextCompactionHandler(rqst, dataSourceWrapper, getDbTime(), poolTimeout).execute(dataSourceWrapper);
   }
 
   /**
@@ -275,12 +273,12 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.SafeToRetry
   public void markCompacted(CompactionInfo info) throws MetaException {
-    new SimpleUpdate(
+    ParameterizedCommand.execute(dataSourceWrapper, 
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = :state, \"CQ_WORKER_ID\" = NULL WHERE \"CQ_ID\" = :id",
         new MapSqlParameterSource()
             .addValue("state", Character.toString(READY_FOR_CLEANING), Types.CHAR)
             .addValue("id", info.id),
-        ParameterizedCommand.EXACTLY_ONE_ROW).call(dataSourceWrapper);
+        ParameterizedCommand.EXACTLY_ONE_ROW);
   }
 
   /**
@@ -449,7 +447,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   private void setCleanerStart(CompactionInfo info, Long timestamp) throws MetaException {
-    new SimpleUpdate(
+    ParameterizedCommand.execute(dataSourceWrapper,
         " UPDATE \"COMPACTION_QUEUE\" " +
             " SET \"CQ_CLEANER_START\" = :timeStamp" +
             " WHERE \"CQ_ID\" = :id AND \"CQ_STATE\"= :state",
@@ -457,7 +455,7 @@ class CompactionTxnHandler extends TxnHandler {
             .addValue("timeStamp", timestamp)
             .addValue("state", Character.toString(READY_FOR_CLEANING), Types.CHAR)
             .addValue("id", info.id),
-        ParameterizedCommand.EXACTLY_ONE_ROW).call(dataSourceWrapper);
+        ParameterizedCommand.EXACTLY_ONE_ROW);
   }
 
   /**
@@ -485,7 +483,7 @@ class CompactionTxnHandler extends TxnHandler {
     // First need to find the min_uncommitted_txnid which is currently seen by any open transactions.
     // If there are no txns which are currently open or aborted in the system, then current value of
     // max(TXNS.txn_id) could be min_uncommitted_txnid.
-    Long minTxnId = new SimpleQuery<>(new MinUncommittedTxnIdHandler(useMinHistoryLevel)).call(dataSourceWrapper);
+    Long minTxnId = new MinUncommittedTxnIdHandler(useMinHistoryLevel).execute(dataSourceWrapper);
     if (minTxnId == null) {
       throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
     }
@@ -502,7 +500,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.SafeToRetry
   public void removeDuplicateCompletedTxnComponents() throws MetaException {
-    new SimpleUpdate(new RemoveDuplicateCompleteTxnComponentsCommand()).call(dataSourceWrapper);
+    RemoveDuplicateCompleteTxnComponentsCommand.INSTANCE.execute(dataSourceWrapper);
   }
 
   /**
@@ -585,12 +583,12 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public List<String> findColumnsWithStats(CompactionInfo ci) throws MetaException {
-    return new SimpleQuery<>(new FindColumnsWithStatsHandler(ci)).call(dataSourceWrapper);
+    return new FindColumnsWithStatsHandler(ci).execute(dataSourceWrapper);
   }
 
   @Override
   public void updateCompactorState(CompactionInfo ci, long compactionTxnId) throws MetaException {
-    new SimpleUpdate(
+    ParameterizedCommand.execute(dataSourceWrapper, 
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HIGHEST_WRITE_ID\" = :highestWriteId, " +
             "\"CQ_RUN_AS\" = :runAs, \"CQ_TXN_ID\" = :txnId WHERE \"CQ_ID\" = :id",
         new MapSqlParameterSource()
@@ -598,7 +596,7 @@ class CompactionTxnHandler extends TxnHandler {
             .addValue("runAs", ci.runAs)
             .addValue("txnId", compactionTxnId)
             .addValue("id", ci.id),
-        ParameterizedCommand.EXACTLY_ONE_ROW).call(dataSourceWrapper);
+        ParameterizedCommand.EXACTLY_ONE_ROW);
 
     MapSqlParameterSource parameterSource = new MapSqlParameterSource()
         .addValue("txnId", compactionTxnId)
@@ -610,7 +608,7 @@ class CompactionTxnHandler extends TxnHandler {
     if (ci.partName != null) {
       parameterSource.addValue("partName", ci.partName);
     }
-    new SimpleUpdate(
+    ParameterizedCommand.execute(dataSourceWrapper,
         /*We make an entry in TXN_COMPONENTS for the partition/table that the compactor is
          * working on in case this txn aborts and so we need to ensure that its TXNS entry is
          * not removed until Cleaner has removed all files that this txn may have written, i.e.
@@ -623,7 +621,7 @@ class CompactionTxnHandler extends TxnHandler {
             "\"TC_WRITEID\", \"TC_OPERATION_TYPE\") " +
             "VALUES(:txnId, :dbName, :tableName, :partName, :highestWriteId, :operationType)",
         parameterSource,
-        ParameterizedCommand.EXACTLY_ONE_ROW).call(dataSourceWrapper);
+        ParameterizedCommand.EXACTLY_ONE_ROW);
   }
 
   /**
@@ -657,15 +655,14 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public boolean checkFailedCompactions(CompactionInfo ci) throws MetaException {
-    return new SimpleQuery<>(new CheckFailedCompactionsHandler(conf, ci)).call(dataSourceWrapper);
+    return new CheckFailedCompactionsHandler(conf, ci).execute(dataSourceWrapper);
   }
 
   private void updateStatus(CompactionInfo ci) throws MetaException {
     String strState = CompactionState.fromSqlConst(ci.state).toString();
 
     LOG.debug("Marking as {}: CompactionInfo: {}", strState, ci);
-    CompactionInfo ciActual = new SimpleQuery<>(
-        new GetCompactionInfoHandler(ci.id, false)).call(dataSourceWrapper);
+    CompactionInfo ciActual = new GetCompactionInfoHandler(ci.id, false).execute(dataSourceWrapper); 
 
     long endTime = getDbTime().getTime();
     if (ciActual != null) {
@@ -696,8 +693,7 @@ class CompactionTxnHandler extends TxnHandler {
           + "can make an entry in COMPLETED_COMPACTIONS. New Id: {}", ciActual.id);
     }
 
-    InsertCompactionInfoCommand command = new InsertCompactionInfoCommand(ciActual, endTime);
-    new SimpleUpdate(command).call(dataSourceWrapper);
+    new InsertCompactionInfoCommand(ciActual, endTime).execute(dataSourceWrapper);
   }
 
   /**
@@ -757,25 +753,25 @@ class CompactionTxnHandler extends TxnHandler {
         throw new MetaException("Failed to set retry retention time for compaction item: " + info + " Error: " + e);
       }
     } else {
-      new SimpleUpdate(
+      ParameterizedCommand.execute(dataSourceWrapper,
           "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_RETRY_RETENTION\" = :retention, \"CQ_ERROR_MESSAGE\"= :msg WHERE \"CQ_ID\" = :id",
           new MapSqlParameterSource()
               .addValue("retention", info.retryRetention)
               .addValue("msg", info.errorMessage)
               .addValue("id", info.id), 
-          ParameterizedCommand.EXACTLY_ONE_ROW).call(dataSourceWrapper);
+          ParameterizedCommand.EXACTLY_ONE_ROW);
     }
   }
 
   @Override
   @RetrySemantics.Idempotent
   public void setHadoopJobId(String hadoopJobId, long id) throws MetaException {
-    new SimpleUpdate(
+    ParameterizedCommand.execute(dataSourceWrapper,
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HADOOP_JOB_ID\" = :hadoopJobId WHERE \"CQ_ID\" = :id",
         new MapSqlParameterSource()
             .addValue("id", id)
             .addValue("hadoopJobId", hadoopJobId),
-        ParameterizedCommand.EXACTLY_ONE_ROW).call(dataSourceWrapper);
+        ParameterizedCommand.EXACTLY_ONE_ROW);
   }
 
   @Override
@@ -832,7 +828,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   private CompactionInfo getCompactionByTxnId(DataSourceWrapper dataSourceWrapper, long txnId) throws MetaException {
-    return new SimpleQuery<>(new GetCompactionInfoHandler(txnId, true)).call(dataSourceWrapper);
+    return new GetCompactionInfoHandler(txnId, true).execute(dataSourceWrapper); 
   }
 
   @Override
@@ -857,25 +853,25 @@ class CompactionTxnHandler extends TxnHandler {
   
   @Override
   public boolean updateCompactionMetricsData(CompactionMetricsData data) throws MetaException {
-    return new UpdateCompactionMetricsDataFunction(data).call(dataSourceWrapper);
+    return new UpdateCompactionMetricsDataFunction(data).execute(dataSourceWrapper);
   }
 
   @Override
   public List<CompactionMetricsData> getTopCompactionMetricsDataPerType(int limit)      
       throws MetaException {
-    return new TopCompactionMetricsDataPerTypeFunction(limit, sqlGenerator).call(dataSourceWrapper);
+    return new TopCompactionMetricsDataPerTypeFunction(limit, sqlGenerator).execute(dataSourceWrapper);
   }
 
   @Override
   public CompactionMetricsData getCompactionMetricsData(String dbName, String tblName, String partitionName,
       CompactionMetricsData.MetricType type) throws MetaException {
-    return new SimpleQuery<>(new CompactionMetricsDataHandler(dbName, tblName, partitionName, type)).call(dataSourceWrapper);
+    return new CompactionMetricsDataHandler(dbName, tblName, partitionName, type).execute(dataSourceWrapper);
   }
 
   @Override
   public void removeCompactionMetricsData(String dbName, String tblName, String partitionName,
       CompactionMetricsData.MetricType type) throws MetaException {
-    new SimpleUpdate(new RemoveCompactionMetricsDataCommand(dbName, tblName, partitionName, type)).call(dataSourceWrapper);
+    new RemoveCompactionMetricsDataCommand(dbName, tblName, partitionName, type).execute(dataSourceWrapper);
   }
 
 }

@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.DID_NOT_INITIATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.FAILED_STATE;
 
-public class CheckFailedCompactionsHandler implements QueryHandler<Boolean> {
+public class CheckFailedCompactionsHandler extends QueryHandler<Boolean> {
   
   private final Configuration conf;
   private final CompactionInfo ci;
@@ -47,14 +47,14 @@ public class CheckFailedCompactionsHandler implements QueryHandler<Boolean> {
 
   //language=SQL
   @Override
-  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     return "SELECT \"CC_STATE\", \"CC_ENQUEUE_TIME\" FROM \"COMPLETED_COMPACTIONS\" WHERE " +
         "\"CC_DATABASE\" = :dbName AND \"CC_TABLE\" = :tableName AND (:partName IS NULL OR \"CC_PARTITION\" = :partName) " +
         "AND \"CC_STATE\" != :state ORDER BY \"CC_ID\" DESC";    
   }
 
   @Override
-  public SqlParameterSource getQueryParameters() {
+  protected SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
         .addValue("state", Character.toString(DID_NOT_INITIATE), Types.CHAR)
         .addValue("dbName", ci.dbname)

@@ -34,13 +34,13 @@ import java.util.Set;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.DID_NOT_INITIATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.FAILED_STATE;
 
-public class CompactionCandidateHandler implements QueryHandler<Set<CompactionCandidate>> {
+public class CompactionCandidateHandler extends QueryHandler<Set<CompactionCandidate>> {
 
   private final long checkInterval;
 
   //language=SQL
   @Override
-  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     return "SELECT DISTINCT \"TC\".\"CTC_DATABASE\", \"TC\".\"CTC_TABLE\", \"TC\".\"CTC_PARTITION\" " +
         "FROM \"COMPLETED_TXN_COMPONENTS\" \"TC\" " + (checkInterval > 0 ?
         "LEFT JOIN ( " +
@@ -58,7 +58,7 @@ public class CompactionCandidateHandler implements QueryHandler<Set<CompactionCa
   }
 
   @Override
-  public SqlParameterSource getQueryParameters() {
+  protected SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
         .addValue("didNotInit", Character.toString(DID_NOT_INITIATE), Types.CHAR)
         .addValue("failed", Character.toString(FAILED_STATE), Types.CHAR);

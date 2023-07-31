@@ -29,7 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-public class MinUncommittedTxnIdHandler implements QueryHandler<Long> {
+public class MinUncommittedTxnIdHandler extends QueryHandler<Long> {
 
   //language=SQL
   private static String minHistoryLevelSql = "SELECT MIN(\"RES\".\"ID\") AS \"ID\" FROM (" +
@@ -53,12 +53,12 @@ public class MinUncommittedTxnIdHandler implements QueryHandler<Long> {
   }
 
   @Override
-  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     return useMinHistoryLevel ? minHistoryLevelSql : noMinHistoryLevelSql;
   }
 
   @Override
-  public SqlParameterSource getQueryParameters() {
+  protected SqlParameterSource getQueryParameters() {
     MapSqlParameterSource params = new MapSqlParameterSource()
         .addValue("abortedState", TxnStatus.ABORTED.getSqlConst(), Types.CHAR);
     if (!useMinHistoryLevel) {

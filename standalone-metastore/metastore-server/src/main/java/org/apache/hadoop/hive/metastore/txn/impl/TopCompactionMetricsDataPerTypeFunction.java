@@ -45,7 +45,7 @@ public class TopCompactionMetricsDataPerTypeFunction implements TransactionalFun
   }
 
   @Override
-  public List<CompactionMetricsData> call(DataSourceWrapper dataSourceWrapper) throws MetaException {
+  public List<CompactionMetricsData> execute(DataSourceWrapper dataSourceWrapper) throws MetaException {
     //TODO: Highly inefficient, should be replaced by a single select
     List<CompactionMetricsData> metricsDataList = new ArrayList<>();
     for (CompactionMetricsData.MetricType type : CompactionMetricsData.MetricType.values()) {

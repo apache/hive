@@ -152,7 +152,7 @@ public class RetryHandler {
       LOG.info("Already established retry-context detected, current retry-call will join it. The passed CallProperties " +
           "instance will be ignored, using the original one.");
       try {
-        return function.call(dataSourceWrapper);
+        return function.execute(dataSourceWrapper);
       } catch (SQLException e) {
         throw new UncategorizedSQLException(null, null, e);
       }
@@ -178,7 +178,7 @@ public class RetryHandler {
             try {
               //set TransactionStatus to allow detection of nested retry calls              
               dataSourceWrapper.setRetryContext(status, properties.getDataSource());
-              Result result = function.call(dataSourceWrapper);
+              Result result = function.execute(dataSourceWrapper);
               LOG.debug("Going to commit transaction");
               return result;
             } catch (SQLException | MetaException e) {

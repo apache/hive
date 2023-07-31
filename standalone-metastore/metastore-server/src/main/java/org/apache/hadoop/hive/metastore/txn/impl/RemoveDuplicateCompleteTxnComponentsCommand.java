@@ -27,7 +27,9 @@ import java.util.function.Function;
 
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.DbType.MYSQL;
 
-public class RemoveDuplicateCompleteTxnComponentsCommand implements ParameterizedCommand {
+public class RemoveDuplicateCompleteTxnComponentsCommand extends ParameterizedCommand {
+  
+  private RemoveDuplicateCompleteTxnComponentsCommand() {}
   
   @Override
   public Function<Integer, Boolean> resultPolicy() {
@@ -36,7 +38,7 @@ public class RemoveDuplicateCompleteTxnComponentsCommand implements Parameterize
 
   //language=SQL
   @Override
-  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     switch (databaseProduct.dbType) {
       case MYSQL:
       case SQLSERVER:
@@ -98,8 +100,10 @@ public class RemoveDuplicateCompleteTxnComponentsCommand implements Parameterize
   }
 
   @Override
-  public SqlParameterSource getQueryParameters() {
+  protected SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource();
   }
+  
+  public static RemoveDuplicateCompleteTxnComponentsCommand INSTANCE = new RemoveDuplicateCompleteTxnComponentsCommand();
   
 }

@@ -32,7 +32,7 @@ import java.sql.Types;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AbortedTxnHandler implements QueryHandler<Set<CompactionCandidate>> {
+public class AbortedTxnHandler extends QueryHandler<Set<CompactionCandidate>> {
 
   private final long abortedTimeThreshold;
   private final int abortedThreshold;
@@ -41,7 +41,7 @@ public class AbortedTxnHandler implements QueryHandler<Set<CompactionCandidate>>
 
   //language=SQL
   @Override
-  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     return "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
         "MIN(\"TXN_STARTED\"), COUNT(*) FROM \"TXNS\", \"TXN_COMPONENTS\" " +
         " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = :state " +
@@ -49,7 +49,7 @@ public class AbortedTxnHandler implements QueryHandler<Set<CompactionCandidate>>
   }
 
   @Override
-  public SqlParameterSource getQueryParameters() {
+  protected SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
         .addValue("state", TxnStatus.ABORTED.getSqlConst(), Types.CHAR);
   }

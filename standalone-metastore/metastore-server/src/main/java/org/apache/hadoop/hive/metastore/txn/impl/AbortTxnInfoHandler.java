@@ -37,7 +37,7 @@ import java.util.List;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.READY_FOR_CLEANING;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 
-public class AbortTxnInfoHandler implements QueryHandler<List<CompactionInfo>> {
+public class AbortTxnInfoHandler extends QueryHandler<List<CompactionInfo>> {
 
   // Three inner sub-queries which are under left-join to fetch the required data for aborted txns.
   //language=SQL
@@ -80,13 +80,13 @@ public class AbortTxnInfoHandler implements QueryHandler<List<CompactionInfo>> {
   private final long abortedTimeThreshold;
   private final int abortedThreshold;
   
-  public String getParameterizedQueryString(DatabaseProduct dbProduct) throws MetaException {
+  protected String getParameterizedQueryString(DatabaseProduct dbProduct) throws MetaException {
     return String.format(AbortTxnInfoHandler.SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY,
         abortedTimeThreshold >= 0 ? "" : " HAVING COUNT(*) > " + abortedThreshold, getEpochFn(dbProduct));
   }
 
   @Override
-  public SqlParameterSource getQueryParameters() {
+  protected SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
         .addValue("abortedState", TxnStatus.ABORTED.getSqlConst(), Types.CHAR)
         .addValue("openState", TxnStatus.OPEN.getSqlConst(), Types.CHAR)

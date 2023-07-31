@@ -29,7 +29,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class GetCompactionInfoHandler implements QueryHandler<CompactionInfo> {
+public class GetCompactionInfoHandler extends QueryHandler<CompactionInfo> {
 
   private final long id;
   private final boolean isTransactionId;
@@ -58,12 +58,12 @@ public class GetCompactionInfoHandler implements QueryHandler<CompactionInfo> {
   }
 
   @Override
-  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     return isTransactionId ? SELECT_BY_TXN_ID : SELECT_BY_ID;
   }
 
   @Override
-  public SqlParameterSource getQueryParameters() {
+  protected SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource().addValue("id", id);
   }  
 

@@ -40,7 +40,7 @@ import static org.apache.hadoop.hive.metastore.txn.TxnStore.INITIATED_STATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.WORKING_STATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 
-public class NextCompactionHandler implements QueryHandler<CompactionInfo> {
+public class NextCompactionHandler extends QueryHandler<CompactionInfo> {
 
   private static final Logger LOG = LoggerFactory.getLogger(NextCompactionHandler.class);
 
@@ -66,7 +66,7 @@ public class NextCompactionHandler implements QueryHandler<CompactionInfo> {
   }
 
   @Override
-  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     StringBuilder sb = new StringBuilder();
     sb.append("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
         "\"CQ_TYPE\", \"CQ_POOL_NAME\", \"CQ_NUMBER_OF_BUCKETS\", \"CQ_ORDER_BY\", " +
@@ -83,7 +83,7 @@ public class NextCompactionHandler implements QueryHandler<CompactionInfo> {
   }
 
   @Override
-  public SqlParameterSource getQueryParameters() {
+  protected SqlParameterSource getQueryParameters() {
     MapSqlParameterSource params = new MapSqlParameterSource()
         .addValue("state", Character.toString(INITIATED_STATE), Types.CHAR);
     if(StringUtils.isNotBlank(request.getPoolName())) {

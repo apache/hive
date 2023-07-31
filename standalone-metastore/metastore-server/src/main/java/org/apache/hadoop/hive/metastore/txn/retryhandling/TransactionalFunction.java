@@ -36,6 +36,6 @@ public interface TransactionalFunction<Result> {
    * @throws SQLException Thrown if any of the JDBC calls fail
    * @throws MetaException Thrown in case of application error within the function
    */
-  Result call(DataSourceWrapper dataSourceWrapper) throws SQLException, MetaException;
+  Result execute(DataSourceWrapper dataSourceWrapper) throws SQLException, MetaException;
 
 }

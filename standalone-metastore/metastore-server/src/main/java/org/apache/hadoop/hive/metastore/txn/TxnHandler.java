@@ -161,10 +161,10 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.impl.InsertCompactionInfoCommand;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.RetryCallProperties;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.RetryHandler;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SimpleUpdate;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.LockTypeUtil;
@@ -6472,7 +6472,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           compactionInfo.errorMessage = "Comapction Aborted by Abort Comapction request.";
           int updCount;
           try {
-            updCount = new SimpleUpdate(new InsertCompactionInfoCommand(compactionInfo, getDbTime().getTime())).call(dataSourceWrapper);
+            updCount = new InsertCompactionInfoCommand(compactionInfo, getDbTime().getTime()).execute(dataSourceWrapper);
           } catch (Exception e) {
             LOG.error("Unable to update compaction record: {}.", compactionInfo);
             return getAbortCompactionResponseElement(compactionInfo.id, "Error",

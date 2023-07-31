@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SimpleQuery;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SimpleUpdate;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalFunction;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -37,10 +35,9 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
   }
 
   @Override
-  public Boolean call(DataSourceWrapper dataSourceWrapper) throws MetaException {
-    SimpleQuery<CompactionMetricsData> query = new SimpleQuery<>(
-        new CompactionMetricsDataHandler(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
-    CompactionMetricsData prevMetricsData = query.call(dataSourceWrapper);
+  public Boolean execute(DataSourceWrapper dataSourceWrapper) throws MetaException {
+    CompactionMetricsData prevMetricsData =
+        new CompactionMetricsDataHandler(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()).execute(dataSourceWrapper);
 
     boolean updateRes;
     if (data.getMetricValue() >= data.getThreshold()) {
@@ -51,9 +48,9 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
       }
     } else {
       if (prevMetricsData != null) {
-        SimpleUpdate delete = new SimpleUpdate(
-            new RemoveCompactionMetricsDataCommand(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
-        updateRes = delete.call(dataSourceWrapper) > 0;
+        int result = new RemoveCompactionMetricsDataCommand(
+            data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()).execute(dataSourceWrapper);
+        updateRes = result > 0;
       } else {
         return true;
       }

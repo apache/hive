@@ -28,7 +28,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.util.function.Function;
 
-public class InsertCompactionInfoCommand implements ParameterizedCommand {
+public class InsertCompactionInfoCommand extends ParameterizedCommand {
 
   private final CompactionInfo ci;
 
@@ -59,12 +59,12 @@ public class InsertCompactionInfoCommand implements ParameterizedCommand {
   }
 
   @Override
-  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     return INSERT;
   }
 
   @Override
-  public SqlParameterSource getQueryParameters() {
+  protected SqlParameterSource getQueryParameters() {
     try {
       return new MapSqlParameterSource()
           .addValue("id", ci.id)
