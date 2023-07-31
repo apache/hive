@@ -2631,6 +2631,38 @@ public class CalcitePlanner extends SemanticAnalyzer {
               unparseTranslator.addIdentifierTranslation((ASTNode) child);
             }
             namedColumns.add(columnName);
+
+            /*
+              In case of multiple joins, leftTableAlias can be null
+              as for the second join, the left side is a join token.
+
+              For example, if we have 3 tables with the following schemas:
+                    t1 - (a), t2 - (a, b), t3 - (a, b, c)
+              and we were trying to run the following query:
+                    select * from t1
+                    join t2 using(a)
+                    join t3 using(a);
+              For the second join, since left side is a join, leftTableAlias is null, and we have
+              to choose the correct alias to use from leftRR. Here we are choosing the rightmost
+              table containing column a, i.e., t2 and not t1.
+
+              And, for the query:
+                    select * from t2
+                    join t1 using(a)
+                    join t3 using(b);
+              For the second join, leftTableAlias is again null, and the rightmost table containing
+              column b is t2 as b is not present in t1.
+             */
+            if (leftTableAlias == null) {
+              leftTableAlias = leftRR.getTableAliasContainingColumn(columnName);
+            }
+            // if it's still null, throw an exception as column is not present
+            // in left row resolver
+            if (leftTableAlias == null) {
+              throw new SemanticException("column '" + columnName +
+                  "' not present in any of these tables: " + leftRR.getTableNames());
+            }
+
             ASTNode left = ASTBuilder.qualifiedName(leftTableAlias, columnName);
             ASTNode right = ASTBuilder.qualifiedName(rightTableAlias, columnName);
             equal = (ASTNode) ParseDriver.adaptor.create(HiveParser.EQUAL, "=");
