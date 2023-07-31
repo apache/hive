@@ -135,7 +135,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       return getColumnMetadata(rs, colAccessor);
     }
     catch (Exception e) {
-      throw new HiveJdbcDatabaseAccessException("", e);
+      throw new HiveJdbcDatabaseAccessException("Caught exception while trying to get columns: " + e.getMessage(), e);
     }
     finally {
       cleanupResources(conn, ps, rs);
@@ -207,7 +207,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       throw he;
     }
     catch (Exception e) {
-      LOGGER.error("Caught exception while trying to get the number of records", e);
+      LOGGER.error("Caught exception while trying to get the number of records: " + e.getMessage(), e);
       throw new HiveJdbcDatabaseAccessException(e);
     }
     finally {
@@ -250,7 +250,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     catch (Exception e) {
       LOGGER.error("Caught exception while trying to execute query", e);
       cleanupResources(conn, ps, rs);
-      throw new HiveJdbcDatabaseAccessException("Caught exception while trying to execute query:" + e.getMessage(), e);
+      throw new HiveJdbcDatabaseAccessException("Caught exception while trying to execute query: " + e.getMessage(), e);
     }
   }
 
@@ -524,7 +524,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       throw he;
     }
     catch (Exception e) {
-      LOGGER.error("Caught exception while trying to get MIN/MAX of " + partitionColumn, e);
+      LOGGER.error("Caught exception while trying to get MIN/MAX of " + partitionColumn + ": " + e.getMessage(), e);
       throw new HiveJdbcDatabaseAccessException(e);
     }
     finally {

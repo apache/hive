@@ -131,7 +131,7 @@ public class JdbcSerDe extends AbstractSerDe {
         row = new ArrayList<>(hiveColumnNames.length);
       }
     } catch (Exception e) {
-      throw new SerDeException("Caught exception while initializing the SqlSerDe", e);
+      throw new SerDeException("Caught exception while initializing the SqlSerDe: " + e.getMessage(), e);
     }
 
     if (log.isDebugEnabled()) {
