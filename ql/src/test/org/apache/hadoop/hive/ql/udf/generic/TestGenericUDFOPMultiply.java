@@ -252,4 +252,15 @@ public class TestGenericUDFOPMultiply extends AbstractTestGenericUDFOPNumeric {
     verifyReturnType(new GenericUDFOPMultiply(), "decimal(38,38)", "decimal(38,0)", "decimal(38,6)");
     verifyReturnType(new GenericUDFOPMultiply(), "decimal(20,2)", "decimal(20,0)", "decimal(38,2)");
   }
+
+  @Test
+  public void testDecimalMultiplyResultType() throws HiveException {
+    verifyReturnType(new GenericUDFOPMultiply(), "decimal(38,10)", "decimal(38,10)", "decimal(38,6)");
+  }
+
+  @Test
+  public void testDecimalMultiplyResultTypeNotAllowLoss() throws HiveException {
+    SessionState.get().getConf().setBoolVar(HiveConf.ConfVars.HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS, false);
+    verifyReturnType(new GenericUDFOPMultiply(), "decimal(38,10)", "decimal(38,10)", "decimal(38,20)");
+  }
 }
