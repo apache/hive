@@ -1435,6 +1435,9 @@ public final class Utilities {
     FileSystem fs = specPath.getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
+    if (!StringUtils.isEmpty(unionSuffix)) {
+      specPath = specPath.getParent();
+    }
     PerfLogger perfLogger = SessionState.getPerfLogger();
     boolean isBlobStorage = BlobStorageUtils.isBlobStorageFileSystem(hconf, fs);
     boolean avoidRename = false;
