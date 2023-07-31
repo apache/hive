@@ -230,6 +230,12 @@ public class MetaStoreUtils {
         allowedSpecialCharacters.append(c);
       }
     }
+
+    // Check for leading or trailing spaces in the name
+    if (name != null && !name.equals(name.trim())) {
+      return false;  
+    }
+    
     tpat = Pattern.compile("[\\w" + Pattern.quote(allowedSpecialCharacters.toString()) + "]+");
     Matcher m = tpat.matcher(name);
     return m.matches();
