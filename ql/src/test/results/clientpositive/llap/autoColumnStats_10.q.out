@@ -1,7 +1,9 @@
 PREHOOK: query: drop table p_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table p_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE p_n1(insert_num int, c1 tinyint, c2 smallint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -265,10 +267,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\"
 PREHOOK: query: drop table p_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@p_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@p_n1
 POSTHOOK: query: drop table p_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@p_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@p_n1
 PREHOOK: query: CREATE TABLE p_n1(insert_num int, c1 tinyint, c2 smallint)
 PREHOOK: type: CREATETABLE

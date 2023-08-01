@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE part_tiny
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE part_tiny
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE part_tiny(
   p_partkey INT,
   p_name STRING,

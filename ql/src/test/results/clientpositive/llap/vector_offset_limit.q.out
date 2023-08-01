@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists TLIMITOFFSET
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists TLIMITOFFSET
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists TLIMITOFFSET (name string, id int, flag string) STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

@@ -192,12 +192,15 @@ Stage-1 INPUT COUNTERS:
 PREHOOK: query: drop table alltypes_text1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alltypes_text1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypes_text1
 PREHOOK: query: drop table alltypes_text2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alltypes_text2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypes_text2
 PREHOOK: query: drop table alltypes_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alltypes_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypes_orc

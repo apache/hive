@@ -116,8 +116,10 @@ POSTHOOK: Input: default@t1_n45@ds=1
 PREHOOK: query: DROP TABLE T1_n45
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n45
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n45
 POSTHOOK: query: DROP TABLE T1_n45
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n45
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n45

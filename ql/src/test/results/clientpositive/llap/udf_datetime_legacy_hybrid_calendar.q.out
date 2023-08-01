@@ -156,8 +156,10 @@ POSTHOOK: Input: default@datetime_legacy_hybrid_calendar
 PREHOOK: query: drop table datetime_legacy_hybrid_calendar
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@datetime_legacy_hybrid_calendar
+PREHOOK: Output: database:default
 PREHOOK: Output: default@datetime_legacy_hybrid_calendar
 POSTHOOK: query: drop table datetime_legacy_hybrid_calendar
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@datetime_legacy_hybrid_calendar
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@datetime_legacy_hybrid_calendar

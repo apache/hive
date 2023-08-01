@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS base_tab_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS base_tab_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE base_tab_n2(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -32,8 +34,10 @@ d                   	string
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE IF EXISTS null_tab3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS null_tab3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: EXPLAIN CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
    AS SELECT a, b FROM base_tab_n2
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -243,16 +247,20 @@ fooNull	fooNull
 PREHOOK: query: DROP TABLE null_tab3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@null_tab3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@null_tab3
 POSTHOOK: query: DROP TABLE null_tab3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@null_tab3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@null_tab3
 PREHOOK: query: DROP TABLE base_tab_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@base_tab_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@base_tab_n2
 POSTHOOK: query: DROP TABLE base_tab_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@base_tab_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@base_tab_n2

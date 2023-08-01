@@ -264,10 +264,12 @@ NULL	NULL
 PREHOOK: query: drop table test_n5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_n5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_n5
 POSTHOOK: query: drop table test_n5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_n5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_n5
 PREHOOK: query: explain select * from part where p_size is distinct from 2
 PREHOOK: type: QUERY

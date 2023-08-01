@@ -1,27 +1,39 @@
 PREHOOK: query: drop table if exists char_join1_vc1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_join1_vc1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists char_join1_vc2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_join1_vc2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists char_join1_str
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_join1_str
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists char_join1_vc1_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_join1_vc1_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists char_join1_vc2_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_join1_vc2_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists char_join1_str_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_join1_str_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table  char_join1_vc1 (
   c1 int,
   c2 char(10)
@@ -671,48 +683,60 @@ POSTHOOK: Input: default@char_join1_vc1_orc
 PREHOOK: query: drop table char_join1_vc1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_join1_vc1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_join1_vc1
 POSTHOOK: query: drop table char_join1_vc1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_join1_vc1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_join1_vc1
 PREHOOK: query: drop table char_join1_vc2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_join1_vc2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_join1_vc2
 POSTHOOK: query: drop table char_join1_vc2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_join1_vc2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_join1_vc2
 PREHOOK: query: drop table char_join1_str
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_join1_str
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_join1_str
 POSTHOOK: query: drop table char_join1_str
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_join1_str
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_join1_str
 PREHOOK: query: drop table char_join1_vc1_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_join1_vc1_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_join1_vc1_orc
 POSTHOOK: query: drop table char_join1_vc1_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_join1_vc1_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_join1_vc1_orc
 PREHOOK: query: drop table char_join1_vc2_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_join1_vc2_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_join1_vc2_orc
 POSTHOOK: query: drop table char_join1_vc2_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_join1_vc2_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_join1_vc2_orc
 PREHOOK: query: drop table char_join1_str_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_join1_str_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_join1_str_orc
 POSTHOOK: query: drop table char_join1_str_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_join1_str_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_join1_str_orc

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table tbl_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tbl_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tbl_orc (a int, b string) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table calendar_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table calendar_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE calendar_n0 (year int, month int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

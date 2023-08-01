@@ -1,7 +1,9 @@
 PREHOOK: query: drop table over10k_n19
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table over10k_n19
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table over10k_n19(
            t tinyint,
            si smallint,
@@ -688,8 +690,10 @@ POSTHOOK: Input: default@over10k_n19
 10	oscar carson	65549	65549
 PREHOOK: query: drop table if exists wtest_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists wtest_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table wtest_n0 as
 select a, b
 from

@@ -1,15 +1,21 @@
 PREHOOK: query: DROP TABLE IF EXISTS test_update_part_text
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_update_part_text
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_update_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_update_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_delete_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_delete_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE test_update_part_text (a int, b int, c int) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -471,24 +477,30 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE IF EXISTS test_update_part_text
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_update_part_text
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_update_part_text
 POSTHOOK: query: DROP TABLE IF EXISTS test_update_part_text
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_update_part_text
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_part_text
 PREHOOK: query: DROP TABLE IF EXISTS test_update_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_update_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_update_part
 POSTHOOK: query: DROP TABLE IF EXISTS test_update_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_update_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_part
 PREHOOK: query: DROP TABLE IF EXISTS test_delete_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_delete_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_delete_part
 POSTHOOK: query: DROP TABLE IF EXISTS test_delete_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_delete_part

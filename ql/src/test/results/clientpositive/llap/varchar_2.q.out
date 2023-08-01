@@ -1,7 +1,9 @@
 PREHOOK: query: drop table varchar_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table varchar_2 (
   key varchar(10),
   value varchar(20)
@@ -113,8 +115,10 @@ val_92	92	1
 PREHOOK: query: drop table varchar_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_2
 POSTHOOK: query: drop table varchar_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_2

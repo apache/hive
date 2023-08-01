@@ -420,8 +420,10 @@ POSTHOOK: Input: default@src
 98	val_98	2
 PREHOOK: query: drop table tc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tc (`@d` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

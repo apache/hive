@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE if exists parquet_mixed_partition_formats_temp
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE if exists parquet_mixed_partition_formats_temp
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TEMPORARY TABLE parquet_mixed_partition_formats_temp (
   cint int,
   ctinyint tinyint,

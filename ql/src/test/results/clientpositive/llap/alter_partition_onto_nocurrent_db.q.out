@@ -61,10 +61,12 @@ ds                  	string
 PREHOOK: query: DROP TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+PREHOOK: Output: database:test_db_nocurr
 PREHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
 POSTHOOK: query: DROP TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+POSTHOOK: Output: database:test_db_nocurr
 POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
 PREHOOK: query: DROP DATABASE test_db_nocurr
 PREHOOK: type: DROPDATABASE

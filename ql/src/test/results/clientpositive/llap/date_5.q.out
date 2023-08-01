@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists date_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists date_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists date_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists date_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table date_1 (key int, dd date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -43,16 +47,20 @@ POSTHOOK: Input: default@date_2
 PREHOOK: query: drop table date_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@date_1
 POSTHOOK: query: drop table date_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_1
 PREHOOK: query: drop table date_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@date_2
 POSTHOOK: query: drop table date_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_2

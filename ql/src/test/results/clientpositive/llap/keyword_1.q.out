@@ -43,10 +43,12 @@ default	test_user			hive_test	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_user
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_user
 POSTHOOK: query: drop table test_user
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_user
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_user
 PREHOOK: query: create table test_user (role string, `group` string)
 PREHOOK: type: CREATETABLE
@@ -93,8 +95,10 @@ default	test_user			hive_test	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_user
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_user
 POSTHOOK: query: drop table test_user
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_user
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_user

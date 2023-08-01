@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE blobstore_source
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE blobstore_source
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE blobstore_source(a STRING, b STRING, c DOUBLE)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ' '
@@ -32,8 +34,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@blobstore_source
 PREHOOK: query: DROP TABLE orc_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE orc_table (a INT, b STRING, value DOUBLE) STORED AS ORC
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE

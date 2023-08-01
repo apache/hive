@@ -17,8 +17,10 @@ POSTHOOK: Output: default@test_ext_concat
 PREHOOK: query: drop table test_ext_concat
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_ext_concat
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_ext_concat
 POSTHOOK: query: drop table test_ext_concat
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_ext_concat
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_ext_concat

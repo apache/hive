@@ -62,10 +62,12 @@ POSTHOOK: Input: dmp@mp
 PREHOOK: query: drop table dmp.mp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: dmp@mp
+PREHOOK: Output: database:dmp
 PREHOOK: Output: dmp@mp
 POSTHOOK: query: drop table dmp.mp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: dmp@mp
+POSTHOOK: Output: database:dmp
 POSTHOOK: Output: dmp@mp
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -109,10 +111,12 @@ POSTHOOK: Input: dmp@delete_parent_path
 PREHOOK: query: drop table dmp.delete_parent_path
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: dmp@delete_parent_path
+PREHOOK: Output: database:dmp
 PREHOOK: Output: dmp@delete_parent_path
 POSTHOOK: query: drop table dmp.delete_parent_path
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: dmp@delete_parent_path
+POSTHOOK: Output: database:dmp
 POSTHOOK: Output: dmp@delete_parent_path
 PREHOOK: query: drop database dmp
 PREHOOK: type: DROPDATABASE

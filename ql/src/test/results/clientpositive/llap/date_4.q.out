@@ -1,7 +1,9 @@
 PREHOOK: query: drop table date_4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table date_4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table date_4 (d date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -41,8 +43,10 @@ POSTHOOK: Input: default@date_4
 PREHOOK: query: drop table date_4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@date_4
 POSTHOOK: query: drop table date_4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_4

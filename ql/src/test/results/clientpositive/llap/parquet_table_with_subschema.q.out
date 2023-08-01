@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE test_n6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE test_n6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE test_n6 (Name string, address struct<Zip:string,Street:string>) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -30,8 +32,10 @@ Roger	{"Zip":"87366","Street":"Congress Ave."}
 PREHOOK: query: DROP TABLE test_n6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_n6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_n6
 POSTHOOK: query: DROP TABLE test_n6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_n6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_n6

@@ -2121,6 +2121,7 @@ PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmp_orcppd
 PREHOOK: query: drop table if exists tbl_orcppd_1_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table tbl_orcppd_1_1 as
     select count(*) from tmp_orcppd
             where ctimestamp1> current_timestamp() and
@@ -2134,6 +2135,7 @@ PREHOOK: Output: default@tbl_orcppd_1_1
 PREHOOK: query: drop table if exists tmp_orcppd
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_orcppd
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_orcppd
 PREHOOK: query: create temporary table tmp_orcppd
                     stored as orc
@@ -2152,6 +2154,7 @@ PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmp_orcppd
 PREHOOK: query: drop table if exists tbl_orcppd_2_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table tbl_orcppd_2_1 as
         select count(*) from tmp_orcppd
                     where ctimestamp1 in (cast('2065-08-13 19:03:52' as timestamp), cast('2071-01-16 20:21:17' as timestamp), current_timestamp())
@@ -2162,6 +2165,7 @@ PREHOOK: Output: default@tbl_orcppd_2_1
 PREHOOK: query: drop table if exists tmp_orcppd
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_orcppd
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_orcppd
 PREHOOK: query: create temporary table tmp_orcppd
                     stored as orc
@@ -2178,6 +2182,7 @@ PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmp_orcppd
 PREHOOK: query: drop table if exists tbl_orcppd_3_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table tbl_orcppd_3_1 as
    select count(*) from tmp_orcppd
             group by ts, cast(ts as date)

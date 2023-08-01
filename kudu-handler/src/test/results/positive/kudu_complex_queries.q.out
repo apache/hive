@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS kv_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS kv_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE kv_table(key int, value string)
 STORED BY 'org.apache.hadoop.hive.kudu.KuduStorageHandler'
 TBLPROPERTIES ("kudu.table_name" = "default.kudu_kv")

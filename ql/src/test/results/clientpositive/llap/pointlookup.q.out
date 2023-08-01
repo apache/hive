@@ -339,26 +339,32 @@ POSTHOOK: Input: default@oroutput
 PREHOOK: query: drop table orOutput
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@oroutput
+PREHOOK: Output: database:default
 PREHOOK: Output: default@oroutput
 POSTHOOK: query: drop table orOutput
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@oroutput
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@oroutput
 PREHOOK: query: drop table inOutput
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@inoutput
+PREHOOK: Output: database:default
 PREHOOK: Output: default@inoutput
 POSTHOOK: query: drop table inOutput
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@inoutput
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inoutput
 PREHOOK: query: drop table inOutputOpt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@inoutputopt
+PREHOOK: Output: database:default
 PREHOOK: Output: default@inoutputopt
 POSTHOOK: query: drop table inOutputOpt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@inoutputopt
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inoutputopt
 PREHOOK: query: CREATE EXTERNAL TABLE hive26230_orc(kob varchar(2), enhanced_type_code int) STORED AS ORC
 PREHOOK: type: CREATETABLE
@@ -394,10 +400,12 @@ POSTHOOK: Input: default@hive26230_orc
 PREHOOK: query: DROP TABLE hive26230_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive26230_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hive26230_orc
 POSTHOOK: query: DROP TABLE hive26230_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive26230_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive26230_orc
 PREHOOK: query: CREATE EXTERNAL TABLE hive26230_char_orc(kob char(2), enhanced_type_code int) STORED AS ORC
 PREHOOK: type: CREATETABLE
@@ -433,10 +441,12 @@ POSTHOOK: Input: default@hive26230_char_orc
 PREHOOK: query: DROP TABLE hive26230_char_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive26230_char_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hive26230_char_orc
 POSTHOOK: query: DROP TABLE hive26230_char_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive26230_char_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive26230_char_orc
 PREHOOK: query: CREATE EXTERNAL TABLE hive26230_parq(kob varchar(2), enhanced_type_code int) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
@@ -472,10 +482,12 @@ POSTHOOK: Input: default@hive26230_parq
 PREHOOK: query: DROP TABLE hive26230_parq
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive26230_parq
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hive26230_parq
 POSTHOOK: query: DROP TABLE hive26230_parq
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive26230_parq
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive26230_parq
 PREHOOK: query: CREATE EXTERNAL TABLE hive26230_char_parq(kob char(2), enhanced_type_code int) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
@@ -511,10 +523,12 @@ POSTHOOK: Input: default@hive26230_char_parq
 PREHOOK: query: DROP TABLE hive26230_char_parq
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive26230_char_parq
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hive26230_char_parq
 POSTHOOK: query: DROP TABLE hive26230_char_parq
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive26230_char_parq
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive26230_char_parq
 PREHOOK: query: CREATE EXTERNAL TABLE hive26230_int_parq(kob int, enhanced_type_code int) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
@@ -548,8 +562,10 @@ POSTHOOK: Input: default@hive26230_int_parq
 PREHOOK: query: DROP TABLE hive26230_int_parq
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive26230_int_parq
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hive26230_int_parq
 POSTHOOK: query: DROP TABLE hive26230_int_parq
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive26230_int_parq
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive26230_int_parq

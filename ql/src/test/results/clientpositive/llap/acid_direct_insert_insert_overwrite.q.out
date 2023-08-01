@@ -1,31 +1,45 @@
 PREHOOK: query: drop table if exists io_test_acid_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists io_test_acid_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists io_test_text_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists io_test_text_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists io_test_text_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists io_test_text_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists io_test_text_3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists io_test_text_3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists io_test_acid_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists io_test_acid_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists io_test_acid_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists io_test_acid_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists io_test_acid_3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists io_test_acid_3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table io_test_text_1 (a int, b int, c int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -161,10 +175,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table io_test_acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid
 POSTHOOK: query: drop table io_test_acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid
 PREHOOK: query: create table io_test_acid_1 (a int, b int, c int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -305,26 +321,32 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table io_test_acid_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid_1
 POSTHOOK: query: drop table io_test_acid_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid_1
 PREHOOK: query: drop table io_test_acid_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid_2
 POSTHOOK: query: drop table io_test_acid_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid_2
 PREHOOK: query: drop table io_test_acid_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid_3
 POSTHOOK: query: drop table io_test_acid_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid_3
 PREHOOK: query: create table io_test_acid_part (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -466,10 +488,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table io_test_acid_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: drop table io_test_acid_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid_part
 PREHOOK: query: create table io_test_acid_part (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -606,10 +630,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table io_test_acid_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: drop table io_test_acid_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid_part
 PREHOOK: query: create table io_test_acid_part (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -745,10 +771,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table io_test_acid_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: drop table io_test_acid_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid_part
 PREHOOK: query: create table io_test_acid_part (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -875,10 +903,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table io_test_acid_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: drop table io_test_acid_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid_part
 PREHOOK: query: create table io_test_acid_part (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -931,10 +961,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table io_test_acid_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: drop table io_test_acid_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid_part
 PREHOOK: query: create table io_test_acid_part (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -983,10 +1015,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table io_test_acid_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: drop table io_test_acid_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid_part
 PREHOOK: query: create external table io_test_text_3 (a int, b int, pc1 int, pc2 int, pc3 int) stored as textfile
 PREHOOK: type: CREATETABLE
@@ -1201,32 +1235,40 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table io_test_acid_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_acid_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: drop table io_test_acid_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_acid_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_acid_part
 PREHOOK: query: drop table io_test_text_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_text_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_text_1
 POSTHOOK: query: drop table io_test_text_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_text_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_text_1
 PREHOOK: query: drop table io_test_text_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_text_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_text_2
 POSTHOOK: query: drop table io_test_text_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_text_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_text_2
 PREHOOK: query: drop table io_test_text_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io_test_text_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io_test_text_3
 POSTHOOK: query: drop table io_test_text_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io_test_text_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io_test_text_3

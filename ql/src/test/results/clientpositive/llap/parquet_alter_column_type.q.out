@@ -218,50 +218,62 @@ POSTHOOK: Input: default@test_parquet_6
 PREHOOK: query: drop table test_parquet_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_1
 POSTHOOK: query: drop table test_parquet_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_1
 PREHOOK: query: drop table test_parquet_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_2
 POSTHOOK: query: drop table test_parquet_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_2
 PREHOOK: query: drop table test_parquet_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_3
 POSTHOOK: query: drop table test_parquet_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_3
 PREHOOK: query: drop table test_parquet_4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_4
 POSTHOOK: query: drop table test_parquet_4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_4
 PREHOOK: query: drop table test_parquet_5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_5
 POSTHOOK: query: drop table test_parquet_5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_5
 PREHOOK: query: drop table test_parquet_6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_6
 POSTHOOK: query: drop table test_parquet_6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_6
 PREHOOK: query: create table test_parquet_1 (id decimal) stored as parquet
 PREHOOK: type: CREATETABLE
@@ -520,58 +532,72 @@ POSTHOOK: Input: default@test_parquet_7
 PREHOOK: query: drop table test_parquet_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_1
 POSTHOOK: query: drop table test_parquet_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_1
 PREHOOK: query: drop table test_parquet_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_2
 POSTHOOK: query: drop table test_parquet_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_2
 PREHOOK: query: drop table test_parquet_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_3
 POSTHOOK: query: drop table test_parquet_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_3
 PREHOOK: query: drop table test_parquet_4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_4
 POSTHOOK: query: drop table test_parquet_4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_4
 PREHOOK: query: drop table test_parquet_5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_5
 POSTHOOK: query: drop table test_parquet_5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_5
 PREHOOK: query: drop table test_parquet_6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_6
 POSTHOOK: query: drop table test_parquet_6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_6
 PREHOOK: query: drop table test_parquet_7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_7
 POSTHOOK: query: drop table test_parquet_7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_7
 PREHOOK: query: create table test_parquet_1 (id decimal) stored as parquet
 PREHOOK: type: CREATETABLE
@@ -830,56 +856,70 @@ POSTHOOK: Input: default@test_parquet_7
 PREHOOK: query: drop table test_parquet_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_1
 POSTHOOK: query: drop table test_parquet_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_1
 PREHOOK: query: drop table test_parquet_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_2
 POSTHOOK: query: drop table test_parquet_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_2
 PREHOOK: query: drop table test_parquet_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_3
 POSTHOOK: query: drop table test_parquet_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_3
 PREHOOK: query: drop table test_parquet_4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_4
 POSTHOOK: query: drop table test_parquet_4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_4
 PREHOOK: query: drop table test_parquet_5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_5
 POSTHOOK: query: drop table test_parquet_5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_5
 PREHOOK: query: drop table test_parquet_6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_6
 POSTHOOK: query: drop table test_parquet_6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_6
 PREHOOK: query: drop table test_parquet_7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_7
 POSTHOOK: query: drop table test_parquet_7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_7

@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_3_txt_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_3_txt_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_3_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_3_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE DECIMAL_3_txt_n0(key decimal(38,18), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
@@ -377,16 +381,20 @@ POSTHOOK: Input: default@decimal_3_n1
 PREHOOK: query: DROP TABLE DECIMAL_3_txt_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_3_txt_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_3_txt_n0
 POSTHOOK: query: DROP TABLE DECIMAL_3_txt_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_3_txt_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_3_txt_n0
 PREHOOK: query: DROP TABLE DECIMAL_3_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_3_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_3_n1
 POSTHOOK: query: DROP TABLE DECIMAL_3_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_3_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_3_n1

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table target_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table target_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table temp
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table temp
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
@@ -79,16 +83,20 @@ POSTHOOK: Input: default@target_n0
 PREHOOK: query: drop table target_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@target_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@target_n0
 POSTHOOK: query: drop table target_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@target_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@target_n0
 PREHOOK: query: drop table temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@temp
 POSTHOOK: query: drop table temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp

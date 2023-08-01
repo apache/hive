@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_orc(a int, b string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -155,15 +157,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tbl_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_orc
 POSTHOOK: query: drop table tbl_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_orc
 PREHOOK: query: drop table if exists tbl_parquet
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_parquet
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_parquet(a int, b string) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -317,15 +323,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tbl_parquet
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_parquet
 POSTHOOK: query: drop table tbl_parquet
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_parquet
 PREHOOK: query: drop table if exists tbl_avro
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_avro
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_avro(a int, b string) stored as avro
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -479,15 +489,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tbl_avro
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_avro
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_avro
 POSTHOOK: query: drop table tbl_avro
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_avro
 PREHOOK: query: drop table if exists part_tbl_parquet
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists part_tbl_parquet
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table part_tbl_parquet (a int) partitioned by (s string) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -536,8 +550,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table part_tbl_parquet
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_tbl_parquet
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_tbl_parquet
 POSTHOOK: query: drop table part_tbl_parquet
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_tbl_parquet
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_tbl_parquet

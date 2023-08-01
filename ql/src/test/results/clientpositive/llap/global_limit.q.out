@@ -1,19 +1,27 @@
 PREHOOK: query: drop table gl_tgt
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table gl_tgt
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table gl_src1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table gl_src1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table gl_src2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table gl_src2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table gl_src_part1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table gl_src_part1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table gl_src1 (key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1630,32 +1638,40 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table gl_src1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@gl_src1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@gl_src1
 POSTHOOK: query: drop table gl_src1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@gl_src1
 PREHOOK: query: drop table gl_src2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@gl_src2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@gl_src2
 POSTHOOK: query: drop table gl_src2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@gl_src2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@gl_src2
 PREHOOK: query: drop table gl_src_part1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@gl_src_part1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@gl_src_part1
 POSTHOOK: query: drop table gl_src_part1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@gl_src_part1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@gl_src_part1
 PREHOOK: query: drop table gl_tgt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@gl_tgt
+PREHOOK: Output: database:default
 PREHOOK: Output: default@gl_tgt
 POSTHOOK: query: drop table gl_tgt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@gl_tgt
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@gl_tgt

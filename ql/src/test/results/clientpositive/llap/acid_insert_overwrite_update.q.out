@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists sequential_update
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists sequential_update
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create transactional table sequential_update(ctime timestamp, seq bigint, mtime timestamp, prev_writeid bigint, prev_dirname string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -151,8 +153,10 @@ POSTHOOK: Input: default@sequential_update
 LOOKS OKAY	base_0000005
 PREHOOK: query: drop table if exists orc_test_txn
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists orc_test_txn
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table  orc_test_txn (`id` integer, name string, dept string) partitioned by(year integer) stored as orc TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

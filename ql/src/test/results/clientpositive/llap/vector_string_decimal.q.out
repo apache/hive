@@ -1,11 +1,15 @@
 PREHOOK: query: drop table orc_decimal
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table orc_decimal
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table staging_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table staging_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table orc_decimal (id decimal(18,0)) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -127,16 +131,20 @@ POSTHOOK: Input: default@orc_decimal
 PREHOOK: query: drop table orc_decimal
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_decimal
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_decimal
 POSTHOOK: query: drop table orc_decimal
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_decimal
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_decimal
 PREHOOK: query: drop table staging_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@staging_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@staging_n1
 POSTHOOK: query: drop table staging_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@staging_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@staging_n1
