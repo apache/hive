@@ -25,11 +25,9 @@ import java.awt.Desktop.Action;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -39,9 +37,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
@@ -206,47 +201,10 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
     return paramMap;
   }
 
-  /**
-   * The pattern for valid urls (http/s).
-   */
-  private static final Pattern VALID_URL = createValidUrlPattern();
-  private static Pattern createValidUrlPattern() {
-    final String validURLPattern =
-        "^http(s?)\\:\\/\\/[0-9a-zA-Z]([-.\\w]*[0-9a-zA-Z@:])*(:(0-9)*)*(\\/?)([a-zA-Z0-9\\-\\.\\?\\,\\&\\(\\)\\/\\\\\\+&%\\$#_=@]*)?$";
-    try {
-      return Pattern.compile(validURLPattern);
-    }
-    catch (PatternSyntaxException pex) {
-      // ignore
-      return null;
-    }
-  }
-
-  @VisibleForTesting
-  public static boolean checkValid(String url) {
-    if (VALID_URL != null) {
-      Matcher matcher = VALID_URL.matcher(url);
-      if (!matcher.find()) {
-        return false;
-      }
-    }
-    // worst case, unlikely, use a basic validation through URL toUri
-    try {
-      new URL(url).toURI();
-      return true;
-    } catch (MalformedURLException | URISyntaxException mex) {
-      return false;
-    }
-  }
 
   @VisibleForTesting
   protected void openBrowserWindow() throws HiveJdbcBrowserException {
     URI ssoUri = clientContext.getSsoUri();
-    Preconditions.checkNotNull(ssoUri, "SSO Url is null");
-    String ssoUriStr = ssoUri.toString();
-    if (!checkValid(ssoUriStr)) {
-      throw new IllegalArgumentException("SSO Url "+ssoUriStr+ "is invalid");
-    }
     try {
       if (Desktop.isDesktopSupported() && Desktop.getDesktop()
           .isSupported(Action.BROWSE)) {
@@ -255,6 +213,7 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
         LOG.info(
             "Desktop mode is not supported. Attempting to use OS "
                 + "commands to open the default browser");
+        String ssoUriStr = ssoUri.toString();
         //Desktop is not supported, lets try to open the browser process
         OsType os = getOperatingSystem();
         switch (os) {

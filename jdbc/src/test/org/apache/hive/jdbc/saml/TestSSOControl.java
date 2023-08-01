@@ -16,25 +16,35 @@
  * limitations under the License.
  */
 
-package org.apache.hive.jdbc;
+package org.apache.hive.jdbc.saml;
 
 import org.junit.Test;
 
-import static org.apache.hive.jdbc.saml.HiveJdbcBrowserClient.checkValid;
+import java.net.URI;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestSSOControl {
 
+  static boolean checkValid(String uri) {
+    try {
+      HiveJdbcSamlRedirectStrategy.checkSsoUri(new URI(uri));
+      return true;
+    } catch(Exception xany) {
+      return false;
+    }
+  }
+
   @Test
-  public void testValidURL() throws Exception {
+  public void testValidURL() {
     assertTrue(checkValid("https://companya.okta.com"));
     assertTrue(checkValid("https://companyb.okta.com:8080"));
     assertTrue(checkValid("https://companyc.okta.com/testpathvalue"));
   }
 
   @Test
-  public void testInvalidURL() throws Exception {
+  public void testInvalidURL() {
     assertFalse(checkValid("-a Calculator"));
     assertFalse(checkValid("This is random text"));
     assertFalse(checkValid("file://randomfile"));
