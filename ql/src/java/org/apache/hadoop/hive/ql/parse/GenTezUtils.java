@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -42,7 +44,9 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.*;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
@@ -75,6 +79,11 @@ public class GenTezUtils {
     context.unionWorkMap.put(leaf, unionWork);
     tezWork.add(unionWork);
     return unionWork;
+  }
+
+  private static boolean isRestrictReducerExtrapolation(Context context) {
+    return context.getOperation() == Context.Operation.DELETE && context.getLoadTableOutputMap().values()
+            .stream().map(WriteEntity::getTable).anyMatch(DDLUtils::isIcebergTable);
   }
 
   public static ReduceWork createReduceWork(
@@ -125,9 +134,15 @@ public class GenTezUtils {
       int minPartition = Math.max(1, (int) (nReducers * minPartitionFactor));
       minPartition = (minPartition > maxReducers) ? maxReducers : minPartition;
 
+      if (isRestrictReducerExtrapolation(context.parseContext.getContext())) {
+        LOG.debug("Overriding maxPartitionFactor to 1.0 to prevent creation of small files after delete operation");
+        maxPartitionFactor = 1f;
+      }
+      
       // max we allow tez to pick
       int maxPartition = Math.max(1, (int) (nReducers * maxPartitionFactor));
       maxPartition = (maxPartition > maxReducers) ? maxReducers : maxPartition;
+      LOG.debug("max partition factor={}, max partition={}", maxPartitionFactor, maxPartition);
 
       // reduce only if the parameters are significant
       final float minThreshold = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM_MIN_THRESHOLD);
