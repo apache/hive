@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
@@ -71,6 +72,7 @@ import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -291,11 +293,16 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaConstantStringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -2438,6 +2445,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } else {
           // This is a partition
           qb.getMetaData().setDestForAlias(name, ts.partHandle);
+          if (ts.tableHandle.getStorageHandler() != null && ts.tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+            if (ts.partSpec != null && ts.partSpec.size() > 0) {
+              qb.getMetaData().setPartSpecForAlias(name, ts.partSpec);
+            }
+          }
         }
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
           // Add the table spec for the destination table.
@@ -4935,7 +4947,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       targetTableColTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(fs.getType()));
     }
     Map<String, String> partSpec = qb.getMetaData().getPartSpecForAlias(dest);
-    if(partSpec != null) {
+    if(partSpec != null && QBMetaData.DEST_PARTITION != qb.getMetaData().getDestTypeForAlias(dest)) {
       //find dynamic partition columns
       //relies on consistent order via LinkedHashMap
       for(Map.Entry<String, String> partKeyVal : partSpec.entrySet()) {
@@ -7296,7 +7308,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LoadTableDesc ltd = null;
     ListBucketingCtx lbCtx = null;
     Map<String, String> partSpec = null;
-    boolean isMmTable = false, isMmCreate = false, isNonNativeTable = false;
+    boolean isMmTable = false, isMmCreate = false, isNonNativeTable = false, isAlreadyContainsPartCols = false;
     Long writeId = null;
     HiveTxnManager txnMgr = getTxnMgr();
 
@@ -7347,8 +7359,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       input = genConstraintsPlan(dest, qb, input);
 
       if (!qb.getIsQuery()) {
-        input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(),
-            dpCtx, destinationTable.getPartitionKeys(), destinationTable);
+        isAlreadyContainsPartCols = Optional.ofNullable(destinationTable)
+            .map(Table::getStorageHandler)
+            .map(HiveStorageHandler::alwaysUnpartitioned)
+            .orElse(Boolean.FALSE);
+        if (!updating(dest) && !deleting(dest) && isAlreadyContainsPartCols
+            && destinationTable != null && partSpec != null) {
+          // Do not specify partition spec again since its already added in the earlier.
+          input = genConversionSelectOperatorByAddPartition(dest, qb, input, destinationTable.getDeserializer(),
+                  destinationTable, partSpec);
+        } else {
+          input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(),
+                  dpCtx, destinationTable.getPartitionKeys(), destinationTable);
+        }
       }
 
       if (destinationTable.isMaterializedView() &&
@@ -7493,9 +7516,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Add NOT NULL constraint check
       input = genConstraintsPlan(dest, qb, input);
+      if (destinationTable.getStorageHandler() != null && destinationTable.getStorageHandler().alwaysUnpartitioned()) {
+        partSpec = qbm.getPartSpecForAlias(dest);
+      }
 
       if (!qb.getIsQuery()) {
-        input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(), dpCtx, null, destinationTable);
+        isAlreadyContainsPartCols = Optional.ofNullable(destinationTable)
+                .map(Table::getStorageHandler)
+                .map(HiveStorageHandler::alwaysUnpartitioned)
+                .orElse(Boolean.FALSE);
+        if (!updating(dest) && !deleting(dest) && isAlreadyContainsPartCols
+                && destinationTable != null && partSpec != null) {
+          input = genConversionSelectOperatorByAddPartition(dest, qb, input, destinationTable.getDeserializer(),
+                  destinationTable, partSpec);
+        } else {
+          input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(),
+                  dpCtx, null, destinationTable);
+        }
       }
 
       if (destinationTable.isMaterializedView() &&
@@ -7563,9 +7600,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ltd.setMoveTaskId(moveTaskId);
 
       loadTableWork.add(ltd);
-      if (!outputs.add(new WriteEntity(destinationPartition, determineWriteType(ltd, dest)))) {
-        throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
-            .getMsg(destinationTable.getTableName() + "@" + destinationPartition.getName()));
+
+      if (destinationTable.getStorageHandler() != null && destinationTable.getStorageHandler().alwaysUnpartitioned()) {
+        // HMS does not know about this partition
+        // but the underlying storage format knows about it.
+        DummyPartition dummyPartition;
+        try {
+          String partName = Warehouse.makePartName(partSpec, false);
+          dummyPartition = new DummyPartition(destinationTable, partName, partSpec);
+        } catch (MetaException e) {
+          throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
+        }
+        if (!outputs.add(new WriteEntity(dummyPartition, determineWriteType(ltd, dest)))) {
+          throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
+                  .getMsg(destinationTable.getTableName() + "@" + dummyPartition.getName()));
+        }
+      } else {
+        if (!outputs.add(new WriteEntity(destinationPartition, determineWriteType(ltd, dest)))) {
+          throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
+                  .getMsg(destinationTable.getTableName() + "@" + destinationPartition.getName()));
+        }
       }
      break;
     }
@@ -7906,8 +7960,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!(destType == QBMetaData.DEST_DFS_FILE && qb.getIsQuery())
             && destinationTable != null && destinationTable.getStorageHandler() != null) {
       try {
-        input = genConversionSelectOperator(
-                dest, qb, input, tableDescriptor.getDeserializer(conf), dpCtx, null, destinationTable);
+        if (!updating(dest) && !deleting(dest) && isAlreadyContainsPartCols && MapUtils.isNotEmpty(partSpec)) {
+          input = genConversionSelectOperatorByAddPartition(dest, qb, input, destinationTable.getDeserializer(),
+                  destinationTable, null);
+        } else {
+          input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(),
+                  dpCtx, null, destinationTable);
+        }
       } catch (Exception e) {
         throw new SemanticException(e);
       }
@@ -8465,19 +8524,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Create a DummyPartition in this case. Since, the metastore does not store partial
       // partitions currently, we need to store dummy partitions
       else {
-        try {
-          String ppath = dpCtx.getSPPath();
-          ppath = ppath.substring(0, ppath.length() - 1);
-          DummyPartition p =
-              new DummyPartition(dest_tab, dest_tab.getDbName()
-                  + "@" + dest_tab.getTableName() + "@" + ppath,
-                  partSpec);
-          output = new WriteEntity(p, getWriteType(dest), false);
-          output.setDynamicPartitionWrite(true);
-          outputs.add(output);
-        } catch (HiveException e) {
-          throw new SemanticException(e.getMessage(), e);
-        }
+        String ppath = dpCtx.getSPPath();
+        ppath = ppath.substring(0, ppath.length() - 1);
+        DummyPartition p =
+                new DummyPartition(dest_tab, dest_tab.getDbName()
+                        + "@" + dest_tab.getTableName() + "@" + ppath,
+                        partSpec);
+        output = new WriteEntity(p, getWriteType(dest), false);
+        output.setDynamicPartitionWrite(true);
+        outputs.add(output);
       }
     }
     return output;
@@ -8593,6 +8648,94 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     */
     conf.set(AcidUtils.CONF_ACID_KEY, "true");
     SessionState.get().getConf().set(AcidUtils.CONF_ACID_KEY, "true");
+  }
+
+  private Operator genConversionSelectOperatorByAddPartition(String dest, QB qb, Operator input,
+      Deserializer deserializer, Table table, Map<String, String> partitionSpec) throws SemanticException {
+    StructObjectInspector oi = null;
+    try {
+      oi = (StructObjectInspector) deserializer.getObjectInspector();
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+
+    // Check column number
+    List<? extends StructField> tableFields = oi.getAllStructFieldRefs();
+    List<ColumnInfo> rowFields = opParseCtx.get(input).getRowResolver().getColumnInfos();
+    int inColumnCnt = rowFields.size();
+    int outColumnCnt = tableFields.size();
+    long staticPartitionColumnCnt = partitionSpec != null ?
+        partitionSpec.values().stream().filter(Objects::nonNull).count() : 0;
+    List<ExprNodeDesc> expressions = new ArrayList<>(outColumnCnt);
+
+    AtomicBoolean convert = new AtomicBoolean(false);
+    if (inColumnCnt + staticPartitionColumnCnt != outColumnCnt) {
+      String reason = "Table " + dest + " has " + outColumnCnt
+              + " columns, but query has " + (inColumnCnt + staticPartitionColumnCnt) + " columns.";
+      throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(),
+              qb.getParseInfo().getDestForClause(dest), reason));
+    }
+
+    int rowNum = 0;
+    for (StructField tableField : tableFields) {
+      ExprNodeDesc column;
+      // Static partition column case
+      if (partitionSpec != null && partitionSpec.containsKey(tableField.getFieldName())
+          && partitionSpec.get(tableField.getFieldName()) != null) {
+        TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
+                tableField.getFieldObjectInspector().getTypeName());
+        if (tableField.getFieldObjectInspector().getCategory() == Category.PRIMITIVE) {
+          AbstractPrimitiveJavaObjectInspector convertOI = PrimitiveObjectInspectorFactory
+              .getPrimitiveJavaObjectInspector(((AbstractPrimitiveObjectInspector) tableField.getFieldObjectInspector())
+              .getPrimitiveCategory());
+          Object value = ObjectInspectorConverters.getConverter(
+              new JavaConstantStringObjectInspector(partitionSpec.get(tableField.getFieldName())),
+              convertOI).convert(partitionSpec.get(tableField.getFieldName()));
+          column = new ExprNodeConstantDesc(typeInfo, value);
+        } else {
+          throw new SemanticException("Unable to use complex type as a partition type");
+        }
+      } else if (partitionSpec != null && partitionSpec.containsKey(tableField.getFieldName())
+          && partitionSpec.get(tableField.getFieldName()) == null) {
+        // Dynamic partition column case
+        ColumnInfo inputColumn = rowFields.get(rowNum);
+        TypeInfo inputTypeInfo = inputColumn.getType();
+        column = new ExprNodeColumnDesc(inputTypeInfo, inputColumn.getInternalName(),
+                "", true);
+        rowNum++;
+      } else {
+        // Non-partitioned column case
+        column = handleConversion(tableField, rowFields.get(rowNum), convert, dest, rowNum);
+        rowNum++;
+      }
+      expressions.add(column);
+    }
+
+    if (expressions.size() != outColumnCnt) {
+      String reason = "Table " + dest + " has " + outColumnCnt
+              + " columns, but query has " + expressions.size() + " columns.";
+      throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(),
+              qb.getParseInfo().getDestForClause(dest), reason));
+    } else {
+      // add the select operator
+      RowResolver rowResolver = new RowResolver();
+      List<String> colNames = new ArrayList<String>();
+      Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+      for (int i = 0; i < expressions.size(); i++) {
+        String name = getColumnInternalName(i);
+        rowResolver.put("", name, new ColumnInfo(name, expressions.get(i)
+                .getTypeInfo(), "", false));
+        colNames.add(name);
+        colExprMap.put(name, expressions.get(i));
+      }
+      input = putOpInsertMap(OperatorFactory.getAndMakeChild(
+              new SelectDesc(expressions, colNames), new RowSchema(rowResolver
+              .getColumnInfos()), input), rowResolver);
+      input.setColumnExprMap(colExprMap);
+    }
+    return input;
   }
 
   /**
