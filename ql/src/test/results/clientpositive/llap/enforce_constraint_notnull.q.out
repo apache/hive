@@ -2115,10 +2115,12 @@ POSTHOOK: Input: default@table1_n7
 PREHOOK: query: DROP TABLE table1_n7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1_n7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1_n7
 POSTHOOK: query: DROP TABLE table1_n7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1_n7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1_n7
 PREHOOK: query: create table src_multi1_n0 (a STRING NOT NULL ENFORCED, b STRING)
 PREHOOK: type: CREATETABLE
@@ -4473,26 +4475,32 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE src_multi1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_multi1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_multi1_n0
 POSTHOOK: query: DROP TABLE src_multi1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_multi1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_multi1_n0
 PREHOOK: query: DROP TABLE src_multi2_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_multi2_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_multi2_n1
 POSTHOOK: query: DROP TABLE src_multi2_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_multi2_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_multi2_n1
 PREHOOK: query: DROP TABLE acid_uami_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid_uami_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_uami_n1
 POSTHOOK: query: DROP TABLE acid_uami_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid_uami_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_uami_n1
 PREHOOK: query: create table nonacid_n2 (key int, a1 string, value string) stored as orc
 PREHOOK: type: CREATETABLE
@@ -5873,18 +5881,22 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE masking_test_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@masking_test_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_n4
 POSTHOOK: query: DROP TABLE masking_test_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@masking_test_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_n4
 PREHOOK: query: DROP TABLE nonacid_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nonacid_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@nonacid_n2
 POSTHOOK: query: DROP TABLE nonacid_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nonacid_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nonacid_n2
 PREHOOK: query: create table table2_n3(i int constraint nn5 not null enforced, j int)
 PREHOOK: type: CREATETABLE
@@ -6118,10 +6130,12 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE table2_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table2_n3
 POSTHOOK: query: DROP TABLE table2_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table2_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2_n3
 PREHOOK: query: create temporary table tttemp(i int not null enforced)
 PREHOOK: type: CREATETABLE
@@ -6254,10 +6268,12 @@ STAGE PLANS:
 PREHOOK: query: drop table tttemp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tttemp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tttemp
 POSTHOOK: query: drop table tttemp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tttemp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tttemp
 PREHOOK: query: create table part_mm_n1(key int not null enforced) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
@@ -6439,8 +6455,10 @@ POSTHOOK: Input: default@part_mm_n1@key_mm=455
 PREHOOK: query: drop table part_mm_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_mm_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_mm_n1
 POSTHOOK: query: drop table part_mm_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_mm_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_mm_n1

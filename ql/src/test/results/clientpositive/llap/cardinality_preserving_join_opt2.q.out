@@ -245,48 +245,60 @@ HiveProject(c1=[$11], c5=[$13], c6=[$14], c3=[$1], c4=[$2], c51=[$3], c61=[$4], 
 PREHOOK: query: drop table f_tab_e10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: mydb_e10@f_tab_e10
+PREHOOK: Output: database:mydb_e10
 PREHOOK: Output: mydb_e10@f_tab_e10
 POSTHOOK: query: drop table f_tab_e10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: mydb_e10@f_tab_e10
+POSTHOOK: Output: database:mydb_e10
 POSTHOOK: Output: mydb_e10@f_tab_e10
 PREHOOK: query: drop table f2_tab_e10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: mydb_e10@f2_tab_e10
+PREHOOK: Output: database:mydb_e10
 PREHOOK: Output: mydb_e10@f2_tab_e10
 POSTHOOK: query: drop table f2_tab_e10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: mydb_e10@f2_tab_e10
+POSTHOOK: Output: database:mydb_e10
 POSTHOOK: Output: mydb_e10@f2_tab_e10
 PREHOOK: query: drop table d2_tab_e10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: mydb_e10@d2_tab_e10
+PREHOOK: Output: database:mydb_e10
 PREHOOK: Output: mydb_e10@d2_tab_e10
 POSTHOOK: query: drop table d2_tab_e10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: mydb_e10@d2_tab_e10
+POSTHOOK: Output: database:mydb_e10
 POSTHOOK: Output: mydb_e10@d2_tab_e10
 PREHOOK: query: drop table d4_tab_e10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: mydb_e10@d4_tab_e10
+PREHOOK: Output: database:mydb_e10
 PREHOOK: Output: mydb_e10@d4_tab_e10
 POSTHOOK: query: drop table d4_tab_e10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: mydb_e10@d4_tab_e10
+POSTHOOK: Output: database:mydb_e10
 POSTHOOK: Output: mydb_e10@d4_tab_e10
 PREHOOK: query: drop table d3_tab_e10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: mydb_e10@d3_tab_e10
+PREHOOK: Output: database:mydb_e10
 PREHOOK: Output: mydb_e10@d3_tab_e10
 POSTHOOK: query: drop table d3_tab_e10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: mydb_e10@d3_tab_e10
+POSTHOOK: Output: database:mydb_e10
 POSTHOOK: Output: mydb_e10@d3_tab_e10
 PREHOOK: query: drop table d1_tab_e10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: mydb_e10@d1_tab_e10
+PREHOOK: Output: database:mydb_e10
 PREHOOK: Output: mydb_e10@d1_tab_e10
 POSTHOOK: query: drop table d1_tab_e10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: mydb_e10@d1_tab_e10
+POSTHOOK: Output: database:mydb_e10
 POSTHOOK: Output: mydb_e10@d1_tab_e10

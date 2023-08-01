@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS insert_into6_neg
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS insert_into6_neg
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE insert_into6_neg (key int, value string)
   PARTITIONED BY (ds string) TBLPROPERTIES("immutable"="true")
 PREHOOK: type: CREATETABLE

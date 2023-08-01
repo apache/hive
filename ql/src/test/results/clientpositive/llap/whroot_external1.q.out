@@ -556,26 +556,32 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table wre1_managed1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@wre1_managed1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@wre1_managed1
 POSTHOOK: query: drop table wre1_managed1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@wre1_managed1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@wre1_managed1
 PREHOOK: query: drop table wre1_ext1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@wre1_ext1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@wre1_ext1
 POSTHOOK: query: drop table wre1_ext1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@wre1_ext1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@wre1_ext1
 PREHOOK: query: drop table wre1_ext2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@wre1_ext2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@wre1_ext2
 POSTHOOK: query: drop table wre1_ext2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@wre1_ext2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@wre1_ext2
 PREHOOK: query: drop database wre1_db cascade
 PREHOOK: type: DROPDATABASE

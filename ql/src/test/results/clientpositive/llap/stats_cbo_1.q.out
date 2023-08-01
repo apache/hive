@@ -272,8 +272,10 @@ POSTHOOK: Input: default@repro
 PREHOOK: query: DROP TABLE repro
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repro
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repro
 POSTHOOK: query: DROP TABLE repro
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repro
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repro

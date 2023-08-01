@@ -200,16 +200,20 @@ name	56	4.00	2015
 PREHOOK: query: drop table src_emptybucket_partitioned_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_emptybucket_partitioned_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_emptybucket_partitioned_1
 POSTHOOK: query: drop table src_emptybucket_partitioned_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_emptybucket_partitioned_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_emptybucket_partitioned_1
 PREHOOK: query: drop table source_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@source_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@source_table
 POSTHOOK: query: drop table source_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@source_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source_table

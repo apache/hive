@@ -1,7 +1,9 @@
 PREHOOK: query: drop table t_n24
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table t_n24
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE t_n24(c tinyint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

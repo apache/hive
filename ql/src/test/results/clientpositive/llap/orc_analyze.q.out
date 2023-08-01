@@ -166,10 +166,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -253,10 +255,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -497,10 +501,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -635,10 +641,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -885,10 +893,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -1029,10 +1039,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -1191,8 +1203,10 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0

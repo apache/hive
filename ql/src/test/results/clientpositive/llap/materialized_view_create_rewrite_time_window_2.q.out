@@ -263,16 +263,20 @@ POSTHOOK: Output: default@cmv_mat_view_n300
 PREHOOK: query: drop table cmv_basetable_n100
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@cmv_basetable_n100
+PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_basetable_n100
 POSTHOOK: query: drop table cmv_basetable_n100
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@cmv_basetable_n100
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable_n100
 PREHOOK: query: drop table cmv_basetable_2_n100
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@cmv_basetable_2_n100
+PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_basetable_2_n100
 POSTHOOK: query: drop table cmv_basetable_2_n100
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@cmv_basetable_2_n100
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable_2_n100

@@ -1355,10 +1355,12 @@ POSTHOOK: Input: default@parttbl@dt=2000-01-02
 PREHOOK: query: drop table parttbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parttbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parttbl
 POSTHOOK: query: drop table parttbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parttbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parttbl
 PREHOOK: query: CREATE TABLE decimal_mapjoin STORED AS ORC AS
   SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1,
@@ -1807,8 +1809,10 @@ POSTHOOK: Input: default@decimal_mapjoin
 PREHOOK: query: DROP TABLE decimal_mapjoin
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_mapjoin
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_mapjoin
 POSTHOOK: query: DROP TABLE decimal_mapjoin
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_mapjoin
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_mapjoin

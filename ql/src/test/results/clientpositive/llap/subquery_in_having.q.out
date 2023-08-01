@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS part_subq
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS part_subq
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE part_subq( 
     p_partkey INT,
     p_name STRING,
@@ -2430,16 +2432,20 @@ POSTHOOK: Input: default@src_null_n4
 PREHOOK: query: DROP TABLE src_null_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_null_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_null_n4
 POSTHOOK: query: DROP TABLE src_null_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_null_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_null_n4
 PREHOOK: query: DROP TABLE part_subq
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_subq
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_subq
 POSTHOOK: query: DROP TABLE part_subq
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_subq
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_subq

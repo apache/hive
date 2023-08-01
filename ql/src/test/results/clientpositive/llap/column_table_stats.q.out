@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS s
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS s
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE s (key STRING COMMENT 'default', value STRING COMMENT 'default') STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -234,8 +236,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: DROP TABLE IF EXISTS spart
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS spart
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE spart (key STRING COMMENT 'default', value STRING COMMENT 'default')
 PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE
@@ -638,10 +642,12 @@ Storage Desc Params:
 PREHOOK: query: DROP TABLE IF EXISTS spart
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@spart
+PREHOOK: Output: database:default
 PREHOOK: Output: default@spart
 POSTHOOK: query: DROP TABLE IF EXISTS spart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@spart
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@spart
 PREHOOK: query: CREATE TABLE spart (key STRING COMMENT 'default', value STRING COMMENT 'default')
 PARTITIONED BY (ds STRING, hr STRING)
@@ -1045,10 +1051,12 @@ Storage Desc Params:
 PREHOOK: query: DROP TABLE IF EXISTS spart
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@spart
+PREHOOK: Output: database:default
 PREHOOK: Output: default@spart
 POSTHOOK: query: DROP TABLE IF EXISTS spart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@spart
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@spart
 PREHOOK: query: CREATE TABLE spart (key STRING COMMENT 'default', value STRING COMMENT 'default')
 PARTITIONED BY (ds STRING, hr STRING)

@@ -175,10 +175,12 @@ NULL	original	99	NULL
 PREHOOK: query: DROP TABLE table5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table5
 POSTHOOK: query: DROP TABLE table5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table5
 PREHOOK: query: CREATE TABLE table6(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -322,10 +324,12 @@ NULL	original	NULL	NULL
 PREHOOK: query: DROP TABLE table6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table6
 POSTHOOK: query: DROP TABLE table6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table6
 PREHOOK: query: CREATE TABLE table7(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -461,8 +465,10 @@ NULL	original	NULL	NULL
 PREHOOK: query: DROP TABLE table7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table7
 POSTHOOK: query: DROP TABLE table7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table7

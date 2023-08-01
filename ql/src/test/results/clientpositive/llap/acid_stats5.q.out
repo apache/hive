@@ -937,8 +937,10 @@ STAGE PLANS:
 PREHOOK: query: drop table stats2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats2
 POSTHOOK: query: drop table stats2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats2

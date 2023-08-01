@@ -4378,24 +4378,30 @@ STAGE PLANS:
 PREHOOK: query: drop table srcpart_date_n7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_date_n7
 POSTHOOK: query: drop table srcpart_date_n7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date_n7
 PREHOOK: query: drop table srcpart_small_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_small_n3
 POSTHOOK: query: drop table srcpart_small_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_small_n3
 PREHOOK: query: drop table alltypesorc_int_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alltypesorc_int_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypesorc_int_n1
 POSTHOOK: query: drop table alltypesorc_int_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alltypesorc_int_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypesorc_int_n1

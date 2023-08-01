@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists smt1_tab1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists smt1_tab1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists smt1_tab2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists smt1_tab2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table smt1_tab1 (c1 string, c2 string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

@@ -2508,16 +2508,20 @@ STAGE PLANS:
 PREHOOK: query: drop table dsrv_big
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dsrv_big
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dsrv_big
 POSTHOOK: query: drop table dsrv_big
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dsrv_big
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dsrv_big
 PREHOOK: query: drop table dsrv_small
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dsrv_small
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dsrv_small
 POSTHOOK: query: drop table dsrv_small
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dsrv_small
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dsrv_small

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS skipHTbl
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS skipHTbl
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE skipHTbl (a int) 
 PARTITIONED BY (b int) 
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' 
@@ -155,8 +157,10 @@ POSTHOOK: Input: default@skiphtbl@b=2
 4
 PREHOOK: query: DROP TABLE IF EXISTS skipFTbl
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS skipFTbl
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE skipFTbl (a int) 
 PARTITIONED BY (b int) 
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' 
@@ -252,16 +256,20 @@ POSTHOOK: Input: default@skipftbl@b=2
 PREHOOK: query: DROP TABLE skipHTbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@skiphtbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@skiphtbl
 POSTHOOK: query: DROP TABLE skipHTbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@skiphtbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skiphtbl
 PREHOOK: query: DROP TABLE skipFTbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@skipftbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@skipftbl
 POSTHOOK: query: DROP TABLE skipFTbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@skipftbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skipftbl

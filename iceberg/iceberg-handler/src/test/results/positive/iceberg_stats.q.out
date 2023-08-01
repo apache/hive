@@ -195,16 +195,20 @@ STAGE PLANS:
 PREHOOK: query: drop table ice01
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice01
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ice01
 POSTHOOK: query: drop table ice01
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice01
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice01
 PREHOOK: query: drop table ice02
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice02
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ice02
 POSTHOOK: query: drop table ice02
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice02
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice02

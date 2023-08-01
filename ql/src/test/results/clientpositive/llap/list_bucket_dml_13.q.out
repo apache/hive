@@ -379,8 +379,10 @@ POSTHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=2013-01-23+18%3
 PREHOOK: query: drop table list_bucketing_mul_col
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@list_bucketing_mul_col
+PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_mul_col
 POSTHOOK: query: drop table list_bucketing_mul_col
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@list_bucketing_mul_col
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_mul_col

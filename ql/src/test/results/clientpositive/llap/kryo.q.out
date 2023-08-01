@@ -104,8 +104,10 @@ POSTHOOK: Input: default@datetime
 PREHOOK: query: drop table DateTime
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@datetime
+PREHOOK: Output: database:default
 PREHOOK: Output: default@datetime
 POSTHOOK: query: drop table DateTime
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@datetime
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@datetime

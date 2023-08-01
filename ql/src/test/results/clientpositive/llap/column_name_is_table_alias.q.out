@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS tableA
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS tableA
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS tableB
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS tableB
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE tableA (a INTEGER,z INTEGER)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

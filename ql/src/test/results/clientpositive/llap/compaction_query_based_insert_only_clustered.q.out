@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS orc_bucketed
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS orc_bucketed
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table orc_bucketed (a int, b string) clustered by (a) into 3 buckets stored as orc TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

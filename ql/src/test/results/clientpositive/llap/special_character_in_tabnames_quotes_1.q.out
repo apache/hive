@@ -4624,8 +4624,10 @@ STAGE PLANS:
 
 PREHOOK: query: drop table "t//"
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:db~!@@#$%^&*(),<>
 POSTHOOK: query: drop table "t//"
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:db~!@@#$%^&*(),<>
 PREHOOK: query: create table "t//" (col string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db~!@@#$%^&*(),<>

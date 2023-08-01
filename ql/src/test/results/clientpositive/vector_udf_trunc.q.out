@@ -1341,8 +1341,10 @@ NULL	NULL
 PREHOOK: query: drop table trunc_number
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@trunc_number
+PREHOOK: Output: database:default
 PREHOOK: Output: default@trunc_number
 POSTHOOK: query: drop table trunc_number
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@trunc_number
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@trunc_number

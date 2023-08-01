@@ -74,26 +74,32 @@ POSTHOOK: Input: default@t2b
 PREHOOK: query: drop table if exists t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
 POSTHOOK: query: drop table if exists t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: drop table if exists t2a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2a
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2a
 POSTHOOK: query: drop table if exists t2a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2a
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2a
 PREHOOK: query: drop table if exists t2b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2b
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2b
 POSTHOOK: query: drop table if exists t2b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2b
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2b
 PREHOOK: query: create table t1 (a int) stored as orc
 PREHOOK: type: CREATETABLE

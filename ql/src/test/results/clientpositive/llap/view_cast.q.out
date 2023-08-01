@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS atab
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS atab
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE IF NOT EXISTS atab (ks_uid BIGINT, sr_uid STRING, sr_id STRING, tstamp STRING, m_id STRING, act STRING, at_sr_uid STRING, tstamp_type STRING, original_m_id STRING, original_tstamp STRING, registered_flag TINYINT, at_ks_uid BIGINT) PARTITIONED BY (dt STRING,nt STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -30,8 +32,10 @@ POSTHOOK: Output: default@atab
 POSTHOOK: Output: default@atab@dt=20130311/nt=tw
 PREHOOK: query: DROP TABLE IF EXISTS  mstab
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS  mstab
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE  mstab(ks_uid INT, csc INT) PARTITIONED BY (dt STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

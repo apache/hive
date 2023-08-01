@@ -300,8 +300,10 @@ POSTHOOK: Input: default@t_test
 PREHOOK: query: DROP TABLE t_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_test
 POSTHOOK: query: DROP TABLE t_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_test

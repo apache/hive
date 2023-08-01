@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS bool_literal
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS bool_literal
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE bool_literal(key int, value boolean)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -53,8 +55,10 @@ POSTHOOK: Input: default@bool_literal
 PREHOOK: query: DROP TABLE bool_literal
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bool_literal
+PREHOOK: Output: database:default
 PREHOOK: Output: default@bool_literal
 POSTHOOK: query: DROP TABLE bool_literal
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bool_literal
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bool_literal

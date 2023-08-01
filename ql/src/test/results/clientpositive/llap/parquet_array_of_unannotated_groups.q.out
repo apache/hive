@@ -32,8 +32,10 @@ POSTHOOK: Input: default@parquet_array_of_unannotated_groups
 PREHOOK: query: DROP TABLE parquet_array_of_unannotated_groups
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_array_of_unannotated_groups
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_array_of_unannotated_groups
 POSTHOOK: query: DROP TABLE parquet_array_of_unannotated_groups
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_array_of_unannotated_groups
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_array_of_unannotated_groups

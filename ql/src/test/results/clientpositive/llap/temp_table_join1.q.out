@@ -377,16 +377,20 @@ POSTHOOK: Input: default@src_temp
 PREHOOK: query: DROP TABLE src_nontemp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_nontemp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_nontemp
 POSTHOOK: query: DROP TABLE src_nontemp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_nontemp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_nontemp
 PREHOOK: query: DROP TABLE src_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_temp
 POSTHOOK: query: DROP TABLE src_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_temp

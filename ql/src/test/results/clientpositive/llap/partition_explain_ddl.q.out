@@ -315,10 +315,12 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE add_part_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@add_part_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@add_part_test
 POSTHOOK: query: DROP TABLE add_part_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@add_part_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@add_part_test
 PREHOOK: query: CREATE DATABASE add_part_test_db
 PREHOOK: type: CREATEDATABASE

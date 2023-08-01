@@ -125,10 +125,12 @@ POSTHOOK: Input: default@serde_regex
 PREHOOK: query: DROP TABLE serde_regex
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@serde_regex
+PREHOOK: Output: database:default
 PREHOOK: Output: default@serde_regex
 POSTHOOK: query: DROP TABLE serde_regex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@serde_regex
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@serde_regex
 PREHOOK: query: EXPLAIN
 CREATE TABLE serde_regex1(
@@ -247,10 +249,12 @@ NULL	0
 PREHOOK: query: DROP TABLE serde_regex1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@serde_regex1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@serde_regex1
 POSTHOOK: query: DROP TABLE serde_regex1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@serde_regex1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@serde_regex1
 PREHOOK: query: EXPLAIN
 CREATE TABLE serde_regex2(
@@ -340,8 +344,10 @@ Peña	Andrés
 PREHOOK: query: DROP TABLE serde_regex2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@serde_regex2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@serde_regex2
 POSTHOOK: query: DROP TABLE serde_regex2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@serde_regex2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@serde_regex2

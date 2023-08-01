@@ -919,8 +919,10 @@ B	3
 PREHOOK: query: DROP TABLE topnkey_windowing
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@topnkey_windowing
+PREHOOK: Output: database:default
 PREHOOK: Output: default@topnkey_windowing
 POSTHOOK: query: DROP TABLE topnkey_windowing
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@topnkey_windowing
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@topnkey_windowing

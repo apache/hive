@@ -47,8 +47,10 @@ POSTHOOK: Input: default@impressions
 PREHOOK: query: drop table impressions
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@impressions
+PREHOOK: Output: database:default
 PREHOOK: Output: default@impressions
 POSTHOOK: query: drop table impressions
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@impressions
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@impressions

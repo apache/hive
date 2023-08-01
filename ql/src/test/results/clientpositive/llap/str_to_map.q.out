@@ -194,8 +194,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 PREHOOK: query: drop table tbl_s2m
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tbl_s2m
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tbl_s2m as select 'ABC=CC_333=444' as t from src tablesample (3 rows)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -221,8 +223,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tbl_s2m
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_s2m
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_s2m
 POSTHOOK: query: drop table tbl_s2m
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_s2m
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_s2m

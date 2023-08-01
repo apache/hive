@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_ice_mixed
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice_mixed
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice_mixed(a int, b string) stored by iceberg stored as orc
 TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
 PREHOOK: type: CREATETABLE
@@ -889,24 +891,30 @@ Europe	Hungary	10	bbb
 PREHOOK: query: drop table tbl_ice_mixed
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_mixed
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_mixed
 POSTHOOK: query: drop table tbl_ice_mixed
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_mixed
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_mixed
 PREHOOK: query: drop table tbl_ice_mixed_all_types
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_mixed_all_types
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_mixed_all_types
 POSTHOOK: query: drop table tbl_ice_mixed_all_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_mixed_all_types
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_mixed_all_types
 PREHOOK: query: drop table tbl_ice_mixed_parted
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_mixed_parted
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_mixed_parted
 POSTHOOK: query: drop table tbl_ice_mixed_parted
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_mixed_parted
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_mixed_parted

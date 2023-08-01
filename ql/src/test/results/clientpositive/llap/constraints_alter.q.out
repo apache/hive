@@ -250,10 +250,12 @@ t1_n2939_nn_2
 PREHOOK: query: drop table t1_n2939
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n2939
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n2939
 POSTHOOK: query: drop table t1_n2939
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n2939
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n2939
 PREHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
 PREHOOK: type: QUERY

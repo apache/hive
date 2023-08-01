@@ -248,16 +248,20 @@ POSTHOOK: Input: default@src_orc_merge_test_part_n2@ds=2011
 PREHOOK: query: drop table src_orc_merge_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_orc_merge_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc_merge_test
 POSTHOOK: query: drop table src_orc_merge_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_orc_merge_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc_merge_test
 PREHOOK: query: drop table src_orc_merge_test_part_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_orc_merge_test_part_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc_merge_test_part_n2
 POSTHOOK: query: drop table src_orc_merge_test_part_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc_merge_test_part_n2

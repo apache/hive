@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists bucket_nr_acid2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists bucket_nr_acid2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table bucket_nr_acid2 (a int, b int) clustered by (a) into 4 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -81,8 +83,10 @@ POSTHOOK: Input: default@bucket_nr_acid2
 PREHOOK: query: drop table bucket_nr_acid2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bucket_nr_acid2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_nr_acid2
 POSTHOOK: query: drop table bucket_nr_acid2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bucket_nr_acid2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_nr_acid2

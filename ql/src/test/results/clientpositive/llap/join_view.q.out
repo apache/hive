@@ -1,11 +1,15 @@
 PREHOOK: query: drop table invites
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table invites
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table invites2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table invites2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table invites (foo int, bar string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -146,16 +150,20 @@ POSTHOOK: Output: default@v
 PREHOOK: query: drop table invites
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@invites
+PREHOOK: Output: database:default
 PREHOOK: Output: default@invites
 POSTHOOK: query: drop table invites
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@invites
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites
 PREHOOK: query: drop table invites2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@invites2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@invites2
 POSTHOOK: query: drop table invites2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@invites2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites2

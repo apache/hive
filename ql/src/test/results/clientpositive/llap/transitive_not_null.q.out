@@ -336,16 +336,20 @@ NULL	200
 PREHOOK: query: DROP TABLE tbl_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_1
 POSTHOOK: query: DROP TABLE tbl_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_1
 PREHOOK: query: DROP TABLE tbl_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_2
 POSTHOOK: query: DROP TABLE tbl_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_2

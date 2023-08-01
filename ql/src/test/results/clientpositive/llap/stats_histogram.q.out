@@ -914,8 +914,10 @@ POSTHOOK: Input: default@test_stats
 PREHOOK: query: DROP TABLE test_stats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_stats
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_stats
 POSTHOOK: query: DROP TABLE test_stats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_stats
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_stats

@@ -2303,25 +2303,31 @@ POSTHOOK: Input: default@rctable
 PREHOOK: query: drop table rctable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@rctable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@rctable
 POSTHOOK: query: drop table rctable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@rctable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rctable
 PREHOOK: query: drop table array_table_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@array_table_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@array_table_n1
 POSTHOOK: query: drop table array_table_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@array_table_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@array_table_n1
 PREHOOK: query: drop table map_table_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@map_table_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@map_table_n2
 POSTHOOK: query: drop table map_table_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@map_table_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@map_table_n2
 #### A masked pattern was here ####

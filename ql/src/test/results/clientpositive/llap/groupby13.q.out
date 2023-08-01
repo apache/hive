@@ -145,8 +145,10 @@ a
 PREHOOK: query: drop table aGBY
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@agby
+PREHOOK: Output: database:default
 PREHOOK: Output: default@agby
 POSTHOOK: query: drop table aGBY
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@agby
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@agby

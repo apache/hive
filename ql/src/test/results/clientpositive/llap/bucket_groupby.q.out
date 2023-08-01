@@ -1218,10 +1218,12 @@ STAGE PLANS:
 PREHOOK: query: drop table clustergroupby
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@clustergroupby
+PREHOOK: Output: database:default
 PREHOOK: Output: default@clustergroupby
 POSTHOOK: query: drop table clustergroupby
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@clustergroupby
 PREHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
 PREHOOK: type: CREATETABLE
@@ -1558,10 +1560,12 @@ POSTHOOK: Input: default@clustergroupby@ds=102
 PREHOOK: query: drop table clustergroupby
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@clustergroupby
+PREHOOK: Output: database:default
 PREHOOK: Output: default@clustergroupby
 POSTHOOK: query: drop table clustergroupby
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@clustergroupby
 PREHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
 PREHOOK: type: CREATETABLE

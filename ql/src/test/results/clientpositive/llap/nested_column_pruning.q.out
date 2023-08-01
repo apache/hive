@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS dummy_n5
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS dummy_n5
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE dummy_n5 (i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -21,8 +23,10 @@ POSTHOOK: Output: default@dummy_n5
 POSTHOOK: Lineage: dummy_n5.i SCRIPT []
 PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_1_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_1_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE nested_tbl_1_n1 (
   a int,
   s1 struct<f1: boolean, f2: string, f3: struct<f4: int, f5: double>, f6: int>,
@@ -80,8 +84,10 @@ POSTHOOK: Lineage: nested_tbl_1_n1.s5 EXPRESSION []
 POSTHOOK: Lineage: nested_tbl_1_n1.s6 EXPRESSION []
 PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_2_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_2_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE nested_tbl_2_n1 LIKE nested_tbl_1_n1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1616,8 +1622,10 @@ POSTHOOK: Input: default@nested_tbl_1_n1
 5.0
 PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_3_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_3_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE nested_tbl_3_n1 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

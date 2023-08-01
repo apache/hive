@@ -4,12 +4,16 @@ POSTHOOK: query: set role admin
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: drop table if exists t
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists t
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists s
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists s
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table s(id integer, cnt integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

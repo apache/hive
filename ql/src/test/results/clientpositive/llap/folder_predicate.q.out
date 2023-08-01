@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists predicate_fold_tb
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists predicate_fold_tb
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table predicate_fold_tb(value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

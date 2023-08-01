@@ -574,16 +574,20 @@ POSTHOOK: Input: default@t_hashjoin_small
 PREHOOK: query: DROP TABLE t_hashjoin_big
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hashjoin_big
 POSTHOOK: query: DROP TABLE t_hashjoin_big
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hashjoin_big
 PREHOOK: query: DROP TABLE t_hashjoin_small
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_hashjoin_small
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hashjoin_small
 POSTHOOK: query: DROP TABLE t_hashjoin_small
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_hashjoin_small
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hashjoin_small

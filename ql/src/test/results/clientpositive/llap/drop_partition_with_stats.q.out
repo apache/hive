@@ -255,26 +255,32 @@ POSTHOOK: Output: partstatsdb1@testtable2_n1@part1=p11/part2=P12
 PREHOOK: query: DROP TABLE partstatsdb1.testtable_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: partstatsdb1@testtable_n0
+PREHOOK: Output: database:partstatsdb1
 PREHOOK: Output: partstatsdb1@testtable_n0
 POSTHOOK: query: DROP TABLE partstatsdb1.testtable_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: partstatsdb1@testtable_n0
+POSTHOOK: Output: database:partstatsdb1
 POSTHOOK: Output: partstatsdb1@testtable_n0
 PREHOOK: query: DROP TABLE partstatsdb1.TestTable1_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: partstatsdb1@testtable1_n1
+PREHOOK: Output: database:partstatsdb1
 PREHOOK: Output: partstatsdb1@testtable1_n1
 POSTHOOK: query: DROP TABLE partstatsdb1.TestTable1_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: partstatsdb1@testtable1_n1
+POSTHOOK: Output: database:partstatsdb1
 POSTHOOK: Output: partstatsdb1@testtable1_n1
 PREHOOK: query: DROP TABLE partstatsdb1.TESTTABLE2_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: partstatsdb1@testtable2_n1
+PREHOOK: Output: database:partstatsdb1
 PREHOOK: Output: partstatsdb1@testtable2_n1
 POSTHOOK: query: DROP TABLE partstatsdb1.TESTTABLE2_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: partstatsdb1@testtable2_n1
+POSTHOOK: Output: database:partstatsdb1
 POSTHOOK: Output: partstatsdb1@testtable2_n1
 PREHOOK: query: DROP DATABASE partstatsdb1
 PREHOOK: type: DROPDATABASE
@@ -541,26 +547,32 @@ POSTHOOK: Output: partstatsdb2@testtable2_n1@part1=p11/part2=P12
 PREHOOK: query: DROP TABLE PARTSTATSDB2.testtable_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: partstatsdb2@testtable_n0
+PREHOOK: Output: database:partstatsdb2
 PREHOOK: Output: partstatsdb2@testtable_n0
 POSTHOOK: query: DROP TABLE PARTSTATSDB2.testtable_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: partstatsdb2@testtable_n0
+POSTHOOK: Output: database:partstatsdb2
 POSTHOOK: Output: partstatsdb2@testtable_n0
 PREHOOK: query: DROP TABLE PARTSTATSDB2.TestTable1_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: partstatsdb2@testtable1_n1
+PREHOOK: Output: database:partstatsdb2
 PREHOOK: Output: partstatsdb2@testtable1_n1
 POSTHOOK: query: DROP TABLE PARTSTATSDB2.TestTable1_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: partstatsdb2@testtable1_n1
+POSTHOOK: Output: database:partstatsdb2
 POSTHOOK: Output: partstatsdb2@testtable1_n1
 PREHOOK: query: DROP TABLE PARTSTATSDB2.TESTTABLE2_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: partstatsdb2@testtable2_n1
+PREHOOK: Output: database:partstatsdb2
 PREHOOK: Output: partstatsdb2@testtable2_n1
 POSTHOOK: query: DROP TABLE PARTSTATSDB2.TESTTABLE2_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: partstatsdb2@testtable2_n1
+POSTHOOK: Output: database:partstatsdb2
 POSTHOOK: Output: partstatsdb2@testtable2_n1
 PREHOOK: query: DROP DATABASE PARTSTATSDB2
 PREHOOK: type: DROPDATABASE

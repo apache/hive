@@ -318,10 +318,12 @@ POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 PREHOOK: query: drop table " ""%&'()*+,-/:;<=>?[]_|{}$^!~#@`"
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+PREHOOK: Output: database:default
 PREHOOK: Output: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 POSTHOOK: query: drop table " ""%&'()*+,-/:;<=>?[]_|{}$^!~#@`"
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 PREHOOK: query: create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```(` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` string)
 PREHOOK: type: CREATETABLE

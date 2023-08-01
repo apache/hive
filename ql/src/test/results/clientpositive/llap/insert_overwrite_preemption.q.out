@@ -151,16 +151,20 @@ STAGE PLANS:
 PREHOOK: query: drop table destinTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destintable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@destintable
 POSTHOOK: query: drop table destinTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destintable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destintable
 PREHOOK: query: drop table sourceTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sourcetable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sourcetable
 POSTHOOK: query: drop table sourceTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sourcetable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sourcetable

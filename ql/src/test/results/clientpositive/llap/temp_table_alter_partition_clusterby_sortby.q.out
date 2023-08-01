@@ -194,8 +194,10 @@ Storage Desc Params:
 PREHOOK: query: drop table alter_table_partition_clusterby_sortby_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_table_partition_clusterby_sortby_temp
 POSTHOOK: query: drop table alter_table_partition_clusterby_sortby_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_table_partition_clusterby_sortby_temp

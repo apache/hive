@@ -292,10 +292,12 @@ Storage Desc Params:
 PREHOOK: query: drop table statstable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: statsdb@statstable
+PREHOOK: Output: database:statsdb
 PREHOOK: Output: statsdb@statstable
 POSTHOOK: query: drop table statstable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: statsdb@statstable
+POSTHOOK: Output: database:statsdb
 POSTHOOK: Output: statsdb@statstable
 PREHOOK: query: create table srcpart_n0 like default.srcpart
 PREHOOK: type: CREATETABLE
@@ -560,8 +562,10 @@ Storage Desc Params:
 PREHOOK: query: drop table srcpart_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: statsdb@srcpart_n0
+PREHOOK: Output: database:statsdb
 PREHOOK: Output: statsdb@srcpart_n0
 POSTHOOK: query: drop table srcpart_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: Output: database:statsdb
 POSTHOOK: Output: statsdb@srcpart_n0

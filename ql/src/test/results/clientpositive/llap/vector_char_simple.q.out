@@ -1,7 +1,9 @@
 PREHOOK: query: drop table char_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table char_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table char_2 (
   key char(10),
   value char(20)
@@ -209,10 +211,12 @@ POSTHOOK: Input: default@char_2
 PREHOOK: query: drop table char_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_2
 POSTHOOK: query: drop table char_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_2
 PREHOOK: query: create table char_3 (
   field char(12)
@@ -315,8 +319,10 @@ POSTHOOK: Lineage: char_3.field EXPRESSION [(alltypesorc)alltypesorc.FieldSchema
 PREHOOK: query: drop table char_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_3
 POSTHOOK: query: drop table char_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_3

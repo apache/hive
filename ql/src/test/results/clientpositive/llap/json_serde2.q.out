@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists json_serde1_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists json_serde1_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists json_serde1_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists json_serde1_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table json_serde1_1 (a array<string>,b map<string,int>)
   row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
 PREHOOK: type: CREATETABLE
@@ -98,16 +102,20 @@ POSTHOOK: Input: default@json_serde1_2
 PREHOOK: query: drop table json_serde1_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@json_serde1_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@json_serde1_1
 POSTHOOK: query: drop table json_serde1_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@json_serde1_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@json_serde1_1
 PREHOOK: query: drop table json_serde1_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@json_serde1_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@json_serde1_2
 POSTHOOK: query: drop table json_serde1_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@json_serde1_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@json_serde1_2

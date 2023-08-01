@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists hive1_tbl_data_hbase1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists hive1_tbl_data_hbase1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists hive1_tbl_data_hbase2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists hive1_tbl_data_hbase2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop view if exists hive1_view_data_hbase1
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view if exists hive1_view_data_hbase1

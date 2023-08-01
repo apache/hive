@@ -2756,8 +2756,10 @@ Column Name:        	b
 PREHOOK: query: DROP TABLE numericDataType_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@numericdatatype_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@numericdatatype_n0
 POSTHOOK: query: DROP TABLE numericDataType_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@numericdatatype_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@numericdatatype_n0

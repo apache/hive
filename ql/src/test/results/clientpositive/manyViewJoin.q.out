@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists test_hive_1035 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1035 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1035
 (
         test_hive_1018 string
@@ -396,8 +398,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1038
 PREHOOK: query: drop table if exists test_hive_1037 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1037 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1037
 (
 max_partition bigint
@@ -1137,8 +1141,10 @@ POSTHOOK: Lineage: test_hive_1036.test_hive_99 SIMPLE [(test_hive_1038)test_hive
 POSTHOOK: Lineage: test_hive_1036.ts EXPRESSION [(test_hive_1038)test_hive_1038.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1054 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1054 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1054
 (
         test_hive_1047 string
@@ -1415,8 +1421,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1057
 PREHOOK: query: drop table if exists test_hive_1056 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1056 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1056
 (
 max_partition bigint
@@ -1946,8 +1954,10 @@ POSTHOOK: Lineage: test_hive_1055.test_hive_160 SIMPLE [(test_hive_1057)test_hiv
 POSTHOOK: Lineage: test_hive_1055.ts EXPRESSION [(test_hive_1057)test_hive_1057.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1083 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1083 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1083
 (
         test_hive_1072 string
@@ -2296,8 +2306,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1086
 PREHOOK: query: drop table if exists test_hive_1085 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1085 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1085
 (
 max_partition bigint
@@ -2953,8 +2965,10 @@ POSTHOOK: Lineage: test_hive_1084.test_hive_213 SIMPLE [(test_hive_1086)test_hiv
 POSTHOOK: Lineage: test_hive_1084.ts EXPRESSION [(test_hive_1086)test_hive_1086.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1100 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1100 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1100
 (
         test_hive_1097 string
@@ -3191,8 +3205,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1103
 PREHOOK: query: drop table if exists test_hive_1102 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1102 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1102
 (
 max_partition bigint
@@ -3652,8 +3668,10 @@ POSTHOOK: Lineage: test_hive_1101.test_hive_250 SIMPLE [(test_hive_1103)test_hiv
 POSTHOOK: Lineage: test_hive_1101.ts EXPRESSION [(test_hive_1103)test_hive_1103.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1250 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1250 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1250
 (
         test_hive_1240 string
@@ -3870,8 +3888,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1253
 PREHOOK: query: drop table if exists test_hive_1252 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1252 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1252
 (
 max_partition bigint
@@ -4296,8 +4316,10 @@ POSTHOOK: Lineage: test_hive_1251.test_hive_305 SIMPLE [(test_hive_1253)test_hiv
 POSTHOOK: Lineage: test_hive_1251.ts EXPRESSION [(test_hive_1253)test_hive_1253.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1373 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1373 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1373
 (
         test_hive_1370 string
@@ -4534,8 +4556,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1376
 PREHOOK: query: drop table if exists test_hive_1375 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1375 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1375
 (
 max_partition bigint
@@ -4995,8 +5019,10 @@ POSTHOOK: Lineage: test_hive_1374.test_hive_375 SIMPLE [(test_hive_1376)test_hiv
 POSTHOOK: Lineage: test_hive_1374.ts EXPRESSION [(test_hive_1376)test_hive_1376.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1397 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1397 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1397
 (
         test_hive_1394 string
@@ -5261,8 +5287,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1400
 PREHOOK: query: drop table if exists test_hive_1399 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1399 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1399
 (
 max_partition bigint
@@ -5771,8 +5799,10 @@ POSTHOOK: Lineage: test_hive_1398.test_hive_411 SIMPLE [(test_hive_1400)test_hiv
 POSTHOOK: Lineage: test_hive_1398.ts EXPRESSION [(test_hive_1400)test_hive_1400.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1417 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1417 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1417
 (
         test_hive_1411 string
@@ -5861,8 +5891,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1420
 PREHOOK: query: drop table if exists test_hive_1419 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1419 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1419
 (
 max_partition bigint
@@ -6063,8 +6095,10 @@ POSTHOOK: Lineage: test_hive_1418.test_hive_412 SIMPLE [(test_hive_1420)test_hiv
 POSTHOOK: Lineage: test_hive_1418.ts EXPRESSION [(test_hive_1420)test_hive_1420.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1114 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1114 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1114
 (
         test_hive_1108 string
@@ -6145,8 +6179,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1117
 PREHOOK: query: drop table if exists test_hive_1116 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1116 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1116
 (
 max_partition bigint
@@ -6333,8 +6369,10 @@ POSTHOOK: Lineage: test_hive_1115.test_hive_272 SIMPLE [(test_hive_1117)test_hiv
 POSTHOOK: Lineage: test_hive_1115.ts EXPRESSION [(test_hive_1117)test_hive_1117.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1128 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1128 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1128
 (
         test_hive_1122 string
@@ -6415,8 +6453,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1131
 PREHOOK: query: drop table if exists test_hive_1130 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1130 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1130
 (
 max_partition bigint
@@ -6603,8 +6643,10 @@ POSTHOOK: Lineage: test_hive_1129.test_hive_273 SIMPLE [(test_hive_1131)test_hiv
 POSTHOOK: Lineage: test_hive_1129.ts EXPRESSION [(test_hive_1131)test_hive_1131.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1142 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1142 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1142
 (
         test_hive_1136 string
@@ -6685,8 +6727,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1145
 PREHOOK: query: drop table if exists test_hive_1144 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1144 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1144
 (
 max_partition bigint
@@ -6873,8 +6917,10 @@ POSTHOOK: Lineage: test_hive_1143.test_hive_274 SIMPLE [(test_hive_1145)test_hiv
 POSTHOOK: Lineage: test_hive_1143.ts EXPRESSION [(test_hive_1145)test_hive_1145.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1158 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1158 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1158
 (
         test_hive_1152 string
@@ -6963,8 +7009,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1161
 PREHOOK: query: drop table if exists test_hive_1160 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1160 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1160
 (
 max_partition bigint
@@ -7165,8 +7213,10 @@ POSTHOOK: Lineage: test_hive_1159.test_hive_275 EXPRESSION [(test_hive_1161)test
 POSTHOOK: Lineage: test_hive_1159.ts EXPRESSION [(test_hive_1161)test_hive_1161.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1172 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1172 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1172
 (
         test_hive_1166 string
@@ -7247,8 +7297,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1175
 PREHOOK: query: drop table if exists test_hive_1174 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1174 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1174
 (
 max_partition bigint
@@ -7435,8 +7487,10 @@ POSTHOOK: Lineage: test_hive_1173.test_hive_276 SIMPLE [(test_hive_1175)test_hiv
 POSTHOOK: Lineage: test_hive_1173.ts EXPRESSION [(test_hive_1175)test_hive_1175.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1186 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1186 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1186
 (
         test_hive_1180 string
@@ -7517,8 +7571,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1189
 PREHOOK: query: drop table if exists test_hive_1188 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1188 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1188
 (
 max_partition bigint
@@ -7705,8 +7761,10 @@ POSTHOOK: Lineage: test_hive_1187.test_hive_277 SIMPLE [(test_hive_1189)test_hiv
 POSTHOOK: Lineage: test_hive_1187.ts EXPRESSION [(test_hive_1189)test_hive_1189.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1202 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1202 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1202
 (
         test_hive_1196 string
@@ -7795,8 +7853,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1205
 PREHOOK: query: drop table if exists test_hive_1204 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1204 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1204
 (
 max_partition bigint
@@ -7997,8 +8057,10 @@ POSTHOOK: Lineage: test_hive_1203.test_hive_278 EXPRESSION [(test_hive_1205)test
 POSTHOOK: Lineage: test_hive_1203.ts EXPRESSION [(test_hive_1205)test_hive_1205.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1312 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1312 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1312
 (
         test_hive_1307 string
@@ -8075,8 +8137,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1315
 PREHOOK: query: drop table if exists test_hive_1314 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1314 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1314
 (
 max_partition bigint
@@ -8256,8 +8320,10 @@ POSTHOOK: Lineage: test_hive_1313.test_hive_334 SIMPLE [(test_hive_1315)test_hiv
 POSTHOOK: Lineage: test_hive_1313.ts EXPRESSION [(test_hive_1315)test_hive_1315.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1344 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1344 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1344
 (
         test_hive_1338 string
@@ -8346,8 +8412,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1347
 PREHOOK: query: drop table if exists test_hive_1346 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1346 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1346
 (
 max_partition bigint
@@ -8548,8 +8616,10 @@ POSTHOOK: Lineage: test_hive_1345.test_hive_336 SIMPLE [(test_hive_1347)test_hiv
 POSTHOOK: Lineage: test_hive_1345.ts EXPRESSION [(test_hive_1347)test_hive_1347.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1360 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1360 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1360
 (
         test_hive_1354 string
@@ -8638,8 +8708,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1363
 PREHOOK: query: drop table if exists test_hive_1362 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1362 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1362
 (
 max_partition bigint
@@ -8840,8 +8912,10 @@ POSTHOOK: Lineage: test_hive_1361.test_hive_337 SIMPLE [(test_hive_1363)test_hiv
 POSTHOOK: Lineage: test_hive_1361.ts EXPRESSION [(test_hive_1363)test_hive_1363.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1433 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1433 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1433
 (
         test_hive_1427 string
@@ -8930,8 +9004,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1436
 PREHOOK: query: drop table if exists test_hive_1435 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1435 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1435
 (
 max_partition bigint
@@ -9132,8 +9208,10 @@ POSTHOOK: Lineage: test_hive_1434.test_hive_413 EXPRESSION [(test_hive_1436)test
 POSTHOOK: Lineage: test_hive_1434.ts EXPRESSION [(test_hive_1436)test_hive_1436.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1447 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1447 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1447
 (
         test_hive_1441 string
@@ -9214,8 +9292,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1450
 PREHOOK: query: drop table if exists test_hive_1449 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1449 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1449
 (
 max_partition bigint
@@ -9402,8 +9482,10 @@ POSTHOOK: Lineage: test_hive_1448.test_hive_414 SIMPLE [(test_hive_1450)test_hiv
 POSTHOOK: Lineage: test_hive_1448.ts EXPRESSION [(test_hive_1450)test_hive_1450.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1463 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1463 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1463
 (
         test_hive_1457 string
@@ -9492,8 +9574,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1466
 PREHOOK: query: drop table if exists test_hive_1465 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1465 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1465
 (
 max_partition bigint
@@ -9694,8 +9778,10 @@ POSTHOOK: Lineage: test_hive_1464.test_hive_415 EXPRESSION [(test_hive_1466)test
 POSTHOOK: Lineage: test_hive_1464.ts EXPRESSION [(test_hive_1466)test_hive_1466.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1477 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1477 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1477
 (
         test_hive_1471 string
@@ -9776,8 +9862,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1480
 PREHOOK: query: drop table if exists test_hive_1479 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1479 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1479
 (
 max_partition bigint
@@ -9964,8 +10052,10 @@ POSTHOOK: Lineage: test_hive_1478.test_hive_416 SIMPLE [(test_hive_1480)test_hiv
 POSTHOOK: Lineage: test_hive_1478.ts EXPRESSION [(test_hive_1480)test_hive_1480.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1491 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1491 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1491
 (
         test_hive_1485 string
@@ -10046,8 +10136,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1494
 PREHOOK: query: drop table if exists test_hive_1493 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1493 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1493
 (
 max_partition bigint
@@ -10234,8 +10326,10 @@ POSTHOOK: Lineage: test_hive_1492.test_hive_417 SIMPLE [(test_hive_1494)test_hiv
 POSTHOOK: Lineage: test_hive_1492.ts EXPRESSION [(test_hive_1494)test_hive_1494.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1507 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1507 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1507
 (
         test_hive_1501 string
@@ -10324,8 +10418,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1510
 PREHOOK: query: drop table if exists test_hive_1509 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1509 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1509
 (
 max_partition bigint
@@ -10526,8 +10622,10 @@ POSTHOOK: Lineage: test_hive_1508.test_hive_418 EXPRESSION [(test_hive_1510)test
 POSTHOOK: Lineage: test_hive_1508.ts EXPRESSION [(test_hive_1510)test_hive_1510.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1521 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1521 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1521
 (
         test_hive_1515 string
@@ -10608,8 +10706,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1524
 PREHOOK: query: drop table if exists test_hive_1523 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1523 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1523
 (
 max_partition bigint
@@ -10796,8 +10896,10 @@ POSTHOOK: Lineage: test_hive_1522.test_hive_419 SIMPLE [(test_hive_1524)test_hiv
 POSTHOOK: Lineage: test_hive_1522.ts EXPRESSION [(test_hive_1524)test_hive_1524.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1537 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1537 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1537
 (
         test_hive_1531 string
@@ -10886,8 +10988,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1540
 PREHOOK: query: drop table if exists test_hive_1539 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1539 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1539
 (
 max_partition bigint
@@ -11088,8 +11192,10 @@ POSTHOOK: Lineage: test_hive_1538.test_hive_420 EXPRESSION [(test_hive_1540)test
 POSTHOOK: Lineage: test_hive_1538.ts EXPRESSION [(test_hive_1540)test_hive_1540.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1849 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1849 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1849
 (
         test_hive_1845 string
@@ -11162,8 +11268,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1852
 PREHOOK: query: drop table if exists test_hive_1851 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1851 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1851
 (
 max_partition bigint
@@ -11336,8 +11444,10 @@ POSTHOOK: Lineage: test_hive_1850.test_hive_445 EXPRESSION [(test_hive_1852)test
 POSTHOOK: Lineage: test_hive_1850.ts EXPRESSION [(test_hive_1852)test_hive_1852.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1861 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1861 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1861
 (
         test_hive_1857 string
@@ -11410,8 +11520,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1864
 PREHOOK: query: drop table if exists test_hive_1863 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1863 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1863
 (
 max_partition bigint
@@ -11584,8 +11696,10 @@ POSTHOOK: Lineage: test_hive_1862.test_hive_446 SIMPLE [(test_hive_1864)test_hiv
 POSTHOOK: Lineage: test_hive_1862.ts EXPRESSION [(test_hive_1864)test_hive_1864.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1873 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1873 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1873
 (
         test_hive_1869 string
@@ -11658,8 +11772,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1876
 PREHOOK: query: drop table if exists test_hive_1875 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1875 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1875
 (
 max_partition bigint
@@ -11832,8 +11948,10 @@ POSTHOOK: Lineage: test_hive_1874.test_hive_447 SIMPLE [(test_hive_1876)test_hiv
 POSTHOOK: Lineage: test_hive_1874.ts EXPRESSION [(test_hive_1876)test_hive_1876.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1299 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1299 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1299
 (
         test_hive_1288 string
@@ -12046,8 +12164,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1302
 PREHOOK: query: drop table if exists test_hive_1301 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1301 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1301
 (
 max_partition bigint
@@ -12465,8 +12585,10 @@ POSTHOOK: Lineage: test_hive_1300.test_hive_333 SIMPLE [(test_hive_1302)test_hiv
 POSTHOOK: Lineage: test_hive_1300.ts EXPRESSION [(test_hive_1302)test_hive_1302.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_2027 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_2027 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_2027
 (
         test_hive_2021 string
@@ -12547,8 +12669,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_2030
 PREHOOK: query: drop table if exists test_hive_2029 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_2029 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_2029
 (
 max_partition bigint
@@ -12735,8 +12859,10 @@ POSTHOOK: Lineage: test_hive_2028.test_hive_458 SIMPLE [(test_hive_2030)test_hiv
 POSTHOOK: Lineage: test_hive_2028.ts EXPRESSION [(test_hive_2030)test_hive_2030.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_2013 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_2013 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_2013
 (
         test_hive_2008 string
@@ -12813,8 +12939,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_2016
 PREHOOK: query: drop table if exists test_hive_2015 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_2015 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_2015
 (
 max_partition bigint
@@ -12994,8 +13122,10 @@ POSTHOOK: Lineage: test_hive_2014.test_hive_457 SIMPLE [(test_hive_2016)test_hiv
 POSTHOOK: Lineage: test_hive_2014.ts EXPRESSION [(test_hive_2016)test_hive_2016.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_2000 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_2000 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_2000
 (
         test_hive_1996 string
@@ -13068,8 +13198,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_2003
 PREHOOK: query: drop table if exists test_hive_2002 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_2002 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_2002
 (
 max_partition bigint
@@ -13242,8 +13374,10 @@ POSTHOOK: Lineage: test_hive_2001.test_hive_456 SIMPLE [(test_hive_2003)test_hiv
 POSTHOOK: Lineage: test_hive_2001.ts EXPRESSION [(test_hive_2003)test_hive_2003.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1988 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1988 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1988
 (
         test_hive_1984 string
@@ -13316,8 +13450,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1991
 PREHOOK: query: drop table if exists test_hive_1990 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1990 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1990
 (
 max_partition bigint
@@ -13490,8 +13626,10 @@ POSTHOOK: Lineage: test_hive_1989.test_hive_455 SIMPLE [(test_hive_1991)test_hiv
 POSTHOOK: Lineage: test_hive_1989.ts EXPRESSION [(test_hive_1991)test_hive_1991.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1976 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1976 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1976
 (
         test_hive_1970 string
@@ -13572,8 +13710,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1979
 PREHOOK: query: drop table if exists test_hive_1978 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1978 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1978
 (
 max_partition bigint
@@ -13760,8 +13900,10 @@ POSTHOOK: Lineage: test_hive_1977.test_hive_454 SIMPLE [(test_hive_1979)test_hiv
 POSTHOOK: Lineage: test_hive_1977.ts EXPRESSION [(test_hive_1979)test_hive_1979.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1962 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1962 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1962
 (
         test_hive_1958 string
@@ -13834,8 +13976,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1965
 PREHOOK: query: drop table if exists test_hive_1964 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1964 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1964
 (
 max_partition bigint
@@ -14008,8 +14152,10 @@ POSTHOOK: Lineage: test_hive_1963.test_hive_453 SIMPLE [(test_hive_1965)test_hiv
 POSTHOOK: Lineage: test_hive_1963.ts EXPRESSION [(test_hive_1965)test_hive_1965.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1950 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1950 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1950
 (
         test_hive_1946 string
@@ -14082,8 +14228,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1953
 PREHOOK: query: drop table if exists test_hive_1952 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1952 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1952
 (
 max_partition bigint
@@ -14256,8 +14404,10 @@ POSTHOOK: Lineage: test_hive_1951.test_hive_452 SIMPLE [(test_hive_1953)test_hiv
 POSTHOOK: Lineage: test_hive_1951.ts EXPRESSION [(test_hive_1953)test_hive_1953.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1938 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1938 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1938
 (
         test_hive_1933 string
@@ -14334,8 +14484,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1941
 PREHOOK: query: drop table if exists test_hive_1940 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1940 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1940
 (
 max_partition bigint
@@ -14515,8 +14667,10 @@ POSTHOOK: Lineage: test_hive_1939.test_hive_451 SIMPLE [(test_hive_1941)test_hiv
 POSTHOOK: Lineage: test_hive_1939.ts EXPRESSION [(test_hive_1941)test_hive_1941.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1925 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1925 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1925
 (
         test_hive_1919 string
@@ -14597,8 +14751,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1928
 PREHOOK: query: drop table if exists test_hive_1927 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1927 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1927
 (
 max_partition bigint
@@ -14785,8 +14941,10 @@ POSTHOOK: Lineage: test_hive_1926.test_hive_1924 EXPRESSION [(test_hive_1928)tes
 POSTHOOK: Lineage: test_hive_1926.ts EXPRESSION [(test_hive_1928)test_hive_1928.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1910 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1910 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1910
 (
         test_hive_1905 string
@@ -14863,8 +15021,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1913
 PREHOOK: query: drop table if exists test_hive_1912 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1912 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1912
 (
 max_partition bigint
@@ -15044,8 +15204,10 @@ POSTHOOK: Lineage: test_hive_1911.test_hive_450 SIMPLE [(test_hive_1913)test_hiv
 POSTHOOK: Lineage: test_hive_1911.ts EXPRESSION [(test_hive_1913)test_hive_1913.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1897 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1897 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1897
 (
         test_hive_1893 string
@@ -15118,8 +15280,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1900
 PREHOOK: query: drop table if exists test_hive_1899 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1899 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1899
 (
 max_partition bigint
@@ -15292,8 +15456,10 @@ POSTHOOK: Lineage: test_hive_1898.test_hive_449 SIMPLE [(test_hive_1900)test_hiv
 POSTHOOK: Lineage: test_hive_1898.ts EXPRESSION [(test_hive_1900)test_hive_1900.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1885 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1885 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1885
 (
         test_hive_1881 string
@@ -15366,8 +15532,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1888
 PREHOOK: query: drop table if exists test_hive_1887 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1887 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1887
 (
 max_partition bigint
@@ -15540,8 +15708,10 @@ POSTHOOK: Lineage: test_hive_1886.test_hive_448 SIMPLE [(test_hive_1888)test_hiv
 POSTHOOK: Lineage: test_hive_1886.ts EXPRESSION [(test_hive_1888)test_hive_1888.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1837 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1837 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1837
 (
         test_hive_1832 string
@@ -15618,8 +15788,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1840
 PREHOOK: query: drop table if exists test_hive_1839 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1839 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1839
 (
 max_partition bigint
@@ -15799,8 +15971,10 @@ POSTHOOK: Lineage: test_hive_1838.test_hive_444 SIMPLE [(test_hive_1840)test_hiv
 POSTHOOK: Lineage: test_hive_1838.ts EXPRESSION [(test_hive_1840)test_hive_1840.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1824 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1824 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1824
 (
         test_hive_1818 string
@@ -15881,8 +16055,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1827
 PREHOOK: query: drop table if exists test_hive_1826 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1826 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1826
 (
 max_partition bigint
@@ -16069,8 +16245,10 @@ POSTHOOK: Lineage: test_hive_1825.test_hive_443 SIMPLE [(test_hive_1827)test_hiv
 POSTHOOK: Lineage: test_hive_1825.ts EXPRESSION [(test_hive_1827)test_hive_1827.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1810 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1810 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1810
 (
         test_hive_1804 string
@@ -16151,8 +16329,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1813
 PREHOOK: query: drop table if exists test_hive_1812 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1812 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1812
 (
 max_partition bigint
@@ -16339,8 +16519,10 @@ POSTHOOK: Lineage: test_hive_1811.test_hive_442 SIMPLE [(test_hive_1813)test_hiv
 POSTHOOK: Lineage: test_hive_1811.ts EXPRESSION [(test_hive_1813)test_hive_1813.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1796 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1796 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1796
 (
         test_hive_1790 string
@@ -16421,8 +16603,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1799
 PREHOOK: query: drop table if exists test_hive_1798 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1798 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1798
 (
 max_partition bigint
@@ -16609,8 +16793,10 @@ POSTHOOK: Lineage: test_hive_1797.test_hive_441 SIMPLE [(test_hive_1799)test_hiv
 POSTHOOK: Lineage: test_hive_1797.ts EXPRESSION [(test_hive_1799)test_hive_1799.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1782 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1782 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1782
 (
         test_hive_1776 string
@@ -16691,8 +16877,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1785
 PREHOOK: query: drop table if exists test_hive_1784 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1784 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1784
 (
 max_partition bigint
@@ -16879,8 +17067,10 @@ POSTHOOK: Lineage: test_hive_1783.test_hive_440 SIMPLE [(test_hive_1785)test_hiv
 POSTHOOK: Lineage: test_hive_1783.ts EXPRESSION [(test_hive_1785)test_hive_1785.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1768 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1768 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1768
 (
         test_hive_1764 string
@@ -16957,8 +17147,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1771
 PREHOOK: query: drop table if exists test_hive_1770 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1770 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1770
 (
 max_partition bigint
@@ -17138,8 +17330,10 @@ POSTHOOK: Lineage: test_hive_1769.test_hive_439 SIMPLE [(test_hive_1771)test_hiv
 POSTHOOK: Lineage: test_hive_1769.ts EXPRESSION [(test_hive_1771)test_hive_1771.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1756 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1756 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1756
 (
         test_hive_1752 string
@@ -17212,8 +17406,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1759
 PREHOOK: query: drop table if exists test_hive_1758 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1758 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1758
 (
 max_partition bigint
@@ -17386,8 +17582,10 @@ POSTHOOK: Lineage: test_hive_1757.test_hive_437 SIMPLE [(test_hive_1759)test_hiv
 POSTHOOK: Lineage: test_hive_1757.ts EXPRESSION [(test_hive_1759)test_hive_1759.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1744 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1744 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1744
 (
         test_hive_1740 string
@@ -17460,8 +17658,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1747
 PREHOOK: query: drop table if exists test_hive_1746 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1746 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1746
 (
 max_partition bigint
@@ -17634,8 +17834,10 @@ POSTHOOK: Lineage: test_hive_1745.test_hive_436 SIMPLE [(test_hive_1747)test_hiv
 POSTHOOK: Lineage: test_hive_1745.ts EXPRESSION [(test_hive_1747)test_hive_1747.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1732 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1732 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1732
 (
         test_hive_1728 string
@@ -17708,8 +17910,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1735
 PREHOOK: query: drop table if exists test_hive_1734 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1734 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1734
 (
 max_partition bigint
@@ -17882,8 +18086,10 @@ POSTHOOK: Lineage: test_hive_1733.test_hive_435 SIMPLE [(test_hive_1735)test_hiv
 POSTHOOK: Lineage: test_hive_1733.ts EXPRESSION [(test_hive_1735)test_hive_1735.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1720 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1720 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1720
 (
         test_hive_1714 string
@@ -17964,8 +18170,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1723
 PREHOOK: query: drop table if exists test_hive_1722 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1722 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1722
 (
 max_partition bigint
@@ -18152,8 +18360,10 @@ POSTHOOK: Lineage: test_hive_1721.test_hive_434 SIMPLE [(test_hive_1723)test_hiv
 POSTHOOK: Lineage: test_hive_1721.ts EXPRESSION [(test_hive_1723)test_hive_1723.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1706 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1706 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1706
 (
         test_hive_1700 string
@@ -18234,8 +18444,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1709
 PREHOOK: query: drop table if exists test_hive_1708 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1708 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1708
 (
 max_partition bigint
@@ -18422,8 +18634,10 @@ POSTHOOK: Lineage: test_hive_1707.test_hive_433 SIMPLE [(test_hive_1709)test_hiv
 POSTHOOK: Lineage: test_hive_1707.ts EXPRESSION [(test_hive_1709)test_hive_1709.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1692 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1692 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1692
 (
         test_hive_1688 string
@@ -18496,8 +18710,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1695
 PREHOOK: query: drop table if exists test_hive_1694 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1694 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1694
 (
 max_partition bigint
@@ -18670,8 +18886,10 @@ POSTHOOK: Lineage: test_hive_1693.test_hive_432 SIMPLE [(test_hive_1695)test_hiv
 POSTHOOK: Lineage: test_hive_1693.ts EXPRESSION [(test_hive_1695)test_hive_1695.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1680 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1680 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1680
 (
         test_hive_1676 string
@@ -18744,8 +18962,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1683
 PREHOOK: query: drop table if exists test_hive_1682 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1682 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1682
 (
 max_partition bigint
@@ -18918,8 +19138,10 @@ POSTHOOK: Lineage: test_hive_1681.test_hive_431 SIMPLE [(test_hive_1683)test_hiv
 POSTHOOK: Lineage: test_hive_1681.ts EXPRESSION [(test_hive_1683)test_hive_1683.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1668 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1668 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1668
 (
         test_hive_1662 string
@@ -19000,8 +19222,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1671
 PREHOOK: query: drop table if exists test_hive_1670 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1670 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1670
 (
 max_partition bigint
@@ -19188,8 +19412,10 @@ POSTHOOK: Lineage: test_hive_1669.test_hive_430 SIMPLE [(test_hive_1671)test_hiv
 POSTHOOK: Lineage: test_hive_1669.ts EXPRESSION [(test_hive_1671)test_hive_1671.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1654 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1654 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1654
 (
         test_hive_1650 string
@@ -19262,8 +19488,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1657
 PREHOOK: query: drop table if exists test_hive_1656 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1656 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1656
 (
 max_partition bigint
@@ -19436,8 +19664,10 @@ POSTHOOK: Lineage: test_hive_1655.test_hive_429 SIMPLE [(test_hive_1657)test_hiv
 POSTHOOK: Lineage: test_hive_1655.ts EXPRESSION [(test_hive_1657)test_hive_1657.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1642 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1642 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1642
 (
         test_hive_1636 string
@@ -19518,8 +19748,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1645
 PREHOOK: query: drop table if exists test_hive_1644 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1644 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1644
 (
 max_partition bigint
@@ -19706,8 +19938,10 @@ POSTHOOK: Lineage: test_hive_1643.test_hive_428 SIMPLE [(test_hive_1645)test_hiv
 POSTHOOK: Lineage: test_hive_1643.ts EXPRESSION [(test_hive_1645)test_hive_1645.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1628 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1628 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1628
 (
         test_hive_1622 string
@@ -19788,8 +20022,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1631
 PREHOOK: query: drop table if exists test_hive_1630 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1630 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1630
 (
 max_partition bigint
@@ -19976,8 +20212,10 @@ POSTHOOK: Lineage: test_hive_1629.test_hive_427 SIMPLE [(test_hive_1631)test_hiv
 POSTHOOK: Lineage: test_hive_1629.ts EXPRESSION [(test_hive_1631)test_hive_1631.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1614 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1614 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1614
 (
         test_hive_1608 string
@@ -20058,8 +20296,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1617
 PREHOOK: query: drop table if exists test_hive_1616 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1616 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1616
 (
 max_partition bigint
@@ -20246,8 +20486,10 @@ POSTHOOK: Lineage: test_hive_1615.test_hive_426 SIMPLE [(test_hive_1617)test_hiv
 POSTHOOK: Lineage: test_hive_1615.ts EXPRESSION [(test_hive_1617)test_hive_1617.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1600 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1600 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1600
 (
         test_hive_1596 string
@@ -20320,8 +20562,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1603
 PREHOOK: query: drop table if exists test_hive_1602 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1602 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1602
 (
 max_partition bigint
@@ -20494,8 +20738,10 @@ POSTHOOK: Lineage: test_hive_1601.test_hive_425 SIMPLE [(test_hive_1603)test_hiv
 POSTHOOK: Lineage: test_hive_1601.ts EXPRESSION [(test_hive_1603)test_hive_1603.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1588 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1588 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1588
 (
         test_hive_1584 string
@@ -20568,8 +20814,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1591
 PREHOOK: query: drop table if exists test_hive_1590 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1590 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1590
 (
 max_partition bigint
@@ -20742,8 +20990,10 @@ POSTHOOK: Lineage: test_hive_1589.test_hive_424 SIMPLE [(test_hive_1591)test_hiv
 POSTHOOK: Lineage: test_hive_1589.ts EXPRESSION [(test_hive_1591)test_hive_1591.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1576 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1576 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1576
 (
         test_hive_1570 string
@@ -20824,8 +21074,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1579
 PREHOOK: query: drop table if exists test_hive_1578 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1578 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1578
 (
 max_partition bigint
@@ -21012,8 +21264,10 @@ POSTHOOK: Lineage: test_hive_1577.test_hive_423 SIMPLE [(test_hive_1579)test_hiv
 POSTHOOK: Lineage: test_hive_1577.ts EXPRESSION [(test_hive_1579)test_hive_1579.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1562 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1562 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1562
 (
         test_hive_1558 string
@@ -21086,8 +21340,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1565
 PREHOOK: query: drop table if exists test_hive_1564 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1564 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1564
 (
 max_partition bigint
@@ -21260,8 +21516,10 @@ POSTHOOK: Lineage: test_hive_1563.test_hive_422 SIMPLE [(test_hive_1565)test_hiv
 POSTHOOK: Lineage: test_hive_1563.ts EXPRESSION [(test_hive_1565)test_hive_1565.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1550 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1550 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1550
 (
         test_hive_1545 string
@@ -21338,8 +21596,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1553
 PREHOOK: query: drop table if exists test_hive_1552 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1552 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1552
 (
 max_partition bigint
@@ -21519,8 +21779,10 @@ POSTHOOK: Lineage: test_hive_1551.test_hive_421 SIMPLE [(test_hive_1553)test_hiv
 POSTHOOK: Lineage: test_hive_1551.ts EXPRESSION [(test_hive_1553)test_hive_1553.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1328 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1328 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1328
 (
         test_hive_1322 string
@@ -21609,8 +21871,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1331
 PREHOOK: query: drop table if exists test_hive_1330 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1330 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1330
 (
 max_partition bigint
@@ -21811,8 +22075,10 @@ POSTHOOK: Lineage: test_hive_1329.test_hive_335 SIMPLE [(test_hive_1331)test_hiv
 POSTHOOK: Lineage: test_hive_1329.ts EXPRESSION [(test_hive_1331)test_hive_1331.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1276 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1276 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1276
 (
         test_hive_1272 string
@@ -21885,8 +22151,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1279
 PREHOOK: query: drop table if exists test_hive_1278 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1278 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1278
 (
 max_partition bigint
@@ -22059,8 +22327,10 @@ POSTHOOK: Lineage: test_hive_1277.test_hive_308 SIMPLE [(test_hive_1279)test_hiv
 POSTHOOK: Lineage: test_hive_1277.ts EXPRESSION [(test_hive_1279)test_hive_1279.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1264 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1264 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1264
 (
         test_hive_1258 string
@@ -22145,8 +22415,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1267
 PREHOOK: query: drop table if exists test_hive_1266 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1266 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1266
 (
 max_partition bigint
@@ -22340,8 +22612,10 @@ POSTHOOK: Lineage: test_hive_1265.test_hive_307 SIMPLE [(test_hive_1267)test_hiv
 POSTHOOK: Lineage: test_hive_1265.ts EXPRESSION [(test_hive_1267)test_hive_1267.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1226 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1226 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1226
 (
         test_hive_1222 string
@@ -22414,8 +22688,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1229
 PREHOOK: query: drop table if exists test_hive_1228 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1228 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1228
 (
 max_partition bigint
@@ -22588,8 +22864,10 @@ POSTHOOK: Lineage: test_hive_1227.test_hive_280 SIMPLE [(test_hive_1229)test_hiv
 POSTHOOK: Lineage: test_hive_1227.ts EXPRESSION [(test_hive_1229)test_hive_1229.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_1214 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1214 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_1214
 (
         test_hive_1210 string
@@ -22662,8 +22940,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_1217
 PREHOOK: query: drop table if exists test_hive_1216 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_1216 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_1216
 (
 max_partition bigint
@@ -22836,8 +23116,10 @@ POSTHOOK: Lineage: test_hive_1215.test_hive_279 SIMPLE [(test_hive_1217)test_hiv
 POSTHOOK: Lineage: test_hive_1215.ts EXPRESSION [(test_hive_1217)test_hive_1217.FieldSchema(name:ts, type:int, comment:null), ]
 PREHOOK: query: drop table if exists test_hive_2046 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_2046 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_hive_2046
 (
         test_hive_2043 string
@@ -22978,8 +23260,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_hive_2049
 PREHOOK: query: drop table if exists test_hive_2048 purge
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_hive_2048 purge
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists test_hive_2048
 (
 max_partition bigint

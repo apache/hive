@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS `dec`
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS `dec`
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE `dec` (
   name string,
   value decimal(8,4))
@@ -53,8 +55,10 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"value\":\"true\"}}
 PREHOOK: query: DROP TABLE IF EXISTS avro_dec
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS avro_dec
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE avro_dec(
   name string,
   value decimal(5,2))
@@ -109,8 +113,10 @@ Beck	0.00
 Beck	79.90
 PREHOOK: query: DROP TABLE IF EXISTS avro_dec1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS avro_dec1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE avro_dec1(
   name string,
   value decimal(4,1))
@@ -164,24 +170,30 @@ POSTHOOK: Input: default@avro_dec1
 PREHOOK: query: DROP TABLE `dec`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dec
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dec
 POSTHOOK: query: DROP TABLE `dec`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dec
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dec
 PREHOOK: query: DROP TABLE avro_dec
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_dec
+PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_dec
 POSTHOOK: query: DROP TABLE avro_dec
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_dec
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_dec
 PREHOOK: query: DROP TABLE avro_dec1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_dec1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_dec1
 POSTHOOK: query: DROP TABLE avro_dec1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_dec1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_dec1

@@ -774,8 +774,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: query: drop table list_bucketing_static_part_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@list_bucketing_static_part_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_static_part_n2
 POSTHOOK: query: drop table list_bucketing_static_part_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@list_bucketing_static_part_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_static_part_n2

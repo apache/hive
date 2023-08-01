@@ -128,8 +128,10 @@ NULL	t1
 PREHOOK: query: drop table ccn_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ccn_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ccn_table
 POSTHOOK: query: drop table ccn_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ccn_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ccn_table

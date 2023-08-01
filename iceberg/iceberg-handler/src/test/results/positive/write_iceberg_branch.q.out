@@ -887,16 +887,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table ice01
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice01
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ice01
 POSTHOOK: query: drop table ice01
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice01
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice01
 PREHOOK: query: drop table source01
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@source01
+PREHOOK: Output: database:default
 PREHOOK: Output: default@source01
 POSTHOOK: query: drop table source01
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@source01
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source01

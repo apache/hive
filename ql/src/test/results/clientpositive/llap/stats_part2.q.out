@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists mysource
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists mysource
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table mysource (p int, key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -34,8 +36,10 @@ POSTHOOK: Lineage: mysource.p SCRIPT []
 POSTHOOK: Lineage: mysource.value SCRIPT []
 PREHOOK: query: drop table if exists stats_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists stats_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table stats_part(key int,value string) partitioned by (p int) stored as orc tblproperties ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

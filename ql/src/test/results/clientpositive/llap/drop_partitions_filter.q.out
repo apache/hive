@@ -293,8 +293,10 @@ c=France/d=4
 PREHOOK: query: drop table ptestfilter_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ptestfilter_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ptestfilter_n1
 POSTHOOK: query: drop table ptestfilter_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ptestfilter_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ptestfilter_n1

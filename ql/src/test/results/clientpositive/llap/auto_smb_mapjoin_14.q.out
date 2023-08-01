@@ -1963,10 +1963,12 @@ POSTHOOK: Input: default@dest2_n0
 PREHOOK: query: DROP TABLE dest2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest2_n0
 POSTHOOK: query: DROP TABLE dest2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest2_n0
 PREHOOK: query: CREATE TABLE dest2_n0(key int, cnt int)
 PREHOOK: type: CREATETABLE

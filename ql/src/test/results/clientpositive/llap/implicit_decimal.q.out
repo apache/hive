@@ -1,7 +1,9 @@
 PREHOOK: query: drop table decimal_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table decimal_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table decimal_test (dc decimal(38,18))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -88,8 +90,10 @@ POSTHOOK: Input: default@decimal_test
 PREHOOK: query: drop table decimal_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_test
 POSTHOOK: query: drop table decimal_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_test

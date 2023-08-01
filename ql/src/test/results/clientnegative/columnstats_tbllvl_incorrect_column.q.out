@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE UserVisits_web_text_none (
   sourceIP string,
   destURL string,

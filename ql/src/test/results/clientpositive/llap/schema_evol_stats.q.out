@@ -203,10 +203,12 @@ POSTHOOK: Input: default@partitioned1_n0
 PREHOOK: query: drop table partitioned1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partitioned1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned1_n0
 POSTHOOK: query: drop table partitioned1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partitioned1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned1_n0
 PREHOOK: query: CREATE TABLE partitioned1_n0(a INT, b STRING) PARTITIONED BY(part INT) STORED AS ORC
 PREHOOK: type: CREATETABLE

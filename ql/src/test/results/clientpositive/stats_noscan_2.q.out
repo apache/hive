@@ -109,10 +109,12 @@ Storage Desc Params:
 PREHOOK: query: drop table anaylyze_external
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@anaylyze_external
+PREHOOK: Output: database:default
 PREHOOK: Output: default@anaylyze_external
 POSTHOOK: query: drop table anaylyze_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@anaylyze_external
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@anaylyze_external
 PREHOOK: query: create table texternal(key string, val string) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
@@ -365,9 +367,11 @@ POSTHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
 PREHOOK: query: drop table anaylyze_external
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@anaylyze_external
+PREHOOK: Output: database:default
 PREHOOK: Output: default@anaylyze_external
 POSTHOOK: query: drop table anaylyze_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@anaylyze_external
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@anaylyze_external
 #### A masked pattern was here ####

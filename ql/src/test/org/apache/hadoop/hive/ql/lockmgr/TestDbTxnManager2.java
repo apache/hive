@@ -263,14 +263,14 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     //tries to get X lock on T1 and gets Waiting state
     ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Fiddler", false);
     List<ShowLocksResponseElement> locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T6", null, locks);
     checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T6", null, locks);
     txnMgr.rollbackTxn(); //release S on T6
     //attempt to X on T6 again - succeed
     ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(1).getLockid());
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T6", null, locks);
     txnMgr2.rollbackTxn();
     driver.run("drop table if exists T6");
@@ -394,11 +394,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("drop table TAB_BLOCKED", true);
     ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "SAM I AM", false); //make non-blocking
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB_BLOCKED", null, locks);
     checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "TAB_BLOCKED", null, locks);
-    Assert.assertEquals("BlockedByExtId doesn't match", locks.get(0).getLockid(), locks.get(1).getBlockedByExtId());
-    Assert.assertEquals("BlockedByIntId doesn't match", locks.get(0).getLockIdInternal(), locks.get(1).getBlockedByIntId());
+    Assert.assertEquals("BlockedByExtId doesn't match", locks.get(0).getLockid(), locks.get(2).getBlockedByExtId());
+    Assert.assertEquals("BlockedByIntId doesn't match", locks.get(0).getLockIdInternal(), locks.get(2).getBlockedByIntId());
   }
 
   @Test
@@ -3130,7 +3130,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     //tries to get X lock on T6 and gets Waiting state
     ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Fiddler", false);
     List<ShowLocksResponseElement> locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T6", null, locks);
     long extLockId = checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T6", null, locks).getLockid();
 
@@ -3151,7 +3151,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         ex.getMessage());
     }
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 2 : 3), locks.size());
+    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 3 : 4), locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T6", null, locks);
     if (!zeroWaitRead) {
       checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T6", null, locks);
@@ -3761,7 +3761,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     }
     driver2.lockAndRespond();
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
     
     checkLock(blocking ? LockType.EXCLUSIVE : LockType.EXCL_WRITE, 
       LockState.ACQUIRED, "default", "tab_acid", null, locks);

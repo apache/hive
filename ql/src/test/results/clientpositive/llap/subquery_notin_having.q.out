@@ -1074,16 +1074,20 @@ NULL
 PREHOOK: query: DROP TABLE t1_n145
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n145
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n145
 POSTHOOK: query: DROP TABLE t1_n145
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n145
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n145
 PREHOOK: query: DROP TABLE t2_n85
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n85
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n85
 POSTHOOK: query: DROP TABLE t2_n85
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n85
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n85

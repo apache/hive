@@ -1843,24 +1843,30 @@ POSTHOOK: Input: default@part_null_n1
 PREHOOK: query: DROP TABLE part_null_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_null_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_null_n1
 POSTHOOK: query: DROP TABLE part_null_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_null_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_null_n1
 PREHOOK: query: DROP TABLE part_null_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_null_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_null_n0
 POSTHOOK: query: DROP TABLE part_null_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_null_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_null_n0
 PREHOOK: query: DROP TABLE tempty
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tempty
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tempty
 POSTHOOK: query: DROP TABLE tempty
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tempty
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tempty

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE mydata
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE mydata
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE mydata (key STRING, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' '
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -533,8 +535,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE mydata
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mydata
+PREHOOK: Output: database:default
 PREHOOK: Output: default@mydata
 POSTHOOK: query: DROP TABLE mydata
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@mydata
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mydata

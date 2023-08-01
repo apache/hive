@@ -1,15 +1,21 @@
 PREHOOK: query: drop table varchar_join1_vc1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_join1_vc1_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table varchar_join1_vc2_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_join1_vc2_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table varchar_join1_str_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_join1_str_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table  varchar_join1_vc1_n0 (
   c1 int,
   c2 varchar(10)
@@ -116,24 +122,30 @@ POSTHOOK: Input: default@varchar_join1_vc1_n0
 PREHOOK: query: drop table varchar_join1_vc1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_join1_vc1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_join1_vc1_n0
 POSTHOOK: query: drop table varchar_join1_vc1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_join1_vc1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_join1_vc1_n0
 PREHOOK: query: drop table varchar_join1_vc2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_join1_vc2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_join1_vc2_n0
 POSTHOOK: query: drop table varchar_join1_vc2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_join1_vc2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_join1_vc2_n0
 PREHOOK: query: drop table varchar_join1_str_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_join1_str_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_join1_str_n0
 POSTHOOK: query: drop table varchar_join1_str_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_join1_str_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_join1_str_n0

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE covar_tab
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE covar_tab
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE covar_tab (a INT, b INT, c INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE
@@ -94,8 +96,10 @@ POSTHOOK: Input: default@covar_tab
 PREHOOK: query: DROP TABLE covar_tab
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@covar_tab
+PREHOOK: Output: database:default
 PREHOOK: Output: default@covar_tab
 POSTHOOK: query: DROP TABLE covar_tab
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@covar_tab
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@covar_tab

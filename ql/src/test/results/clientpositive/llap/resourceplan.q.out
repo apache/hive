@@ -956,10 +956,12 @@ POSTHOOK: Input: default@wm_test
 PREHOOK: query: drop table wm_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@wm_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@wm_test
 POSTHOOK: query: drop table wm_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@wm_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@wm_test
 PREHOOK: query: CREATE RESOURCE PLAN plan_1
 PREHOOK: type: CREATE RESOURCEPLAN

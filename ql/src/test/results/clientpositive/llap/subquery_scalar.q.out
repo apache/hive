@@ -4485,26 +4485,32 @@ POSTHOOK: Input: default@tnull_n0
 PREHOOK: query: drop table tnull_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tnull_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tnull_n0
 POSTHOOK: query: drop table tnull_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tnull_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tnull_n0
 PREHOOK: query: drop table part_null_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_null_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_null_n0
 POSTHOOK: query: drop table part_null_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_null_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_null_n0
 PREHOOK: query: drop table tempty_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tempty_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tempty_n0
 POSTHOOK: query: drop table tempty_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tempty_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tempty_n0
 PREHOOK: query: create table EMPS_n4(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
 PREHOOK: type: CREATETABLE
@@ -5295,18 +5301,22 @@ POSTHOOK: Input: default@emps_n4
 PREHOOK: query: drop table DEPTS_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@depts_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@depts_n3
 POSTHOOK: query: drop table DEPTS_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@depts_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@depts_n3
 PREHOOK: query: drop table EMPS_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@emps_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@emps_n4
 POSTHOOK: query: drop table EMPS_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@emps_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps_n4
 Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
@@ -6857,18 +6867,22 @@ POSTHOOK: Input: default@tempty_n0
 PREHOOK: query: drop table t_n11
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_n11
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_n11
 POSTHOOK: query: drop table t_n11
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_n11
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_n11
 PREHOOK: query: drop table tempty_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tempty_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tempty_n0
 POSTHOOK: query: drop table tempty_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tempty_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tempty_n0
 Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select key, count(*) from src group by key having count(*) >
@@ -7281,16 +7295,20 @@ HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
 PREHOOK: query: DROP TABLE store_sales
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_sales
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store_sales
 POSTHOOK: query: DROP TABLE store_sales
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_sales
 PREHOOK: query: DROP TABLE date_dim
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_dim
+PREHOOK: Output: database:default
 PREHOOK: Output: default@date_dim
 POSTHOOK: query: DROP TABLE date_dim
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_dim
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_dim

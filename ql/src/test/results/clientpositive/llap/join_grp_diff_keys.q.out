@@ -240,32 +240,40 @@ STAGE PLANS:
 PREHOOK: query: drop table split
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@split
+PREHOOK: Output: database:default
 PREHOOK: Output: default@split
 POSTHOOK: query: drop table split
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@split
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@split
 PREHOOK: query: drop table bar
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bar
+PREHOOK: Output: database:default
 PREHOOK: Output: default@bar
 POSTHOOK: query: drop table bar
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bar
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bar
 PREHOOK: query: drop table foo
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo
+PREHOOK: Output: database:default
 PREHOOK: Output: default@foo
 POSTHOOK: query: drop table foo
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@foo
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo
 PREHOOK: query: drop table forecast
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@forecast
+PREHOOK: Output: database:default
 PREHOOK: Output: default@forecast
 POSTHOOK: query: drop table forecast
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@forecast
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@forecast

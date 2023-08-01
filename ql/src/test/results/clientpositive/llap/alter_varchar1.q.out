@@ -152,10 +152,12 @@ PREHOOK: query: drop table avc.alter_varchar_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: avc@alter_varchar_1
 PREHOOK: Output: avc@alter_varchar_1
+PREHOOK: Output: database:avc
 POSTHOOK: query: drop table avc.alter_varchar_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: avc@alter_varchar_1
 POSTHOOK: Output: avc@alter_varchar_1
+POSTHOOK: Output: database:avc
 PREHOOK: query: drop database avc
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:avc

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS orc_partition
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS orc_partition
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orc_partition
 (a STRING, b STRING)
 PARTITIONED BY (c STRING)

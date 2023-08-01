@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_ice_puffin
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice_puffin
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice_puffin(a int, b string, c int) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

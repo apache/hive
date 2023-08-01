@@ -235,8 +235,10 @@ POSTHOOK: Input: default@stats_tbl_part_n0@dt=2014
 PREHOOK: query: drop table stats_tbl_part_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_tbl_part_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_tbl_part_n0
 POSTHOOK: query: drop table stats_tbl_part_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_tbl_part_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_tbl_part_n0

@@ -1,15 +1,21 @@
 PREHOOK: query: DROP TABLE orcfile_merge1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orcfile_merge1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orcfile_merge1b
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orcfile_merge1b
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orcfile_merge1c
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orcfile_merge1c
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orcfile_merge1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties("orc.compress"="SNAPPY","orc.compress.size"="4096")
 PREHOOK: type: CREATETABLE
@@ -842,12 +848,15 @@ ________________________________________________________________________________
 PREHOOK: query: DROP TABLE orcfile_merge1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge1
 PREHOOK: query: DROP TABLE orcfile_merge1b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orcfile_merge1b
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge1b
 PREHOOK: query: DROP TABLE orcfile_merge1c
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orcfile_merge1c
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge1c

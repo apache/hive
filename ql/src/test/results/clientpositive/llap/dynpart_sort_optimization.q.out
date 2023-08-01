@@ -4176,10 +4176,12 @@ POSTHOOK: Input: default@over1k_part3@s=xavier quirinius/t=27/i=65599
 PREHOOK: query: drop table over1k_part3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@over1k_part3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@over1k_part3
 POSTHOOK: query: drop table over1k_part3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@over1k_part3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part3
 PREHOOK: query: create table over1k_part3(
            si smallint,
@@ -4361,10 +4363,12 @@ POSTHOOK: Input: default@over1k_part3@s=xavier quirinius/t=27/i=65599
 PREHOOK: query: drop table over1k_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@over1k_n3
 POSTHOOK: query: drop table over1k_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@over1k_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_n3
 PREHOOK: query: create table over1k_n3(
            t tinyint,
@@ -5392,8 +5396,10 @@ POSTHOOK: Input: default@over1k_part4_1@s=bob zipper
 PREHOOK: query: drop table over1k_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@over1k_n3
 POSTHOOK: query: drop table over1k_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@over1k_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_n3

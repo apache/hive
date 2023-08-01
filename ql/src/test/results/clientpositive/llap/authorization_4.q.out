@@ -21,6 +21,10 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test_n2
 POSTHOOK: type: SHOW_GRANT
 default	src_autho_test_n2			hive_test_user	USER	ALL	false	-1	hive_test_user
+PREHOOK: query: GRANT drop ON DATABASE default TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT drop ON DATABASE default TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: select key from src_autho_test_n2 order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test_n2
@@ -52,8 +56,10 @@ POSTHOOK: Input: default@src_autho_test_n2
 PREHOOK: query: drop table src_autho_test_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_autho_test_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_autho_test_n2
 POSTHOOK: query: drop table src_autho_test_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_autho_test_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_autho_test_n2

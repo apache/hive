@@ -1,7 +1,9 @@
 PREHOOK: query: drop table array_valued_src
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table array_valued_src
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table array_valued_src (key string, value array<string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

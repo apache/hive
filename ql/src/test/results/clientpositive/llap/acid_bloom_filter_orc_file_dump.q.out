@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE if exists bloomTest
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE if exists bloomTest
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE bloomTest(
   msisdn  STRING,
   imsi    VARCHAR(20),

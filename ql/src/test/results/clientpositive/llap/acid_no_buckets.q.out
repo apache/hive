@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists srcpart_acid
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists srcpart_acid
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE srcpart_acid (key STRING, value STRING) PARTITIONED BY (ds STRING, hr STRING) stored as ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -696,15 +698,19 @@ POSTHOOK: Input: default@srcpart_acid
 PREHOOK: query: drop table if exists srcpart_acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_acid
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_acid
 POSTHOOK: query: drop table if exists srcpart_acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_acid
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_acid
 PREHOOK: query: drop table if exists srcpart_acidb
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists srcpart_acidb
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE srcpart_acidb (key STRING, value STRING) PARTITIONED BY (ds STRING, hr STRING) CLUSTERED BY(key) INTO 2 BUCKETS stored as ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1294,15 +1300,19 @@ POSTHOOK: Input: default@srcpart_acidb
 PREHOOK: query: drop table if exists srcpart_acidb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_acidb
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_acidb
 POSTHOOK: query: drop table if exists srcpart_acidb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_acidb
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_acidb
 PREHOOK: query: drop table if exists srcpart_acidv
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists srcpart_acidv
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE srcpart_acidv (key STRING, value STRING) PARTITIONED BY (ds STRING, hr STRING) stored as ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2164,15 +2174,19 @@ POSTHOOK: Input: default@srcpart_acidv
 PREHOOK: query: drop table if exists srcpart_acidv
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_acidv
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_acidv
 POSTHOOK: query: drop table if exists srcpart_acidv
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_acidv
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_acidv
 PREHOOK: query: drop table if exists srcpart_acidvb
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists srcpart_acidvb
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE srcpart_acidvb (key STRING, value STRING) PARTITIONED BY (ds STRING, hr STRING) CLUSTERED BY(key) INTO 2 BUCKETS stored as ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -3111,8 +3125,10 @@ POSTHOOK: Input: default@srcpart_acidvb
 PREHOOK: query: drop table if exists srcpart_acidvb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_acidvb
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_acidvb
 POSTHOOK: query: drop table if exists srcpart_acidvb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_acidvb
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_acidvb

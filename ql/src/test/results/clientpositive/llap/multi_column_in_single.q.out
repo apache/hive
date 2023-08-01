@@ -10,8 +10,10 @@ POSTHOOK: Input: default@src
 238	val_238
 PREHOOK: query: drop table emps_n7
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table emps_n7
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table emps_n7 (empno int, deptno int, empname string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

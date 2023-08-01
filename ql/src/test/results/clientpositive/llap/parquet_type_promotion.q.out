@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE parquet_type_promotion_staging
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_type_promotion_staging
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE parquet_type_promotion
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_type_promotion
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE parquet_type_promotion_staging (
   cint int,
   cint2 int,
@@ -203,8 +207,10 @@ POSTHOOK: Input: default@parquet_type_promotion
 400	450.0	455.0	8643.0	9999.0	0.4000000059604645	0.5	{"k4":15}	{"k4":23.0}	[7,18,27]	[27.0,29.0,31.0]	{"c1":50,"c2":70}	{"d11":8.0}	[6.300000190734863,3.299999952316284,5.800000190734863]	{"c1":5.0,"c2":4.5}
 PREHOOK: query: DROP TABLE arrays_of_struct_to_map
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE arrays_of_struct_to_map
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE arrays_of_struct_to_map (locations1 array<struct<c1:int,c2:int>>, locations2 array<struct<f1:int,
 f2:int,f3:int>>) STORED AS PARQUET
 PREHOOK: type: CREATETABLE

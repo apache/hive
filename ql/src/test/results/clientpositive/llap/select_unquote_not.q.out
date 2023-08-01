@@ -85,8 +85,10 @@ POSTHOOK: Input: default@npe_test_n1@ds=2012-12-12
 PREHOOK: query: DROP TABLE npe_test_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@npe_test_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@npe_test_n1
 POSTHOOK: query: DROP TABLE npe_test_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@npe_test_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@npe_test_n1

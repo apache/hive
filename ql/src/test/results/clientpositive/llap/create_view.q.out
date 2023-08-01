@@ -1530,10 +1530,12 @@ val_114
 PREHOOK: query: DROP TABLE IF EXISTS view16
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@view16
+PREHOOK: Output: database:default
 PREHOOK: Output: default@view16
 POSTHOOK: query: DROP TABLE IF EXISTS view16
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@view16
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view16
 PREHOOK: query: DESCRIBE view16
 PREHOOK: type: DESCTABLE

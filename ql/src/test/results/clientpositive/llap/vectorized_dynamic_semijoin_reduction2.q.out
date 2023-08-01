@@ -1418,16 +1418,20 @@ POSTHOOK: Input: default@dsrv2_small
 PREHOOK: query: drop table dsrv2_big
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dsrv2_big
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dsrv2_big
 POSTHOOK: query: drop table dsrv2_big
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dsrv2_big
 PREHOOK: query: drop table dsrv2_small
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dsrv2_small
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dsrv2_small
 POSTHOOK: query: drop table dsrv2_small
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dsrv2_small
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dsrv2_small

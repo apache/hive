@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE alter_rename_partition_src
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE alter_rename_partition_src
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE alter_rename_partition
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE alter_rename_partition
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table alter_rename_partition_src ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -99,18 +103,22 @@ POSTHOOK: Input: default@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_par
 PREHOOK: query: DROP TABLE alter_rename_partition_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_rename_partition_src
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_rename_partition_src
 POSTHOOK: query: DROP TABLE alter_rename_partition_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_rename_partition_src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_rename_partition_src
 PREHOOK: query: DROP TABLE alter_rename_partition
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_rename_partition
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_rename_partition
 POSTHOOK: query: DROP TABLE alter_rename_partition
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_rename_partition
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_rename_partition
 PREHOOK: query: CREATE DATABASE alter_rename_partition_db
 PREHOOK: type: CREATEDATABASE

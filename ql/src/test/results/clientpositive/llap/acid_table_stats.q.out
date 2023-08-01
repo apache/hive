@@ -1,7 +1,9 @@
 PREHOOK: query: drop table acid
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table acid
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -494,10 +496,12 @@ STAGE PLANS:
 PREHOOK: query: drop table acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid
 POSTHOOK: query: drop table acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid
 PREHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC
 PREHOOK: type: CREATETABLE

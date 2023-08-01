@@ -156,8 +156,10 @@ CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time
 PREHOOK: query: drop table partitioned_acid_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partitioned_acid_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned_acid_table
 POSTHOOK: query: drop table partitioned_acid_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partitioned_acid_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_acid_table

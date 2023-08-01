@@ -130,16 +130,20 @@ POSTHOOK: Input: default@sessions
 PREHOOK: query: drop table sessions
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sessions
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sessions
 POSTHOOK: query: drop table sessions
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sessions
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sessions
 PREHOOK: query: drop table sessions_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sessions_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sessions_orc
 POSTHOOK: query: drop table sessions_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sessions_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sessions_orc

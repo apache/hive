@@ -431,8 +431,10 @@ POSTHOOK: Input: default@list_bucketing_static_part_n1@ds=2008-04-08/hr=11
 PREHOOK: query: drop table list_bucketing_static_part_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@list_bucketing_static_part_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_static_part_n1
 POSTHOOK: query: drop table list_bucketing_static_part_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@list_bucketing_static_part_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_static_part_n1

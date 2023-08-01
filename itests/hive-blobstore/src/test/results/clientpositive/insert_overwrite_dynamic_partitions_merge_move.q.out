@@ -127,16 +127,20 @@ u5	name5	2017-04-10	10002
 PREHOOK: query: DROP TABLE s3_table_merge_move
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@s3_table_merge_move
+PREHOOK: Output: database:default
 PREHOOK: Output: default@s3_table_merge_move
 POSTHOOK: query: DROP TABLE s3_table_merge_move
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@s3_table_merge_move
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s3_table_merge_move
 PREHOOK: query: DROP TABLE tmp_table_merge_move
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_table_merge_move
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_table_merge_move
 POSTHOOK: query: DROP TABLE tmp_table_merge_move
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_table_merge_move
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_table_merge_move

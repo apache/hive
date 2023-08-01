@@ -373,18 +373,22 @@ POSTHOOK: Input: default@db1_ext_auth3_2
 PREHOOK: query: DROP TABLE db1_ext_auth3_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@db1_ext_auth3_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@db1_ext_auth3_1
 POSTHOOK: query: DROP TABLE db1_ext_auth3_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@db1_ext_auth3_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@db1_ext_auth3_1
 PREHOOK: query: DROP TABLE db1_ext_auth3_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@db1_ext_auth3_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@db1_ext_auth3_2
 POSTHOOK: query: DROP TABLE db1_ext_auth3_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@db1_ext_auth3_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@db1_ext_auth3_2
 PREHOOK: query: FROM src
 SELECT

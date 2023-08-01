@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS repairtable
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -66,8 +68,10 @@ p1=c/p2=a
 PREHOOK: query: DROP TABLE default.repairtable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable
 POSTHOOK: query: DROP TABLE default.repairtable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable

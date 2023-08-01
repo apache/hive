@@ -1,7 +1,9 @@
 PREHOOK: query: drop table orc_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table orc_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table orc_table (a int, b string) clustered by (a) into 3 buckets stored as orc TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

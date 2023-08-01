@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS t1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS t1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS t2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS t2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE t1 (a int) PARTITIONED BY (d1 int) STORED AS ORC TBLPROPERTIES ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

@@ -509,16 +509,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE calls
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@calls
+PREHOOK: Output: database:default
 PREHOOK: Output: default@calls
 POSTHOOK: query: DROP TABLE calls
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@calls
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@calls
 PREHOOK: query: DROP TABLE display
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@display
+PREHOOK: Output: database:default
 PREHOOK: Output: default@display
 POSTHOOK: query: DROP TABLE display
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@display
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@display

@@ -5871,18 +5871,22 @@ NULL
 PREHOOK: query: DROP TABLE t1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n0
 POSTHOOK: query: DROP TABLE t1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n0
 PREHOOK: query: DROP TABLE t2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n0
 POSTHOOK: query: DROP TABLE t2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n0
 PREHOOK: query: create table t1_n0(a int, b int)
 PREHOOK: type: CREATETABLE
@@ -6101,18 +6105,22 @@ POSTHOOK: Input: default@t2_n0
 PREHOOK: query: drop table t1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n0
 POSTHOOK: query: drop table t1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n0
 PREHOOK: query: drop table t2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n0
 POSTHOOK: query: drop table t2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n0
 PREHOOK: query: create table t7(i int, j int)
 PREHOOK: type: CREATETABLE
@@ -6332,18 +6340,22 @@ POSTHOOK: Input: default@t7
 PREHOOK: query: drop table t7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t7
 POSTHOOK: query: drop table t7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t7
 PREHOOK: query: drop table fixOb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@fixob
+PREHOOK: Output: database:default
 PREHOOK: Output: default@fixob
 POSTHOOK: query: drop table fixOb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@fixob
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fixob
 PREHOOK: query: create table t_n0(i int, j int)
 PREHOOK: type: CREATETABLE
@@ -7032,8 +7044,10 @@ POSTHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 PREHOOK: query: drop table t1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table t1_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 Warning: Shuffle Join MERGEJOIN[54][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
 PREHOOK: query: explain select *
 from src b

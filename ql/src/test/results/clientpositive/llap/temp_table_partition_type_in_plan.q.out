@@ -42,8 +42,10 @@ col1-2014-08-09	2014-08-09
 PREHOOK: query: DROP TABLE datePartTbl_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dateparttbl_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dateparttbl_temp
 POSTHOOK: query: DROP TABLE datePartTbl_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dateparttbl_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dateparttbl_temp

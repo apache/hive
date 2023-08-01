@@ -8,12 +8,16 @@ POSTHOOK: query: drop materialized view if exists mv1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: query: drop table if exists emps
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists emps
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists depts
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists depts
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE emps (
   empid INT,
   deptno INT,

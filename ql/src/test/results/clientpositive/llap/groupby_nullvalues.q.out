@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists paqtest
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists paqtest
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE paqtest(
 c1 int,
 s1 string,
@@ -76,8 +78,10 @@ PM	58	NULL	NULL	ABC	NULL	NULL	0
 PREHOOK: query: drop table paqtest
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@paqtest
+PREHOOK: Output: database:default
 PREHOOK: Output: default@paqtest
 POSTHOOK: query: drop table paqtest
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@paqtest
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@paqtest
