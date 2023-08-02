@@ -120,7 +120,7 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    *
    */
   private static class ChainedCheckerFactory implements CheckerFactory {
-    private static final Pattern CHAIN_PATTERN = Pattern.compile("(%?[^%_\\\\]+%?)+");
+    private static final Pattern CHAIN_PATTERN = Pattern.compile("(%?[^%_\\\\]+%?)++");
 
     public Checker tryCreate(String pattern) {
       Matcher matcher = CHAIN_PATTERN.matcher(pattern);
