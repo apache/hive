@@ -33,6 +33,7 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_LOAD_DYNAMIC_PARTITIONS_SCAN_SPECIFIC_PARTITIONS;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_WRITE_NOTIFICATION_MAX_BATCH_SIZE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_LEGACY_CONFIG;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -1354,9 +1355,14 @@ public class Hive {
 
       CreateTableRequest request = new CreateTableRequest(tTbl);
 
-      if (isIcebergTable(tbl) && isIcebergStatsSource(conf)) {
+      if (isIcebergTable(tbl)) {
         EnvironmentContext envContext = new EnvironmentContext();
-        envContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+        if (TableType.MANAGED_TABLE.equals(tbl.getTableType())) {
+          envContext.putToProperties(CTAS_LEGACY_CONFIG, Boolean.TRUE.toString());
+        }
+        if (isIcebergStatsSource(conf)) {
+          envContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+        }
         request.setEnvContext(envContext);
       }
 

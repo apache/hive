@@ -110,7 +110,7 @@ PREHOOK: Input: default@emp_iceberg
 POSTHOOK: query: show create table emp_iceberg
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@emp_iceberg
-CREATE TABLE `emp_iceberg`(
+CREATE EXTERNAL TABLE `emp_iceberg`(
   `id` int, 
   `company` string)
 PARTITIONED BY SPEC ( 
