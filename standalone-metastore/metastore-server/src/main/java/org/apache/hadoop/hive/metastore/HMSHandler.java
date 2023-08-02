@@ -101,6 +101,7 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_A
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_LEGACY_CONFIG;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
@@ -2256,9 +2257,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }
 
-    if (tbl.getParameters() != null) {
-      tbl.getParameters().remove(TABLE_IS_CTAS);
-      tbl.getParameters().remove(TABLE_IS_CTLT);
+    Map<String, String> params = tbl.getParameters();
+    if (params != null) {
+      params.remove(TABLE_IS_CTAS);
+      params.remove(TABLE_IS_CTLT);
+      if (MetaStoreServerUtils.getBooleanEnvProp(envContext, CTAS_LEGACY_CONFIG) &&
+          TableType.MANAGED_TABLE.toString().equals(tbl.getTableType())) {
+        params.put("EXTERNAL", "TRUE");
+        tbl.setTableType(TableType.EXTERNAL_TABLE.toString());
+      }
     }
 
     // If the given table has column statistics, save it here. We will update it later.
