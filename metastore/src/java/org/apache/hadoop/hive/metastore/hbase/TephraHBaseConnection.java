@@ -64,6 +64,9 @@ public class TephraHBaseConnection extends VanillaHBaseConnection {
       LOG.debug("Using an in memory client transaction system for testing");
       TransactionManager txnMgr = new TransactionManager(conf);
       try {
+        // HIVE-27560: In order to support Guava 17+, change to using reflection for method calls.
+        // Before Guava 16, need to call 'startAndWait', and after Guava 17, need to call
+        // `startAsync ` and `awaitRunning`.
         startAndWait(txnMgr);
       } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
         throw new RuntimeException("txnMgr start failed", e);

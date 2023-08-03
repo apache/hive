@@ -122,6 +122,8 @@ public class LlapProtocolClientProxy extends AbstractService {
   @Override
   public void serviceStart() {
     requestManagerFuture = requestManagerExecutor.submit(requestManager);
+    // HIVE-27560: In order to support Guava 26+, need to use the `addCallback`
+    // method with `Executor` parameter.
     Futures.addCallback(requestManagerFuture, new FutureCallback<Void>() {
       @Override
       public void onSuccess(Void result) {
@@ -264,6 +266,7 @@ public class LlapProtocolClientProxy extends AbstractService {
     void submitToExecutor(CallableRequest request, LlapNodeId nodeId) {
       ListenableFuture<SourceStateUpdatedResponseProto> future =
           executor.submit(request);
+      // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
       Futures.addCallback(future, new ResponseCallback(request.getCallback(), nodeId, this),
         SameThreadExecutorUtil.sameThreadExecutor());
     }

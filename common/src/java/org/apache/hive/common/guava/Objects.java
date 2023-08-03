@@ -33,6 +33,9 @@ import javax.annotation.Nullable;
  *
  * @author Laurence Gonsalves
  * @since 2.0 (imported from Google Collections Library)
+ * <p>
+ * This code is from Guava's 14.0.1 source code, because there is no compatible way to
+ * use this functionality in both a Guava 14 ~ 20 environment and a Guava &gt;21 environment.
  */
 @GwtCompatible
 public final class Objects {

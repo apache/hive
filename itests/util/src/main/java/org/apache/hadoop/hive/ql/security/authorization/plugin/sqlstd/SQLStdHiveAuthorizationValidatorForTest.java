@@ -87,7 +87,7 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
           }
           return !bypassObjectTypes.contains(hivePrivilegeObject.getType());
         }
-
+        // HIVE-27560: In order to support Guava 21+, need to add the `test` method.
         public boolean test(HivePrivilegeObject input) {
           return apply(input);
         }

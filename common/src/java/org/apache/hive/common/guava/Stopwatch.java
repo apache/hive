@@ -68,6 +68,9 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Kevin Bourrillion
  * @since 10.0
+ * <p>
+ * This code is from Guava's 14.0.1 source code, because there is no compatible way to
+ * use this functionality in both a Guava 14 ~ 16 environment and a Guava &gt;17 environment.
  */
 @Beta
 @GwtCompatible(emulated = true)

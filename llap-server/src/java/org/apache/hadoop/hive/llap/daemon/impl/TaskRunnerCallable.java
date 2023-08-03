@@ -274,8 +274,10 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           return result;
         } finally {
           FileSystem.closeAllForUGI(fsTaskUgi);
+          // HIVE-27560: In order to support Guava 16+, need to use the `elapsed`
+          // method with `TimeUnit` parameter.
           LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
-            runtimeWatch.stop().elapsed(TimeUnit.MILLISECONDS));
+                  runtimeWatch.stop().elapsed(TimeUnit.MILLISECONDS));
           if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
@@ -501,6 +503,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           LOG.info("Killed task {}", requestId);
           if (killtimerWatch.isRunning()) {
             killtimerWatch.stop();
+            // HIVE-27560: In order to support Guava 16+, need to use the `elapsed`
+            // method with `TimeUnit` parameter.
             long elapsed = killtimerWatch.elapsed(TimeUnit.MILLISECONDS);
             LOG.info("Time to die for task {}", elapsed);
             if (metrics != null) {
@@ -508,6 +512,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
             }
           }
           if (metrics != null) {
+            // HIVE-27560: In order to support Guava 16+, need to use the `elapsed`
+            // method with `TimeUnit` parameter.
             metrics.addMetricsPreemptionTimeLost(runtimeWatch.elapsed(TimeUnit.MILLISECONDS));
             metrics.incrExecutorTotalKilled();
           }

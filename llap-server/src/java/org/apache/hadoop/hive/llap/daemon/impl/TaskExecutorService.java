@@ -169,6 +169,7 @@ public class TaskExecutorService extends AbstractService
     executionCompletionExecutorService = MoreExecutors.listeningDecorator(
         executionCompletionExecutorServiceRaw);
     ListenableFuture<?> future = waitQueueExecutorService.submit(new WaitQueueWorker());
+    // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
     Futures.addCallback(future, new WaitQueueWorkerCallback(), SameThreadExecutorUtil.sameThreadExecutor());
   }
 

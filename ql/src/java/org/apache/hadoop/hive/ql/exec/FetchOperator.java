@@ -106,6 +106,7 @@ public class FetchOperator implements Serializable {
 
   private transient Iterator<Path> iterPath;
   private transient Iterator<PartitionDesc> iterPartDesc;
+  // HIVE-27560: In order to support Guava 20+, change to use JDK API.
   private transient Iterator<FetchInputFormatSplit> iterSplits = Collections.emptyIterator();
 
   private transient Path currPath;
@@ -541,8 +542,7 @@ public class FetchOperator implements Serializable {
       this.currPath = null;
       this.iterPath = null;
       this.iterPartDesc = null;
-      // Guava 19: Iterators.emptyIterator()
-      // Guava 20: Collections.emptyIterator();
+      // HIVE-27560: In order to support Guava 20+, change to use JDK API.
       this.iterSplits = Collections.emptyIterator();
     } catch (Exception e) {
       throw new HiveException("Failed with exception " + e.getMessage()

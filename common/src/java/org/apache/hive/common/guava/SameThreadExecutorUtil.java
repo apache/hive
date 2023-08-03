@@ -37,6 +37,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Kyle Littlefield
  * @author Justin Mahoney
  * @since 3.0
+ * <p>
+ * This code is from Guava's 14.0 source code, because there is no compatible way to
+ * use this functionality in both a Guava 14 ~ 25 environment and a Guava &gt;26 environment.
  */
 public final class SameThreadExecutorUtil {
   private SameThreadExecutorUtil() {}

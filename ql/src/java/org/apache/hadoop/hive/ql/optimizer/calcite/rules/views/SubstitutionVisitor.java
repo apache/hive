@@ -2416,7 +2416,7 @@ public class SubstitutionVisitor {
           public boolean apply(Filter input) {
             return input.getCondition() instanceof RexInputRef;
           }
-
+          // HIVE-27560: In order to support Guava 21+, need to add the `test` method.
           public boolean test(Filter input) {
             return this.apply(input);
           }

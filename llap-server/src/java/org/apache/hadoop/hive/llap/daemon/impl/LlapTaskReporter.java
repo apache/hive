@@ -124,6 +124,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
     currentCallable = new HeartbeatCallable(completionListener, task, umbilical, pollInterval, sendCounterInterval,
         maxEventsToGet, requestCounter, containerIdStr, initialEvent, fragmentRequestId);
     ListenableFuture<Boolean> future = heartbeatExecutor.submit(currentCallable);
+    // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
     Futures.addCallback(future, new HeartbeatCallback(errorReporter), SameThreadExecutorUtil.sameThreadExecutor());
   }
 

@@ -532,6 +532,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         public Iterator<Mapping> iterator() {
           ImmutableBitSet fields = exprFields.get(predicate.toString());
           if (fields.cardinality() == 0) {
+            // HIVE-27560: In order to support Guava 20+, change to use JDK API.
             return Collections.emptyIterator();
           }
           return new ExprsItr(fields);

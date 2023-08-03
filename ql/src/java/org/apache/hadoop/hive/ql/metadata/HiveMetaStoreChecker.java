@@ -433,6 +433,7 @@ public class HiveMetaStoreChecker {
     ExecutorService executor;
     if (poolSize <= 1) {
       LOG.debug("Using single-threaded version of MSCK-GetPaths");
+      // HIVE-27560: In order to support Guava 26+, change to use `SameThreadExecutorUtil`.
       executor = SameThreadExecutorUtil.sameThreadExecutor();
     } else {
       LOG.debug("Using multi-threaded version of MSCK-GetPaths with number of threads " + poolSize);

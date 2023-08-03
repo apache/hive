@@ -318,16 +318,19 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }, 10000L, TimeUnit.MILLISECONDS);
 
       nodeEnablerFuture = nodeEnabledExecutor.submit(nodeEnablerCallable);
+      // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
       Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG),
         SameThreadExecutorUtil.sameThreadExecutor());
 
       delayedTaskSchedulerFuture =
           delayedTaskSchedulerExecutor.submit(delayedTaskSchedulerCallable);
+      // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
       Futures.addCallback(delayedTaskSchedulerFuture,
           new LoggingFutureCallback("DelayedTaskSchedulerThread", LOG),
             SameThreadExecutorUtil.sameThreadExecutor());
 
       schedulerFuture = schedulerExecutor.submit(schedulerCallable);
+      // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
       Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG),
         SameThreadExecutorUtil.sameThreadExecutor());
 

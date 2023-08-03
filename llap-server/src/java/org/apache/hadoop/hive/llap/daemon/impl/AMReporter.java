@@ -162,6 +162,7 @@ public class AMReporter extends AbstractService {
   public void serviceStart() {
     QueueLookupCallable queueDrainerCallable = new QueueLookupCallable();
     queueLookupFuture = queueLookupExecutor.submit(queueDrainerCallable);
+    // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
     Futures.addCallback(queueLookupFuture, new FutureCallback<Void>() {
       @Override
       public void onSuccess(Void result) {
@@ -261,6 +262,7 @@ public class AMReporter extends AbstractService {
     // only happen after the AtomicReference address has been populated. Not adding an additional check.
     ListenableFuture<Void> future =
         executor.submit(new KillTaskCallable(taskAttemptId, amNodeInfo));
+    // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
     Futures.addCallback(future, new FutureCallback<Void>() {
       @Override
       public void onSuccess(Void result) {

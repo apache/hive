@@ -104,9 +104,7 @@ public class MetricsCollection {
       public boolean apply(TaskInfo input) {
         return jobId == input.jobId && stageId == input.stageId && taskId == input.taskId;
       }
-
-      // Guava 20: no this method
-      // Guava 21: need override test
+      // HIVE-27560: In order to support Guava 21+, need to add the `test` method.
       public boolean test(TaskInfo input) {
         return this.apply(input);
       }
@@ -263,7 +261,7 @@ public class MetricsCollection {
     public boolean apply(TaskInfo input) {
       return jobId == input.jobId;
     }
-
+    // HIVE-27560: In order to support Guava 21+, need to add the `test` method.
     public boolean test(TaskInfo input) {
       return this.apply(input);
     }
@@ -284,7 +282,7 @@ public class MetricsCollection {
     public boolean apply(TaskInfo input) {
       return jobId == input.jobId && stageId == input.stageId;
     }
-
+    // HIVE-27560: In order to support Guava 21+, need to add the `test` method.
     public boolean test(TaskInfo input) {
       return this.apply(input);
     }

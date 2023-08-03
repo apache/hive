@@ -137,7 +137,7 @@ public class SessionManager extends CompositeService {
           public boolean apply(HiveSession hiveSession) {
             return hiveSession.getNoOperationTime() == 0L;
           }
-
+          // HIVE-27560: In order to support Guava 21+, need to add the `test` method.
           public boolean test(HiveSession input) {
             return apply(input);
           }

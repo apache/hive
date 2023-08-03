@@ -462,6 +462,8 @@ public class LineageLogger implements ExecuteWithHookContext {
    */
   private String getQueryHash(String queryStr) {
     Hasher hasher = Hashing.md5().newHasher();
+    // HIVE-27560: In order to support Guava 16+,
+    // need to call `putString` method with `Charset` parameter.
     hasher.putString(queryStr, StandardCharsets.UTF_8);
     return hasher.hash().toString();
   }
