@@ -201,7 +201,7 @@ final class CommandAuthorizerV2 {
           HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLES_ON_STORAGEHANDLERS)) {
         //TODO: add hive privilege object for storage based handlers for create and alter table commands.
         if (hiveOpType == HiveOperationType.CREATETABLE ||
-                hiveOpType == HiveOperationType.ALTERTABLE_PROPERTIES) {
+                hiveOpType == HiveOperationType.ALTERTABLE_PROPERTIES || privObject instanceof WriteEntity) {
           try {
             String storageUri = table.getStorageHandler().getURIForAuth(table.getTTable()).toString();
             hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
