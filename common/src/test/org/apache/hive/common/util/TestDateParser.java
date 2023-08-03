@@ -61,6 +61,14 @@ public class TestDateParser {
   }
 
   @Test
+  public void testParseDateFromTimestampWithCommonTimeDelimiter() {
+    for (String d : new String[] { "T", " ", "-", ".", "_" }) {
+      String ts = "2023-08-03" + d + "01:02:03";
+      assertEquals("Parsing " + ts, Date.of(2023, 8, 3), DateParser.parseDate(ts));
+    }
+  }
+
+  @Test
   public void testInvalidCases() throws Exception {
     checkInvalidCase("2001");
     checkInvalidCase("2001-01");
