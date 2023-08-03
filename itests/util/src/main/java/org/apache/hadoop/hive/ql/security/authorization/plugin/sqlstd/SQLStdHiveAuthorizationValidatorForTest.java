@@ -87,6 +87,10 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
           }
           return !bypassObjectTypes.contains(hivePrivilegeObject.getType());
         }
+
+        public boolean test(HivePrivilegeObject input) {
+          return apply(input);
+        }
       }));
     }
   }

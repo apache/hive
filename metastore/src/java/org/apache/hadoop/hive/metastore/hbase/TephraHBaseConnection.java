@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.twill.discovery.InMemoryDiscoveryService;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +63,11 @@ public class TephraHBaseConnection extends VanillaHBaseConnection {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
       LOG.debug("Using an in memory client transaction system for testing");
       TransactionManager txnMgr = new TransactionManager(conf);
-      txnMgr.startAndWait();
+      try {
+        startAndWait(txnMgr);
+      } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+        throw new RuntimeException("txnMgr start failed", e);
+      }
       txnClient = new InMemoryTxSystemClient(txnMgr);
     } else {
       // TODO should enable use of ZKDiscoveryService if users want it
@@ -124,4 +130,16 @@ public class TephraHBaseConnection extends VanillaHBaseConnection {
     return (TransactionAwareHTable)txnTables.get(tableName);
   }
 
+  private void startAndWait(TransactionManager txnMgr)
+      throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    try {
+      Method startAndWaitMethod = txnMgr.getClass().getMethod("startAndWait");
+      startAndWaitMethod.invoke(txnMgr);
+    } catch (NoSuchMethodException e) {
+      Method startAsyncMethod = txnMgr.getClass().getMethod("startAsync");
+      Method awaitRunningMethod = txnMgr.getClass().getMethod("awaitRunning");
+      startAsyncMethod.invoke(txnMgr);
+      awaitRunningMethod.invoke(txnMgr);
+    }
+  }
 }

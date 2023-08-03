@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.MonotonicClock;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.util.Clock;
+import org.apache.hive.common.guava.SameThreadExecutorUtil;
 import org.apache.tez.runtime.task.EndReason;
 import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.slf4j.Logger;
@@ -168,7 +169,7 @@ public class TaskExecutorService extends AbstractService
     executionCompletionExecutorService = MoreExecutors.listeningDecorator(
         executionCompletionExecutorServiceRaw);
     ListenableFuture<?> future = waitQueueExecutorService.submit(new WaitQueueWorker());
-    Futures.addCallback(future, new WaitQueueWorkerCallback());
+    Futures.addCallback(future, new WaitQueueWorkerCallback(), SameThreadExecutorUtil.sameThreadExecutor());
   }
 
   private Comparator<TaskWrapper> createComparator(

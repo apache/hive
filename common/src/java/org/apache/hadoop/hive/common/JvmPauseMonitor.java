@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.common;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -29,6 +28,7 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.util.Daemon;
+import org.apache.hive.common.guava.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

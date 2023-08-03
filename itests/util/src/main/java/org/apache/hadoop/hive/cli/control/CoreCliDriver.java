@@ -22,11 +22,11 @@ import static org.junit.Assert.fail;
 
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Stopwatch;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig.MetastoreType;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.util.ElapsedTimeLoggingWrapper;
+import org.apache.hive.common.guava.Stopwatch;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

@@ -256,6 +256,10 @@ public class ReplicationSpec {
         }
         return (allowEventReplacementInto(partition));
       }
+
+      public boolean test(Partition input) {
+          return this.apply(input);
+      }
     };
   }
 

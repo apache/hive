@@ -104,6 +104,12 @@ public class MetricsCollection {
       public boolean apply(TaskInfo input) {
         return jobId == input.jobId && stageId == input.stageId && taskId == input.taskId;
       }
+
+      // Guava 20: no this method
+      // Guava 21: need override test
+      public boolean test(TaskInfo input) {
+        return this.apply(input);
+      }
     };
     lock.readLock().lock();
     try {
@@ -258,6 +264,10 @@ public class MetricsCollection {
       return jobId == input.jobId;
     }
 
+    public boolean test(TaskInfo input) {
+      return this.apply(input);
+    }
+
   }
 
   private static class StageFilter implements Predicate<TaskInfo> {
@@ -273,6 +283,10 @@ public class MetricsCollection {
     @Override
     public boolean apply(TaskInfo input) {
       return jobId == input.jobId && stageId == input.stageId;
+    }
+
+    public boolean test(TaskInfo input) {
+      return this.apply(input);
     }
 
   }

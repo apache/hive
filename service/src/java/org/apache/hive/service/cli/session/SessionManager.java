@@ -137,6 +137,10 @@ public class SessionManager extends CompositeService {
           public boolean apply(HiveSession hiveSession) {
             return hiveSession.getNoOperationTime() == 0L;
           }
+
+          public boolean test(HiveSession input) {
+            return apply(input);
+          }
         });
         return Iterables.size(filtered);
       }

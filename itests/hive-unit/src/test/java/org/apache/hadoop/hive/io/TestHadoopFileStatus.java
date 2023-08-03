@@ -86,6 +86,10 @@ public class TestHadoopFileStatus {
         }
         return false;
       }
+
+      public boolean test(AclEntry input) {
+        return apply(input);
+      }
     });
   }
 

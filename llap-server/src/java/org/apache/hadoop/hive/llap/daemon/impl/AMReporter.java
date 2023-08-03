@@ -67,6 +67,7 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.AbstractService;
+import org.apache.hive.common.guava.SameThreadExecutorUtil;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.dag.records.TezTaskAttemptID;
@@ -176,7 +177,7 @@ public class AMReporter extends AbstractService {
           Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), t);
         }
       }
-    });
+    }, SameThreadExecutorUtil.sameThreadExecutor());
     // TODO: why is this needed? we could just save the host and port?
     nodeId = LlapNodeId.getInstance(localAddress.get().getHostName(), localAddress.get().getPort());
     LOG.info("AMReporter running with DaemonId: {}, NodeId: {}", daemonId, nodeId);
@@ -271,7 +272,7 @@ public class AMReporter extends AbstractService {
         LOG.warn("Failed to send taskKilled for {}. The attempt will likely time out.",
             taskAttemptId);
       }
-    });
+    }, SameThreadExecutorUtil.sameThreadExecutor());
   }
 
   public void queryComplete(QueryIdentifier queryIdentifier) {
@@ -337,7 +338,7 @@ public class AMReporter extends AbstractService {
                     amNodeInfo.amNodeId, currentQueryIdentifier, t);
                   queryFailedHandler.queryFailed(currentQueryIdentifier);
                 }
-              });
+              }, SameThreadExecutorUtil.sameThreadExecutor());
             }
           }
         } catch (InterruptedException e) {

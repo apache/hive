@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -147,6 +148,10 @@ public class TestServiceDiscovery {
     public boolean apply(ConnParamInfo inputParam) {
       return inputParam.host.equals(host) && inputParam.port == port &&
         inputParam.path.startsWith(pathPrefix);
+    }
+
+    public boolean test(ConnParamInfo input) {
+      return apply(input);
     }
   }
 

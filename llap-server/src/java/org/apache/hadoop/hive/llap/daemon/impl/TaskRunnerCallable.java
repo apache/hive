@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.FutureCallback;
@@ -44,6 +43,7 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hive.common.guava.Stopwatch;
 import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.CallableWithNdc;
@@ -275,7 +275,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         } finally {
           FileSystem.closeAllForUGI(fsTaskUgi);
           LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
-                  runtimeWatch.stop().elapsedMillis());
+            runtimeWatch.stop().elapsed(TimeUnit.MILLISECONDS));
           if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
@@ -501,14 +501,14 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           LOG.info("Killed task {}", requestId);
           if (killtimerWatch.isRunning()) {
             killtimerWatch.stop();
-            long elapsed = killtimerWatch.elapsedMillis();
+            long elapsed = killtimerWatch.elapsed(TimeUnit.MILLISECONDS);
             LOG.info("Time to die for task {}", elapsed);
             if (metrics != null) {
               metrics.addMetricsPreemptionTimeToKill(elapsed);
             }
           }
           if (metrics != null) {
-            metrics.addMetricsPreemptionTimeLost(runtimeWatch.elapsedMillis());
+            metrics.addMetricsPreemptionTimeLost(runtimeWatch.elapsed(TimeUnit.MILLISECONDS));
             metrics.incrExecutorTotalKilled();
           }
           break;

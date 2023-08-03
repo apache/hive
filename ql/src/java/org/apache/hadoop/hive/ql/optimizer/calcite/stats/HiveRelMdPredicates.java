@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,7 +71,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -532,7 +532,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         public Iterator<Mapping> iterator() {
           ImmutableBitSet fields = exprFields.get(predicate.toString());
           if (fields.cardinality() == 0) {
-            return Iterators.emptyIterator();
+            return Collections.emptyIterator();
           }
           return new ExprsItr(fields);
         }

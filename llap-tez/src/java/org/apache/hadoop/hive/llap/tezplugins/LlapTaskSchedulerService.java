@@ -81,6 +81,7 @@ import org.apache.hadoop.yarn.api.records.NodeState;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.util.Clock;
+import org.apache.hive.common.guava.SameThreadExecutorUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -317,15 +318,18 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }, 10000L, TimeUnit.MILLISECONDS);
 
       nodeEnablerFuture = nodeEnabledExecutor.submit(nodeEnablerCallable);
-      Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG));
+      Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG),
+        SameThreadExecutorUtil.sameThreadExecutor());
 
       delayedTaskSchedulerFuture =
           delayedTaskSchedulerExecutor.submit(delayedTaskSchedulerCallable);
       Futures.addCallback(delayedTaskSchedulerFuture,
-          new LoggingFutureCallback("DelayedTaskSchedulerThread", LOG));
+          new LoggingFutureCallback("DelayedTaskSchedulerThread", LOG),
+            SameThreadExecutorUtil.sameThreadExecutor());
 
       schedulerFuture = schedulerExecutor.submit(schedulerCallable);
-      Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG));
+      Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG),
+        SameThreadExecutorUtil.sameThreadExecutor());
 
       registry.start();
       registry.registerStateChangeListener(new NodeStateChangeListener());
