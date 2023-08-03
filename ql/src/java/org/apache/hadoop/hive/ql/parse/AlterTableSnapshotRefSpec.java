@@ -96,8 +96,8 @@ public class AlterTableSnapshotRefSpec<T> {
   }
   public static class DropSnapshotRefSpec {
 
-    private String refName;
-    private boolean ifExists;
+    private final String refName;
+    private final boolean ifExists;
 
     public String getRefName() {
       return refName;
@@ -113,8 +113,7 @@ public class AlterTableSnapshotRefSpec<T> {
     }
 
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("refName", refName).add("ifExists", ifExists).omitNullValues()
-          .toString();
+      return MoreObjects.toStringHelper(this).add("refName", refName).add("ifExists", ifExists).toString();
     }
   }
 }

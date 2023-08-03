@@ -49,7 +49,7 @@ public class AlterTableDropSnapshotRefAnalyzer extends AbstractAlterTableAnalyze
     DDLUtils.validateTableIsIceberg(table);
     inputs.add(new ReadEntity(table));
     validateAlterTableType(table, alterTableType, false);
-    String refName = !ifExists ? command.getChild(0).getText() : command.getChild(1).getText();
+    String refName = ifExists ? command.getChild(1).getText() : command.getChild(0).getText();
 
     AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropSnapshotRefSpec =
         new AlterTableSnapshotRefSpec.DropSnapshotRefSpec(refName, ifExists);

@@ -191,10 +191,10 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     String branchName = "test_branch_1";
     shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s", branchName));
     table.refresh();
-    Assert.assertTrue(table.refs().get(branchName) != null);
+    Assert.assertNotNull(table.refs().get(branchName));
 
     shell.executeStatement(String.format("ALTER TABLE customers DROP BRANCH IF EXISTS %s", branchName));
     table.refresh();
-    Assert.assertTrue(table.refs().get(branchName) == null);
+    Assert.assertNull(table.refs().get(branchName));
   }
 }

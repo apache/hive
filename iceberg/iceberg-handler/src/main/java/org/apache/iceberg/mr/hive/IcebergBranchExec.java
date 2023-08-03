@@ -67,7 +67,7 @@ public class IcebergBranchExec {
 
   public static void dropBranch(Table table, AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropBranchSpec) {
     String branchName = dropBranchSpec.getRefName();
-    Boolean ifExists = dropBranchSpec.getIfExists();
+    boolean ifExists = dropBranchSpec.getIfExists();
 
     SnapshotRef snapshotRef = table.refs().get(branchName);
     if (snapshotRef != null || !ifExists) {
