@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -519,16 +520,13 @@ public class GenTezWork implements SemanticNodeProcessor {
    * Otherwise, return the name of the given reduceWork.
    */
   private String getActualOutputWorkName(GenTezProcContext context, ReduceWork reduceWork) {
-    for (MergeJoinWork mergeJoinWork: context.opMergeJoinWorkMap.values()) {
-      if (mergeJoinWork.getBaseWorkList().contains(reduceWork)) {
+    return context.opMergeJoinWorkMap.values().stream()
+        .filter(mergeJoinWork -> mergeJoinWork.getBaseWorkList().contains(reduceWork))
+        .map(MergeJoinWork::getMainWork)
         // getMainWork() == null means that we have not visited the leaf Operator of MergeJoinWork.
         // In this case, GenTezWork will adjust the output name of merged works
         // by calling MergeJoinWork.addMergedWork() with non-null argument for parameter work.
-        if (mergeJoinWork.getMainWork() != null) {
-          return mergeJoinWork.getMainWork().getName();
-        }
-      }
-    }
-    return reduceWork.getName();
+        .filter(Objects::nonNull)
+        .findAny().orElse(reduceWork).getName();
   }
 }
