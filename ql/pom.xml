@@ -907,14 +907,6 @@
                   <pattern>org.objenesis</pattern>
                   <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
                 </relocation>
-                <relocation>
-                  <pattern>com.google.common</pattern>
-                  <shadedPattern>org.apache.hive.com.google.common</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.thirdparty.publicsuffix</pattern>
-                  <shadedPattern>org.apache.hive.com.google.thirdparty.publicsuffix</shadedPattern>
-                </relocation>
               </relocations>
             </configuration>
           </execution>
