@@ -71,14 +71,11 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
     QueryPlan queryPlan = ctx.getHookContext().getQueryPlan();
     boolean isCTAS = Optional.ofNullable(queryPlan.getQueryProperties())
         .map(queryProps -> queryProps.isCTAS()).orElse(false);
-    // return early if the query is not CATS type.
-    if (!isCTAS)
-      return;
 
     PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
     Path tblPath = pCtx.getContext().getLocation();
 
-    if (tblPath != null) {
+    if (isCTAS && tblPath != null) {
       try {
         FileSystem fs = tblPath.getFileSystem(conf);
         if (!fs.exists(tblPath)) {
