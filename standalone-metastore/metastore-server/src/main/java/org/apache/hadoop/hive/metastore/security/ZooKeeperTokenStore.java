@@ -433,14 +433,17 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   public boolean removeToken(DelegationTokenIdentifier tokenIdentifier) {
     String tokenPath = getTokenPath(tokenIdentifier);
     zkDelete(tokenPath);
+    LOGGER.info("Removed token: {}", tokenPath);
     return true;
   }
 
   @Override
   public DelegationTokenInformation getToken(DelegationTokenIdentifier tokenIdentifier) {
-    byte[] tokenBytes = zkGetData(getTokenPath(tokenIdentifier));
+    String tokenPath = getTokenPath(tokenIdentifier);
+    byte[] tokenBytes = zkGetData(tokenPath);
     if(tokenBytes == null) {
       // The token is already removed.
+      LOGGER.info("Could not get data from {}", tokenPath);
       return null;
     }
     try {
