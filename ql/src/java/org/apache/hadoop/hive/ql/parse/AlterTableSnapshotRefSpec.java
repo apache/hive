@@ -89,9 +89,31 @@ public class AlterTableSnapshotRefSpec<T> {
     }
 
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("branchName", refName).add("snapshotId", snapshotId)
+      return MoreObjects.toStringHelper(this).add("refName", refName).add("snapshotId", snapshotId)
           .add("asOfTime", asOfTime).add("maxRefAgeMs", maxRefAgeMs).add("minSnapshotsToKeep", minSnapshotsToKeep)
           .add("maxSnapshotAgeMs", maxSnapshotAgeMs).omitNullValues().toString();
+    }
+  }
+  public static class DropSnapshotRefSpec {
+
+    private final String refName;
+    private final boolean ifExists;
+
+    public String getRefName() {
+      return refName;
+    }
+
+    public boolean getIfExists() {
+      return ifExists;
+    }
+
+    public DropSnapshotRefSpec(String refName, Boolean ifExists) {
+      this.refName = refName;
+      this.ifExists = ifExists;
+    }
+
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("refName", refName).add("ifExists", ifExists).toString();
     }
   }
 }

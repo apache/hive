@@ -41,6 +41,7 @@ public enum AlterTableType {
   SETPARTITIONSPEC("set partition spec"),
   EXECUTE("execute"),
   CREATE_BRANCH("create branch"),
+  DROP_BRANCH("drop branch"),
   CREATE_TAG("create tag"),
   // constraint
   ADD_CONSTRAINT("add constraint"),

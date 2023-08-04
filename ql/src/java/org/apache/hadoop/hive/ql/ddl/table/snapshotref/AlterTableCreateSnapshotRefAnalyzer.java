@@ -100,7 +100,7 @@ public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterT
     AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.CreateSnapshotRefSpec> alterTableSnapshotRefSpec
         = new AlterTableSnapshotRefSpec(alterTableType, createSnapshotRefSpec);
     AbstractAlterTableDesc alterTableDesc =
-        new AlterTableCreateSnapshotRefDesc(alterTableType, tableName, alterTableSnapshotRefSpec);
+        new AlterTableSnapshotRefDesc(alterTableType, tableName, alterTableSnapshotRefSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTableDesc)));
   }
 }

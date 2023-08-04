@@ -181,4 +181,20 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
       Assert.assertTrue(e.getMessage().contains("Not an iceberg table"));
     }
   }
+
+  @Test
+  public void testDropBranch() throws InterruptedException, IOException {
+    Table table =
+        testTables.createTableWithVersions(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    String branchName = "test_branch_1";
+    shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s", branchName));
+    table.refresh();
+    Assert.assertNotNull(table.refs().get(branchName));
+
+    shell.executeStatement(String.format("ALTER TABLE customers DROP BRANCH IF EXISTS %s", branchName));
+    table.refresh();
+    Assert.assertNull(table.refs().get(branchName));
+  }
 }

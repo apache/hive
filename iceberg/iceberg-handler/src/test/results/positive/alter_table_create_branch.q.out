@@ -25,9 +25,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateSnapshotRef Operation
+    SnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{branchName=test_branch_1}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{refName=test_branch_1}}
 
 PREHOOK: query: alter table iceTbl create branch test_branch_1
 PREHOOK: type: ALTERTABLE_CREATEBRANCH
@@ -63,9 +63,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateSnapshotRef Operation
+    SnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{branchName=test_branch_2, maxRefAgeMs=432000000}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{refName=test_branch_2, maxRefAgeMs=432000000}}
 
 PREHOOK: query: alter table iceTbl create branch test_branch_2 retain 5 days
 PREHOOK: type: ALTERTABLE_CREATEBRANCH
@@ -102,9 +102,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateSnapshotRef Operation
+    SnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{branchName=test_branch_3, minSnapshotsToKeep=5}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{refName=test_branch_3, minSnapshotsToKeep=5}}
 
 PREHOOK: query: alter table iceTbl create branch test_branch_3 with snapshot retention 5 snapshots
 PREHOOK: type: ALTERTABLE_CREATEBRANCH
@@ -142,9 +142,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    CreateSnapshotRef Operation
+    SnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{branchName=test_branch_4, minSnapshotsToKeep=5, maxSnapshotAgeMs=432000000}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_BRANCH, operationParams=CreateSnapshotRefSpec{refName=test_branch_4, minSnapshotsToKeep=5, maxSnapshotAgeMs=432000000}}
 
 PREHOOK: query: alter table iceTbl create branch test_branch_4 with snapshot retention 5 snapshots 5 days
 PREHOOK: type: ALTERTABLE_CREATEBRANCH
@@ -164,3 +164,51 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	bob
 3	tom
 4	lisa
+PREHOOK: query: explain alter table iceTbl drop branch test_branch_3
+PREHOOK: type: ALTERTABLE_DROPBRANCH
+PREHOOK: Input: default@icetbl
+POSTHOOK: query: explain alter table iceTbl drop branch test_branch_3
+POSTHOOK: type: ALTERTABLE_DROPBRANCH
+POSTHOOK: Input: default@icetbl
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    SnapshotRef Operation
+      table name: default.iceTbl
+      spec: AlterTableSnapshotRefSpec{operationType=DROP_BRANCH, operationParams=DropSnapshotRefSpec{refName=test_branch_3, ifExists=false}}
+
+PREHOOK: query: alter table iceTbl drop branch test_branch_3
+PREHOOK: type: ALTERTABLE_DROPBRANCH
+PREHOOK: Input: default@icetbl
+POSTHOOK: query: alter table iceTbl drop branch test_branch_3
+POSTHOOK: type: ALTERTABLE_DROPBRANCH
+POSTHOOK: Input: default@icetbl
+PREHOOK: query: explain alter table iceTbl drop branch if exists test_branch_4
+PREHOOK: type: ALTERTABLE_DROPBRANCH
+PREHOOK: Input: default@icetbl
+POSTHOOK: query: explain alter table iceTbl drop branch if exists test_branch_4
+POSTHOOK: type: ALTERTABLE_DROPBRANCH
+POSTHOOK: Input: default@icetbl
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    SnapshotRef Operation
+      table name: default.iceTbl
+      spec: AlterTableSnapshotRefSpec{operationType=DROP_BRANCH, operationParams=DropSnapshotRefSpec{refName=test_branch_4, ifExists=true}}
+
+PREHOOK: query: alter table iceTbl drop branch if exists test_branch_4
+PREHOOK: type: ALTERTABLE_DROPBRANCH
+PREHOOK: Input: default@icetbl
+POSTHOOK: query: alter table iceTbl drop branch if exists test_branch_4
+POSTHOOK: type: ALTERTABLE_DROPBRANCH
+POSTHOOK: Input: default@icetbl
+PREHOOK: query: alter table iceTbl drop branch if exists test_branch_5
+PREHOOK: type: ALTERTABLE_DROPBRANCH
+PREHOOK: Input: default@icetbl
+POSTHOOK: query: alter table iceTbl drop branch if exists test_branch_5
+POSTHOOK: type: ALTERTABLE_DROPBRANCH
+POSTHOOK: Input: default@icetbl
