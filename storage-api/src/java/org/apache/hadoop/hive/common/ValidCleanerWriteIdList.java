@@ -21,6 +21,11 @@ package org.apache.hadoop.hive.common;
 import java.util.BitSet;
 import java.util.Optional;
 
+/**
+ * An implementation of {@link ValidWriteIdList} for use by the Cleaner.
+ * Uses the same logic as {@link ValidReaderWriteIdList} with he only exception: 
+ * returns NONE for any range that includes any unresolved write ids or write id above {@code highWatermark}
+ */
 public class ValidCleanerWriteIdList extends ValidReaderWriteIdList {
 
   public ValidCleanerWriteIdList(ValidReaderWriteIdList vrwil) {
@@ -32,6 +37,11 @@ public class ValidCleanerWriteIdList extends ValidReaderWriteIdList {
     super(tableName, new long[0], new BitSet(), highWatermark, Long.MAX_VALUE);
   }
 
+
+  /**
+   * Returns NONE if some of the write ids in the range are not resolved, 
+   * otherwise uses {@link ValidReaderWriteIdList#isWriteIdRangeValid(long, long)} 
+   */
   @Override
   public RangeResponse isWriteIdRangeValid(long minWriteId, long maxWriteId) {
     if (maxWriteId > highWatermark) {
