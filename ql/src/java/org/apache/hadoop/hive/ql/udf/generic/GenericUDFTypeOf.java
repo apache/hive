@@ -30,21 +30,19 @@ import org.apache.hadoop.io.Text;
 @Description(name = "typeof",
     value = "_FUNC_(x) - returns the type of the supplied argument")
 public class GenericUDFTypeOf extends GenericUDF {
-  private String inputType = null;
+  private Text returnValue = new Text();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length != 1) {
       throw new UDFArgumentLengthException("TYPEOF requires 1 argument, got " + arguments.length);
     }
-    inputType = arguments[0].getTypeName();
+    returnValue.set(arguments[0].getTypeName());
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    Text returnValue = new Text();
-    returnValue.set(inputType);
     return returnValue;
   }
 

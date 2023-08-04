@@ -37,3 +37,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 decimal(4,3)
+PREHOOK: query: SELECT typeof(key) FROM src LIMIT 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT typeof(key) FROM src LIMIT 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+string
+string
