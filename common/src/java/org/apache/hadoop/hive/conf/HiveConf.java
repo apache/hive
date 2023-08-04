@@ -3755,7 +3755,7 @@ public class HiveConf extends Configuration {
         "When auto reducer parallelism is enabled this factor will be used to put a lower limit to the number\n" +
         "of reducers that tez specifies."),
     TEZ_OPTIMIZE_BUCKET_PRUNING(
-        "hive.tez.bucket.pruning", false,
+        "hive.tez.bucket.pruning", true,
          "When pruning is enabled, filters on bucket columns will be processed by \n" +
          "filtering the splits against a bitset of included buckets. This needs predicates \n"+
             "produced by hive.optimize.ppd and hive.optimize.index.filters."),
