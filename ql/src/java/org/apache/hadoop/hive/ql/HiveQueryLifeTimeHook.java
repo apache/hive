@@ -71,6 +71,9 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
     QueryPlan queryPlan = ctx.getHookContext().getQueryPlan();
     boolean isCTAS = Optional.ofNullable(queryPlan.getQueryProperties())
         .map(queryProps -> queryProps.isCTAS()).orElse(false);
+    // return early if the query is not CATS type.
+    if (!isCTAS)
+      return;
 
     PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
     Path tblPath = pCtx.getContext().getLocation();
@@ -84,9 +87,7 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
       } catch (Exception e) {
         throw new RuntimeException("Not able to check whether the CTAS table directory exists due to: ", e);
       }
-    }
 
-    if (isCTAS && tblPath != null) {
       boolean isSoftDeleteEnabled = tblPath.getName().matches("(.*)" + SOFT_DELETE_TABLE_PATTERN);
 
       if ((HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK) || isSoftDeleteEnabled)
