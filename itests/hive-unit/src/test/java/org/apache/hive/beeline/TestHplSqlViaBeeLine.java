@@ -610,6 +610,25 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(NullPointerException)))*$", OutStream.ERR);
   }
 
+  @Test
+  public void testTableAliasInColumnName() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS input;\n" +
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE input (col1 string, col2 int);\n" +
+            "CREATE TABLE result (res string);\n" +
+            "INSERT INTO input VALUES('Hive', 3);\n" +
+            "CREATE PROCEDURE p1() AS\n" +
+            "BEGIN\n" +
+            "FOR rec IN (select tab.col1, tab.col2 num from input tab) LOOP\n" +
+            "INSERT INTO result VALUES(rec.num || ' = ' || rec.col1);\n" +
+            "END LOOP;\n" +
+            "END;\n" +
+            "p1();\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "3 = Hive");
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);

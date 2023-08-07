@@ -28,13 +28,25 @@ public class ColumnMap {
   private List<Column> columns = new ArrayList<>();
   private Map<String, Column> columnMap = new HashMap<>();
 
+  private Map<String, String> columnNameVsFQColumnName = new HashMap<>();
+
   public void add(Column column) {
     columns.add(column);
-    columnMap.put(column.getName().toUpperCase(), column);
+    String columnName = column.getName().toUpperCase();
+    columnMap.put(columnName, column);
+    if (columnName.contains(".")) {
+      columnNameVsFQColumnName.put(columnName.substring(columnName.lastIndexOf('.') + 1), columnName);
+    }
   }
 
   public Column get(String name) {
-    return columnMap.get(name.toUpperCase());
+    String columnNameInUpper = name.toUpperCase();
+    Column column = columnMap.get(columnNameInUpper);
+    if (column == null) {
+      String fqColumnName = columnNameVsFQColumnName.get(columnNameInUpper);
+      column = (fqColumnName == null) ? null : columnMap.get(fqColumnName);
+    }
+    return column;
   }
 
   public Column at(int index) {
