@@ -36,6 +36,7 @@ import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -124,12 +125,12 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
     RexNode newInlineCall =
         cluster.getRexBuilder().makeCall(tfs.getRowType(), inlineCall.op, newArrayCall);
 
-    // Use null for columnMappings. The return row type of the RelNode now comprises of
+    // Use empty listfor columnMappings. The return row type of the RelNode now comprises of
     // all the fields within the UDTF, so there is no mapping from the output fields
     // directly to the input fields anymore.
     final RelNode newTableFunctionScanNode = tfs.copy(tfs.getTraitSet(),
         tfs.getInputs(), newInlineCall, tfs.getElementType(), tfs.getRowType(),
-        /*columnMappings*/ null);
+        new HashSet<>());
 
     call.transformTo(newTableFunctionScanNode);
   }
