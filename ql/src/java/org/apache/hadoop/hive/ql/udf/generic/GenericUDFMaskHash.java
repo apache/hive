@@ -53,32 +53,43 @@ class MaskHashTransformer extends AbstractTransformer {
 
   private static final Logger LOG = LoggerFactory.getLogger(MaskHashTransformer.class);
 
-  private boolean isSHA512 = false;
+  private boolean isConfigured;
+  private boolean isSHA512;
   @Override
   public void init(ObjectInspector[] arguments, int startIdx) {
   }
 
   public void setSHA512(boolean val) {
+    if (val) {
+      LOG.info("Use SHA512 for masking");
+    } else {
+      LOG.info("Use SHA256 for masking");
+    }
+    this.isConfigured = true;
     this.isSHA512 = val;
   }
 
   @Override
   String transform(final String value) {
-    if (getIsSHA512FromSessionConf() || isSHA512) {
-      LOG.info("Using SHA512 for masking");
+    if (!isConfigured) {
+      setIsSHA512FromSessionConf();
+    }
+    if (isSHA512) {
       return DigestUtils.sha512Hex(value);
     } else {
-      LOG.info("Using SHA256 for masking");
       return DigestUtils.sha256Hex(value);
     }
   }
 
-  private boolean getIsSHA512FromSessionConf() {
+  private void setIsSHA512FromSessionConf() {
+    final boolean isSha512;
     if (SessionState.get() != null) {
-      return "sha512".equalsIgnoreCase(
+      isSha512 = "sha512".equalsIgnoreCase(
           HiveConf.getVar(SessionState.get().getConf(), HiveConf.ConfVars.HIVE_MASKING_ALGO).trim());
+    } else {
+      isSha512 = false;
     }
-    return false;
+    setSHA512(isSha512);
   }
 
   @Override
