@@ -75,9 +75,10 @@ alterTableStatementSuffix
     | alterStatementSuffixSetPartSpec
     | alterStatementSuffixExecute
     | alterStatementSuffixCreateBranch
-    | alterStatementSuffixCreateTag
-    | alterStatementSuffixConvert
     | alterStatementSuffixDropBranch
+    | alterStatementSuffixCreateTag
+    | alterStatementSuffixDropTag
+    | alterStatementSuffixConvert
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -516,6 +517,13 @@ retentionOfSnapshots
 @after { gParent.popMsg(state); }
     : (KW_WITH KW_SNAPSHOT KW_RETENTION minSnapshotsToKeep=Number KW_SNAPSHOTS (maxSnapshotAge=Number timeUnit=timeUnitQualifiers)?)
     -> ^(TOK_WITH_SNAPSHOT_RETENTION $minSnapshotsToKeep ($maxSnapshotAge $timeUnit)?)
+    ;
+
+alterStatementSuffixDropTag
+@init { gParent.pushMsg("alter table drop tag (if exists) tagName", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_TAG ifExists? tagName=identifier
+    -> ^(TOK_ALTERTABLE_DROP_TAG ifExists? $tagName)
     ;
 
 alterStatementSuffixCreateTag
