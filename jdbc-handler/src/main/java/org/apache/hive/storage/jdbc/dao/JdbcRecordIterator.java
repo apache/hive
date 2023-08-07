@@ -48,11 +48,13 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
   private Connection conn;
   private PreparedStatement ps;
   private ResultSet rs;
+  private GenericJdbcDatabaseAccessor accessor;
   private String[] hiveColumnNames;
   List<TypeInfo> hiveColumnTypesList;
 
   public JdbcRecordIterator(GenericJdbcDatabaseAccessor accessor, Connection conn,
       PreparedStatement ps, ResultSet rs, Configuration conf) throws HiveJdbcDatabaseAccessException {
+    this.accessor = accessor;
     this.conn = conn;
     this.ps = ps;
     this.rs = rs;
@@ -188,14 +190,7 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
    * Release all DB resources
    */
   public void close() {
-    try {
-      rs.close();
-      ps.close();
-      conn.close();
-    }
-    catch (Exception e) {
-      LOGGER.warn("Caught exception while trying to close database objects", e);
-    }
+    accessor.cleanupResources(conn, ps, rs);
   }
 
 }

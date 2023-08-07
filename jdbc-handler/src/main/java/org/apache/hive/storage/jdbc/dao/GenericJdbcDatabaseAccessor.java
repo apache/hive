@@ -61,8 +61,9 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   protected static final String DBCP_CONFIG_PREFIX = Constants.JDBC_CONFIG_PREFIX + ".dbcp";
   protected static final int DEFAULT_FETCH_SIZE = 1000;
   protected static final Logger LOGGER = LoggerFactory.getLogger(GenericJdbcDatabaseAccessor.class);
-  protected DataSource dbcpDataSource = null;
+  private DataSource dbcpDataSource = null;
   static final Pattern fromPattern = Pattern.compile("(.*?\\sfrom\\s)(.*+)", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+
   private static ColumnMetadataAccessor<TypeInfo> typeInfoTranslator = (meta, col) -> {
     JDBCType type = JDBCType.valueOf(meta.getColumnType(col));
     int prec = meta.getPrecision(col);
@@ -271,7 +272,16 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       conn = dbcpDataSource.getConnection();
       ps = conn.prepareStatement(constructQuery(tableName, columnNames));
       return new org.apache.hadoop.mapreduce.lib.db.DBOutputFormat()
-              .new DBRecordWriter(conn, ps);
+              .new DBRecordWriter(conn, ps) {
+        @Override
+        public void close(TaskAttemptContext context) throws IOException {
+          try {
+            super.close(context);
+          } finally {
+            GenericJdbcDatabaseAccessor.this.close();
+          }
+        }
+      };
     } catch (Exception e) {
       cleanupResources(conn, ps, null);
       throw new IOException(e.getMessage());
@@ -560,4 +570,23 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   private interface ColumnMetadataAccessor<T> {
     T get(ResultSetMetaData metadata, Integer column) throws SQLException;
   }
+
+  @Override
+  public void close() {
+    if (dbcpDataSource instanceof AutoCloseable) {
+      try (AutoCloseable closeable = (AutoCloseable) dbcpDataSource) {
+      } catch (Exception e) {
+        LOGGER.warn("Caught exception while trying to close the DataSource: "
+            + e.getMessage(), e);
+      }
+      dbcpDataSource = null;
+    }
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    super.finalize();
+    close();
+  }
+
 }
