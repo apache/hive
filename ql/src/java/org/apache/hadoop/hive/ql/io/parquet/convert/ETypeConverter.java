@@ -707,6 +707,11 @@ public enum ETypeConverter {
                   (DecimalTypeInfo) hiveTypeInfo);
             }
 
+            // TODO HIVE-27529 Add dictionary encoding support for parquet decimal types
+            @Override
+            public boolean hasDictionarySupport() {
+              return false;
+            }
             @Override
             public void addInt(final int value) {
               addDecimal(value);
