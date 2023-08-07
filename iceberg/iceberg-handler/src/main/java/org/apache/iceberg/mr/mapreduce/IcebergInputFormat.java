@@ -534,12 +534,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       }
 
       String[] selectedColumns = InputFormatConfig.selectedColumns(conf);
-      if (selectedColumns == null) {
-        return table.schema();
-      }
+      readSchema = table.schema();
 
-      readSchema = caseSensitive ? table.schema().select(selectedColumns) :
-          table.schema().caseInsensitiveSelect(selectedColumns);
+      if (selectedColumns != null) {
+        readSchema =
+            caseSensitive ? readSchema.select(selectedColumns) : readSchema.caseInsensitiveSelect(selectedColumns);
+      }
 
       if (InputFormatConfig.fetchVirtualColumns(conf)) {
         return IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns(), table);
