@@ -23,7 +23,7 @@
   <!--this module is added to parent pom so that it builds and releases with the reset of Hive-->
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-upgrade-acid</artifactId>
-  <version>4.0.0-beta-1-SNAPSHOT</version>
+  <version>4.0.0-beta-1</version>
   <name>Hive Upgrade Acid</name>
   <packaging>pom</packaging>
   <properties>
