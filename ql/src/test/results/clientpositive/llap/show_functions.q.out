@@ -456,6 +456,7 @@ translate
 trim
 trunc
 tumbling_window
+typeof
 ucase
 udftoboolean
 udftobyte
@@ -1079,6 +1080,7 @@ translate
 trim
 trunc
 tumbling_window
+typeof
 ucase
 udftoboolean
 udftobyte
