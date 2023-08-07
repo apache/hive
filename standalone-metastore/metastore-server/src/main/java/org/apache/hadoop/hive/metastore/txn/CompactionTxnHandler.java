@@ -97,7 +97,6 @@ class CompactionTxnHandler extends TxnHandler {
 
   // Three inner sub-queries which are under left-join to fetch the required data for aborted txns.
   private static final String SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY =
-      "SELECT " +
           " \"res1\".\"TC_DATABASE\" AS \"DB\", \"res1\".\"TC_TABLE\" AS \"TBL\", \"res1\".\"TC_PARTITION\" AS \"PART\", " +
           " \"res1\".\"MIN_TXN_START_TIME\" AS \"MIN_TXN_START_TIME\", \"res1\".\"ABORTED_TXN_COUNT\" AS \"ABORTED_TXN_COUNT\", " +
           " \"res2\".\"MIN_OPEN_WRITE_TXNID\" AS \"MIN_OPEN_WRITE_TXNID\", \"res3\".\"RETRY_RETENTION\" AS \"RETRY_RETENTION\", " +
@@ -193,7 +192,9 @@ class CompactionTxnHandler extends TxnHandler {
         long checkInterval = (lastChecked <= 0) ? lastChecked : (startedAt - lastChecked + 500) / 1000;
 
         // Check for completed transactions
-        final String s = "SELECT DISTINCT \"TC\".\"CTC_DATABASE\", \"TC\".\"CTC_TABLE\", \"TC\".\"CTC_PARTITION\" " +
+        final String s = dbProduct.addLimitClause(
+          MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE),
+          "DISTINCT \"TC\".\"CTC_DATABASE\", \"TC\".\"CTC_TABLE\", \"TC\".\"CTC_PARTITION\" " +
           "FROM \"COMPLETED_TXN_COMPONENTS\" \"TC\" " + (checkInterval > 0 ?
           "LEFT JOIN ( " +
           "  SELECT \"C1\".* FROM \"COMPLETED_COMPACTIONS\" \"C1\" " +
@@ -206,9 +207,10 @@ class CompactionTxnHandler extends TxnHandler {
           ") \"C\" " +
           "ON \"TC\".\"CTC_DATABASE\" = \"C\".\"CC_DATABASE\" AND \"TC\".\"CTC_TABLE\" = \"C\".\"CC_TABLE\" " +
           "  AND (\"TC\".\"CTC_PARTITION\" = \"C\".\"CC_PARTITION\" OR (\"TC\".\"CTC_PARTITION\" IS NULL AND \"C\".\"CC_PARTITION\" IS NULL)) " +
-          "WHERE \"C\".\"CC_ID\" IS NOT NULL OR " + isWithinCheckInterval("\"TC\".\"CTC_TIMESTAMP\"", checkInterval) : "");
+          "WHERE \"C\".\"CC_ID\" IS NOT NULL OR " + isWithinCheckInterval("\"TC\".\"CTC_TIMESTAMP\"", checkInterval) : ""));
 
         LOG.debug("Going to execute query <{}>", s);
+
         rs = stmt.executeQuery(s);
         while (rs.next()) {
           CompactionInfo info = new CompactionInfo();
@@ -456,7 +458,7 @@ class CompactionTxnHandler extends TxnHandler {
           " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - \"CQ_RETRY_RETENTION\" - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
         
         String queryStr = 
-          "SELECT \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," + 
+          "  \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
           "  \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\", \"CQ_RETRY_RETENTION\", " +
           "  \"CQ_NEXT_TXN_ID\"";
         if (useMinHistoryWriteId) {
@@ -489,7 +491,10 @@ class CompactionTxnHandler extends TxnHandler {
         } else if (minOpenTxnWaterMark > 0) {
           whereClause += " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
         }
+
         queryStr += whereClause + " ORDER BY \"CQ_ID\"";
+
+        queryStr = dbProduct.addLimitClause(MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE), queryStr);
         LOG.debug("Going to execute query <{}>", queryStr);
 
         try (ResultSet rs = stmt.executeQuery(queryStr)) {
@@ -531,10 +536,13 @@ class CompactionTxnHandler extends TxnHandler {
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
            Statement stmt = dbConn.createStatement()) {
         boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
-        String sCheckAborted = String.format(SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY,
-                checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold, getEpochFn(dbProduct));
 
+        String sCheckAborted = dbProduct.addLimitClause(
+                MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE),
+                String.format(SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY,
+                checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold, getEpochFn(dbProduct)));
         LOG.debug("Going to execute query <{}>", sCheckAborted);
+
         try (ResultSet rs = stmt.executeQuery(sCheckAborted)) {
           long systemTime = System.currentTimeMillis();
           while (rs.next()) {
