@@ -1,3 +1,335 @@
+Release Notes - Hive - Version 4.0.0-beta-1
+
+** Sub-task
+    * [HIVE-23693] - HiveKafkaProducerTest.resumeTransaction is flaky
+    * [HIVE-25205] - Reduce overhead of adding write notification log during batch loading of partition..
+    * [HIVE-26400] - Provide docker images for Hive
+    * [HIVE-26484] - Introduce gRPC Proto Definition
+    * [HIVE-26585] - Revamp Apache Hive website
+    * [HIVE-26586] - Create a Basic Apache Hive website with HUGO
+    * [HIVE-26587] - Create a custom hive-theme in HUGO
+    * [HIVE-26588] - Move the markdown files from old website and add content to the homepage.
+    * [HIVE-26589] - Add GitHub Action workflow to build and deploy site to gh-pages
+    * [HIVE-26590] - Hive website: Fix JS, broken links, add license text and section header, and updates images
+    * [HIVE-26655] - VectorUDAFBloomFilterMerge should take care of safe batch handling when working in parallel
+    * [HIVE-26694] - Populate file row position information during vectorized Iceberg reads
+    * [HIVE-26696] - Implement row iterator for VectorizedRowBatch
+    * [HIVE-26697] - Create vectorized Hive DeleteFilter for Iceberg tables
+    * [HIVE-26716] - Query based Rebalance compaction on full acid tables
+    * [HIVE-26719] - Ability to set number of buckets manually
+    * [HIVE-26744] - Add array_max and array_min UDFs 
+    * [HIVE-26754] - Implement array_distinct UDF to return an array after removing duplicates in it
+    * [HIVE-26757] - Add sfs+ofs support
+    * [HIVE-26774] - Implement array_slice UDF to get the subset of elements from an array (subarray)
+    * [HIVE-26848] - Ozone: LOAD data fails in case of move across buckets
+    * [HIVE-26889] - Implement array_join udf to concatenate the elements of an array with a specified delimiter
+    * [HIVE-26968] - Wrong results when shared work optimizer merges TS operator with different DPP edges
+    * [HIVE-27019] - Split Cleaner into separate manageable modular entities
+    * [HIVE-27020] - Implement a separate handler to handle aborted transaction cleanup
+    * [HIVE-27031] - Iceberg: Implement Copy-On-Write for Delete Queries
+    * [HIVE-27081] - Revert HIVE-26717 and HIVE-26718
+    * [HIVE-27112] - implement array_except UDF in Hive
+    * [HIVE-27118] - implement array_intersect UDF in Hive
+    * [HIVE-27197] - Iceberg:  Support Iceberg version travel by reference name 
+    * [HIVE-27234] - Iceberg:  CREATE BRANCH SQL implementation
+    * [HIVE-27235] - Iceberg: CREATE TAG SQL implementation
+    * [HIVE-27236] - Iceberg: DROP BRANCH SQL implementation
+    * [HIVE-27243] - Iceberg: Implement Load data via temp table
+    * [HIVE-27244] - Iceberg: Implement LOAD data for unpartitioned table via Append API
+    * [HIVE-27245] - Iceberg: Implement LOAD data for partitioned tables via Append API
+    * [HIVE-27302] - Iceberg: Suport write to iceberg branch
+    * [HIVE-27329] - Document usage of the image
+    * [HIVE-27332] - Add retry backoff mechanism for abort cleanup
+    * [HIVE-27440] - Improve data connector cache
+    * [HIVE-27482] - Minor issues in array_intersect udf
+    * [HIVE-27503] - Iceberg: Support query iceberg tag
+
+** Bug
+    * [HIVE-22173] - Query with multiple lateral views hangs during compilation
+    * [HIVE-22383] - `alterPartitions` is invoked twice during dynamic partition load causing runtime delay
+    * [HIVE-22813] - Hive query fails if table location is in remote EZ and it's readonly
+    * [HIVE-23935] - Fetching primaryKey through beeline fails with NPE
+    * [HIVE-24404] - Hive getUserName close db makes client operations lost metaStoreClient connection
+    * [HIVE-25707] - SchemaTool may leave the metastore in-between upgrade steps
+    * [HIVE-26035] - Explore moving to directsql for ObjectStore::addPartitions
+    * [HIVE-26065] - Fix incorrect metric active_calls_alter_partitions and active_calls_alter_partition
+    * [HIVE-26522] - Test for HIVE-22033 and backport to 3.1 and 2.3
+    * [HIVE-26575] - Fix missing Copy Serde Description when Alter Table's Serde Description
+    * [HIVE-26628] - Iceberg table is created when running explain ctas command
+    * [HIVE-26632] - Update DelegationTokenSecretManager current key ID to prevent erroneous database updates.
+    * [HIVE-26658] - INT64 Parquet timestamps cannot be mapped to most Hive numeric types
+    * [HIVE-26684] - Upgrade maven-shade-plugin from 3.4.1 for bug fixes.
+    * [HIVE-26701] - Enable metrics for Database connection pools(1 & 2) used by ObjectStore in HMS
+    * [HIVE-26707] - Iceberg: Write failing due to Ranger Authorization failure
+    * [HIVE-26709] - Iceberg: Count(*) fails for V2 tables with delete files.
+    * [HIVE-26712] - HCatMapReduceTest writes test files in project base directory instead of build directory.
+    * [HIVE-26724] - Mask UDF failing with NPE
+    * [HIVE-26736] - Authorization failure for nested Views having WITH clause
+    * [HIVE-26740] - HS2 makes direct connections to HMS backend DB due to Compaction/StatsUpdater
+    * [HIVE-26742] - Iceberg: Vectorization fails incase of multiple tables in queries
+    * [HIVE-26745] - HPL unable to handle Decimal or null values in hplsql mode
+    * [HIVE-26756] - Iceberg: Fetch format version from metadata file to avoid conflicts with spark
+    * [HIVE-26759] - ERROR: column "CC_START" does not exist, when Postgres is used as Hive metastore
+    * [HIVE-26765] - Hive Ranger URL policy  for insert overwrite directory denies access when  fully qualified paths are passed 
+    * [HIVE-26767] - Support for custom RDBMS is broken
+    * [HIVE-26768] - HPLSQL UDF is not working if it is applied on a column of type varchar/char/decimal in a table.
+    * [HIVE-26786] - Iceberg: Read queries with copy-on-write failing
+    * [HIVE-26796] - All tests in hive-unit module are skipped silently
+    * [HIVE-26811] - SharedWorkOptimizer: take the union of virtual columns in mergeable TableScans
+    * [HIVE-26812] - Compile error in hive-it-util module when itests are built separately
+    * [HIVE-26821] - Fetch task caching should only depend on fetch task conversion
+    * [HIVE-26849] - Nightly build fails in master from build 1533 onwards
+    * [HIVE-26850] - ColumnInfo of the source table should not be null for the alter view as query
+    * [HIVE-26860] - Appropriate rows in HMS datastore tables(SDS, SERDES, SERDE_PARAMS, SKEWED_COL_NAMES, SKEWED_COL_VALUE_LOC_MAP, SKEWED_VALUES) are not deleted upon drop partition table with skewed columns
+    * [HIVE-26884] - Iceberg: V2 Vectorization returns wrong results with deletes
+    * [HIVE-26885] - Iceberg: Parquet Vectorized V2 reads fails with NPE
+    * [HIVE-26904] - QueryCompactor failed in commitCompaction if the tmp table dir is already removed 
+    * [HIVE-26911] - Renaming a translated external table with a specified location fails with 'location already exists' exception
+    * [HIVE-26947] - Hive compactor.Worker can respawn connections to HMS at extremely high frequency
+    * [HIVE-26955] - Select query fails when decimal column data type is changed to string/char/varchar in Parquet
+    * [HIVE-26976] - Failure in direct SQL processing do not undo the changes made to database before fallback to JDO resulting in stale entries in database forever
+    * [HIVE-26983] - 404 Error when clicking the "Getting Started Guide" link in the website
+    * [HIVE-26988] - Broken website links when opening results from search engines
+    * [HIVE-27004] - DateTimeFormatterBuilder cannot parse 'UTC+' in Java versions higher than 8
+    * [HIVE-27029] - hive query fails with Filesystem closed error
+    * [HIVE-27060] - Exception in add partitions with SQL Server when number of parameters exceed 2100
+    * [HIVE-27061] - Website deployment GitHub action should not trigger on pull requests
+    * [HIVE-27063] - LDAP+JWT auth forms not supported
+    * [HIVE-27065] - Exception in partition column statistics update with SQL Server db when histogram statistics is not enabled
+    * [HIVE-27071] - Select query with LIMIT clause can fail if there are marker files like "_SUCCESS" and "_MANIFEST"
+    * [HIVE-27085] - Revert Manual constructor from AbortCompactionResponseElement
+    * [HIVE-27091] - Add double quotes for tables in PartitionProjectionEvaluator
+    * [HIVE-27103] - Thrift compilation warnings on drop_dataconnector()
+    * [HIVE-27105] - Querying parquet table with zstd encryption is failing
+    * [HIVE-27116] - HS2 need to send owner info for UDFs in the HivePrivilegeObject for authorization
+    * [HIVE-27128] - Exception "Can't finish byte read from uncompressed stream DATA position" when querying ORC table
+    * [HIVE-27135] - AcidUtils#getHdfsDirSnapshots() throws FNFE when a directory is removed in HDFS
+    * [HIVE-27140] - Set HADOOP_PROXY_USER cause  hiveMetaStoreClient close everytime
+    * [HIVE-27147] - HS2 is not accessible to clients via zookeeper when hostname used is not FQDN
+    * [HIVE-27157] - AssertionError when inferring return type for unix_timestamp function
+    * [HIVE-27163] - Column stats are not getting published after an insert query into an external table with custom location
+    * [HIVE-27168] - Use basename of the datatype when fetching partition metadata using partition filters
+    * [HIVE-27179] - HS2 WebUI throws NPE when JspFactory loaded from jetty-runner
+    * [HIVE-27195] - Add database authorization for drop table command
+    * [HIVE-27201] - Inconsistency between session Hive and thread-local Hive may cause HS2 deadlock
+    * [HIVE-27217] - addWriteNotificationLogInBatch can silently fail
+    * [HIVE-27223] - Show Compactions failing with NPE
+    * [HIVE-27228] - Add missing upgrade SQL statements after CQ_NUMBER_OF_BUCKETS column being introduced in HIVE-26719
+    * [HIVE-27268] - Hive.getPartitionsByNames should not enforce SessionState to be available
+    * [HIVE-27271] - Client connection to HS2 fails when transportMode=http, ssl=true, sslTrustStore specified without trustStorePassword in the JDBC URL
+    * [HIVE-27272] - Limit query causes error at qtests
+    * [HIVE-27278] - Simplify correlated queries with empty inputs
+    * [HIVE-27289] - Check for proxy hosts with subnet in IP results in exception 
+    * [HIVE-27292] - Upgrade Zookeeper to 3.7.1
+    * [HIVE-27316] - Select query on table with remote database returns NULL values with postgreSQL and Redshift data connectors
+    * [HIVE-27327] - Iceberg basic stats: Incorrect row count in snapshot summary leading to unoptimized plans
+    * [HIVE-27338] - JDBC drivers are transitively inherited although declared optional
+    * [HIVE-27340] - ThreadPool in HS2 over HTTP should respect the customized ThreadFactory
+    * [HIVE-27344] - ORC RecordReaderImpl throws NPE when close() is called from the constructor
+    * [HIVE-27374] - Exception while getting kafka delegation tokens in Kerberos/SSL enabled clusters
+    * [HIVE-27375] - SharedWorkOptimizer assigns a common cache key to MapJoin operators that should not share MapJoin tables
+    * [HIVE-27392] - Iceberg: Use String instead of Long for file length in HadoopInputFile
+    * [HIVE-27398] - SHOW CREATE TABLE doesn't output backticks for CLUSTERED by Col names
+    * [HIVE-27408] - Parquet file opened for reading stats is never closed
+    * [HIVE-27413] - Bump jettison from 1.5.3 to 1.5.4
+    * [HIVE-27438] - Audit leader election event failed in non-appendable filesystems
+    * [HIVE-27439] - Support space in Decimal(precision, scale) format
+    * [HIVE-27441] - Iceberg: CTLT with source table as Hive managed table fails with "The table must be stored using an ACID compliant format"
+    * [HIVE-27447] - Iceberg: Queries failing due to FileSystem close errors due to column statistics
+    * [HIVE-27449] - Fix flaky test KafkaRecordIteratorTest
+    * [HIVE-27452] - Fix possible FNFE in HiveQueryLifeTimeHook::checkAndRollbackCTAS
+    * [HIVE-27466] - Remove obsolete reference to category-X JSON license from NOTICE
+    * [HIVE-27467] - NOTICE files use incorrect wording "developed by" instead of "developed at"
+    * [HIVE-27488] - Incorrect escaping of quotes in HPL/SQL literals
+    * [HIVE-27494] - Deduplicate the task result that generated by more branches in union all
+    * [HIVE-27502] - Fix flaky test HiveKafkaProducerTest
+    * [HIVE-27565] - Fix NPE when dropping table in HiveQueryLifeTimeHook::checkAndRollbackCTAS
+
+** New Feature
+    * [HIVE-25699] - Optimise Bootstrap incase of Failovers
+    * [HIVE-26509] - Introduce dynamic leader election in HMS
+    * [HIVE-26636] - Hyperbolic functions  
+    * [HIVE-26758] - Allow use scratchdir for staging final job
+    * [HIVE-26799] - Make authorizations on custom UDFs involved in tables/view configurable.
+    * [HIVE-26804] - Cancel Compactions in initiated state
+    * [HIVE-26832] - Implement SHOW PARTITIONS for Iceberg
+    * [HIVE-26838] - Add a new event to improve cache performance in external systems that communicates with HMS.
+    * [HIVE-26908] - Provide configs to selectively enable/disable Initiator/Cleaner threads
+
+** Improvement
+    * [HIVE-11495] - Add aborted reason to transaction information.
+    * [HIVE-21599] - Wrong results for partitioned Parquet table when files contain partition column
+    * [HIVE-22628] - Add locks and transactions tables from sys db to information_schema
+    * [HIVE-22977] - Merge delta files instead of running a query in major/minor compaction
+    * [HIVE-23831] - Make auto reducer parallelism min threshold configurable.
+    * [HIVE-24286] - Render date and time with progress of Hive on Tez
+    * [HIVE-24485] - Make the slow-start behavior tunable
+    * [HIVE-25032] - Optimise PartitionManagementTask
+    * [HIVE-25366] - Reduce number of Table calls in updatePartitonColStatsInternal
+    * [HIVE-25497] - Bump ORC to 1.7.2
+    * [HIVE-25585] - Put dagId to MDC once it's available in HS2
+    * [HIVE-25723] - Found some typos
+    * [HIVE-26221] - Add histogram-based column statistics
+    * [HIVE-26243] - Add vectorized implementation of the 'ds_kll_sketch' UDAF
+    * [HIVE-26565] - Revamp Apache Hive website
+    * [HIVE-26572] - Support constant expressions in vectorization
+    * [HIVE-26578] - Enable Iceberg storage format for materialized views
+    * [HIVE-26631] - Remove unused Thrift config parameters login.timeout and exponential.backoff.slot.length
+    * [HIVE-26661] - Support partition filter for char and varchar types on Hive metastore
+    * [HIVE-26666] - Filter out compactions by id to minimise  expense of db operations
+    * [HIVE-26674] - REBALANCE type compaction
+    * [HIVE-26675] - Update Iceberg from 0.14.1 to 1.0.0
+    * [HIVE-26680] - Make CMV use Direct Insert Semantics
+    * [HIVE-26685] - Improve Path name escaping / unescaping performance
+    * [HIVE-26699] - Iceberg: S3 fadvise can hurt JSON parsing significantly
+    * [HIVE-26705] - Fix Typo in hive-kudu-handler
+    * [HIVE-26734] - Iceberg: Add an option to allow positional delete files without actual row data
+    * [HIVE-26763] - Upgrade Zookeeper to latest 3.6.3 and curator to 5.2.0
+    * [HIVE-26773] - Update Avro version to 1.10.2
+    * [HIVE-26788] - Update stats of table/partition using noscan operation when stats autogather is enabled
+    * [HIVE-26789] - Add UserName in CallerContext for queries
+    * [HIVE-26793] - Create a new configuration to override "no compaction" for tables
+    * [HIVE-26794] - Explore retiring TxnHandler#connPoolMutex idle connections
+    * [HIVE-26802] - Create qtest running QB compaction queries
+    * [HIVE-26809] - Upgrade ORC to 1.8.3
+    * [HIVE-26813] - Upgrade HikariCP from 2.6.1 to 4.0.3.
+    * [HIVE-26825] - Compactor: Cleaner shouldn't fetch table details again and again for partitioned tables
+    * [HIVE-26827] - Add configs in error message to workaround predicate issue with Parquet on TIMESTAMP data type
+    * [HIVE-26843] - Filter all dependency module descriptors from shaded jars.
+    * [HIVE-26845] - Upgrade htmlunit from 2.45.0 to 2.67.0
+    * [HIVE-26868] - Iceberg: Allow IOW on empty table with Partition Evolution
+    * [HIVE-26882] - Allow transactional check of Table parameter before altering the Table
+    * [HIVE-26903] - Compactor threads should gracefully shutdown
+    * [HIVE-26912] - Publish SBOM artifacts
+    * [HIVE-26913] - Iceberg: HiveVectorizedReader::parquetRecordReader should reuse footer information
+    * [HIVE-26917] - Upgrade parquet to 1.12.3
+    * [HIVE-26927] - Iceberg: Add support for set_current_snapshotid
+    * [HIVE-26929] - Iceberg: Allow creating iceberg tables without column definition when 'metadata_location' tblproperties is set.
+    * [HIVE-26935] - Expose root cause of MetaException in RetryingHMSHandler
+    * [HIVE-26944] - FileSinkOperator shouldn't check for compactiontable for every row being processed
+    * [HIVE-26950] - Iceberg: (CTLT) Create external table like V2 table is not preserving table properties
+    * [HIVE-26952] - set the value of metastore.storage.schema.reader.impl  to org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader as default
+    * [HIVE-26954] - Upgrade Avro to 1.11.1
+    * [HIVE-26974] - Iceberg: CTL from iceberg table should copy partition fields correctly
+    * [HIVE-26990] - Upgrade Iceberg to 1.1.0
+    * [HIVE-26997] - Iceberg: Vectorization gets disabled at runtime in merge-into statements
+    * [HIVE-27000] - Improve the modularity of the *ColumnStatsMerger classes
+    * [HIVE-27011] - Default value of PartitionManagementTask frequency should be set to higher value
+    * [HIVE-27013] - Iceberg: Provide an option to enable iceberg manifest caching for all catalogs
+    * [HIVE-27015] - Add support to accept client connections with X-CSRF-TOKEN as part of header in http transport mode
+    * [HIVE-27018] -  Move aborted transaction cleanup outside compaction process
+    * [HIVE-27049] - Iceberg: Provide current snapshot version in show-create-table
+    * [HIVE-27050] - Iceberg: MOR: Restrict reducer extrapolation to contain number of small files being created
+    * [HIVE-27055] - hive-exec typos part 3
+    * [HIVE-27074] - Make IMetaStoreClient interface extends AutoCloseable
+    * [HIVE-27097] - Improve the retry strategy for Metastore client and server
+    * [HIVE-27120] - Warn when Authorizer V2 is configured
+    * [HIVE-27122] - Use Caffeine for caching metadata objects in Compactor threads
+    * [HIVE-27124] - Disable ANTI join transformation by default
+    * [HIVE-27137] - Remove HIVE_IN_TEST_ICEBERG flag
+    * [HIVE-27139] - Log details when hiveserver2.sh doing sanity check with the process id
+    * [HIVE-27141] - Iceberg:  Add more iceberg table metadata
+    * [HIVE-27143] - Optimize HCatStorer move task
+    * [HIVE-27150] - Drop single partition can also support direct sql
+    * [HIVE-27158] - Store hive columns stats in puffin files for iceberg tables
+    * [HIVE-27165] - PART_COL_STATS metastore query not hitting the index
+    * [HIVE-27167] - Upgrade guava version in standalone-metastore and storage-api module
+    * [HIVE-27173] - Add method for Spark to be able to trigger DML events
+    * [HIVE-27177] - Iceberg: Add alter table...Convert to Iceberg command
+    * [HIVE-27184] - Add class name profiling option in ProfileServlet
+    * [HIVE-27185] - Iceberg: Cache iceberg table while loading for stats
+    * [HIVE-27186] - A persistent property store 
+    * [HIVE-27192] - Forbid imports from shaded/relocated libraries in Hive modules
+    * [HIVE-27198] - Delete directly aborted transactions instead of select and loading ids
+    * [HIVE-27199] - Read TIMESTAMP WITH LOCAL TIME ZONE columns from text files using custom formats
+    * [HIVE-27208] - Iceberg: Add support for rename table
+    * [HIVE-27213] - parquet logical decimal type to INT32 is not working while compute statastics
+    * [HIVE-27225] - Speedup build by skipping SBOM generation by default
+    * [HIVE-27266] - Retrieve only partNames if not need drop data in HMSHandler.dropPartitionsAndGetLocations
+    * [HIVE-27273] - Iceberg:  Upgrade iceberg to 1.2.1
+    * [HIVE-27284] - Make HMSHandler proxy pluggable
+    * [HIVE-27287] - Upgrade Commons-text to 1.10.0 to fix CVE
+    * [HIVE-27294] - Remove redundant qt_database_all.q for memory consumption reasons
+    * [HIVE-27295] - Improve docker logging in AbstractExternalDB and DatabaseRule
+    * [HIVE-27300] - Upgrade to Parquet 1.13.0
+    * [HIVE-27306] - Iceberg: Upgrade to 1.3.0 and port catalog and handler changes
+    * [HIVE-27308] - Exposing client keystore and truststore passwords in the JDBC URL can be a security concern
+    * [HIVE-27311] - Improve LDAP auth to support generic search bind authentication
+    * [HIVE-27317] - Temporary (local) session files cleanup improvements
+    * [HIVE-27325] - Iceberg: Expiring old snapshots deletes files with DirectExecutorService causing runtime delays
+    * [HIVE-27330] - Compaction entry dequeue order
+    * [HIVE-27339] - Hive Website: Add links to the new hive dockerhub
+    * [HIVE-27343] - Fix flaky tests: TestHiveMetaStoreTimeout#testResetTimeout
+    * [HIVE-27345] - Upgrade commons-dbcp2 to 2.9.0 to fix CVE
+    * [HIVE-27352] - Support both LDAP and Kerberos Auth in HS2
+    * [HIVE-27355] - Iceberg: Create table can be slow due to file listing for stats
+    * [HIVE-27358] - Add test cases for HIVE-22816 (view result caching w/ transactional tables)
+    * [HIVE-27360] - Iceberg: Don't create the redundant MANAGED location when creating table without EXTERNAL keyword
+    * [HIVE-27363] - Typo in the description of hive.tez.bucket.pruning
+    * [HIVE-27393] - Upgrade ant to 1.10.13 to fix CVE's
+    * [HIVE-27394] - Upgrade commons dependency to fix CVE
+    * [HIVE-27402] - Refactor Kafka credential handling into kafka-handler module
+    * [HIVE-27409] - Iceberg: table with EXTERNAL type can not use statistics to optimize the query
+    * [HIVE-27419] - Update PR template for dependency upgrade changes
+    * [HIVE-27444] - Limit items processed by Initiator/Cleaner
+    * [HIVE-27448] - Iceberg: Merge Iceberg column stats 
+    * [HIVE-27454] - Iceberg: Allow expire snapshots by id
+    * [HIVE-27455] - Iceberg: Set COLUMN_STATS_ACCURATE after writing stats for Iceberg tables
+    * [HIVE-27474] - Deprecate registerUDF with function resources as param for in Registry
+    * [HIVE-27500] - Normalize add_partitions related api in HMS
+    * [HIVE-27504] - Automate inclusion of 3-party licenses in binary distribution
+    * [HIVE-27505] - Added batching with retry mechanism in Hive.getAllPartitionsOf API
+    * [HIVE-27513] - Iceberg: Fetch task returns wrong results for Timestamp with local time zone datatype for Iceberg tables
+    * [HIVE-27516] - Add programatically added DAG scoped properties to DAG Configuration
+
+** Test
+    * [HIVE-26392] - Move StringableMap tests into a dedicated test class
+    * [HIVE-26677] - Constrain available processors to Jetty during test runs to prevent thread exhaustion.
+    * [HIVE-26820] - Disable hybridgrace_hashjoin_2.q flaky test
+    * [HIVE-27203] - Add compaction pending Qtest for Insert-only, Partitioned, Clustered ACID, and combination Tables 
+
+** Task
+    * [HIVE-26640] - Upgrade JUnit to 4.13.2 due to medium CVEs
+    * [HIVE-26681] - Upgrade dom4j: flexible XML framework for Java to safe version due to critical CVEs
+    * [HIVE-26690] - Redirect hive-site notifications to the appropriate mailing lists
+    * [HIVE-26692] - Check for the expected thrift version before compiling
+    * [HIVE-26704] - Cleaner shouldn't be blocked by global min open txnId
+    * [HIVE-26753] - Upgrade Apache Ivy to 2.5.1 due to CVE-2022-37865, CVE-2022-37866
+    * [HIVE-26762] - Remove operand pruning in HiveFilterSetOpTransposeRule
+    * [HIVE-26785] - Remove explicit protobuf-java dependency from blobstore and minikdc modules
+    * [HIVE-26790] - Upgrade to protobuf 3.21.7 / grpc 1.51.0; build on Apple M1
+    * [HIVE-26810] - Replace HiveFilterSetOpTransposeRule onMatch method with Calcite's built-in implementation
+    * [HIVE-26873] - Whiltelist iceberg configs for sql std authorization 
+    * [HIVE-26914] - Upgrade postgresql to 42.5.1 due to CVE-2022-41946
+    * [HIVE-26995] - Iceberg: Enhance time travel syntax with expressions
+    * [HIVE-26999] - Upgrade MySQL Connector Java  due to security CVEs
+    * [HIVE-27012] - Remove JavaEWAH dependency from HIVE to fix CVEs.
+    * [HIVE-27075] - removeDuplicateCompletedTxnComponents() task must start only if compactions are enabled.
+    * [HIVE-27100] - Remove unused data/files from repo
+    * [HIVE-27110] - Upgrade com.esotericsoftware:Kyro version to 5.2.0
+    * [HIVE-27117] - Fix compaction related flaky tests
+    * [HIVE-27131] - Remove empty module shims/scheduler 
+    * [HIVE-27155] - Iceberg: Vectorize virtual columns
+    * [HIVE-27160] - Iceberg: Optimise delete (entire) data from table
+    * [HIVE-27172] - Add the HMS client connection timeout config
+    * [HIVE-27263] - Upgrade cyclonedx-maven-plugin to 2.7.6
+    * [HIVE-27310] - Upgrade jQuery to 3.5.1 in HIVE in hive/llap-server/src/main/resources/hive-webapps/llap/js/
+    * [HIVE-27341] - Disable JIRA worklog notifications for GitHub PRs
+    * [HIVE-27347] - Iceberg: count(*) should be using Iceberg basic stats if present
+    * [HIVE-27367] - Iceberg: Encode partition key values to avoid unnecessary partition keys split in DataFiles.fillFromPath
+    * [HIVE-27401] - Upgrade arrow to 12.0.0
+    * [HIVE-27416] - Vectorization: ClassCastException for string to decimal64 conversion
+    * [HIVE-27425] - Upgrade Nimbus-JOSE-JWT to 9.24+ due to CVEs coming from json-smart
+    * [HIVE-27434] - Preparing for 4.0.0-beta-1 development
+    * [HIVE-27436] - Iceberg: Alter table schema fails when partition spec contains columns not in the lower registry
+    * [HIVE-27437] - Vectorization: VectorizedOrcRecordReader does not reset VectorizedRowBatch after processing
+    * [HIVE-27450] - Upgrade snappy version to 1.1.10.1 for CVE-2023-34455
+    * [HIVE-27472] - Iceberg: Disallow creation of temporary tables 
+    * [HIVE-27475] - Downgrade Kafka version to 2.5.0 to stabilise Kafka handler 
+    * [HIVE-27478] - Remove re2j, SQLLine, ClassNameCompleter entries from LICENSE file
+    * [HIVE-27501] - CVE-2022-45868: Upgrade h2database version to 2.2.220
+    * [HIVE-27522] - Iceberg: Bucket partition transformation date type support
+
 Release Notes - Hive - Version 3.1.0
 
 ** Sub-task
