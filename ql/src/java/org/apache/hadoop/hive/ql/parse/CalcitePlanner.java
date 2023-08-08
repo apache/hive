@@ -2610,7 +2610,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RexNode calciteJoinCond = null;
       List<String> namedColumns = null;
       if (joinCond != null) {
-        JoinTypeCheckCtx jCtx = new JoinTypeCheckCtx(leftRR, rightRR, hiveJoinType);
+        JoinTypeCheckCtx jCtx = new JoinTypeCheckCtx(leftRR, rightRR, cluster.getRexBuilder(), hiveJoinType);
         jCtx.setOuterRR(outerRR);
         RowResolver input = jCtx.getInputRR();
         // named columns join
