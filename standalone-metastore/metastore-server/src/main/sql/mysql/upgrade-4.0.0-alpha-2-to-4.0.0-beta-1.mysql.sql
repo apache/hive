@@ -46,6 +46,9 @@ UPDATE SERDES
             WHERE TBL_ID IN (SELECT TBL_ID FROM TABLE_PARAMS WHERE PARAM_VALUE LIKE '%KuduStorageHandler%')
     );
 
+-- HIVE-27493
+CREATE INDEX PARTITION_KEY_VALS_IDX ON PARTITION_KEY_VALS (PART_KEY_VAL) USING BTREE;
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='4.0.0-beta-1', VERSION_COMMENT='Hive release version 4.0.0-beta-1' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 4.0.0-alpha-2 to 4.0.0-beta-1' AS MESSAGE;

@@ -47,3 +47,6 @@ UPDATE "SERDES"
 
 -- This needs to be the last thing done.  Insert any changes above this line.
 UPDATE "APP".VERSION SET SCHEMA_VERSION='4.0.0-beta-1', VERSION_COMMENT='Hive release version 4.0.0-beta-1' where VER_ID=1;
+
+-- HIVE-27493
+CREATE INDEX "APP"."PARTITION_KEY_VALS_IDX" ON "APP"."PARTITION_KEY_VALS"("PART_KEY_VAL");
