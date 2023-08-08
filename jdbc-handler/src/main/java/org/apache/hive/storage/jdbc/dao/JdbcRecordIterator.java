@@ -18,7 +18,6 @@ import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -29,15 +28,15 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * An iterator that allows iterating through a SQL resultset. Includes methods to clear up resources.
@@ -49,10 +48,13 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
   private Connection conn;
   private PreparedStatement ps;
   private ResultSet rs;
+  private GenericJdbcDatabaseAccessor accessor;
   private String[] hiveColumnNames;
   List<TypeInfo> hiveColumnTypesList;
 
-  public JdbcRecordIterator(Connection conn, PreparedStatement ps, ResultSet rs, Configuration conf) throws HiveJdbcDatabaseAccessException {
+  public JdbcRecordIterator(GenericJdbcDatabaseAccessor accessor, Connection conn,
+      PreparedStatement ps, ResultSet rs, Configuration conf) throws HiveJdbcDatabaseAccessException {
+    this.accessor = accessor;
     this.conn = conn;
     this.ps = ps;
     this.rs = rs;
@@ -61,29 +63,29 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
     if (conf.get(Constants.JDBC_TABLE) != null && conf.get(Constants.JDBC_QUERY) != null) {
       fieldNamesProperty = Preconditions.checkNotNull(conf.get(Constants.JDBC_QUERY_FIELD_NAMES));
       fieldTypesProperty = Preconditions.checkNotNull(conf.get(Constants.JDBC_QUERY_FIELD_TYPES));
+      hiveColumnNames = fieldNamesProperty.trim().split(",");
+      hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(fieldTypesProperty);
     } else {
       try {
         if (conf.get(Constants.JDBC_QUERY) == null) {
-          ResultSetMetaData metadata = rs.getMetaData();
-          int numColumns = metadata.getColumnCount();
-          List<String> columnNames = new ArrayList<String>(numColumns);
-          for (int i = 0; i < numColumns; i++) {
-            columnNames.add(metadata.getColumnName(i + 1));
-          }
-          fieldNamesProperty = String.join(",",columnNames);
+          hiveColumnNames = accessor.getColNamesFromRS(rs).toArray(new String[0]);
+          hiveColumnTypesList = accessor.getColTypesFromRS(rs);
+          fieldNamesProperty = Arrays.stream(hiveColumnNames).collect(Collectors.joining(","));
+          fieldTypesProperty = hiveColumnTypesList.stream().map(typeInfo -> typeInfo.getTypeName())
+              .collect(Collectors.joining(","));
         } else {
           fieldNamesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMNS));
+          fieldTypesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMN_TYPES));
+          hiveColumnNames = fieldNamesProperty.trim().split(",");
+          hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(fieldTypesProperty);
         }
       }
       catch (Exception e) {
         LOGGER.error("Error while trying to get column names.", e);
         throw new HiveJdbcDatabaseAccessException("Error while trying to get column names: " + e.getMessage(), e);
       }
-      fieldTypesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMN_TYPES));
     }
-    LOGGER.debug("Iterator ColumnNames = {}", fieldNamesProperty);
-    hiveColumnNames = fieldNamesProperty.trim().split(",");
-    hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(fieldTypesProperty);
+    LOGGER.debug("Iterator column names: {}, column types: {}", fieldNamesProperty, fieldTypesProperty);
   }
 
 
@@ -188,14 +190,7 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
    * Release all DB resources
    */
   public void close() {
-    try {
-      rs.close();
-      ps.close();
-      conn.close();
-    }
-    catch (Exception e) {
-      LOGGER.warn("Caught exception while trying to close database objects", e);
-    }
+    accessor.cleanupResources(conn, ps, rs);
   }
 
 }
