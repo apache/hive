@@ -5,7 +5,6 @@ SET hive.vectorized.execution.enabled=false;
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET mapred.min.split.size=1000;
 SET mapred.max.split.size=5000;
-SET hive.parquet.timestamp.skip.conversion=false;
 
 drop table if exists ppd_char_test;
 create table ppd_char_test (id int, a char(10), b char(10), c varchar(10), d varchar(10)) stored as parquet;
