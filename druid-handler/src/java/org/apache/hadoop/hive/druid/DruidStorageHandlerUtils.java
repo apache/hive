@@ -222,7 +222,7 @@ public final class DruidStorageHandlerUtils {
     FileSystem fs = taskDir.getFileSystem(conf);
     for (FileStatus fileStatus : fs.listStatus(taskDir)) {
       final DataSegment segment = JSON_MAPPER
-              .readValue(fs.open(fileStatus.getPath()), DataSegment.class);
+              .readValue((InputStream) fs.open(fileStatus.getPath()), DataSegment.class);
       publishedSegmentsBuilder.add(segment);
     }
     List<DataSegment> publishedSegments = publishedSegmentsBuilder.build();

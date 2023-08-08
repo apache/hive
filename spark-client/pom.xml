@@ -50,6 +50,10 @@
       <artifactId>netty-all</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-scala_${scala.binary.version}</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
@@ -85,6 +89,10 @@
          <groupId>commmons-logging</groupId>
          <artifactId>commons-logging</artifactId>
        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.module</groupId>
+          <artifactId>jackson-module-scala_${scala.binary.version}</artifactId>
+        </exclusion>
      </exclusions>
    </dependency>
     <dependency>
