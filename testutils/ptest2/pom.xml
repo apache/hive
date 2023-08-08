@@ -29,7 +29,7 @@ limitations under the License.
     <log4j2.version>2.17.0</log4j2.version>
     <spring.framework.version>3.2.16.RELEASE</spring.framework.version>
     <jclouds.version>2.0.0</jclouds.version>
-    <jackson.version>2.9.9</jackson.version>
+    <jackson.version>2.10.0</jackson.version>
   </properties>
 
   <repositories>
