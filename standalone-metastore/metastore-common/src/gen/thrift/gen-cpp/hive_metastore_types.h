@@ -12383,9 +12383,12 @@ void swap(BasicTxnInfo &a, BasicTxnInfo &b);
 std::ostream& operator<<(std::ostream& out, const BasicTxnInfo& obj);
 
 typedef struct _NotificationEventRequest__isset {
-  _NotificationEventRequest__isset() : maxEvents(false), eventTypeSkipList(false) {}
+  _NotificationEventRequest__isset() : maxEvents(false), eventTypeSkipList(false), catName(false), dbName(false), tableNames(false) {}
   bool maxEvents :1;
   bool eventTypeSkipList :1;
+  bool catName :1;
+  bool dbName :1;
+  bool tableNames :1;
 } _NotificationEventRequest__isset;
 
 class NotificationEventRequest : public virtual ::apache::thrift::TBase {
@@ -12395,13 +12398,18 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
   NotificationEventRequest& operator=(const NotificationEventRequest&);
   NotificationEventRequest() noexcept
                            : lastEvent(0),
-                             maxEvents(0) {
+                             maxEvents(0),
+                             catName(),
+                             dbName() {
   }
 
   virtual ~NotificationEventRequest() noexcept;
   int64_t lastEvent;
   int32_t maxEvents;
   std::vector<std::string>  eventTypeSkipList;
+  std::string catName;
+  std::string dbName;
+  std::vector<std::string>  tableNames;
 
   _NotificationEventRequest__isset __isset;
 
@@ -12410,6 +12418,12 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
   void __set_maxEvents(const int32_t val);
 
   void __set_eventTypeSkipList(const std::vector<std::string> & val);
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableNames(const std::vector<std::string> & val);
 
   bool operator == (const NotificationEventRequest & rhs) const
   {
@@ -12422,6 +12436,18 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
     if (__isset.eventTypeSkipList != rhs.__isset.eventTypeSkipList)
       return false;
     else if (__isset.eventTypeSkipList && !(eventTypeSkipList == rhs.eventTypeSkipList))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    if (__isset.tableNames != rhs.__isset.tableNames)
+      return false;
+    else if (__isset.tableNames && !(tableNames == rhs.tableNames))
       return false;
     return true;
   }
@@ -12611,10 +12637,11 @@ void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b);
 std::ostream& operator<<(std::ostream& out, const CurrentNotificationEventId& obj);
 
 typedef struct _NotificationEventsCountRequest__isset {
-  _NotificationEventsCountRequest__isset() : catName(false), toEventId(false), limit(false) {}
+  _NotificationEventsCountRequest__isset() : catName(false), toEventId(false), limit(false), tableNames(false) {}
   bool catName :1;
   bool toEventId :1;
   bool limit :1;
+  bool tableNames :1;
 } _NotificationEventsCountRequest__isset;
 
 class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
@@ -12636,6 +12663,7 @@ class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
   std::string catName;
   int64_t toEventId;
   int64_t limit;
+  std::vector<std::string>  tableNames;
 
   _NotificationEventsCountRequest__isset __isset;
 
@@ -12648,6 +12676,8 @@ class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
   void __set_toEventId(const int64_t val);
 
   void __set_limit(const int64_t val);
+
+  void __set_tableNames(const std::vector<std::string> & val);
 
   bool operator == (const NotificationEventsCountRequest & rhs) const
   {
@@ -12666,6 +12696,10 @@ class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
     if (__isset.limit != rhs.__isset.limit)
       return false;
     else if (__isset.limit && !(limit == rhs.limit))
+      return false;
+    if (__isset.tableNames != rhs.__isset.tableNames)
+      return false;
+    else if (__isset.tableNames && !(tableNames == rhs.tableNames))
       return false;
     return true;
   }

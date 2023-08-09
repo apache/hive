@@ -11858,6 +11858,25 @@ public class ObjectStore implements RawStore, Configurable {
       parameterVals.add(lastEvent);
       StringBuilder filterBuilder = new StringBuilder("eventId > para" + parameterVals.size());
       StringBuilder parameterBuilder = new StringBuilder("java.lang.Long para" + parameterVals.size());
+      if (rqst.isSetCatName()) {
+        parameterVals.add(rqst.getCatName());
+        parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+        filterBuilder.append(" && catalogName == para" + parameterVals.size());
+      }
+      if (rqst.isSetDbName()) {
+        parameterVals.add(rqst.getDbName());
+        parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+        filterBuilder.append(" && dbName == para" + parameterVals.size());
+      }
+      if (rqst.isSetTableNames()) {
+        filterBuilder.append(" && ");
+        for (String tableName : rqst.getTableNames()) {
+          parameterVals.add(tableName);
+          parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+          filterBuilder.append("tableName == para" + parameterVals.size()+ " || ");
+        }
+        filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
+      }
       if (rqst.isSetEventTypeSkipList()) {
         for (String eventType : rqst.getEventTypeSkipList()) {
           parameterVals.add(eventType);
@@ -12222,6 +12241,16 @@ public class ObjectStore implements RawStore, Configurable {
         queryStr = queryStr + " && eventId <= toEventId";
         paramSpecs = paramSpecs + ", java.lang.Long toEventId";
         paramVals.add(Long.valueOf(toEventId));
+      }
+
+      if (rqst.isSetTableNames()) {
+        queryStr = queryStr + " && ";
+        for (String tableName : rqst.getTableNames()) {
+          paramVals.add(tableName.toLowerCase());
+          queryStr = queryStr + "tableName == tableName" + paramVals.size() + " || ";
+          paramSpecs = paramSpecs + ", java.lang.String tableName" + paramVals.size();
+        }
+        queryStr = queryStr.substring(0, queryStr.length() - 4); // remove the last " || "
       }
 
       query = pm.newQuery(queryStr);

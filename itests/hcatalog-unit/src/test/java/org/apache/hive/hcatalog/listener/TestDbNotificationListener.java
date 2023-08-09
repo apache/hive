@@ -117,8 +117,13 @@ import org.slf4j.LoggerFactory;
  * Tests DbNotificationListener when used as a transactional event listener
  * (hive.metastore.transactional.event.listeners)
  */
+<<<<<<< HEAD
 public class TestDbNotificationListener
 {
+=======
+//@org.junit.Ignore("TestDbNotificationListener is unstable HIVE-23680")
+public class TestDbNotificationListener {
+>>>>>>> cf271c7a18 (HIVE-27499: Include optional db/table names in the NotificationEvent thrift object)
   private static final Logger LOG = LoggerFactory.getLogger(TestDbNotificationListener.class
       .getName());
   private static final int EVENTS_TTL = 30;
@@ -1581,5 +1586,55 @@ public class TestDbNotificationListener
     assertTrue(files.hasNext());
   }
 
+  @Test
+  public void fetchNotificationEventBasedOnTables() throws Exception {
+    String dbName = "test_hive27499";
+    String table1 = "test_tbl1";
+    String table2 = "test_tbl2";
+    String table3 = "test_tbl3";
+    // Generate some table events
+    generateSometableEvents(dbName, table1);
+    generateSometableEvents(dbName, table2);
+    generateSometableEvents(dbName, table3);
 
+    // Verify events by table names
+    NotificationEventRequest request = new NotificationEventRequest();
+    request.setLastEvent(firstEventId);
+    request.setMaxEvents(-1);
+    request.setDbName(dbName);
+    request.setTableNames(Arrays.asList(table1));
+    NotificationEventResponse rsp1 = msClient.getNextNotification(request, true, null);
+    assertEquals(12, rsp1.getEventsSize());
+    request.setTableNames(Arrays.asList(table1, table2));
+    NotificationEventResponse rsp2 = msClient.getNextNotification(request, true, null);
+    assertEquals(24, rsp2.getEventsSize());
+    request.unsetTableNames();
+    NotificationEventResponse rsp3 = msClient.getNextNotification(request, true, null);
+    assertEquals(37, rsp3.getEventsSize());
+
+    NotificationEventsCountRequest eventsReq = new NotificationEventsCountRequest(firstEventId, dbName);
+    eventsReq.setTableNames(Arrays.asList(table1));
+    assertEquals(12, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
+    eventsReq.setTableNames(Arrays.asList(table1, table2));
+    assertEquals(24, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
+    eventsReq.unsetTableNames();
+    assertEquals(37, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
+  }
+
+  private void generateSometableEvents(String dbName, String tableName) throws Exception {
+    // Event 1
+    driver.run("create database if not exists "+dbName);
+    // Event 2
+    driver.run("use "+dbName);
+    // Event 3
+    driver.run("create table " + tableName + " (c int) partitioned by (ds string)");
+    // Event 4, 5, 6
+    driver.run("insert into table " + tableName + " partition (ds = 'today') values (1)");
+    // Event 7, 8, 9
+    driver.run("insert into table " + tableName + " partition (ds = 'today') values (2)");
+    // Event 10, 11, 12
+    driver.run("insert into table " + tableName + " partition (ds) values (3, 'today')");
+    // Event 13, 14
+    driver.run("alter table " + tableName + " add partition (ds = 'yesterday')");
+  }
 }
