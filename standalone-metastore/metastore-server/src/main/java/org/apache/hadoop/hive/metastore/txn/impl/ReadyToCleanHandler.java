@@ -39,11 +39,13 @@ public class ReadyToCleanHandler extends QueryHandler<List<CompactionInfo>> {
   private final boolean useMinHistoryWriteId;
   private final long minOpenTxnWaterMark;
   private final long retentionTime;
+  private final int fetchSize;
 
-  public ReadyToCleanHandler(boolean useMinHistoryWriteId, long minOpenTxnWaterMark, long retentionTime) {
+  public ReadyToCleanHandler(boolean useMinHistoryWriteId, long minOpenTxnWaterMark, long retentionTime, int fetchSize) {
     this.useMinHistoryWriteId = useMinHistoryWriteId;
     this.minOpenTxnWaterMark = minOpenTxnWaterMark;
     this.retentionTime = retentionTime;
+    this.fetchSize = fetchSize;
   }
 
   @Override
@@ -57,7 +59,7 @@ public class ReadyToCleanHandler extends QueryHandler<List<CompactionInfo>> {
         " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(databaseProduct) + " - \"CQ_RETRY_RETENTION\" - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
 
     String queryStr =
-        "SELECT \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
+        " \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
             "  \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\", \"CQ_RETRY_RETENTION\", " +
             "  \"CQ_NEXT_TXN_ID\"";
     if (useMinHistoryWriteId) {
@@ -91,6 +93,8 @@ public class ReadyToCleanHandler extends QueryHandler<List<CompactionInfo>> {
       whereClause += " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
     }
     queryStr += whereClause + " ORDER BY \"CQ_ID\"";
+
+    queryStr = databaseProduct.addLimitClause(fetchSize, queryStr);
     return queryStr;
   }
 

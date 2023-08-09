@@ -75,12 +75,10 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
-import org.apache.hadoop.hive.metastore.txn.entities.CompactionCandidate;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.Retry;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.RetryHandler;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
@@ -489,11 +487,11 @@ public interface TxnStore extends Configurable {
    */
   @Retry(datasource = POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
-  Set<CompactionCandidate> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold) throws MetaException;
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold) throws MetaException;
 
   @Retry(datasource = POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
-  Set<CompactionCandidate> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold, long lastChecked)
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold, long lastChecked)
       throws MetaException;
 
   /**

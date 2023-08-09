@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
-import org.apache.hadoop.hive.metastore.txn.entities.CompactionCandidate;
 import org.apache.hadoop.hive.metastore.txn.impl.AbortTxnInfoHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.AbortedTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.CheckFailedCompactionsHandler;
@@ -72,61 +71,6 @@ class CompactionTxnHandler extends TxnHandler {
   
   private static final Logger LOG = LoggerFactory.getLogger(CompactionTxnHandler.class.getName());
 
-  private static DataSourceWrapper dataSourceWrapper;  
-
-  private static final String DELETE_FAILED_TXNS_SQL =
-      "DELETE FROM \"TXNS\" WHERE \"TXN_ID\" NOT IN (SELECT \"TC_TXNID\" FROM \"TXN_COMPONENTS\") " +
-          "AND (\"TXN_STATE\" = " + TxnStatus.ABORTED + " OR \"TXN_STATE\" = " + TxnStatus.COMMITTED + ") " +
-          "AND \"TXN_ID\" < ?";
-
-  // Three inner sub-queries which are under left-join to fetch the required data for aborted txns.
-  private static final String SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY =
-          " \"res1\".\"TC_DATABASE\" AS \"DB\", \"res1\".\"TC_TABLE\" AS \"TBL\", \"res1\".\"TC_PARTITION\" AS \"PART\", " +
-          " \"res1\".\"MIN_TXN_START_TIME\" AS \"MIN_TXN_START_TIME\", \"res1\".\"ABORTED_TXN_COUNT\" AS \"ABORTED_TXN_COUNT\", " +
-          " \"res2\".\"MIN_OPEN_WRITE_TXNID\" AS \"MIN_OPEN_WRITE_TXNID\", \"res3\".\"RETRY_RETENTION\" AS \"RETRY_RETENTION\", " +
-          " \"res3\".\"ID\" AS \"RETRY_CQ_ID\" " +
-      " FROM " +
-          // First sub-query - Gets the aborted txns with min txn start time, number of aborted txns
-          // for corresponding db, table, partition.
-          " ( SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", MIN(\"TXN_STARTED\") AS \"MIN_TXN_START_TIME\", " +
-          " COUNT(*) AS \"ABORTED_TXN_COUNT\" FROM \"TXNS\", \"TXN_COMPONENTS\" " +
-          " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.ABORTED +
-          " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" %s ) \"res1\" " +
-      " LEFT JOIN" +
-          // Second sub-query - Gets the min open txn id for corresponding db, table, partition.
-          "( SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", MIN(\"TC_TXNID\") AS \"MIN_OPEN_WRITE_TXNID\" " +
-          " FROM \"TXNS\", \"TXN_COMPONENTS\" " +
-          " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.OPEN +
-          " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" ) \"res2\"" +
-      " ON \"res1\".\"TC_DATABASE\" = \"res2\".\"TC_DATABASE\"" +
-      " AND \"res1\".\"TC_TABLE\" = \"res2\".\"TC_TABLE\"" +
-      " AND (\"res1\".\"TC_PARTITION\" = \"res2\".\"TC_PARTITION\" " +
-              " OR (\"res1\".\"TC_PARTITION\" IS NULL AND \"res2\".\"TC_PARTITION\" IS NULL)) " +
-      " LEFT JOIN " +
-          // Third sub-query - Gets the retry entries for corresponding db, table, partition.
-          "( SELECT \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", MAX(\"CQ_ID\") AS \"ID\", " +
-          " MAX(\"CQ_RETRY_RETENTION\") AS \"RETRY_RETENTION\", " +
-          " MIN(\"CQ_COMMIT_TIME\") - %s + MAX(\"CQ_RETRY_RETENTION\") AS \"RETRY_RECORD_CHECK\" FROM \"COMPACTION_QUEUE\" " +
-          " WHERE \"CQ_TYPE\" = " + quoteChar(TxnStore.ABORT_TXN_CLEANUP_TYPE) +
-          " GROUP BY \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\") \"res3\" " +
-      " ON \"res1\".\"TC_DATABASE\" = \"res3\".\"CQ_DATABASE\" " +
-      " AND \"res1\".\"TC_TABLE\" = \"res3\".\"CQ_TABLE\" " +
-      " AND (\"res1\".\"TC_PARTITION\" = \"res3\".\"CQ_PARTITION\" " +
-              " OR (\"res1\".\"TC_PARTITION\" IS NULL AND \"res3\".\"CQ_PARTITION\" IS NULL))" +
-      " WHERE \"res3\".\"RETRY_RECORD_CHECK\" <= 0 OR \"res3\".\"RETRY_RECORD_CHECK\" IS NULL";
-
-  private static final String DELETE_CQ_ENTRIES = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
-
-  private static final String DELETE_CQ_AND_ABORT_ENTRIES = DELETE_CQ_ENTRIES +
-      " OR ( \"CQ_DATABASE\" = ? AND \"CQ_TABLE\" = ? " +
-      " AND \"CQ_PARTITION\" %s AND \"CQ_TYPE\" = " +
-      quoteChar(TxnStore.ABORT_TXN_CLEANUP_TYPE) + " )";
-
-  private static final String INSERT_ABORT_RETRY_ENTRY_INTO_COMPACTION_QUEUE =
-      "INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
-      " \"CQ_TYPE\", \"CQ_STATE\", \"CQ_RETRY_RETENTION\", \"CQ_ERROR_MESSAGE\", \"CQ_COMMIT_TIME\") " +
-      " VALUES (?, ?, ?, ?, ?, ?, ?, ?, %s)";
-
   public CompactionTxnHandler() {
   }
 
@@ -140,7 +84,7 @@ class CompactionTxnHandler extends TxnHandler {
    */
   @Override
   @RetrySemantics.ReadOnly
-  public Set<CompactionCandidate> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold)
+  public Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold)
       throws MetaException {
     return findPotentialCompactions(abortedThreshold, abortedTimeThreshold, -1);
   }
@@ -149,86 +93,10 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.ReadOnly
   public Set<CompactionInfo> findPotentialCompactions(int abortedThreshold,
       long abortedTimeThreshold, long lastChecked) throws MetaException {
-    Connection dbConn = null;
-    Set<CompactionInfo> response = new HashSet<>();
-    Statement stmt = null;
-    ResultSet rs = null;
-    try {
-      try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
-        stmt = dbConn.createStatement();
-
-        long startedAt = System.currentTimeMillis();
-        long checkInterval = (lastChecked <= 0) ? lastChecked : (startedAt - lastChecked + 500) / 1000;
-
-        // Check for completed transactions
-        final String s = dbProduct.addLimitClause(
-          MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE),
-          "DISTINCT \"TC\".\"CTC_DATABASE\", \"TC\".\"CTC_TABLE\", \"TC\".\"CTC_PARTITION\" " +
-          "FROM \"COMPLETED_TXN_COMPONENTS\" \"TC\" " + (checkInterval > 0 ?
-          "LEFT JOIN ( " +
-          "  SELECT \"C1\".* FROM \"COMPLETED_COMPACTIONS\" \"C1\" " +
-          "  INNER JOIN ( " +
-          "    SELECT MAX(\"CC_ID\") \"CC_ID\" FROM \"COMPLETED_COMPACTIONS\" " +
-          "    GROUP BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\"" +
-          "  ) \"C2\" " +
-          "  ON \"C1\".\"CC_ID\" = \"C2\".\"CC_ID\" " +
-          "  WHERE \"C1\".\"CC_STATE\" IN (" + quoteChar(DID_NOT_INITIATE) + "," + quoteChar(FAILED_STATE) + ")" +
-          ") \"C\" " +
-          "ON \"TC\".\"CTC_DATABASE\" = \"C\".\"CC_DATABASE\" AND \"TC\".\"CTC_TABLE\" = \"C\".\"CC_TABLE\" " +
-          "  AND (\"TC\".\"CTC_PARTITION\" = \"C\".\"CC_PARTITION\" OR (\"TC\".\"CTC_PARTITION\" IS NULL AND \"C\".\"CC_PARTITION\" IS NULL)) " +
-          "WHERE \"C\".\"CC_ID\" IS NOT NULL OR " + isWithinCheckInterval("\"TC\".\"CTC_TIMESTAMP\"", checkInterval) : ""));
-
-        LOG.debug("Going to execute query <{}>", s);
-
-        rs = stmt.executeQuery(s);
-        while (rs.next()) {
-          CompactionInfo info = new CompactionInfo();
-          info.dbname = rs.getString(1);
-          info.tableName = rs.getString(2);
-          info.partName = rs.getString(3);
-          response.add(info);
-        }
-        rs.close();
-
-        if (!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER)) {
-          // Check for aborted txns: number of aborted txns past threshold and age of aborted txns
-          // past time threshold
-          boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
-          String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
-                  "MIN(\"TXN_STARTED\"), COUNT(*) FROM \"TXNS\", \"TXN_COMPONENTS\" " +
-                  "   WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " " +
-                  "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" " +
-                  (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold);
-
-          LOG.debug("Going to execute query <{}>", sCheckAborted);
-          rs = stmt.executeQuery(sCheckAborted);
-          long systemTime = System.currentTimeMillis();
-          while (rs.next()) {
-            boolean pastTimeThreshold =
-                    checkAbortedTimeThreshold && rs.getLong(4) + abortedTimeThreshold < systemTime;
-            int numAbortedTxns = rs.getInt(5);
-            if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
-              CompactionInfo info = new CompactionInfo();
-              info.dbname = rs.getString(1);
-              info.tableName = rs.getString(2);
-              info.partName = rs.getString(3);
-              info.tooManyAborts = numAbortedTxns > abortedThreshold;
-              info.hasOldAbort = pastTimeThreshold;
-              LOG.debug("Found potential compaction: {}", info);
-              response.add(info);
-            }
-          }
-        }
-      } catch (SQLException e) {
-        LOG.error(DB_FAILED_TO_CONNECT + e.getMessage());
-        checkRetryable(e,
-            "findPotentialCompactions(maxAborted:" + abortedThreshold
-                + ", abortedTimeThreshold:" + abortedTimeThreshold + ")");
-      } finally {
-        close(rs, stmt, dbConn);
-      }
-      return response;
+    Set<CompactionInfo> candidates = new HashSet<>(new CompactionCandidateHandler(lastChecked, 
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE)).execute(dataSourceWrapper));
+    if (!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER)) {
+      candidates.addAll(new AbortedTxnHandler(abortedTimeThreshold, abortedThreshold).execute(dataSourceWrapper));
     }
     return candidates;
   }
@@ -290,136 +158,15 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException {
-    try {
-      List<CompactionInfo> rc = new ArrayList<>();
-
-      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
-          Statement stmt = dbConn.createStatement()) {
-        /*
-         * By filtering on minOpenTxnWaterMark, we will only cleanup after every transaction is committed, that could see
-         * the uncompacted deltas. This way the cleaner can clean up everything that was made obsolete by this compaction.
-         */
-        String whereClause = " WHERE \"CQ_STATE\" = " + quoteChar(READY_FOR_CLEANING) +
-          " AND \"CQ_TYPE\" != " + quoteChar(TxnStore.ABORT_TXN_CLEANUP_TYPE) +
-          " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - \"CQ_RETRY_RETENTION\" - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
-        
-        String queryStr = 
-          "  \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
-          "  \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\", \"CQ_RETRY_RETENTION\", " +
-          "  \"CQ_NEXT_TXN_ID\"";
-        if (useMinHistoryWriteId) {
-          queryStr += ", \"MIN_OPEN_WRITE_ID\"";
-        }
-        queryStr +=
-          "  FROM \"COMPACTION_QUEUE\" \"cq1\" " +
-          "INNER JOIN (" +
-          "  SELECT MIN(\"CQ_HIGHEST_WRITE_ID\") \"MIN_WRITE_ID_HWM\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\"" +
-          "  FROM \"COMPACTION_QUEUE\"" 
-          + whereClause +
-          "  GROUP BY \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\") \"cq2\" " +
-          "ON \"cq1\".\"CQ_DATABASE\" = \"cq2\".\"CQ_DATABASE\""+
-          "  AND \"cq1\".\"CQ_TABLE\" = \"cq2\".\"CQ_TABLE\""+
-          "  AND (\"cq1\".\"CQ_PARTITION\" = \"cq2\".\"CQ_PARTITION\"" +
-          "    OR \"cq1\".\"CQ_PARTITION\" IS NULL AND \"cq2\".\"CQ_PARTITION\" IS NULL)" +
-          "  AND \"CQ_HIGHEST_WRITE_ID\" = \"MIN_WRITE_ID_HWM\" ";
-        
-        if (useMinHistoryWriteId) {
-          queryStr += 
-            "LEFT JOIN (" +
-            "  SELECT MIN(\"MH_WRITEID\") \"MIN_OPEN_WRITE_ID\", \"MH_DATABASE\", \"MH_TABLE\"" +
-            "  FROM \"MIN_HISTORY_WRITE_ID\"" +
-            "  GROUP BY \"MH_DATABASE\", \"MH_TABLE\") \"hwm\" " +
-            "ON \"cq1\".\"CQ_DATABASE\" = \"hwm\".\"MH_DATABASE\"" +
-            "  AND \"cq1\".\"CQ_TABLE\" = \"hwm\".\"MH_TABLE\"";
-          
-          whereClause += " AND (\"CQ_HIGHEST_WRITE_ID\" < \"MIN_OPEN_WRITE_ID\" OR \"MIN_OPEN_WRITE_ID\" IS NULL)";
-          
-        } else if (minOpenTxnWaterMark > 0) {
-          whereClause += " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
-        }
-
-        queryStr += whereClause + " ORDER BY \"CQ_ID\"";
-
-        queryStr = dbProduct.addLimitClause(MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE), queryStr);
-        LOG.debug("Going to execute query <{}>", queryStr);
-
-        try (ResultSet rs = stmt.executeQuery(queryStr)) {
-          while (rs.next()) {
-            CompactionInfo info = new CompactionInfo();
-            info.id = rs.getLong(1);
-            info.dbname = rs.getString(2);
-            info.tableName = rs.getString(3);
-            info.partName = rs.getString(4);
-            info.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0));
-            info.runAs = rs.getString(6);
-            info.highestWriteId = rs.getLong(7);
-            info.properties = rs.getString(8);
-            info.retryRetention = rs.getInt(9);
-            info.nextTxnId = rs.getLong(10);
-            if (useMinHistoryWriteId) {
-              info.minOpenWriteId = rs.getLong(11);
-            }
-            LOG.debug("Found ready to clean: {}", info);
-            rc.add(info);
-          }
-        }
-        return rc;
-      } catch (SQLException e) {
-        LOG.error("Unable to select next element for cleaning, " + e.getMessage());
-        checkRetryable(e, "findReadyToClean");
-        throw new MetaException(DB_FAILED_TO_CONNECT + e.getMessage());
-      }
-    } catch (RetryException e) {
-      return findReadyToClean(minOpenTxnWaterMark, retentionTime);
-    }
+    return new ReadyToCleanHandler(useMinHistoryWriteId, minOpenTxnWaterMark, retentionTime, 
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE)).execute(dataSourceWrapper);
   }
 
   @Override
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException {
-    try {
-      List<CompactionInfo> readyToCleanAborts = new ArrayList<>();
-      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
-           Statement stmt = dbConn.createStatement()) {
-        boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
-
-        String sCheckAborted = dbProduct.addLimitClause(
-                MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE),
-                String.format(SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY,
-                checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold, getEpochFn(dbProduct)));
-        LOG.debug("Going to execute query <{}>", sCheckAborted);
-
-        try (ResultSet rs = stmt.executeQuery(sCheckAborted)) {
-          long systemTime = System.currentTimeMillis();
-          while (rs.next()) {
-            boolean pastTimeThreshold =
-                    checkAbortedTimeThreshold && rs.getLong(4) + abortedTimeThreshold < systemTime;
-            int numAbortedTxns = rs.getInt(5);
-            if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
-              CompactionInfo info = new CompactionInfo();
-              info.dbname = rs.getString(1);
-              info.tableName = rs.getString(2);
-              info.partName = rs.getString(3);
-              // In this case, this field contains min open write txn ID.
-              info.minOpenWriteTxnId = rs.getLong(6) > 0 ? rs.getLong(6) : Long.MAX_VALUE;
-              // The specific type, state assigned to abort cleanup.
-              info.type = CompactionType.ABORT_TXN_CLEANUP;
-              info.state = READY_FOR_CLEANING;
-              info.retryRetention = rs.getLong(7);
-              info.id = rs.getLong(8);
-              readyToCleanAborts.add(info);
-            }
-          }
-        }
-        return readyToCleanAborts;
-      } catch (SQLException e) {
-        LOG.error("Unable to select next element for cleaning, " + e.getMessage());
-        checkRetryable(e, "findReadyToCleanAborts");
-        throw new MetaException(DB_FAILED_TO_CONNECT + e.getMessage());
-      }
-    } catch (RetryException e) {
-      return findReadyToCleanAborts(abortedTimeThreshold, abortedThreshold);
-    }
+    return new AbortTxnInfoHandler(abortedTimeThreshold, abortedThreshold,
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE)).execute(dataSourceWrapper);
   }
 
   /**

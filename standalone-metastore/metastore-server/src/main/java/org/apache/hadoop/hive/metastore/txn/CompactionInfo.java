@@ -24,9 +24,9 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
-import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfoBase;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
@@ -34,8 +34,7 @@ import java.util.Set;
 /**
  * Information on a possible or running compaction.
  */
-public class 
-CompactionInfo extends CompactionInfoBase {
+public class CompactionInfo implements Comparable<CompactionInfo> {
 
   /**
    *  Modifying this variables or adding new ones should be done in sync
@@ -45,6 +44,9 @@ CompactionInfo extends CompactionInfoBase {
    *  being resetted. This will be fixed at HIVE-21056.
    */
   public long id;
+  public String dbname;
+  public String tableName;
+  public String partName;
   public char state;
   public CompactionType type;
   public String workerId;
@@ -60,7 +62,7 @@ CompactionInfo extends CompactionInfoBase {
   public long retryRetention = 0;
   public long nextTxnId = 0;
   public long minOpenWriteId = -1;
-  public long txnId = 0;  
+  public long txnId = 0;
   public long commitTime = 0;
   public String poolName;
   public int numberOfBuckets = 0;
@@ -81,6 +83,8 @@ CompactionInfo extends CompactionInfoBase {
   public String hadoopJobId;
   public String errorMessage;
 
+  private String fullPartitionName = null;
+  private String fullTableName = null;
   private StringableMap propertiesMap;
 
   public CompactionInfo(String dbname, String tableName, String partName, CompactionType type) {
@@ -111,12 +115,41 @@ CompactionInfo extends CompactionInfoBase {
     properties = propertiesMap.toString();
   }
 
+  public String getFullPartitionName() {
+    if (fullPartitionName == null) {
+      StringBuilder buf = new StringBuilder(dbname);
+      buf.append('.');
+      buf.append(tableName);
+      if (partName != null) {
+        buf.append('.');
+        buf.append(partName);
+      }
+      fullPartitionName = buf.toString();
+    }
+    return fullPartitionName;
+  }
+
+  public String getFullTableName() {
+    if (fullTableName == null) {
+      StringBuilder buf = new StringBuilder(dbname);
+      buf.append('.');
+      buf.append(tableName);
+      fullTableName = buf.toString();
+    }
+    return fullTableName;
+  }
+
   public boolean isMajorCompaction() {
     return CompactionType.MAJOR == type;
   }
 
   public boolean isRebalanceCompaction() {
     return CompactionType.REBALANCE == type;
+  }
+
+  @Override
+  public int compareTo(CompactionInfo o) {
+    return getFullPartitionName().compareTo(o.getFullPartitionName());
   }
 
   public String toString() {
@@ -148,6 +181,25 @@ CompactionInfo extends CompactionInfoBase {
         .append("orderByClause", orderByClause)
         .append("minOpenWriteTxnId", minOpenWriteTxnId)
         .build();
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 17;
+    result = 31 * result + this.getFullPartitionName().hashCode();
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+    if (!(obj instanceof CompactionInfo)) {
+      return false;
+    }
+    CompactionInfo info = (CompactionInfo) obj;
+    return this.compareTo(info) == 0;
   }
 
   /**
@@ -183,6 +235,33 @@ CompactionInfo extends CompactionInfoBase {
     fullCi.numberOfBuckets = rs.getInt(24);
     fullCi.orderByClause = rs.getString(25);
     return fullCi;
+  }
+  static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
+    pStmt.setLong(1, ci.id);
+    pStmt.setString(2, ci.dbname);
+    pStmt.setString(3, ci.tableName);
+    pStmt.setString(4, ci.partName);
+    pStmt.setString(5, Character.toString(ci.state));
+    pStmt.setString(6, Character.toString(TxnUtils.thriftCompactionType2DbType(ci.type)));
+    pStmt.setString(7, ci.properties);
+    pStmt.setString(8, ci.workerId);
+    pStmt.setLong(9, ci.start);
+    pStmt.setLong(10, endTime);
+    pStmt.setString(11, ci.runAs);
+    pStmt.setLong(12, ci.highestWriteId);
+    pStmt.setBytes(13, ci.metaInfo);
+    pStmt.setString(14, ci.hadoopJobId);
+    pStmt.setString(15, ci.errorMessage);
+    pStmt.setLong(16, ci.enqueueTime);
+    pStmt.setString(17, ci.workerVersion);
+    pStmt.setString(18, ci.initiatorId);
+    pStmt.setString(19, ci.initiatorVersion);
+    pStmt.setLong(20, ci.nextTxnId);
+    pStmt.setLong(21, ci.txnId);
+    pStmt.setLong(22, ci.commitTime);
+    pStmt.setString(23, ci.poolName);
+    pStmt.setInt(24, ci.numberOfBuckets);
+    pStmt.setString(25, ci.orderByClause);
   }
 
   public static CompactionInfo compactionStructToInfo(CompactionInfoStruct cr) {

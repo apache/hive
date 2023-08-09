@@ -26,9 +26,9 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfoBase;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.thrift.TException;
 
@@ -65,7 +65,7 @@ public abstract class MetaStoreCompactorThread extends CompactorThread implement
     getMSForConf(conf);
   }
 
-  @Override Table resolveTable(CompactionInfoBase ci) throws MetaException {
+  @Override Table resolveTable(CompactionInfo ci) throws MetaException {
     return CompactorUtil.resolveTable(conf, ci.dbname, ci.tableName);
   }
 
@@ -84,7 +84,7 @@ public abstract class MetaStoreCompactorThread extends CompactorThread implement
     }
   }
 
-  @Override List<Partition> getPartitionsByNames(CompactionInfoBase ci) throws MetaException {
+  @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
     return CompactorUtil.getPartitionsByNames(conf, ci.dbname, ci.tableName, ci.partName);
   }
 

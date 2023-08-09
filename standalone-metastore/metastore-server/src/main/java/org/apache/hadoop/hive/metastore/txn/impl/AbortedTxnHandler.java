@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
-import org.apache.hadoop.hive.metastore.txn.entities.CompactionCandidate;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.QueryHandler;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -32,7 +32,7 @@ import java.sql.Types;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AbortedTxnHandler extends QueryHandler<Set<CompactionCandidate>> {
+public class AbortedTxnHandler extends QueryHandler<Set<CompactionInfo>> {
 
   private final long abortedTimeThreshold;
   private final int abortedThreshold;
@@ -55,13 +55,13 @@ public class AbortedTxnHandler extends QueryHandler<Set<CompactionCandidate>> {
   }
 
   @Override
-  public Set<CompactionCandidate> extractData(ResultSet rs) throws SQLException, DataAccessException {
-    Set<CompactionCandidate> response = new HashSet<>();
+  public Set<CompactionInfo> extractData(ResultSet rs) throws SQLException, DataAccessException {
+    Set<CompactionInfo> response = new HashSet<>();
     while (rs.next()) {
       boolean pastTimeThreshold = checkAbortedTimeThreshold && rs.getLong(4) + abortedTimeThreshold < systemTime;
       int numAbortedTxns = rs.getInt(5);
       if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
-        CompactionCandidate candidate = new CompactionCandidate();
+        CompactionInfo candidate = new CompactionInfo();
         candidate.dbname = rs.getString(1);
         candidate.tableName = rs.getString(2);
         candidate.partName = rs.getString(3);

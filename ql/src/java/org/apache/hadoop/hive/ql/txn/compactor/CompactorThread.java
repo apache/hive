@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 
-import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfoBase;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.thrift.TException;
@@ -103,7 +102,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @return metastore table
    * @throws org.apache.hadoop.hive.metastore.api.MetaException if the table cannot be found.
    */
-  abstract Table resolveTable(CompactionInfoBase ci) throws MetaException;
+  abstract Table resolveTable(CompactionInfo ci) throws MetaException;
 
   abstract boolean replIsCompactionDisabledForDatabase(String dbName) throws TException;
 
@@ -113,7 +112,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @return list of partitions
    * @throws MetaException if an error occurs.
    */
-  abstract List<Partition> getPartitionsByNames(CompactionInfoBase ci) throws MetaException;
+  abstract List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException;
 
   /**
    * Get the partition being compacted.
@@ -122,7 +121,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @throws MetaException if underlying calls throw, or if the partition name resolves to more than
    * one partition.
    */
-  protected Partition resolvePartition(CompactionInfoBase ci) throws MetaException {
+  protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
     if (ci.partName != null) {
       List<Partition> parts;
       try {
@@ -137,7 +136,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
       }
       if (parts.size() != 1) {
         LOG.error(ci.getFullPartitionName() + " does not refer to a single partition. " +
-                      Arrays.toString(parts.toArray()));
+            Arrays.toString(parts.toArray()));
         throw new MetaException("Too many partitions for : " + ci.getFullPartitionName());
       }
       return parts.get(0);
@@ -160,13 +159,13 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected boolean isMinorCompactionSupported(Map<String, String> tblproperties, AcidDirectory dir) {
     //Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them.
     return AcidUtils.isInsertOnlyTable(tblproperties) || !conf.getBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)
-            || !(dir.getOriginalFiles().size() > 0 || dir.getCurrentDirectories().stream().anyMatch(AcidUtils.ParsedDelta::isRawFormat));
+        || !(dir.getOriginalFiles().size() > 0 || dir.getCurrentDirectories().stream().anyMatch(AcidUtils.ParsedDelta::isRawFormat));
   }
 
   /**
    * Get the storage descriptor for a compaction.
-   * @param t table from {@link #resolveTable(org.apache.hadoop.hive.metastore.txn.entities.CompactionInfoBase)}
-   * @param p table from {@link #resolvePartition(org.apache.hadoop.hive.metastore.txn.entities.CompactionInfoBase)}
+   * @param t table from {@link #resolveTable(org.apache.hadoop.hive.metastore.txn.CompactionInfo)}
+   * @param p table from {@link #resolvePartition(org.apache.hadoop.hive.metastore.txn.CompactionInfo)}
    * @return metastore storage descriptor.
    */
   protected StorageDescriptor resolveStorageDescriptor(Table t, Partition p) {
@@ -189,7 +188,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
   }
 
   public static void initializeAndStartThread(CompactorThread thread,
-      Configuration conf) throws Exception {
+                                              Configuration conf) throws Exception {
     LOG.info("Starting compactor thread of type " + thread.getClass().getName());
     thread.setConf(conf);
     thread.init(new AtomicBoolean());
@@ -217,11 +216,11 @@ public abstract class CompactorThread extends Thread implements Configurable {
     requestBuilder.setTransactionId(txnId);
 
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
-      .setLock(lockType)
-      .setOperationType(opType)
-      .setDbName(ci.dbname)
-      .setTableName(ci.tableName)
-      .setIsTransactional(true);
+        .setLock(lockType)
+        .setOperationType(opType)
+        .setDbName(ci.dbname)
+        .setTableName(ci.tableName)
+        .setIsTransactional(true);
 
     if (ci.partName != null) {
       lockCompBuilder.setPartitionName(ci.partName);
@@ -229,7 +228,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
     requestBuilder.addLockComponent(lockCompBuilder.build());
 
     requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
-      !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
+        !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
     return requestBuilder.build();
   }
 

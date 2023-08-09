@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -42,8 +43,7 @@ public class AbortTxnInfoHandler extends QueryHandler<List<CompactionInfo>> {
   // Three inner sub-queries which are under left-join to fetch the required data for aborted txns.
   //language=SQL
   private static final String SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY =
-      "SELECT " +
-          " \"res1\".\"TC_DATABASE\" AS \"DB\", \"res1\".\"TC_TABLE\" AS \"TBL\", \"res1\".\"TC_PARTITION\" AS \"PART\", " +
+      " \"res1\".\"TC_DATABASE\" AS \"DB\", \"res1\".\"TC_TABLE\" AS \"TBL\", \"res1\".\"TC_PARTITION\" AS \"PART\", " +
           " \"res1\".\"MIN_TXN_START_TIME\" AS \"MIN_TXN_START_TIME\", \"res1\".\"ABORTED_TXN_COUNT\" AS \"ABORTED_TXN_COUNT\", " +
           " \"res2\".\"MIN_OPEN_WRITE_TXNID\" AS \"MIN_OPEN_WRITE_TXNID\", \"res3\".\"RETRY_RETENTION\" AS \"RETRY_RETENTION\", " +
           " \"res3\".\"ID\" AS \"RETRY_CQ_ID\" " +
@@ -79,10 +79,13 @@ public class AbortTxnInfoHandler extends QueryHandler<List<CompactionInfo>> {
 
   private final long abortedTimeThreshold;
   private final int abortedThreshold;
+  private final int fetchSize;
   
   protected String getParameterizedQueryString(DatabaseProduct dbProduct) throws MetaException {
-    return String.format(AbortTxnInfoHandler.SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY,
-        abortedTimeThreshold >= 0 ? "" : " HAVING COUNT(*) > " + abortedThreshold, getEpochFn(dbProduct));
+    return dbProduct.addLimitClause(
+        fetchSize,
+        String.format(AbortTxnInfoHandler.SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY,
+            abortedTimeThreshold >= 0 ? "" : " HAVING COUNT(*) > " + abortedThreshold, getEpochFn(dbProduct)));
   }
 
   @Override
@@ -121,8 +124,9 @@ public class AbortTxnInfoHandler extends QueryHandler<List<CompactionInfo>> {
     return readyToCleanAborts;
   }
 
-  public AbortTxnInfoHandler(long abortedTimeThreshold, int abortedThreshold) {
+  public AbortTxnInfoHandler(long abortedTimeThreshold, int abortedThreshold, int fetchSize) {
     this.abortedTimeThreshold = abortedTimeThreshold;
     this.abortedThreshold = abortedThreshold;
+    this.fetchSize = fetchSize;
   }
 }
