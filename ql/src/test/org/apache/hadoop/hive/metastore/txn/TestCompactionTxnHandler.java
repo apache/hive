@@ -461,7 +461,7 @@ public class TestCompactionTxnHandler {
       txnHandler.markFailed(ci);
       fail("The first call to markFailed() must have failed as this call did "
           + "not throw the expected exception");
-    } catch (IllegalStateException e) {
+    } catch (MetaException e) {
       // This is expected
       assertTrue(e.getMessage().contains("No record with CQ_ID="));
     }
