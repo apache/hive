@@ -134,6 +134,22 @@ public class TestHiveMetaStoreAuthorizer {
   }
 
   @Test
+  public void testI_CreateExternalTable_authorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      Table table = new TableBuilder()
+              .setTableName(tblName)
+              .setType(TableType.EXTERNAL_TABLE.name())
+              .addCol("name", ColumnType.STRING_TYPE_NAME)
+              .setOwner(authorizedUser)
+              .build(conf);
+      hmsHandler.create_table(table);
+    } catch (Exception e) {
+      // No Exception for create table for authorized user
+    }
+  }
+
+  @Test
   public void testC_CreateView_anyUser() throws Exception {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
