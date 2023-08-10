@@ -89,7 +89,6 @@ public interface IJdbcBrowserClient extends Closeable {
     }
   }
 
-
   class HiveJdbcBrowserException extends Exception {
     HiveJdbcBrowserException(String msg, Throwable ex) {
       super(msg, ex);
