@@ -1859,7 +1859,7 @@
                       <sequential>
                         <echo message="Generating Thrift code for @{thrift.file}"/>
                         <exec executable="${thrift.home}/bin/thrift" failonerror="true" dir=".">
-                          <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} "/>
+                          <arg line="${thrift.args} -strict -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} "/>
                         </exec>
                       </sequential>
                     </for>
