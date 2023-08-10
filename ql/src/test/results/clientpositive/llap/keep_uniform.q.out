@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists customer_address
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists customer_address
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table customer_address
 (
     ca_address_sk             int,
@@ -46,8 +48,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer_address
 PREHOOK: query: drop table if exists date_dim
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists date_dim
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table date_dim
 (
     d_date_sk                 int,
@@ -122,8 +126,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_dim
 PREHOOK: query: drop table if exists web_returns
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists web_returns
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table web_returns
 (
     wr_returned_date_sk        int,
@@ -190,8 +196,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@web_returns
 PREHOOK: query: drop table if exists web_sales
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists web_sales
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table web_sales
 (
     ws_sold_date_sk           int,
@@ -278,8 +286,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@web_sales
 PREHOOK: query: drop table if exists web_site
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists web_site
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table web_site
 (
     web_site_sk             int,

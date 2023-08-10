@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists mini_store
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists mini_store
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table mini_store
 (
     s_store_sk                int,
@@ -24,8 +26,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mini_store
 PREHOOK: query: drop table if exists mini_sales
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists mini_sales
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table mini_sales
 (
     ss_store_sk               int,

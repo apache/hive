@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists acid_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE acid_part(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -412,8 +414,10 @@ POSTHOOK: Input: default@acid_part@ds=2008-04-08
 1000
 PREHOOK: query: drop table if exists acid_part_sdpo
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid_part_sdpo
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE acid_part_sdpo(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -824,8 +828,10 @@ POSTHOOK: Input: default@acid_part_sdpo@ds=2008-04-08
 1000
 PREHOOK: query: drop table if exists acid_2L_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid_2L_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE acid_2L_part(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1396,8 +1402,10 @@ POSTHOOK: Input: default@acid_2l_part@ds=2008-04-09/hr=12
 2000
 PREHOOK: query: drop table if exists acid_2L_part_sdpo
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid_2L_part_sdpo
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE acid_2L_part_sdpo(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1966,8 +1974,10 @@ POSTHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-09/hr=12
 2000
 PREHOOK: query: drop table if exists acid_2L_part_sdpo_no_cp
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid_2L_part_sdpo_no_cp
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE acid_2L_part_sdpo_no_cp(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

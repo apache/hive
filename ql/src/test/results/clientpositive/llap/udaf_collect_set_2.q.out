@@ -658,21 +658,27 @@ POSTHOOK: Input: default@nested_orders
 2	[{"sub":[3.65,420.36]},{"sub":[27.45]},{"sub":[126.57,210.57]}]
 PREHOOK: query: DROP TABLE customer
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE customer
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orders
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orders
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orders
 POSTHOOK: query: DROP TABLE orders
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orders
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orders
 PREHOOK: query: DROP TABLE nested_orders
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nested_orders
+PREHOOK: Output: database:default
 PREHOOK: Output: default@nested_orders
 POSTHOOK: query: DROP TABLE nested_orders
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nested_orders
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nested_orders

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table pcr_t1_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t1_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table pcr_t1_n1 (key int, value string) partitioned by (ds1 string, ds2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2815,8 +2817,10 @@ POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
 PREHOOK: query: drop table pcr_t1_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_t1_n1
 POSTHOOK: query: drop table pcr_t1_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_t1_n1

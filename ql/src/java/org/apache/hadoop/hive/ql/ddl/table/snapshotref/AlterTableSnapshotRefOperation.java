@@ -22,8 +22,11 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
-public class AlterTableCreateSnapshotRefOperation extends DDLOperation<AlterTableCreateSnapshotRefDesc> {
-  public AlterTableCreateSnapshotRefOperation(DDLOperationContext context, AlterTableCreateSnapshotRefDesc desc) {
+/**
+ * Operation process of Create/Drop a table snapshotRef.
+ */
+public class AlterTableSnapshotRefOperation extends DDLOperation<AlterTableSnapshotRefDesc> {
+  public AlterTableSnapshotRefOperation(DDLOperationContext context, AlterTableSnapshotRefDesc desc) {
     super(context, desc);
   }
 

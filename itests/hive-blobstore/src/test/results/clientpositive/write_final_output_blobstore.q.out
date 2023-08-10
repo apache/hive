@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS hdfs_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hdfs_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS blobstore_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS blobstore_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE hdfs_table(key INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -539,16 +543,20 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE hdfs_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hdfs_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hdfs_table
 POSTHOOK: query: DROP TABLE hdfs_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hdfs_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hdfs_table
 PREHOOK: query: DROP TABLE blobstore_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@blobstore_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@blobstore_table
 POSTHOOK: query: DROP TABLE blobstore_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@blobstore_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@blobstore_table

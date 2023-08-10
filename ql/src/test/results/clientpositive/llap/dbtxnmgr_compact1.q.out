@@ -60,16 +60,20 @@ CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time
 PREHOOK: query: drop table T1_n153
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n153
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n153
 POSTHOOK: query: drop table T1_n153
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n153
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n153
 PREHOOK: query: drop table T2_n153
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n153
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n153
 POSTHOOK: query: drop table T2_n153
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n153
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n153

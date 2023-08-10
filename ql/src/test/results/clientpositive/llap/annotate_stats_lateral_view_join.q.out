@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists annotate_stats_lateral_view_join_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists annotate_stats_lateral_view_join_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table annotate_stats_lateral_view_join_test (id int, name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

@@ -21,8 +21,10 @@ Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSortArrayByField
 Function type:BUILTIN
 PREHOOK: query: DROP TABLE IF EXISTS sort_array_by_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS sort_array_by_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE sort_array_by_table
 STORED AS TEXTFILE
 AS
@@ -210,8 +212,10 @@ Google	IN	[{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":800,"nam
 Microsoft	UK	[{"empid":730,"name":"Eden","age":45,"salary":20300},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":300,"name":"Spiro","age":38,"salary":80300}]	[{"empid":730,"name":"Eden","age":45,"salary":20300},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":300,"name":"Spiro","age":38,"salary":80300}]	[{"empid":300,"name":"Spiro","age":38,"salary":80300},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":730,"name":"Eden","age":45,"salary":20300}]
 PREHOOK: query: DROP TABLE IF EXISTS sort_array_by_order_name
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS sort_array_by_order_name
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE sort_array_by_order_name
 STORED AS TEXTFILE
 AS
@@ -278,8 +282,10 @@ POSTHOOK: Input: default@sort_array_by_order_name
 Google	[{"asc":"Able","desc":"Keiko","salary":28},{"asc":"Boo","desc":"Aron","salary":70000},{"asc":"Hary","desc":"James","salary":50000}]	[{"asc":"Able","desc":"Keiko","salary":28},{"asc":"Hary","desc":"James","salary":50000},{"asc":"Boo","desc":"Aron","salary":70000}]
 PREHOOK: query: DROP TABLE IF EXISTS sort_array_by_table_order
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS sort_array_by_table_order
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE sort_array_by_table_order
 STORED AS TEXTFILE
 AS

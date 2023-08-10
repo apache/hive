@@ -212,18 +212,22 @@ POSTHOOK: Input: default@t2_n18
 PREHOOK: query: DROP TABLE T1_n27
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n27
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n27
 POSTHOOK: query: DROP TABLE T1_n27
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n27
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n27
 PREHOOK: query: DROP TABLE T2_n18
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n18
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n18
 POSTHOOK: query: DROP TABLE T2_n18
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n18
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n18
 PREHOOK: query: CREATE TABLE T1_n27(key STRING, val STRING)
 SKEWED BY (key, val) ON ((2, 12)) STORED AS TEXTFILE

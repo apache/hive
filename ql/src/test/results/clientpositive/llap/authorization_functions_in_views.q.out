@@ -12,8 +12,10 @@ POSTHOOK: query: drop function if exists udf_lower
 POSTHOOK: type: DROPFUNCTION
 PREHOOK: query: drop table if exists base_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists base_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop view if exists view_using_udf
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view if exists view_using_udf
@@ -174,8 +176,10 @@ POSTHOOK: Output: default@view_using_udf
 PREHOOK: query: drop table base_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@base_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@base_table
 POSTHOOK: query: drop table base_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@base_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@base_table

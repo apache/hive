@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE if exists insert_into5_neg
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE if exists insert_into5_neg
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE insert_into5_neg (key int, value string) TBLPROPERTIES ("immutable"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

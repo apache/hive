@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE src_a_data
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE src_a_data
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE src_a_data (
     key int,
     value string)

@@ -1956,18 +1956,22 @@ POSTHOOK: Input: database:statsdb2
 PREHOOK: query: drop table statsdb2.testpart2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: statsdb2@testpart2
+PREHOOK: Output: database:statsdb2
 PREHOOK: Output: statsdb2@testpart2
 POSTHOOK: query: drop table statsdb2.testpart2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: statsdb2@testpart2
+POSTHOOK: Output: database:statsdb2
 POSTHOOK: Output: statsdb2@testpart2
 PREHOOK: query: drop table statsdb2.testtable2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: statsdb2@testtable2
+PREHOOK: Output: database:statsdb2
 PREHOOK: Output: statsdb2@testtable2
 POSTHOOK: query: drop table statsdb2.testtable2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: statsdb2@testtable2
+POSTHOOK: Output: database:statsdb2
 POSTHOOK: Output: statsdb2@testtable2
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
@@ -3949,18 +3953,22 @@ POSTHOOK: Input: database:statsdb2
 PREHOOK: query: drop table statsdb2.testpart2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: statsdb2@testpart2
+PREHOOK: Output: database:statsdb2
 PREHOOK: Output: statsdb2@testpart2
 POSTHOOK: query: drop table statsdb2.testpart2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: statsdb2@testpart2
+POSTHOOK: Output: database:statsdb2
 POSTHOOK: Output: statsdb2@testpart2
 PREHOOK: query: drop table statsdb2.testtable2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: statsdb2@testtable2
+PREHOOK: Output: database:statsdb2
 PREHOOK: Output: statsdb2@testtable2
 POSTHOOK: query: drop table statsdb2.testtable2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: statsdb2@testtable2
+POSTHOOK: Output: database:statsdb2
 POSTHOOK: Output: statsdb2@testtable2
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE

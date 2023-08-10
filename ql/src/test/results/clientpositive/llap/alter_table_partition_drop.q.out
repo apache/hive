@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS part_table PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS part_table PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE part_table (key INT, value STRING) partitioned by (p STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

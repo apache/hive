@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists foo
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists foo
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create temporary table foo (x int, y int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

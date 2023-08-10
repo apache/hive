@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE repairtable_n6(col STRING) PARTITIONED BY (p1 STRING, p2 STRING) STORED AS ORC tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -81,8 +83,10 @@ p1=a/p2=b
 PREHOOK: query: DROP TABLE default.repairtable_n6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n6
 POSTHOOK: query: DROP TABLE default.repairtable_n6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n6

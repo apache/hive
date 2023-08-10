@@ -86,10 +86,12 @@ POSTHOOK: Input: default@smb_table_part@p1=100
 PREHOOK: query: drop table smb_table_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smb_table_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@smb_table_part
 POSTHOOK: query: drop table smb_table_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@smb_table_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smb_table_part
 PREHOOK: query: CREATE TABLE smb_table_part (key INT, value STRING) PARTITIONED BY (p1 double) 
 CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS 

@@ -136,34 +136,42 @@ TBLPROPERTIES (
 PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tmp_feng@tmp_showcrt1
+PREHOOK: Output: database:tmp_feng
 PREHOOK: Output: tmp_feng@tmp_showcrt1
 POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tmp_feng@tmp_showcrt1
+POSTHOOK: Output: database:tmp_feng
 POSTHOOK: Output: tmp_feng@tmp_showcrt1
 PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tmp_feng@tmp_showcrt2
+PREHOOK: Output: database:tmp_feng
 PREHOOK: Output: tmp_feng@tmp_showcrt2
 POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tmp_feng@tmp_showcrt2
+POSTHOOK: Output: database:tmp_feng
 POSTHOOK: Output: tmp_feng@tmp_showcrt2
 PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tmp_feng@tmp_showcrt3
+PREHOOK: Output: database:tmp_feng
 PREHOOK: Output: tmp_feng@tmp_showcrt3
 POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tmp_feng@tmp_showcrt3
+POSTHOOK: Output: database:tmp_feng
 POSTHOOK: Output: tmp_feng@tmp_showcrt3
 PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tmp_feng@tmp_showcrt4
+PREHOOK: Output: database:tmp_feng
 PREHOOK: Output: tmp_feng@tmp_showcrt4
 POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tmp_feng@tmp_showcrt4
+POSTHOOK: Output: database:tmp_feng
 POSTHOOK: Output: tmp_feng@tmp_showcrt4
 PREHOOK: query: DROP DATABASE tmp_feng
 PREHOOK: type: DROPDATABASE

@@ -91,26 +91,32 @@ POSTHOOK: Output: tblstatsdb1@testtable2_n0
 PREHOOK: query: DROP TABLE tblstatsdb1.testtable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tblstatsdb1@testtable
+PREHOOK: Output: database:tblstatsdb1
 PREHOOK: Output: tblstatsdb1@testtable
 POSTHOOK: query: DROP TABLE tblstatsdb1.testtable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tblstatsdb1@testtable
+POSTHOOK: Output: database:tblstatsdb1
 POSTHOOK: Output: tblstatsdb1@testtable
 PREHOOK: query: DROP TABLE tblstatsdb1.TestTable1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tblstatsdb1@testtable1_n0
+PREHOOK: Output: database:tblstatsdb1
 PREHOOK: Output: tblstatsdb1@testtable1_n0
 POSTHOOK: query: DROP TABLE tblstatsdb1.TestTable1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tblstatsdb1@testtable1_n0
+POSTHOOK: Output: database:tblstatsdb1
 POSTHOOK: Output: tblstatsdb1@testtable1_n0
 PREHOOK: query: DROP TABLE tblstatsdb1.TESTTABLE2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tblstatsdb1@testtable2_n0
+PREHOOK: Output: database:tblstatsdb1
 PREHOOK: Output: tblstatsdb1@testtable2_n0
 POSTHOOK: query: DROP TABLE tblstatsdb1.TESTTABLE2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tblstatsdb1@testtable2_n0
+POSTHOOK: Output: database:tblstatsdb1
 POSTHOOK: Output: tblstatsdb1@testtable2_n0
 PREHOOK: query: DROP DATABASE tblstatsdb1
 PREHOOK: type: DROPDATABASE
@@ -213,26 +219,32 @@ POSTHOOK: Output: tblstatsdb2@testtable2_n0
 PREHOOK: query: DROP TABLE TBLSTATSDB2.testtable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tblstatsdb2@testtable
+PREHOOK: Output: database:tblstatsdb2
 PREHOOK: Output: tblstatsdb2@testtable
 POSTHOOK: query: DROP TABLE TBLSTATSDB2.testtable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tblstatsdb2@testtable
+POSTHOOK: Output: database:tblstatsdb2
 POSTHOOK: Output: tblstatsdb2@testtable
 PREHOOK: query: DROP TABLE TBLSTATSDB2.TestTable1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tblstatsdb2@testtable1_n0
+PREHOOK: Output: database:tblstatsdb2
 PREHOOK: Output: tblstatsdb2@testtable1_n0
 POSTHOOK: query: DROP TABLE TBLSTATSDB2.TestTable1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tblstatsdb2@testtable1_n0
+POSTHOOK: Output: database:tblstatsdb2
 POSTHOOK: Output: tblstatsdb2@testtable1_n0
 PREHOOK: query: DROP TABLE TBLSTATSDB2.TESTTABLE2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tblstatsdb2@testtable2_n0
+PREHOOK: Output: database:tblstatsdb2
 PREHOOK: Output: tblstatsdb2@testtable2_n0
 POSTHOOK: query: DROP TABLE TBLSTATSDB2.TESTTABLE2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tblstatsdb2@testtable2_n0
+POSTHOOK: Output: database:tblstatsdb2
 POSTHOOK: Output: tblstatsdb2@testtable2_n0
 PREHOOK: query: DROP DATABASE TBLSTATSDB2
 PREHOOK: type: DROPDATABASE

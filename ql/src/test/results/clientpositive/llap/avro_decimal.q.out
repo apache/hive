@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS `dec_n0`
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS `dec_n0`
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE `dec_n0`(name string, value decimal(8,4))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -49,8 +51,10 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"value\":\"true\"}}
 PREHOOK: query: DROP TABLE IF EXISTS avro_dec_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS avro_dec_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE `avro_dec_n0`(
   `name` string COMMENT 'from deserializer',
   `value` decimal(5,2) COMMENT 'from deserializer')
@@ -123,8 +127,10 @@ Beck	0.00
 Beck	79.90
 PREHOOK: query: DROP TABLE IF EXISTS avro_dec1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS avro_dec1_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE `avro_dec1_n0`(
   `name` string COMMENT 'from deserializer',
   `value` decimal(4,1) COMMENT 'from deserializer')
@@ -196,26 +202,32 @@ POSTHOOK: Input: default@avro_dec1_n0
 PREHOOK: query: DROP TABLE `dec_n0`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dec_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dec_n0
 POSTHOOK: query: DROP TABLE `dec_n0`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dec_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dec_n0
 PREHOOK: query: DROP TABLE avro_dec_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_dec_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_dec_n0
 POSTHOOK: query: DROP TABLE avro_dec_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_dec_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_dec_n0
 PREHOOK: query: DROP TABLE avro_dec1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_dec1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_dec1_n0
 POSTHOOK: query: DROP TABLE avro_dec1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_dec1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_dec1_n0
 PREHOOK: query: CREATE TABLE test_quoted_scale_precision
 STORED AS AVRO
@@ -259,8 +271,10 @@ decimal24_6         	decimal(24,6)
 PREHOOK: query: DROP TABLE test_quoted_scale_precision
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_quoted_scale_precision
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_quoted_scale_precision
 POSTHOOK: query: DROP TABLE test_quoted_scale_precision
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_quoted_scale_precision
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_quoted_scale_precision

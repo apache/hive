@@ -123,16 +123,20 @@ POSTHOOK: Input: default@tgt_rc_merge_test_n1
 PREHOOK: query: drop table src_rc_merge_test_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_rc_merge_test_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_rc_merge_test_n1
 POSTHOOK: query: drop table src_rc_merge_test_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_rc_merge_test_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_rc_merge_test_n1
 PREHOOK: query: drop table tgt_rc_merge_test_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tgt_rc_merge_test_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tgt_rc_merge_test_n1
 POSTHOOK: query: drop table tgt_rc_merge_test_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tgt_rc_merge_test_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tgt_rc_merge_test_n1

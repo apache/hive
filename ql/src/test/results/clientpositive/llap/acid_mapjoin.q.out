@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists acid1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists acid2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table acid1 (key int, value string) clustered by (key) into 2 buckets stored as orc tblproperties ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -176,16 +180,20 @@ POSTHOOK: Input: default@acid2
 PREHOOK: query: drop table acid1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid1
 POSTHOOK: query: drop table acid1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid1
 PREHOOK: query: drop table acid2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid2
 POSTHOOK: query: drop table acid2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid2

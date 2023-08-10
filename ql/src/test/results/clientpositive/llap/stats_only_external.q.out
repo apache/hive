@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists stats_only_external_tab1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists stats_only_external_tab1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists stats_only_external_tab1_ext
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists stats_only_external_tab1_ext
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table stats_only_external_tab1 (key int, value string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -233,16 +237,20 @@ STAGE PLANS:
 PREHOOK: query: drop table stats_only_external_tab1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_only_external_tab1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_only_external_tab1
 POSTHOOK: query: drop table stats_only_external_tab1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_only_external_tab1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_only_external_tab1
 PREHOOK: query: drop table stats_only_external_tab1_ext
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_only_external_tab1_ext
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_only_external_tab1_ext
 POSTHOOK: query: drop table stats_only_external_tab1_ext
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_only_external_tab1_ext
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_only_external_tab1_ext
