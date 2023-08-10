@@ -59,7 +59,7 @@ def setPrLabel(String prLabel) {
      newLabels.remove(mapping[l])
    newLabels.add(mapping[prLabel])
    echo ('' +newLabels)
-   pullRequest.labels=newLabels
+   //pullRequest.labels=newLabels
   }
 }
 
