@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
 import org.eclipse.jetty.server.Server;
@@ -200,7 +199,6 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
     }
     return paramMap;
   }
-
 
   @VisibleForTesting
   protected void openBrowserWindow() throws HiveJdbcBrowserException {
