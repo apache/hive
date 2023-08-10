@@ -98,6 +98,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -563,7 +564,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       // Analyze table and stats updater thread
       return fs.delete(statsPath, true);
     }
-    return false;
+    return SessionStateUtil.getQueryState(conf).map(QueryState::getHiveOperation)
+      .filter(opType -> HiveOperation.ANALYZE_TABLE == opType)
+      .isPresent();
   }
 
   private void checkAndMergeColStats(ColumnStatistics statsObjNew, Table tbl) throws InvalidObjectException {
