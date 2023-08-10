@@ -79,21 +79,10 @@ public class HiveJdbcSamlRedirectStrategy extends DefaultRedirectStrategy {
     if (uri == null) {
       throw new ProtocolException("SSO Url is null");
     }
-    boolean valid = false;
-    // a pseudo loop to break from sequence
-    do {
-      String scheme = uri.getScheme();
-      // require https or https
-      if (!("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))) {
-        break;
-      }
-      // require absolute
-      if (!uri.isAbsolute()) {
-        break;
-      }
-      // went through all validation points
-      valid = true;
-    } while(false);
+    final String scheme = uri.getScheme();
+    // require https or https and absolute
+    final boolean valid = ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))
+                          && uri.isAbsolute();
     if (!valid) {
       throw new ProtocolException("SSO Url "+uri.toString()+ "is invalid");
     }
