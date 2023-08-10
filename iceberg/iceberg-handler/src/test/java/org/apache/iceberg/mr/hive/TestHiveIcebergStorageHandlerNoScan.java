@@ -1928,6 +1928,53 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Assert.assertTrue(hmsTblLocation.getFileSystem(shell.getHiveConf()).exists(hmsTblLocation));
   }
 
+  @Test
+  public void testSnycProperties() throws TException, InterruptedException {
+    Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    // Test create v2 iceberg table and check iceberg properties & hms properties
+    TableIdentifier identifier = TableIdentifier.of("default", "customers_v2");
+    shell.executeStatement("CREATE TABLE customers_v2 (id int, name string) Stored by Iceberg stored as ORC " +
+        "TBLPROPERTIES ('format-version'='2','write.delete.mode'='copy-on-write')");
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers_v2");
+    Map<String, String> icePros = icebergTable.properties();
+    Map<String, String> hmsProps = hmsTable.getParameters();
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), HiveIcebergStorageHandler.COPY_ON_WRITE);
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), HiveIcebergStorageHandler.MERGE_ON_READ);
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), HiveIcebergStorageHandler.MERGE_ON_READ);
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), hmsProps.get(TableProperties.DELETE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), hmsProps.get(TableProperties.UPDATE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), hmsProps.get(TableProperties.MERGE_MODE));
+
+    // Test create v1 iceberg table and check its properties before and after it upgrades to v2
+    identifier = TableIdentifier.of("default", "customers_v1");
+    shell.executeStatement("CREATE TABLE customers_v1 (id int, name string) Stored by Iceberg stored as ORC");
+    icebergTable = testTables.loadTable(identifier);
+    hmsTable = shell.metastore().getTable("default", "customers_v1");
+    icePros = icebergTable.properties();
+    hmsProps = hmsTable.getParameters();
+    // check v1 iceberg table properties
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), null);
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), null);
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), null);
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), hmsProps.get(TableProperties.DELETE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), hmsProps.get(TableProperties.UPDATE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), hmsProps.get(TableProperties.MERGE_MODE));
+    // check table properties after upgrading to v2
+    shell.executeStatement("ALTER TABLE customers_v1 SET TBLPROPERTIES ('format-version'='2')");
+    icebergTable = testTables.loadTable(identifier);
+    hmsTable = shell.metastore().getTable("default", "customers_v1");
+    icePros = icebergTable.properties();
+    hmsProps = hmsTable.getParameters();
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), HiveIcebergStorageHandler.MERGE_ON_READ);
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), HiveIcebergStorageHandler.MERGE_ON_READ);
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), HiveIcebergStorageHandler.MERGE_ON_READ);
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), hmsProps.get(TableProperties.DELETE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), hmsProps.get(TableProperties.UPDATE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), hmsProps.get(TableProperties.MERGE_MODE));
+  }
+
   private String getCurrentSnapshotForHiveCatalogTable(org.apache.iceberg.Table icebergTable) {
     return ((BaseMetastoreTableOperations) ((BaseTable) icebergTable).operations()).currentMetadataLocation();
   }

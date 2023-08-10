@@ -428,7 +428,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       assertNotMigratedTable(hmsTable.getParameters(), "CHANGE COLUMN");
       handleChangeColumn(hmsTable);
     } else {
-      setDeleteModeOnTableProperties(icebergTable, hmsTable.getParameters());
+      setDeleteModeOnTableProperties(icebergTable, hmsTable.getParameters(), context);
       assertNotCrossTableMetadataLocationChange(hmsTable.getParameters(), context);
     }
 
@@ -741,7 +741,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     // Remove creation related properties
     PARAMETERS_TO_REMOVE.forEach(hmsParams::remove);
 
-    setDeleteModeOnTableProperties(null, hmsParams);
+    setDeleteModeOnTableProperties(null, hmsParams, null);
   }
 
   /**
@@ -981,14 +981,43 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   // TODO: remove this if copy-on-write mode gets implemented in Hive
-  private static void setDeleteModeOnTableProperties(Table icebergTable, Map<String, String> newProps) {
+  private void setDeleteModeOnTableProperties(Table icebergTbl, Map<String, String> newProps,
+      EnvironmentContext context) {
     // Hive only supports merge-on-read delete mode, it will actually throw an error if DML operations are attempted on
     // tables that don't have this (the default is copy-on-write). We set this at table creation and v1->v2 conversion.
-    if ((icebergTable == null || ((BaseTable) icebergTable).operations().current().formatVersion() == 1) &&
+    if ((icebergTbl == null || ((BaseTable) icebergTbl).operations().current().formatVersion() == 1) &&
         IcebergTableUtil.isV2Table(newProps)) {
-      newProps.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
-      newProps.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
-      newProps.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+      if (catalogProperties.get(TableProperties.DELETE_MODE) == null) {
+        catalogProperties.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+        newProps.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+      }
+      if (catalogProperties.get(TableProperties.UPDATE_MODE) == null) {
+        catalogProperties.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+        newProps.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+      }
+      if (catalogProperties.get(TableProperties.MERGE_MODE) == null) {
+        catalogProperties.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+        newProps.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+      }
+
+      if (context != null) {
+        Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
+        Map<String, String> contextProperties = context.getProperties();
+        if (contextProperties.containsKey(SET_PROPERTIES)) {
+          String propValue = context.getProperties().get(SET_PROPERTIES);
+          List propsList = splitter.splitToList(propValue);
+          if (!propsList.contains(TableProperties.DELETE_MODE)) {
+            propValue += "'" + TableProperties.DELETE_MODE;
+          }
+          if (!propsList.contains(TableProperties.UPDATE_MODE)) {
+            propValue += "'" + TableProperties.UPDATE_MODE;
+          }
+          if (!propsList.contains(TableProperties.MERGE_MODE)) {
+            propValue += "'" + TableProperties.MERGE_MODE;
+          }
+          contextProperties.put(SET_PROPERTIES, propValue);
+        }
+      }
     }
   }
 
