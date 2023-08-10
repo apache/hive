@@ -118,10 +118,14 @@ import org.slf4j.LoggerFactory;
  * (hive.metastore.transactional.event.listeners)
  */
 <<<<<<< HEAD
+<<<<<<< HEAD
 public class TestDbNotificationListener
 {
 =======
 //@org.junit.Ignore("TestDbNotificationListener is unstable HIVE-23680")
+=======
+@org.junit.Ignore("TestDbNotificationListener is unstable HIVE-23680")
+>>>>>>> 6c6acf442e (Test class uncommented)
 public class TestDbNotificationListener {
 >>>>>>> cf271c7a18 (HIVE-27499: Include optional db/table names in the NotificationEvent thrift object)
   private static final Logger LOG = LoggerFactory.getLogger(TestDbNotificationListener.class
