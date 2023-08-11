@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.txn.compactor.InitiatorForTable;
 
 import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
 
@@ -51,48 +53,53 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
   }
 
   @Override
-  public int execute() throws HiveException {
+  public int execute() throws Exception {
     Table table = context.getDb().getTable(desc.getTableName());
     if (!AcidUtils.isTransactionalTable(table)) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, table.getDbName(), table.getTableName());
     }
 
-    String partitionName = getPartitionName(table);
-
-    CompactionResponse resp = compact(table, partitionName);
-    if (!resp.isAccepted()) {
-      String message = Constants.ERROR_MESSAGE_NO_DETAILS_AVAILABLE;
-      if (resp.isSetErrormessage()) {
-        message = resp.getErrormessage();
+    List<Partition> partitions = getPartitions(table);
+    if(partitions.size() > 1){
+      new InitiatorForTable(table, partitions, desc, context.getConf());
+    } else {
+      String partitionName = null;
+      if(partitions.size() == 1){
+        partitionName = partitions.get(0).getName();
       }
-      throw new HiveException(ErrorMsg.COMPACTION_REFUSED,
-          table.getDbName(), table.getTableName(), partitionName == null ? "" : "(partition=" + partitionName + ")", message);
-    }
+      CompactionResponse resp = compact(table, partitionName);
+      if (!resp.isAccepted()) {
+        String message = Constants.ERROR_MESSAGE_NO_DETAILS_AVAILABLE;
+        if (resp.isSetErrormessage()) {
+          message = resp.getErrormessage();
+        }
+        throw new HiveException(ErrorMsg.COMPACTION_REFUSED, table.getDbName(), table.getTableName(),
+            partitionName == null ? "" : "(partition=" + partitionName + ")", message);
+      }
 
-    if (desc.isBlocking() && resp.isAccepted()) {
-      waitForCompactionToFinish(resp);
+      if (desc.isBlocking() && resp.isAccepted()) {
+        waitForCompactionToFinish(resp);
+      }
     }
-
     return 0;
   }
 
-  private String getPartitionName(Table table) throws HiveException {
-    String partitionName = null;
+  private List<Partition> getPartitions(Table table) throws HiveException {
+    List<Partition> partitions = new ArrayList<>();
     if (desc.getPartitionSpec() == null) {
-      if (table.isPartitioned()) { // Compaction can only be done on the whole table if the table is non-partitioned.
-        throw new HiveException(ErrorMsg.NO_COMPACTION_PARTITION);
+      if (table.isPartitioned()) { // Compaction will get initiated for all the potential partitions that meets the criteria
+       partitions = context.getDb().getPartitions(table);
       }
     } else {
       Map<String, String> partitionSpec = desc.getPartitionSpec();
-      List<Partition> partitions = context.getDb().getPartitions(table, partitionSpec);
+      partitions = context.getDb().getPartitions(table, partitionSpec);
       if (partitions.size() > 1) {
         throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
       } else if (partitions.size() == 0) {
         throw new HiveException(ErrorMsg.INVALID_PARTITION_SPEC);
       }
-      partitionName = partitions.get(0).getName();
     }
-    return partitionName;
+    return partitions;
   }
 
   private CompactionResponse compact(Table table, String partitionName) throws HiveException {

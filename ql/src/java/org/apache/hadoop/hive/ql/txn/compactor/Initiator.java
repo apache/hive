@@ -250,7 +250,7 @@ public class Initiator extends MetaStoreCompactorThread {
             MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
   }
 
-  private void scheduleCompactionIfRequired(CompactionInfo ci, Table t, Partition p, String poolName,
+  protected void scheduleCompactionIfRequired(CompactionInfo ci, Table t, Partition p, String poolName,
                                             String runAs, boolean metricsEnabled)
       throws MetaException {
     StorageDescriptor sd = resolveStorageDescriptor(t, p);
@@ -538,7 +538,11 @@ public class Initiator extends MetaStoreCompactorThread {
     CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, ci.type);
     if (ci.partName != null) rqst.setPartitionname(ci.partName);
     rqst.setRunas(runAs);
-    rqst.setInitiatorId(getInitiatorId(Thread.currentThread().getId()));
+    if (StringUtils.isEmpty(ci.initiatorId)) {
+      rqst.setInitiatorId(getInitiatorId(Thread.currentThread().getId()));
+    } else {
+      rqst.setInitiatorId(ci.initiatorId);
+    }
     rqst.setInitiatorVersion(this.runtimeVersion);
     rqst.setPoolName(ci.poolName);
     LOG.info("Requesting compaction: " + rqst);
