@@ -153,10 +153,10 @@ public class Initiator extends MetaStoreCompactorThread {
           Set<String> skipTables = Sets.newConcurrentHashSet();
 
           Set<CompactionInfo> potentials = compactionExecutor.submit(() ->
-              txnHandler.findPotentialCompactions(abortedThreshold, abortedTimeThreshold, prevStart)
-                  .parallelStream()
-                  .filter(ci -> isEligibleForCompaction(ci, currentCompactions, skipDBs, skipTables))
-                  .collect(Collectors.toSet())).get();
+            txnHandler.findPotentialCompactions(abortedThreshold, abortedTimeThreshold, prevStart)
+              .parallelStream()
+              .filter(ci -> isEligibleForCompaction(ci, currentCompactions, skipDBs, skipTables))
+              .collect(Collectors.toSet())).get();
           LOG.debug("Found {} potential compactions, checking to see if we should compact any of them", potentials.size());
 
           checkInterrupt();
@@ -247,7 +247,7 @@ public class Initiator extends MetaStoreCompactorThread {
   @Override
   protected boolean isCacheEnabled() {
     return MetastoreConf.getBoolVar(conf,
-        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
+            MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
   }
 
   private void scheduleCompactionIfRequired(CompactionInfo ci, Table t, Partition p, String poolName,
@@ -325,8 +325,8 @@ public class Initiator extends MetaStoreCompactorThread {
     super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
-        conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
-        COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
+            COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
   }
@@ -349,18 +349,18 @@ public class Initiator extends MetaStoreCompactorThread {
     //requests are skipped by the worker, and only cleaner will pick them up, so we should allow to schedule a 'normal'
     //compaction for partitions of those tables which has special (DP abort) entry with undefined partition name.
     List<ShowCompactResponseElement> filteredElements = compactions.getCompacts().stream()
-        .filter(e -> e.getDbname().equals(ci.dbname)
-            && e.getTablename().equals(ci.tableName)
-            && (e.getPartitionname() == null && ci.partName == null ||
-            (Objects.equals(e.getPartitionname(),ci.partName))))
-        .collect(Collectors.toList());
+      .filter(e -> e.getDbname().equals(ci.dbname)
+        && e.getTablename().equals(ci.tableName)
+        && (e.getPartitionname() == null && ci.partName == null ||
+              (Objects.equals(e.getPartitionname(),ci.partName))))
+      .collect(Collectors.toList());
 
     // Figure out if there are any currently running compactions on the same table or partition.
     if (filteredElements.stream().anyMatch(
         e -> TxnStore.WORKING_RESPONSE.equals(e.getState()) || TxnStore.INITIATED_RESPONSE.equals(e.getState()))) {
 
       LOG.info("Found currently initiated or working compaction for " +
-          ci.getFullPartitionName() + " so we will not initiate another compaction");
+        ci.getFullPartitionName() + " so we will not initiate another compaction");
       return true;
     }
 
@@ -369,24 +369,24 @@ public class Initiator extends MetaStoreCompactorThread {
     int failedThreshold = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
 
     LongSummaryStatistics failedStats = filteredElements.stream()
-        .filter(e -> TxnStore.SUCCEEDED_RESPONSE.equals(e.getState()) || TxnStore.FAILED_RESPONSE.equals(e.getState()))
-        .sorted(Comparator.comparingLong(ShowCompactResponseElement::getId).reversed())
-        .limit(failedThreshold)
+      .filter(e -> TxnStore.SUCCEEDED_RESPONSE.equals(e.getState()) || TxnStore.FAILED_RESPONSE.equals(e.getState()))
+      .sorted(Comparator.comparingLong(ShowCompactResponseElement::getId).reversed())
+      .limit(failedThreshold)
 
-        .filter(e -> TxnStore.FAILED_RESPONSE.equals(e.getState()))
-        .collect(Collectors.summarizingLong(ShowCompactResponseElement::getEnqueueTime));
+      .filter(e -> TxnStore.FAILED_RESPONSE.equals(e.getState()))
+      .collect(Collectors.summarizingLong(ShowCompactResponseElement::getEnqueueTime));
 
     // If the last attempt was too long ago, ignore the failed threshold and try compaction again
     long retryTime = MetastoreConf.getTimeVar(conf,
-        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_RETRY_TIME, TimeUnit.MILLISECONDS);
+      MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_RETRY_TIME, TimeUnit.MILLISECONDS);
 
     boolean needsRetry = (retryTime > 0) && (failedStats.getMax() + retryTime < System.currentTimeMillis());
     if (failedStats.getCount() == failedThreshold && !needsRetry) {
       LOG.warn("Will not initiate compaction for " + ci.getFullPartitionName() + " since last " +
-          MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " attempts to compact it failed.");
+        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " attempts to compact it failed.");
 
       ci.errorMessage = "Compaction is not initiated since last " +
-          MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " consecutive compaction attempts failed)";
+        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " consecutive compaction attempts failed)";
 
       txnHandler.markFailed(ci);
       return true;
@@ -432,7 +432,7 @@ public class Initiator extends MetaStoreCompactorThread {
     } else {
       LOG.info("Going to initiate as user " + runAs + " for " + ci.getFullPartitionName());
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(runAs,
-          UserGroupInformation.getLoginUser());
+        UserGroupInformation.getLoginUser());
       CompactionType compactionType;
       try {
         compactionType = ugi.doAs(
@@ -469,7 +469,7 @@ public class Initiator extends MetaStoreCompactorThread {
           Float.parseFloat(deltaPctProp);
       boolean bigEnough =   (float)deltaSize/(float)baseSize > deltaPctThreshold;
       boolean multiBase = dir.getObsolete().stream()
-          .anyMatch(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX));
+              .anyMatch(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX));
 
       boolean initiateMajor =  bigEnough || (deltaSize == 0  && multiBase);
       if (LOG.isDebugEnabled()) {
@@ -512,7 +512,7 @@ public class Initiator extends MetaStoreCompactorThread {
         "requesting " + (noBase ? "major" : "minor") + " compaction");
 
     return noBase || !isMinorCompactionSupported(tblproperties, dir) ?
-        CompactionType.MAJOR : CompactionType.MINOR;
+            CompactionType.MAJOR : CompactionType.MINOR;
   }
 
   private long getBaseSize(AcidDirectory dir) throws IOException {
@@ -551,16 +551,16 @@ public class Initiator extends MetaStoreCompactorThread {
   // Check if it's a dynamic partitioning case. If so, do not initiate compaction for streaming ingest, only for aborts.
   private static boolean isDynPartIngest(Table t, CompactionInfo ci){
     if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
-        ci.partName  == null && !ci.hasOldAbort) {
+            ci.partName  == null && !ci.hasOldAbort) {
       LOG.info("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
-          " partitioning");
+              " partitioning");
       return  true;
     }
     return false;
   }
 
   private boolean isEligibleForCompaction(CompactionInfo ci,
-                                          ShowCompactResponse currentCompactions, Set<String> skipDBs, Set<String> skipTables) {
+      ShowCompactResponse currentCompactions, Set<String> skipDBs, Set<String> skipTables) {
     try {
       if (skipDBs.contains(ci.dbname)) {
         LOG.info("Skipping {}::{}, skipDBs::size:{}", ci.dbname, ci.tableName, skipDBs.size());
@@ -654,7 +654,7 @@ public class Initiator extends MetaStoreCompactorThread {
     private boolean warningReported;
 
     InitiatorCycleUpdater(String metric, long startedAt,
-                          long warningThreshold, long errorThreshold) {
+        long warningThreshold, long errorThreshold) {
       this.metric = metric;
       this.startedAt = startedAt;
       this.warningThreshold = warningThreshold;
