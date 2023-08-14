@@ -814,6 +814,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     ASTNode node = SubQueryUtils.andAST(outerQryFilter, postJoinConditionAST);
     if(nullNotInConditionAST != null){
       ASTNode ans = SubQueryUtils.andAST(nullNotInConditionAST, node);
+      nullNotInConditionAST = null;
       return ans;
     }
     return node;
