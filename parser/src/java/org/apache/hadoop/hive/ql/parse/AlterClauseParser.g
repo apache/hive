@@ -77,6 +77,7 @@ alterTableStatementSuffix
     | alterStatementSuffixCreateBranch
     | alterStatementSuffixCreateTag
     | alterStatementSuffixConvert
+    | alterStatementSuffixDropBranch
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -477,6 +478,13 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam)
     | KW_EXECUTE KW_SET_CURRENT_SNAPSHOT LPAREN (snapshotParam=Number) RPAREN
     -> ^(TOK_ALTERTABLE_EXECUTE KW_SET_CURRENT_SNAPSHOT $snapshotParam)
+    ;
+
+alterStatementSuffixDropBranch
+@init { gParent.pushMsg("alter table drop branch (if exists) branchName", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_BRANCH ifExists? branchName=identifier
+    -> ^(TOK_ALTERTABLE_DROP_BRANCH ifExists? $branchName)
     ;
 
 alterStatementSuffixCreateBranch

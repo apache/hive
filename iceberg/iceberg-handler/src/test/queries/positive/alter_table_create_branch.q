@@ -32,3 +32,14 @@ explain alter table iceTbl create branch test_branch_4 with snapshot retention 5
 alter table iceTbl create branch test_branch_4 with snapshot retention 5 snapshots 5 days;
 -- check the values, four values
 select * from iceTbl for system_version as of 'test_branch_4';
+
+-- drop a branch
+explain alter table iceTbl drop branch test_branch_3;
+alter table iceTbl drop branch test_branch_3;
+
+-- drop a branch with if exists
+explain alter table iceTbl drop branch if exists test_branch_4;
+alter table iceTbl drop branch if exists test_branch_4;
+
+-- drop a non-exist branch with if exists
+alter table iceTbl drop branch if exists test_branch_5;

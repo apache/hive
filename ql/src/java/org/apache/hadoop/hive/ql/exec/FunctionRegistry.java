@@ -611,6 +611,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("array_slice", GenericUDFArraySlice.class);
     system.registerGenericUDF("array_except", GenericUDFArrayExcept.class);
     system.registerGenericUDF("array_intersect", GenericUDFArrayIntersect.class);
+    system.registerGenericUDF("array_union", GenericUDFArrayUnion.class);
     system.registerGenericUDF("deserialize", GenericUDFDeserialize.class);
     system.registerGenericUDF("sentences", GenericUDFSentences.class);
     system.registerGenericUDF("map_keys", GenericUDFMapKeys.class);
@@ -621,6 +622,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("least", GenericUDFLeast.class);
     system.registerGenericUDF("cardinality_violation", GenericUDFCardinalityViolation.class);
     system.registerGenericUDF("width_bucket", GenericUDFWidthBucket.class);
+    system.registerGenericUDF("typeof", GenericUDFTypeOf.class);
 
     system.registerGenericUDF("from_utc_timestamp", GenericUDFFromUtcTimestamp.class);
     system.registerGenericUDF("to_utc_timestamp", GenericUDFToUtcTimestamp.class);
