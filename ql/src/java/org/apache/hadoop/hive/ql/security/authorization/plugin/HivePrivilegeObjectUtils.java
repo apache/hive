@@ -59,7 +59,74 @@ public class HivePrivilegeObjectUtils {
       objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATACONNECTOR, null, dcname));
     }
     return objs;
-
   }
 
+
+  /**
+   * An index on a table list by dbName, tableName.
+   */
+  public abstract static class TableIndex<T> {
+    private final T[] index;
+    protected abstract String getDbName(T item);
+    protected abstract String getTableName(T item);
+    protected TableIndex(List<T> tables) {
+      if (tables != null) {
+        index = tables.toArray((T[]) new Object[0]);
+        // sort them by dbname, tblname
+        Arrays.sort(index, (left, right)->{
+          int cmp = getDbName(left).compareTo(getDbName(right));
+          return cmp != 0
+              ? cmp
+              : getTableName(left).compareTo(getTableName(right));
+        });
+      } else {
+        index = (T[]) new Object[0];
+      }
+    }
+
+    /**
+     * Lookup using dichotomy using order described by Name, tblName
+     * @param dbName the database name
+     * @param tableName the table name
+     * @return the table if found in the index, null otherwise
+     */
+    public T lookup(String dbName, String tableName) {
+      int low = 0;
+      int high = index.length - 1;
+      while (low <= high) {
+        int mid = (low + high) >>> 1;
+        T item = index[mid];
+        int cmp = getDbName(item).compareTo(dbName);
+        if (cmp == 0) {
+          cmp = getTableName(item).compareTo(tableName);
+        }
+        if (cmp < 0)
+          low = mid + 1;
+        else if (cmp > 0)
+          high = mid - 1;
+        else
+          return item; // key found
+      }
+      return null;  // key not found.
+    }
+  }
+
+  /**
+   * Specialized index for HivePrivilegeObject.
+   */
+  public static class PrivilegeIndex extends TableIndex<HivePrivilegeObject> {
+    public PrivilegeIndex(List<HivePrivilegeObject> tables) {
+      super(tables);
+    }
+
+    @Override
+    protected String getDbName(HivePrivilegeObject item) {
+      return item.getDbname();
+    }
+
+    @Override
+    protected String getTableName(HivePrivilegeObject item) {
+      return item.getObjectName();
+    }
+  }
 }
