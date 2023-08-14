@@ -105,6 +105,13 @@ public class SubQueryUtils {
     return node;
   }
 
+  static ASTNode isNotNull(ASTNode expr) {
+    ASTNode node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+    node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, "isnotnull"));
+    node.addChild(expr);
+    return node;
+  }
+
   static public void subqueryRestrictionCheck(QB qb, ASTNode subqueryExprNode, RelNode srcRel,
       boolean forHavingClause, Context ctx,
       LinkedHashMap<RelNode, RowResolver> relToHiveRR)
@@ -451,6 +458,29 @@ public class SubQueryUtils {
 
   static ASTNode buildOuterJoinPostCond(String sqAlias, RowResolver sqRR) {
     return isNull(buildSQJoinExpr(sqAlias, sqRR));
+  }
+
+  static ASTNode buildNullNotInSearchCond(ASTNode colRefAST){
+    int type = colRefAST.getType();
+    if (type == HiveParser.DOT) {
+      return isNotNull(colRefAST);
+    }
+
+    ASTNode ans = null;
+    for (int i = 0; i < colRefAST.getChildCount(); i++) {
+      ASTNode child = (ASTNode) colRefAST.getChild(i);
+      ASTNode c = buildNullNotInSearchCond(child);
+      if (c == null) {
+        return null;
+      }
+      if(i == 0){
+        ans = c;
+      }
+      else{
+        ans = andAST(ans, c);
+      }
+    }
+    return ans;
   }
 
   @SuppressWarnings("rawtypes")

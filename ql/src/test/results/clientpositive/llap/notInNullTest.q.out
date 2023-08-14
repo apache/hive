@@ -1,0 +1,197 @@
+PREHOOK: query: create table t3 (id int,name string, age int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: create table t3 (id int,name string, age int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: insert into t3 values(1,'Sagar',23),(2,'Sultan',NULL),(3,'Surya',23),(4,'Raman',45),(5,'Scott',23),(6,'Ramya',5),(7,'',23),(8,'',23),(9,'ron',3),(10,'Sam',22),(11,'nick',19),(12,'fed',18),(13,'kong',13),(14,'hela',45)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3
+POSTHOOK: query: insert into t3 values(1,'Sagar',23),(2,'Sultan',NULL),(3,'Surya',23),(4,'Raman',45),(5,'Scott',23),(6,'Ramya',5),(7,'',23),(8,'',23),(9,'ron',3),(10,'Sam',22),(11,'nick',19),(12,'fed',18),(13,'kong',13),(14,'hela',45)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3
+POSTHOOK: Lineage: t3.age SCRIPT []
+POSTHOOK: Lineage: t3.id SCRIPT []
+POSTHOOK: Lineage: t3.name SCRIPT []
+PREHOOK: query: create table t4 (id int,name string, age int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t4
+POSTHOOK: query: create table t4 (id int,name string, age int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t4
+PREHOOK: query: insert into t4 values(1,'Sagar',23),(3,'Surya',23),(4,'Raman',45),(5,'Scott',23),(6,'Ramya',5),(7,'',23),(8,'',23)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t4
+POSTHOOK: query: insert into t4 values(1,'Sagar',23),(3,'Surya',23),(4,'Raman',45),(5,'Scott',23),(6,'Ramya',5),(7,'',23),(8,'',23)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t4
+POSTHOOK: Lineage: t4.age SCRIPT []
+POSTHOOK: Lineage: t4.id SCRIPT []
+POSTHOOK: Lineage: t4.name SCRIPT []
+PREHOOK: query: create table t5 (id int,name string, ages int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t5
+POSTHOOK: query: create table t5 (id int,name string, ages int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t5
+PREHOOK: query: insert into t5 values(1,'Sagar',23),(3,'Surya',23),(4,'Raman',45),(5,'Scott',23),(6,'Ramya',5),(7,'',23),(8,'',23)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t5
+POSTHOOK: query: insert into t5 values(1,'Sagar',23),(3,'Surya',23),(4,'Raman',45),(5,'Scott',23),(6,'Ramya',5),(7,'',23),(8,'',23)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t5
+POSTHOOK: Lineage: t5.ages SCRIPT []
+POSTHOOK: Lineage: t5.id SCRIPT []
+POSTHOOK: Lineage: t5.name SCRIPT []
+Warning: Shuffle Join MERGEJOIN[42][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from t3
+where age not in (select distinct(age) age from t4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (select distinct(age) age from t4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9	ron	3
+13	kong	13
+12	fed	18
+11	nick	19
+10	Sam	22
+Warning: Shuffle Join MERGEJOIN[42][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from t3
+where t3.age not in (select distinct(age) age from t4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where t3.age not in (select distinct(age) age from t4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9	ron	3
+13	kong	13
+12	fed	18
+11	nick	19
+10	Sam	22
+Warning: Shuffle Join MERGEJOIN[42][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t5
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9	ron	3
+13	kong	13
+12	fed	18
+11	nick	19
+10	Sam	22
+PREHOOK: query: select * from t3
+where age not in (23,22,18)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (23,22,18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4	Raman	45
+6	Ramya	5
+9	ron	3
+11	nick	19
+13	kong	13
+14	hela	45
+Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select * from t3
+where age not in (select distinct(age) age from t4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (select distinct(age) age from t4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10	Sam	22
+11	nick	19
+12	fed	18
+13	kong	13
+9	ron	3
+Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select * from t3
+where t3.age not in (select distinct(age) age from t4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where t3.age not in (select distinct(age) age from t4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11	nick	19
+12	fed	18
+13	kong	13
+9	ron	3
+10	Sam	22
+Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t5
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10	Sam	22
+11	nick	19
+12	fed	18
+13	kong	13
+9	ron	3
+PREHOOK: query: select * from t3
+where age not in (23,22,18)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (23,22,18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4	Raman	45
+6	Ramya	5
+9	ron	3
+11	nick	19
+13	kong	13
+14	hela	45

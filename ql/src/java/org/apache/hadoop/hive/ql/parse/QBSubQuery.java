@@ -460,6 +460,9 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   private ASTNode joinConditionAST;
   private JoinType joinType;
   private ASTNode postJoinConditionAST;
+
+  private ASTNode nullNotInConditionAST;
+
   private int numCorrExprsinSQ;
   private List<ASTNode> subQueryJoinAliasExprs;
   private transient final ASTNodeOrigin originalSQASTOrigin;
@@ -734,7 +737,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       boolean forHavingClause,
       String outerQueryAlias) throws SemanticException {
     ASTNode parentQueryJoinCond = null;
-
+    ASTNode tmpNullNotInSearchCond = null;
     if ( parentQueryExpression != null ) {
 
       ColumnInfo outerQueryCol = null;
@@ -747,10 +750,19 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       ASTNode parentExpr = parentQueryExpression;
       if (!forHavingClause) {
         Set<String> aliases = outerQueryRR.getRslvMap().keySet();
+        String tableAlias;
         if (notInCheck != null) {
           aliases.remove(notInCheck.getAlias());
+          tableAlias = aliases.size() == 1 ? aliases.iterator().next() : null;
+          ASTNode colRefAST = SubQueryUtils.setQualifiedColumnReferences(parentExpr, tableAlias);
+
+          if (colRefAST == null) {
+            tmpNullNotInSearchCond = null;
+          } else {
+            tmpNullNotInSearchCond = SubQueryUtils.buildNullNotInSearchCond(colRefAST);
+          }
         }
-        String tableAlias = aliases.size() == 1 ? aliases.iterator().next() : null;
+        tableAlias = aliases.size() == 1 ? aliases.iterator().next() : null;
         parentExpr =
                 SubQueryUtils.setQualifiedColumnReferences(parentExpr, tableAlias);
         if (parentExpr == null) {
@@ -781,6 +793,9 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         postJoinConditionAST = SubQueryUtils.buildPostJoinNullCheck(subQueryJoinAliasExprs);
       } else if ( operator.getType() == SubQueryType.NOT_IN ) {
         postJoinConditionAST = SubQueryUtils.buildOuterJoinPostCond(alias, sqRR);
+        if(notInCheck != null){
+          nullNotInConditionAST = tmpNullNotInSearchCond;
+        }
       }
     }
 
@@ -797,6 +812,10 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       return postJoinConditionAST;
     }
     ASTNode node = SubQueryUtils.andAST(outerQryFilter, postJoinConditionAST);
+    if(nullNotInConditionAST != null){
+      ASTNode ans = SubQueryUtils.andAST(nullNotInConditionAST, node);
+      return ans;
+    }
     return node;
   }
 
