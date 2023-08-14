@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalVoidFunction;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -39,7 +39,7 @@ import static org.apache.hadoop.hive.metastore.txn.TxnStore.FAILED_STATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.REFUSED_STATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.SUCCEEDED_STATE;
 
-public class PurgeCompactionHistoryFunction implements TransactionalVoidFunction {
+public class PurgeCompactionHistoryFunction implements TransactionalFunction<Void> {
 
   private static final Logger LOG = LoggerFactory.getLogger(PurgeCompactionHistoryFunction.class);
   
@@ -50,7 +50,7 @@ public class PurgeCompactionHistoryFunction implements TransactionalVoidFunction
   }
 
   @Override
-  public void call(DataSourceWrapper dataSourceWrapper) throws MetaException {
+  public Void execute(DataSourceWrapper dataSourceWrapper) throws MetaException {
     NamedParameterJdbcTemplate jdbcTemplate = dataSourceWrapper.getJdbcTemplate();
     List<Long> deleteSet = new ArrayList<>();
     long timeoutThreshold = System.currentTimeMillis() -
@@ -87,13 +87,14 @@ public class PurgeCompactionHistoryFunction implements TransactionalVoidFunction
     });
 
     if (deleteSet.size() == 0) {
-      return;
+      return null;
     }
 
     int totalCount = TxnUtils.executeStatementWithInClause(conf, jdbcTemplate,
         "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE \"CC_ID\" in (:ids)",
         new MapSqlParameterSource(), "ids", deleteSet, Long::compareTo);
     LOG.debug("Removed {} records from COMPLETED_COMPACTIONS", totalCount);
+    return null;
   }
   
 

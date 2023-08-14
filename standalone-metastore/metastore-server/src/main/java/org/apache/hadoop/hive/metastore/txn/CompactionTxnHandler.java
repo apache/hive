@@ -93,10 +93,10 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.ReadOnly
   public Set<CompactionInfo> findPotentialCompactions(int abortedThreshold,
       long abortedTimeThreshold, long lastChecked) throws MetaException {
-    Set<CompactionInfo> candidates = new HashSet<>(new CompactionCandidateHandler(lastChecked, 
-        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE)).execute(dataSourceWrapper));
+    Set<CompactionInfo> candidates = new HashSet<>(jdbcTemplate.execute(
+        new CompactionCandidateHandler(lastChecked, MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE))));
     if (!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER)) {
-      candidates.addAll(new AbortedTxnHandler(abortedTimeThreshold, abortedThreshold).execute(dataSourceWrapper));
+      candidates.addAll(jdbcTemplate.execute(new AbortedTxnHandler(abortedTimeThreshold, abortedThreshold)));
     }
     return candidates;
   }
@@ -130,7 +130,7 @@ class CompactionTxnHandler extends TxnHandler {
       throw new MetaException("FindNextCompactRequest is null");
     }
     long poolTimeout = MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_WORKER_POOL_TIMEOUT, TimeUnit.MILLISECONDS);
-    return new NextCompactionHandler(rqst, dataSourceWrapper, getDbTime(), poolTimeout).execute(dataSourceWrapper);
+    return jdbcTemplate.execute(new NextCompactionHandler(rqst, jdbcTemplate, getDbTime(), poolTimeout));
   }
 
   /**
@@ -141,7 +141,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.SafeToRetry
   public void markCompacted(CompactionInfo info) throws MetaException {
-    ParameterizedCommand.execute(dataSourceWrapper, 
+    jdbcTemplate.execute(
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = :state, \"CQ_WORKER_ID\" = NULL WHERE \"CQ_ID\" = :id",
         new MapSqlParameterSource()
             .addValue("state", Character.toString(READY_FOR_CLEANING), Types.CHAR)
@@ -158,15 +158,15 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException {
-    return new ReadyToCleanHandler(useMinHistoryWriteId, minOpenTxnWaterMark, retentionTime, 
-        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE)).execute(dataSourceWrapper);
+    return jdbcTemplate.execute(new ReadyToCleanHandler(useMinHistoryWriteId, minOpenTxnWaterMark, retentionTime, 
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE)));
   }
 
   @Override
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException {
-    return new AbortTxnInfoHandler(abortedTimeThreshold, abortedThreshold,
-        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE)).execute(dataSourceWrapper);
+    return jdbcTemplate.execute(new AbortTxnInfoHandler(abortedTimeThreshold, abortedThreshold,
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE)));
   }
 
   /**
@@ -194,7 +194,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   private void setCleanerStart(CompactionInfo info, Long timestamp) throws MetaException {
-    ParameterizedCommand.execute(dataSourceWrapper,
+    jdbcTemplate.execute(
         " UPDATE \"COMPACTION_QUEUE\" " +
             " SET \"CQ_CLEANER_START\" = :timeStamp" +
             " WHERE \"CQ_ID\" = :id AND \"CQ_STATE\"= :state",
@@ -215,7 +215,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.CannotRetry
   public void markCleaned(CompactionInfo info) throws MetaException {
     LOG.debug("Running markCleaned with CompactionInfo: {}", info);
-    new MarkCleanedFunction(info, dbProduct, conf).call(dataSourceWrapper);
+    new MarkCleanedFunction(info, dbProduct, conf).execute(jdbcTemplate);
   }
   
   /**
@@ -230,7 +230,7 @@ class CompactionTxnHandler extends TxnHandler {
     // First need to find the min_uncommitted_txnid which is currently seen by any open transactions.
     // If there are no txns which are currently open or aborted in the system, then current value of
     // max(TXNS.txn_id) could be min_uncommitted_txnid.
-    Long minTxnId = new MinUncommittedTxnIdHandler(useMinHistoryLevel).execute(dataSourceWrapper);
+    Long minTxnId = jdbcTemplate.execute(new MinUncommittedTxnIdHandler(useMinHistoryLevel));
     if (minTxnId == null) {
       throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
     }
@@ -238,16 +238,15 @@ class CompactionTxnHandler extends TxnHandler {
 
     // As all txns below min_uncommitted_txnid are either committed or empty_aborted, we are allowed
     // to clean up the entries less than min_uncommitted_txnid from the TXN_TO_WRITE_ID table.
-    String sql = "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" < :txnId";
-    LOG.debug("Going to execute delete <{}>", sql);
-    int rc = dataSourceWrapper.getJdbcTemplate().update(sql, new MapSqlParameterSource("txnId", minUncommitedTxnid));
+    int rc = jdbcTemplate.execute("DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" < :txnId",
+        new MapSqlParameterSource("txnId", minUncommitedTxnid), null);
     LOG.info("Removed {} rows from TXN_TO_WRITE_ID with Txn Low-Water-Mark: {}", rc, minUncommitedTxnid);
   }
 
   @Override
   @RetrySemantics.SafeToRetry
   public void removeDuplicateCompletedTxnComponents() throws MetaException {
-    RemoveDuplicateCompleteTxnComponentsCommand.INSTANCE.execute(dataSourceWrapper);
+    jdbcTemplate.execute(RemoveDuplicateCompleteTxnComponentsCommand.INSTANCE);
   }
 
   /**
@@ -269,14 +268,14 @@ class CompactionTxnHandler extends TxnHandler {
      * 2. never deletes the maximum txnId even if it is before the TXN_OPENTXN_TIMEOUT window
      */
     long lowWaterMark = getOpenTxnTimeoutLowBoundaryTxnId();
-    String query = "DELETE FROM \"TXNS\" WHERE \"TXN_ID\" NOT IN (SELECT \"TC_TXNID\" FROM \"TXN_COMPONENTS\") " +
-        "AND (\"TXN_STATE\" = :abortedState OR \"TXN_STATE\" = :committedState) AND \"TXN_ID\" < :txnId";
-
-    LOG.debug("Going to execute query <{}>", query);
-    dataSourceWrapper.getJdbcTemplate().update(query, new MapSqlParameterSource()
-        .addValue("txnId", lowWaterMark)
-        .addValue("abortedState", TxnStatus.ABORTED.getSqlConst(), Types.CHAR)
-        .addValue("committedState", TxnStatus.COMMITTED.getSqlConst(), Types.CHAR));
+    jdbcTemplate.execute(
+        "DELETE FROM \"TXNS\" WHERE \"TXN_ID\" NOT IN (SELECT \"TC_TXNID\" FROM \"TXN_COMPONENTS\") " +
+            "AND (\"TXN_STATE\" = :abortedState OR \"TXN_STATE\" = :committedState) AND \"TXN_ID\" < :txnId",
+        new MapSqlParameterSource()
+            .addValue("txnId", lowWaterMark)
+            .addValue("abortedState", TxnStatus.ABORTED.getSqlConst(), Types.CHAR)
+            .addValue("committedState", TxnStatus.COMMITTED.getSqlConst(), Types.CHAR),
+        null);
   }
 
   /**
@@ -290,14 +289,15 @@ class CompactionTxnHandler extends TxnHandler {
    */
   @Override
   @RetrySemantics.Idempotent
-  public void revokeFromLocalWorkers(String hostname) {
-    dataSourceWrapper.getJdbcTemplate().update(
+  public void revokeFromLocalWorkers(String hostname) throws MetaException {
+    jdbcTemplate.execute(
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL," +
             " \"CQ_STATE\" = :initiatedState WHERE \"CQ_STATE\" = :workingState AND \"CQ_WORKER_ID\" LIKE :hostname",
         new MapSqlParameterSource()
             .addValue("initiatedState", Character.toString(INITIATED_STATE), Types.CHAR)
             .addValue("workingState", Character.toString(WORKING_STATE), Types.CHAR)
-            .addValue("hostname", hostname + "%"));
+            .addValue("hostname", hostname + "%"),
+        null);
   }
 
   /**
@@ -313,12 +313,14 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.Idempotent
   public void revokeTimedoutWorkers(long timeout) throws MetaException {
     long latestValidStart = getDbTime().getTime() - timeout;
-    dataSourceWrapper.getJdbcTemplate().update("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL, " +
+    jdbcTemplate.execute(
+        "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL, " +
             "\"CQ_STATE\" = :initiatedState WHERE \"CQ_STATE\" = :workingState AND \"CQ_START\" < :timeout",
         new MapSqlParameterSource()
             .addValue("initiatedState", Character.toString(INITIATED_STATE), Types.CHAR)
             .addValue("workingState", Character.toString(WORKING_STATE), Types.CHAR)
-            .addValue("timeout", latestValidStart));
+            .addValue("timeout", latestValidStart),
+        null);
   }
 
   /**
@@ -330,12 +332,12 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public List<String> findColumnsWithStats(CompactionInfo ci) throws MetaException {
-    return new FindColumnsWithStatsHandler(ci).execute(dataSourceWrapper);
+    return jdbcTemplate.execute(new FindColumnsWithStatsHandler(ci));
   }
 
   @Override
   public void updateCompactorState(CompactionInfo ci, long compactionTxnId) throws MetaException {
-    ParameterizedCommand.execute(dataSourceWrapper, 
+    jdbcTemplate.execute(
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HIGHEST_WRITE_ID\" = :highestWriteId, " +
             "\"CQ_RUN_AS\" = :runAs, \"CQ_TXN_ID\" = :txnId WHERE \"CQ_ID\" = :id",
         new MapSqlParameterSource()
@@ -355,7 +357,7 @@ class CompactionTxnHandler extends TxnHandler {
     if (ci.partName != null) {
       parameterSource.addValue("partName", ci.partName);
     }
-    ParameterizedCommand.execute(dataSourceWrapper,
+    jdbcTemplate.execute(
         /*We make an entry in TXN_COMPONENTS for the partition/table that the compactor is
          * working on in case this txn aborts and so we need to ensure that its TXNS entry is
          * not removed until Cleaner has removed all files that this txn may have written, i.e.
@@ -388,7 +390,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.SafeToRetry
   public void purgeCompactionHistory() throws MetaException {
-    new PurgeCompactionHistoryFunction(conf).call(dataSourceWrapper);
+    new PurgeCompactionHistoryFunction(conf).execute(jdbcTemplate);
   }
 
   /**
@@ -402,14 +404,14 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public boolean checkFailedCompactions(CompactionInfo ci) throws MetaException {
-    return new CheckFailedCompactionsHandler(conf, ci).execute(dataSourceWrapper);
+    return jdbcTemplate.execute(new CheckFailedCompactionsHandler(conf, ci));
   }
 
   private void updateStatus(CompactionInfo ci) throws MetaException {
     String strState = CompactionState.fromSqlConst(ci.state).toString();
 
     LOG.debug("Marking as {}: CompactionInfo: {}", strState, ci);
-    CompactionInfo ciActual = new GetCompactionInfoHandler(ci.id, false).execute(dataSourceWrapper); 
+    CompactionInfo ciActual = jdbcTemplate.execute(new GetCompactionInfoHandler(ci.id, false)); 
 
     long endTime = getDbTime().getTime();
     if (ciActual != null) {
@@ -417,8 +419,8 @@ class CompactionTxnHandler extends TxnHandler {
       ciActual.errorMessage = ci.errorMessage;
       ciActual.state = ci.state;
 
-      dataSourceWrapper.getJdbcTemplate().update("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = :id",
-          new MapSqlParameterSource("id", ci.id));
+      jdbcTemplate.execute("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = :id",
+          new MapSqlParameterSource("id", ci.id), null);
     } else {
       if (ci.id > 0) {
         //the record with valid CQ_ID has disappeared - this is a sign of something wrong
@@ -440,7 +442,7 @@ class CompactionTxnHandler extends TxnHandler {
           + "can make an entry in COMPLETED_COMPACTIONS. New Id: {}", ciActual.id);
     }
 
-    new InsertCompactionInfoCommand(ciActual, endTime).execute(dataSourceWrapper);
+    jdbcTemplate.execute(new InsertCompactionInfoCommand(ciActual, endTime));
   }
 
   /**
@@ -479,7 +481,8 @@ class CompactionTxnHandler extends TxnHandler {
        */
       try (TxnStore.MutexAPI.LockHandle ignored = getMutexAPI().acquireLock(MUTEX_KEY.CompactionScheduler.name())) {
         long id = generateCompactionQueueId();
-        int updCnt = dataSourceWrapper.getJdbcTemplate().update("INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
+        int updCnt = jdbcTemplate.execute(
+            "INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
                 " \"CQ_TYPE\", \"CQ_STATE\", \"CQ_RETRY_RETENTION\", \"CQ_ERROR_MESSAGE\", \"CQ_COMMIT_TIME\") " +
                 " VALUES (:id, :db, :table, :partition, :type, :state, :retention, :msg, " + getEpochFn(dbProduct) + ")",
             new MapSqlParameterSource()
@@ -490,7 +493,7 @@ class CompactionTxnHandler extends TxnHandler {
                 .addValue("type", Character.toString(thriftCompactionType2DbType(info.type)))
                 .addValue("state", Character.toString(info.state))
                 .addValue("retention", info.retryRetention)
-                .addValue("msg", info.errorMessage));
+                .addValue("msg", info.errorMessage), null);
         if (updCnt == 0) {
           LOG.error("Unable to update/insert compaction queue record: {}. updCnt={}", info, updCnt);
           throw new MetaException("Unable to insert abort retry entry into COMPACTION QUEUE: " +
@@ -500,12 +503,12 @@ class CompactionTxnHandler extends TxnHandler {
         throw new MetaException("Failed to set retry retention time for compaction item: " + info + " Error: " + e);
       }
     } else {
-      ParameterizedCommand.execute(dataSourceWrapper,
+      jdbcTemplate.execute(
           "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_RETRY_RETENTION\" = :retention, \"CQ_ERROR_MESSAGE\"= :msg WHERE \"CQ_ID\" = :id",
           new MapSqlParameterSource()
               .addValue("retention", info.retryRetention)
               .addValue("msg", info.errorMessage)
-              .addValue("id", info.id), 
+              .addValue("id", info.id),
           ParameterizedCommand.EXACTLY_ONE_ROW);
     }
   }
@@ -513,7 +516,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.Idempotent
   public void setHadoopJobId(String hadoopJobId, long id) throws MetaException {
-    ParameterizedCommand.execute(dataSourceWrapper,
+    jdbcTemplate.execute(
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HADOOP_JOB_ID\" = :hadoopJobId WHERE \"CQ_ID\" = :id",
         new MapSqlParameterSource()
             .addValue("id", id)
@@ -527,7 +530,7 @@ class CompactionTxnHandler extends TxnHandler {
     if (useMinHistoryWriteId) {
       return Long.MAX_VALUE;
     }
-    return getMinOpenTxnIdWaterMark(dataSourceWrapper.getConnection());
+    return getMinOpenTxnIdWaterMark(jdbcTemplate.getConnection());
   }
 
   /**
@@ -543,7 +546,7 @@ class CompactionTxnHandler extends TxnHandler {
       return Long.MAX_VALUE;
     }
     try {
-      Long minId = dataSourceWrapper.getJdbcTemplate().queryForObject("SELECT MIN(\"MHL_MIN_OPEN_TXNID\") FROM \"MIN_HISTORY_LEVEL\"",
+      Long minId = jdbcTemplate.getJdbcTemplate().queryForObject("SELECT MIN(\"MHL_MIN_OPEN_TXNID\") FROM \"MIN_HISTORY_LEVEL\"",
           new MapSqlParameterSource(), Long.class);
       return minId == null ? Long.MAX_VALUE : minId;
     } catch (DataAccessException e) {
@@ -571,11 +574,11 @@ class CompactionTxnHandler extends TxnHandler {
 
   @Override
   public Optional<CompactionInfo> getCompactionByTxnId(long txnId) throws MetaException {
-    return Optional.ofNullable(getCompactionByTxnId(dataSourceWrapper, txnId));
+    return Optional.ofNullable(getCompactionByTxnId(jdbcTemplate, txnId));
   }
 
   private CompactionInfo getCompactionByTxnId(DataSourceWrapper dataSourceWrapper, long txnId) throws MetaException {
-    return new GetCompactionInfoHandler(txnId, true).execute(dataSourceWrapper); 
+    return dataSourceWrapper.execute( new GetCompactionInfoHandler(txnId, true)); 
   }
 
   @Override
@@ -600,25 +603,25 @@ class CompactionTxnHandler extends TxnHandler {
   
   @Override
   public boolean updateCompactionMetricsData(CompactionMetricsData data) throws MetaException {
-    return new UpdateCompactionMetricsDataFunction(data).execute(dataSourceWrapper);
+    return new UpdateCompactionMetricsDataFunction(data).execute(jdbcTemplate);
   }
 
   @Override
   public List<CompactionMetricsData> getTopCompactionMetricsDataPerType(int limit)      
       throws MetaException {
-    return new TopCompactionMetricsDataPerTypeFunction(limit, sqlGenerator).execute(dataSourceWrapper);
+    return new TopCompactionMetricsDataPerTypeFunction(limit, sqlGenerator).execute(jdbcTemplate);
   }
 
   @Override
   public CompactionMetricsData getCompactionMetricsData(String dbName, String tblName, String partitionName,
       CompactionMetricsData.MetricType type) throws MetaException {
-    return new CompactionMetricsDataHandler(dbName, tblName, partitionName, type).execute(dataSourceWrapper);
+    return jdbcTemplate.execute(new CompactionMetricsDataHandler(dbName, tblName, partitionName, type));
   }
 
   @Override
   public void removeCompactionMetricsData(String dbName, String tblName, String partitionName,
       CompactionMetricsData.MetricType type) throws MetaException {
-    new RemoveCompactionMetricsDataCommand(dbName, tblName, partitionName, type).execute(dataSourceWrapper);
+    jdbcTemplate.execute(new RemoveCompactionMetricsDataCommand(dbName, tblName, partitionName, type));
   }
 
 }

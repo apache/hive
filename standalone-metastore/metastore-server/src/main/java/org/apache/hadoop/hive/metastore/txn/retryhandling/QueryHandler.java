@@ -17,43 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore.txn.retryhandling;
 
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-
-import java.sql.ResultSet;
 
 /**
  * A simple combination of the {@link ParameterizedQuery} and a {@link ResultSetExtractor}.
  * @param <Result> The type of the result 
  */
-public abstract class QueryHandler<Result> extends ParameterizedQuery implements ResultSetExtractor<Result> {
-  
-  private static final Logger LOG = LoggerFactory.getLogger(QueryHandler.class);
-
-  /**
-   * Executes a {@link NamedParameterJdbcTemplate#query(String, SqlParameterSource, ResultSetExtractor)} call using the query 
-   * string and parameters obtained from {@link QueryHandler#getParameterizedQueryString(DatabaseProduct)} and 
-   * {@link QueryHandler#getQueryParameters()} methods. Processes the result using the {@link QueryHandler#extractData(ResultSet)}
-   * method ({@link QueryHandler} extends the {@link ResultSetExtractor} interface).
-   * @param dataSourceWrapper A {@link DataSourceWrapper} instance responsible for providing all the necessary resources 
-   *                          to be able to perform transactional database calls.
-   * @return Returns with the object(s) constructed from the result of the executed query. 
-   * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)}.
-   */  
-  public Result execute(DataSourceWrapper dataSourceWrapper) throws MetaException {
-    String queryStr = getParameterizedQueryString(dataSourceWrapper.getDatabaseProduct());
-    LOG.debug("Going to execute query <{}>", queryStr);
-    SqlParameterSource params = getQueryParameters();
-    if (params != null) {
-      return dataSourceWrapper.getJdbcTemplate().query(queryStr, params, this);
-    } else {
-      return dataSourceWrapper.getJdbcTemplate().query(queryStr, this);
-    }
-  }
-  
-}
+public interface QueryHandler<Result> extends ParameterizedQuery, ResultSetExtractor<Result> {}

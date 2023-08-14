@@ -26,7 +26,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
  * A pair of a Spring {@link NamedParameterJdbcTemplate} style parameterized query string <br>
  * (for example: <b>SELECT * FROM TBL WHERE ID = :id</b>) and its parameters.
  */
-public abstract class ParameterizedQuery {
+public interface ParameterizedQuery {
 
   /**
    * The parameterized query string. It is allowed if the query has no parameters at all.
@@ -34,13 +34,13 @@ public abstract class ParameterizedQuery {
    * @return Returns the parameterized query string.
    * @throws MetaException Thrown if the query string cannot be assembled.
    */
-  protected abstract String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException;
+  String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException;
 
   /**
    * An {@link SqlParameterSource} instance containing the required parameters for the query string. If the query is not
    * parameterized, this method can either return null or an empty {@link SqlParameterSource}.
    * @return Returns the {@link SqlParameterSource} containing the parameters for the query.
    */
-  protected abstract SqlParameterSource getQueryParameters();
+  SqlParameterSource getQueryParameters();
   
 }

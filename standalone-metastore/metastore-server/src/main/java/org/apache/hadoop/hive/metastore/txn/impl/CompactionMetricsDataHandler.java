@@ -29,7 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-public class CompactionMetricsDataHandler extends QueryHandler<CompactionMetricsData> {
+public class CompactionMetricsDataHandler implements QueryHandler<CompactionMetricsData> {
 
   //language=SQL
   private static final String SELECT_COMPACTION_METRICS_CACHE =
@@ -50,12 +50,12 @@ public class CompactionMetricsDataHandler extends QueryHandler<CompactionMetrics
   }
 
   @Override
-  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     return SELECT_COMPACTION_METRICS_CACHE;
   }
 
   @Override
-  protected SqlParameterSource getQueryParameters() {
+  public SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
         .addValue("db", dbName)
         .addValue("table", tblName)

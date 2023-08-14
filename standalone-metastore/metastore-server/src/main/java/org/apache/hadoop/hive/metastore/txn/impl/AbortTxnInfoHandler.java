@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -38,7 +37,7 @@ import java.util.List;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.READY_FOR_CLEANING;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 
-public class AbortTxnInfoHandler extends QueryHandler<List<CompactionInfo>> {
+public class AbortTxnInfoHandler implements QueryHandler<List<CompactionInfo>> {
 
   // Three inner sub-queries which are under left-join to fetch the required data for aborted txns.
   //language=SQL
@@ -81,7 +80,7 @@ public class AbortTxnInfoHandler extends QueryHandler<List<CompactionInfo>> {
   private final int abortedThreshold;
   private final int fetchSize;
   
-  protected String getParameterizedQueryString(DatabaseProduct dbProduct) throws MetaException {
+  public String getParameterizedQueryString(DatabaseProduct dbProduct) throws MetaException {
     return dbProduct.addLimitClause(
         fetchSize,
         String.format(AbortTxnInfoHandler.SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY,
@@ -89,7 +88,7 @@ public class AbortTxnInfoHandler extends QueryHandler<List<CompactionInfo>> {
   }
 
   @Override
-  protected SqlParameterSource getQueryParameters() {
+  public SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
         .addValue("abortedState", TxnStatus.ABORTED.getSqlConst(), Types.CHAR)
         .addValue("openState", TxnStatus.OPEN.getSqlConst(), Types.CHAR)

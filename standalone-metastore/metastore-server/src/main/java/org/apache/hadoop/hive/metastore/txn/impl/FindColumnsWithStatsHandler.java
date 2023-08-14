@@ -31,7 +31,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FindColumnsWithStatsHandler extends QueryHandler<List<String>> {
+public class FindColumnsWithStatsHandler implements QueryHandler<List<String>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(FindColumnsWithStatsHandler.class);
 
@@ -49,12 +49,12 @@ public class FindColumnsWithStatsHandler extends QueryHandler<List<String>> {
   }
 
   @Override
-  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) {
+  public String getParameterizedQueryString(DatabaseProduct databaseProduct) {
     return ci.partName != null ? PARTITION_SELECT : TABLE_SELECT;
   }
 
   @Override
-  protected SqlParameterSource getQueryParameters() {
+  public SqlParameterSource getQueryParameters() {
     MapSqlParameterSource params = new MapSqlParameterSource()
         .addValue("dbName", ci.dbname)
         .addValue("tableName", ci.tableName);

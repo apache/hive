@@ -27,7 +27,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import java.sql.Types;
 import java.util.function.Function;
 
-public class RemoveCompactionMetricsDataCommand extends ParameterizedCommand {
+public class RemoveCompactionMetricsDataCommand implements ParameterizedCommand {
 
   //language=SQL
   private static final String DELETE_COMPACTION_METRICS_CACHE =
@@ -52,12 +52,12 @@ public class RemoveCompactionMetricsDataCommand extends ParameterizedCommand {
   }
 
   @Override
-  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     return DELETE_COMPACTION_METRICS_CACHE;
   }
 
   @Override
-  protected SqlParameterSource getQueryParameters() {
+  public SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
         .addValue("db", dbName)
         .addValue("table", tblName)

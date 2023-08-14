@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalVoidFunction;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.SUCCEEDED_STATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 
-public class MarkCleanedFunction implements TransactionalVoidFunction {
+public class MarkCleanedFunction implements TransactionalFunction<Void> {
 
   private static final Logger LOG = LoggerFactory.getLogger(MarkCleanedFunction.class);
 
@@ -53,7 +53,7 @@ public class MarkCleanedFunction implements TransactionalVoidFunction {
   }
 
   @Override
-  public void call(DataSourceWrapper dataSourceWrapper) throws MetaException {
+  public Void execute(DataSourceWrapper dataSourceWrapper) throws MetaException {
     NamedParameterJdbcTemplate jdbcTemplate = dataSourceWrapper.getJdbcTemplate();
     MapSqlParameterSource param;
     if (!info.isAbortedTxnCleanup()) {
@@ -115,6 +115,7 @@ public class MarkCleanedFunction implements TransactionalVoidFunction {
 
     // Do cleanup of metadata in TXN_COMPONENTS table.
     removeTxnComponents(info, jdbcTemplate);
+    return null;
   }
 
   private void removeTxnComponents(CompactionInfo info, NamedParameterJdbcTemplate jdbcTemplate) {

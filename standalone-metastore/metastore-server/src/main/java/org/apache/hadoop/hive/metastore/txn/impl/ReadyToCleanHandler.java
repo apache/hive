@@ -34,7 +34,7 @@ import static org.apache.hadoop.hive.metastore.txn.TxnStore.ABORT_TXN_CLEANUP_TY
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.READY_FOR_CLEANING;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 
-public class ReadyToCleanHandler extends QueryHandler<List<CompactionInfo>> {
+public class ReadyToCleanHandler implements QueryHandler<List<CompactionInfo>> {
   
   private final boolean useMinHistoryWriteId;
   private final long minOpenTxnWaterMark;
@@ -49,9 +49,9 @@ public class ReadyToCleanHandler extends QueryHandler<List<CompactionInfo>> {
   }
 
   @Override
-  protected String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     /*
-     * By filtering on minOpenTxnWaterMark, we will only cleanup after every transaction is committed, that could see
+     * By filtering on minOpenTxnWaterMark, we will only clea nup after every transaction is committed, that could see
      * the uncompacted deltas. This way the cleaner can clean up everything that was made obsolete by this compaction.
      */
     String whereClause = " WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'" + 
@@ -99,7 +99,7 @@ public class ReadyToCleanHandler extends QueryHandler<List<CompactionInfo>> {
   }
 
   @Override
-  protected SqlParameterSource getQueryParameters() {
+  public SqlParameterSource getQueryParameters() {
     return null;
   }
 

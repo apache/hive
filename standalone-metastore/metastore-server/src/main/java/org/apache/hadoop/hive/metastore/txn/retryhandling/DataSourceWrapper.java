@@ -19,7 +19,11 @@ package org.apache.hadoop.hive.metastore.txn.retryhandling;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -30,9 +34,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Wraps multiple {@link DataSource}s into a single object and offers transaction management functionality. 
@@ -40,6 +46,7 @@ import java.util.Objects;
  */
 public class DataSourceWrapper {
 
+  private static final Logger LOG = LoggerFactory.getLogger(DataSourceWrapper.class);
   private static final ThreadLocal<RetryContext> threadLocal = new ThreadLocal<>();
 
   private final Map<String, DataSource> dataSources;
@@ -168,6 +175,64 @@ public class DataSourceWrapper {
       transactionManagers.get(context.datasource).rollback(context.transactionStatus);
     } finally {
       clearRetryContext();
+    }
+  }
+
+  /**
+   * Executes a {@link NamedParameterJdbcTemplate#update(String, org.springframework.jdbc.core.namedparam.SqlParameterSource)}
+   * calls using the query string and parameters obtained from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)} and
+   * {@link ParameterizedCommand#getQueryParameters()} methods. Validates the resulted number of affected rows using the
+   * {@link ParameterizedCommand#resultPolicy()} function.
+   * @param command The {@link ParameterizedCommand} to execute.
+   * @return Returns the number of affected rows.
+   * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)} or
+   *                       thrown if the update count was rejected by the {@link ParameterizedCommand#resultPolicy()} method
+   */
+  public Integer execute(ParameterizedCommand command) throws MetaException {
+    return execute(command.getParameterizedQueryString(getDatabaseProduct()),
+        command.getQueryParameters(), command.resultPolicy());
+  }
+
+  /**
+   * Executes a {@link NamedParameterJdbcTemplate#update(String, org.springframework.jdbc.core.namedparam.SqlParameterSource)}
+   * calls using the query string and {@link SqlParameterSource}. Validates the resulted number of affected rows using the
+   * resultpolicy function.
+   * @param query Parameterized query string.
+   * @param params Qyery parameters
+   * @param resultPolicy Result policy to use, or null, if no result policy.
+   * @return Returns the number of affected rows.
+   * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)} or
+   *                       thrown if the update count was rejected by the {@link ParameterizedCommand#resultPolicy()} method
+   */
+  public Integer execute(String query, SqlParameterSource params,
+                                Function<Integer, Boolean> resultPolicy) throws MetaException {
+    LOG.debug("Going to execute command <{}>", query);
+    int count = getJdbcTemplate().update(query, params);
+    if (resultPolicy != null && !resultPolicy.apply(count)) {
+      LOG.error("The update count was " + count + " which is not the expected. Rolling back.");
+      throw new MetaException("The update count was " + count + " which is not the expected. Rolling back.");
+    }
+    LOG.debug("Command <{}> updated {} records.", query, count);
+    return count;
+  }
+
+  /**
+   * Executes a {@link NamedParameterJdbcTemplate#query(String, SqlParameterSource, ResultSetExtractor)} call using the query 
+   * string and parameters obtained from {@link QueryHandler#getParameterizedQueryString(DatabaseProduct)} and 
+   * {@link QueryHandler#getQueryParameters()} methods. Processes the result using the {@link QueryHandler#extractData(ResultSet)}
+   * method ({@link QueryHandler} extends the {@link ResultSetExtractor} interface).
+   * @param queryHandler The {@link QueryHandler} instance containing the query, {@link SqlParameterSource}, and {@link ResultSetExtractor}.
+   * @return Returns with the object(s) constructed from the result of the executed query. 
+   * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)}.
+   */
+  public <Result> Result execute(QueryHandler<Result> queryHandler) throws MetaException {
+    String queryStr = queryHandler.getParameterizedQueryString(getDatabaseProduct());
+    LOG.debug("Going to execute query <{}>", queryStr);
+    SqlParameterSource params = queryHandler.getQueryParameters();
+    if (params != null) {
+      return getJdbcTemplate().query(queryStr, params, queryHandler);
+    } else {
+      return getJdbcTemplate().query(queryStr, queryHandler);
     }
   }
 

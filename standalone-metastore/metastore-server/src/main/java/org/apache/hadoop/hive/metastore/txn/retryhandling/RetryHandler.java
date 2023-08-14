@@ -99,20 +99,6 @@ public class RetryHandler {
   }
 
   /**
-   * Establishes a {@link DataSourceWrapper.RetryContext} and executes the passed {@link TransactionalVoidFunction}. 
-   * Automatically retries the execution in case of failure.
-   * @param properties {@link RetryCallProperties} instance used to fine-tune/alter the execution-mechanism.
-   * @param function The {@link TransactionalVoidFunction} to execute.
-   * @throws MetaException Thrown in case of execution error.
-   */
-  public void executeWithRetry(DataSourceWrapper dataSourceWrapper, RetryCallProperties properties, TransactionalVoidFunction function) throws MetaException {
-    executeWithRetryInternal(dataSourceWrapper, properties, (DataSourceWrapper wrapper) -> { 
-      function.call(wrapper);
-      return null;
-    }, retryLimit, ALLOWED_REPEATED_DEADLOCKS);
-  }
-
-  /**
    * Executes the passed {@link TransactionalFunction}, without retry in case of failure.
    * @param properties {@link RetryCallProperties} instance used to fine-tune/alter the execution-mechanism.
    * @param function The {@link TransactionalFunction} to execute.
@@ -120,24 +106,11 @@ public class RetryHandler {
    * @param <Result> Type of the result
    * @throws MetaException Thrown in case of execution error.
    */
-  public  <Result> Result executeWithoutRetry(DataSourceWrapper dataSourceWrapper, RetryCallProperties properties, TransactionalFunction<Result> function) 
+  public <Result> Result executeWithoutRetry(DataSourceWrapper dataSourceWrapper, RetryCallProperties properties, TransactionalFunction<Result> function) 
       throws MetaException {
     return executeWithRetryInternal(dataSourceWrapper, properties, function, 0, 0);
   }
 
-  /**
-   * Executes the passed {@link TransactionalVoidFunction}, without retry in case of failure.
-   * @param properties {@link RetryCallProperties} instance used to fine-tune/alter the execution-mechanism.
-   * @param function The {@link TransactionalVoidFunction} to execute.
-   * @throws MetaException Thrown in case of execution error.
-   */
-  public void executeWithoutRetry(DataSourceWrapper dataSourceWrapper, RetryCallProperties properties, TransactionalVoidFunction function) throws MetaException {
-    executeWithRetryInternal(dataSourceWrapper, properties, (DataSourceWrapper wrapper) -> {
-      function.call(wrapper);
-      return null;
-    }, 0, 0);
-  }
-  
   private <Result> Result executeWithRetryInternal(DataSourceWrapper dataSourceWrapper, RetryCallProperties properties, TransactionalFunction<Result> function
       , int retryCount, int deadlockCount) throws MetaException {
     Objects.requireNonNull(function, "RetryFunction<Result> cannot be null!");

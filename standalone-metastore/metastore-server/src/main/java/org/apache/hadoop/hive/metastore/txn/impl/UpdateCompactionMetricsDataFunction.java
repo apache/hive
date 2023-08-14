@@ -36,8 +36,8 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
 
   @Override
   public Boolean execute(DataSourceWrapper dataSourceWrapper) throws MetaException {
-    CompactionMetricsData prevMetricsData =
-        new CompactionMetricsDataHandler(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()).execute(dataSourceWrapper);
+    CompactionMetricsData prevMetricsData = dataSourceWrapper.execute(
+        new CompactionMetricsDataHandler(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
 
     boolean updateRes;
     if (data.getMetricValue() >= data.getThreshold()) {
@@ -48,8 +48,8 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
       }
     } else {
       if (prevMetricsData != null) {
-        int result = new RemoveCompactionMetricsDataCommand(
-            data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()).execute(dataSourceWrapper);
+        int result = dataSourceWrapper.execute(new RemoveCompactionMetricsDataCommand(
+            data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
         updateRes = result > 0;
       } else {
         return true;
