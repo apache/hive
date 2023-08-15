@@ -7,7 +7,7 @@ create table t4 (id int,name string, age int);
 insert into t4 values(1,'Sagar',23),(3,'Surya',23),(4,'Raman',45),(5,'Scott',23),(6,'Ramya',5),(7,'',23),(8,'',23);
 
 create table t5 (id int,name string, ages int);
-insert into t5 values(1,'Sagar',23),(3,'Surya',23),(4,'Raman',45),(5,'Scott',23),(6,'Ramya',5),(7,'',23),(8,'',23);
+insert into t5 values(1,'Sagar',23),(3,'Surya',NULL),(4,'Raman',45),(5,'Scott',23),(6,'Ramya',5),(7,'',23),(8,'',23);
 
 select * from t3
 where age not in (select distinct(age) age from t4);
@@ -20,6 +20,12 @@ where age not in (select distinct(ages) ages from t5);
 
 select * from t3
 where age not in (23,22,18);
+
+explain select * from t3
+        where age not in (select distinct(age) age from t4);
+
+select * from t3
+where age not in (select distinct(age)age from t3 t1 where t1.age > 10);
 
 set hive.cbo.enable = true;
 
@@ -34,3 +40,9 @@ where age not in (select distinct(ages) ages from t5);
 
 select * from t3
 where age not in (23,22,18);
+
+explain select * from t3
+        where age not in (select distinct(age) age from t4);
+
+select * from t3
+where age not in (select distinct(age) from t3 t1 where t1.age > 10);

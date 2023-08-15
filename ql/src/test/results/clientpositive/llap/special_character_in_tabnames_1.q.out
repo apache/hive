@@ -164,78 +164,78 @@ PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Output: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Output: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table `c/b/o_t1` compute statistics for columns key, value, c_int, c_float, c_boolean
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Output: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Output: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: analyze table `//cbo_t2` compute statistics for columns key, value, c_int, c_float, c_boolean
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Output: db~!@#$%^&*(),<>@//cbo_t2
 PREHOOK: Output: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table `//cbo_t2` compute statistics for columns key, value, c_int, c_float, c_boolean
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Output: db~!@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Output: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: analyze table `cbo_/t3////` compute statistics for columns key, value, c_int, c_float, c_boolean
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
 PREHOOK: Output: db~!@#$%^&*(),<>@cbo_/t3////
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table `cbo_/t3////` compute statistics for columns key, value, c_int, c_float, c_boolean
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
 POSTHOOK: Output: db~!@#$%^&*(),<>@cbo_/t3////
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: analyze table `src/_/cbo` compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
 PREHOOK: Output: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table `src/_/cbo` compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
 POSTHOOK: Output: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: analyze table `p/a/r/t` compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
 PREHOOK: Output: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table `p/a/r/t` compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
 POSTHOOK: Output: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: analyze table `line/item` compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@line/item
 PREHOOK: Output: db~!@#$%^&*(),<>@line/item
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table `line/item` compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@line/item
 POSTHOOK: Output: db~!@#$%^&*(),<>@line/item
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select key, (c_int+1)+2 as x, sum(c_int) from `c/b/o_t1` group by c_float, `c/b/o_t1`.c_int, key
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key, (c_int+1)+2 as x, sum(c_int) from `c/b/o_t1` group by c_float, `c/b/o_t1`.c_int, key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
  1	4	2
  1 	4	2
 1	4	12
@@ -252,7 +252,7 @@ UNION  ALL
         select 'avg' as key,  avg(c_int) as value from `cbo_/t3////` s3) unionsrc order by unionsrc.key
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select unionsrc.key FROM (select 'max' as key, max(c_int) as value from `cbo_/t3////` s1
 
 UNION  ALL
@@ -264,7 +264,7 @@ UNION  ALL
         select 'avg' as key,  avg(c_int) as value from `cbo_/t3////` s3) unionsrc order by unionsrc.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 avg
 max
 min
@@ -273,13 +273,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select `c/b/o_t1`.key from `c/b/o_t1` join `cbo_/t3////`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -346,14 +346,14 @@ PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select `c/b/o_t1`.c_int, `//cbo_t2`.c_int from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key where (`c/b/o_t1`.c_int + `//cbo_t2`.c_int == 2) and (`c/b/o_t1`.c_int > 0 or `//cbo_t2`.c_float >= 0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -438,12 +438,12 @@ PREHOOK: query: explain select key, (c_int+1)+2 as x, sum(c_int) from `c/b/o_t1`
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select key, (c_int+1)+2 as x, sum(c_int) from `c/b/o_t1` group by c_float, `c/b/o_t1`.c_int, key order by x limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -537,14 +537,14 @@ PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select `c/b/o_t1`.c_int           from `c/b/o_t1` left semi join   `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -635,12 +635,12 @@ PREHOOK: query: explain select * from `c/b/o_t1` as `c/b/o_t1`
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from `c/b/o_t1` as `c/b/o_t1`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -660,12 +660,12 @@ PREHOOK: query: explain select * from `c/b/o_t1` as `c/b/o_t1`  where `c/b/o_t1`
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from `c/b/o_t1` as `c/b/o_t1`  where `c/b/o_t1`.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -688,12 +688,12 @@ PREHOOK: query: explain select * from (select * from `c/b/o_t1` where `c/b/o_t1`
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from (select * from `c/b/o_t1` where `c/b/o_t1`.c_int >= 0) as `c/b/o_t1`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -715,11 +715,11 @@ STAGE PLANS:
 PREHOOK: query: explain select null from `cbo_/t3////`
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select null from `cbo_/t3////`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -739,12 +739,12 @@ PREHOOK: query: explain select key from `c/b/o_t1` where c_int = -6  or c_int = 
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select key from `c/b/o_t1` where c_int = -6  or c_int = +6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -769,14 +769,14 @@ PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(`c/b/o_t1`.dt) from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.dt  = `//cbo_t2`.dt  where `c/b/o_t1`.dt = '2014'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -886,13 +886,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select `c/b/o_t1`.value from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key = `//cbo_t2`.key where `c/b/o_t1`.dt = '10' and `c/b/o_t1`.c_boolean = true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -984,7 +984,7 @@ where not exists
   )
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select *
 
 from `src/_/cbo` b
@@ -1000,7 +1000,7 @@ where not exists
   )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1110,7 +1110,7 @@ having not exists
   )
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select *
 
 from `src/_/cbo` b
@@ -1128,7 +1128,7 @@ having not exists
   )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1264,12 +1264,12 @@ PREHOOK: query: select * from cv1_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@cv1_n0
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from cv1_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@cv1_n0
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 90	val_90
 90	val_90
 90	val_90
@@ -1298,7 +1298,7 @@ from (select *
      ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select *
 
 from (select *
@@ -1316,7 +1316,7 @@ from (select *
      ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1419,7 +1419,7 @@ from (select b.key, count(*)
 ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select *
 
 from (select b.key, count(*)
@@ -1441,7 +1441,7 @@ from (select b.key, count(*)
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1547,7 +1547,7 @@ from `src/_/cbo`
 where `src/_/cbo`.key in (select key from `src/_/cbo` s1 where s1.key > '9') order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select *
 
 from `src/_/cbo`
@@ -1555,7 +1555,7 @@ from `src/_/cbo`
 where `src/_/cbo`.key in (select key from `src/_/cbo` s1 where s1.key > '9') order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1667,7 +1667,7 @@ where b.key in
         ) order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select *
 
 from `src/_/cbo` b
@@ -1683,7 +1683,7 @@ where b.key in
         ) order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1799,7 +1799,7 @@ where li.l_linenumber = 1 and
  order by p.p_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@line/item
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select p.p_partkey, li.l_suppkey
 
 from (select distinct l_partkey as p_partkey from `line/item`) p join `line/item` li on p.p_partkey = li.l_partkey
@@ -1811,7 +1811,7 @@ where li.l_linenumber = 1 and
  order by p.p_partkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@line/item
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1964,7 +1964,7 @@ group by key, value
 having count(*) in (select count(*) from `src/_/cbo` s1 where s1.key > '9' group by s1.key ) order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select key, value, count(*)
 
 from `src/_/cbo` b
@@ -1976,7 +1976,7 @@ group by key, value
 having count(*) in (select count(*) from `src/_/cbo` s1 where s1.key > '9' group by s1.key ) order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2180,7 +2180,7 @@ having p_name in
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from `p/a/r/t`) order by p_mfgr
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select p_mfgr, p_name, avg(p_size)
 
 from `p/a/r/t`
@@ -2192,7 +2192,7 @@ having p_name in
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from `p/a/r/t`) order by p_mfgr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2352,7 +2352,7 @@ where `src/_/cbo`.key not in
   ) order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select *
 
 from `src/_/cbo`
@@ -2366,7 +2366,7 @@ where `src/_/cbo`.key not in
   ) order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2386,12 +2386,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src/_/cbo
+                  filterExpr: (key is not null or (key > '2') or ((key > '2') and key is null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: key (type: string), value (type: string)
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: key (type: string), value (type: string)
                   Filter Operator
                     predicate: (key > '2') (type: boolean)
                     Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2524,7 +2528,7 @@ where b.p_name not in
   ) order by p_mfgr,p_size
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select p_mfgr, b.p_name, p_size
 
 from `p/a/r/t` b
@@ -2540,7 +2544,7 @@ where b.p_name not in
   ) order by p_mfgr,p_size
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2560,14 +2564,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (p_name is not null or ((p_size < 10) and p_name is not null) or ((p_size < 10) and (p_name is null or p_mfgr is null))) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
                   Filter Operator
-                    predicate: (p_size < 10) (type: boolean)
+                    predicate: p_name is not null (type: boolean)
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                  Filter Operator
+                    predicate: ((p_size < 10) and p_name is not null) (type: boolean)
                     Statistics: Num rows: 5 Data size: 1115 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_name (type: string), p_mfgr (type: string)
@@ -2698,7 +2706,7 @@ from
   ) order by p_name
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select p_name, p_size
 
 from
@@ -2714,7 +2722,7 @@ from
   ) order by p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2734,12 +2742,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p/a/r/t
+                  filterExpr: (p_size is not null or (p_size < 10)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
+                  Filter Operator
+                    predicate: p_size is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: p_name (type: string), p_size (type: int)
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: p_name (type: string), p_size (type: int)
                   Filter Operator
                     predicate: (p_size < 10) (type: boolean)
                     Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2875,7 +2887,7 @@ from `p/a/r/t` b where b.p_size not in
   ) order by  p_name
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select p_mfgr, p_name, p_size
 
 from `p/a/r/t` b where b.p_size not in
@@ -2889,7 +2901,7 @@ from `p/a/r/t` b where b.p_size not in
   ) order by  p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2910,12 +2922,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (p_size is not null or (p_size < 10)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
+                  Filter Operator
+                    predicate: p_size is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
                   Filter Operator
                     predicate: (p_size < 10) (type: boolean)
                     Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3004,16 +3020,19 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col1 (type: int), _col0 (type: string)
-                  outputColumnNames: _col0, _col1
+                Filter Operator
+                  predicate: _col1 is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: string)
-                    null sort order: zz
-                    sort order: ++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                  Select Operator
+                    expressions: _col1 (type: int), _col0 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int), _col1 (type: string)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                      Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: (_col1 is null or _col0 is null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3071,7 +3090,7 @@ where li.l_linenumber = 1 and
 group by li.l_partkey order by li.l_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@line/item
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select li.l_partkey, count(*)
 
 from `line/item` li
@@ -3083,7 +3102,7 @@ where li.l_linenumber = 1 and
 group by li.l_partkey order by li.l_partkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@line/item
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3104,10 +3123,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: line/item
-                  filterExpr: ((l_shipmode = 'AIR') or ((l_shipmode = 'AIR') and l_orderkey is null) or (l_linenumber = 1)) (type: boolean)
+                  filterExpr: (((l_shipmode = 'AIR') and l_orderkey is not null) or ((l_shipmode = 'AIR') and l_orderkey is null) or (l_orderkey is not null and (l_linenumber = 1))) (type: boolean)
                   Statistics: Num rows: 100 Data size: 9200 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (l_shipmode = 'AIR') (type: boolean)
+                    predicate: ((l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int)
@@ -3136,7 +3155,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
                   Filter Operator
-                    predicate: (l_linenumber = 1) (type: boolean)
+                    predicate: (l_orderkey is not null and (l_linenumber = 1)) (type: boolean)
                     Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
@@ -3273,7 +3292,7 @@ having b.p_mfgr not in
   order by b.p_mfgr
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select b.p_mfgr, min(p_retailprice)
 
 from `p/a/r/t` b
@@ -3293,7 +3312,7 @@ having b.p_mfgr not in
   order by b.p_mfgr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3540,7 +3559,7 @@ having b.p_mfgr not in
   order by b.p_mfgr
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select b.p_mfgr, min(p_retailprice)
 
 from `p/a/r/t` b
@@ -3562,7 +3581,7 @@ having b.p_mfgr not in
   order by b.p_mfgr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3796,12 +3815,12 @@ PREHOOK: query: explain select f,a,e,b from (select count(*) as a, count(c_int) 
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select f,a,e,b from (select count(*) as a, count(c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from `c/b/o_t1`) `c/b/o_t1`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3868,14 +3887,14 @@ PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from (select * from `c/b/o_t1` order by key, c_boolean, value, dt)a union all select * from (select * from `//cbo_t2` order by key, c_boolean, value, dt)b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3995,13 +4014,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select value from v1_n7 where c_boolean=false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1
 PREHOOK: query: select max(c_int) from v1_n7 group by (c_boolean)
@@ -4009,13 +4028,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select max(c_int) from v1_n7 group by (c_boolean)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1
 NULL
@@ -4026,7 +4045,7 @@ PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(v1_n7.c_int)  from v1_n7 join `//cbo_t2` on v1_n7.c_int = `//cbo_t2`.c_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
@@ -4034,7 +4053,7 @@ POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 234
 PREHOOK: query: select count(v1_n7.c_int)  from v1_n7 join v2_n2 on v1_n7.c_int = v2_n2.c_int
 PREHOOK: type: QUERY
@@ -4044,7 +4063,7 @@ PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@v1_n7
 PREHOOK: Input: db~!@#$%^&*(),<>@v2_n2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(v1_n7.c_int)  from v1_n7 join v2_n2 on v1_n7.c_int = v2_n2.c_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
@@ -4053,20 +4072,20 @@ POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@v1_n7
 POSTHOOK: Input: db~!@#$%^&*(),<>@v2_n2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 234
 PREHOOK: query: select count(*) from v1_n7 a join v1_n7 b on a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from v1_n7 a join v1_n7 b on a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 156
 PREHOOK: query: create view v3_n0 as select v1_n7.value val from v1_n7 join `c/b/o_t1` on v1_n7.c_boolean = `c/b/o_t1`.c_boolean
 PREHOOK: type: CREATEVIEW
@@ -4087,14 +4106,14 @@ PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@v1_n7
 PREHOOK: Input: db~!@#$%^&*(),<>@v3_n0
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(val) from v3_n0 where val != '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@v1_n7
 POSTHOOK: Input: db~!@#$%^&*(),<>@v3_n0
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 96
 PREHOOK: query: with q1 as ( select key from `c/b/o_t1` where key = '1')
 
@@ -4102,14 +4121,14 @@ select count(*) from q1
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with q1 as ( select key from `c/b/o_t1` where key = '1')
 
 select count(*) from q1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 12
 PREHOOK: query: with q1 as ( select value from v1_n7 where c_boolean = false)
 
@@ -4118,7 +4137,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with q1 as ( select value from v1_n7 where c_boolean = false)
 
 select count(value) from q1
@@ -4126,7 +4145,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2
 PREHOOK: query: create view v4_n0 as
 
@@ -4159,7 +4178,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with q1 as ( select c_int from q2 where c_boolean = false),
 
 q2 as ( select c_int,c_boolean from v1_n7  where value = '1')
@@ -4169,7 +4188,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@v1_n7
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2
 PREHOOK: query: with q1 as ( select `c/b/o_t1`.c_int c_int from q2 join `c/b/o_t1` where q2.c_int = `c/b/o_t1`.c_int  and `c/b/o_t1`.dt='2014'),
 
@@ -4181,7 +4200,7 @@ PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@#$%^&*(),<>@v1_n7
 PREHOOK: Input: db~!@#$%^&*(),<>@v4_n0
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with q1 as ( select `c/b/o_t1`.c_int c_int from q2 join `c/b/o_t1` where q2.c_int = `c/b/o_t1`.c_int  and `c/b/o_t1`.dt='2014'),
 
 q2 as ( select c_int,c_boolean from v1_n7  where value = '1' or dt = '14')
@@ -4192,7 +4211,7 @@ POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@#$%^&*(),<>@v1_n7
 POSTHOOK: Input: db~!@#$%^&*(),<>@v4_n0
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 31104
 PREHOOK: query: drop view v1_n7
 PREHOOK: type: DROPVIEW
@@ -4230,12 +4249,12 @@ PREHOOK: query: explain select count(c_int) over(partition by c_float order by k
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(c_int) over(partition by c_float order by key), sum(c_float) over(partition by c_float order by key), max(c_int) over(partition by c_float order by key), min(c_int) over(partition by c_float order by key), row_number() over(partition by c_float order by key) as rn, rank() over(partition by c_float order by key), dense_rank() over(partition by c_float order by key), round(percent_rank() over(partition by c_float order by key), 2), lead(c_int, 2, c_int) over(partition by c_float order by key), lag(c_float, 2, c_float) over(partition by c_float order by key) from `c/b/o_t1` order by rn
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4393,11 +4412,11 @@ POSTHOOK: Lineage: src/_/cbo.value SIMPLE [(src)src.FieldSchema(name:value, type
 PREHOOK: query: select * from `src/_/cbo` limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from `src/_/cbo` limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	val_238
 PREHOOK: query: insert overwrite table `src/_/cbo` select * from default.src
 PREHOOK: type: QUERY
@@ -4412,11 +4431,11 @@ POSTHOOK: Lineage: src/_/cbo.value SIMPLE [(src)src.FieldSchema(name:value, type
 PREHOOK: query: select * from `src/_/cbo` limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from `src/_/cbo` limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	val_238
 PREHOOK: query: drop table `t//`
 PREHOOK: type: DROPTABLE
@@ -4461,11 +4480,11 @@ POSTHOOK: Output: db~!@#$%^&*(),<>@t//
 PREHOOK: query: explain select * from `t//`
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@t//
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from `t//`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@#$%^&*(),<>@t//
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
