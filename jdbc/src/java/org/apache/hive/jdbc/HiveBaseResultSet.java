@@ -542,7 +542,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       }
       return value;
     case TIMESTAMP_TYPE:
-      return Timestamp.valueOf((String) value);
+      return org.apache.hadoop.hive.common.type.Timestamp.valueOf((String)value);
     case TIMESTAMPLOCALTZ_TYPE:
       return TimestampTZUtil.parse((String) value);
     case DECIMAL_TYPE:
