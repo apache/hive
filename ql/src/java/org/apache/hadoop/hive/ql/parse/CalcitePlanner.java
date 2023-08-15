@@ -2610,7 +2610,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RexNode calciteJoinCond = null;
       List<String> namedColumns = null;
       if (joinCond != null) {
-        JoinTypeCheckCtx jCtx = new JoinTypeCheckCtx(leftRR, rightRR, hiveJoinType);
+        JoinTypeCheckCtx jCtx = new JoinTypeCheckCtx(leftRR, rightRR, cluster.getRexBuilder(), hiveJoinType);
         jCtx.setOuterRR(outerRR);
         RowResolver input = jCtx.getInputRR();
         // named columns join
@@ -2673,7 +2673,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
           joinCond = count > 1 ? and : equal;
         } else if (unparseTranslator != null && unparseTranslator.isEnabled()) {
-          genAllExprNodeDesc(joinCond, input, jCtx);
+          jCtx.setUnparseTranslator(unparseTranslator);
+          genAllRexNode(joinCond, input, jCtx, conf);
         }
         Map<ASTNode, RexNode> exprNodes = RexNodeTypeCheck.genExprNodeJoinCond(
             joinCond, jCtx, cluster.getRexBuilder());
