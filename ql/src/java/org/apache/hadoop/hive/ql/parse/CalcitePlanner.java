@@ -1018,7 +1018,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   @Override
-  boolean isCBOExecuted() {
+  public boolean isCBOExecuted() {
     return runCBO;
   }
 
@@ -1100,22 +1100,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     ctx.addMaterializedTable(table.getFullyQualifiedName(), table);
 
     return table;
-  }
-
-  @Override
-  String fixCtasColumnName(String colName) {
-    if (runCBO) {
-      int lastDot = colName.lastIndexOf('.');
-      if (lastDot < 0)
-       {
-        return colName; // alias is not fully qualified
-      }
-      String nqColumnName = colName.substring(lastDot + 1);
-      STATIC_LOG.debug("Replacing " + colName + " (produced by CBO) by " + nqColumnName);
-      return nqColumnName;
-    }
-
-    return super.fixCtasColumnName(colName);
   }
 
   /**
@@ -2673,7 +2657,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
           joinCond = count > 1 ? and : equal;
         } else if (unparseTranslator != null && unparseTranslator.isEnabled()) {
-          genAllExprNodeDesc(joinCond, input, jCtx);
+          jCtx.setUnparseTranslator(unparseTranslator);
+          genAllExprNodeDesc(joinCond, input, jCtx, conf);
         }
         Map<ASTNode, RexNode> exprNodes = RexNodeTypeCheck.genExprNodeJoinCond(
             joinCond, jCtx, cluster.getRexBuilder());

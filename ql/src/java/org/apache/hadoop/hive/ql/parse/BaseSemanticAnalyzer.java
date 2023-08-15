@@ -1559,7 +1559,7 @@ public abstract class BaseSemanticAnalyzer {
     return transactionalInQuery;
   }
 
-  protected ListBucketingCtx constructListBucketingCtx(List<String> skewedColNames,
+  protected static ListBucketingCtx constructListBucketingCtx(List<String> skewedColNames,
       List<List<String>> skewedValues, Map<List<String>, String> skewedColValueLocationMaps,
       boolean isStoredAsSubDirectories) {
     ListBucketingCtx lbCtx = new ListBucketingCtx();
@@ -1949,7 +1949,7 @@ public abstract class BaseSemanticAnalyzer {
     return (FetchTask) TaskFactory.get(fetch);
   }
 
-  protected HiveTxnManager getTxnMgr() {
+  public HiveTxnManager getTxnMgr() {
     if (txnManager != null) {
       return txnManager;
     }
