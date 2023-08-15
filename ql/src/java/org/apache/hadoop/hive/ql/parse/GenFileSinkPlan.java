@@ -358,7 +358,7 @@ public class GenFileSinkPlan {
     Hive db = sa.getDb();
     HiveConf conf = sa.getConf();
     HiveTxnManager txnMgr = sa.getTxnMgr();
-    int nextDestTableId = sa.getDestTableId();
+    nextDestTableId = sa.getDestTableId();
 
     RowResolver inputRR = operatorMap.get(input).getRowResolver();
     QBMetaData qbm = qb.getMetaData();
@@ -687,7 +687,6 @@ public class GenFileSinkPlan {
       // fall through
     case QBMetaData.DEST_DFS_FILE: {
       destinationPath = getDestinationFilePath(sa, qbm.getDestFileForAlias(dest), isMmTable);
-      needSetFsResultCache = true;
       // CTAS case: the file output format and serde are defined by the create
       // table command rather than taking the default value
       List<FieldSchema> fieldSchemas = null;
@@ -2145,16 +2144,17 @@ public class GenFileSinkPlan {
       QueryResultsCache instance = QueryResultsCache.getInstance();
       // QueryResultsCache should have been initialized by now
       if (instance != null) {
+        //TODO: shouldn't set the variable here
+        this.needSetFsResultCache = true;
         Path resultCacheTopDir = instance.getCacheDirPath();
         String dirName = UUID.randomUUID().toString();
         Path resultDir = new Path(resultCacheTopDir, dirName);
-        //XXX: PUT THIS IN SEMANTICANALYZER
-//        this.ctx.setFsResultCacheDirs(resultDir);
         return resultDir;
       }
     }
     return new Path(destinationFile);
   }
+
   public Operator getOperator() {
     return output;
   }

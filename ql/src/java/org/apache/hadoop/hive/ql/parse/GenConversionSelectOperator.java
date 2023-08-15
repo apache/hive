@@ -364,7 +364,6 @@ public class GenConversionSelectOperator {
     }
 
     // The numbers of input columns and output columns should match for regular query
-    // Impala partial width inserts are handled later by ImpalaPlanner
     if (!SemanticAnalyzer.updating(dest) && !SemanticAnalyzer.deleting(dest) && inColumnCnt != outColumnCnt) {
       String reason = "Table " + dest + " has " + outColumnCnt
           + " columns, but query has " + inColumnCnt + " columns.";
