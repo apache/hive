@@ -836,7 +836,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
   }
 
   @Override
-  protected boolean allowOutputMultipleTimes() {
+  public boolean allowOutputMultipleTimes() {
     return true;
   }
 }

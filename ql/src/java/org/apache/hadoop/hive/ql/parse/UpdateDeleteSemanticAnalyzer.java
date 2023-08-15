@@ -294,7 +294,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   }
 
   @Override
-  protected boolean enableColumnStatsCollecting() {
+  public boolean enableColumnStatsCollecting() {
     return false;
   }
 }

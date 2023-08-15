@@ -115,8 +115,7 @@ class HiveProjectVisitor extends HiveRelNodeVisitor<HiveProject> {
     }
 
     while (groups.hasNext()) {
-      wSpec = groups.next(hiveOpConverter.getHiveConf(), hiveOpConverter.getSemanticAnalyzer(),
-          hiveOpConverter.getUnparseTranslator(), rr);
+      wSpec = groups.next(hiveOpConverter.getHiveConf(), hiveOpConverter.getUnparseTranslator(), rr);
 
       // 1. Create RS and backtrack Select operator on top
       ArrayList<ExprNodeDesc> keyCols = new ArrayList<ExprNodeDesc>();
@@ -157,7 +156,7 @@ class HiveProjectVisitor extends HiveRelNodeVisitor<HiveProject> {
 
       // 2. Finally create PTF
       PTFTranslator translator = new PTFTranslator();
-      PTFDesc ptfDesc = translator.translate(wSpec, hiveOpConverter.getSemanticAnalyzer(),
+      PTFDesc ptfDesc = translator.translate(wSpec,
           hiveOpConverter.getHiveConf(), rr, hiveOpConverter.getUnparseTranslator());
       RowResolver ptfOpRR = ptfDesc.getFuncDef().getOutputShape().getRr();
 

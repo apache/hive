@@ -101,7 +101,7 @@ public class SplitMergeSemanticAnalyzer extends MergeSemanticAnalyzer {
   }
 
   @Override
-  protected boolean allowOutputMultipleTimes() {
+  public boolean allowOutputMultipleTimes() {
     return true;
   }
 }

@@ -99,18 +99,16 @@ public class PTFTranslator {
 
   HiveConf hCfg;
   LeadLagInfo llInfo;
-  SemanticAnalyzer semAly;
   UnparseTranslator unparseT;
   RowResolver inputRR;
   PTFDesc ptfDesc;
   PTFInvocationSpec ptfInvocation;
   WindowingSpec windowingSpec;
 
-  private void init(SemanticAnalyzer semAly,
+  private void init(
       HiveConf hCfg,
       RowResolver inputRR,
       UnparseTranslator unparseT) {
-    this.semAly = semAly;
     this.hCfg = hCfg;
     this.inputRR = inputRR;
     this.unparseT = unparseT;
@@ -119,12 +117,11 @@ public class PTFTranslator {
   }
 
   public PTFDesc translate(PTFInvocationSpec qSpec,
-      SemanticAnalyzer semAly,
       HiveConf hCfg,
       RowResolver inputRR,
       UnparseTranslator unparseT)
       throws SemanticException {
-    init(semAly, hCfg, inputRR, unparseT);
+    init(hCfg, inputRR, unparseT);
     ptfInvocation = qSpec;
     ptfDesc = new PTFDesc();
     ptfDesc.setCfg(hCfg);
@@ -134,11 +131,11 @@ public class PTFTranslator {
     return ptfDesc;
   }
 
-  public PTFDesc translate(WindowingSpec wdwSpec, SemanticAnalyzer semAly, HiveConf hCfg,
+  public PTFDesc translate(WindowingSpec wdwSpec, HiveConf hCfg,
       RowResolver inputRR,
       UnparseTranslator unparseT)
       throws SemanticException {
-    init(semAly, hCfg, inputRR, unparseT);
+    init(hCfg, inputRR, unparseT);
     windowingSpec = wdwSpec;
     ptfDesc = new PTFDesc();
     ptfDesc.setCfg(hCfg);
@@ -757,8 +754,9 @@ public class PTFTranslator {
       throws HiveException {
     PTFExpressionDef argDef = new PTFExpressionDef();
 
-    ExprNodeDesc exprNode = semAly.genExprNodeDesc(arg, inpShape.getRr(),
-        inpShape.getTypeCheckCtx());
+    inpShape.getTypeCheckCtx().setUnparseTranslator(unparseT);
+    ExprNodeDesc exprNode = SemanticAnalyzer.genExprNodeDesc(arg, inpShape.getRr(),
+        inpShape.getTypeCheckCtx(), hCfg);
     ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(llInfo, exprNode);
     ObjectInspector oi = initExprNodeEvaluator(exprEval, exprNode, inpShape);
 

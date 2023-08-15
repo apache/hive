@@ -1018,7 +1018,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   @Override
-  boolean isCBOExecuted() {
+  public boolean isCBOExecuted() {
     return runCBO;
   }
 
@@ -1100,22 +1100,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     ctx.addMaterializedTable(table.getFullyQualifiedName(), table);
 
     return table;
-  }
-
-  @Override
-  String fixCtasColumnName(String colName) {
-    if (runCBO) {
-      int lastDot = colName.lastIndexOf('.');
-      if (lastDot < 0)
-       {
-        return colName; // alias is not fully qualified
-      }
-      String nqColumnName = colName.substring(lastDot + 1);
-      STATIC_LOG.debug("Replacing " + colName + " (produced by CBO) by " + nqColumnName);
-      return nqColumnName;
-    }
-
-    return super.fixCtasColumnName(colName);
   }
 
   /**
@@ -3677,7 +3661,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return null;
       }
 
-      List<ASTNode> groupByNodes = getGroupByForClause(qbp, destClauseName);
+      List<ASTNode> groupByNodes = getGroupByForClause(qbp, destClauseName, isCalcitePlanner());
       Map<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(destClauseName);
       boolean hasGrpByAstExprs = groupByNodes != null && !groupByNodes.isEmpty();
       boolean hasAggregationTrees = aggregationTrees != null && !aggregationTrees.isEmpty();
@@ -4316,7 +4300,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (!qbp.getDestToGroupBy().isEmpty()) {
           // Special handling of grouping function
           wExprSpec.setExpression(rewriteGroupingFunctionAST(
-                  getGroupByForClause(qbp, selClauseName), wExprSpec.getExpression(),
+                  getGroupByForClause(qbp, selClauseName, isCalcitePlanner()), wExprSpec.getExpression(),
                   !cubeRollupGrpSetPresent));
         }
         if (out_rwsch.getExpression(wExprSpec.getExpression()) == null) {
@@ -4664,8 +4648,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             tcCtx.setUnparseTranslator(unparseTranslator);
             if (!qbp.getDestToGroupBy().isEmpty()) {
               // Special handling of grouping function
-              expr = rewriteGroupingFunctionAST(getGroupByForClause(qbp, selClauseName), expr,
-                      !cubeRollupGrpSetPresent);
+              expr = rewriteGroupingFunctionAST(getGroupByForClause(qbp, selClauseName,
+                  isCalcitePlanner()), expr, !cubeRollupGrpSetPresent);
             }
             RexNode expression = genRexNode(expr, inputRR, tcCtx, conf);
 
@@ -4793,7 +4777,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         outputRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
               outputRel, groupSet, null, new ArrayList<AggregateCall>());
         RowResolver groupByOutputRowResolver = new RowResolver();
-        List<ASTNode> gbyKeyExpressions = getGroupByForClause(qbp, selClauseName);
+        List<ASTNode> gbyKeyExpressions = getGroupByForClause(qbp, selClauseName, isCalcitePlanner());
         for (int i = 0; i < outputRR.getColumnInfos().size(); i++) {
           ColumnInfo colInfo = outputRR.getColumnInfos().get(i);
           ColumnInfo newColInfo = new ColumnInfo(colInfo.getInternalName(),
@@ -5176,8 +5160,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           final boolean cubeRollupGrpSetPresent = (!qbp.getDestRollups().isEmpty()
                   || !qbp.getDestGroupingSets().isEmpty() || !qbp.getDestCubes().isEmpty());
           // Special handling of grouping function
-          targetNode = rewriteGroupingFunctionAST(getGroupByForClause(qbp, destClauseName), targetNode,
-              !cubeRollupGrpSetPresent);
+          targetNode = rewriteGroupingFunctionAST(getGroupByForClause(qbp, destClauseName,
+              isCalcitePlanner()), targetNode, !cubeRollupGrpSetPresent);
         }
         gbFilter = genFilterRelNode(qb, targetNode, srcRel, null, null, true);
       }
@@ -5543,6 +5527,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         null;
   }
 
+  @Override
+  public boolean isCalcitePlanner() {
+    return true;
+  }
 
   /**
    * Contains information useful to decorrelate queries.

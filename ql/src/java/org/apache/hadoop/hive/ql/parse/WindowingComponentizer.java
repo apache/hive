@@ -71,7 +71,6 @@ public class WindowingComponentizer {
   }
 
   public WindowingSpec next(HiveConf hCfg,
-      SemanticAnalyzer semAly,
       UnparseTranslator unparseT,
       RowResolver inputRR) throws SemanticException {
 
@@ -83,7 +82,7 @@ public class WindowingComponentizer {
       WindowingSpec wSpec = entry.getValue();
       try {
         PTFTranslator t = new PTFTranslator();
-        t.translate(wSpec, semAly, hCfg, inputRR, unparseT);
+        t.translate(wSpec, hCfg, inputRR, unparseT);
         groups.remove(entry.getKey());
         return wSpec;
       } catch (SemanticException se) {

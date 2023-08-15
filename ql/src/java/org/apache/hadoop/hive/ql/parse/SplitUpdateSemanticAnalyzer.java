@@ -193,12 +193,12 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
   }
 
   @Override
-  protected boolean allowOutputMultipleTimes() {
+  public boolean allowOutputMultipleTimes() {
     return true;
   }
 
   @Override
-  protected boolean enableColumnStatsCollecting() {
+  public boolean enableColumnStatsCollecting() {
     return false;
   }
 }

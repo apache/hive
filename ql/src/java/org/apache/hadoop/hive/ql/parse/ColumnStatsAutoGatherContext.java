@@ -60,27 +60,29 @@ public class ColumnStatsAutoGatherContext {
 
   public AnalyzeRewriteContext analyzeRewrite;
   private final List<LoadFileDesc> loadFileWork = new ArrayList<>();
-  private final SemanticAnalyzer sa;
   private final HiveConf conf;
   private final Operator<? extends OperatorDesc> op;
   private final List<FieldSchema> columns;
   private final List<FieldSchema> partitionColumns;
+  private final Map<Operator<? extends OperatorDesc>, OpParseContext> operatorMap;
   private boolean isInsertInto;
   private Table tbl;
   private Map<String, String> partSpec;
   private Context origCtx;
   
-  public ColumnStatsAutoGatherContext(SemanticAnalyzer sa, HiveConf conf,
+  public ColumnStatsAutoGatherContext(HiveConf conf,
       Operator<? extends OperatorDesc> op, Table tbl, Map<String, String> partSpec,
-      boolean isInsertInto, Context ctx) throws SemanticException {
+      boolean isInsertInto, Context ctx,
+      Map<Operator<? extends OperatorDesc>, OpParseContext> operatorMap
+      ) throws SemanticException {
     super();
-    this.sa = sa;
     this.conf = conf;
     this.op = op;
     this.tbl = tbl;
     this.partSpec = partSpec;
     this.isInsertInto = isInsertInto;
     this.origCtx = ctx;
+    this.operatorMap = operatorMap;
     columns = tbl.getCols();
     partitionColumns = tbl.getPartCols();
   }
@@ -239,7 +241,7 @@ public class ColumnStatsAutoGatherContext {
       throws HiveException {
     RowSchema selRS = operator.getSchema();
     List<ColumnInfo> signature = new ArrayList<>();
-    OpParseContext inputCtx = sa.opParseCtx.get(input);
+    OpParseContext inputCtx = operatorMap.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
     List<ColumnInfo> columns = inputRR.getColumnInfos();
     List<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
