@@ -501,11 +501,11 @@ Table:              	default.tmulti
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:numclicks	Check Value:numClicks > 0	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+PREHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmulti
-POSTHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+POSTHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tmulti
@@ -526,7 +526,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct('hive.apache.com','user1',48,'12-01-2018')) (type: array<struct<col1:string,col2:string,col3:int,col4:string>>)
+                    expressions: array(const struct('hive.apache.com','user1',48,'2018-01-12')) (type: array<struct<col1:string,col2:string,col3:int,col4:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -567,11 +567,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.tmulti
 
-PREHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+PREHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmulti
-POSTHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+POSTHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tmulti
@@ -587,7 +587,7 @@ POSTHOOK: query: Select * from tmulti
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmulti
 #### A masked pattern was here ####
-hive.apache.com	user1	48	NULL
+hive.apache.com	user1	48	2018-01-12
 PREHOOK: query: truncate table tmulti
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@tmulti
@@ -672,11 +672,11 @@ Column Name:null    	Check Value:numClicks <= 10000 AND userName != ''
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:numclicks	Check Value:numClicks > 0	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+PREHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmulti
-POSTHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+POSTHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tmulti
@@ -697,7 +697,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct('hive.apache.com','user1',48,'12-01-2018')) (type: array<struct<col1:string,col2:string,col3:int,col4:string>>)
+                    expressions: array(const struct('hive.apache.com','user1',48,'2018-01-12')) (type: array<struct<col1:string,col2:string,col3:int,col4:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -738,11 +738,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.tmulti
 
-PREHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+PREHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmulti
-POSTHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+POSTHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tmulti
@@ -758,7 +758,7 @@ POSTHOOK: query: Select * from tmulti
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmulti
 #### A masked pattern was here ####
-hive.apache.com	user1	48	NULL
+hive.apache.com	user1	48	2018-01-12
 PREHOOK: query: Drop table tmulti
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmulti
@@ -823,11 +823,11 @@ Table:              	default.tcase
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:numclicks	Check Value:numclicks > 0	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '12-01-2018', 48)
+PREHOOK: query: EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tcase
-POSTHOOK: query: EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '12-01-2018', 48)
+POSTHOOK: query: EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tcase
@@ -848,7 +848,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct('hive.apache.com','user1','12-01-2018',48)) (type: array<struct<col1:string,col2:string,col3:string,col4:int>>)
+                    expressions: array(const struct('hive.apache.com','user1','2018-01-12',48)) (type: array<struct<col1:string,col2:string,col3:string,col4:int>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -889,11 +889,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.tcase
 
-PREHOOK: query: INSERT INTO tcase values('hive.apache.com', 'user1', '12-01-2018', 48)
+PREHOOK: query: INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tcase
-POSTHOOK: query: INSERT INTO tcase values('hive.apache.com', 'user1', '12-01-2018', 48)
+POSTHOOK: query: INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tcase
@@ -909,7 +909,7 @@ POSTHOOK: query: Select * from tcase
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tcase
 #### A masked pattern was here ####
-hive.apache.com	user1	NULL	48
+hive.apache.com	user1	2018-01-12	48
 PREHOOK: query: Drop table tcase
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tcase
