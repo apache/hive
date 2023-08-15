@@ -44,25 +44,22 @@ public class RetryingTxnHandler implements InvocationHandler {
   /**
    * Gets the proxy interface for the given {@link TxnStore}.
    * @param realStore The real {@link TxnStore} to proxy.
-   * @param dataSourceWrapper Used by {@link RetryHandler} to establish a retry-context.
    * @param retryHandler Responsible to re-execute the methods in case of failure.
    * @return Returns the proxy object capable of retrying the failed calls automatically and transparently. 
    */
-  public static TxnStore getProxy(TxnStore realStore, DataSourceWrapper dataSourceWrapper, RetryHandler retryHandler) {
-    RetryingTxnHandler handler = new RetryingTxnHandler(realStore, dataSourceWrapper, retryHandler);
+  public static TxnStore getProxy(TxnStore realStore, RetryHandler retryHandler) {
+    RetryingTxnHandler handler = new RetryingTxnHandler(realStore, retryHandler);
     return (TxnStore) Proxy.newProxyInstance(
         RetryingTxnHandler.class.getClassLoader(),
         new Class[]{ TxnStore.class },
         handler);
   }
 
-  private final DataSourceWrapper dataSourceWrapper;
   private final RetryHandler retryHandler;
   private final TxnStore realStore;
 
-  private RetryingTxnHandler(TxnStore realStore, DataSourceWrapper dataSourceWrapper, RetryHandler retryHandler) {
+  private RetryingTxnHandler(TxnStore realStore, RetryHandler retryHandler) {
     this.realStore = realStore;
-    this.dataSourceWrapper = dataSourceWrapper;
     this.retryHandler = retryHandler;
   }
 
@@ -79,7 +76,7 @@ public class RetryingTxnHandler implements InvocationHandler {
           .withRollbackOnError(retry.rollbackOnError())
           .withRetryOnDuplicateKey(retry.retryOnDuplicateKey())
           .withTransactionIsolationLevel(retry.transactionIsolation());
-      return retryHandler.executeWithRetry(dataSourceWrapper, properties,
+      return retryHandler.executeWithRetry(properties,
           (DataSourceWrapper dataSourceWrapper) -> {
             try {
               LOG.info("Invoking method within retry context: {}", callerId);

@@ -469,7 +469,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
 
     retryHandler = new RetryHandler();
-    retryHandler.init(conf, dbProduct);    
+    retryHandler.init(conf, jdbcTemplate);    
   }
 
   /**
@@ -512,12 +512,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return dbProduct;
   }
   
-  @Override
-  @RetrySemantics.ReadOnly
-  public DataSourceWrapper getDataSourceWrapper() {
-    return jdbcTemplate;
-  }
-
   @Override
   @RetrySemantics.ReadOnly
   public RetryHandler getRetryHandler() {
@@ -2553,7 +2547,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent
   public void addWriteNotificationLog(ListenerEvent acidWriteEvent) throws MetaException {
-    retryHandler.executeWithRetry(jdbcTemplate, new RetryCallProperties()
+    retryHandler.executeWithRetry(new RetryCallProperties()
             .withCallerId("addWriteNotificationLog(" + acidWriteEvent + ")")
             .withDataSource(POOL_TX)
             .withExceptionSupplier((e) -> new MetaException("Unable to add write notification event " + StringUtils.stringifyException(e)))
@@ -5814,7 +5808,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.Idempotent
   public void performTimeOuts() {
     try {
-      retryHandler.executeWithoutRetry(jdbcTemplate,
+      retryHandler.executeWithoutRetry(
           new RetryCallProperties()
               .withCallerId("performTimeOuts()")
               .withDataSource(POOL_TX)
@@ -6464,7 +6458,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   @RetrySemantics.SafeToRetry
   public AbortCompactionResponseElement abortCompaction(CompactionInfo compactionInfo) throws MetaException {
-    return retryHandler.executeWithRetry(jdbcTemplate, new RetryCallProperties()
+    return retryHandler.executeWithRetry(new RetryCallProperties()
             .withCallerId("abortCompaction(" + compactionInfo + ")")
             .withDataSource(POOL_TX),
         (DataSourceWrapper dataSourceWrapper) -> {

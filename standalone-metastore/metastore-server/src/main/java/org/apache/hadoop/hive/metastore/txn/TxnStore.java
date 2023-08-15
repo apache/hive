@@ -75,7 +75,6 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.Retry;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.RetryHandler;
 
@@ -144,11 +143,6 @@ public interface TxnStore extends Configurable {
    * @return Returns a {@link DatabaseProduct} instance representing the type of the HMS database
    */
   DatabaseProduct getDatabaseProduct();
-
-  /**
-   * @return Returns the {@link DataSourceWrapper} instance containing all the datasources used by {@link TxnStore}
-   */
-  DataSourceWrapper getDataSourceWrapper();
 
   /**
    * @return Returns the {@link RetryHandler} instance used by {@link TxnStore}.

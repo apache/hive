@@ -30,7 +30,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -54,37 +53,31 @@ public class DataSourceWrapper {
   private final Map<String, NamedParameterJdbcTemplate> jdbcTemplates = new HashMap<>();
   private final DatabaseProduct databaseProduct;
 
-  public TransactionStatus getTransactionStatus() throws MetaException {
-    return getRetryContext().transactionStatus;
+  /**
+   * Creates a new isntance of the {@link DataSourceWrapper} class
+   * @param dataSources A {@link Map} of the datasource names and the corresponding datasources which needs to be wrapped
+   *                    by this instance
+   * @param databaseProduct A {@link DatabaseProduct} instance representing the type of the underlying HMS dabatabe.
+   */
+  public DataSourceWrapper(Map<String, DataSource> dataSources, DatabaseProduct databaseProduct) {
+    this.dataSources = dataSources;
+    for(String dataSource : dataSources.keySet()) {
+      NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSources.get(dataSource));
+      jdbcTemplates.put(dataSource, jdbcTemplate);
+      transactionManagers.put(dataSource, new DataSourceTransactionManager(Objects.requireNonNull(jdbcTemplate.getJdbcTemplate().getDataSource())));
+    }
+    this.databaseProduct = databaseProduct;
   }
 
+
   /**
-   * Retrurns the previously established {@link RetryContext}. Can be called only within an established {@link RetryContext}.
-   * @return Retruns the previously established {@link RetryContext}.
+   * Provides direct access to the {@link TransactionStatus} to allow manual savepoint creation, rollback, etc.
+   * Can be called only within an established {@link RetryContext}.
+   * @return Returns the {@link TransactionStatus} instance stored in the {@link RetryContext}.
    * @throws IllegalStateException Thrown when called outside a {@link RetryContext}.
    */
-  RetryContext getRetryContext() {
-    RetryContext context = threadLocal.get();
-    if (context == null) {
-      throw new IllegalStateException("Trying to access TransactionStatus without retry context!");
-    }
-    return context;    
-  }
-
-  /**
-   * Establishes a {@link RetryContext} on the current thread using the given {@link TransactionStatus}. 
-   * @param status The {@link TransactionStatus} to bind to the current {@link Thread}.
-   * @param datasource The name of the {@link DataSource} used to create the {@link TransactionStatus}.
-   */
-  void setRetryContext(TransactionStatus status, String datasource) {
-    threadLocal.set(new RetryContext(status, datasource));
-  }
-
-  /**
-   * Clears a previously established {@link RetryContext} on the current {@link Thread}.
-   */
-  void clearRetryContext() {
-    threadLocal.remove();
+  public TransactionStatus getTransactionStatus() {
+    return RetryContext.getRetryContext().transactionStatus;
   }
 
   /**
@@ -95,23 +88,12 @@ public class DataSourceWrapper {
   }
 
   /**
-   * Creates a new {@link TransactionTemplate} using an internal {@link PlatformTransactionManager} associated with the 
-   * reffered {@link DataSource}. The returned template can be used to execute a 
-   * {@link org.springframework.transaction.support.TransactionCallback} function within a transaction.
-   * @param dataSource The identifier of the {@link DataSource} to use
-   * @return Returns with the created {@link TransactionTemplate}.
-   */
-  TransactionTemplate getTransactionTemplate(String dataSource) {
-    return new TransactionTemplate(transactionManagers.get(dataSource));
-  }
-  
-  /**
    * @return Returns the {@link NamedParameterJdbcTemplate} associated with the current {@link RetryContext}.
    * Can be called only within an established {@link RetryContext}.
    * @throws IllegalStateException Thrown when called outside a {@link RetryContext}.
    */
   public NamedParameterJdbcTemplate getJdbcTemplate() {
-    return jdbcTemplates.get(getRetryContext().datasource);
+    return jdbcTemplates.get(RetryContext.getRetryContext().datasource);
   }
 
   /**
@@ -122,7 +104,7 @@ public class DataSourceWrapper {
    * @throws IllegalArgumentException Thrown when called outside a {@link RetryContext}
    */
   public Connection getConnection() {
-    return DataSourceUtils.getConnection(dataSources.get(getRetryContext().datasource));
+    return DataSourceUtils.getConnection(dataSources.get(RetryContext.getRetryContext().datasource));
   }
 
   /**
@@ -136,7 +118,9 @@ public class DataSourceWrapper {
    * Establishes a {@link RetryContext} on the current {@link Thread}: Creates a new transaction with the given 
    * {@link TransactionDefinition} using an internal {@link PlatformTransactionManager} associated with the reffered 
    * {@link DataSource}. Returns a {@link TransactionStatus} representing the created transaction. The returned 
-   * {@link TransactionStatus} instance can be used for manual transaction handling.
+   * {@link TransactionStatus} instance can be used for manual transaction handling. 
+   * <br/><br/><b>!!!! Please note that if there already is a {@link RetryContext} established, this call will create a nested
+   * {@link RetryContext} (and transaction).</b>  
    * @param definition The {@link TransactionDefinition} to use for creating a new transaction.
    * @param dataSource The identifier of the {@link DataSource} to use
    * @return Returns a {@link TransactionStatus} object representing the created transaction.
@@ -144,7 +128,7 @@ public class DataSourceWrapper {
    */
   public TransactionStatus getTransactionWithinRetryContext(TransactionDefinition definition, String dataSource) throws TransactionException {
     TransactionStatus status = transactionManagers.get(dataSource).getTransaction(definition);
-    setRetryContext(status, dataSource);
+    RetryContext.setRetryContext(status, dataSource);
     return status;
   }
 
@@ -156,10 +140,10 @@ public class DataSourceWrapper {
    */
   public void commit() throws TransactionException {
     try {
-      RetryContext context = getRetryContext();
+      RetryContext context = RetryContext.getRetryContext();
       transactionManagers.get(context.datasource).commit(context.transactionStatus);
     } finally {
-      clearRetryContext();
+      RetryContext.clearRetryContext();
     }
   }
 
@@ -171,10 +155,10 @@ public class DataSourceWrapper {
    */
   public void rollback() throws TransactionException {
     try {
-      RetryContext context = getRetryContext();
+      RetryContext context = RetryContext.getRetryContext();
       transactionManagers.get(context.datasource).rollback(context.transactionStatus);
     } finally {
-      clearRetryContext();
+      RetryContext.clearRetryContext();
     }
   }
 
@@ -237,42 +221,64 @@ public class DataSourceWrapper {
   }
 
   /**
-   * Creates a new isntance of the {@link DataSourceWrapper} class
-   * @param dataSources A {@link Map} of the datasource names and the corresponding datasources which needs to be wrapped
-   *                    by this instance
-   * @param databaseProduct A {@link DatabaseProduct} instance representing the type of the underlying HMS dabatabe.
-   */
-  public DataSourceWrapper(Map<String, DataSource> dataSources, DatabaseProduct databaseProduct) {
-    this.dataSources = dataSources;
-    for(String dataSource : dataSources.keySet()) {
-      NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSources.get(dataSource));
-      jdbcTemplates.put(dataSource, jdbcTemplate);
-      transactionManagers.put(dataSource, new DataSourceTransactionManager(Objects.requireNonNull(jdbcTemplate.getJdbcTemplate().getDataSource())));
-    }
-    this.databaseProduct = databaseProduct;
-  }
-
-  /**
-   * Represents a transaciton associated with a {@link DataSource} and a {@link Thread}. Holds the {@link TransactionStatus} 
+   * Represents a transaciton associated with a {@link DataSource} and a {@link Thread}. Holds the {@link TransactionStatus}
    * representing the transaction, and the name of the {@link DataSource} used to create the transaction. Used for two things:
    * <ul>
    *   <li>
-   *     Its presence tells to {@link RetryHandler} that there is no need for new (nested) context, it can use the 
+   *     Its presence tells to {@link RetryHandler} that there is no need for new (nested) context, it can use the
    *     existing one
    *   </li>
    *   <li>
-   *     The {@link #getTransactionStatus()}, {@link #getConnection()}, {@link #getJdbcTemplate()}, {@link #commit()},
-   *     {@link #rollback()} methods are using it to identify the correct instance which is associated with the current 
-   *     {@link RetryContext} (and {@link Thread}).    
+   *     The {@link DataSourceWrapper#getTransactionStatus()}, {@link DataSourceWrapper#getConnection()}, 
+   *     {@link DataSourceWrapper#getJdbcTemplate()}, {@link DataSourceWrapper#commit()}, {@link DataSourceWrapper#rollback()}
+   *     methods are using it to identify the correct datasource which is associated with the current
+   *     {@link RetryContext} (and {@link Thread}).
    *   </li>
    * </ul>
    */
   static class RetryContext {
+
+    /**
+     * Retrurns the previously established {@link RetryContext}. Can be called only within an established {@link RetryContext}.
+     * @return Retruns the previously established {@link RetryContext}.
+     * @throws IllegalStateException Thrown when called outside a {@link RetryContext}.
+     */
+    private static RetryContext getRetryContext() {
+      RetryContext context = threadLocal.get();
+      if (context == null) {
+        throw new IllegalStateException("Trying to access a transactional resource without retry context!");
+      }
+      return context;
+    }
     
+    /**
+     * Establishes a {@link RetryContext} on the current thread using the given {@link TransactionStatus}. 
+     * @param status The {@link TransactionStatus} to bind to the current {@link Thread}.
+     * @param datasource The name of the {@link DataSource} used to create the {@link TransactionStatus}.
+     */
+    private static void setRetryContext(TransactionStatus status, String datasource) {
+      RetryContext old = threadLocal.get();
+      threadLocal.set(new RetryContext(status, datasource, old));
+    }
+
+    /**
+     * Clears a previously established {@link RetryContext} on the current {@link Thread}.
+     */
+    private static void clearRetryContext() {
+      RetryContext top = threadLocal.get();
+      if(top != null && top.parent != null) {
+        threadLocal.set(top.parent);
+      } else {
+        threadLocal.remove();
+      }
+    }
+
+    private final RetryContext parent;
     private final TransactionStatus transactionStatus;
     private final String datasource;
 
-    public RetryContext(TransactionStatus transactionStatus, String datasource) {
+    public RetryContext(TransactionStatus transactionStatus, String datasource, RetryContext parent) {
+      this.parent = parent;
       this.transactionStatus = transactionStatus;
       this.datasource = datasource;
     }

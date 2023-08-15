@@ -34,6 +34,7 @@ public class RetryCallProperties {
   private int transactionIsolationLevel = TransactionIsolation.READ_COMMITTED;
   private boolean lockInternally = false;
   private boolean rollbackOnError = true;
+  private RetryPropagation retryPropagation = RetryPropagation.CREATE_OR_JOIN;
   private Function<Exception, MetaException> exceptionSupplier =
       (e -> new MetaException("Failed to execute function: " + caller + ", details:" + e.getMessage()));
 
@@ -95,6 +96,11 @@ public class RetryCallProperties {
     return this;
   }
 
+  public RetryCallProperties withRetryPropagation(RetryPropagation retryPropagation) {
+    this.retryPropagation = retryPropagation;
+    return this;
+  }
+
   /**
    * @param exceptionSupplier Sets a function responsuble for creating a {@link MetaException} from any oher 
    *                          {@link Exception}. The default supplier will create a {@link MetaException} with the 
@@ -130,6 +136,10 @@ public class RetryCallProperties {
     return rollbackOnError;
   }
 
+  public RetryPropagation getRetryPropagation() {
+    return retryPropagation;
+  }
+
   Function<Exception, MetaException> getExceptionSupplier() {
     return exceptionSupplier;
   }
@@ -138,7 +148,7 @@ public class RetryCallProperties {
   public String toString() {
     return "[Id:" + caller
         + ", retryOnDuplicateKey:" + retryOnDuplicateKey
-        + ", transactionIsolationLevel:" + transactionIsolationLevel 
+        + ", transactionIsolationLevel:" + transactionIsolationLevel
         + ", rollbackOnError:" + rollbackOnError
         + "]";
   }
