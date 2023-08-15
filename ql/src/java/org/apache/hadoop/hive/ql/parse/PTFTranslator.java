@@ -757,6 +757,7 @@ public class PTFTranslator {
       throws HiveException {
     PTFExpressionDef argDef = new PTFExpressionDef();
 
+    inpShape.getTypeCheckCtx().setUnparseTranslator(unparseT);
     ExprNodeDesc exprNode = semAly.genExprNodeDesc(arg, inpShape.getRr(),
         inpShape.getTypeCheckCtx());
     ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(llInfo, exprNode);
