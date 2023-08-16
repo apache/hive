@@ -236,6 +236,7 @@ public class DataSourceWrapper {
    *     {@link RetryContext} (and {@link Thread}).
    *   </li>
    * </ul>
+   * Please note that this class supports nested contexts through the {@link RetryContext#parent} field.
    */
   static class RetryContext {
 
@@ -253,7 +254,8 @@ public class DataSourceWrapper {
     }
     
     /**
-     * Establishes a {@link RetryContext} on the current thread using the given {@link TransactionStatus}. 
+     * Establishes a {@link RetryContext} on the current thread using the given {@link TransactionStatus}.
+     * If there is a context already, the new context will be created as a nested one.
      * @param status The {@link TransactionStatus} to bind to the current {@link Thread}.
      * @param datasource The name of the {@link DataSource} used to create the {@link TransactionStatus}.
      */
@@ -263,7 +265,8 @@ public class DataSourceWrapper {
     }
 
     /**
-     * Clears a previously established {@link RetryContext} on the current {@link Thread}.
+     * Clears a previously established {@link RetryContext} on the current {@link Thread}. If this context has a parent,
+     * the parent context will be restored as a result of this operation.
      */
     private static void clearRetryContext() {
       RetryContext top = threadLocal.get();
