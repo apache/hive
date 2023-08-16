@@ -261,7 +261,7 @@ public class GenReduceSinkPlan {
     ReduceSinkDesc rsdesc = PlanUtils.getReduceSinkDesc(newSortCols, valueCols, outputColumns,
         false, -1, partitionCols, newSortOrder.toString(), newNullOrder.toString(), sa.getDefaultNullOrdering(),
         numReducers, acidOp, isCompaction);
-    Operator interim = GenFileSinkPlan.createOperator(rsdesc,
+    Operator interim = OperatorUtils.createOperator(rsdesc,
         new RowSchema(rsRR.getColumnInfos()), input);
 
     finalOperatorMap.put(interim, new OpParseContext(rsRR));
@@ -313,7 +313,7 @@ public class GenReduceSinkPlan {
       selColExprMap.put(internalName, desc);
     }
     SelectDesc select = new SelectDesc(selCols, selOutputCols);
-    reduceOperator = GenFileSinkPlan.createOperator(select,
+    reduceOperator = OperatorUtils.createOperator(select,
         new RowSchema(selectRR.getColumnInfos()), interim);
     finalOperatorMap.put(reduceOperator, new OpParseContext(selectRR));
     reduceOperator.setColumnExprMap(selColExprMap);
