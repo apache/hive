@@ -20,14 +20,9 @@ package org.apache.hive.hcatalog.listener;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.util.concurrent.TimeUnit;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -43,13 +38,10 @@ import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL;
@@ -69,16 +61,6 @@ public class TestDbNotificationCleanup {
 
     private long firstEventId;
     private final String testTempDir = Paths.get(System.getProperty("java.io.tmpdir"), "testDbNotif").toString();
-
-    private static List<String> testsToSkipForReplV1BackwardCompatTesting =
-            new ArrayList<>(Arrays.asList("cleanupNotifs", "cleanupNotificationWithError","skipCleanedUpEvents"));
-    // Make sure we skip backward-compat checking for those tests that don't generate events
-
-    private static ReplicationV1CompatRule bcompat = null;
-
-    @Rule
-    public TestRule replV1BackwardCompatibleRule = bcompat;
-
     @SuppressWarnings("rawtypes")
     @BeforeClass
     public static void connectToMetastore() throws Exception {
@@ -89,19 +71,16 @@ public class TestDbNotificationCleanup {
         conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
         conf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
         conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL, DummyRawStoreFailEvent.class.getName());
-        MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANUP_SLEEP_TIME, TimeUnit.SECONDS);
         MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class.getName());
+        MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANUP_SLEEP_TIME, TimeUnit.SECONDS);
         MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, EVENTS_TTL, TimeUnit.SECONDS);
         MetastoreConf.setTimeVar(conf, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, 20, TimeUnit.SECONDS);
-
         conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
                 "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
         SessionState.start(new CliSessionState(conf));
-
         msClient = new HiveMetaStoreClient(conf);
         driver = DriverFactory.newDriver(conf);
 
-        bcompat = new ReplicationV1CompatRule(msClient, conf, testsToSkipForReplV1BackwardCompatTesting);
     }
 
     @Before

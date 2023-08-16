@@ -1441,6 +1441,7 @@ public class TestDbNotificationListener {
   public void sqlInsertPartition() throws Exception {
     String defaultDbName = "default";
     String tblName = "sqlinsptn";
+
     // Event 1
     driver.run("create table " + tblName + " (c int) partitioned by (ds string)");
     // Event 2, 3, 4
@@ -1448,33 +1449,33 @@ public class TestDbNotificationListener {
     // Event 5, 6, 7
     driver.run("insert into table " + tblName + " partition (ds = 'today') values (2)");
     // Event 8, 9, 10
-    driver.run("insert into table " + tblName + " partition (ds) values (3, 'today')");
+    driver.run("insert into table " + tblName + " partition (ds = 'today') values (3)");
     // Event 9, 10
     driver.run("alter table " + tblName + " add partition (ds = 'yesterday')");
 
-    testEventCounts(defaultDbName, firstEventId, null, null, 12);
+    testEventCounts(defaultDbName, firstEventId, null, null, 13);
     // Test a limit higher than available events
-    testEventCounts(defaultDbName, firstEventId, null, 100, 12);
+    testEventCounts(defaultDbName, firstEventId, null, 100, 13);
     // Test toEventId lower than current eventId
     testEventCounts(defaultDbName, firstEventId, firstEventId + 5, null, 5);
 
-    // Event 10, 11, 12
-    driver.run("insert into table " + tblName + " partition (ds = 'yesterday') values (2)");
     // Event 12, 13, 14
-    driver.run("insert into table " + tblName + " partition (ds) values (3, 'yesterday')");
+    driver.run("insert into table " + tblName + " partition (ds = 'yesterday') values (2)");
     // Event 15, 16, 17
-    driver.run("insert into table " + tblName + " partition (ds) values (3, 'tomorrow')");
-    // Event 18
+    driver.run("insert into table " + tblName + " partition (ds = 'yesterday') values (3)");
+    // Event 18, 19, 20
+    driver.run("insert into table " + tblName + " partition (ds = 'tomorrow') values (3)");
+    // Event 21
     driver.run("alter table " + tblName + " drop partition (ds = 'tomorrow')");
-    // Event 19, 20, 21
-    driver.run("insert into table " + tblName + " partition (ds) values (42, 'todaytwo')");
     // Event 22, 23, 24
+    driver.run("insert into table " + tblName + " partition (ds) values (42, 'todaytwo')");
+    // Event 25, 26, 27
     driver.run("insert overwrite table " + tblName + " partition(ds='todaytwo') select c from "
-        + tblName + " where 'ds'='today'");
+            + tblName + " where 'ds'='today'");
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(29, rsp.getEventsSize());
+    assertEquals(31, rsp.getEventsSize());
 
     NotificationEvent event = rsp.getEvents().get(1);
     assertEquals(firstEventId + 2, event.getEventId());
@@ -1500,39 +1501,69 @@ public class TestDbNotificationListener {
 
     event = rsp.getEvents().get(12);
     assertEquals(firstEventId + 13, event.getEventId());
-    assertEquals(EventType.INSERT.toString(), event.getEventType());
+    assertEquals(EventType.ADD_PARTITION.toString(), event.getEventType());
 
     event = rsp.getEvents().get(13);
     assertEquals(firstEventId + 14, event.getEventId());
-    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
+    assertEquals(EventType.INSERT.toString(), event.getEventType());
+    // Parse the message field
+    verifyInsert(event, null, tblName);
 
     event = rsp.getEvents().get(17);
     assertEquals(firstEventId + 18, event.getEventId());
-    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
+    assertEquals(EventType.INSERT.toString(), event.getEventType());
+    // Parse the message field
+    verifyInsert(event, null, tblName);
 
     event = rsp.getEvents().get(21);
     assertEquals(firstEventId + 22, event.getEventId());
-    assertEquals(EventType.UPDATE_PARTITION_COLUMN_STAT.toString(), event.getEventType());
+    assertEquals(EventType.ADD_PARTITION.toString(), event.getEventType());
 
     event = rsp.getEvents().get(24);
     assertEquals(firstEventId + 25, event.getEventId());
-    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
+    assertEquals(EventType.DROP_PARTITION.toString(), event.getEventType());
 
     event = rsp.getEvents().get(25);
     assertEquals(firstEventId + 26, event.getEventId());
-    assertEquals(EventType.UPDATE_PARTITION_COLUMN_STAT.toString(), event.getEventType());
+    assertEquals(EventType.ADD_PARTITION.toString(), event.getEventType());
 
     event = rsp.getEvents().get(26);
     assertEquals(firstEventId + 27, event.getEventId());
-    assertEquals(EventType.INSERT.toString(), event.getEventType());
+    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
+    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
 
     // Test fromEventId different from the very first
-    testEventCounts(defaultDbName, event.getEventId(), null, null, 2);
+    testEventCounts(defaultDbName, event.getEventId(), null, null, 4);
 
     event = rsp.getEvents().get(28);
     assertEquals(firstEventId + 29, event.getEventId());
-    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
+    assertEquals(EventType.INSERT.toString(), event.getEventType());
+    // Verify the replace flag.
+    insertMsg = md.getInsertMessage(event.getMessage());
+    assertTrue(insertMsg.isReplace());
+    // replace-overwrite introduces no new files
+    // the insert overwrite creates an empty file with the current change
+    //assertTrue(event.getMessage().matches(".*\"files\":\\[\\].*"));
 
+    event = rsp.getEvents().get(29);
+    assertEquals(firstEventId + 30, event.getEventId());
+    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
+    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+
+    event = rsp.getEvents().get(30);
+    assertEquals(firstEventId + 31, event.getEventId());
+    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
+    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+    testEventCounts(defaultDbName, firstEventId, null, null, 31);
+
+    // Test a limit within the available events
+    testEventCounts(defaultDbName, firstEventId, null, 10, 10);
+    // Test toEventId greater than current eventId
+    testEventCounts(defaultDbName, firstEventId, firstEventId + 100, null, 31);
+    // Test toEventId greater than current eventId with some limit within available events
+    testEventCounts(defaultDbName, firstEventId, firstEventId + 100, 10, 10);
+    // Test toEventId greater than current eventId with some limit beyond available events
+    testEventCounts(defaultDbName, firstEventId, firstEventId + 100, 50, 31);
   }
 
   private void verifyInsert(NotificationEvent event, String dbName, String tblName) throws Exception {
