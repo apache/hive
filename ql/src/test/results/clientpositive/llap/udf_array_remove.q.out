@@ -96,7 +96,6 @@ POSTHOOK: query: select id,value from test_null_array
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_null_array
 #### A masked pattern was here ####
-	["empty"]
 1	[]
 2	["NULL"]
 3	["null","null"]
@@ -109,7 +108,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_null_array
 #### A masked pattern was here ####
 ["NULL"]
-["empty"]
 ["null","null"]
 []
 PREHOOK: query: select value, array_remove(value,id) from test_null_array
@@ -121,6 +119,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_null_array
 #### A masked pattern was here ####
 ["NULL"]	["NULL"]
-["empty"]	["empty"]
 ["null","null"]	["null","null"]
 []	[]
