@@ -1441,7 +1441,6 @@ public class TestDbNotificationListener {
   public void sqlInsertPartition() throws Exception {
     String defaultDbName = "default";
     String tblName = "sqlinsptn";
-
     // Event 1
     driver.run("create table " + tblName + " (c int) partitioned by (ds string)");
     // Event 2, 3, 4
@@ -1459,19 +1458,19 @@ public class TestDbNotificationListener {
     // Test toEventId lower than current eventId
     testEventCounts(defaultDbName, firstEventId, firstEventId + 5, null, 5);
 
-    // Event 12, 13, 14
+    // Event 10, 11, 12
     driver.run("insert into table " + tblName + " partition (ds = 'yesterday') values (2)");
-    // Event 15, 16, 17
+    // Event 12, 13, 14
     driver.run("insert into table " + tblName + " partition (ds = 'yesterday') values (3)");
-    // Event 18, 19, 20
-    driver.run("insert into table " + tblName + " partition (ds = 'tomorrow') values (3)");
-    // Event 21
+    // Event 15, 16, 17
+    driver.run("insert into table " + tblName + " partition (ds = 'tomorrow') values (2)");
+    // Event 18
     driver.run("alter table " + tblName + " drop partition (ds = 'tomorrow')");
-    // Event 22, 23, 24
+    // Event 19, 20, 21
     driver.run("insert into table " + tblName + " partition (ds) values (42, 'todaytwo')");
-    // Event 25, 26, 27
+    // Event 22, 23, 24
     driver.run("insert overwrite table " + tblName + " partition(ds='todaytwo') select c from "
-            + tblName + " where 'ds'='today'");
+        + tblName + " where 'ds'='today'");
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
