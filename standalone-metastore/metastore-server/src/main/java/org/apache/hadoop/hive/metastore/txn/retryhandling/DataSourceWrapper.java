@@ -115,11 +115,12 @@ public class DataSourceWrapper {
   }
 
   /**
-   * Establishes a {@link RetryContext} on the current {@link Thread}: Creates a new transaction with the given 
+   * <p>Establishes a {@link RetryContext} on the current {@link Thread}: Creates a new transaction with the given 
    * {@link TransactionDefinition} using an internal {@link PlatformTransactionManager} associated with the reffered 
    * {@link DataSource}. Returns a {@link TransactionStatus} representing the created transaction. The returned 
-   * {@link TransactionStatus} instance can be used for manual transaction handling. 
-   * <br/><br/><b>!!!! Please note that if there already is a {@link RetryContext} established, this call will create a nested
+   * {@link TransactionStatus} instance can be used for manual transaction handling.</p> 
+   * <br>
+   * <p>!!!! Please note that if there already is a {@link RetryContext} established, this call will create a nested</p>
    * {@link RetryContext} (and transaction).</b>  
    * @param definition The {@link TransactionDefinition} to use for creating a new transaction.
    * @param dataSource The identifier of the {@link DataSource} to use
