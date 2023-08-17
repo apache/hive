@@ -871,6 +871,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             (AlterTableSnapshotRefSpec.DropSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
         IcebergBranchExec.dropBranch(icebergTable, dropBranchSpec);
         break;
+      case DROP_TAG:
+        AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropTagSpec =
+            (AlterTableSnapshotRefSpec.DropSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
+        IcebergTagExec.dropTag(icebergTable, dropTagSpec);
+        break;
       default:
         throw new UnsupportedOperationException(String.format(
             "Operation type %s is not supported", alterTableSnapshotRefSpec.getOperationType().getName()));
