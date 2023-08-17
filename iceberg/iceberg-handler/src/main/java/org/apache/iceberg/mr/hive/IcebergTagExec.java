@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.iceberg.ManageSnapshots;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
@@ -51,5 +52,16 @@ public class IcebergTagExec {
     }
 
     manageSnapshots.commit();
+  }
+
+  public static void dropTag(Table table, AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropTagSpec) {
+    String tagName = dropTagSpec.getRefName();
+    boolean ifExists = dropTagSpec.getIfExists();
+
+    SnapshotRef snapshotRef = table.refs().get(tagName);
+    if (snapshotRef != null || !ifExists) {
+      LOG.info("Dropping tag {} on iceberg table {}", tagName, table.name());
+      table.manageSnapshots().removeTag(tagName).commit();
+    }
   }
 }
