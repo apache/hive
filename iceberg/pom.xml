@@ -46,6 +46,13 @@
     <module>iceberg-catalog</module>
     <module>iceberg-handler</module>
   </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${iceberg.mockito-core.version}</version>
+    </dependency>
+  </dependencies>
   <dependencyManagement>
     <dependencies>
       <dependency>
