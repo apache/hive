@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.FutureCallback;
@@ -44,6 +43,7 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hive.common.guava.Stopwatch;
 import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.CallableWithNdc;

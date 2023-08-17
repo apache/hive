@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -105,7 +106,8 @@ public class FetchOperator implements Serializable {
 
   private transient Iterator<Path> iterPath;
   private transient Iterator<PartitionDesc> iterPartDesc;
-  private transient Iterator<FetchInputFormatSplit> iterSplits = Iterators.emptyIterator();
+  // HIVE-27560: In order to support Guava 20+, change to use JDK API.
+  private transient Iterator<FetchInputFormatSplit> iterSplits = Collections.emptyIterator();
 
   private transient Path currPath;
   private transient PartitionDesc currDesc;
@@ -540,7 +542,8 @@ public class FetchOperator implements Serializable {
       this.currPath = null;
       this.iterPath = null;
       this.iterPartDesc = null;
-      this.iterSplits = Iterators.emptyIterator();
+      // HIVE-27560: In order to support Guava 20+, change to use JDK API.
+      this.iterSplits = Collections.emptyIterator();
     } catch (Exception e) {
       throw new HiveException("Failed with exception " + e.getMessage()
           + StringUtils.stringifyException(e));

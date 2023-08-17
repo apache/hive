@@ -53,9 +53,9 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.metadata.CheckResult.PartitionResult;
+import org.apache.hive.common.guava.SameThreadExecutorUtil;
 import org.apache.thrift.TException;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -433,7 +433,8 @@ public class HiveMetaStoreChecker {
     ExecutorService executor;
     if (poolSize <= 1) {
       LOG.debug("Using single-threaded version of MSCK-GetPaths");
-      executor = MoreExecutors.sameThreadExecutor();
+      // HIVE-27560: In order to support Guava 26+, change to use `SameThreadExecutorUtil`.
+      executor = SameThreadExecutorUtil.sameThreadExecutor();
     } else {
       LOG.debug("Using multi-threaded version of MSCK-GetPaths with number of threads " + poolSize);
       ThreadFactory threadFactory =

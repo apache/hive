@@ -81,6 +81,7 @@ import org.apache.hadoop.yarn.api.records.NodeState;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.util.Clock;
+import org.apache.hive.common.guava.SameThreadExecutorUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -317,15 +318,21 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }, 10000L, TimeUnit.MILLISECONDS);
 
       nodeEnablerFuture = nodeEnabledExecutor.submit(nodeEnablerCallable);
-      Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG));
+      // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
+      Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG),
+        SameThreadExecutorUtil.sameThreadExecutor());
 
       delayedTaskSchedulerFuture =
           delayedTaskSchedulerExecutor.submit(delayedTaskSchedulerCallable);
+      // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
       Futures.addCallback(delayedTaskSchedulerFuture,
-          new LoggingFutureCallback("DelayedTaskSchedulerThread", LOG));
+          new LoggingFutureCallback("DelayedTaskSchedulerThread", LOG),
+            SameThreadExecutorUtil.sameThreadExecutor());
 
       schedulerFuture = schedulerExecutor.submit(schedulerCallable);
-      Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG));
+      // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
+      Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG),
+        SameThreadExecutorUtil.sameThreadExecutor());
 
       registry.start();
       registry.registerStateChangeListener(new NodeStateChangeListener());

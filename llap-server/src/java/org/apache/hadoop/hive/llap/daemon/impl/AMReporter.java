@@ -67,6 +67,7 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.AbstractService;
+import org.apache.hive.common.guava.SameThreadExecutorUtil;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.dag.records.TezTaskAttemptID;
@@ -161,6 +162,7 @@ public class AMReporter extends AbstractService {
   public void serviceStart() {
     QueueLookupCallable queueDrainerCallable = new QueueLookupCallable();
     queueLookupFuture = queueLookupExecutor.submit(queueDrainerCallable);
+    // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
     Futures.addCallback(queueLookupFuture, new FutureCallback<Void>() {
       @Override
       public void onSuccess(Void result) {
@@ -176,7 +178,7 @@ public class AMReporter extends AbstractService {
           Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), t);
         }
       }
-    });
+    }, SameThreadExecutorUtil.sameThreadExecutor());
     // TODO: why is this needed? we could just save the host and port?
     nodeId = LlapNodeId.getInstance(localAddress.get().getHostName(), localAddress.get().getPort());
     LOG.info("AMReporter running with DaemonId: {}, NodeId: {}", daemonId, nodeId);
@@ -260,6 +262,7 @@ public class AMReporter extends AbstractService {
     // only happen after the AtomicReference address has been populated. Not adding an additional check.
     ListenableFuture<Void> future =
         executor.submit(new KillTaskCallable(taskAttemptId, amNodeInfo));
+    // HIVE-27560: In order to support Guava 26+, need to use the `addCallback` method with `Executor` parameter.
     Futures.addCallback(future, new FutureCallback<Void>() {
       @Override
       public void onSuccess(Void result) {
@@ -271,7 +274,7 @@ public class AMReporter extends AbstractService {
         LOG.warn("Failed to send taskKilled for {}. The attempt will likely time out.",
             taskAttemptId);
       }
-    });
+    }, SameThreadExecutorUtil.sameThreadExecutor());
   }
 
   public void queryComplete(QueryIdentifier queryIdentifier) {
@@ -337,7 +340,7 @@ public class AMReporter extends AbstractService {
                     amNodeInfo.amNodeId, currentQueryIdentifier, t);
                   queryFailedHandler.queryFailed(currentQueryIdentifier);
                 }
-              });
+              }, SameThreadExecutorUtil.sameThreadExecutor());
             }
           }
         } catch (InterruptedException e) {

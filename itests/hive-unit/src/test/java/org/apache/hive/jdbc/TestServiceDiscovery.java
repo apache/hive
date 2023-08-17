@@ -148,6 +148,10 @@ public class TestServiceDiscovery {
       return inputParam.host.equals(host) && inputParam.port == port &&
         inputParam.path.startsWith(pathPrefix);
     }
+    // HIVE-27560: In order to support Guava 21+, need to add the `test` method.
+    public boolean test(ConnParamInfo input) {
+      return apply(input);
+    }
   }
 
   //Mocks HS2 publishing logic.

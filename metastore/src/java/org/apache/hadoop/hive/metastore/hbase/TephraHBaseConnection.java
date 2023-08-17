@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.twill.discovery.InMemoryDiscoveryService;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +63,14 @@ public class TephraHBaseConnection extends VanillaHBaseConnection {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
       LOG.debug("Using an in memory client transaction system for testing");
       TransactionManager txnMgr = new TransactionManager(conf);
-      txnMgr.startAndWait();
+      try {
+        // HIVE-27560: In order to support Guava 17+, change to using reflection for method calls.
+        // Before Guava 16, need to call 'startAndWait', and after Guava 17, need to call
+        // `startAsync ` and `awaitRunning`.
+        startAndWait(txnMgr);
+      } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+        throw new RuntimeException("txnMgr start failed", e);
+      }
       txnClient = new InMemoryTxSystemClient(txnMgr);
     } else {
       // TODO should enable use of ZKDiscoveryService if users want it
@@ -124,4 +133,16 @@ public class TephraHBaseConnection extends VanillaHBaseConnection {
     return (TransactionAwareHTable)txnTables.get(tableName);
   }
 
+  private void startAndWait(TransactionManager txnMgr)
+      throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    try {
+      Method startAndWaitMethod = txnMgr.getClass().getMethod("startAndWait");
+      startAndWaitMethod.invoke(txnMgr);
+    } catch (NoSuchMethodException e) {
+      Method startAsyncMethod = txnMgr.getClass().getMethod("startAsync");
+      Method awaitRunningMethod = txnMgr.getClass().getMethod("awaitRunning");
+      startAsyncMethod.invoke(txnMgr);
+      awaitRunningMethod.invoke(txnMgr);
+    }
+  }
 }

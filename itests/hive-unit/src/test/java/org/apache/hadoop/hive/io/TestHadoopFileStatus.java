@@ -86,6 +86,10 @@ public class TestHadoopFileStatus {
         }
         return false;
       }
+      // HIVE-27560: In order to support Guava 21+, need to add the `test` method.
+      public boolean test(AclEntry input) {
+        return apply(input);
+      }
     });
   }
 
