@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.metastore.client.builder.*;
 import org.apache.hadoop.hive.metastore.events.*;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -45,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 
 import java.io.File;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -419,92 +417,4 @@ public class TestHiveMetaStoreAuthorizer {
     }
   }
 
-  /**
-   * Fake tables to test.
-   */
-  private static class TestTable {
-    private final String dbName;
-    private final String tableName;
-
-    private TestTable(String dbName, String tableName) {
-      this.dbName = dbName;
-      this.tableName = tableName;
-    }
-
-    @Override
-    public String toString() {
-      return dbName + "." + tableName;
-    }
-
-    public String getDbName() {
-      return dbName;
-    }
-
-    public String getTableName() {
-      return tableName;
-    }
-  }
-
-
-  private static List<TestTable> createTables(int dbs, int tbls) {
-    List<TestTable> tables  = new ArrayList<>(dbs * tbls);
-    for(int d = 0; d < dbs; ++d) {
-      for(int t = 0; t < tbls; ++t) {
-        String dbname = String.format("db%05x", d);
-        String tblName = String.format("tbl%05x", t);
-        tables.add(new TestTable(dbname, tblName));
-      }
-    }
-    return tables;
-  }
-
-  private static final int NUM_DB = 2;
-  private static final int NUM_TBL = 50;
-  @Ignore
-  public void testIndexedTableLookup0() {
-    List<TestTable> tables = createTables(NUM_DB, NUM_TBL);
-    int cnt = 0;
-    for (TestTable t : tables) {
-      if (tables.contains(t)) {
-        cnt += 1;
-      }
-    }
-    Assert.assertTrue(cnt == tables.size());
-  }
-
-  @Test
-  public void testIndexedTableLookup1() {
-    List<TestTable> tables = createTables(NUM_DB, NUM_TBL);
-    HivePrivilegeObjectUtils.TableIndex<TestTable> index = new HivePrivilegeObjectUtils.TableIndex<TestTable>(tables) {
-      @Override
-      protected String getDbName(TestTable item) {
-        return item.getDbName();
-      }
-
-      @Override
-      protected String getTableName(TestTable item) {
-        return item.getTableName();
-      }
-    };
-    // lookup all
-    int cnt = 0;
-    for(TestTable t : tables) {
-      if (index.lookup(t.dbName, t.tableName) == t) {
-        cnt += 1;
-      }
-    }
-    Assert.assertTrue(cnt == tables.size());
-
-    // lookup some
-    List<TestTable> filtered = tables.stream()
-        .filter(t -> t.getTableName().endsWith("0"))
-        .collect(Collectors.toList());
-    cnt = 0;
-    for(TestTable t : filtered) {
-      if (index.lookup(t.dbName, t.tableName) == t) {
-        cnt += 1;
-      }
-    }
-    Assert.assertTrue(cnt == filtered.size());
-  }
 }

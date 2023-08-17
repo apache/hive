@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
-import static org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils.PrivilegeIndex;
+import static org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils.PrivilegeLookup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.slf4j.Logger;
@@ -164,7 +164,7 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     List<HivePrivilegeObject> listObjs = tableMetasToPrivilegeObjs(tableMetas);
     List<HivePrivilegeObject> filteredList = getFilteredObjects(listObjs);
     final List<TableMeta> ret = new ArrayList<>();
-    final PrivilegeIndex index = new PrivilegeIndex(filteredList);
+    final PrivilegeLookup index = new PrivilegeLookup(filteredList);
     for(TableMeta table : tableMetas) {
       if (index.lookup(table.getDbName(), table.getTableName()) != null) {
         ret.add(table);
