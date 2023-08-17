@@ -543,15 +543,20 @@ public interface HiveStorageHandler extends Configurable {
   default boolean commitInMoveTask() {
     return false;
   }
-
+  
   /**
    * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
    * @param commitProperties Commit properties which are needed for the handler based commit
-   * @param overwrite If this is an INSERT OVERWRITE then it is true
+   * @param operation the operation type
    * @throws HiveException If there is an error during commit
    */
-  default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+  default void storageHandlerCommit(Properties commitProperties, Operation operation) throws HiveException {
     throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+    storageHandlerCommit(commitProperties, overwrite ? Operation.IOW : Operation.OTHER);
   }
 
   /**

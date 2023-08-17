@@ -653,6 +653,28 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @Test
+  public void testConcurrent2Deletes() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+    String sql = "DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'";
+
+    Tasks.range(2)
+        .executeWith(Executors.newFixedThreadPool(2))
+        .run(i -> {
+          init(shell, testTables, temp, executionEngine);
+          HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+          HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+          shell.executeStatement(sql);
+          shell.closeSession();
+        });
+    List<Object[]> res = shell.executeStatement("SELECT * FROM customers");
+    Assert.assertEquals(4, res.size());
+  }
+
+  @Test
   public void testConcurrent2Updates() {
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
@@ -677,6 +699,70 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     }
     List<Object[]> res = shell.executeStatement("SELECT * FROM customers WHERE last_name='Changed'");
     Assert.assertEquals(5, res.size());
+  }
+
+  @Test
+  public void testConcurrentUpdateAndDelete() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+    String[] sql = new String[]{
+        "DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'",
+        "UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'"
+    };
+
+    boolean deleteFirst = false;
+    try {
+      Tasks.range(2)
+          .executeWith(Executors.newFixedThreadPool(2))
+          .run(i -> {
+            init(shell, testTables, temp, executionEngine);
+            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            shell.executeStatement(sql[i]);
+            shell.closeSession();
+          });
+    } catch (Throwable ex) {
+      Throwable cause = Throwables.getRootCause(ex);
+      Assert.assertTrue(cause instanceof ValidationException);
+      Assert.assertTrue(cause.getMessage().matches("^Found.*conflicting.*files(.*)"));
+      deleteFirst = cause.getMessage().contains("conflicting delete");
+    }
+    List<Object[]> res = shell.executeStatement("SELECT * FROM customers WHERE last_name='Changed'");
+    Assert.assertEquals(deleteFirst ? 0 : 5, res.size());
+  }
+
+  @Test
+  public void testConcurrent2MergeInserts() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1);
+    testTables.createTable(shell, "target", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    String sql = "MERGE INTO target t USING source s on t.customer_id = s.customer_id WHEN Not MATCHED THEN " +
+        "INSERT values (s.customer_id, s.first_name, s.last_name)";
+    try {
+      Tasks.range(2)
+          .executeWith(Executors.newFixedThreadPool(2))
+          .run(i -> {
+            init(shell, testTables, temp, executionEngine);
+            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            shell.executeStatement(sql);
+            shell.closeSession();
+          });
+    } catch (Throwable ex) {
+      Throwable cause = Throwables.getRootCause(ex);
+      Assert.assertTrue(cause instanceof ValidationException);
+      Assert.assertTrue(cause.getMessage().startsWith("Found conflicting files"));
+    }
+    List<Object[]> res = shell.executeStatement("SELECT * FROM target");
+    Assert.assertEquals(6, res.size());
   }
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
