@@ -21,57 +21,36 @@ import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 import java.time.ZoneId;
-import java.util.Objects;
-import java.util.function.Function;
 
-public abstract class UnixTimeFormatter<T> {
+public interface UnixTimeFormatter {
 
   enum Type {
     SIMPLE {
       @Override
-      UnixTimeFormatter<?> newFormatter(ZoneId zone) {
+      UnixTimeFormatter newFormatter(ZoneId zone) {
         return new UnixTimeSimpleDateFormatter(zone);
       }
     }, DATETIME {
       @Override
-      UnixTimeFormatter<?> newFormatter(final ZoneId zone) {
+      UnixTimeFormatter newFormatter(final ZoneId zone) {
         return new UnixTimeDateTimeFormatter(zone);
       }
     };
 
-    abstract UnixTimeFormatter<?> newFormatter(ZoneId zone);
+    abstract UnixTimeFormatter newFormatter(ZoneId zone);
   }
 
-  public static UnixTimeFormatter<?> from(Configuration conf) {
+  static UnixTimeFormatter from(Configuration conf) {
     ZoneId zoneId = TimestampTZUtil.parseTimeZone(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE));
     Type type = Type.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DATETIME_FORMATTER).toUpperCase());
     return type.newFormatter(zoneId);
   }
 
-  protected final ZoneId zoneId;
-  protected final Function<String, T> loader;
-  protected String lastPattern;
-  protected T formatter;
+  long parse(String value) throws RuntimeException;
 
-  protected UnixTimeFormatter(ZoneId zoneId, Function<String, T> loader) {
-    this.zoneId = zoneId;
-    this.loader = loader;
-  }
+  long parse(String value, String pattern) throws RuntimeException;
 
-  public abstract long parse(String value) throws RuntimeException;
+  String format(long epochSeconds);
 
-  public abstract long parse(String value, String pattern) throws RuntimeException;
-
-  public abstract String format(long epochSeconds);
-
-  public abstract String format(long epochSeconds, String pattern);
-
-  protected final T getFormatter(String pattern) {
-    Objects.requireNonNull(pattern);
-    if (!pattern.equals(lastPattern)) {
-      lastPattern = pattern;
-      formatter = loader.apply(pattern);
-    }
-    return formatter;
-  }
+  String format(long epochSeconds, String pattern);
 }

@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
 
-public class UnixTimeSimpleDateFormatter extends UnixTimeFormatter<SimpleDateFormat> {
+final class UnixTimeSimpleDateFormatter extends UnixTimeFormatterCache<SimpleDateFormat> {
   private static final String DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
   UnixTimeSimpleDateFormatter(final ZoneId zoneId) {

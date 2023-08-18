@@ -34,7 +34,7 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
 
   private static final long serialVersionUID = 1L;
 
-  private transient UnixTimeFormatter<?> formatter;
+  private transient UnixTimeFormatter formatter;
 
   public VectorUDFUnixTimeStampString(int colNum, int outputColumnNum) {
     super(colNum, outputColumnNum, -1, -1);

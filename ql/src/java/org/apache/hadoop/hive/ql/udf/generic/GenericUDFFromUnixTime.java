@@ -47,7 +47,7 @@ public class GenericUDFFromUnixTime extends GenericUDF {
   private transient IntObjectInspector inputIntOI;
   private transient LongObjectInspector inputLongOI;
   private transient final Text result = new Text();
-  private transient UnixTimeFormatter<?> formatter;
+  private transient UnixTimeFormatter formatter;
   private transient Converter[] converters = new Converter[2];
   private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes = new PrimitiveObjectInspector.PrimitiveCategory[2];
 

@@ -29,7 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Objects;
 
-public class UnixTimeDateTimeFormatter extends UnixTimeFormatter<DateTimeFormatter> {
+final class UnixTimeDateTimeFormatter extends UnixTimeFormatterCache<DateTimeFormatter> {
 
   UnixTimeDateTimeFormatter(final ZoneId zoneId) {
     super(zoneId,

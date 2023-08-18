@@ -60,7 +60,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   private transient TimestampLocalTZObjectInspector inputTimestampLocalTzOI;
   private transient Converter inputTextConverter;
   private transient Converter patternConverter;
-  private transient UnixTimeFormatter<?> formatter;
+  private transient UnixTimeFormatter formatter;
   private transient ZoneId timeZone;
 
   @Override
