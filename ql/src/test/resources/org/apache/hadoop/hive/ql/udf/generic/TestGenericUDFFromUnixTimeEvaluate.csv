@@ -33,16 +33,16 @@ Jul 21 2023 9:13;MMM dd yyyy H:mm;Etc/GMT;SIMPLE;1689930780
 2023-07-21 9:13;yyyy-MM-dd H:mm;Etc/GMT;DATETIME;1689930780
 2023-07-21 9:13;yyyy-MM-dd H:mm;Etc/GMT;SIMPLE;1689930780
 Field MilliOfDay cannot be printed as the value 33180000 exceeds the maximum print width of 2;yyyy-MM-dd HH:mmAA;Etc/GMT;DATETIME;1689930780
-java.lang.IllegalArgumentException: Illegal pattern character 'A';yyyy-MM-dd HH:mmAA;Etc/GMT;SIMPLE;1689930780
-java.lang.IllegalArgumentException: Too many pattern letters: a;yyyy-MM-dd HH:mmaa;Etc/GMT;DATETIME;1689930780
+Illegal pattern character 'A';yyyy-MM-dd HH:mmAA;Etc/GMT;SIMPLE;1689930780
+Too many pattern letters: a;yyyy-MM-dd HH:mmaa;Etc/GMT;DATETIME;1689930780
 2023-07-21 09:13AM;yyyy-MM-dd HH:mmaa;Etc/GMT;SIMPLE;1689930780
-java.lang.IllegalArgumentException: Too many pattern letters: a;yyyy-MM-dd hh:mmaa;Etc/GMT;DATETIME;1689930780
+Too many pattern letters: a;yyyy-MM-dd hh:mmaa;Etc/GMT;DATETIME;1689930780
 2023-07-21 09:13AM;yyyy-MM-dd hh:mmaa;Etc/GMT;SIMPLE;1689930780
 2023-07-21 09:13PM;yyyy-MM-dd hh:mma;Etc/GMT;DATETIME;1689973980
 2023-07-21 09:13PM;yyyy-MM-dd hh:mma;Etc/GMT;SIMPLE;1689973980
 2023-07-21 09:13:10;yyyy-MM-dd HH:mm:ss;Etc/GMT;DATETIME;1689930790
 2023-07-21 09:13:10;yyyy-MM-dd HH:mm:ss;Etc/GMT;SIMPLE;1689930790
-java.lang.IllegalArgumentException: Too many pattern letters: s;yyyy-MM-dd HH:mm:ss.sss;Etc/GMT;DATETIME;1689930790
+Too many pattern letters: s;yyyy-MM-dd HH:mm:ss.sss;Etc/GMT;DATETIME;1689930790
 2023-07-21 09:13:10.010;yyyy-MM-dd HH:mm:ss.sss;Etc/GMT;SIMPLE;1689930790
 2023-07-21 09:13:10.000;yyyy-MM-dd HH:mm:ss.SSS;Etc/GMT;DATETIME;1689930790
 2023-07-21 09:13:10.000;yyyy-MM-dd HH:mm:ss.SSS;Etc/GMT;DATETIME;1689930790

@@ -16,8 +16,6 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import com.google.common.cache.CacheLoader;
-
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
@@ -30,13 +28,10 @@ public class UnixTimeSimpleDateFormatter extends UnixTimeFormatter<SimpleDateFor
   private static final String DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
   UnixTimeSimpleDateFormatter(final ZoneId zoneId) {
-    super(zoneId, new CacheLoader<String, SimpleDateFormat>() {
-      @Override
-      public SimpleDateFormat load(final String s) {
-        SimpleDateFormat f = new SimpleDateFormat(s);
-        f.setTimeZone(TimeZone.getTimeZone(zoneId));
-        return f;
-      }
+    super(zoneId, s -> {
+      SimpleDateFormat f = new SimpleDateFormat(s);
+      f.setTimeZone(TimeZone.getTimeZone(zoneId));
+      return f;
     });
   }
 

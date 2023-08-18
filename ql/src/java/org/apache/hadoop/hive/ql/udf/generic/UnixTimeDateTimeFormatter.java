@@ -20,8 +20,6 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 
-import com.google.common.cache.CacheLoader;
-
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -34,12 +32,8 @@ import java.util.Objects;
 public class UnixTimeDateTimeFormatter extends UnixTimeFormatter<DateTimeFormatter> {
 
   UnixTimeDateTimeFormatter(final ZoneId zoneId) {
-    super(zoneId, new CacheLoader<String, DateTimeFormatter>() {
-      @Override
-      public DateTimeFormatter load(final String s) {
-        return new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern(s).toFormatter().withZone(zoneId);
-      }
-    });
+    super(zoneId,
+        s -> new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern(s).toFormatter().withZone(zoneId));
   }
 
   @Override

@@ -20,12 +20,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-
 import java.time.ZoneId;
-import java.util.concurrent.ExecutionException;
+import java.util.Objects;
+import java.util.function.Function;
 
 public abstract class UnixTimeFormatter<T> {
 
@@ -52,11 +49,13 @@ public abstract class UnixTimeFormatter<T> {
   }
 
   protected final ZoneId zoneId;
-  private final LoadingCache<String, T> formatters;
+  protected final Function<String, T> loader;
+  protected String lastPattern;
+  protected T formatter;
 
-  protected UnixTimeFormatter(ZoneId zoneId, CacheLoader<String, T> loader) {
+  protected UnixTimeFormatter(ZoneId zoneId, Function<String, T> loader) {
     this.zoneId = zoneId;
-    formatters = CacheBuilder.newBuilder().maximumSize(1).concurrencyLevel(1).build(loader);
+    this.loader = loader;
   }
 
   public abstract long parse(String value) throws RuntimeException;
@@ -68,10 +67,11 @@ public abstract class UnixTimeFormatter<T> {
   public abstract String format(long epochSeconds, String pattern);
 
   protected final T getFormatter(String pattern) {
-    try {
-      return this.formatters.get(pattern);
-    } catch (ExecutionException e) {
-      throw new RuntimeException(e);
+    Objects.requireNonNull(pattern);
+    if (!pattern.equals(lastPattern)) {
+      lastPattern = pattern;
+      formatter = loader.apply(pattern);
     }
+    return formatter;
   }
 }
