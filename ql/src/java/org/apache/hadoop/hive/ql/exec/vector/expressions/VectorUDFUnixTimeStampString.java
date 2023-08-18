@@ -47,7 +47,9 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
   @Override
   public void transientInit(Configuration conf) throws HiveException {
     super.transientInit(conf);
-    formatter = UnixTimeFormatter.from(conf);
+    if (formatter == null) {
+      formatter = UnixTimeFormatter.from(conf);
+    }
   }
 
   @Override

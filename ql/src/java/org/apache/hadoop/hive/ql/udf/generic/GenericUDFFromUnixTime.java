@@ -76,7 +76,9 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       checkArgGroups(arguments, 1, inputTypes, STRING_GROUP);
       obtainStringConverter(arguments, 1, inputTypes, converters);
     }
-    formatter = UnixTimeFormatter.from(SessionState.get() == null ? new HiveConf() : SessionState.getSessionConf());
+    if (formatter == null) {
+      formatter = UnixTimeFormatter.from(SessionState.get() == null ? new HiveConf() : SessionState.getSessionConf());
+    }
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
   }
 

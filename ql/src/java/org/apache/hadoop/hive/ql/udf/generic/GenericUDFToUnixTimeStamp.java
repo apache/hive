@@ -99,7 +99,9 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
           patternConverter = ObjectInspectorConverters.getConverter(arg2OI,
               PrimitiveObjectInspectorFactory.javaStringObjectInspector);
         }
-        formatter = UnixTimeFormatter.from(conf);
+        if (formatter == null) {
+          formatter = UnixTimeFormatter.from(conf);
+        }
         break;
       case DATE:
         inputDateOI = (DateObjectInspector) arguments[0];
@@ -115,7 +117,9 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
             + " takes only string/date/timestamp/timestampwltz types. Got Type:" + arg1OI
             .getPrimitiveCategory().name());
     }
-    timeZone = conf.getLocalTimeZone();
+    if (timeZone == null) {
+      timeZone = conf.getLocalTimeZone();
+    }
   }
 
   @Override
