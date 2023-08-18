@@ -55,7 +55,7 @@ public interface UnixTimeFormatter {
      */
     DATETIME {
       @Override
-      UnixTimeFormatter newFormatter(final ZoneId zone) {
+      UnixTimeFormatter newFormatter(ZoneId zone) {
         return new UnixTimeDateTimeFormatter(zone);
       }
     };
