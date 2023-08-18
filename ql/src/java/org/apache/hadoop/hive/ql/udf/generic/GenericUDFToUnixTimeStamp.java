@@ -100,7 +100,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
               PrimitiveObjectInspectorFactory.javaStringObjectInspector);
         }
         if (formatter == null) {
-          formatter = UnixTimeFormatter.from(conf);
+          formatter = UnixTimeFormatter.ofConfiguration(conf);
         }
         break;
       case DATE:
@@ -125,7 +125,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   @Override
   public void configure(MapredContext context) {
     if (context != null) {
-      formatter = UnixTimeFormatter.from(context.getJobConf());
+      formatter = UnixTimeFormatter.ofConfiguration(context.getJobConf());
       String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
       timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
     }

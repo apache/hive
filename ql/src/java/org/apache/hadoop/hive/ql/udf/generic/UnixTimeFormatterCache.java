@@ -20,6 +20,13 @@ import java.time.ZoneId;
 import java.util.Objects;
 import java.util.function.Function;
 
+/**
+ * Formatter that supports caching of patterns to avoid compilation overhead.
+ * <p>
+ * At its current state, the cache is very simplistic and just holds the last used pattern in memory.
+ * </p>
+ * @param <T> the type of the underlying datetime formatter
+ */
 abstract class UnixTimeFormatterCache<T> implements UnixTimeFormatter {
 
   protected final ZoneId zoneId;

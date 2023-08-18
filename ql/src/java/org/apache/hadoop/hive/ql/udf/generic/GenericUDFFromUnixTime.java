@@ -77,7 +77,7 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       obtainStringConverter(arguments, 1, inputTypes, converters);
     }
     if (formatter == null) {
-      formatter = UnixTimeFormatter.from(SessionState.get() == null ? new HiveConf() : SessionState.getSessionConf());
+      formatter = UnixTimeFormatter.ofConfiguration(SessionState.get() == null ? new HiveConf() : SessionState.getSessionConf());
     }
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
   }
@@ -85,7 +85,7 @@ public class GenericUDFFromUnixTime extends GenericUDF {
   @Override
   public void configure(MapredContext context) {
     if (context != null) {
-      formatter = UnixTimeFormatter.from(context.getJobConf());
+      formatter = UnixTimeFormatter.ofConfiguration(context.getJobConf());
     }
   }
 

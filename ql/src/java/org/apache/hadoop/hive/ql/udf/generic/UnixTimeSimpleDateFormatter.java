@@ -41,14 +41,14 @@ final class UnixTimeSimpleDateFormatter extends UnixTimeFormatterCache<SimpleDat
   }
 
   @Override
-  public long parse(String val, String pattern) {
-    Objects.requireNonNull(val);
+  public long parse(String text, String pattern) {
+    Objects.requireNonNull(text);
     Objects.requireNonNull(pattern);
     final SimpleDateFormat formatter = getFormatter(pattern);
     ParsePosition pos = new ParsePosition(0);
-    Date d = formatter.parse(val, pos);
+    Date d = formatter.parse(text, pos);
     if (d == null) {
-      throw new DateTimeParseException(val + " cannot be parsed to date. Error at index " + pos.getErrorIndex(), val,
+      throw new DateTimeParseException(text + " cannot be parsed to date. Error at index " + pos.getErrorIndex(), text,
           pos.getErrorIndex());
     }
     return d.getTime() / 1000;
