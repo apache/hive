@@ -29,7 +29,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
@@ -135,8 +134,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private boolean isQuery = false;
 
   private boolean isCTASorCM = false;
-
-  private boolean changeToTmpPath = false;
 
   public FileSinkDesc() {
   }
@@ -294,7 +291,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     if (isMmTable()) {
       return new Path(root, AcidUtils.deltaSubdir(tableWriteId, tableWriteId, statementId));
     } else {
-      return shouldChangeToTmpPath() ? Utilities.toTempPath(root) : root;
+      return root;
     }
   }
 
@@ -753,14 +750,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   public void setDynPartitionValues(Map<String, List<Path>> dynPartitionValues) {
     this.dynPartitionValues = dynPartitionValues;
-  }
-
-  public void changeToTmpPath(boolean changeToTmpPath) {
-    this.changeToTmpPath = changeToTmpPath;
-  }
-
-  public boolean shouldChangeToTmpPath() {
-    return changeToTmpPath;
   }
 
 }

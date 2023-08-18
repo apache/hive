@@ -3525,6 +3525,9 @@ public final class Utilities {
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
     DriverState driverState = DriverState.getDriverState();
+    if (work.isUseInputPathsDirectly() && work.getInputPaths() != null) {
+      return work.getInputPaths();
+    }
     // AliasToWork contains all the aliases
     Collection<String> aliasToWork = work.getAliasToWork().keySet();
     if (!skipDummy) {
