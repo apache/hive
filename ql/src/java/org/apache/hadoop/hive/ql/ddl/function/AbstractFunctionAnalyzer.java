@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -70,7 +71,7 @@ public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     if (database != null) {
-      outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
+      inputs.add(new ReadEntity(database));
       // Add the permanent function as a WriteEntity
       Function function;
       if (queryState.getHiveOperation().equals(HiveOperation.CREATEFUNCTION)) {
