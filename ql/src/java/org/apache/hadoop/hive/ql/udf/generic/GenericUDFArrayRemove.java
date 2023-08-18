@@ -39,19 +39,17 @@ import java.util.stream.Collectors;
 public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
   private static final String FUNC_NAME = "ARRAY_REMOVE";
   private static final int VALUE_IDX = 1;
-  private transient ObjectInspector valueOI;
-  private transient ObjectInspector arrayElementOI;
 
   public GenericUDFArrayRemove() {
     super(FUNC_NAME, 2, 2, ObjectInspector.Category.LIST);
   }
 
-  @Override public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+  @Override
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     ObjectInspector defaultOI = super.initialize(arguments);
-    arrayOI = (ListObjectInspector) arguments[ARRAY_IDX];
-    arrayElementOI = arrayOI.getListElementObjectInspector();
+    ObjectInspector arrayElementOI = arrayOI.getListElementObjectInspector();
 
-    valueOI = arguments[VALUE_IDX];
+    ObjectInspector valueOI = arguments[VALUE_IDX];
 
     // Check if list element and value are of same type
     if (!ObjectInspectorUtils.compareTypes(arrayElementOI, valueOI)) {
@@ -62,7 +60,8 @@ public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
     return defaultOI;
   }
 
-  @Override public Object evaluate(DeferredObject[] arguments) throws HiveException {
+  @Override
+  public Object evaluate(DeferredObject[] arguments) throws HiveException {
 
     Object array = arguments[ARRAY_IDX].get();
     Object value = arguments[VALUE_IDX].get();
