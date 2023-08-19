@@ -45,18 +45,16 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 
-public class GenReduceSinkPlan {
-  private final Operator<? extends OperatorDesc> reduceOperator;
-  private final Map<Operator<? extends OperatorDesc>, OpParseContext> finalOperatorMap;
+public class ReduceSinkPlanGenerator {
 
-  public GenReduceSinkPlan(String dest, QB qb, Operator<?> input,
-                                     int numReducers, boolean hasOrderBy,
-                                     HiveConf conf,
-                                     HiveTxnManager txnMgr,
-                                     ReadOnlySemanticAnalyzer sa,
-                                     Map<Operator<? extends OperatorDesc>, OpParseContext> operatorMap,
-                                     UnparseTranslator unparseTranslator
-                                     ) throws SemanticException {
+  public static Result genPlan(String dest, QB qb, Operator<?> input,
+      int numReducers, boolean hasOrderBy,
+      HiveConf conf,
+      HiveTxnManager txnMgr,
+      ReadOnlySemanticAnalyzer sa,
+      Map<Operator<? extends OperatorDesc>, OpParseContext> operatorMap,
+      UnparseTranslator unparseTranslator
+      ) throws SemanticException {
     RowResolver inputRR = operatorMap.get(input).getRowResolver();
 
     // First generate the expression for the partition and sort keys
@@ -146,35 +144,37 @@ public class GenReduceSinkPlan {
     if (dest_tab != null && dest_tab.getParameters() != null) {
       isCompaction = AcidUtils.isCompactionTable(dest_tab.getParameters());
     }
-    GenReduceSinkPlan finalGenReduceSinkPlan = new GenReduceSinkPlan(
+    Result finalResult = genPlan(
         input, partCols, sortCols, order.toString(), nullOrder.toString(),
         numReducers, acidOp, true, isCompaction, sa, operatorMap);
-    reduceOperator = finalGenReduceSinkPlan.getOperator();
-    finalOperatorMap = finalGenReduceSinkPlan.getOperatorMap();
+    Operator<? extends OperatorDesc> reduceOperator = finalResult.getOperator();
+    
     if (reduceOperator.getParentOperators().size() == 1 &&
         reduceOperator.getParentOperators().get(0) instanceof ReduceSinkOperator) {
       ((ReduceSinkOperator) reduceOperator.getParentOperators().get(0))
           .getConf().setHasOrderBy(hasOrderBy);
     }
+    return new Result(reduceOperator, finalResult.getOperatorMap());
   }
 
-  public GenReduceSinkPlan(Operator<?> input,
-                                     List<ExprNodeDesc> partitionCols, List<ExprNodeDesc> sortCols,
-                                     String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp, boolean isCompaction,
-                                     ReadOnlySemanticAnalyzer sa,
-                                     Map<Operator<? extends OperatorDesc>, OpParseContext> operatorMap
-                                     )
-      throws SemanticException {
-    this(input, partitionCols, sortCols, sortOrder, nullOrder, numReducers, acidOp, false, isCompaction, sa, operatorMap);
+  public static Result genPlan(Operator<?> input,
+      List<ExprNodeDesc> partitionCols, List<ExprNodeDesc> sortCols,
+      String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp, boolean isCompaction,
+      ReadOnlySemanticAnalyzer sa,
+      Map<Operator<? extends OperatorDesc>, OpParseContext> operatorMap
+      ) throws SemanticException {
+    return genPlan(input, partitionCols, sortCols, sortOrder, nullOrder, numReducers,
+        acidOp, false, isCompaction, sa, operatorMap);
   }
 
   @SuppressWarnings("nls")
-  public GenReduceSinkPlan(Operator<?> input, List<ExprNodeDesc> partitionCols, List<ExprNodeDesc> sortCols,
+  public static Result genPlan(Operator<?> input,
+      List<ExprNodeDesc> partitionCols, List<ExprNodeDesc> sortCols,
       String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp,
       boolean pullConstants, boolean isCompaction, ReadOnlySemanticAnalyzer sa,
       Map<Operator<? extends OperatorDesc>, OpParseContext> operatorMap
                                      ) throws SemanticException {
-    finalOperatorMap = new HashMap<>();
+    Map<Operator<? extends OperatorDesc>, OpParseContext> finalOperatorMap = new HashMap<>();
     RowResolver inputRR = operatorMap.get(input).getRowResolver();
 
     Operator dummy = Operator.createDummy();
@@ -313,17 +313,30 @@ public class GenReduceSinkPlan {
       selColExprMap.put(internalName, desc);
     }
     SelectDesc select = new SelectDesc(selCols, selOutputCols);
-    reduceOperator = OperatorUtils.createOperator(select,
+
+    Operator<? extends OperatorDesc> reduceOperator = OperatorUtils.createOperator(select,
         new RowSchema(selectRR.getColumnInfos()), interim);
     finalOperatorMap.put(reduceOperator, new OpParseContext(selectRR));
     reduceOperator.setColumnExprMap(selColExprMap);
+    return new Result(reduceOperator, finalOperatorMap);
   }
 
-  public Operator getOperator() {
-    return reduceOperator;
-  }
+  public static class Result {
+    private final Operator<? extends OperatorDesc> reduceOperator;
+    private final Map<Operator<? extends OperatorDesc>, OpParseContext> finalOperatorMap;
 
-  public Map<Operator<? extends OperatorDesc>, OpParseContext> getOperatorMap() {
-    return finalOperatorMap;
+    public Result(Operator<? extends OperatorDesc> reduceOperator,
+        Map<Operator<? extends OperatorDesc>, OpParseContext> finalOperatorMap) {
+      this.reduceOperator = reduceOperator;
+      this.finalOperatorMap = finalOperatorMap;
+    }
+
+    public Operator getOperator() {
+      return reduceOperator;
+    }
+
+    public Map<Operator<? extends OperatorDesc>, OpParseContext> getOperatorMap() {
+      return finalOperatorMap;
+    }
   }
 }

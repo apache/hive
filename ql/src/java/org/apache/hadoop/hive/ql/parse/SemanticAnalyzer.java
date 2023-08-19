@@ -7009,8 +7009,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer implements ReadOnlySe
         maxReducers = numBuckets;
       }
 
-      GenReduceSinkPlan genReduceSinkPlan = new GenReduceSinkPlan(input, partnCols, sortCols, order.toString(),
-          nullOrder.toString(), maxReducers, acidOp, isCompaction, this, ImmutableMap.copyOf(opParseCtx));
+      ReduceSinkPlanGenerator.Result genReduceSinkPlan = ReduceSinkPlanGenerator.genPlan(input, partnCols,
+          sortCols, order.toString(), nullOrder.toString(), maxReducers, acidOp, isCompaction,
+          this, ImmutableMap.copyOf(opParseCtx));
       opParseCtx.putAll(genReduceSinkPlan.getOperatorMap());
       input = genReduceSinkPlan.getOperator();
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
@@ -8912,7 +8913,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer implements ReadOnlySe
     }
 
     // Create a reduceSink operator followed by another limit
-    GenReduceSinkPlan genReduceSinkPlan = new GenReduceSinkPlan(dest, qb, curr, 1, false,
+    ReduceSinkPlanGenerator.Result genReduceSinkPlan = ReduceSinkPlanGenerator.genPlan(dest, qb, curr, 1, false,
         conf, getTxnMgr(), this, ImmutableMap.copyOf(opParseCtx), unparseTranslator);
     opParseCtx.putAll(genReduceSinkPlan.getOperatorMap());
     curr = genReduceSinkPlan.getOperator();
@@ -11028,8 +11029,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer implements ReadOnlySe
         numReducers = 1;
       }
 
-      GenReduceSinkPlan genReduceSinkPlan = new GenReduceSinkPlan(dest, qb, curr, numReducers, hasOrderBy,
-          conf, getTxnMgr(), this, ImmutableMap.copyOf(opParseCtx), unparseTranslator);
+      ReduceSinkPlanGenerator.Result genReduceSinkPlan = ReduceSinkPlanGenerator.genPlan(dest, qb, curr,
+          numReducers, hasOrderBy, conf, getTxnMgr(), this, ImmutableMap.copyOf(opParseCtx),
+          unparseTranslator);
       opParseCtx.putAll(genReduceSinkPlan.getOperatorMap());
       curr = genReduceSinkPlan.getOperator();
     }
@@ -13911,7 +13913,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer implements ReadOnlySe
         // iceberg CTAS has it's own locking mechanism, therefore we should exclude them
         && (t.getStorageHandler() == null || !t.getStorageHandler().directInsert()) ?
       WriteType.CTAS : WriteType.DDL_NO_LOCK;
-    
+
     outputs.add(new WriteEntity(t, lockType));
   }
 
@@ -14804,7 +14806,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer implements ReadOnlySe
        * output RR.
        */
       buildPTFReduceSinkDetails(tabDef, partCols, orderCols, orderString, nullOrderString);
-      GenReduceSinkPlan genReduceSinkPlan = new GenReduceSinkPlan(input, partCols, orderCols,
+      ReduceSinkPlanGenerator.Result genReduceSinkPlan = ReduceSinkPlanGenerator.genPlan(input, partCols, orderCols,
           orderString.toString(), nullOrderString.toString(), -1, Operation.NOT_ACID, false,
           this, ImmutableMap.copyOf(opParseCtx));
       input = genReduceSinkPlan.getOperator();
@@ -14911,7 +14913,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer implements ReadOnlySe
     }
 
 
-    GenReduceSinkPlan genReduceSinkPlan = new GenReduceSinkPlan(input, partCols, orderCols,
+    ReduceSinkPlanGenerator.Result genReduceSinkPlan = ReduceSinkPlanGenerator.genPlan(input, partCols, orderCols,
         order.toString(), nullOrder.toString(), -1, Operation.NOT_ACID, false, this,
         ImmutableMap.copyOf(opParseCtx));
     opParseCtx.putAll(genReduceSinkPlan.getOperatorMap());
@@ -15520,7 +15522,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer implements ReadOnlySe
     }
   }
 
-  @Override 
+  @Override
   public NullOrdering getDefaultNullOrdering() {
     return defaultNullOrder;
   }
