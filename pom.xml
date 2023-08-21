@@ -117,7 +117,7 @@
 
     <!-- Library Dependency Versions -->
     <accumulo.version>1.7.3</accumulo.version>
-    <ant.version>1.9.1</ant.version>
+    <ant.version>1.10.9</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
