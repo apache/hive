@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 public class TestTablePermissionFilterAlgos {
   private static final Logger LOGGER = LogManager.getLogger(TestHiveMetaStoreAuthorizer.class);
   // reduce constants to speed up tests when true, set to false for benchmarking
-  private static final boolean TEST = false;
+  private static final boolean TEST = true;
   // Whether we shuffle table names or not: this has an important effect on sort speed - mostly sorted
   // arrays sort faster than completely unsorted ones.
   // A hashset of concatenated strings seem to be faster than a sort in that case.
