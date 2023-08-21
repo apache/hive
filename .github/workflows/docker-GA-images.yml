@@ -48,6 +48,7 @@ jobs:
         with:
           context: ./packaging/src/docker/
           file: ./packaging/src/docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ secrets.DOCKERHUB_USER }}/hive:${{ env.tag }}
           build-args:
