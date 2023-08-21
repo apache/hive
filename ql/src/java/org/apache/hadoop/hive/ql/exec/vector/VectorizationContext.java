@@ -2496,37 +2496,12 @@ import com.google.common.annotations.VisibleForTesting;
     final int size = vectorChildren.length;
     TypeInfo[] inputTypeInfos = new TypeInfo[size];
     DataTypePhysicalVariation[] inputDataTypePhysicalVariations = new DataTypePhysicalVariation[size];
-    DataTypePhysicalVariation outputDataTypePhysicalVariation = DataTypePhysicalVariation.DECIMAL_64;
-    boolean fixConstants = false;
+    DataTypePhysicalVariation outputDataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
     for (int i = 0; i < vectorChildren.length; ++i) {
       VectorExpression ve = vectorChildren[i];
       inputColumns[i] = ve.getOutputColumnNum();
       inputTypeInfos[i] = ve.getOutputTypeInfo();
       inputDataTypePhysicalVariations[i] = ve.getOutputDataTypePhysicalVariation();
-      if (inputDataTypePhysicalVariations[i] == DataTypePhysicalVariation.NONE ||
-          inputDataTypePhysicalVariations[i] == null) {
-        if (childExpr.get(i) instanceof ExprNodeConstantDesc && inputTypeInfos[i] instanceof DecimalTypeInfo &&
-            ((DecimalTypeInfo)inputTypeInfos[i]).precision() <= 18) {
-          fixConstants = true;
-        } else {
-          outputDataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
-        }
-      }
-    }
-
-    if (outputDataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64 && fixConstants) {
-      for (int i = 0; i < vectorChildren.length; ++i) {
-        if ((inputDataTypePhysicalVariations[i] == DataTypePhysicalVariation.NONE ||
-            inputDataTypePhysicalVariations[i] == null) && vectorChildren[i] instanceof ConstantVectorExpression) {
-          ConstantVectorExpression cve = ((ConstantVectorExpression)vectorChildren[i]);
-          HiveDecimal hd = cve.getDecimalValue();
-          Long longValue = new HiveDecimalWritable(hd).serialize64(((DecimalTypeInfo)cve.getOutputTypeInfo()).getScale());
-          ((ConstantVectorExpression)vectorChildren[i]).setLongValue(longValue);
-          vectorChildren[i].setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.DECIMAL_64);
-          int scratchColIndex = vectorChildren[i].getOutputColumnNum() - ocm.initialOutputCol;
-          ocm.scratchDataTypePhysicalVariations[scratchColIndex] = DataTypePhysicalVariation.DECIMAL_64;
-        }
-      }
     }
 
     final int outputColumnNum = ocm.allocateOutputColumn(returnType, outputDataTypePhysicalVariation);

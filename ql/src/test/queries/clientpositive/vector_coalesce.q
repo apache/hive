@@ -75,3 +75,57 @@ SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
 FROM alltypesorc
 WHERE cbigint IS NULL
 LIMIT 10;
+
+-- HIVE-27632, check vector coalesce with decimal in filter
+create database test;
+use test;
+ CREATE EXTERNAL TABLE test.ext_1(
+   ord_key string,
+   col2 string,
+   col3 decimal(18,6),
+   col4 String,
+   col5 decimal(18,6))
+   CLUSTERED BY (
+   ord_key)
+ SORTED BY (
+   ord_key ASC)
+ INTO 64 BUCKETS
+ ROW FORMAT SERDE
+   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+ STORED AS INPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+ OUTPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+ TBLPROPERTIES (
+   'TRANSLATED_TO_EXTERNAL'='TRUE',
+   'external.table.purge'='TRUE',
+   'orc.output.codec'='snappy');
+
+
+ CREATE EXTERNAL TABLE test.ext_2(
+   Col1 string,
+   col2 string,
+   Col3 decimal(18,6),
+   col4 string,
+   col5 string)
+ CLUSTERED BY (
+   col2)
+ SORTED BY (
+   col2 ASC)
+ INTO 64 BUCKETS
+ ROW FORMAT SERDE
+   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+ STORED AS INPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+ OUTPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+ TBLPROPERTIES (
+   'TRANSLATED_TO_EXTERNAL'='TRUE',
+   'external.table.purge'='TRUE',
+   'orc.output.codec'='snappy');
+
+insert into test.ext_1 (col2) values('a');
+insert into test.ext_2 (col2) values ('a');
+select ord_key,test1.col5 FROM test.ext_1 test1
+left outer join test.ext_2 test2 on (test1.col4 = test2.col4)
+where (NVL(test1.col5, 0) = 0) limit 10;

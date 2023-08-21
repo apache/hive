@@ -645,3 +645,152 @@ NULL	31	31
 NULL	31	31
 NULL	61	61
 NULL	NULL	NULL
+PREHOOK: query: create database test
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test
+POSTHOOK: query: create database test
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test
+PREHOOK: query: use test
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test
+POSTHOOK: query: use test
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test
+PREHOOK: query: CREATE EXTERNAL TABLE test.ext_1(
+   ord_key string,
+   col2 string,
+   col3 decimal(18,6),
+   col4 String,
+   col5 decimal(18,6))
+   CLUSTERED BY (
+   ord_key)
+ SORTED BY (
+   ord_key ASC)
+ INTO 64 BUCKETS
+ ROW FORMAT SERDE
+   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+ STORED AS INPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+ OUTPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+ TBLPROPERTIES (
+   'TRANSLATED_TO_EXTERNAL'='TRUE',
+   'external.table.purge'='TRUE',
+   'orc.output.codec'='snappy')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test
+PREHOOK: Output: test@ext_1
+POSTHOOK: query: CREATE EXTERNAL TABLE test.ext_1(
+   ord_key string,
+   col2 string,
+   col3 decimal(18,6),
+   col4 String,
+   col5 decimal(18,6))
+   CLUSTERED BY (
+   ord_key)
+ SORTED BY (
+   ord_key ASC)
+ INTO 64 BUCKETS
+ ROW FORMAT SERDE
+   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+ STORED AS INPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+ OUTPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+ TBLPROPERTIES (
+   'TRANSLATED_TO_EXTERNAL'='TRUE',
+   'external.table.purge'='TRUE',
+   'orc.output.codec'='snappy')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test
+POSTHOOK: Output: test@ext_1
+PREHOOK: query: CREATE EXTERNAL TABLE test.ext_2(
+   Col1 string,
+   col2 string,
+   Col3 decimal(18,6),
+   col4 string,
+   col5 string)
+ CLUSTERED BY (
+   col2)
+ SORTED BY (
+   col2 ASC)
+ INTO 64 BUCKETS
+ ROW FORMAT SERDE
+   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+ STORED AS INPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+ OUTPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+ TBLPROPERTIES (
+   'TRANSLATED_TO_EXTERNAL'='TRUE',
+   'external.table.purge'='TRUE',
+   'orc.output.codec'='snappy')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test
+PREHOOK: Output: test@ext_2
+POSTHOOK: query: CREATE EXTERNAL TABLE test.ext_2(
+   Col1 string,
+   col2 string,
+   Col3 decimal(18,6),
+   col4 string,
+   col5 string)
+ CLUSTERED BY (
+   col2)
+ SORTED BY (
+   col2 ASC)
+ INTO 64 BUCKETS
+ ROW FORMAT SERDE
+   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+ STORED AS INPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+ OUTPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+ TBLPROPERTIES (
+   'TRANSLATED_TO_EXTERNAL'='TRUE',
+   'external.table.purge'='TRUE',
+   'orc.output.codec'='snappy')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test
+POSTHOOK: Output: test@ext_2
+PREHOOK: query: insert into test.ext_1 (col2) values('a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test@ext_1
+POSTHOOK: query: insert into test.ext_1 (col2) values('a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test@ext_1
+POSTHOOK: Lineage: ext_1.col2 SCRIPT []
+POSTHOOK: Lineage: ext_1.col3 SIMPLE []
+POSTHOOK: Lineage: ext_1.col4 SIMPLE []
+POSTHOOK: Lineage: ext_1.col5 SIMPLE []
+POSTHOOK: Lineage: ext_1.ord_key SIMPLE []
+PREHOOK: query: insert into test.ext_2 (col2) values ('a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test@ext_2
+POSTHOOK: query: insert into test.ext_2 (col2) values ('a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test@ext_2
+POSTHOOK: Lineage: ext_2.col1 SIMPLE []
+POSTHOOK: Lineage: ext_2.col2 SCRIPT []
+POSTHOOK: Lineage: ext_2.col3 SIMPLE []
+POSTHOOK: Lineage: ext_2.col4 SIMPLE []
+POSTHOOK: Lineage: ext_2.col5 SIMPLE []
+PREHOOK: query: select ord_key,test1.col5 FROM test.ext_1 test1
+left outer join test.ext_2 test2 on (test1.col4 = test2.col4)
+where (NVL(test1.col5, 0) = 0) limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: test@ext_1
+PREHOOK: Input: test@ext_2
+#### A masked pattern was here ####
+POSTHOOK: query: select ord_key,test1.col5 FROM test.ext_1 test1
+left outer join test.ext_2 test2 on (test1.col4 = test2.col4)
+where (NVL(test1.col5, 0) = 0) limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test@ext_1
+POSTHOOK: Input: test@ext_2
+#### A masked pattern was here ####
+NULL	NULL
