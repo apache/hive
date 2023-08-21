@@ -54,7 +54,8 @@ public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
     // Check if list element and value are of same type
     if (!ObjectInspectorUtils.compareTypes(arrayElementOI, valueOI)) {
       throw new UDFArgumentTypeException(VALUE_IDX,
-          String.format("%s expected at function %s, but %s is found", arrayElementOI.getTypeName(), FUNC_NAME,
+          String.format("%s type element is expected at function array_remove(array<%s>,%s), but %s is found",
+              arrayElementOI.getTypeName(), arrayElementOI.getTypeName(), arrayElementOI.getTypeName(),
               valueOI.getTypeName()));
     }
     return defaultOI;

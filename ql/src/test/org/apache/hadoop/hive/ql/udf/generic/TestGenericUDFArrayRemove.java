@@ -57,6 +57,7 @@ public class TestGenericUDFArrayRemove {
     i3 = new FloatWritable(3.3f);
     i4 = new FloatWritable(2.20f);
     runAndVerify(asList(i1, i2, i3, i4), i1, asList(i2, i4));
+    runAndVerify(asList(i1, i2, i3, i4),null,null); //Test null element
   }
 
   @Test public void testList() throws HiveException {
@@ -139,6 +140,11 @@ public class TestGenericUDFArrayRemove {
       throws HiveException {
     GenericUDF.DeferredJavaObject[] args = { new GenericUDF.DeferredJavaObject(actual), new GenericUDF.DeferredJavaObject(element) };
     List<Object> result = (List<Object>) udf.evaluate(args);
-    Assert.assertArrayEquals("Check content", expected.toArray(), result.toArray());
+    if(expected == null){
+      Assert.assertEquals(result,null);
+    }
+    else {
+      Assert.assertArrayEquals("Check content", expected.toArray(), result.toArray());
+    }
   }
 }
