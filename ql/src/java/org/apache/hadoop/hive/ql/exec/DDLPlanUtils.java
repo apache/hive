@@ -144,7 +144,8 @@ public class DDLPlanUtils {
       "<" + ROW_FORMAT + ">\n" +
       "<" + LOCATION_BLOCK + ">" +
       "TBLPROPERTIES (\n" +
-      "<" + PROPERTIES + ">)";
+      "<" + PROPERTIES + ">\n" +
+      ");";
 
   private static final String CREATE_VIEW_TEMPLATE =
     "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>`<" + TABLE_NAME +

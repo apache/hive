@@ -453,7 +453,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   }
 
   public void addCreateTableStatement(Table table, List<String> tableCreateStmt , DDLPlanUtils ddlPlanUtils) {
-    tableCreateStmt.add(ddlPlanUtils.getCreateTableCommand(table, false) + ";");
+    tableCreateStmt.add(ddlPlanUtils.getCreateTableCommand(table, false));
   }
 
   public void addPKandBasicStats(Table tbl, List<String> basicDef, DDLPlanUtils ddlPlanUtils){
