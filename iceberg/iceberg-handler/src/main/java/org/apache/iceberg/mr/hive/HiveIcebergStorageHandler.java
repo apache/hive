@@ -98,6 +98,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -563,7 +564,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       // Analyze table and stats updater thread
       return fs.delete(statsPath, true);
     }
-    return false;
+    return SessionStateUtil.getQueryState(conf).map(QueryState::getHiveOperation)
+      .filter(opType -> HiveOperation.ANALYZE_TABLE == opType)
+      .isPresent();
   }
 
   private void checkAndMergeColStats(ColumnStatistics statsObjNew, Table tbl) throws InvalidObjectException {
@@ -703,7 +706,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+  public void storageHandlerCommit(Properties commitProperties, Operation operation)
+        throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     String location = commitProperties.getProperty(Catalogs.LOCATION);
     String snapshotRef = commitProperties.getProperty(Catalogs.SNAPSHOT_REF);
@@ -711,14 +715,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (location != null) {
       HiveTableUtil.cleanupTableObjectFile(location, configuration);
     }
-    List<JobContext> jobContextList = generateJobContext(configuration, tableName, snapshotRef, overwrite);
+    List<JobContext> jobContextList = generateJobContext(configuration, tableName, snapshotRef);
     if (jobContextList.isEmpty()) {
       return;
     }
 
     HiveIcebergOutputCommitter committer = new HiveIcebergOutputCommitter();
     try {
-      committer.commitJobs(jobContextList);
+      committer.commitJobs(jobContextList, operation);
     } catch (Throwable e) {
       String ids = jobContextList
           .stream().map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(", "));
@@ -1394,7 +1398,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @return The generated Optional JobContext list or empty if not presents.
    */
   private List<JobContext> generateJobContext(Configuration configuration, String tableName,
-      String branchName, boolean overwrite) {
+      String branchName) {
     JobConf jobConf = new JobConf(configuration);
     Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
         SessionStateUtil.getCommitInfo(jobConf, tableName);
@@ -1403,7 +1407,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       for (SessionStateUtil.CommitInfo commitInfo : commitInfoMap.get().values()) {
         JobID jobID = JobID.forName(commitInfo.getJobIdStr());
         commitInfo.getProps().forEach(jobConf::set);
-        jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
 
         // we should only commit this current table because
         // for multi-table inserts, this hook method will be called sequentially for each target table

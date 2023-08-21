@@ -34,6 +34,8 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
@@ -1063,7 +1065,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   private boolean checkAndCommitNatively(MoveWork moveWork, Configuration configuration) throws HiveException {
     String storageHandlerClass = null;
     Properties commitProperties = null;
-    boolean overwrite = false;
+    Operation operation = context.getOperation();
     LoadTableDesc loadTableWork = moveWork.getLoadTableWork();
     if (loadTableWork != null) {
       if (loadTableWork.isUseAppendForLoad()) {
@@ -1077,7 +1079,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       storageHandlerClass = tableDesc.getProperties().getProperty(
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
       commitProperties = new Properties(tableDesc.getProperties());
-      overwrite = moveWork.getLoadTableWork().isInsertOverwrite();
+      if (moveWork.getLoadTableWork().isInsertOverwrite()) {
+        operation = Operation.IOW;
+      }
     } else if (moveWork.getLoadFileWork() != null) {
       // Get the info from the create table data
       CreateTableDesc createTableDesc = moveWork.getLoadFileWork().getCtasCreateTableDesc();
@@ -1105,7 +1109,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     if (storageHandlerClass != null) {
       HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(configuration, storageHandlerClass);
       if (storageHandler.commitInMoveTask()) {
-        storageHandler.storageHandlerCommit(commitProperties, overwrite);
+        storageHandler.storageHandlerCommit(commitProperties, operation);
         return true;
       }
     }
