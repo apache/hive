@@ -42,7 +42,13 @@ import java.util.stream.Collectors;
 public class TestTablePermissionFilterAlgos {
   private static final Logger LOGGER = LogManager.getLogger(TestHiveMetaStoreAuthorizer.class);
   // reduce constants to speed up tests when true, set to false for benchmarking
-  private static final boolean TEST = true;
+  private static final boolean TEST = false;
+  // Whether we shuffle table names or not: this has an important effect on sort speed - mostly sorted
+  // arrays sort faster than completely unsorted ones.
+  // A hashset of concatenated strings seem to be faster than a sort in that case.
+  // I suspect something fishy in the cost of string creation (intern()?) since a hashset of pairs is much slower.
+  // We'll make the semi-educated assumption that most of the time, tablenames come back mostly ordered.
+  private static final boolean SHUFFLE_TABLENAMES = !TEST;
   private static final int NUM_DB = TEST? 2 : 20;
   private static final int NUM_TBL = TEST? 100 : 10000;
   private static final int NLOOPS = TEST? 1 : 40;
@@ -118,7 +124,9 @@ public class TestTablePermissionFilterAlgos {
     for(int i = 0; i < tbls; ++i) {
       tblis.add(i);
     }
-    //Collections.shuffle(tblis, rnd);
+    if (SHUFFLE_TABLENAMES) {
+      Collections.shuffle(tblis, rnd);
+    }
 
     List<TestTable> tables  = new ArrayList<>(dbs * tbls);
     for(int d : dbis) {
@@ -184,7 +192,7 @@ public class TestTablePermissionFilterAlgos {
             cnt += 1;
           }
         }
-        Assert.assertTrue(cnt == tts.size());
+      Assert.assertEquals(cnt, tts.size());
     }
     chrono.stop();
     LOGGER.info("lookup elapse " + chrono.elapse());
@@ -213,7 +221,7 @@ public class TestTablePermissionFilterAlgos {
           cnt += 1;
         }
       }
-      Assert.assertTrue(cnt == tts.size());
+      Assert.assertEquals(cnt, tts.size());
     }
     chrono.stop();
     LOGGER.info("set pair elapse " + chrono.elapse());
@@ -236,7 +244,7 @@ public class TestTablePermissionFilterAlgos {
           cnt += 1;
         }
       }
-      Assert.assertTrue(cnt == tts.size());
+      Assert.assertEquals(cnt, tts.size());
     }
     chrono.stop();
     LOGGER.info("set table elapse " + chrono.elapse());
@@ -266,7 +274,7 @@ public class TestTablePermissionFilterAlgos {
           cnt += 1;
         }
       }
-      Assert.assertTrue(cnt == tts.size());
+      Assert.assertEquals(cnt, tts.size());
     }
     chrono.stop();
     LOGGER.info("set fullname elapse " + chrono.elapse());

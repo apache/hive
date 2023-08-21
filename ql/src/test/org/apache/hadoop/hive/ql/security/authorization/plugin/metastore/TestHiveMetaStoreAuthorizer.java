@@ -32,17 +32,12 @@ import org.apache.hadoop.hive.metastore.events.*;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.junit.Assert;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.runners.MethodSorters;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
 import java.io.File;
 
 import static org.junit.Assert.assertEquals;
