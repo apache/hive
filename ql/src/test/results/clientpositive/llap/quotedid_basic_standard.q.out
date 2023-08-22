@@ -307,6 +307,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: select " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`" from " ""%&'()*+,-/:;<=>?[]_|{}$^!~#@`"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
@@ -359,6 +360,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: select ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` from ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```
 PREHOOK: type: QUERY
 PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`

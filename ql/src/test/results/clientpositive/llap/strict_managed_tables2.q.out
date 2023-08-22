@@ -62,6 +62,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: create table smt2_tab2 (c1 string, c2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -92,6 +93,7 @@ TBLPROPERTIES (
   'transactional'='true', 
   'transactional_properties'='default', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: create table smt2_tab3 (c1 string, c2 string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -122,6 +124,7 @@ TBLPROPERTIES (
   'transactional'='true', 
   'transactional_properties'='default', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: create external table smt2_tab4 (c1 string, c2 string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -150,6 +153,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: create table smt2_tab5 (c1 string, c2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -180,6 +184,7 @@ TBLPROPERTIES (
   'transactional'='true', 
   'transactional_properties'='insert_only', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: create table smt2_tab6 (c1 string, c2 string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -210,6 +215,7 @@ TBLPROPERTIES (
   'transactional'='true', 
   'transactional_properties'='insert_only', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: drop table if exists smt2_tab1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smt2_tab1

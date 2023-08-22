@@ -98,6 +98,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base_tab

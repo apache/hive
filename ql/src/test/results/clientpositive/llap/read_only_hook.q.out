@@ -34,6 +34,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 POSTHOOK: query: DESC DATABASE default
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:default

@@ -77,7 +77,8 @@ TBLPROPERTIES (
   'hive.sql.jdbc.driver'='com.mysql.jdbc.Driver', 
   'hive.sql.jdbc.url'='jdbc:mysql://localhost:3306/qtestDB', 
   'hive.sql.schema'='qtestDB', 
-  'hive.sql.table'='country')
+  'hive.sql.table'='country'
+);
 PREHOOK: query: SELECT * FROM country
 PREHOOK: type: QUERY
 PREHOOK: Input: db_mysql@country

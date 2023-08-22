@@ -30,6 +30,7 @@ TBLPROPERTIES (
   'transactional'='true', 
   'transactional_properties'='insert_only', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: describe formatted test11
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test11
@@ -98,6 +99,7 @@ TBLPROPERTIES (
   'transactional'='true', 
   'transactional_properties'='insert_only', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: describe formatted test12
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test12
@@ -166,6 +168,7 @@ TBLPROPERTIES (
   'transactional'='true', 
   'transactional_properties'='insert_only', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: describe formatted test21
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test21
@@ -234,6 +237,7 @@ TBLPROPERTIES (
   'transactional'='true', 
   'transactional_properties'='insert_only', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: describe formatted test22
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test22
@@ -300,6 +304,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: describe formatted test31
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test31
@@ -364,6 +369,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: describe formatted test32
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test32
@@ -425,6 +431,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: describe formatted ` default`.` table41`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table41

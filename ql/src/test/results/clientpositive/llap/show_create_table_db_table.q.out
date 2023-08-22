@@ -68,6 +68,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt2
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: tmp_feng@tmp_showcrt2
@@ -90,6 +91,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt3
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: tmp_feng@tmp_showcrt3
@@ -113,6 +115,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt4
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: tmp_feng@tmp_showcrt4
@@ -133,6 +136,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tmp_feng@tmp_showcrt1

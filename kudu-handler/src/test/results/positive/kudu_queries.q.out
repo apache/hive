@@ -1285,6 +1285,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'kudu.table_name'='default.kudu_all_types', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: DESCRIBE all_types_table
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@all_types_table

@@ -51,7 +51,8 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
-  'write.update.mode'='merge-on-read')
+  'write.update.mode'='merge-on-read'
+);
 PREHOOK: query: select count(*) from target
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target
@@ -133,7 +134,8 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#'
+);
 PREHOOK: query: create table emp_like1 like emp_iceberg stored by iceberg
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -171,7 +173,8 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#'
+);
 PREHOOK: query: create table emp (id int) partitioned by (company string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -201,6 +204,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: create table emp_like2 like emp stored by iceberg
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -238,7 +242,8 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#'
+);
 PREHOOK: query: create managed table man_table (id int) Stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

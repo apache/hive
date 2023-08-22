@@ -261,6 +261,7 @@ TBLPROPERTIES (
   'avro.schema.literal'='{"type":"record","name":"DecimalTest","namespace":"com.example.test","fields":[{"name":"Decimal24_6","type":["null",{"type":"bytes","logicalType":"decimal","precision":"24","scale":"6"}]}]}', 
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: desc test_quoted_scale_precision
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_quoted_scale_precision

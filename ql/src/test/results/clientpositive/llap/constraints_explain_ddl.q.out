@@ -99,6 +99,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -170,6 +171,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -251,6 +253,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -334,6 +337,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -480,6 +484,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -626,6 +631,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -867,6 +873,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`dates_removal_n0`(
   `d_datekey` bigint, 
   `d_id` bigint, 
@@ -897,6 +904,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='1','rawDataSize'='22' );
 ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
@@ -1107,6 +1115,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='2','rawDataSize'='102' );
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_date SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
@@ -1310,6 +1319,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='1','rawDataSize'='22' );
 ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_address SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
@@ -1500,6 +1510,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
@@ -1564,6 +1575,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
@@ -1629,6 +1641,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
@@ -1694,6 +1707,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
@@ -1823,6 +1837,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
@@ -1954,6 +1969,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
@@ -2104,6 +2120,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
@@ -2286,6 +2303,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
@@ -2354,6 +2372,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
@@ -2513,6 +2532,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
@@ -2642,6 +2662,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
@@ -2772,6 +2793,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
@@ -2901,6 +2923,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
@@ -3090,6 +3113,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
@@ -3291,6 +3315,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### UNIQUE (key1) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.dest_g21 CHANGE COLUMN key1 key1 int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
@@ -3354,6 +3379,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.dest_g24 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.dest_g24 ADD CONSTRAINT #### A masked pattern was here #### UNIQUE (key1) DISABLE NOVALIDATE RELY;
 
@@ -3673,6 +3699,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`customer`(
   `c_customer_sk` int, 
   `c_customer_id` string, 
@@ -3703,6 +3730,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
@@ -3957,6 +3985,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`customer`(
   `c_customer_sk` int, 
   `c_customer_id` string, 
@@ -3987,6 +4016,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
@@ -4271,6 +4301,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`customer`(
   `c_customer_sk` int, 
   `c_customer_id` string, 
@@ -4301,6 +4332,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
@@ -4666,6 +4698,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`customer`(
   `c_customer_sk` int, 
   `c_customer_id` string, 
@@ -4696,6 +4729,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
@@ -5148,6 +5182,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`date_dim`(
   `d_date_sk` int, 
   `d_date_id` string, 
@@ -5188,6 +5223,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`customer`(
   `c_customer_sk` int, 
   `c_customer_id` string, 
@@ -5218,6 +5254,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.date_dim UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
@@ -5800,6 +5837,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`customer`(
   `c_customer_sk` int, 
   `c_customer_id` string, 
@@ -5830,6 +5868,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
@@ -6092,6 +6131,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`customer`(
   `c_customer_sk` int, 
   `c_customer_id` string, 
@@ -6122,6 +6162,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
@@ -6419,6 +6460,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`customer`(
   `c_customer_sk` int, 
   `c_customer_id` string, 
@@ -6449,6 +6491,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
@@ -6743,6 +6786,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `default`.`customer`(
   `c_customer_sk` int, 
   `c_customer_id` string, 
@@ -6773,6 +6817,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
@@ -7033,6 +7078,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.web_sales ADD CONSTRAINT pk1 PRIMARY KEY (ws_order_number,ws_item_sk) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.web_sales UPDATE STATISTICS SET('numRows'='2','rawDataSize'='14' );
 ALTER TABLE default.web_sales UPDATE STATISTICS FOR COLUMN ws_item_sk SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
@@ -7372,6 +7418,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table1_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -7432,6 +7479,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -7485,6 +7533,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -7539,6 +7588,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -7592,6 +7642,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table5_n4 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -7646,6 +7697,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -7700,6 +7752,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table7_n3 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.table7_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -7755,6 +7808,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -7809,6 +7863,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table9 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a,b) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.table9 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -7864,6 +7919,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table10 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -7919,6 +7975,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table11 ADD CONSTRAINT pk11 PRIMARY KEY (a) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.table11 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -7974,6 +8031,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8029,6 +8087,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table13 CHANGE COLUMN a a string CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
 
@@ -8083,6 +8142,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table14 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table14 CHANGE COLUMN a a string CONSTRAINT nn14_1 NOT NULL DISABLE NOVALIDATE RELY;
 
@@ -8137,6 +8197,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table15 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8191,6 +8252,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8245,6 +8307,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table17 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table17 ADD CONSTRAINT uk17_1 UNIQUE (a) DISABLE NOVALIDATE RELY;
 
@@ -8300,6 +8363,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table18 ADD CONSTRAINT uk18_1 UNIQUE (b) DISABLE NOVALIDATE RELY;
 
@@ -8354,6 +8418,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table19 ADD CONSTRAINT pk19_1 PRIMARY KEY (b) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.table19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table19 ADD CONSTRAINT fk19_2 FOREIGN KEY (a) REFERENCES default.table19(b) DISABLE NOVALIDATE RELY;
@@ -8409,6 +8474,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table20 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table20 ADD CONSTRAINT uk20_1 UNIQUE (b) DISABLE NOVALIDATE RELY;
 
@@ -8464,6 +8530,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table21 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8518,6 +8585,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table22 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8572,6 +8640,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table1_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8629,6 +8698,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8682,6 +8752,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8736,6 +8807,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8789,6 +8861,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table5_n4 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8843,6 +8916,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -8897,6 +8971,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table7_n3 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.table7_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -8952,6 +9027,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -9006,6 +9082,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table9 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a,b) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.table9 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -9061,6 +9138,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table10 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -9116,6 +9194,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table11 ADD CONSTRAINT pk11 PRIMARY KEY (a) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.table11 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -9171,6 +9250,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -9226,6 +9306,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table13 CHANGE COLUMN a a string CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
 
@@ -9280,6 +9361,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table14 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table14 CHANGE COLUMN a a string CONSTRAINT nn14_1 NOT NULL DISABLE NOVALIDATE RELY;
 
@@ -9334,6 +9416,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table15 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -9388,6 +9471,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -9442,6 +9526,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table17 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table17 ADD CONSTRAINT uk17_1 UNIQUE (a) DISABLE NOVALIDATE RELY;
 
@@ -9497,6 +9582,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table18 ADD CONSTRAINT uk18_1 UNIQUE (b) DISABLE NOVALIDATE RELY;
 
@@ -9551,6 +9637,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table19 ADD CONSTRAINT pk19_1 PRIMARY KEY (b) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.table19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table19 ADD CONSTRAINT fk19_2 FOREIGN KEY (a) REFERENCES default.table19(b) DISABLE NOVALIDATE RELY;
@@ -9606,6 +9693,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table20 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table20 ADD CONSTRAINT uk20_1 UNIQUE (b) DISABLE NOVALIDATE RELY;
 
@@ -9661,6 +9749,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table21 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -9715,6 +9804,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table22 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -9825,6 +9915,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -9881,6 +9972,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -9935,6 +10027,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -9989,6 +10082,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10043,6 +10137,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10097,6 +10192,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10152,6 +10248,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10206,6 +10303,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10262,6 +10360,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10316,6 +10415,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10370,6 +10470,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10424,6 +10525,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10478,6 +10580,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10533,6 +10636,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10635,6 +10739,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10691,6 +10796,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES default.table2_n8(a) DISABLE NOVALIDATE RELY;
 
@@ -10745,6 +10851,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10799,6 +10906,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a,b) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -10854,6 +10962,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10909,6 +11018,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -10979,6 +11089,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -11037,6 +11148,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.table13 CHANGE COLUMN a a string CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
 
@@ -11099,6 +11211,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -11182,6 +11295,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -11239,6 +11353,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -11301,6 +11416,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -11358,6 +11474,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -11420,6 +11537,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -11482,6 +11600,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -11561,6 +11680,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.table23 ADD CONSTRAINT pk23_1 PRIMARY KEY (b) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.table23 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 

@@ -82,6 +82,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.test ADD IF NOT EXISTS PARTITION (i=1,j=1);
 ALTER TABLE default.test PARTITION (i=1,j=1) UPDATE STATISTICS SET('numRows'='1','rawDataSize'='1' );
@@ -371,6 +372,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.test2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 -- ALTER TABLE default.test2 ADD IF NOT EXISTS PARTITION (i=1,j=1,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__');
 -- ALTER TABLE default.test2 PARTITION (i=1,j=1,s='__HIVE_DEFAULT_PARTITION__',t='__HIVE_DEFAULT_PARTITION__') UPDATE STATISTICS SET('numRows'='1','rawDataSize'='1' );

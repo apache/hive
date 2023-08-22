@@ -200,6 +200,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: select * from managed_t_imported
 PREHOOK: type: QUERY
 PREHOOK: Input: default@managed_t_imported
@@ -281,6 +282,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'repl.last.id'='0', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: select * from managed_t_r_imported
 PREHOOK: type: QUERY
 PREHOOK: Input: default@managed_t_r_imported
@@ -362,6 +364,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: select * from ext_t_imported
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ext_t_imported
@@ -443,6 +446,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'repl.last.id'='0', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: select * from ext_t_r_imported
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ext_t_r_imported

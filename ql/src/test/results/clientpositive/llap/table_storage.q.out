@@ -26,6 +26,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@t
@@ -78,6 +79,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t INTO 3 BUCKETS
 PREHOOK: type: ALTERTABLE_BUCKETNUM
 PREHOOK: Input: default@t
@@ -125,6 +127,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t NOT SORTED
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@t
@@ -172,6 +175,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t NOT CLUSTERED
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@t
@@ -216,6 +220,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t SKEWED BY (key) ON (("a"), ("b")) STORED AS DIRECTORIES
 PREHOOK: type: ALTERTABLE_SKEWED
 PREHOOK: Input: default@t
@@ -266,6 +271,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
+#### A masked pattern was here ####
 PREHOOK: type: ALTERTBLPART_SKEWED_LOCATION
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
@@ -315,6 +322,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t NOT SKEWED
 PREHOOK: type: ALTERTABLE_SKEWED
 PREHOOK: Input: default@t
@@ -359,6 +367,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t SET FILEFORMAT parquet
 PREHOOK: type: ALTERTABLE_FILEFORMAT
 PREHOOK: Input: default@t
@@ -406,6 +415,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
+#### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_LOCATION
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
@@ -452,6 +463,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t SET SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe"
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@t
@@ -497,6 +509,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t SET SERDEPROPERTIES('property1'='value1', 'property2'='value2')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@t
@@ -547,6 +560,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t UNSET SERDEPROPERTIES('property1')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@t
@@ -595,6 +609,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: ALTER TABLE t UNSET SERDEPROPERTIES('property1')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@t
@@ -625,6 +640,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: ALTER TABLE t SET SERDEPROPERTIES('property1'='value1')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@t
@@ -656,6 +672,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: ALTER TABLE t UNSET SERDEPROPERTIES('property1', 'property2')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@t
@@ -684,3 +701,4 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);

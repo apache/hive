@@ -54,6 +54,7 @@ TBLPROPERTIES (
   'b'='y', 
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: EXPLAIN ALTER TABLE t UNSET TBLPROPERTIES('a', 'b')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@t
@@ -100,3 +101,4 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);

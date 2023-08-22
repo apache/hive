@@ -40,7 +40,8 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#'
+);
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_transform
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -95,7 +96,8 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#'
+);
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_transform_prop
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -151,7 +153,8 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#'
+);
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_identity_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -195,7 +198,8 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#'
+);
 PREHOOK: query: DROP TABLE IF EXISTS ice_data
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -248,4 +252,5 @@ TBLPROPERTIES (
   'snapshot-count'='1', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#'
+);

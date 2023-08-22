@@ -38,6 +38,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: DROP TABLE tmp_showcrt1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1_n0
@@ -86,6 +87,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: DROP TABLE tmp_showcrt1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1_n0
@@ -136,6 +138,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: DROP TABLE tmp_showcrt1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1_n0
@@ -181,6 +184,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: DROP TABLE tmp_showcrt1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1_n0

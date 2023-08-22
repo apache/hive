@@ -41,6 +41,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: DROP TABLE tmp_showcrt1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1
@@ -82,6 +83,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: drop table esc_special_delimiter
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@esc_special_delimiter
@@ -123,6 +125,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: drop table esc_special_delimiter
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@esc_special_delimiter
@@ -164,6 +167,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: drop table esc_special_delimiter
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@esc_special_delimiter
@@ -205,6 +209,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: drop table esc_special_delimiter
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@esc_special_delimiter

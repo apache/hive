@@ -31,6 +31,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.add_part_test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
@@ -142,6 +143,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.add_part_test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01');
 ALTER TABLE default.add_part_test PARTITION (ds='2010-01-01') UPDATE STATISTICS SET('numRows'='19','rawDataSize'='267' );
@@ -263,6 +265,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE default.add_part_test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01');
 ALTER TABLE default.add_part_test PARTITION (ds='2010-01-01') UPDATE STATISTICS SET('numRows'='19','rawDataSize'='267' );
@@ -416,6 +419,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE add_part_test_db.add_part_test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE add_part_test_db.add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01');
 ALTER TABLE add_part_test_db.add_part_test PARTITION (ds='2010-01-01') UPDATE STATISTICS SET('numRows'='19','rawDataSize'='267' );
@@ -537,6 +541,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE add_part_test_db.add_part_test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE add_part_test_db.add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01');
 ALTER TABLE add_part_test_db.add_part_test PARTITION (ds='2010-01-01') UPDATE STATISTICS SET('numRows'='19','rawDataSize'='267' );
@@ -639,6 +644,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE add_part_test_db.add_part_test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE add_part_test_db.add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01');
 ALTER TABLE add_part_test_db.add_part_test PARTITION (ds='2010-01-01') UPDATE STATISTICS SET('numRows'='19','rawDataSize'='267' );
@@ -887,6 +893,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE db_bdpbase.default_partition_test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE db_bdpbase.default_partition_test ADD IF NOT EXISTS PARTITION (sports='Badminton');
 ALTER TABLE db_bdpbase.default_partition_test PARTITION (sports='Badminton') UPDATE STATISTICS SET('numRows'='26','rawDataSize'='985' );

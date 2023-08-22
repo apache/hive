@@ -64,6 +64,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: describe formatted unicode_comments_tbl1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: unicode_comments_db@unicode_comments_tbl1

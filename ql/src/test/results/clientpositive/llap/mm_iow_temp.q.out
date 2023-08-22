@@ -40,7 +40,8 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
-  'bucketing_version'='2')
+  'bucketing_version'='2'
+);
 PREHOOK: query: select * from temptable1 order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temptable1

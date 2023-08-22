@@ -139,6 +139,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: create table json_serde1_4 (a array<string>,b map<string,int>)
   row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
   WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1')

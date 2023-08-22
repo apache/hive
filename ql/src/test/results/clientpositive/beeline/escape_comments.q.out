@@ -72,6 +72,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: describe formatted escape_comments_tbl1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: escape_comments_db@escape_comments_tbl1

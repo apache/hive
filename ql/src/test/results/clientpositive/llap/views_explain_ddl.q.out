@@ -167,6 +167,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v1_n17` AS SELECT `table1_n19`.`key`, `table1_n19`.`value` FROM `db1`.`table1_n19`;
@@ -228,6 +229,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v2_n10` AS SELECT `t1`.`key`, `t1`.`value` FROM `db1`.`table1_n19` `t1`;
@@ -288,6 +290,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `db1`.`table1_n19`(
   `key` string, 
   `value` string)
@@ -302,6 +305,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE db1.table2_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -454,6 +458,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v4_n3` AS SELECT `table1_n19`.`key`, `table1_n19`.`value` FROM `db1`.`table1_n19`;
@@ -512,6 +517,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v5_n1` AS SELECT `t1`.`key`, `t1`.`value` FROM `db1`.`table1_n19` `t1`;
@@ -572,6 +578,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 CREATE TABLE `db1`.`table1_n19`(
   `key` string, 
   `value` string)
@@ -586,6 +593,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE db1.table2_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -738,6 +746,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v7` AS SELECT `table1_n19`.`key` from `db1`.`table1_n19`;
@@ -796,6 +805,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v8` AS SELECT `table1_n19`.`key` from `db1`.`table1_n19`;

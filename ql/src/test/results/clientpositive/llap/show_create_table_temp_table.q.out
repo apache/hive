@@ -30,7 +30,8 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
-  'bucketing_version'='2')
+  'bucketing_version'='2'
+);
 PREHOOK: query: drop table tmp1
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -62,7 +63,8 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
-  'bucketing_version'='2')
+  'bucketing_version'='2'
+);
 PREHOOK: query: drop table tmpdb.tmp_not_null_tbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tmpdb@tmp_not_null_tbl

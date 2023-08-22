@@ -127,6 +127,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'external.table.purge'='false', 
 #### A masked pattern was here ####
+);
 test.comment=Table should have data
 PREHOOK: query: select count(*) from etp_1
 PREHOOK: type: QUERY
@@ -178,6 +179,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'external.table.purge'='true', 
 #### A masked pattern was here ####
+);
 test.comment=Table should have data
 PREHOOK: query: select count(*) from etp_1
 PREHOOK: type: QUERY
@@ -471,6 +473,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'external.table.purge'='false', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: alter table etp_2 add partition (p1='part1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@etp_2
@@ -542,6 +545,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'external.table.purge'='true', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: alter table etp_2 add partition (p1='part1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@etp_2

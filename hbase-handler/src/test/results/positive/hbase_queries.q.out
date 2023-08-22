@@ -1024,6 +1024,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+);
 PREHOOK: query: DROP TABLE IF EXISTS hbase_table_9
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
