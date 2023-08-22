@@ -1519,7 +1519,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public HadoopShims.HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException {
     if (isHdfsEncryptionSupported()) {
       URI uri = fs.getUri();
-      if ("hdfs".equals(uri.getScheme())) {
+      if ("hdfs".equals(uri.getScheme()) && fs instanceof DistributedFileSystem) {
         return new HdfsEncryptionShim(uri, conf);
       }
     }
