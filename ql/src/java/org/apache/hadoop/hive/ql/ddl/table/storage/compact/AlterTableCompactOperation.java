@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.txn.compactor.InitiatorForTable;
+import org.apache.hadoop.hive.ql.txn.compactor.InitiatorBase;
 
 import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
 
@@ -61,7 +61,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
 
     List<Partition> partitions = getPartitions(table);
     if(partitions.size() > 1){
-      new InitiatorForTable(table, partitions, desc, context.getConf());
+      new InitiatorBase(table, partitions, desc, context.getConf());
     } else {
       String partitionName = null;
       if(partitions.size() == 1){
