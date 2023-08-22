@@ -672,4 +672,50 @@ public final class ParseUtils {
     }
     return val;
   }
+
+  /**
+   * Parse the newly generated SQL statement to get a new AST.
+   */
+  public static ReparseResult parseRewrittenQuery(HiveConf conf, Context ctx,
+      StringBuilder rewrittenQueryStr)
+      throws SemanticException {
+    // Set dynamic partitioning to nonstrict so that queries do not need any partition
+    // references.
+    // TODO: this may be a perf issue as it prevents the optimizer.. or not
+    HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    // Disable LLAP IO wrapper; doesn't propagate extra ACID columns correctly.
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
+    // Parse the rewritten query string
+    Context rewrittenCtx;
+    rewrittenCtx = new Context(conf);
+    rewrittenCtx.setHDFSCleanup(true);
+    // We keep track of all the contexts that are created by this query
+    // so we can clear them when we finish execution
+    ctx.addSubContext(rewrittenCtx);
+    rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
+    rewrittenCtx.setExplainPlan(ctx.isExplainPlan());
+    rewrittenCtx.setStatsSource(ctx.getStatsSource());
+    rewrittenCtx.setPlanMapper(ctx.getPlanMapper());
+    rewrittenCtx.setIsUpdateDeleteMerge(true);
+    rewrittenCtx.setCmd(rewrittenQueryStr.toString());
+
+    ASTNode rewrittenTree;
+    try {
+      LOG.info("Going to reparse <" + ctx.getCmd() + "> as \n<" + rewrittenQueryStr.toString() + ">");
+      rewrittenTree = ParseUtils.parse(rewrittenQueryStr.toString(), rewrittenCtx);
+    } catch (ParseException e) {
+      throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);
+    }
+    return new ReparseResult(rewrittenTree, rewrittenCtx);
+  }
+
+  public static final class ReparseResult {
+    public final ASTNode rewrittenTree;
+    public final Context rewrittenCtx;
+    ReparseResult(ASTNode n, Context c) {
+      rewrittenTree = n;
+      rewrittenCtx = c;
+    }
+  }
+
 }

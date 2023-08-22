@@ -22,7 +22,7 @@ import java.util.Optional;
 public class TransformSpec {
 
   public enum TransformType {
-    IDENTITY, YEAR, MONTH, DAY, HOUR, TRUNCATE, BUCKET, VOID
+    IDENTITY, YEAR, MONTH, DAY, HOUR, TRUNCATE, BUCKET, VOID, UNKNOWN
   }
 
   private String columnName;

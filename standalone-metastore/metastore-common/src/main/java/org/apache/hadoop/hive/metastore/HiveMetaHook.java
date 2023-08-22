@@ -175,6 +175,10 @@ public interface HiveMetaHook {
    * @throws MetaException
    */
   public default void preTruncateTable(Table table, EnvironmentContext context) throws MetaException {
+    preTruncateTable(table, context, null);
+  }
+
+  public default void preTruncateTable(Table table, EnvironmentContext context, List<String> partNames) throws MetaException {
     // Do nothing
   }
 

@@ -37,6 +37,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.transforms.Transform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -257,5 +258,29 @@ public class IcebergTableUtil {
   public static void cherryPick(Table table, long snapshotId) {
     LOG.debug("Cherry-Picking {} to {}", snapshotId, table.name());
     table.manageSnapshots().cherrypick(snapshotId).commit();
+  }
+
+  public static TransformSpec.TransformType getTransformType(Transform<?, ?> transform) {
+    String transformString = transform.toString();
+    if (transformString.contains("bucket")) {
+      return TransformSpec.TransformType.BUCKET;
+    } else if (transformString.contains("identity")) {
+      return TransformSpec.TransformType.IDENTITY;
+    } else if (transformString.contains("truncate")) {
+      return TransformSpec.TransformType.TRUNCATE;
+    } else if (transformString.contains("year")) {
+      return TransformSpec.TransformType.YEAR;
+    } else if (transformString.contains("month")) {
+      return TransformSpec.TransformType.MONTH;
+    } else if (transformString.contains("day")) {
+      return TransformSpec.TransformType.DAY;
+    } else if (transformString.contains("hour")) {
+      return TransformSpec.TransformType.HOUR;
+    } else if (transformString.contains("void")) {
+      return TransformSpec.TransformType.VOID;
+    } else {
+      // By default, lets return UNKNOWN.
+      return TransformSpec.TransformType.UNKNOWN;
+    }
   }
 }

@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -124,10 +125,13 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.DataFile;
 import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.FindFiles;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
+import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -143,6 +147,10 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.expressions.Expression;
+import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.ResidualEvaluator;
+import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -158,11 +166,13 @@ import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.collect.Streams;
 import org.apache.iceberg.types.Conversions;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
@@ -377,16 +387,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       return true;
     }
     // If it is a table which has undergone partition evolution, return false;
-    if (icebergTbl.currentSnapshot() != null) {
-      if (icebergTbl.currentSnapshot().allManifests(icebergTbl.io()).parallelStream()
-          .map(ManifestFile::partitionSpecId)
-          .anyMatch(id -> id < icebergTbl.spec().specId())) {
-        if (withPartClause) {
-          throw new SemanticException("Can not Load into an iceberg table, which has undergone partition evolution " +
-              "using the PARTITION clause");
-        }
-        return false;
+    if (isPartitionEvolution(icebergTbl)) {
+      if (withPartClause) {
+        throw new SemanticException("Can not Load into an iceberg table, which has undergone partition evolution " +
+            "using the PARTITION clause");
       }
+      return false;
     }
     return withPartClause;
   }
@@ -970,14 +976,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       if (IcebergTableUtil.isBucketed(table)) {
         throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
       }
-      if (table.currentSnapshot() != null) {
-        if (table.currentSnapshot().allManifests(table.io()).parallelStream().map(ManifestFile::partitionSpecId)
-            .anyMatch(id -> id < table.spec().specId())) {
-          throw new SemanticException(
-              "Cannot perform insert overwrite query on Iceberg table where partition evolution happened. In order " +
-              "to successfully carry out any insert overwrite operation on this table, the data has to be rewritten " +
-              "conforming to the latest spec. ");
-        }
+      if (isPartitionEvolution(table)) {
+        throw new SemanticException(
+            "Cannot perform insert overwrite query on Iceberg table where partition evolution happened. In order " +
+            "to successfully carry out any insert overwrite operation on this table, the data has to be rewritten " +
+            "conforming to the latest spec. ");
       }
     }
   }
@@ -1623,7 +1626,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
 
-    if (table.spec().isUnpartitioned()) {
+    if (table.spec().isUnpartitioned() && MapUtils.isNotEmpty(partitionSpec)) {
       throw new SemanticException("Writing data into a partition fails when the Iceberg table is unpartitioned.");
     }
 
@@ -1643,5 +1646,69 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             String.format("Partition spec value for column : %s is invalid", field.name()));
       }
     }
+  }
+
+  // Metadata delete or a positional delete
+  @Override
+  public boolean shouldTruncate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+      throws SemanticException {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    if (MapUtils.isEmpty(partitionSpec) || !isPartitionEvolution(table)) {
+      return true;
+    }
+
+    Map<String, PartitionField> partitionFieldMap = Maps.newHashMap();
+    for (PartitionField partField : table.spec().fields()) {
+      partitionFieldMap.put(partField.name(), partField);
+    }
+    Expression finalExp = Expressions.alwaysTrue();
+    for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
+      String partColName = entry.getKey();
+      if (partitionFieldMap.containsKey(partColName)) {
+        PartitionField partitionField = partitionFieldMap.get(partColName);
+        Type resultType = partitionField.transform().getResultType(table.schema()
+            .findField(partitionField.sourceId()).type());
+        TransformSpec.TransformType transformType = IcebergTableUtil.getTransformType(partitionField.transform());
+        Object value = Conversions.fromPartitionString(resultType, entry.getValue());
+        Iterable iterable = () -> Collections.singletonList(value).iterator();
+        if (transformType.equals(TransformSpec.TransformType.IDENTITY)) {
+          Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
+          finalExp = Expressions.and(finalExp, boundPredicate);
+        } else {
+          throw new SemanticException(
+              String.format("Partition transforms are not supported via truncate operation: %s", partColName));
+        }
+      } else {
+        throw new SemanticException(String.format("No partition column/transform by the name: %s", partColName));
+      }
+    }
+    FindFiles.Builder builder = new FindFiles.Builder(table).withRecordsMatching(finalExp).includeColumnStats();
+    Set<DataFile> dataFiles = Sets.newHashSet(Iterables.transform(builder.collect(), file -> file));
+    boolean result = true;
+    for (DataFile dataFile : dataFiles) {
+      PartitionData partitionData = (PartitionData) dataFile.partition();
+      Expression residual = ResidualEvaluator.of(table.spec(), finalExp, false)
+          .residualFor(partitionData);
+      StrictMetricsEvaluator strictMetricsEvaluator = new StrictMetricsEvaluator(table.schema(), residual);
+      if (!strictMetricsEvaluator.eval(dataFile)) {
+        result = false;
+      }
+    }
+
+    boolean isV2Table = hmsTable.getParameters() != null &&
+        "2".equals(hmsTable.getParameters().get(TableProperties.FORMAT_VERSION));
+    if (!result && !isV2Table) {
+      throw new SemanticException("Truncate conversion to delete is not possible since its not an Iceberg V2 table." +
+          " Consider converting the table to Iceberg's V2 format specification.");
+    }
+    return result;
+  }
+
+  private boolean isPartitionEvolution(Table table) {
+    // If it is a table which has undergone partition evolution, return true.
+    return table.currentSnapshot() != null &&
+        table.currentSnapshot().allManifests(table.io()).parallelStream()
+        .map(ManifestFile::partitionSpecId)
+        .anyMatch(id -> id < table.spec().specId());
   }
 }

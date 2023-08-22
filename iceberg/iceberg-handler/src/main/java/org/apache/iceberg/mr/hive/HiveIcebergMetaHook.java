@@ -65,6 +65,7 @@ import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DeleteFiles;
+import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
@@ -81,6 +82,7 @@ import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NotFoundException;
+import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -99,6 +101,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.util.Pair;
 import org.apache.thrift.TException;
@@ -597,12 +600,49 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   @Override
-  public void preTruncateTable(org.apache.hadoop.hive.metastore.api.Table table, EnvironmentContext context)
+  public void preTruncateTable(org.apache.hadoop.hive.metastore.api.Table table, EnvironmentContext context,
+      List<String> partNames)
       throws MetaException {
     this.catalogProperties = getCatalogProperties(table);
     this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
+    Map<String, PartitionField> partitionFieldMap = Maps.newHashMap();
+    for (PartitionField partField : icebergTable.spec().fields()) {
+      partitionFieldMap.put(partField.name(), partField);
+    }
+    Expression finalExp = Expressions.alwaysTrue();
+    if (partNames != null && !partNames.isEmpty()) {
+      for (String partName : partNames) {
+        String[] partColPairs = partName.split("/");
+        Expression subExp = Expressions.alwaysTrue();
+        for (String partColPair : partColPairs) {
+          String[] partColNameValue = partColPair.split("=");
+          assert partColNameValue.length == 2;
+          String partColName = partColNameValue[0];
+          String partColValue = partColNameValue[1];
+          if (partitionFieldMap.containsKey(partColName)) {
+            PartitionField partitionField = partitionFieldMap.get(partColName);
+            Type resultType = partitionField.transform().getResultType(icebergTable.schema()
+                    .findField(partitionField.sourceId()).type());
+            TransformSpec.TransformType transformType = IcebergTableUtil.getTransformType(partitionField.transform());
+            Object value = Conversions.fromPartitionString(resultType, partColValue);
+            Iterable iterable = () -> Collections.singletonList(value).iterator();
+            if (transformType.equals(TransformSpec.TransformType.IDENTITY)) {
+              Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
+              subExp = Expressions.and(subExp, boundPredicate);
+            } else {
+              throw new MetaException(
+                  String.format("Partition transforms are not supported via truncate operation: %s", partColName));
+            }
+          } else {
+            throw new MetaException(String.format("No partition column/transform name by the name: %s", partColName));
+          }
+        }
+        finalExp = Expressions.and(finalExp, subExp);
+      }
+    }
+
     DeleteFiles delete = icebergTable.newDelete();
-    delete.deleteFromRowFilter(Expressions.alwaysTrue());
+    delete.deleteFromRowFilter(finalExp);
     delete.commit();
     context.putToProperties("truncateSkipDataDeletion", "true");
   }

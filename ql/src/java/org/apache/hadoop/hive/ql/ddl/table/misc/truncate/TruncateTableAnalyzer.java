@@ -29,9 +29,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -47,19 +49,26 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.HiveTableName;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.*;
+import org.apache.hadoop.hive.ql.parse.ParseUtils.ReparseResult;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
@@ -80,7 +89,24 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
     checkTruncateEligibility(root, tableNode, tableNameString, table);
 
     Map<String, String> partitionSpec = getPartSpec((ASTNode) tableNode.getChild(1));
+
     addTruncateTableOutputs(tableNode, table, partitionSpec);
+
+    if (table.getStorageHandler() != null && !table.getStorageHandler().shouldTruncate(table, partitionSpec)) {
+      // Transform the truncate query to delete query.
+      StringBuilder rewrittenQuery = constructDeleteQuery(table, partitionSpec);
+      ReparseResult rr = ParseUtils.parseRewrittenQuery(conf, ctx, rewrittenQuery);
+      Context rewrittenCtx = rr.rewrittenCtx;
+      ASTNode rewrittenTree = rr.rewrittenTree;
+
+      BaseSemanticAnalyzer deleteAnalyzer = SemanticAnalyzerFactory.get(queryState, rewrittenTree);
+      // Note: this will overwrite this.ctx with rewrittenCtx
+      rewrittenCtx.setEnableUnparse(false);
+      deleteAnalyzer.analyze(rewrittenTree, rewrittenCtx);
+
+      rootTasks = deleteAnalyzer.getRootTasks();
+      return;
+    }
 
     Task<?> truncateTask = null;
     ASTNode colNamesNode = (ASTNode) root.getFirstChildWithType(HiveParser.TOK_TABCOLNAME);
@@ -95,7 +121,6 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
 
   private void checkTruncateEligibility(ASTNode ast, ASTNode root, String tableName, Table table)
       throws SemanticException {
-    validateUnsupportedPartitionClause(table, root.getChildCount() > 1);
 
     if (table.isNonNative()) {
       if (table.getStorageHandler() == null || !table.getStorageHandler().supportsTruncateOnNonNativeTables()) {
@@ -137,9 +162,19 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       }
     } else {
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
-        validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, true);
-        Partition partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
-        outputs.add(new WriteEntity(partition, writeType));
+        if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+          table.getStorageHandler().validatePartSpec(table, partitionSpec);
+          try {
+            String partName = Warehouse.makePartName(partitionSpec, false);
+            Partition partition = new DummyPartition(table, partName, partitionSpec);
+            outputs.add(new WriteEntity(partition, writeType));
+          } catch (MetaException e) {
+            throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
+          }
+        } else {
+          Partition partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
+          outputs.add(new WriteEntity(partition, writeType));
+        }
       } else {
         validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, false);
         for (Partition partition : PartitionUtils.getPartitions(db, table, partitionSpec, false)) {
@@ -337,5 +372,43 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       Task<?> statTask = TaskFactory.get(columnStatsWork);
       moveTask.addDependentTask(statTask);
     }
+  }
+
+  public StringBuilder constructDeleteQuery(Table table, Map<String, String> partitionSpec) throws SemanticException {
+    StringBuilder sb = new StringBuilder().append("delete from ").append(table.getTableName())
+            .append(" where ");
+    List<String> keyList = new ArrayList<String>(partitionSpec.keySet());
+    Deserializer deserializer = table.getDeserializer();
+    Map<String, PrimitiveObjectInspector.PrimitiveCategory> stringTypeInfoMap = new HashMap<>();
+    try {
+      ObjectInspector objectInspector = deserializer.getObjectInspector();
+      if (objectInspector.getCategory() == ObjectInspector.Category.STRUCT) {
+        StructObjectInspector structObjectInspector = (StructObjectInspector) objectInspector;
+        List<? extends StructField> structFields =  structObjectInspector.getAllStructFieldRefs();
+        for (int index = 0;index < structFields.size();index++) {
+          StructField structField = structFields.get(index);
+          if (structField.getFieldObjectInspector().getCategory() == ObjectInspector.Category.PRIMITIVE) {
+            PrimitiveObjectInspector primitiveObjectInspector = (PrimitiveObjectInspector) structField.getFieldObjectInspector();
+            stringTypeInfoMap.put(structField.getFieldName(),
+                primitiveObjectInspector.getTypeInfo().getPrimitiveCategory());
+          }
+        }
+      }
+    } catch (SerDeException e) {
+      throw new SemanticException(String.format("Unable to get object inspector due to: %s", e));
+    }
+    for (int index = 0;index < keyList.size();index++) {
+      String key = keyList.get(index);
+      PrimitiveObjectInspector.PrimitiveCategory category = stringTypeInfoMap.get(key);
+      String value = partitionSpec.get(key);
+      boolean shouldEncloseQuotes = TypeInfoUtils.shouldEncloseQuotes(category);
+      sb.append(index == 0 ? "" : " and ").append(key).append(" = ");
+      if (shouldEncloseQuotes) {
+        sb.append("'").append(value).append("'");
+      } else {
+        sb.append(value);
+      }
+    }
+    return sb;
   }
 }

@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ParseUtils.ReparseResult;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 
@@ -227,7 +228,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     boolean validating = handleCardinalityViolation(rewrittenQueryStr, targetNameNode, onClauseAsText, targetTable,
         numWhenMatchedDeleteClauses == 0 && numWhenMatchedUpdateClauses == 0, columnAppender);
-    ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
+    ReparseResult rr = ParseUtils.parseRewrittenQuery(conf, ctx, rewrittenQueryStr);
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
     rewrittenCtx.setOperation(Context.Operation.MERGE);

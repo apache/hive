@@ -2077,7 +2077,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     EnvironmentContext context = new EnvironmentContext();
     context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
     if (hook != null) {
-      hook.preTruncateTable(table, context);
+      hook.preTruncateTable(table, context, partNames);
     }
     TruncateTableRequest req = new TruncateTableRequest(
         prependCatalogToDbName(catName, dbName, conf), tableName);

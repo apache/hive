@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ParseUtils.ReparseResult;
 
 /**
  * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
@@ -104,7 +105,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       && children.size() == 1 && deleting();
     if (shouldTruncate) {
       StringBuilder rewrittenQueryStr = new StringBuilder("truncate ").append(getFullTableNameForSQL(tabNameNode));
-      ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
+      ReparseResult rr = ParseUtils.parseRewrittenQuery(conf, ctx, rewrittenQueryStr);
       Context rewrittenCtx = rr.rewrittenCtx;
       ASTNode rewrittenTree = rr.rewrittenTree;
 
@@ -210,7 +211,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       // Add a sort by clause so that the row ids come out in the correct order
       appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
     }
-    ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
+    ReparseResult rr = ParseUtils.parseRewrittenQuery(conf, ctx, rewrittenQueryStr);
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 

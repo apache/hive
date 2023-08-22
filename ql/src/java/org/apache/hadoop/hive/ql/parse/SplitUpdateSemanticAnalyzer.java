@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ParseUtils.ReparseResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +31,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * A subclass of the {@link SemanticAnalyzer} that just handles
@@ -157,7 +155,7 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
     List<String> sortKeys = columnAppender.getSortKeys();
     appendSortBy(rewrittenQueryStr, sortKeys);
 
-    ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
+    ReparseResult rr = ParseUtils.parseRewrittenQuery(conf, ctx, rewrittenQueryStr);
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 

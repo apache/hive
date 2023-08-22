@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.ParseUtils.ReparseResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -296,41 +297,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     }
   }
 
-  /**
-   * Parse the newly generated SQL statement to get a new AST.
-   */
-  protected ReparseResult parseRewrittenQuery(StringBuilder rewrittenQueryStr, String originalQuery)
-      throws SemanticException {
-    // Set dynamic partitioning to nonstrict so that queries do not need any partition
-    // references.
-    // TODO: this may be a perf issue as it prevents the optimizer.. or not
-    HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
-    // Disable LLAP IO wrapper; doesn't propagate extra ACID columns correctly.
-    HiveConf.setBoolVar(conf, ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
-    // Parse the rewritten query string
-    Context rewrittenCtx;
-    rewrittenCtx = new Context(conf);
-    rewrittenCtx.setHDFSCleanup(true);
-    // We keep track of all the contexts that are created by this query
-    // so we can clear them when we finish execution
-    ctx.addSubContext(rewrittenCtx);
-    rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
-    rewrittenCtx.setExplainPlan(ctx.isExplainPlan());
-    rewrittenCtx.setStatsSource(ctx.getStatsSource());
-    rewrittenCtx.setPlanMapper(ctx.getPlanMapper());
-    rewrittenCtx.setIsUpdateDeleteMerge(true);
-    rewrittenCtx.setCmd(rewrittenQueryStr.toString());
-
-    ASTNode rewrittenTree;
-    try {
-      LOG.info("Going to reparse <" + originalQuery + "> as \n<" + rewrittenQueryStr.toString() + ">");
-      rewrittenTree = ParseUtils.parse(rewrittenQueryStr.toString(), rewrittenCtx);
-    } catch (ParseException e) {
-      throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);
-    }
-    return new ReparseResult(rewrittenTree, rewrittenCtx);
-  }
-
   private void validateTxnManager(Table mTable) throws SemanticException {
     if (!AcidUtils.acidTableWithoutTransactions(mTable) && !getTxnMgr().supportsAcid()) {
       throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getMsg());
@@ -474,15 +440,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
    */
   protected String getSimpleTableName(ASTNode n) throws SemanticException {
     return HiveUtils.unparseIdentifier(getSimpleTableNameBase(n), this.conf);
-  }
-
-  protected static final class ReparseResult {
-    final ASTNode rewrittenTree;
-    final Context rewrittenCtx;
-    ReparseResult(ASTNode n, Context c) {
-      rewrittenTree = n;
-      rewrittenCtx = c;
-    }
   }
 
   // Patch up the projection list for updates, putting back the original set expressions.
