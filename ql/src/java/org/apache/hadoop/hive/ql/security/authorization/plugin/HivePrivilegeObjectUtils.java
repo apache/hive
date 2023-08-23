@@ -96,7 +96,10 @@ public class HivePrivilegeObjectUtils {
     private int compareNames(final T table, final T arg) {
       int cmp = getDbName(table).compareTo(getDbName(arg));
       if (cmp == 0) {
-        cmp = getTableName(table).compareTo(getTableName(arg));
+        String argTableName = getTableName(arg);
+        if (argTableName != null) {
+          cmp = getTableName(table).compareTo(argTableName);
+        }
       }
       return cmp;
     }
@@ -110,7 +113,7 @@ public class HivePrivilegeObjectUtils {
      */
     private int compareNames(final T table, final String dbName, final String tableName) {
       int cmp = getDbName(table).compareTo(dbName);
-      if (cmp == 0) {
+      if (cmp == 0 && tableName != null) {
         cmp = getTableName(table).compareTo(tableName);
       }
       return cmp;
@@ -165,10 +168,10 @@ public class HivePrivilegeObjectUtils {
   }
 
   /**
-   * Specialized lookup for HivePrivilegeObject.
+   * Specialized lookup for table privilege (HivePrivilegeObject)..
    */
-  public static class PrivilegeLookup extends TableLookup<HivePrivilegeObject> {
-    public PrivilegeLookup(List<HivePrivilegeObject> tables) {
+  public static class TablePrivilegeLookup extends TableLookup<HivePrivilegeObject> {
+    public TablePrivilegeLookup(List<HivePrivilegeObject> tables) {
       super(tables);
     }
 
