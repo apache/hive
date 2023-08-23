@@ -411,5 +411,4 @@ public class TestHiveMetaStoreAuthorizer {
       fail("testU_DropDataConnector_authorizedUser() failed with " + e);
     }
   }
-
 }
