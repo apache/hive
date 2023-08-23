@@ -111,14 +111,6 @@
   </property>
 
   <property>
-    <name>hive.metastore.metadb.dir</name>
-    <value>file://${test.tmp.dir}/metadb/</value>
-    <description>
-      Required by metastore server or if the uris argument below is not supplied
-    </description>
-  </property>
-
-  <property>
     <name>test.log.dir</name>
     <value>${test.tmp.dir}/log/</value>
     <description></description>
@@ -221,11 +213,6 @@
     <name>hive.default.rcfile.serde</name>
     <value>org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe</value>
     <description>The default SerDe hive will use for the rcfile format</description>
-  </property>
-
-  <property>
-    <name>hive.stats.key.prefix.reserve.length</name>
-    <value>0</value>
   </property>
 
   <property>
