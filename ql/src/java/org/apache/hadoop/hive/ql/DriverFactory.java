@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.reexec.ReExecuteLostAMQueryPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReCompileWithoutCBOPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionOverlayPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionDagSubmitPlugin;
+import org.apache.hadoop.hive.ql.reexec.ReExecuteOptimisticConcurrentWritePlugin;
 import org.apache.hadoop.hive.ql.reexec.ReOptimizePlugin;
 
 import com.google.common.base.Strings;
@@ -80,6 +81,9 @@ public final class DriverFactory {
     }
     if (name.equals("dagsubmit")) {
       return new ReExecutionDagSubmitPlugin();
+    }
+    if (name.equals("optimistic_concurrency")){
+      return new ReExecuteOptimisticConcurrentWritePlugin();
     }
     throw new RuntimeException(
         "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");

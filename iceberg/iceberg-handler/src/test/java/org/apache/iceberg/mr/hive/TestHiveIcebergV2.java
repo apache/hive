@@ -654,6 +654,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testConcurrent2Deletes() {
+    String withoutRetry = "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo";
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
@@ -667,6 +668,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
           init(shell, testTables, temp, executionEngine);
           HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
           HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+          HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, withoutRetry);
           shell.executeStatement(sql);
           shell.closeSession();
         });
@@ -676,6 +678,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testConcurrent2Updates() {
+    String withoutRetry = "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo";
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
@@ -689,6 +692,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
             init(shell, testTables, temp, executionEngine);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, withoutRetry);
             shell.executeStatement(sql);
             shell.closeSession();
           });
@@ -703,6 +707,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testConcurrentUpdateAndDelete() {
+    String withoutRetry = "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo";
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
@@ -721,6 +726,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
             init(shell, testTables, temp, executionEngine);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, withoutRetry);
             shell.executeStatement(sql[i]);
             shell.closeSession();
           });
@@ -736,6 +742,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testConcurrent2MergeInserts() {
+    String withoutRetry = "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo";
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
@@ -753,6 +760,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
             init(shell, testTables, temp, executionEngine);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, withoutRetry);
             shell.executeStatement(sql);
             shell.closeSession();
           });
