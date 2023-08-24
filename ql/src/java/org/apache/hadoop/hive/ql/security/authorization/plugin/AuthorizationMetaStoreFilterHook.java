@@ -19,10 +19,6 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
@@ -31,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import static org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils.TablePrivilegeLookup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.slf4j.Logger;
@@ -162,20 +159,18 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     return objs;
   }
 
-  private ImmutablePair<String, String> tableMetaKey(String dbName, String tableName) {
-    return new ImmutablePair(dbName, tableName);
-  }
-
   @Override
   public List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException {
     List<HivePrivilegeObject> listObjs = tableMetasToPrivilegeObjs(tableMetas);
     List<HivePrivilegeObject> filteredList = getFilteredObjects(listObjs);
-    Set<ImmutablePair<String, String>> filteredNames = filteredList.stream()
-        .map(e -> tableMetaKey(e.getDbname(), e.getObjectName()))
-        .collect(Collectors.toSet());
-    return tableMetas.stream()
-        .filter(e -> filteredNames.contains(tableMetaKey(e.getDbName(), e.getTableName())))
-        .collect(Collectors.toList());
+    final List<TableMeta> ret = new ArrayList<>();
+    final TablePrivilegeLookup index = new TablePrivilegeLookup(filteredList);
+    for(TableMeta table : tableMetas) {
+      if (index.lookup(table.getDbName(), table.getTableName()) != null) {
+        ret.add(table);
+      }
+    }
+    return ret;
   }
 
   @Override

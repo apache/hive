@@ -36,8 +36,8 @@ import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.Before;
 import org.junit.Test;
-import java.util.Map;
 
+import java.util.Map;
 import java.io.File;
 
 import static org.junit.Assert.assertEquals;
