@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
-import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.FASTFORWARD;
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.FAST_FORWARD;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ROLLBACK;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.SET_CURRENT_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.TIME;
@@ -108,13 +108,21 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
           new AlterTableExecuteSpec(SET_CURRENT_SNAPSHOT,
               new AlterTableExecuteSpec.SetCurrentSnapshotSpec(Long.valueOf(child.getText())));
       desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
-    } else if (HiveParser.KW_FASTFORWARD == executeCommandType.getType()) {
+    } else if (HiveParser.KW_FAST_FORWARD == executeCommandType.getType()) {
+      String branchName;
+      String targetBranchName;
       ASTNode child1 = (ASTNode) command.getChild(1);
-      ASTNode child2 = (ASTNode) command.getChild(2);
-      String branchName = PlanUtils.stripQuotes(child1.getText());
-      String targetBranchName = PlanUtils.stripQuotes(child2.getText());
-      AlterTableExecuteSpec spec = new AlterTableExecuteSpec(FASTFORWARD,
-          new FastForwardSpec(branchName, targetBranchName));
+      if (command.getChildCount() == 2) {
+        branchName = "main";
+        targetBranchName = PlanUtils.stripQuotes(child1.getText());
+      } else {
+        ASTNode child2 = (ASTNode) command.getChild(2);
+        branchName = PlanUtils.stripQuotes(child1.getText());
+        targetBranchName = PlanUtils.stripQuotes(child2.getText());
+      }
+
+      AlterTableExecuteSpec spec =
+          new AlterTableExecuteSpec(FAST_FORWARD, new FastForwardSpec(branchName, targetBranchName));
       desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
     }
 

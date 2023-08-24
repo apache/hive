@@ -791,7 +791,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             hmsTable.getTableName(), setSnapshotVersionSpec.getSnapshotId());
         IcebergTableUtil.setCurrentSnapshot(icebergTable, setSnapshotVersionSpec.getSnapshotId());
         break;
-      case FASTFORWARD:
+      case FAST_FORWARD:
         AlterTableExecuteSpec.FastForwardSpec fastForwardSpec =
             (AlterTableExecuteSpec.FastForwardSpec) executeSpec.getOperationParams();
         IcebergTableUtil.fastForwardBranch(icebergTable, fastForwardSpec.getSourceBranch(),

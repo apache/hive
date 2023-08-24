@@ -397,7 +397,7 @@ KW_SNAPSHOTS: 'SNAPSHOTS';
 KW_RETAIN: 'RETAIN';
 KW_RETENTION: 'RETENTION';
 KW_TAG: 'TAG';
-KW_FASTFORWARD: 'FASTFORWARD';
+KW_FAST_FORWARD: 'FAST-FORWARD';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

@@ -37,7 +37,7 @@ public class AlterTableExecuteSpec<T> {
     ROLLBACK,
     EXPIRE_SNAPSHOT,
     SET_CURRENT_SNAPSHOT,
-    FASTFORWARD
+    FAST_FORWARD
   }
 
   private final ExecuteOperationType operationType;
