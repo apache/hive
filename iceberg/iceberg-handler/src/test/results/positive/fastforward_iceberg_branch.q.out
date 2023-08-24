@@ -111,10 +111,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 31
 4
 41
-PREHOOK: query: explain alter table ice01 execute fast-forward 'test01' to 'test1'
+PREHOOK: query: explain alter table ice01 execute fast-forward 'test01' 'test1'
 PREHOOK: type: ALTERTABLE_EXECUTE
 PREHOOK: Input: default@ice01
-POSTHOOK: query: explain alter table ice01 execute fast-forward 'test01' to 'test1'
+POSTHOOK: query: explain alter table ice01 execute fast-forward 'test01' 'test1'
 POSTHOOK: type: ALTERTABLE_EXECUTE
 POSTHOOK: Input: default@ice01
 STAGE DEPENDENCIES:
@@ -126,10 +126,10 @@ STAGE PLANS:
       table name: default.ice01
       spec: AlterTableExecuteSpec{operationType=FAST_FORWARD, operationParams=FastForwardSpec{sourceBranch=test01, targetBranch=test1}}
 
-PREHOOK: query: alter table ice01 execute fast-forward 'test01' to 'test1'
+PREHOOK: query: alter table ice01 execute fast-forward 'test01' 'test1'
 PREHOOK: type: ALTERTABLE_EXECUTE
 PREHOOK: Input: default@ice01
-POSTHOOK: query: alter table ice01 execute fast-forward 'test01' to 'test1'
+POSTHOOK: query: alter table ice01 execute fast-forward 'test01' 'test1'
 POSTHOOK: type: ALTERTABLE_EXECUTE
 POSTHOOK: Input: default@ice01
 PREHOOK: query: select * from default.ice01.branch_test01
@@ -162,10 +162,10 @@ POSTHOOK: query: insert into default.ice01.branch_test2 values (12), (22), (32),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice01
-PREHOOK: query: alter table ice01 execute fast-forward 'main' to 'test2'
+PREHOOK: query: alter table ice01 execute fast-forward 'main' 'test2'
 PREHOOK: type: ALTERTABLE_EXECUTE
 PREHOOK: Input: default@ice01
-POSTHOOK: query: alter table ice01 execute fast-forward 'main' to 'test2'
+POSTHOOK: query: alter table ice01 execute fast-forward 'main' 'test2'
 POSTHOOK: type: ALTERTABLE_EXECUTE
 POSTHOOK: Input: default@ice01
 PREHOOK: query: select * from ice01

@@ -1,4 +1,4 @@
-- SORT_QUERY_RESULTS
+-- SORT_QUERY_RESULTS
 set hive.explain.user=false;
 set hive.fetch.task.conversion=more;
 
@@ -22,4 +22,4 @@ insert into default.ice01.branch_test1 values(15, 'five', 89);
 select * from ice01;
 
 -- fastforward the branch
-alter table ice01 execute fast-forward 'test1' to 'main';
+alter table ice01 execute fast-forward 'test1' 'main';

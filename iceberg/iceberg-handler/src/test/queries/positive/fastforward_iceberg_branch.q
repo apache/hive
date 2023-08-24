@@ -24,8 +24,8 @@ alter table ice01 execute fast-forward 'test1';
 select * from ice01;
 
 -- fast-forward the test01 branch to test1
-explain alter table ice01 execute fast-forward 'test01' to 'test1';
-alter table ice01 execute fast-forward 'test01' to 'test1';
+explain alter table ice01 execute fast-forward 'test01' 'test1';
+alter table ice01 execute fast-forward 'test01' 'test1';
 select * from default.ice01.branch_test01;
 
 -- create another branch test2
@@ -35,5 +35,5 @@ alter table ice01 create branch test2;
 insert into default.ice01.branch_test2 values (12), (22), (32), (42);
 
 -- fast-forward the main branch
-alter table ice01 execute fast-forward 'main' to 'test2';
+alter table ice01 execute fast-forward 'main' 'test2';
 select * from ice01;
