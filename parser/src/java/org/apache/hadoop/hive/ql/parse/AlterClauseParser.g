@@ -479,6 +479,8 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam)
     | KW_EXECUTE KW_SET_CURRENT_SNAPSHOT LPAREN (snapshotParam=Number) RPAREN
     -> ^(TOK_ALTERTABLE_EXECUTE KW_SET_CURRENT_SNAPSHOT $snapshotParam)
+    | KW_EXECUTE KW_FASTFORWARD sourceBranch=StringLiteral KW_TO targetBranch=StringLiteral
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_FASTFORWARD $sourceBranch $targetBranch)
     ;
 
 alterStatementSuffixDropBranch
