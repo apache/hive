@@ -12491,7 +12491,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         MaskAndFilterInfo info = basicInfos.get(privObj);
         // First we check whether entity actually needs masking or filtering. Query based Compaction related queries are
         // excluded from all masking and filtering.
-        if (tableMask.needsMaskingOrFiltering(privObj) && conf.getBoolean(Compactor.COMPACTION_SESSION, false)) {
+        if (tableMask.needsMaskingOrFiltering(privObj) && !conf.getBoolean(Compactor.COMPACTION_SESSION, false)) {
           if (info == null) {
             // This is a table used by a materialized view
             // Currently we do not support querying directly a materialized view

@@ -32,7 +32,7 @@ public interface Compactor {
     Marker config key to indicate that the current Driver instance is used for executing compaction queries only.
     It is required to exclude compaction related queries from all Ranger policies that would otherwise apply.
    */
-  String COMPACTION_SESSION = "query_based_compactor_session";
+  String COMPACTION_SESSION = "hive.compactor.query.based.session";
 
   static long getCompactorTxnId(Configuration jobConf) {
     String snapshot = jobConf.get(ValidTxnList.VALID_TXNS_KEY);
