@@ -90,6 +90,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -3290,9 +3291,11 @@ public class TestJdbcDriver2 {
   }
 
   // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException
-  @Test(expected = HiveSQLException.class)
+  @Test
   public void testConnectInvalidDatabase() throws SQLException {
-    DriverManager.getConnection("jdbc:hive2:///databasedoesnotexist", "", "");
+    assertThrows(HiveSQLException.class, () -> {
+      DriverManager.getConnection("jdbc:hive2:///databasedoesnotexist", "", "");
+    });
   }
 
   @Test
