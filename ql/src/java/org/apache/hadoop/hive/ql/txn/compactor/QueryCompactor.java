@@ -94,6 +94,7 @@ abstract class QueryCompactor implements Compactor {
     conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);
+    conf.setBoolean(Compactor.COMPACTION_SESSION, true);
     Util.overrideConfProps(conf, compactionInfo, tblProperties);
     String user = compactionInfo.runAs;
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);

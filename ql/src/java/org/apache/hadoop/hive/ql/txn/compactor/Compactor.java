@@ -28,6 +28,11 @@ import java.io.IOException;
 public interface Compactor {
 
   String FINAL_LOCATION = "hive.compactor.input.dir";
+  /*
+    Marker config key to indicate that the current Driver instance is used for executing compaction queries only.
+    It is required to exclude compaction related queries from all Ranger policies that would otherwise apply.
+   */
+  String COMPACTION_SESSION = "query_based_compactor_session";
 
   static long getCompactorTxnId(Configuration jobConf) {
     String snapshot = jobConf.get(ValidTxnList.VALID_TXNS_KEY);
