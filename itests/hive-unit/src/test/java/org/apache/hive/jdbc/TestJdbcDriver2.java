@@ -87,6 +87,7 @@ import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
 import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -3238,16 +3239,16 @@ public class TestJdbcDriver2 {
 
     stmt1.executeAsync("repl status query_id_test with ('hive.query.id' = 'hiveCustomTag')");
     String queryId1 = stmt1.getQueryId();
-    assertFalse("hiveCustomTag".equals(queryId1));
-    assertFalse(queryId.equals(queryId1));
+    assertNotEquals("hiveCustomTag", queryId1);
+    assertNotEquals(queryId, queryId1);
     assertFalse(queryId1.isEmpty());
     stmt1.getUpdateCount();
 
     stmt.executeAsync("select count(*) from " + dataTypeTableName);
     queryId = stmt.getQueryId();
-    assertFalse("hiveCustomTag".equals(queryId));
+    assertNotEquals("hiveCustomTag", queryId);
     assertFalse(queryId.isEmpty());
-    assertFalse(queryId.equals(queryId1));
+    assertNotEquals(queryId, queryId1);
     stmt.getUpdateCount();
 
     stmt.execute("drop database query_id_test");
