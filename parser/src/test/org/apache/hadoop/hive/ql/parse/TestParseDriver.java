@@ -297,7 +297,7 @@ public class TestParseDriver {
   @Test
   public void testFromSubqueryIsSetop() throws Exception {
     String q =
-        "explain select key from ((select key from src) union (select key from src))subq ";
+        "explain select key from ((select key from src order by key) union (select key from src))subq ";
     System.out.println(q);
 
     ASTNode root = parseDriver.parse(q).getTree();

@@ -108,7 +108,7 @@ atomjoinSource
     :  tableSource (lateralView^)*
     |  virtualTableSource (lateralView^)*
     |  (LPAREN (KW_WITH|KW_SELECT|KW_MAP|KW_REDUCE|KW_FROM)) => subQuerySource (lateralView^)*
-    |  (LPAREN LPAREN atomSelectStatement RPAREN setOperator ) => subQuerySource (lateralView^)*
+    |  (LPAREN LPAREN selectStatement RPAREN setOperator ) => subQuerySource (lateralView^)*
     |  (LPAREN valuesSource) => subQuerySource (lateralView^)*
     |  partitionedTableFunction (lateralView^)*
     |  LPAREN! joinSource RPAREN!
