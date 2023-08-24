@@ -5270,17 +5270,25 @@ public class ObjectStore implements RawStore, Configurable {
     tblName = normalizeIdentifier(tblName);
 
     boolean success = false;
-    Exception e = null;
     try {
       openTransaction();
 
       Table table = ensureGetTable(catName, dbName, tblName);
+      // Validate new parts: StorageDescriptor and SerDeInfo must be set in Partition.
+      if (!TableType.VIRTUAL_VIEW.name().equals(table.getTableType())) {
+        for (Partition newPart : newParts) {
+          if (!newPart.isSetSd() || !newPart.getSd().isSetSerdeInfo()) {
+            throw new InvalidObjectException("Partition does not set storageDescriptor or serdeInfo.");
+          }
+        }
+      }
+      if (writeId > 0) {
+        newParts.forEach(newPart -> newPart.setWriteId(writeId));
+      }
+
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
         partNames.add(Warehouse.makePartName(table.getPartitionKeys(), partVal));
-      }
-      if (writeId > 0) {
-        newParts.forEach(p -> p.setWriteId(writeId));
       }
 
       results = new GetListHelper<Partition>(catName, dbName, tblName, true, true) {
@@ -5300,17 +5308,11 @@ public class ObjectStore implements RawStore, Configurable {
       // commit the changes
       success = commitTransaction();
     } catch (Exception exception) {
-      e = exception;
-      LOG.error("Alter failed", e);
+      LOG.error("Alter failed", exception);
+      throw new MetaException(exception.getMessage());
     } finally {
       if (!success) {
         rollbackTransaction();
-        MetaException metaException = new MetaException(
-            "The transaction for alter partition did not commit successfully.");
-        if (e != null) {
-          metaException.initCause(e);
-        }
-        throw metaException;
       }
     }
     return results;
