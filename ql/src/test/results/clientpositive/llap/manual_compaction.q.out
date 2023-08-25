@@ -342,11 +342,11 @@ PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
-1	default	un_partitioned_t	 --- 	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
-2	default	un_partitioned_t_minor	 --- 	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
-3	default	partitioned_t	dt=2023	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
-4	default	partitioned_t	dt=2024	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
-5	default	partitioned_t	dt=2022	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	un_partitioned_t	 --- 	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	un_partitioned_t_minor	 --- 	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	partitioned_t	dt=2023	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	partitioned_t	dt=2024	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	partitioned_t	dt=2022	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
 PREHOOK: query: drop table UN_PARTITIONED_T
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@un_partitioned_t
