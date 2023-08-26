@@ -316,22 +316,13 @@ public class TestHiveAuthorizerCheckInvocation {
     List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
 
     HivePrivilegeObject funcObj;
-    HivePrivilegeObject dbObj;
-    assertEquals("number of output objects", 2, outputs.size());
-    if(outputs.get(0).getType() == HivePrivilegeObjectType.FUNCTION) {
-      funcObj = outputs.get(0);
-      dbObj = outputs.get(1);
-    } else {
-      funcObj = outputs.get(1);
-      dbObj = outputs.get(0);
-    }
+    assertEquals("number of output objects", 1, outputs.size());
+
+    funcObj = outputs.get(0);
 
     assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
     assertTrue("function name", funcName.equalsIgnoreCase(funcObj.getObjectName()));
     assertTrue("db name", dbName.equalsIgnoreCase(funcObj.getDbname()));
-
-    assertEquals("input type", HivePrivilegeObjectType.DATABASE, dbObj.getType());
-    assertTrue("db name", dbName.equalsIgnoreCase(dbObj.getDbname()));
 
     // actually create the permanent function
     driver.run();
