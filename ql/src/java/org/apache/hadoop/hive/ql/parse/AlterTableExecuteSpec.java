@@ -36,7 +36,8 @@ public class AlterTableExecuteSpec<T> {
   public enum ExecuteOperationType {
     ROLLBACK,
     EXPIRE_SNAPSHOT,
-    SET_CURRENT_SNAPSHOT
+    SET_CURRENT_SNAPSHOT,
+    FAST_FORWARD
   }
 
   private final ExecuteOperationType operationType;
@@ -159,6 +160,37 @@ public class AlterTableExecuteSpec<T> {
     @Override
     public String toString() {
       return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+    }
+  }
+
+    /**
+   * Value object class, that stores the fast-forward operation specific parameters.
+   * <ul>
+   *   <li>source branch: the branch which needs to be fast-forwarded</li>
+     * <li>target branch: the branch to which the source branch needs to be fast-forwarded</li>
+   * </ul>
+   */
+  public static class FastForwardSpec {
+    private final String sourceBranch;
+    private final String targetBranch;
+
+    public FastForwardSpec(String sourceBranch, String targetBranch) {
+      this.sourceBranch = sourceBranch;
+      this.targetBranch = targetBranch;
+    }
+
+    public String getSourceBranch() {
+      return sourceBranch;
+    }
+
+    public String getTargetBranch() {
+      return targetBranch;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("sourceBranch", sourceBranch)
+          .add("targetBranch", targetBranch).toString();
     }
   }
 }

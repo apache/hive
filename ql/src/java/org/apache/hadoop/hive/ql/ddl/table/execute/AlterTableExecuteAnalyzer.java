@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.execute;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
@@ -35,6 +34,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExpireSnapshotsSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.FastForwardSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.FAST_FORWARD;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ROLLBACK;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.SET_CURRENT_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.TIME;
@@ -106,6 +107,22 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       AlterTableExecuteSpec<AlterTableExecuteSpec.SetCurrentSnapshotSpec> spec =
           new AlterTableExecuteSpec(SET_CURRENT_SNAPSHOT,
               new AlterTableExecuteSpec.SetCurrentSnapshotSpec(Long.valueOf(child.getText())));
+      desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+    } else if (HiveParser.KW_FAST_FORWARD == executeCommandType.getType()) {
+      String branchName;
+      String targetBranchName;
+      ASTNode child1 = (ASTNode) command.getChild(1);
+      if (command.getChildCount() == 2) {
+        branchName = "main";
+        targetBranchName = PlanUtils.stripQuotes(child1.getText());
+      } else {
+        ASTNode child2 = (ASTNode) command.getChild(2);
+        branchName = PlanUtils.stripQuotes(child1.getText());
+        targetBranchName = PlanUtils.stripQuotes(child2.getText());
+      }
+
+      AlterTableExecuteSpec spec =
+          new AlterTableExecuteSpec(FAST_FORWARD, new FastForwardSpec(branchName, targetBranchName));
       desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
     }
 
