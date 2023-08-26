@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.CherryPickSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExpireSnapshotsSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.FastForwardSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec;
@@ -44,6 +45,7 @@ import java.time.ZoneId;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.CHERRY_PICK;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.FAST_FORWARD;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ROLLBACK;
@@ -123,6 +125,11 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
 
       AlterTableExecuteSpec spec =
           new AlterTableExecuteSpec(FAST_FORWARD, new FastForwardSpec(branchName, targetBranchName));
+      desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+    } else if (HiveParser.KW_CHERRY_PICK == executeCommandType.getType()) {
+      ASTNode child = (ASTNode) command.getChild(1);
+      long snapshotId = Long.parseLong(child.getText());
+      AlterTableExecuteSpec spec = new AlterTableExecuteSpec(CHERRY_PICK, new CherryPickSpec(snapshotId));
       desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
     }
 

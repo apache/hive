@@ -797,6 +797,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         IcebergTableUtil.fastForwardBranch(icebergTable, fastForwardSpec.getSourceBranch(),
             fastForwardSpec.getTargetBranch());
         break;
+      case CHERRY_PICK:
+        AlterTableExecuteSpec.CherryPickSpec cherryPickSpec =
+            (AlterTableExecuteSpec.CherryPickSpec) executeSpec.getOperationParams();
+        IcebergTableUtil.cherryPick(icebergTable, cherryPickSpec.getSnapshotId());
+        break;
       default:
         throw new UnsupportedOperationException(
             String.format("Operation type %s is not supported", executeSpec.getOperationType().name()));
@@ -1400,7 +1405,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * Generates {@link JobContext}s for the OutputCommitter for the specific table.
    * @param configuration The configuration used for as a base of the JobConf
    * @param tableName The name of the table we are planning to commit
-   * @param overwrite If we have to overwrite the existing table or just add the new data
+   * @param branchName If we have to overwrite the existing table or just add the new data
    * @return The generated Optional JobContext list or empty if not presents.
    */
   private List<JobContext> generateJobContext(Configuration configuration, String tableName,
