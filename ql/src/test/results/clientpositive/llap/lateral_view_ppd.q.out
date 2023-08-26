@@ -54,7 +54,7 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(value=[$1], mycol=[$6])
-  HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
+  HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
     HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5])
       HiveFilter(condition=[=($0, _UTF-16LE'0')])
         HiveTableScan(table=[[default, src]], table:alias=[src])
@@ -139,7 +139,7 @@ POSTHOOK: Input: default@src
 CBO PLAN:
 HiveProject(value=[$1], mycol=[CAST(1):INTEGER])
   HiveFilter(condition=[=($6, 1)])
-    HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
+    HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
       HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5])
         HiveFilter(condition=[=($0, _UTF-16LE'0')])
           HiveTableScan(table=[[default, src]], table:alias=[src])
@@ -218,7 +218,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 CBO PLAN:
 HiveSortLimit(fetch=[12])
   HiveProject(value=[$1], mycol=[$8])
-    HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) ds, VARCHAR(2147483647) hr, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
+    HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5, $6, $7)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) ds, VARCHAR(2147483647) hr, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
       HiveProject(key=[$0], value=[$1], ds=[$2], hr=[$3], BLOCK__OFFSET__INSIDE__FILE=[$4], INPUT__FILE__NAME=[$5], ROW__ID=[$6], ROW__IS__DELETED=[$7])
         HiveFilter(condition=[AND(=($2, _UTF-16LE'2008-04-08'), =($3, _UTF-16LE'12'))])
           HiveTableScan(table=[[default, srcpart]], table:alias=[srcpart])
@@ -335,9 +335,9 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(value=[$1], mycol=[$6])
-  HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol, INTEGER mytable2.mycol2)])
+  HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5, $6)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol, INTEGER mytable2.mycol2)])
     HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], mytable.mycol=[$6])
-      HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
+      HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
         HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5])
           HiveFilter(condition=[=($0, _UTF-16LE'0')])
             HiveTableScan(table=[[default, src]], table:alias=[src])
@@ -440,7 +440,7 @@ POSTHOOK: Input: default@src
 CBO PLAN:
 HiveProject(value=[$1], mycol=[$6])
   HiveFilter(condition=[>($6, 1)])
-    HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
+    HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
       HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5])
         HiveFilter(condition=[=($0, _UTF-16LE'0')])
           HiveTableScan(table=[[default, src]], table:alias=[src])

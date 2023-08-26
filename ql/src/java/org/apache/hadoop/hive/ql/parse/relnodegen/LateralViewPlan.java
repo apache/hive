@@ -24,6 +24,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -103,8 +104,9 @@ public class LateralViewPlan {
 
     this.lateralTableAlias = getTableAliasFromASTNode(selExprAST);
 
-    // The RexCall for the udtf function (e.g. inline)
-    RexCall udtfCall = getUDTFFunction(functionAST, inputRR);
+    // The RexCall for the lateral function (e.g. lateral(inline(), $0, $1, ...)), where
+    // the inputrefs are all retrieved from the input RelNode.
+    RexCall udtfCall = getLateralFunction(functionAST, inputRR, inputRel);
 
     // Column aliases provided by the query.
     List<String> columnAliases = getColumnAliasesFromASTNode(selExprAST, udtfCall);
@@ -129,6 +131,17 @@ public class LateralViewPlan {
         throw new SemanticException(ASTErrorUtils.getMsg(
             ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), lateralView));
     }
+  }
+
+  private RexCall getLateralFunction(ASTNode functionAST, RowResolver inputRR, RelNode inputRel)
+      throws SemanticException {
+    List<RexNode> operands = new ArrayList<>();
+    operands.add(getUDTFFunction(functionAST, inputRR));
+    for (int i = 0; i < inputRel.getRowType().getFieldCount(); ++i) {
+      RelDataType type = inputRel.getRowType().getFieldList().get(i).getType();
+      operands.add(this.cluster.getRexBuilder().makeInputRef(type, i));
+    }
+    return (RexCall) this.cluster.getRexBuilder().makeCall(SqlStdOperatorTable.LATERAL, operands);
   }
 
   private RexCall getUDTFFunction(ASTNode functionAST, RowResolver inputRR)
@@ -247,8 +260,7 @@ public class LateralViewPlan {
       RexNode udtfCall, List<String> columnAliases) {
 
     // initialize allDataTypes and allDataTypeNames from the fields in the inputRel
-    List<RelDataType> allDataTypes = new ArrayList<>(
-        Lists.transform(inputRel.getRowType().getFieldList(), RelDataTypeField::getType));
+    List<RelDataType> allDataTypes = new ArrayList<>( Lists.transform(inputRel.getRowType().getFieldList(), RelDataTypeField::getType));
     List<String> allDataTypeNames = new ArrayList<>(
         Lists.transform(inputRel.getRowType().getFieldList(), RelDataTypeField::getName));
 

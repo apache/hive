@@ -130,7 +130,7 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
     // directly to the input fields anymore.
     final RelNode newTableFunctionScanNode = tfs.copy(tfs.getTraitSet(),
         tfs.getInputs(), newInlineCall, tfs.getElementType(), tfs.getRowType(),
-        new HashSet<>());
+        Collections.emptySet());
 
     call.transformTo(newTableFunctionScanNode);
   }

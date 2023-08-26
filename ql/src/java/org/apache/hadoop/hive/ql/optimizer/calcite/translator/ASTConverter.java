@@ -589,7 +589,7 @@ public class ASTConverter {
         s = new Schema((Union) r, sqAlias);
       }
     } else if (r instanceof HiveTableFunctionScan &&
-        !canOptimizeOutLateralView((HiveTableFunctionScan) r)) {
+        isLateralView((HiveTableFunctionScan) r)) {
       TableFunctionScan tfs = ((TableFunctionScan) r);
 
       // retrieve the base table source.
@@ -646,12 +646,6 @@ public class ASTConverter {
 
   private ASTNode createASTLateralView(TableFunctionScan tfs, Schema s,
       QueryBlockInfo tableFunctionSource, String sqAlias) {
-    // In the case where the RelNode is a HiveTableFunctionScan, first we check
-    // to see if we can't optimize out the lateral view operator. We can optimize the
-    // operator out if only the udtf fields are grabbed out of the RelNode.  If any
-    // of the base table fields need to be grabbed out, then a 'join' needs to be done
-    // and we need the lateral view.
-    //
     // The structure of the AST LATERAL VIEW will be:
     //
     //   TOK_LATERAL_VIEW
@@ -666,7 +660,11 @@ public class ASTConverter {
 
     // set up the select for the parameters of the UDTF
     List<ASTNode> children = new ArrayList<>();
-    RexCall call = (RexCall) tfs.getCall();
+    // The UDTF function call within the table function scan will be of the form:
+    // lateral(my_udtf_func(...), $0, $1, ...).  For recreating the AST, we need
+    // the inner "my_udtf_func".
+    RexCall lateralCall = (RexCall) tfs.getCall();
+    RexCall call = (RexCall) lateralCall.getOperands().get(0);
     for (RexNode rn : call.getOperands()) {
       ASTNode expr = rn.accept(new RexVisitor(s, rn instanceof RexLiteral,
           select.getCluster().getRexBuilder()));
@@ -715,36 +713,9 @@ public class ASTConverter {
    * is needed because all the fields come from the table level rather
    * than the row level.
    */
-  private boolean canOptimizeOutLateralView(HiveTableFunctionScan htfs) {
-    Set<Integer> inputRefs = new HashSet<>();
-    if (this.select instanceof HiveProject) {
-      inputRefs.addAll(HiveCalciteUtil.getInputRefs(((HiveProject)this.select).getProjects()));
-    }
-    if (this.where != null) {
-      inputRefs.addAll(HiveCalciteUtil.getInputRefs(where.getCondition()));
-    }
-    if (this.having != null) {
-      inputRefs.addAll(HiveCalciteUtil.getInputRefs(having.getCondition()));
-    }
-    if (this.groupBy != null) {
-      inputRefs.addAll(HiveCalciteUtil.translateBitSetToProjIndx(
-          HiveCalciteUtil.extractRefs(this.groupBy)));
-    }
-    if (this.orderLimit instanceof HiveSortExchange) {
-      inputRefs.addAll(HiveCalciteUtil.getInputRefs(((HiveSortExchange)this.orderLimit).getKeys()));
-    }
-    if (this.orderLimit instanceof HiveSortLimit) {
-      if (((HiveSortLimit)this.orderLimit).getInputRefToCallMap() != null) {
-        inputRefs.addAll(((HiveSortLimit)this.orderLimit).getInputRefToCallMap().keySet());
-      }
-    }
-
-    for (Integer inputRef : inputRefs) {
-      if (htfs.containsInputRefMapping(inputRef)) {
-        return false;
-      }
-    }
-    return true;
+  private boolean isLateralView(HiveTableFunctionScan htfs) {
+    RexCall call = (RexCall) htfs.getCall();
+    return ((RexCall) htfs.getCall()).getOperator() == SqlStdOperatorTable.LATERAL;
   }
 
   class QBVisitor extends RelVisitor {

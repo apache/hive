@@ -301,16 +301,29 @@ STAGE PLANS:
           properties:
             insideView TRUE
           Select Operator
-            expressions: array(1,2,3) (type: array<int>)
-            outputColumnNames: _col0
-            UDTF Operator
-              function name: explode
-              Limit
-                Number of rows: 3
-                Select Operator
-                  expressions: col (type: int)
-                  outputColumnNames: _col0
-                  ListSink
+            Lateral View Forward
+              Select Operator
+                Lateral View Join Operator
+                  outputColumnNames: _col4
+                  Limit
+                    Number of rows: 3
+                    Select Operator
+                      expressions: _col4 (type: int)
+                      outputColumnNames: _col0
+                      ListSink
+              Select Operator
+                expressions: array(1,2,3) (type: array<int>)
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col4
+                    Limit
+                      Number of rows: 3
+                      Select Operator
+                        expressions: _col4 (type: int)
+                        outputColumnNames: _col0
+                        ListSink
 
 PREHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 PREHOOK: type: QUERY
@@ -424,17 +437,29 @@ STAGE PLANS:
               Select Operator
                 Lateral View Join Operator
                   outputColumnNames: _col4
-                  Select Operator
-                    expressions: _col4 (type: array<int>)
-                    outputColumnNames: _col0
-                    UDTF Operator
-                      function name: explode
-                      Limit
-                        Number of rows: 3
-                        Select Operator
-                          expressions: col (type: int)
-                          outputColumnNames: _col0
-                          ListSink
+                  Lateral View Forward
+                    Select Operator
+                      Lateral View Join Operator
+                        outputColumnNames: _col5
+                        Limit
+                          Number of rows: 3
+                          Select Operator
+                            expressions: _col5 (type: int)
+                            outputColumnNames: _col0
+                            ListSink
+                    Select Operator
+                      expressions: _col4 (type: array<int>)
+                      outputColumnNames: _col0
+                      UDTF Operator
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col5
+                          Limit
+                            Number of rows: 3
+                            Select Operator
+                              expressions: _col5 (type: int)
+                              outputColumnNames: _col0
+                              ListSink
               Select Operator
                 expressions: array(array(1,2,3)) (type: array<array<int>>)
                 outputColumnNames: _col0
@@ -442,17 +467,29 @@ STAGE PLANS:
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col4
-                    Select Operator
-                      expressions: _col4 (type: array<int>)
-                      outputColumnNames: _col0
-                      UDTF Operator
-                        function name: explode
-                        Limit
-                          Number of rows: 3
-                          Select Operator
-                            expressions: col (type: int)
-                            outputColumnNames: _col0
-                            ListSink
+                    Lateral View Forward
+                      Select Operator
+                        Lateral View Join Operator
+                          outputColumnNames: _col5
+                          Limit
+                            Number of rows: 3
+                            Select Operator
+                              expressions: _col5 (type: int)
+                              outputColumnNames: _col0
+                              ListSink
+                      Select Operator
+                        expressions: _col4 (type: array<int>)
+                        outputColumnNames: _col0
+                        UDTF Operator
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col5
+                            Limit
+                              Number of rows: 3
+                              Select Operator
+                                expressions: _col5 (type: int)
+                                outputColumnNames: _col0
+                                ListSink
 
 PREHOOK: query: EXPLAIN CBO SELECT * FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY c1 ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
@@ -487,7 +524,7 @@ POSTHOOK: Input: default@lv_view
 CBO PLAN:
 HiveSortLimit(fetch=[3])
   HiveProject(mycol=[$4])
-    HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol)])
+    HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3)], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol)])
       HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3])
         HiveTableScan(table=[[default, lv_table_n0]], table:alias=[lv_table_n0])
 
@@ -504,9 +541,9 @@ POSTHOOK: Input: default@lv_view
 CBO PLAN:
 HiveSortLimit(fetch=[9])
   HiveProject(mycol=[$4], mycol2=[$5])
-    HiveTableFunctionScan(invocation=[explode(ARRAY(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol, VARCHAR(2147483647) mytable2.mycol2)])
+    HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), $0, $1, $2, $3, $4)], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol, VARCHAR(2147483647) mytable2.mycol2)])
       HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3], mytable.mycol=[$4])
-        HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol)])
+        HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3)], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytable.mycol)])
           HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3])
             HiveTableScan(table=[[default, lv_table_n0]], table:alias=[lv_table_n0])
 
@@ -523,9 +560,9 @@ POSTHOOK: Input: default@lv_view
 CBO PLAN:
 HiveSortLimit(fetch=[3])
   HiveProject(mycol2=[$5])
-    HiveTableFunctionScan(invocation=[explode($4)], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER ARRAY mytable.mycol, INTEGER mytable2.mycol2)])
+    HiveTableFunctionScan(invocation=[LATERAL(explode($4), $0, $1, $2, $3, $4)], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER ARRAY mytable.mycol, INTEGER mytable2.mycol2)])
       HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3], mytable.mycol=[$4])
-        HiveTableFunctionScan(invocation=[explode(ARRAY(ARRAY(1, 2, 3)))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER ARRAY mytable.mycol)])
+        HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(ARRAY(1, 2, 3))), $0, $1, $2, $3)], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER ARRAY mytable.mycol)])
           HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3])
             HiveTableScan(table=[[default, lv_table_n0]], table:alias=[lv_table_n0])
 
@@ -653,7 +690,7 @@ POSTHOOK: Input: default@lv_view
 CBO PLAN:
 HiveSortLimit(fetch=[3])
   HiveProject(_o__c0=[size($1)], c3=[$2], _o__c2=[trim($0)], c4=[$3], mycol=[$4])
-    HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytab.mycol)])
+    HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3)], rowType=[RecordType(VARCHAR(2147483647) c1, INTEGER ARRAY c2, INTEGER c3, CHAR(1) c4, INTEGER mytab.mycol)])
       HiveProject(c1=[$0], c2=[$1], c3=[$2], c4=[$3])
         HiveTableScan(table=[[default, lv_table_n0]], table:alias=[lv_table_n0])
 
