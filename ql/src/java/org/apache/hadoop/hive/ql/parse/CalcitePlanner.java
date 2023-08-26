@@ -1814,8 +1814,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       } else {
         rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC);
       }
-      rules.add(new HiveFilterTableFunctionTransposeRule(Filter.class, HiveRelFactories.HIVE_BUILDER,
-         HiveTableFunctionScan.class));
+      rules.add(HiveFilterTableFunctionTransposeRule.INSTANCE);
       rules.add(HiveOptimizeInlineArrayTableFunctionRule.INSTANCE);
       rules.add(HiveFilterSetOpTransposeRule.INSTANCE);
       rules.add(HiveFilterSortTransposeRule.INSTANCE);
