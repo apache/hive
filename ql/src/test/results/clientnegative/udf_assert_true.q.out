@@ -21,17 +21,29 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: array(1,2) (type: array<int>)
-            outputColumnNames: _col0
-            UDTF Operator
-              function name: explode
-              Limit
-                Number of rows: 2
-                Select Operator
-                  expressions: assert_true((col > 0)) (type: void)
-                  outputColumnNames: _col0
-                  ListSink
+          Lateral View Forward
+            Select Operator
+              Lateral View Join Operator
+                outputColumnNames: _col6
+                Limit
+                  Number of rows: 2
+                  Select Operator
+                    expressions: assert_true((_col6 > 0)) (type: void)
+                    outputColumnNames: _col0
+                    ListSink
+            Select Operator
+              expressions: array(1,2) (type: array<int>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                Lateral View Join Operator
+                  outputColumnNames: _col6
+                  Limit
+                    Number of rows: 2
+                    Select Operator
+                      expressions: assert_true((_col6 > 0)) (type: void)
+                      outputColumnNames: _col0
+                      ListSink
 
 PREHOOK: query: SELECT ASSERT_TRUE(x > 0) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
 PREHOOK: type: QUERY
@@ -61,17 +73,29 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: array(1,2) (type: array<int>)
-            outputColumnNames: _col0
-            UDTF Operator
-              function name: explode
-              Limit
-                Number of rows: 2
-                Select Operator
-                  expressions: assert_true((col < 2)) (type: void)
-                  outputColumnNames: _col0
-                  ListSink
+          Lateral View Forward
+            Select Operator
+              Lateral View Join Operator
+                outputColumnNames: _col6
+                Limit
+                  Number of rows: 2
+                  Select Operator
+                    expressions: assert_true((_col6 < 2)) (type: void)
+                    outputColumnNames: _col0
+                    ListSink
+            Select Operator
+              expressions: array(1,2) (type: array<int>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                Lateral View Join Operator
+                  outputColumnNames: _col6
+                  Limit
+                    Number of rows: 2
+                    Select Operator
+                      expressions: assert_true((_col6 < 2)) (type: void)
+                      outputColumnNames: _col0
+                      ListSink
 
 PREHOOK: query: SELECT ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
 PREHOOK: type: QUERY
