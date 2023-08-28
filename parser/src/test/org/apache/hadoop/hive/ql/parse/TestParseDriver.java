@@ -297,12 +297,21 @@ public class TestParseDriver {
   @Test
   public void testFromSubqueryIsSetop() throws Exception {
     String q =
-        "explain select key from ((select key from src order by key) union (select key from src))subq ";
+        "explain select key from ((select key from src) union (select key from src))subq ";
     System.out.println(q);
 
     ASTNode root = parseDriver.parse(q).getTree();
     System.out.println(root.dump());
 
+  }
+
+  @Test
+  public void testSubQueryWithSetOpSupportsOrderBy() throws Exception {
+    String q = "SELECT a FROM ((SELECT a FROM t1 ORDER BY a) UNION ALL (SELECT a FROM t2 DISTRIBUTE BY a)) B";
+    System.out.println(q);
+
+    ASTNode root = parseDriver.parse(q).getTree();
+    System.out.println(root.dump());
   }
 
   @Test
