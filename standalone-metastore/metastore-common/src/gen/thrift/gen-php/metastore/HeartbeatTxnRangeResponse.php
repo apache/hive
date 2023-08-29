@@ -84,13 +84,13 @@ class HeartbeatTxnRangeResponse
                 case 1:
                     if ($ftype == TType::SET) {
                         $this->aborted = array();
-                        $_size772 = 0;
-                        $_etype775 = 0;
-                        $xfer += $input->readSetBegin($_etype775, $_size772);
-                        for ($_i776 = 0; $_i776 < $_size772; ++$_i776) {
-                            $elem777 = null;
-                            $xfer += $input->readI64($elem777);
-                            $this->aborted[$elem777] = true;
+                        $_size786 = 0;
+                        $_etype789 = 0;
+                        $xfer += $input->readSetBegin($_etype789, $_size786);
+                        for ($_i790 = 0; $_i790 < $_size786; ++$_i790) {
+                            $elem791 = null;
+                            $xfer += $input->readI64($elem791);
+                            $this->aborted[$elem791] = true;
                         }
                         $xfer += $input->readSetEnd();
                     } else {
@@ -100,13 +100,13 @@ class HeartbeatTxnRangeResponse
                 case 2:
                     if ($ftype == TType::SET) {
                         $this->nosuch = array();
-                        $_size778 = 0;
-                        $_etype781 = 0;
-                        $xfer += $input->readSetBegin($_etype781, $_size778);
-                        for ($_i782 = 0; $_i782 < $_size778; ++$_i782) {
-                            $elem783 = null;
-                            $xfer += $input->readI64($elem783);
-                            $this->nosuch[$elem783] = true;
+                        $_size792 = 0;
+                        $_etype795 = 0;
+                        $xfer += $input->readSetBegin($_etype795, $_size792);
+                        for ($_i796 = 0; $_i796 < $_size792; ++$_i796) {
+                            $elem797 = null;
+                            $xfer += $input->readI64($elem797);
+                            $this->nosuch[$elem797] = true;
                         }
                         $xfer += $input->readSetEnd();
                     } else {
@@ -133,8 +133,8 @@ class HeartbeatTxnRangeResponse
             }
             $xfer += $output->writeFieldBegin('aborted', TType::SET, 1);
             $output->writeSetBegin(TType::I64, count($this->aborted));
-            foreach ($this->aborted as $iter784 => $iter785) {
-                $xfer += $output->writeI64($iter784);
+            foreach ($this->aborted as $iter798 => $iter799) {
+                $xfer += $output->writeI64($iter798);
             }
             $output->writeSetEnd();
             $xfer += $output->writeFieldEnd();
@@ -145,8 +145,8 @@ class HeartbeatTxnRangeResponse
             }
             $xfer += $output->writeFieldBegin('nosuch', TType::SET, 2);
             $output->writeSetBegin(TType::I64, count($this->nosuch));
-            foreach ($this->nosuch as $iter786 => $iter787) {
-                $xfer += $output->writeI64($iter786);
+            foreach ($this->nosuch as $iter800 => $iter801) {
+                $xfer += $output->writeI64($iter800);
             }
             $output->writeSetEnd();
             $xfer += $output->writeFieldEnd();
