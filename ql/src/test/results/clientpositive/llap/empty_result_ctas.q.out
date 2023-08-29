@@ -8,19 +8,17 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
 PREHOOK: query: CREATE TABLE T2 AS SELECT * FROM T1 LIMIT 0
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T2
 POSTHOOK: query: CREATE TABLE T2 AS SELECT * FROM T1 LIMIT 0
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T2
-POSTHOOK: Lineage: t2.c_array EXPRESSION []
-POSTHOOK: Lineage: t2.c_nested EXPRESSION []
-POSTHOOK: Lineage: t2.c_primitive SIMPLE []
+POSTHOOK: Lineage: t2.c_array SIMPLE [(t1)t1.FieldSchema(name:c_array, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: t2.c_nested SIMPLE [(t1)t1.FieldSchema(name:c_nested, type:array<struct<f1:int,f2:map<int,double>,f3:array<char(10)>>>, comment:null), ]
+POSTHOOK: Lineage: t2.c_primitive SIMPLE [(t1)t1.FieldSchema(name:c_primitive, type:int, comment:null), ]
 t1.c_primitive	t1.c_array	t1.c_nested
 PREHOOK: query: DESCRIBE FORMATTED t2
 PREHOOK: type: DESCTABLE
@@ -30,6 +28,101 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t2
 col_name	data_type	comment
 # col_name            	data_type           	comment             
+c_primitive         	int                 	                    
+c_array             	array<int>          	                    
+c_nested            	array<struct<f1:int,f2:map<int,double>,f3:array<char(10)>>>	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table t3 (a string, b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: create table t3 (a string, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo
+create table t_dest as
+with cte1 as (select * from t3), cte2 as (select * from t1 where 1=0) select cte1.*, cte2.* from cte1 left join cte2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_dest
+POSTHOOK: query: explain cbo
+create table t_dest as
+with cte1 as (select * from t3), cte2 as (select * from t1 where 1=0) select cte1.*, cte2.* from cte1 left join cte2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_dest
+Explain
+CBO PLAN:
+HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
+  HiveProject(a=[$0], b=[$1])
+    HiveTableScan(table=[[default, t3]], table:alias=[t3])
+  HiveProject(c_primitive=[$0], c_array=[$1], c_nested=[$2])
+    HiveSortLimit(fetch=[0])
+      HiveProject(c_primitive=[$0], c_array=[$1], c_nested=[$2])
+        HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: create table t_dest as
+with cte1 as (select * from t3), cte2 as (select * from t1 where 1=0) select cte1.*, cte2.* from cte1 left join cte2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_dest
+POSTHOOK: query: create table t_dest as
+with cte1 as (select * from t3), cte2 as (select * from t1 where 1=0) select cte1.*, cte2.* from cte1 left join cte2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_dest
+POSTHOOK: Lineage: t_dest.a SIMPLE [(t3)t3.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: t_dest.b SIMPLE [(t3)t3.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: t_dest.c_array SIMPLE [(t1)t1.FieldSchema(name:c_array, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: t_dest.c_nested SIMPLE [(t1)t1.FieldSchema(name:c_nested, type:array<struct<f1:int,f2:map<int,double>,f3:array<char(10)>>>, comment:null), ]
+POSTHOOK: Lineage: t_dest.c_primitive SIMPLE [(t1)t1.FieldSchema(name:c_primitive, type:int, comment:null), ]
+cte1.a	cte1.b	cte2.c_primitive	cte2.c_array	cte2.c_nested
+PREHOOK: query: DESCRIBE FORMATTED t_dest
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t_dest
+POSTHOOK: query: DESCRIBE FORMATTED t_dest
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t_dest
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	string              	                    
+b                   	string              	                    
 c_primitive         	int                 	                    
 c_array             	array<int>          	                    
 c_nested            	array<struct<f1:int,f2:map<int,double>,f3:array<char(10)>>>	                    

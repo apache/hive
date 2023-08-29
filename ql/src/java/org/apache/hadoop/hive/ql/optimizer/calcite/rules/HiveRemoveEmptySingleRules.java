@@ -21,6 +21,7 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelRule;
+import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.RelNode;
@@ -28,13 +29,17 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Correlate;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.rules.PruneEmptyRules;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexDynamicParam;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
@@ -274,9 +279,43 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
                   .withOperandSupplier(b ->
                           b.operand(HiveSortLimit.class).anyInputs())
                   .withDescription("HivePruneSortLimit0")
-                  .as(PruneEmptyRules.SortFetchZeroRuleConfig.class)
+                  .as(HiveSortFetchZeroRuleConfig.class)
                   .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
                   .toRule();
+
+  /**
+   * Configuration for a rule that prunes a Sort if it has limit 0.
+   *
+   * The difference of this implementation and the original Calcite one is that
+   * this one applies only if the schema does not have complex types.
+   */
+  public interface HiveSortFetchZeroRuleConfig extends PruneEmptyRule.Config {
+    @Override default PruneEmptyRule toRule() {
+      return new PruneEmptyRule(this) {
+        @Override public void onMatch(RelOptRuleCall call) {
+          Sort sort = call.rel(0);
+          HiveRelBuilder hiveRelBuilder = (HiveRelBuilder) call.builder().push(sort);
+          if (hiveRelBuilder.hasComplexTypes()) {
+            return;
+          }
+
+          if (sort.fetch != null
+              && !(sort.fetch instanceof RexDynamicParam)
+              && RexLiteral.intValue(sort.fetch) == 0) {
+            RelNode emptyValues = hiveRelBuilder.empty().build();
+            RelTraitSet traits = sort.getTraitSet();
+            // propagate all traits (except convention) from the original sort into the empty values
+            if (emptyValues.getConvention() != null) {
+              traits = traits.replace(emptyValues.getConvention());
+            }
+            emptyValues = emptyValues.copy(traits, Collections.emptyList());
+            call.transformTo(emptyValues);
+          }
+        }
+
+      };
+    }
+  }
 
   public static final RelOptRule AGGREGATE_INSTANCE =
           RelRule.Config.EMPTY

@@ -17,6 +17,9 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
+import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -46,12 +49,29 @@ public final class HiveReduceExpressionsRule {
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter}.
    */
   public static final RelOptRule FILTER_INSTANCE =
-      ReduceExpressionsRule.FilterReduceExpressionsRule.Config.DEFAULT
+      HiveReduceExpressionsRule.Config.DEFAULT
           .withOperandFor(HiveFilter.class)
           .withMatchNullability(false)
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.FilterReduceExpressionsRule.Config.class)
+          .as(HiveReduceExpressionsRule.Config.class)
           .toRule();
+
+  public static class HiveFilterReduceExpressionsRule extends ReduceExpressionsRule.FilterReduceExpressionsRule {
+    protected HiveFilterReduceExpressionsRule(Config config) {
+      super(config);
+    }
+
+    @Override
+    protected RelNode createEmptyRelOrEquivalent(RelOptRuleCall call, Filter filter) {
+      return call.builder().push(filter.getInput()).filter(call.builder().literal(false)).build();
+    }
+  }
+
+  public interface Config extends ReduceExpressionsRule.FilterReduceExpressionsRule.Config {
+    default HiveFilterReduceExpressionsRule toRule() {
+      return new HiveFilterReduceExpressionsRule(this);
+    }
+  }
 
   /**
    * Singleton rule that reduces constants inside a

@@ -24,11 +24,13 @@ import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexInputRef;
@@ -40,6 +42,7 @@ import org.apache.calcite.server.CalciteServerStatement;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelBuilder;
@@ -116,6 +119,42 @@ public class HiveRelBuilder extends RelBuilder {
       return this.push(filter);
     }
     return this;
+  }
+
+  /**
+   * Empty node is represented as HiveValues(tuples=[[]]) which is converted to an AST of limit 0 in
+   * {@link org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter#emptyPlan(RelDataType)}
+   *
+   * However, if the schema contains any complex types the type can not be represented as AST
+   * Example.: col_0 array of int
+   * CAST(NULL as array[int]) is different from array(CAST(NULL AS int))
+   *
+   * In this case the empty node is represented as HiveSortLimit(fetch=[0])
+   */
+  @Override
+  public RelBuilder empty() {
+    if (!hasComplexTypes()) {
+      return super.empty();
+    }
+
+    final RelNode input = build();
+    final RelNode sort = HiveRelFactories.HIVE_SORT_FACTORY.createSort(
+        input, RelCollations.of(), null, literal(0));
+    return this.push(sort);
+  }
+
+  public boolean hasComplexTypes() {
+    RelDataType relDataType = peek().getRowType();
+    List<RelDataTypeField> fieldList = relDataType.getFieldList();
+    for (RelDataTypeField relDataTypeField : fieldList) {
+      SqlTypeName sqlTypeName = relDataTypeField.getType().getSqlTypeName();
+      if (sqlTypeName == SqlTypeName.ROW ||
+          sqlTypeName == SqlTypeName.MAP ||
+          sqlTypeName == SqlTypeName.ARRAY) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public static SqlFunction getFloorSqlFunction(TimeUnitRange flag) {
