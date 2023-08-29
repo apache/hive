@@ -339,7 +339,7 @@ public class SessionState implements ISessionAuthState{
    * Marker flag to indicate that the current SessionState (and Driver) instance is used for executing compaction queries only.
    * It is required to exclude compaction related queries from all Ranger policies that would otherwise apply.
    */
-  private boolean compactionSession = false;
+  private boolean compaction = false;
 
   public QueryState getQueryState(String queryId) {
     return queryStateMap.get(queryId);
@@ -440,12 +440,12 @@ public class SessionState implements ISessionAuthState{
     this.isHiveServerQuery = isHiveServerQuery;
   }
 
-  public boolean isCompactionSession() {
-    return compactionSession;
+  public boolean isCompaction() {
+    return compaction;
   }
 
-  public void setCompactionSession(boolean compactionSession) {
-    this.compactionSession = compactionSession;
+  public void setCompaction(boolean compaction) {
+    this.compaction = compaction;
   }
 
   public SessionState(HiveConf conf) {

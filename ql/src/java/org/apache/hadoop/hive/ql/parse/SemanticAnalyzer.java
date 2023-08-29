@@ -264,7 +264,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
-import org.apache.hadoop.hive.ql.txn.compactor.Compactor;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -12491,7 +12490,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         MaskAndFilterInfo info = basicInfos.get(privObj);
         // First we check whether entity actually needs masking or filtering. Query based Compaction related queries are
         // excluded from all masking and filtering.
-        if (tableMask.needsMaskingOrFiltering(privObj) && !SessionState.get().isCompactionSession()) {
+        if (tableMask.needsMaskingOrFiltering(privObj) && !SessionState.get().isCompaction()) {
           if (info == null) {
             // This is a table used by a materialized view
             // Currently we do not support querying directly a materialized view
