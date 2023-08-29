@@ -61,16 +61,17 @@ public class ShowCreateDatabaseOperation extends DDLOperation<ShowCreateDatabase
       createDbCommand.append(HiveStringUtils.escapeHiveCommand(database.getDescription())).append("'\n");
     }
     createDbCommand.append("LOCATION\n  '");
-    createDbCommand.append(database.getLocationUri()).append("'\n");
+    createDbCommand.append(database.getLocationUri()).append("'");
     if (database.getManagedLocationUri() != null) {
-      createDbCommand.append("MANAGEDLOCATION\n  '");
-      createDbCommand.append(database.getManagedLocationUri()).append("'\n");
+      createDbCommand.append("\nMANAGEDLOCATION\n  '");
+      createDbCommand.append(database.getManagedLocationUri()).append("'");
     }
     String propertiesToString = ShowUtils.propertiesToString(database.getParameters(), Collections.emptySet());
     if (!propertiesToString.isEmpty()) {
-      createDbCommand.append("WITH DBPROPERTIES (\n");
-      createDbCommand.append(propertiesToString).append(")\n");
+      createDbCommand.append("\nWITH DBPROPERTIES (\n");
+      createDbCommand.append(propertiesToString).append("\n)");
     }
+    createDbCommand.append(";\n");
 
     outStream.write(createDbCommand.toString().getBytes(StandardCharsets.UTF_8));
     return 0;
