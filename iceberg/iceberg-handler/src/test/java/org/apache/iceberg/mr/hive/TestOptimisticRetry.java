@@ -38,7 +38,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testConcurrentOverlappingUpdates() {
-    String withRetry = "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,optimistic_concurrency";
+    String withRetry = "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict";
 
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
@@ -74,7 +74,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testNonOverlappingConcurrent2Updates() {
-    String withRetry = "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,optimistic_concurrency";
+    String withRetry = "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict";
 
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
@@ -112,7 +112,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testConcurrent2MergeInserts() {
-    String withRetry = "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,optimistic_concurrency";
+    String withRetry = "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict";
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 

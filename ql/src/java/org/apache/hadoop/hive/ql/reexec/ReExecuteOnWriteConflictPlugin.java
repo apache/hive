@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
+import com.google.common.base.Throwables;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -28,12 +29,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 
-public class ReExecuteOptimisticConcurrentWritePlugin implements IReExecutionPlugin {
-  private static final Logger LOG = LoggerFactory.getLogger(ReExecuteOptimisticConcurrentWritePlugin.class);
+public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
+  private static final Logger LOG = LoggerFactory.getLogger(ReExecuteOnWriteConflictPlugin.class);
   private boolean retryPossible;
 
-  private final Pattern optimisticConcurrentWriteErrorPattern =
-      Pattern.compile(".*Found.*conflicting.* files .* records matching true.*");
+  private final Pattern writeConflictErrorPattern = Pattern.compile("^Found.*conflicting.*files(.*)");
+  private final String validationException = "org.apache.iceberg.exceptions.ValidationException";
 
   class LocalHook implements ExecuteWithHookContext {
     @Override
@@ -41,13 +42,13 @@ public class ReExecuteOptimisticConcurrentWritePlugin implements IReExecutionPlu
       if (hookContext.getHookType() == HookContext.HookType.ON_FAILURE_HOOK) {
         Throwable exception = hookContext.getException();
 
-        if (exception != null && exception.getMessage() != null && exception.getCause() != null) {
+        if (exception != null && exception.getMessage() != null) {
 
-          String commitFailed = "Error committing job";
-          if (optimisticConcurrentWriteErrorPattern.matcher(exception.getCause().getMessage()).matches() &&
-              exception.getMessage().contains(commitFailed)) {
+          Throwable cause = Throwables.getRootCause(exception);
+          if (cause.getClass().getName().equals(validationException) &&
+              cause.getMessage().matches(writeConflictErrorPattern.pattern())) {
             retryPossible = true;
-            LOG.info("Retrying query: Optimistic concurrency followed for iceberg.");
+            LOG.info("Retrying query due to write conflict.");
           }
           LOG.info("Got exception message: {} retryPossible: {}", exception.getMessage(), retryPossible);
         }
@@ -57,7 +58,7 @@ public class ReExecuteOptimisticConcurrentWritePlugin implements IReExecutionPlu
 
   @Override
   public void initialize(Driver driver) {
-    driver.getHookRunner().addOnFailureHook(new ReExecuteOptimisticConcurrentWritePlugin.LocalHook());
+    driver.getHookRunner().addOnFailureHook(new ReExecuteOnWriteConflictPlugin.LocalHook());
   }
 
   @Override
