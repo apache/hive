@@ -3604,10 +3604,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          */
         pushJoinFilters(qb, joinTree, aliasToOpInfo, false);
         boolean notInCheck = (subQuery.getNotInCheck() != null)?true : false;
-        if(notInCheck){
+        if(notInCheck && !qb.isMultiDestQuery()){
           /**
            * In case of not in operator, there will be a not in check, so at this point, notInCheck is used to
            *  direct the JoinPlan to have the condition outerQuerytable.OuterQueryCol is not null predicate added to it
+           *
+           *  Note that: in case of multi dest queries, with even one containing a notIn operator, the code is not changed yet.
+           *  That needs to be worked on as a separate bug
            */
           input = genJoinOperatorNIC(qbSQ, joinTree, aliasToOpInfo , input, notInCheck);
         }
