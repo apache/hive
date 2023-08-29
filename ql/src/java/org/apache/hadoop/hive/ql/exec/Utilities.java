@@ -298,15 +298,17 @@ public final class Utilities {
       return;
     }
 
-    try {
-      FileSystem fs = mapPath.getFileSystem(conf);
-      if (fs.exists(mapPath)) {
-        fs.delete(mapPath, true);
-      }
-      if (fs.exists(reducePath)) {
-        fs.delete(reducePath, true);
-      }
 
+    try {
+      if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+        FileSystem fs = mapPath.getFileSystem(conf);
+        if (fs.exists(mapPath)) {
+          fs.delete(mapPath, true);
+        }
+        if (fs.exists(reducePath)) {
+          fs.delete(reducePath, true);
+        }
+      }
     } catch (Exception e) {
       LOG.warn("Failed to clean-up tmp directories.", e);
     } finally {
@@ -662,8 +664,11 @@ public final class Utilities {
       // this is the unique conf ID, which is kept in JobConf as part of the plan file name
       String jobID = UUID.randomUUID().toString();
       Path planPath = new Path(hiveScratchDir, jobID);
-      FileSystem fs = planPath.getFileSystem(conf);
-      fs.mkdirs(planPath);
+      if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+        FileSystem fs = planPath.getFileSystem(conf);
+        // since we are doing RPC creating a directory is un-necessary
+        fs.mkdirs(planPath);
+      }
       HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, planPath.toUri().toString());
     }
   }
