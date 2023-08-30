@@ -147,7 +147,6 @@ public class TestGenericUDFDateFormat extends TestCase {
   }
 
 
-  @Test
   public void testJulianDates() throws HiveException {
     GenericUDFDateFormat udf = new GenericUDFDateFormat();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
