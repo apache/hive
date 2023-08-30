@@ -140,11 +140,6 @@ public interface TxnStore extends Configurable {
 
 
   /**
-   * @return Returns a {@link DatabaseProduct} instance representing the type of the HMS database
-   */
-  DatabaseProduct getDatabaseProduct();
-
-  /**
    * @return Returns the {@link RetryHandler} instance used by {@link TxnStore}.
    */
   RetryHandler getRetryHandler();
@@ -772,6 +767,7 @@ public interface TxnStore extends Configurable {
    * Add the ACID write event information to writeNotificationLog table.
    * @param acidWriteEvent
    */
+  @Retry(datasource = POOL_TX, lockInternally = true,retryOnDuplicateKey = true)
   @RetrySemantics.Idempotent
   void addWriteNotificationLog(ListenerEvent acidWriteEvent) throws MetaException;
 

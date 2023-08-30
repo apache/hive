@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
@@ -43,12 +42,10 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
   private static final Logger LOG = LoggerFactory.getLogger(MarkCleanedFunction.class);
 
   private final CompactionInfo info;
-  private final DatabaseProduct dbProduct;
   private final Configuration conf;
 
-  public MarkCleanedFunction(CompactionInfo info, DatabaseProduct dbProduct, Configuration conf) {
+  public MarkCleanedFunction(CompactionInfo info, Configuration conf) {
     this.info = info;
-    this.dbProduct = dbProduct;
     this.conf = conf;
   }
 
@@ -70,7 +67,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
               + "\"CC_ORDER_BY\") "
               + "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
               + ":succeeded, \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", "
-              + getEpochFn(dbProduct) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
+              + getEpochFn(dataSourceWrapper.getDatabaseProduct()) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
               + "\"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", \"CQ_ENQUEUE_TIME\", "
               + "\"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
               + "\"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\", \"CQ_POOL_NAME\", \"CQ_NUMBER_OF_BUCKETS\", "

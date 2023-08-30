@@ -36,7 +36,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -48,36 +47,29 @@ public class DataSourceWrapper {
   private static final Logger LOG = LoggerFactory.getLogger(DataSourceWrapper.class);
   private static final ThreadLocal<RetryContext> threadLocal = new ThreadLocal<>();
 
-  private final Map<String, DataSource> dataSources;
+  private final Map<String, DataSource> dataSources = new HashMap<>();
   private final Map<String, PlatformTransactionManager> transactionManagers = new HashMap<>();
   private final Map<String, NamedParameterJdbcTemplate> jdbcTemplates = new HashMap<>();
   private final DatabaseProduct databaseProduct;
 
   /**
    * Creates a new isntance of the {@link DataSourceWrapper} class
-   * @param dataSources A {@link Map} of the datasource names and the corresponding datasources which needs to be wrapped
-   *                    by this instance
    * @param databaseProduct A {@link DatabaseProduct} instance representing the type of the underlying HMS dabatabe.
    */
-  public DataSourceWrapper(Map<String, DataSource> dataSources, DatabaseProduct databaseProduct) {
-    this.dataSources = dataSources;
-    for(String dataSource : dataSources.keySet()) {
-      NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSources.get(dataSource));
-      jdbcTemplates.put(dataSource, jdbcTemplate);
-      transactionManagers.put(dataSource, new DataSourceTransactionManager(Objects.requireNonNull(jdbcTemplate.getJdbcTemplate().getDataSource())));
-    }
+  public DataSourceWrapper(DatabaseProduct databaseProduct) {
     this.databaseProduct = databaseProduct;
   }
 
-
   /**
-   * Provides direct access to the {@link TransactionStatus} to allow manual savepoint creation, rollback, etc.
-   * Can be called only within an established {@link RetryContext}.
-   * @return Returns the {@link TransactionStatus} instance stored in the {@link RetryContext}.
-   * @throws IllegalStateException Thrown when called outside a {@link RetryContext}.
+   * Adds an additional {@link DataSource} to this instance, specified by its name.
+   * @param dataSourceName The name of the {@link DataSource} to add.
+   * @param dataSource The {@link DataSource} to add.
    */
-  public TransactionStatus getTransactionStatus() {
-    return RetryContext.getRetryContext().transactionStatus;
+  public void registerDataSource(String dataSourceName, DataSource dataSource) {
+    this.dataSources.put(dataSourceName, dataSource);
+    NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+    jdbcTemplates.put(dataSourceName, jdbcTemplate);
+    transactionManagers.put(dataSourceName, new DataSourceTransactionManager(dataSource));
   }
 
   /**
@@ -124,13 +116,11 @@ public class DataSourceWrapper {
    * {@link RetryContext} (and transaction).</b>  
    * @param definition The {@link TransactionDefinition} to use for creating a new transaction.
    * @param dataSource The identifier of the {@link DataSource} to use
-   * @return Returns a {@link TransactionStatus} object representing the created transaction.
    * @throws TransactionException Forwarded from {@link PlatformTransactionManager#getTransaction(TransactionDefinition)}
    */
-  public TransactionStatus getTransactionWithinRetryContext(TransactionDefinition definition, String dataSource) throws TransactionException {
+  public void beginTransactionWithinRetryContext(TransactionDefinition definition, String dataSource) throws TransactionException {
     TransactionStatus status = transactionManagers.get(dataSource).getTransaction(definition);
     RetryContext.setRetryContext(status, dataSource);
-    return status;
   }
 
   /**
@@ -147,6 +137,30 @@ public class DataSourceWrapper {
       RetryContext.clearRetryContext();
     }
   }
+
+  /**
+   * @see TransactionStatus#createSavepoint()
+   * @return Returns with the created savepoint object.
+   */
+  public Object createSavepoint() {
+    return RetryContext.getRetryContext().transactionStatus.createSavepoint();
+  }
+
+  /**
+   * @see TransactionStatus#rollbackToSavepoint(Object)
+   * @param savePoint The savepoint to rollback to
+   */
+  public void rollbackToSavepoint(Object savePoint) {
+    RetryContext.getRetryContext().transactionStatus.rollbackToSavepoint(savePoint);    
+  }
+
+  /**
+   * @see TransactionStatus#releaseSavepoint(Object) (Object)
+   * @param savePoint The savepoint to release
+   */
+  public void releaseSavepoint(Object savePoint) {
+    RetryContext.getRetryContext().transactionStatus.releaseSavepoint(savePoint);
+  } 
 
   /**
    * Rollbacks the transaction associated with the current {@link Thread} and clears the {@link RetryContext}.
@@ -230,9 +244,9 @@ public class DataSourceWrapper {
    *     existing one
    *   </li>
    *   <li>
-   *     The {@link DataSourceWrapper#getTransactionStatus()}, {@link DataSourceWrapper#getConnection()}, 
-   *     {@link DataSourceWrapper#getJdbcTemplate()}, {@link DataSourceWrapper#commit()}, {@link DataSourceWrapper#rollback()}
-   *     methods are using it to identify the correct datasource which is associated with the current
+   *     The {@link DataSourceWrapper#getConnection()}, {@link DataSourceWrapper#getJdbcTemplate()}, 
+   *     {@link DataSourceWrapper#commit()}, {@link DataSourceWrapper#rollback()} methods are using it to identify the 
+   *     correct datasource which is associated with the current
    *     {@link RetryContext} (and {@link Thread}).
    *   </li>
    * </ul>
@@ -270,7 +284,7 @@ public class DataSourceWrapper {
      */
     private static void clearRetryContext() {
       RetryContext top = threadLocal.get();
-      if(top != null && top.parent != null) {
+      if (top != null && top.parent != null) {
         threadLocal.set(top.parent);
       } else {
         threadLocal.remove();

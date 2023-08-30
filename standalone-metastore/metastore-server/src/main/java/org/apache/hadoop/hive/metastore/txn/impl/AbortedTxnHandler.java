@@ -38,14 +38,15 @@ public class AbortedTxnHandler implements QueryHandler<Set<CompactionInfo>> {
   private final int abortedThreshold;
   private final boolean checkAbortedTimeThreshold;
   private final long systemTime;
+  private final int fetchSize;
 
   //language=SQL
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
+    return databaseProduct.addLimitClause(fetchSize, " \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
         "MIN(\"TXN_STARTED\"), COUNT(*) FROM \"TXNS\", \"TXN_COMPONENTS\" " +
         " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = :state " +
-        "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" ";
+        "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" ");
   }
 
   @Override
@@ -73,9 +74,10 @@ public class AbortedTxnHandler implements QueryHandler<Set<CompactionInfo>> {
     return response;
   }
 
-  public AbortedTxnHandler(long abortedTimeThreshold, int abortedThreshold) {
+  public AbortedTxnHandler(long abortedTimeThreshold, int abortedThreshold, int fetchSize) {
     this.abortedTimeThreshold = abortedTimeThreshold;
     this.abortedThreshold = abortedThreshold;
+    this.fetchSize = fetchSize;
     checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
     systemTime = System.currentTimeMillis();
   }

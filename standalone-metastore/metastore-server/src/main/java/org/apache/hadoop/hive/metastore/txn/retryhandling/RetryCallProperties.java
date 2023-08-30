@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.retryhandling;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.datanucleus.transaction.TransactionIsolation;
+import org.springframework.transaction.TransactionDefinition;
 
 import java.util.function.Function;
 
@@ -32,6 +33,7 @@ public class RetryCallProperties {
   private String caller = null;
   private boolean retryOnDuplicateKey = false;
   private int transactionIsolationLevel = TransactionIsolation.READ_COMMITTED;
+  private int transactionPropagationLevel = TransactionDefinition.PROPAGATION_REQUIRED;
   private boolean lockInternally = false;
   private boolean rollbackOnError = true;
   private RetryPropagation retryPropagation = RetryPropagation.CREATE_OR_JOIN;
@@ -73,6 +75,11 @@ public class RetryCallProperties {
    */
   public RetryCallProperties withTransactionIsolationLevel(int transactionIsolationLevel) {
     this.transactionIsolationLevel = transactionIsolationLevel;
+    return this;
+  }
+
+  public RetryCallProperties withTransactionPropagationLevel(int transactionPropagationLevel) {
+    this.transactionPropagationLevel = transactionPropagationLevel;
     return this;
   }
 
@@ -126,6 +133,10 @@ public class RetryCallProperties {
 
   int getTransactionIsolationLevel() {
     return transactionIsolationLevel;
+  }
+
+  public int getTransactionPropagationLevel() {
+    return transactionPropagationLevel;
   }
 
   boolean isLockInternally() {

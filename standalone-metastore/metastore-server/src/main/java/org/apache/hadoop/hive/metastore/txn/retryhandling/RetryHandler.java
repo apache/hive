@@ -24,8 +24,6 @@ import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.UncategorizedSQLException;
-import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.sql.SQLException;
@@ -50,10 +48,10 @@ public class RetryHandler {
   private static final ReentrantLock derbyLock = new ReentrantLock(true);
 
 
-  private DataSourceWrapper jdbcTemplate;
-  private long deadlockRetryInterval;
-  private long retryInterval;
-  private int retryLimit;
+  private final DataSourceWrapper jdbcTemplate;
+  private final long deadlockRetryInterval;
+  private final long retryInterval;
+  private final int retryLimit;
   
   private Configuration conf;
   
@@ -67,7 +65,7 @@ public class RetryHandler {
     return sb.toString();
   }
   
-  public void init(Configuration conf, DataSourceWrapper jdbcTemplate){
+  public RetryHandler(Configuration conf, DataSourceWrapper jdbcTemplate){
     this.conf = conf;
     this.jdbcTemplate = jdbcTemplate;
 
@@ -116,11 +114,7 @@ public class RetryHandler {
       */
       LOG.info("Already established retry-context detected, current retry-call will join it. The passed CallProperties " +
           "instance will be ignored, using the original one.");
-      try {
-        return function.execute(jdbcTemplate);
-      } catch (SQLException e) {
-        throw new UncategorizedSQLException(null, null, e);
-      }
+      return function.execute(jdbcTemplate);
     }
 
     if (!properties.getRetryPropagation().canCreateContext()) {
@@ -139,9 +133,9 @@ public class RetryHandler {
         lockInternal();
       }
       try {
-        DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
+        DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(properties.getTransactionPropagationLevel());
         transactionDefinition.setIsolationLevel(properties.getTransactionIsolationLevel());
-        jdbcTemplate.getTransactionWithinRetryContext(transactionDefinition, properties.getDataSource());
+        jdbcTemplate.beginTransactionWithinRetryContext(transactionDefinition, properties.getDataSource());
         Result result = function.execute(jdbcTemplate);
         LOG.debug("Going to commit transaction");
         jdbcTemplate.commit();
@@ -152,12 +146,10 @@ public class RetryHandler {
         }
         throw e;
       }
-    } catch (DataAccessException | SQLException e) {
+    } catch (DataAccessException e) {
       SQLException sqlEx = null;
       if (e.getCause() instanceof SQLException) {
         sqlEx = (SQLException) e.getCause();
-      } else if (e instanceof SQLException) {
-        sqlEx = (SQLException) e;
       }
       if (sqlEx != null) {
         if (checkDeadlock(sqlEx, properties.getCaller(), deadlockCount)) {

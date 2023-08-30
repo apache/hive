@@ -37,7 +37,7 @@ import java.util.List;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.READY_FOR_CLEANING;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 
-public class AbortTxnInfoHandler implements QueryHandler<List<CompactionInfo>> {
+public class ReadyToCleanAbortHandler implements QueryHandler<List<CompactionInfo>> {
 
   // Three inner sub-queries which are under left-join to fetch the required data for aborted txns.
   //language=SQL
@@ -83,7 +83,7 @@ public class AbortTxnInfoHandler implements QueryHandler<List<CompactionInfo>> {
   public String getParameterizedQueryString(DatabaseProduct dbProduct) throws MetaException {
     return dbProduct.addLimitClause(
         fetchSize,
-        String.format(AbortTxnInfoHandler.SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY,
+        String.format(ReadyToCleanAbortHandler.SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY,
             abortedTimeThreshold >= 0 ? "" : " HAVING COUNT(*) > " + abortedThreshold, getEpochFn(dbProduct)));
   }
 
@@ -123,7 +123,7 @@ public class AbortTxnInfoHandler implements QueryHandler<List<CompactionInfo>> {
     return readyToCleanAborts;
   }
 
-  public AbortTxnInfoHandler(long abortedTimeThreshold, int abortedThreshold, int fetchSize) {
+  public ReadyToCleanAbortHandler(long abortedTimeThreshold, int abortedThreshold, int fetchSize) {
     this.abortedTimeThreshold = abortedTimeThreshold;
     this.abortedThreshold = abortedThreshold;
     this.fetchSize = fetchSize;

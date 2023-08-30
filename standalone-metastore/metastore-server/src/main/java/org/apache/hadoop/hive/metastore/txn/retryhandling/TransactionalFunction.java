@@ -19,8 +19,6 @@ package org.apache.hadoop.hive.metastore.txn.retryhandling;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
-import java.sql.SQLException;
-
 /**
  * A functional interface representing a function call (typically a query) which has a result and done within a database transaction.
  * @param <Result> The type of the function call result
@@ -33,9 +31,9 @@ public interface TransactionalFunction<Result> {
    * @param dataSourceWrapper A {@link DataSourceWrapper} instance responsible for providing all the necessary resources 
    *                          to be able to perform transactional database calls.
    * @return Returns with the result of the function call. 
-   * @throws SQLException Thrown if any of the JDBC calls fail
+   * @throws org.springframework.dao.DataAccessException Thrown if any of the JDBC calls fail
    * @throws MetaException Thrown in case of application error within the function
    */
-  Result execute(DataSourceWrapper dataSourceWrapper) throws SQLException, MetaException;
+  Result execute(DataSourceWrapper dataSourceWrapper) throws MetaException;
 
 }

@@ -23,7 +23,7 @@ import java.util.function.Function;
 
 /**
  * Represents a parameterized command (for exmaple an UPDATE statement) as a Spring {@link NamedParameterJdbcTemplate}
- * style parameterized query string (for example: <b>SELECT * FROM TBL WHERE ID = :id</b>), its parameters, and a result
+ * style parameterized query string (for example: <b>UPDATE TBL SET COL1 = :value WHERE ID = :id</b>), its parameters, and a result
  * policy. The result policy is a <b>Function&lt;Integer, Boolean&gt;</b> function which must decide if the number of 
  * affected rows is acceptable or not.
  */

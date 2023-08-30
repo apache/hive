@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.txn.retryhandling.RetryCallProperties;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.Retry;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.RetryHandler;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,24 +77,25 @@ public class RetryingTxnHandler implements InvocationHandler {
           .withRollbackOnError(retry.rollbackOnError())
           .withRetryOnDuplicateKey(retry.retryOnDuplicateKey())
           .withTransactionIsolationLevel(retry.transactionIsolation());
-      return retryHandler.executeWithRetry(properties,
-          (DataSourceWrapper dataSourceWrapper) -> {
-            try {
-              LOG.info("Invoking method within retry context: {}", callerId);
-              return method.invoke(realStore, args);
-            } catch (IllegalAccessException | InvocationTargetException | UndeclaredThrowableException e) {
-              if (e.getCause() instanceof MetaException) {
-                throw (MetaException) e.getCause();
-              } else if (e.getCause() instanceof RuntimeException) {
-                throw (RuntimeException) e.getCause();
-              } else {
-                throw new RuntimeException(e);
-              }
-            }
-          });
+
+      TransactionalFunction<Object> transactionalLambda = (DataSourceWrapper dataSourceWrapper) -> {
+        try {
+          LOG.info("Invoking method within retry context: {}", callerId);
+          return method.invoke(realStore, args);
+        } catch (IllegalAccessException | InvocationTargetException | UndeclaredThrowableException e) {
+          if (e.getCause() instanceof MetaException) {
+            throw (MetaException) e.getCause();
+          } else if (e.getCause() instanceof RuntimeException) {
+            throw (RuntimeException) e.getCause();
+          } else {
+            throw new RuntimeException(e);
+          }
+        }
+      };
+      return retryHandler.executeWithRetry(properties, transactionalLambda);
     } else {
       try {
-        LOG.info("Invoking method without retry context: {}", callerId);
+        LOG.debug("Invoking method without retry context: {}", callerId);
         return method.invoke(realStore, args);
       } catch (InvocationTargetException | UndeclaredThrowableException e) {
         throw e.getCause();
