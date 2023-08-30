@@ -57,7 +57,6 @@ import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Scan;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
-import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
@@ -199,7 +198,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     Configuration conf = context.getConfiguration();
     Table table = Optional
         .ofNullable(HiveIcebergStorageHandler.table(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER)))
-        .orElseGet(() -> Catalogs.loadTable(conf));
+        .orElseGet(() -> {
+          Table tbl = Catalogs.loadTable(conf);
+          conf.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.name());
+          conf.set(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tbl.name(), SerializationUtil.serializeToBase64(tbl));
+          return tbl;
+        });
 
     List<InputSplit> splits = Lists.newArrayList();
     boolean applyResidual = !conf.getBoolean(InputFormatConfig.SKIP_RESIDUAL_FILTERING, false);
@@ -215,14 +219,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     try (CloseableIterable<CombinedScanTask> tasksIterable = scan.planTasks()) {
-      Table serializableTable = SerializableTable.copyOf(table);
       tasksIterable.forEach(task -> {
         if (applyResidual && (model == InputFormatConfig.InMemoryDataModel.HIVE ||
             model == InputFormatConfig.InMemoryDataModel.PIG)) {
           // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
           checkResiduals(task);
         }
-        splits.add(new IcebergSplit(serializableTable, conf, task));
+        splits.add(new IcebergSplit(conf, task));
       });
     } catch (IOException e) {
       throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
@@ -296,7 +299,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       CombinedScanTask task = ((IcebergSplit) split).task();
       this.context = newContext;
       this.conf = newContext.getConfiguration();
-      this.table = ((IcebergSplit) split).table();
+      this.table = SerializationUtil.deserializeFromBase64(
+                conf.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + conf.get(InputFormatConfig.TABLE_IDENTIFIER)));
       HiveIcebergStorageHandler.checkAndSetIoConfig(conf, table);
       this.tasks = task.files().iterator();
       this.nameMapping = table.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
