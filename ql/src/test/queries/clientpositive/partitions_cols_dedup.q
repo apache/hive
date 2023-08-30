@@ -7,7 +7,7 @@ set hive.create.as.insert.only=true;
 set hive.default.fileformat.managed=ORC;
 set metastore.metadata.transformer.class=org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer;
 set hive.metastore.client.capabilities=HIVEFULLACIDREAD,HIVEFULLACIDWRITE,HIVECACHEINVALIDATE,HIVEMANAGESTATS,HIVEMANAGEDINSERTWRITE,HIVEMANAGEDINSERTREAD;
-set hive.metastore.client.skip.columns.for.partitions=true;
+set metastore.client.skip.columns.for.partitions=true;
 
 drop database if exists partition_cols_dedup cascade;
 create database partition_cols_dedup;
@@ -21,5 +21,5 @@ create table ctas_table_1 as select * from partitioned_table_1;
 select * from ctas_table_1;
 
 create table insert_overwrite_table (c1 int, c2 int) partitioned by (p1 int, p2 int);
-insert overwrite insert_overwrite_table select i1, i2, year, month from partitioned_table_1;
+insert overwrite table insert_overwrite_table select i1, i2, year, month from partitioned_table_1;
 select * from insert_overwrite_table;
