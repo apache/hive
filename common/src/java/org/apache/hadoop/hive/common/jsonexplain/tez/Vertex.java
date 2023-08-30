@@ -18,19 +18,13 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.hadoop.hive.common.jsonexplain.tez.Op.OpType;
-import org.apache.hadoop.util.hash.Hash;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -98,16 +92,11 @@ public final class Vertex implements Comparable<Vertex>{
   }
 
   /**
-   * @throws JSONException
-   * @throws JsonParseException
-   * @throws JsonMappingException
-   * @throws IOException
    * @throws Exception
    *           We assume that there is a single top-level Map Operator Tree or a
    *           Reduce Operator Tree in a vertex
    */
-  public void extractOpTree() throws JSONException, JsonParseException, JsonMappingException,
-      IOException, Exception {
+  public void extractOpTree() throws Exception {
     if (vertexObject.length() != 0) {
       for (String key : JSONObject.getNames(vertexObject)) {
         if (key.equals("Map Operator Tree:")) {
@@ -152,16 +141,11 @@ public final class Vertex implements Comparable<Vertex>{
    * @param operator
    * @param parent
    * @return
-   * @throws JSONException
-   * @throws JsonParseException
-   * @throws JsonMappingException
-   * @throws IOException
    * @throws Exception
    *           assumption: each operator only has one parent but may have many
    *           children
    */
-  Op extractOp(JSONObject operator) throws JSONException, JsonParseException, JsonMappingException,
-      IOException, Exception {
+  Op extractOp(JSONObject operator) throws Exception {
     String[] names = JSONObject.getNames(operator);
     if (names.length != 1) {
       throw new Exception("Expect only one operator in " + operator.toString());
@@ -214,8 +198,7 @@ public final class Vertex implements Comparable<Vertex>{
     }
   }
 
-  public void print(Printer printer, int indentFlag, String type, Vertex callingVertex)
-      throws JSONException, Exception {
+  public void print(Printer printer, int indentFlag, String type, Vertex callingVertex) throws Exception {
     // print vertexname
     if (parser.printSet.contains(this) && !hasMultiReduceOp) {
       if (type != null) {

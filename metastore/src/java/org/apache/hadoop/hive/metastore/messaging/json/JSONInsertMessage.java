@@ -20,8 +20,8 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
-import org.codehaus.jackson.annotate.JsonProperty;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
 import java.util.Iterator;

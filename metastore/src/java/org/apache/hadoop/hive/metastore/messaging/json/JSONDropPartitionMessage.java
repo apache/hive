@@ -22,7 +22,7 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 import java.util.Map;

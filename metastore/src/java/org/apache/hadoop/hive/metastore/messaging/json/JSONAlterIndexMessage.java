@@ -22,7 +22,7 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON Implementation of AlterIndexMessage.
