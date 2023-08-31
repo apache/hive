@@ -22,7 +22,9 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 
 /**
  * A Map Type has homogeneous keys and homogeneous values. All keys of the Map
@@ -106,4 +108,9 @@ public final class MapTypeInfo extends TypeInfo implements Serializable {
     return mapKeyTypeInfo.hashCode() ^ mapValueTypeInfo.hashCode();
   }
 
+  @Override
+  public ObjectInspector createObjectInspector() {
+    return ObjectInspectorFactory.getStandardMapObjectInspector(
+        mapKeyTypeInfo.createObjectInspector(), mapValueTypeInfo.createObjectInspector());
+  }
 }

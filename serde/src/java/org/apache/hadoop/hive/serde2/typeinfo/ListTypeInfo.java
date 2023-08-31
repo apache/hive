@@ -22,7 +22,9 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 
 /**
  * A List Type has homogeneous elements. All elements of the List has the same
@@ -88,6 +90,11 @@ public final class ListTypeInfo extends TypeInfo implements Serializable {
   @Override
   public int hashCode() {
     return listElementTypeInfo.hashCode();
+  }
+
+  @Override
+  public ObjectInspector createObjectInspector() {
+    return ObjectInspectorFactory.getStandardListObjectInspector(listElementTypeInfo.createObjectInspector());
   }
 
 }

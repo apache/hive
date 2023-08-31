@@ -122,4 +122,17 @@ public class TestParseDefault {
     assertTrue(tree.dump(), tree.toStringTree().contains("tok_compact_pool 'pool'"));
   }
 
+  @Test
+  public void testParseCastInt() throws Exception {
+    ASTNode tree = parseDriver.parse(
+        "create table tbl_arr(ca ARRAY<int>, cm map<int, string>, cs struct<f1:int, f2:string, f3:string>)", null).getTree();
+    System.out.println(tree.dump());
+  }
+
+  @Test
+  public void testParseCastMap() throws Exception {
+    ASTNode tree = parseDriver.parse(
+        "select cast(null as map<int, string>)", null).getTree();
+    System.out.println(tree.dump());
+  }
 }

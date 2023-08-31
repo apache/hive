@@ -188,12 +188,16 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
 
   private static ExprNodeConstantDesc toStructConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
                                                         List<? extends StructField> fields) {
-    List<?> values = (List<?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
-    List<Object> constant =  new ArrayList<Object>();
-    for (int i = 0; i < values.size(); i++) {
-      Object value = values.get(i);
-      PrimitiveObjectInspector fieldPoi = (PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector();
-      constant.add(fieldPoi.getPrimitiveJavaObject(value));
+    List<Object> constant = null;
+    Object writableConstantValue = ((ConstantObjectInspector) inspector).getWritableConstantValue();
+    if (writableConstantValue != null) {
+      List<?> values = (List<?>) writableConstantValue;
+      constant = new ArrayList<>(values.size());
+      for (int i = 0; i < values.size(); i++) {
+        Object value = values.get(i);
+        PrimitiveObjectInspector fieldPoi = (PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector();
+        constant.add(fieldPoi.getPrimitiveJavaObject(value));
+      }
     }
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());

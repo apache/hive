@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
@@ -81,5 +82,7 @@ public abstract class TypeInfo implements Serializable {
   public boolean accept(TypeInfo other) {
     return this.equals(other);
   }
+
+  public abstract ObjectInspector createObjectInspector();
 
 }
