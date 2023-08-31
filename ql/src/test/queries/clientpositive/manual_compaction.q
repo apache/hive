@@ -23,6 +23,8 @@ alter table PARTITIONED_T add partition(dt='2023');
 
 alter table PARTITIONED_T compact 'minor';
 
+SHOW COMPACTIONS ORDER BY 'PARTITION' DESC;
+
 alter table PARTITIONED_T add partition(dt='2024');
 
 insert into PARTITIONED_T partition(dt='2023') values ('k1','v1');
@@ -57,7 +59,7 @@ explain alter table PARTITIONED_T compact 'major';
 
 alter table PARTITIONED_T compact 'major';
 
-show compactions;
+SHOW COMPACTIONS ORDER BY 'PARTITION' DESC;
 
 drop table UN_PARTITIONED_T;
 

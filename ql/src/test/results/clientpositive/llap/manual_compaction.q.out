@@ -53,6 +53,14 @@ POSTHOOK: query: alter table PARTITIONED_T compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@partitioned_t
 POSTHOOK: Output: default@partitioned_t
+PREHOOK: query: SHOW COMPACTIONS ORDER BY 'PARTITION' DESC
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: SHOW COMPACTIONS ORDER BY 'PARTITION' DESC
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	un_partitioned_t_minor	 --- 	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	un_partitioned_t	 --- 	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	partitioned_t	dt=2023	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
 PREHOOK: query: alter table PARTITIONED_T add partition(dt='2024')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@partitioned_t
@@ -337,15 +345,15 @@ POSTHOOK: query: alter table PARTITIONED_T compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@partitioned_t
 POSTHOOK: Output: default@partitioned_t
-PREHOOK: query: show compactions
+PREHOOK: query: SHOW COMPACTIONS ORDER BY 'PARTITION' DESC
 PREHOOK: type: SHOW COMPACTIONS
-POSTHOOK: query: show compactions
+POSTHOOK: query: SHOW COMPACTIONS ORDER BY 'PARTITION' DESC
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
-#Masked#	default	un_partitioned_t	 --- 	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	un_partitioned_t_minor	 --- 	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	partitioned_t	dt=2023	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	un_partitioned_t	 --- 	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	partitioned_t	dt=2024	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	partitioned_t	dt=2023	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	partitioned_t	dt=2022	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
 PREHOOK: query: drop table UN_PARTITIONED_T
 PREHOOK: type: DROPTABLE
