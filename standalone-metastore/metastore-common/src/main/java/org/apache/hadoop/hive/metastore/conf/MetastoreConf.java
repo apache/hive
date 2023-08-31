@@ -758,6 +758,10 @@ public class MetastoreConf {
         "The default partition name in case the dynamic partition column value is null/empty string or any other values that cannot be escaped. \n" +
             "This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). \n" +
             "The user has to be aware that the dynamic partition value should not contain this value to avoid confusions."),
+    PARTITION_ORDER_EXPR("metastore.partition.order.expr",
+        "hive.exec.partition.order.expr", "\"PART_NAME\" asc",
+        "The default partition order if we are not returning all partitions. "
+            + "It can be sorted based on any column in the PARTITIONS table (e.g., \"CREATE_TIME\" desc, \"LAST_ACCESS_TIME\" desc etc)"),
     DELEGATION_KEY_UPDATE_INTERVAL("metastore.cluster.delegation.key.update-interval",
         "hive.cluster.delegation.key.update-interval", 1, TimeUnit.DAYS, ""),
     DELEGATION_TOKEN_GC_INTERVAL("metastore.cluster.delegation.token.gc-interval",

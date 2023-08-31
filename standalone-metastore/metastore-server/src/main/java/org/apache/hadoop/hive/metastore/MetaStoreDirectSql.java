@@ -149,6 +149,7 @@ class MetaStoreDirectSql {
   private final int batchSize;
   private final boolean convertMapNullsToEmptyStrings;
   private final String defaultPartName;
+  private final String partOrderExpr;
 
   /**
    * Whether direct SQL can be used with the current datastore backing {@link #pm}.
@@ -220,6 +221,7 @@ class MetaStoreDirectSql {
     convertMapNullsToEmptyStrings =
         MetastoreConf.getBoolVar(conf, ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS);
     defaultPartName = MetastoreConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
+    partOrderExpr = MetastoreConf.getVar(conf, ConfVars.PARTITION_ORDER_EXPR);
 
     String jdoIdFactory = MetastoreConf.getVar(conf, ConfVars.IDENTIFIER_FACTORY);
     if (! ("datanucleus1".equalsIgnoreCase(jdoIdFactory))){
@@ -901,7 +903,7 @@ class MetaStoreDirectSql {
     final String catNameLcase = normalizeSpace(catName).toLowerCase();
 
     // We have to be mindful of order during filtering if we are not returning all partitions.
-    String orderForFilter = (max != null) ? " order by \"PART_NAME\" asc" : "";
+    String orderForFilter = (max != null) ? " order by " + partOrderExpr : "";
 
     String queryText =
         "select " + PARTITIONS + ".\"PART_ID\" from " + PARTITIONS + ""
