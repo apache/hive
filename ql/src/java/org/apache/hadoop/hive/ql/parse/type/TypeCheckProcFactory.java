@@ -139,6 +139,8 @@ public class TypeCheckProcFactory<T> {
         serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_DECIMAL,
         serdeConstants.DECIMAL_TYPE_NAME);
+    CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_MAP,
+        "toMap");
 
     WINDOWING_TOKENS = new HashSet<Integer>();
     WINDOWING_TOKENS.add(HiveParser.KW_OVER);

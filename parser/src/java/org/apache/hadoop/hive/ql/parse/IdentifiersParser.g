@@ -327,7 +327,7 @@ castExpression
     LPAREN
           expression
           KW_AS
-          toType=primitiveType
+          toType=type
           (fmt=KW_FORMAT StringLiteral)?
     RPAREN
     // simple cast

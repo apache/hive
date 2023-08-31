@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.hadoop.hive.ql.udf.UDFToMap;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Aggr_ConvexHull;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Aggr_Union;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Area;
@@ -500,6 +501,7 @@ public final class FunctionRegistry {
     system.registerUDF(serdeConstants.BIGINT_TYPE_NAME, UDFToLong.class, false, UDFToLong.class.getSimpleName());
     system.registerUDF(serdeConstants.FLOAT_TYPE_NAME, UDFToFloat.class, false, UDFToFloat.class.getSimpleName());
     system.registerUDF(serdeConstants.DOUBLE_TYPE_NAME, UDFToDouble.class, false, UDFToDouble.class.getSimpleName());
+    system.registerUDF("toMap", UDFToMap.class, false, UDFToMap.class.getSimpleName());
     // following mapping is to enable UDFName to UDF while generating expression for default value (in operator tree)
     //  e.g. cast(4 as string) is serialized as UDFToString(4) into metastore, to allow us to generate appropriate UDF for
     //  UDFToString we need the following mappings
