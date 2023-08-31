@@ -19,16 +19,40 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
+import java.util.List;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
-import org.apache.thrift.TException;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-public class TestHiveIcebergCherryPick extends HiveIcebergStorageHandlerWithEngineBase {
+import static org.apache.iceberg.mr.hive.TestTables.TestTableType.HIVE_CATALOG;
+import static org.junit.Assert.assertEquals;
+
+public class TestHiveIcebergCherryPick {
+
+  private TestTables testTables;
+  private TestHiveShell shell;
+  private TemporaryFolder temp = new TemporaryFolder();
+
+  @Before
+  public void before() throws IOException {
+    shell = HiveIcebergStorageHandlerTestUtils.shell();
+    temp.create();
+    testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, HIVE_CATALOG, temp);
+    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, "tez");
+  }
+
+  @After
+  public void after() throws Exception {
+    HiveIcebergStorageHandlerTestUtils.close(shell);
+  }
 
   @Test
-  public void testCherryPick() throws TException, InterruptedException {
+  public void testCherryPick() {
     TableIdentifier identifier = TableIdentifier.of("default", "testCherryPick");
     shell.executeStatement(String.format("CREATE EXTERNAL TABLE %s (id INT) STORED BY iceberg  %s %s",
             identifier.name(),
@@ -55,5 +79,7 @@ public class TestHiveIcebergCherryPick extends HiveIcebergStorageHandlerWithEngi
     // cherry-pick the last snapshot to test1 branch
     shell.executeStatement("ALTER TABLE default.testCherryPick EXECUTE CHERRY-PICK " + id2);
 
+    List<Object[]> result = shell.executeStatement("SELECT COUNT(*) FROM " + identifier.name());
+    assertEquals(6L, result.get(0)[0]);
   }
 }
