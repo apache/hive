@@ -107,7 +107,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Tez
-#### A masked pattern was here ####
+      DagId: diksha_20230830225429_65ee241f-184b-4ea0-a3c4-5616419fd344:4
       Edges:
         Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 8 (XPROD_EDGE)
         Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
@@ -115,16 +115,16 @@ STAGE PLANS:
         Reducer 5 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
         Reducer 6 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
         Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
+      DagName: diksha_20230830225429_65ee241f-184b-4ea0-a3c4-5616419fd344:4
       Vertices:
-        Map 1 
+        Map 1
             Map Operator Tree:
                 TableScan
                   alias: b
                   Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    null sort order: 
-                    sort order: 
+                    null sort order:
+                    sort order:
                     Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: id (type: int), name (type: string), age (type: int)
                   Filter Operator
@@ -139,7 +139,7 @@ STAGE PLANS:
                       value expressions: id (type: int), name (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 7 
+        Map 7
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -166,8 +166,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          null sort order: 
-                          sort order: 
+                          null sort order:
+                          sort order:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
                   Filter Operator
@@ -191,15 +191,15 @@ STAGE PLANS:
                           Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Reducer 2 
+        Reducer 2
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-                  0 
-                  1 
+                  0
+                  1
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
@@ -209,7 +209,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col2 (type: int)
                   Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: string)
-        Reducer 3 
+        Reducer 3
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -233,7 +233,7 @@ STAGE PLANS:
                       sort order: +
                       Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string)
-        Reducer 4 
+        Reducer 4
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
@@ -268,7 +268,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 5
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -298,11 +298,11 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
                     Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      null sort order: 
-                      sort order: 
+                      null sort order:
+                      sort order:
                       Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: int), _col11 (type: bigint), _col12 (type: binary)
-        Reducer 6 
+        Reducer 6
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -321,7 +321,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 8 
+        Reducer 8
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -341,8 +341,8 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        null sort order: 
-                        sort order: 
+                        null sort order:
+                        sort order:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-3
@@ -477,13 +477,13 @@ where age not in (select distinct(age) age from t4)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-32_474_4023803399904392806-1/-mr-10000
 POSTHOOK: query: select count(*) from t3
 where age not in (select distinct(age) age from t4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-32_474_4023803399904392806-1/-mr-10000
 5
 Warning: Shuffle Join MERGEJOIN[48][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from t3
@@ -491,13 +491,13 @@ where t3.age not in (select distinct(age) age from t4)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-33_703_3517219914197695231-1/-mr-10000
 POSTHOOK: query: select count(*) from t3
 where t3.age not in (select distinct(age) age from t4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-33_703_3517219914197695231-1/-mr-10000
 5
 Warning: Shuffle Join MERGEJOIN[48][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from t3
@@ -505,24 +505,24 @@ where age not in (select distinct(ages) ages from t5)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t5
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-34_464_9192246663966268881-1/-mr-10000
 POSTHOOK: query: select count(*) from t3
 where age not in (select distinct(ages) ages from t5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t5
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-34_464_9192246663966268881-1/-mr-10000
 0
 PREHOOK: query: select count(*) from t3
 where age not in (23,22,18)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-35_009_4438672741238799316-1/-mr-10000
 POSTHOOK: query: select count(*) from t3
 where age not in (23,22,18)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-35_009_4438672741238799316-1/-mr-10000
 6
 Warning: Shuffle Join MERGEJOIN[44][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from t3
@@ -530,13 +530,13 @@ PREHOOK: query: explain select * from t3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-35_203_4091291217796179741-1/-mr-10000
 POSTHOOK: query: explain select * from t3
         where age not in (select distinct(age) age from t4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-35_203_4091291217796179741-1/-mr-10000
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -544,16 +544,16 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
-#### A masked pattern was here ####
+      DagId: diksha_20230830225435_6c1f6206-a8ad-49fe-be81-28072b6fb7e0:12
       Edges:
         Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
         Reducer 5 <- Map 4 (SIMPLE_EDGE)
         Reducer 6 <- Map 4 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
+      DagName: diksha_20230830225435_6c1f6206-a8ad-49fe-be81-28072b6fb7e0:12
       Vertices:
-        Map 1 
+        Map 1
             Map Operator Tree:
                 TableScan
                   alias: t3
@@ -563,13 +563,13 @@ STAGE PLANS:
                     predicate: age is not null (type: boolean)
                     Statistics: Num rows: 13 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      null sort order: 
-                      sort order: 
+                      null sort order:
+                      sort order:
                       Statistics: Num rows: 13 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: id (type: int), name (type: string), age (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 4 
+        Map 4
             Map Operator Tree:
                 TableScan
                   alias: t4
@@ -609,15 +609,15 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Reducer 2 
+        Reducer 2
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-                  0 
-                  1 
+                  0
+                  1
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 13 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
@@ -627,7 +627,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col2 (type: int)
                   Statistics: Num rows: 13 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: string)
-        Reducer 3 
+        Reducer 3
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -652,7 +652,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 5
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -666,7 +666,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 6 
+        Reducer 6
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -683,11 +683,11 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      null sort order: 
-                      sort order: 
+                      null sort order:
+                      sort order:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
-        Reducer 7 
+        Reducer 7
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -707,8 +707,8 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        null sort order: 
-                        sort order: 
+                        null sort order:
+                        sort order:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
@@ -722,12 +722,12 @@ PREHOOK: query: select count(*) from t3
 where age not in (select distinct(age)age from t3 t1 where t1.age > 10)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-35_336_4244163201787168902-1/-mr-10000
 POSTHOOK: query: select count(*) from t3
 where age not in (select distinct(age)age from t3 t1 where t1.age > 10)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-35_336_4244163201787168902-1/-mr-10000
 2
 Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from t3
@@ -735,13 +735,13 @@ where age not in (select distinct(age) age from t4)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-36_049_7425845116485351978-1/-mr-10001
 POSTHOOK: query: select count(*) from t3
 where age not in (select distinct(age) age from t4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-36_049_7425845116485351978-1/-mr-10001
 5
 Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from t3
@@ -749,13 +749,13 @@ where t3.age not in (select distinct(age) age from t4)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-37_322_2840290271012555427-1/-mr-10001
 POSTHOOK: query: select count(*) from t3
 where t3.age not in (select distinct(age) age from t4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-37_322_2840290271012555427-1/-mr-10001
 5
 Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from t3
@@ -763,24 +763,24 @@ where age not in (select distinct(ages) ages from t5)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t5
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-38_267_2214240838749802300-1/-mr-10001
 POSTHOOK: query: select count(*) from t3
 where age not in (select distinct(ages) ages from t5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t5
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-38_267_2214240838749802300-1/-mr-10001
 0
 PREHOOK: query: select count(*) from t3
 where age not in (23,22,18)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-39_089_2875277230945910640-1/-mr-10001
 POSTHOOK: query: select count(*) from t3
 where age not in (23,22,18)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-39_089_2875277230945910640-1/-mr-10001
 6
 Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from t3
@@ -788,13 +788,13 @@ PREHOOK: query: explain select * from t3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-39_388_544201903312105618-1/-mr-10001
 POSTHOOK: query: explain select * from t3
         where age not in (select distinct(age) age from t4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-39_388_544201903312105618-1/-mr-10001
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -802,16 +802,16 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
-#### A masked pattern was here ####
+      DagId: diksha_20230830225439_524cb7df-baf7-4258-9073-138fadf751f5:18
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
         Reducer 5 <- Map 4 (SIMPLE_EDGE)
         Reducer 6 <- Map 4 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
+      DagName: diksha_20230830225439_524cb7df-baf7-4258-9073-138fadf751f5:18
       Vertices:
-        Map 1 
+        Map 1
             Map Operator Tree:
                 TableScan
                   alias: t3
@@ -829,7 +829,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 4 
+        Map 4
             Map Operator Tree:
                 TableScan
                   alias: t4
@@ -867,7 +867,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Reducer 2 
+        Reducer 2
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -879,19 +879,19 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col4
                 Statistics: Num rows: 19 Data size: 1848 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  null sort order: 
-                  sort order: 
+                  null sort order:
+                  sort order:
                   Statistics: Num rows: 19 Data size: 1848 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col4 (type: boolean)
-        Reducer 3 
+        Reducer 3
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 
-                  1 
+                  0
+                  1
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6
                 Statistics: Num rows: 19 Data size: 2152 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
@@ -912,7 +912,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 5
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -931,7 +931,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: boolean)
-        Reducer 6 
+        Reducer 6
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -946,11 +946,11 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    null sort order: 
-                    sort order: 
+                    null sort order:
+                    sort order:
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint), _col1 (type: bigint)
-        Reducer 7 
+        Reducer 7
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -959,8 +959,8 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  null sort order: 
-                  sort order: 
+                  null sort order:
+                  sort order:
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint)
 
@@ -975,10 +975,10 @@ PREHOOK: query: select count(*) from t3
 where age not in (select distinct(age)age from t3 t1 where t1.age > 10)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-#### A masked pattern was here ####
+PREHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-39_730_6936806328653634155-1/-mr-10001
 POSTHOOK: query: select count(*) from t3
 where age not in (select distinct(age)age from t3 t1 where t1.age > 10)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-#### A masked pattern was here ####
+POSTHOOK: Output: file:/home/diksha/Repositories/github/hive/itests/qtest/target/tmp/localscratchdir/a3ae08f8-02b9-4554-bba4-a2e7102e1b32/hive_2023-08-30_22-54-39_730_6936806328653634155-1/-mr-10001
 2
