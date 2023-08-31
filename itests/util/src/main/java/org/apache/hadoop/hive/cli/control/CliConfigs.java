@@ -269,6 +269,7 @@ public class CliConfigs {
       customConfigValueMap.put(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, "true");
       customConfigValueMap.put(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
       customConfigValueMap.put(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, "false");
+      customConfigValueMap.put(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER, "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest");
       return customConfigValueMap;
     }
   }
