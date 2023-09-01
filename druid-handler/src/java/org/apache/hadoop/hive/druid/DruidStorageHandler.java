@@ -107,7 +107,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.joda.time.DateTime;
+import java.time.ZonedDateTime;
 import org.joda.time.Period;
 import org.skife.jdbi.v2.exceptions.CallbackFailedException;
 import org.slf4j.Logger;
@@ -770,7 +770,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   @Override public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
     jobProperties.put(Constants.DRUID_DATA_SOURCE, tableDesc.getTableName());
-    jobProperties.put(DruidConstants.DRUID_SEGMENT_VERSION, new DateTime().toString());
+    jobProperties.put(DruidConstants.DRUID_SEGMENT_VERSION, ZonedDateTime.now().toString());
     jobProperties.put(DruidConstants.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
     // DruidOutputFormat will write segments in an intermediate directory
     jobProperties.put(DruidConstants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY,

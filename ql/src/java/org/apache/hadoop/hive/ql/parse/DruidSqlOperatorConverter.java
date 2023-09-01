@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFromUnixTime
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTruncSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToUnixTimestampSqlOperator;
-import org.joda.time.Period;
+import java.time.Period;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -180,7 +180,7 @@ public class DruidSqlOperatorConverter {
         if (SqlTypeUtil.isDatetime(call.getOperands().get(0).getType())) {
           final TimeZone tz = timezoneId(query, call.getOperands().get(0));
           return applyTimestampFormat(
-              DruidExpressions.applyTimestampFloor(arg, Period.days(1).toString(), "", tz),
+              DruidExpressions.applyTimestampFloor(arg, Period.ofDays(1).toString(), "", tz),
               YYYY_MM_DD,
               tz);
         }
@@ -196,11 +196,11 @@ public class DruidSqlOperatorConverter {
         }
         final String unit;
         if ("'MONTH'".equals(granularity) || "'MON'".equals(granularity) || "'MM'".equals(granularity)) {
-          unit = Period.months(1).toString();
+          unit = Period.ofMonths(1).toString();
         } else if ("'YEAR'".equals(granularity) || "'YYYY'".equals(granularity) || "'YY'".equals(granularity)) {
-          unit = Period.years(1).toString();
+          unit = Period.ofYears(1).toString();
         } else if ("'QUARTER'".equals(granularity) || "'Q'".equals(granularity)) {
-          unit = Period.months(3).toString();
+          unit = Period.ofMonths(3).toString();
         } else {
           unit = null;
         }
@@ -240,7 +240,7 @@ public class DruidSqlOperatorConverter {
       }
       return DruidExpressions.applyTimestampFloor(
           arg,
-          Period.days(1).toString(),
+          Period.ofDays(1).toString(),
           "",
           timezoneId(query, call.getOperands().get(0)));
     }

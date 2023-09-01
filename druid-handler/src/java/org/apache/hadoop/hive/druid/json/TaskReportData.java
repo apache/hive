@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.druid.json;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.joda.time.DateTime;
+import java.time.ZonedDateTime;
 
 import java.util.Map;
 
@@ -41,7 +41,7 @@ import javax.annotation.Nullable;
 
   private final String id;
   private final Map<Integer, Long> startingOffsets;
-  private final DateTime startTime;
+  private final ZonedDateTime startTime;
   private final Long remainingSeconds;
   private final TaskType type;
   private final Map<Integer, Long> currentOffsets;
@@ -50,7 +50,7 @@ import javax.annotation.Nullable;
   public TaskReportData(String id,
       @Nullable Map<Integer, Long> startingOffsets,
       @Nullable Map<Integer, Long> currentOffsets,
-      DateTime startTime,
+      ZonedDateTime startTime,
       Long remainingSeconds,
       TaskType type,
       @Nullable Map<Integer, Long> lag) {
@@ -75,7 +75,7 @@ import javax.annotation.Nullable;
     return currentOffsets;
   }
 
-  @JsonProperty public DateTime getStartTime() {
+  @JsonProperty public ZonedDateTime getStartTime() {
     return startTime;
   }
 

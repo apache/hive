@@ -30,12 +30,12 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
-import java.time.Chronology;
-import java.time.ZonedDateTime;
-import java.time.ZoneId;
-import java.time.Period;
-import java.time.Duration;
-import java.time.chrono.ISOChronology;
+import org.joda.time.Chronology;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Period;
+import org.joda.time.ReadableDuration;
+import org.joda.time.chrono.ISOChronology;
 
 import com.google.common.collect.ImmutableMap;
 

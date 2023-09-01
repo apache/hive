@@ -300,7 +300,7 @@ public class HCatLoader extends HCatBaseLoader {
     Object value = con.getValue();
     switch (type) {
     case DATE:
-      return ((ZonedDateTime)value).toString(DateTimeFormatter.forPattern("YYYY-MM-dd"));
+      return ((ZonedDateTime)value).format(DateTimeFormatter.ofPattern("YYYY-MM-dd"));
     default:
       return con.toString();
     }
