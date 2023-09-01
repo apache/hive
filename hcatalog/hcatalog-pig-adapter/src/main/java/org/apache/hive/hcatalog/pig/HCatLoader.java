@@ -54,9 +54,8 @@ import org.apache.pig.PigException;
 import org.apache.pig.ResourceSchema;
 import org.apache.pig.ResourceStatistics;
 import org.apache.pig.impl.util.UDFContext;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -301,7 +300,7 @@ public class HCatLoader extends HCatBaseLoader {
     Object value = con.getValue();
     switch (type) {
     case DATE:
-      return ((DateTime)value).toString(DateTimeFormat.forPattern("YYYY-MM-dd"));
+      return ((ZonedDateTime)value).toString(DateTimeFormat.forPattern("YYYY-MM-dd"));
     default:
       return con.toString();
     }
