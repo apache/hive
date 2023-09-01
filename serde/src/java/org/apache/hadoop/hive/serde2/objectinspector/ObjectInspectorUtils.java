@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
 
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
@@ -557,6 +558,7 @@ public final class ObjectInspectorUtils {
    */
   public static Field[] getDeclaredNonStaticFields(Class<?> c) {
     Field[] f = c.getDeclaredFields();
+    Arrays.sort(f, Comparator.comparing(Field::getName));
     ArrayList<Field> af = new ArrayList<Field>();
     for (int i = 0; i < f.length; ++i) {
       if (!Modifier.isStatic(f[i].getModifiers())) {

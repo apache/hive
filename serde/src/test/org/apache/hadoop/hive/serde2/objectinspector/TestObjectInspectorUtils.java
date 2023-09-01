@@ -76,7 +76,7 @@ public class TestObjectInspectorUtils {
           .getStandardObjectInspector(oi1);
       List<? extends StructField> fields = soi.getAllStructFieldRefs();
       assertEquals(10, fields.size());
-      assertEquals(fields.get(0), soi.getStructFieldRef("aint"));
+      assertEquals(fields.get(0), soi.getStructFieldRef("astring"));
 
       // null
       for (int i = 0; i < fields.size(); i++) {
@@ -87,22 +87,23 @@ public class TestObjectInspectorUtils {
       Complex cc = new Complex();
       cc.setAint(1);
       cc.setAString("test");
-      List<Integer> c2 = Arrays.asList(new Integer[] {1, 2, 3});
-      cc.setLint(c2);
       List<String> c3 = Arrays.asList(new String[] {"one", "two"});
       cc.setLString(c3);
-      List<IntString> c4 = new ArrayList<IntString>();
-      cc.setLintString(c4);
+      List<Integer> c4 = Arrays.asList(new Integer[] {1, 2, 3});
+      cc.setLint(c4);
+      List<IntString> c5 = new ArrayList<IntString>();
+      cc.setLintString(c5);
       cc.setMStringString(null);
       // standard object
       Object c = ObjectInspectorUtils.copyToStandardObject(cc, oi1);
 
-      assertEquals(1, soi.getStructFieldData(c, fields.get(0)));
-      assertEquals("test", soi.getStructFieldData(c, fields.get(1)));
-      assertEquals(c2, soi.getStructFieldData(c, fields.get(2)));
+      assertEquals("test", soi.getStructFieldData(c, fields.get(0)));
+      assertEquals(1, soi.getStructFieldData(c, fields.get(1)));
       assertEquals(c3, soi.getStructFieldData(c, fields.get(3)));
       assertEquals(c4, soi.getStructFieldData(c, fields.get(4)));
-      assertNull(soi.getStructFieldData(c, fields.get(5)));
+      assertEquals(c5, soi.getStructFieldData(c, fields.get(5)));
+      assertNull(soi.getStructFieldData(c, fields.get(6)));
+
       ArrayList<Object> cfields = new ArrayList<Object>();
       for (int i = 0; i < 10; i++) {
         cfields.add(soi.getStructFieldData(c, fields.get(i)));
@@ -110,28 +111,28 @@ public class TestObjectInspectorUtils {
       assertEquals(cfields, soi.getStructFieldsDataAsList(c));
 
       // sub fields
-      assertEquals(PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-          fields.get(0).getFieldObjectInspector());
       assertEquals(PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          fields.get(0).getFieldObjectInspector());
+      assertEquals(PrimitiveObjectInspectorFactory.javaIntObjectInspector,
           fields.get(1).getFieldObjectInspector());
-      assertEquals(
-          ObjectInspectorFactory
-          .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.javaIntObjectInspector),
-          fields.get(2).getFieldObjectInspector());
       assertEquals(
           ObjectInspectorFactory
               .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.javaStringObjectInspector),
           fields.get(3).getFieldObjectInspector());
+      assertEquals(
+          ObjectInspectorFactory
+          .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.javaIntObjectInspector),
+          fields.get(4).getFieldObjectInspector());
       assertEquals(ObjectInspectorUtils
           .getStandardObjectInspector(ObjectInspectorFactory
           .getStandardListObjectInspector(ObjectInspectorFactory
           .getReflectionObjectInspector(IntString.class,
           ObjectInspectorFactory.ObjectInspectorOptions.THRIFT))),
-          fields.get(4).getFieldObjectInspector());
+          fields.get(5).getFieldObjectInspector());
       assertEquals(ObjectInspectorFactory.getStandardMapObjectInspector(
           PrimitiveObjectInspectorFactory.javaStringObjectInspector,
           PrimitiveObjectInspectorFactory.javaStringObjectInspector), fields
-          .get(5).getFieldObjectInspector());
+          .get(6).getFieldObjectInspector());
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
