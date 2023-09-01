@@ -56,8 +56,8 @@ public class AlterTableSetLocationAnalyzer extends AbstractAlterTableAnalyzer {
     } catch (FileNotFoundException e) {
       // Only check host/port pair is valid, whether the file exist or not does not matter
     } catch (Exception e) {
-      throw new SemanticException("Cannot connect to namenode, please check if host/port pair for " + newLocation +
-          " is valid", e);
+      throw new SemanticException("Unable to check path:" + newLocation +
+          " Error: " + e.getMessage());
     }
 
     outputs.add(toWriteEntity(newLocation));
