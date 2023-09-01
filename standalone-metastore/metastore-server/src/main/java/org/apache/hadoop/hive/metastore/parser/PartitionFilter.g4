@@ -16,6 +16,10 @@
 
 grammar PartitionFilter;
 
+@lexer::header {
+import org.apache.commons.lang3.StringUtils;
+}
+
 filter
     : orExpression
     ;
@@ -47,8 +51,13 @@ comparisonOperator
 
 identifier
     : IDENTIFIER #unquotedIdentifer
+    | QUOTEDIDENTIFIER #quotedIdentifier
     ;
 
+QUOTEDIDENTIFIER
+    :
+    ('`'  ( '``' | ~('`') )* '`') { setText(StringUtils.replace(getText().substring(1, getText().length() -1 ), "``", "`")); }
+    ;
 identifierList
     : LPAREN ident+=identifier (COMMA ident+=identifier)* RPAREN
     ;
