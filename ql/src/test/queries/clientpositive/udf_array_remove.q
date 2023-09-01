@@ -16,6 +16,8 @@ SELECT array(1,2,3),array_remove(array(1, 2, 3),3);
 
 SELECT array(1,2,3),array_remove(array(1, 2, 3),5);
 
+SELECT array_remove(array(1, 2, 3), CAST(null AS int));
+
 SELECT array_remove(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),1.1234567890);
 
 SELECT array_remove(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),11234567890);

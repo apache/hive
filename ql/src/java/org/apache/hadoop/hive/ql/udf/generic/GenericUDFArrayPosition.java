@@ -22,45 +22,40 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.IntWritable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * GenericUDFArrayRemove.
+ * GenericUDFArrayPosition.
  */
-@Description(name = "array_remove", value = "_FUNC_(array, element) - Removes all occurrences of element from array.",
-    extended = "Example:\n" + "  > SELECT _FUNC_(array(1, 2, 3,4,2), 2) FROM src;\n"
-    + "  [1,3,4]")
-public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
-  private static final String FUNC_NAME = "ARRAY_REMOVE";
+@Description(name = "array_position", value = "_FUNC_(array, element) - Returns the position of the first occurrence of "
+    + "element in array. Array indexing starts at 1. If the element value is NULL, a NULL is returned.", extended =
+    "Example:\n" + "  > SELECT _FUNC_(array(1, 2, 3,4,2), 2) FROM src;\n" + "  2")
+public class GenericUDFArrayPosition extends AbstractGenericUDFArrayBase {
+  static final String FUNC_NAME = "ARRAY_POSITION";
 
-  public GenericUDFArrayRemove() {
-    super(FUNC_NAME, 2, 2, ObjectInspector.Category.LIST);
+  public GenericUDFArrayPosition() {
+    super(FUNC_NAME, 2, 2, ObjectInspector.Category.PRIMITIVE);
   }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    ObjectInspector defaultOI = super.initialize(arguments);
+    super.initialize(arguments);
     checkValueAndListElementTypes(arguments);
-    return defaultOI;
+    return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-
     Object array = arguments[ARRAY_IDX].get();
     Object value = arguments[ELEMENT_IDX].get();
-    if (arrayOI.getListLength(array) == 0) {
-      return Collections.emptyList();
-    } else if (arrayOI.getListLength(array) < 0 || value == null) {
+    if (arrayOI.getListLength(array) <= 0 || value == null) {
       return null;
     }
-
     List<?> resultArray = new ArrayList<>(((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array));
-    resultArray.removeIf(value::equals);
-    return resultArray.stream().map(o -> converter.convert(o)).collect(Collectors.toList());
+    return new IntWritable(resultArray.indexOf(arguments[ELEMENT_IDX].get()) + 1);
   }
 }

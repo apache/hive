@@ -37,8 +37,8 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 
-public class TestGenericUDFArrayRemove {
-  private final GenericUDFArrayRemove udf = new GenericUDFArrayRemove();
+public class TestGenericUDFArrayPosition {
+  private final GenericUDFArrayPosition udf = new GenericUDFArrayPosition();
 
   @Test public void testPrimitive() throws HiveException {
     ObjectInspector[] inputOIs = { ObjectInspectorFactory.getStandardListObjectInspector(
@@ -51,12 +51,12 @@ public class TestGenericUDFArrayRemove {
     Object i3 = new IntWritable(2);
     Object i4 = new IntWritable(1);
 
-    runAndVerify(asList(i1, i2, i3, i4), i2, asList(i1, i3));
+    runAndVerify(asList(i1, i2, i3, i4), i2, 2);
     i1 = new FloatWritable(3.3f);
     i2 = new FloatWritable(1.1f);
     i3 = new FloatWritable(3.3f);
     i4 = new FloatWritable(2.20f);
-    runAndVerify(asList(i1, i2, i3, i4), i1, asList(i2, i4));
+    runAndVerify(asList(i1, i2, i3, i4), i1, 1);
     runAndVerify(asList(i1, i2, i3, i4),null,null); //Test null element
   }
 
@@ -72,7 +72,7 @@ public class TestGenericUDFArrayRemove {
     Object i2 = asList(new Text("aa2"), new Text("cc"), new Text("ba"), new Text("dd"));
     Object i3 = asList(new Text("aa3"), new Text("cc"), new Text("dd"), new Text("ee"), new Text("bb"));
     Object i4 = asList(new Text("aa4"), new Text("cc"), new Text("ddd"), new Text("bb"));
-    runAndVerify(asList(i1, i2, i2, i3, i4, i4), i1, asList(i2, i2, i3, i4, i4));
+    runAndVerify(asList(i1, i2, i2, i3, i4, i4), i2, 2);
   }
 
   @Test public void testStruct() throws HiveException {
@@ -103,7 +103,7 @@ public class TestGenericUDFArrayRemove {
     Object i4 = asList(new Text("a"), new DoubleWritable(3.1415), new DateWritableV2(Date.of(2015, 5, 25)),
         asList(new IntWritable(1), new IntWritable(3), new IntWritable(2), new IntWritable(4)));
 
-    runAndVerify(asList(i1, i3, i2, i3, i4, i2), i1, asList(i3, i2, i3, i4, i2));
+    runAndVerify(asList(i1, i3, i2, i3, i4, i2), i2, 3);
   }
 
   @Test public void testMap() throws HiveException {
@@ -133,18 +133,18 @@ public class TestGenericUDFArrayRemove {
     m3.put(new Text("b"), new IntWritable(3));
     m3.put(new Text("a"), new IntWritable(1));
 
-    runAndVerify(asList(m1, m3, m2, m3, m1), m1, asList(m3, m2, m3));
+    runAndVerify(asList(m1, m3, m2, m3, m1), m1, 1);
   }
 
-  private void runAndVerify(List<Object> actual, Object element, List<Object> expected)
+  private void runAndVerify(List<Object> actual, Object element, Object expected)
       throws HiveException {
     GenericUDF.DeferredJavaObject[] args = { new GenericUDF.DeferredJavaObject(actual), new GenericUDF.DeferredJavaObject(element) };
-    List<Object> result = (List<Object>) udf.evaluate(args);
+    Object result = udf.evaluate(args);
     if(expected == null){
       Assert.assertNull(result);
     }
     else {
-      Assert.assertArrayEquals("Check content", expected.toArray(), result.toArray());
+      Assert.assertEquals("index value", expected, ((IntWritable)result).get());
     }
   }
 }

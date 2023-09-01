@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
  * Abstract GenericUDF for array functions
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
 
     static final int ARRAY_IDX = 0;
+    static final int ELEMENT_IDX = 1;
 
     private final int minArgCount;
     private final int maxArgCount;
@@ -121,6 +123,23 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
 
     ObjectInspector initListOI(ObjectInspector[] arguments) {
         return ObjectInspectorFactory.getStandardListObjectInspector(initOI(arguments));
+    }
+
+    void checkValueAndListElementTypes(ObjectInspector[] arguments) throws UDFArgumentException {
+        ObjectInspector arrayElementOI = arrayOI.getListElementObjectInspector();
+        ObjectInspector valueOI = arguments[ELEMENT_IDX];
+        checkValueAndListElementTypes(arrayElementOI, valueOI);
+    }
+
+    void checkValueAndListElementTypes(ObjectInspector arrayElementOI, ObjectInspector valueOI)
+        throws UDFArgumentTypeException {
+        // Check if list element and value are of same type
+        if (!ObjectInspectorUtils.compareTypes(arrayElementOI, valueOI)) {
+            throw new UDFArgumentTypeException(ELEMENT_IDX,
+                String.format("%s type element is expected at function array_position(array<%s>,%s), but %s is found",
+                    arrayElementOI.getTypeName(), arrayElementOI.getTypeName(), arrayElementOI.getTypeName(),
+                    valueOI.getTypeName()));
+        }
     }
 
 }
