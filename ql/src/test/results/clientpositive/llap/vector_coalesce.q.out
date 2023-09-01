@@ -88,7 +88,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
 
-PREHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c 
+PREHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c
 FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
@@ -96,7 +96,7 @@ LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c 
+POSTHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c
 FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
@@ -341,7 +341,7 @@ NULL	NULL	0.0
 NULL	NULL	0.0
 NULL	NULL	0.0
 PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
-FROM alltypesorc 
+FROM alltypesorc
 WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
 ORDER BY ctimestamp1, ctimestamp2, c
 LIMIT 10
@@ -349,7 +349,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
-FROM alltypesorc 
+FROM alltypesorc
 WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
 ORDER BY ctimestamp1, ctimestamp2, c
 LIMIT 10
@@ -426,7 +426,7 @@ STAGE PLANS:
     Fetch Operator
 
 PREHOOK: query: SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
-FROM alltypesorc 
+FROM alltypesorc
 WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
 ORDER BY ctimestamp1, ctimestamp2, c
 LIMIT 10
@@ -434,7 +434,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
-FROM alltypesorc 
+FROM alltypesorc
 WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
 ORDER BY ctimestamp1, ctimestamp2, c
 LIMIT 10
@@ -645,3 +645,119 @@ NULL	31	31
 NULL	31	31
 NULL	61	61
 NULL	NULL	NULL
+PREHOOK: query: CREATE TABLE test1 (
+   col1 String,
+   col2 decimal(18,6))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
+POSTHOOK: query: CREATE TABLE test1 (
+   col1 String,
+   col2 decimal(18,6))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test1
+PREHOOK: query: insert into test1 (col1, col2) values('hello', null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test1
+POSTHOOK: query: insert into test1 (col1, col2) values('hello', null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test1
+POSTHOOK: Lineage: test1.col1 SCRIPT []
+POSTHOOK: Lineage: test1.col2 EXPRESSION []
+PREHOOK: query: select col1,col2 FROM test1
+where (NVL(test1.col2, 0) = 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+#### A masked pattern was here ####
+POSTHOOK: query: select col1,col2 FROM test1
+where (NVL(test1.col2, 0) = 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+#### A masked pattern was here ####
+hello	NULL
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+select col1,col2 FROM test1
+where (NVL(test1.col2, 0) = 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+select col1,col2 FROM test1
+where (NVL(test1.col2, 0) = 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  filterExpr: (COALESCE(col2,0) = 0) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 201 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:col1:string, 1:col2:decimal(18,6)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterDecimal64ColEqualDecimal64Scalar(col 5:decimal(18,6)/DECIMAL_64, val 0)(children: VectorCoalesce(columns [1, 4])(children: col 1:decimal(18,6)/DECIMAL_64, ConstantVectorExpression(val 0) -> 4:decimal(10,0)/DECIMAL_64) -> 5:decimal(18,6)/DECIMAL_64)
+                    predicate: (COALESCE(col2,0) = 0) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 201 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: col1 (type: string), col2 (type: decimal(18,6))
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 1 Data size: 201 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 1 Data size: 201 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: col1:string, col2:decimal(18,6)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(10,0)/DECIMAL_64, decimal(18,6)/DECIMAL_64]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
