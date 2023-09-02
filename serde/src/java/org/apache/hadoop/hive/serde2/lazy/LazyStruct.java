@@ -20,8 +20,9 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.google.common.primitives.Bytes;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -278,8 +279,14 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     return serializedSize;
   }
 
-  // parse the struct using multi-char delimiter
-  public void parseMultiDelimit(byte[] rawRow, byte[] fieldDelimit) {
+  /**
+   *  Parses rawRow using multi-char delimiter.
+   *
+   * @param rawRow row to be parsed, delimited by fieldDelimit
+   * @param fieldDelimit pattern of multi-char delimiter
+   * @param replacementDelim delimiter with which fieldDelimit has been replaced in rawRow
+   */
+  public void parseMultiDelimit(final String rawRow, final Pattern fieldDelimit, final String replacementDelim) {
     if (rawRow == null || fieldDelimit == null) {
       return;
     }
@@ -292,45 +299,26 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
       fieldInited = new boolean[fields.length];
       startPosition = new int[fields.length + 1];
     }
-    // the indexes of the delimiters
-    int[] delimitIndexes = findIndexes(rawRow, fieldDelimit);
-    int diff = fieldDelimit.length - 1;
+    final int delimiterLength = fieldDelimit.toString().length();
+    final int extraBytesInDelim = delimiterLength - replacementDelim.length();
+
     // first field always starts from 0, even when missing
     startPosition[0] = 0;
-    for (int i = 1; i < fields.length; i++) {
-      if (delimitIndexes[i - 1] != -1) {
-        int start = delimitIndexes[i - 1] + fieldDelimit.length;
-        startPosition[i] = start - i * diff;
+    Matcher delimiterMatcher = fieldDelimit.matcher(rawRow);
+    for (int i = 1; i <= fields.length; i++) {
+      if (delimiterMatcher.find()) {
+        // MultiDelimitSerDe replaces actual multi-char delimiter by replacementDelim("\1") which reduces the length
+        // however here we are getting rawRow with original multi-char delimiter
+        // due to this we have to subtract those extra chars to match length of LazyNonPrimitive#bytes which are used
+        // while reading data, see uncheckedGetField()
+        startPosition[i] = delimiterMatcher.start() + delimiterLength - i * extraBytesInDelim;
       } else {
         startPosition[i] = length + 1;
       }
     }
-    startPosition[fields.length] = length + 1;
+
     Arrays.fill(fieldInited, false);
     parsed = true;
-  }
-
-  // find all the indexes of the sub byte[]
-  private int[] findIndexes(byte[] array, byte[] target) {
-    if (fields.length <= 1) {
-      return new int[0];
-    }
-    int[] indexes = new int[fields.length - 1];
-    Arrays.fill(indexes, -1);
-    indexes[0] = Bytes.indexOf(array, target);
-    if (indexes[0] == -1) {
-      return indexes;
-    }
-    int indexInNewArray = indexes[0];
-    for (int i = 1; i < indexes.length; i++) {
-      array = Arrays.copyOfRange(array, indexInNewArray + target.length, array.length);
-      indexInNewArray = Bytes.indexOf(array, target);
-      if (indexInNewArray == -1) {
-        break;
-      }
-      indexes[i] = indexInNewArray + indexes[i - 1] + target.length;
-    }
-    return indexes;
   }
 
   /**
