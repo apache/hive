@@ -2536,6 +2536,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (tbl == null) {
           throw new NoSuchObjectException(name + " doesn't exist");
         }
+
+        // Check if table is part of a materialized view.
+        // If it is, it cannot be dropped.
+        List<String> isPartOfMV = ms.isPartOfMaterializedView(catName, dbname, name);
+        if (!isPartOfMV.isEmpty()) {
+          throw new MetaException(String.format("Cannot drop table as it is used in the following materialized" +
+                  " views %s%n", isPartOfMV));
+        }
+
         if (tbl.getSd() == null) {
           throw new MetaException("Table metadata is corrupted");
         }
@@ -9592,7 +9601,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   private static void startRemoteOnlyTasks(Configuration conf) throws Exception {
-    if(!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
+    if(!MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON)) {
       return;
     }
 
