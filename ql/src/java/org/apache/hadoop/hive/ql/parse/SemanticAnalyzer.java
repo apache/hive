@@ -2585,7 +2585,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         stagingPath = ctx.getMRTmpPath(tablePath.toUri());
       }
     } else {
-      stagingPath = ctx.getMRTmpPath();
+      stagingPath = ctx.getMRTmpPath(false);
     }
 
     return stagingPath;
@@ -12082,8 +12082,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // the table needs to be masked or filtered.
   // For the replacement, we leverage the methods that are used for
   // unparseTranslator.
-  protected static ASTNode rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
-                                                       Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
+  protected ASTNode rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
+                                                Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
       throws SemanticException {
     // 1. collect information about CTE if there is any.
     // The base table of CTE should be masked.
@@ -12124,6 +12124,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     // 2. rewrite the AST, replace TABREF with masking/filtering
     if (tableMask.needsRewrite()) {
+      quoteIdentifierTokens(tokenRewriteStream);
       tableMask.applyTranslations(tokenRewriteStream);
       String rewrittenQuery = tokenRewriteStream.toString(
           ast.getTokenStartIndex(), ast.getTokenStopIndex());
@@ -12458,7 +12459,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           queryState.getLineageState()
               .mapDirToOp(new Path(createVwDesc.getViewName()), sinkOp);
         }
-        return;
+        if (getColumnAccessInfo() != null) {
+          return;
+        }
       }
     }
 
@@ -12493,6 +12496,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
       // view column access info is carried by this.getColumnAccessInfo().
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+    }
+
+    if (getQB().isView()) {
+      return;
     }
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
@@ -13664,7 +13671,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           createVwDesc)));
       addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW, false, tblProps);
-      queryState.setCommandType(HiveOperation.CREATEVIEW);
+      if (isAlterViewAs) {
+        queryState.setCommandType(HiveOperation.ALTERVIEW_AS);
+      } else {
+        queryState.setCommandType(HiveOperation.CREATEVIEW);
+      }
+
     }
     qb.setViewDesc(createVwDesc);
 
@@ -14861,6 +14873,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return sb.toString();
+  }
+
+  private void quoteIdentifierTokens(TokenRewriteStream tokenRewriteStream) {
+    if (conf.getVar(ConfVars.HIVE_QUOTEDID_SUPPORT).equals("none")) {
+      return;
+    }
+
+    for (int idx = tokenRewriteStream.MIN_TOKEN_INDEX; idx <= tokenRewriteStream.size()-1; idx++) {
+      Token curTok = tokenRewriteStream.get(idx);
+      if (curTok.getType() == HiveLexer.Identifier) {
+        // The Tokens have no distinction between Identifiers and QuotedIdentifiers.
+        // Ugly solution is just to surround all identifiers with quotes.
+        // Re-escape any backtick (`) characters in the identifier.
+        String escapedTokenText = curTok.getText().replaceAll("`", "``");
+        tokenRewriteStream.replace(curTok, "`" + escapedTokenText + "`");
+      }
+    }
   }
 
   /**

@@ -531,14 +531,14 @@ public class Context {
 
   /**
    * Create a map-reduce scratch directory on demand and return it.
+   * @param mkDir flag to indicate if scratch dir is to be created or not
    *
    */
-  public Path getMRScratchDir() {
-
+  public Path getMRScratchDir(boolean mkDir) {
     // if we are executing entirely on the client side - then
     // just (re)use the local scratch directory
     if(isLocalOnlyExecutionMode()) {
-      return getLocalScratchDir(!isExplainSkipExecution());
+      return getLocalScratchDir(mkDir);
     }
 
     try {
@@ -546,15 +546,22 @@ public class Context {
       URI uri = dir.toUri();
 
       Path newScratchDir = getScratchDir(uri.getScheme(), uri.getAuthority(),
-          !isExplainSkipExecution(), uri.getPath());
+                                         mkDir, uri.getPath());
       LOG.info("New scratch dir is " + newScratchDir);
       return newScratchDir;
     } catch (IOException e) {
       throw new RuntimeException(e);
     } catch (IllegalArgumentException e) {
       throw new RuntimeException("Error while making MR scratch "
-          + "directory - check filesystem config (" + e.getCause() + ")", e);
+                                     + "directory - check filesystem config (" + e.getCause() + ")", e);
     }
+  }
+  /**
+   * Create a map-reduce scratch directory on demand and return it.
+   *
+   */
+  public Path getMRScratchDir() {
+    return getMRScratchDir(!isExplainSkipExecution());
   }
 
   /**
@@ -674,6 +681,10 @@ public class Context {
     return new Path(getStagingDir(new Path(uri), !isExplainSkipExecution()), MR_PREFIX + nextPathId());
   }
 
+  public Path getMRTmpPath(boolean mkDir) {
+    return new Path(getMRScratchDir(mkDir), MR_PREFIX +
+        nextPathId());
+  }
   /**
    * Get a path to store map-reduce intermediate data in.
    *

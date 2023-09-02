@@ -1039,13 +1039,6 @@ public class Hive {
       if (!ignoreUnknownTab) {
         throw new HiveException(e);
       }
-    } catch (MetaException e) {
-      int idx = ExceptionUtils.indexOfType(e, SQLIntegrityConstraintViolationException.class);
-      if (idx != -1 && ExceptionUtils.getThrowables(e)[idx].getMessage().contains("MV_TABLES_USED")) {
-        throw new HiveException("Cannot drop table since it is used by at least one materialized view definition. " +
-            "Please drop any materialized view that uses the table before dropping it", e);
-      }
-      throw new HiveException(e);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -1868,7 +1861,7 @@ public class Hive {
           boolean needRecycle = !tbl.isTemporary()
                   && ReplChangeManager.isSourceOfReplication(Hive.get().getDatabase(tbl.getDbName()));
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(), isSrcLocal,
-              isAutoPurge, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged);
+              isAutoPurge, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged, isInsertOverwrite);
         } else {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
@@ -2456,7 +2449,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         boolean needRecycle = !tbl.isTemporary()
                 && ReplChangeManager.isSourceOfReplication(Hive.get().getDatabase(tbl.getDbName()));
         replaceFiles(tblPath, loadPath, destPath, tblPath, conf, isSrcLocal, isAutopurge,
-            newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged);
+            newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged, isInsertOverwrite);
       } else {
         try {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
@@ -4204,9 +4197,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isManaged
    *          If the table is managed.
    */
-  protected void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
+  private void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
           boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
-          boolean isNeedRecycle, boolean isManaged) throws HiveException {
+      boolean isNeedRecycle, boolean isManaged, boolean isInsertOverwrite) throws HiveException {
     try {
 
       FileSystem destFs = destf.getFileSystem(conf);
@@ -4219,13 +4212,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       } catch (IOException e) {
         throw new HiveException("Getting globStatus " + srcf.toString(), e);
       }
+
+      // the extra check is required to make ALTER TABLE ... CONCATENATE work
+      if (oldPath != null && (srcs != null || isInsertOverwrite)) {
+        deleteOldPathForReplace(destf, oldPath, conf, purge, deletePathFilter, isNeedRecycle);
+      }
+
       if (srcs == null) {
         LOG.info("No sources specified to move: " + srcf);
         return;
-      }
-
-      if (oldPath != null) {
-        deleteOldPathForReplace(destf, oldPath, conf, purge, deletePathFilter, isNeedRecycle);
       }
 
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates

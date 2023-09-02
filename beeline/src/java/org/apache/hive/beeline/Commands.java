@@ -169,7 +169,7 @@ public class Commands {
       return false;
     }
 
-    URLClassLoader classLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try {
       beeLine.debug(jarPath + " is added to the local beeline.");
       URLClassLoader newClassLoader = new URLClassLoader(new URL[]{p.toURL()}, classLoader);
@@ -1026,8 +1026,10 @@ public class Commands {
               int count = beeLine.print(rs);
               long end = System.currentTimeMillis();
 
-              beeLine.info(
-                  beeLine.loc("rows-selected", count) + " " + beeLine.locElapsedTime(end - start));
+              if (showReport()) {
+                beeLine.output(beeLine.loc("rows-selected", count) + " " + beeLine.locElapsedTime(end - start),
+                    true, beeLine.getErrorStream());
+              }
             } finally {
               if (logThread != null) {
                 logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
@@ -1043,8 +1045,11 @@ public class Commands {
         } else {
           int count = stmnt.getUpdateCount();
           long end = System.currentTimeMillis();
-          beeLine.info(
-              beeLine.loc("rows-affected", count) + " " + beeLine.locElapsedTime(end - start));
+
+          if (showReport()) {
+            beeLine.output(beeLine.loc("rows-affected", count) + " " + beeLine.locElapsedTime(end - start),
+                true, beeLine.getErrorStream());
+          }
         }
       } finally {
         if (logThread != null) {
@@ -1066,6 +1071,13 @@ public class Commands {
       hook.postHook(beeLine);
     }
     return true;
+  }
+
+  private boolean showReport() {
+    if (beeLine.getOpts().isReport() != null) {
+      return beeLine.getOpts().isReport();
+    }
+    return !beeLine.getOpts().isSilent();
   }
 
   /*
