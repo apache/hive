@@ -1405,7 +1405,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * Generates {@link JobContext}s for the OutputCommitter for the specific table.
    * @param configuration The configuration used for as a base of the JobConf
    * @param tableName The name of the table we are planning to commit
-   * @param branchName If we have to overwrite the existing table or just add the new data
+   * @param branchName the name of the branch
    * @return The generated Optional JobContext list or empty if not presents.
    */
   private List<JobContext> generateJobContext(Configuration configuration, String tableName,

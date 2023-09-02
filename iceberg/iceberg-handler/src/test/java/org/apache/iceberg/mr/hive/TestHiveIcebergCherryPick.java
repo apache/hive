@@ -73,7 +73,7 @@ public class TestHiveIcebergCherryPick {
 
     Assert.assertNotEquals(id1, id2);
 
-    // Rollback to the previous id before inserts.
+    // Rollback the table to the previous state before the previous inserts.
     shell.executeStatement(
         "ALTER TABLE default.testCherryPick EXECUTE ROLLBACK (" + id1 + ")");
     // cherry-pick the last snapshot to test1 branch
