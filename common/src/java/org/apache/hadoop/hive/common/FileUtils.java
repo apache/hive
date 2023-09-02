@@ -558,7 +558,13 @@ public final class FileUtils {
       return true;
     }
     // check all children
-    FileStatus[] childStatuses = fs.listStatus(fileStatus.getPath());
+    FileStatus[] childStatuses = null;
+    try {
+      childStatuses = fs.listStatus(fileStatus.getPath());
+    } catch (FileNotFoundException fe) {
+      LOG.debug("Skipping child access check since the directory is already removed");
+      return true;
+    }
     for (FileStatus childStatus : childStatuses) {
       // check children recursively - recurse is true if we're here.
       if (!checkIsOwnerOfFileHierarchy(fs, childStatus, userName, true)) {
