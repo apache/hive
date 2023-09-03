@@ -838,6 +838,9 @@ public class TestHive {
       partialSpec.put("hr", "14");
       assertEquals(1, hm.getPartitions(tbl, partialSpec).size());
 
+      // Test get partitions with max_parts
+      assertEquals(1, hm.getPartitions(tbl, new HashMap(), (short) 1).size());
+
       hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
