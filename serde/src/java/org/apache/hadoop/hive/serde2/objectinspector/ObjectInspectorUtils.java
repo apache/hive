@@ -24,6 +24,7 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -558,6 +559,17 @@ public final class ObjectInspectorUtils {
   public static Field[] getDeclaredNonStaticFields(Class<?> c) {
     Field[] f = c.getDeclaredFields();
     ArrayList<Field> af = new ArrayList<Field>();
+    Arrays.sort(f, Comparator.comparingInt(field -> {
+      try {
+        Field slotField = Field.class.getDeclaredField("slot");
+        slotField.setAccessible(true);
+        return slotField.getInt(field);
+      } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
+        e.printStackTrace();
+        return 0; // Default value if there's an error
+      }
+    }));
+
     for (int i = 0; i < f.length; ++i) {
       if (!Modifier.isStatic(f[i].getModifiers())) {
         af.add(f[i]);
