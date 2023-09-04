@@ -253,7 +253,8 @@ public class MetastoreConf {
       ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
       ConfVars.CAPABILITY_CHECK,
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-      ConfVars.EXPRESSION_PROXY_CLASS
+      ConfVars.EXPRESSION_PROXY_CLASS,
+      ConfVars.PARTITION_ORDER_EXPR
   };
 
   static {
@@ -759,8 +760,8 @@ public class MetastoreConf {
             "This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). \n" +
             "The user has to be aware that the dynamic partition value should not contain this value to avoid confusions."),
     PARTITION_ORDER_EXPR("metastore.partition.order.expr",
-        "hive.exec.partition.order.expr", "\"PARTITIONS\".\"CREATE_TIME\" desc",
-        "The default partition order if we are not returning all partitions. "
+        "hive.metastore.partition.order.expr", "\"PART_NAME\" asc",
+        "The default partition order if the metastore does not return all partitions. \n"
             + "It can be sorted based on any column in the PARTITIONS table (e.g., \"PARTITIONS\".\"CREATE_TIME\" desc, \"PARTITIONS\".\"LAST_ACCESS_TIME\" desc etc)"),
     DELEGATION_KEY_UPDATE_INTERVAL("metastore.cluster.delegation.key.update-interval",
         "hive.cluster.delegation.key.update-interval", 1, TimeUnit.DAYS, ""),
