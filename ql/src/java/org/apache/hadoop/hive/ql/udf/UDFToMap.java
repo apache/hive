@@ -36,6 +36,7 @@ import org.apache.hadoop.io.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * UDFToInteger.
@@ -78,7 +79,7 @@ public class UDFToMap extends UDF {
    *          The void value to convert
    * @return Integer
    */
-  public List<IntWritable> evaluate(NullWritable i) {
+  public Map<Object, Object> evaluate(NullWritable i) {
     return null;
   }
 
@@ -89,7 +90,7 @@ public class UDFToMap extends UDF {
    *          The boolean value to convert
    * @return IntWritable
    */
-  public List<IntWritable> evaluate(BooleanWritable i) {
+  public Map<Object, Object> evaluate(BooleanWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -106,7 +107,7 @@ public class UDFToMap extends UDF {
    *          The byte value to convert
    * @return IntWritable
    */
-  public List<IntWritable> evaluate(ByteWritable i) {
+  public Map<Object, Object> evaluate(ByteWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -123,7 +124,7 @@ public class UDFToMap extends UDF {
    *          The short value to convert
    * @return IntWritable
    */
-  public List<IntWritable> evaluate(ShortWritable i) {
+  public Map<Object, Object> evaluate(ShortWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -140,7 +141,7 @@ public class UDFToMap extends UDF {
    *          The long value to convert
    * @return IntWritable
    */
-  public List<IntWritable> evaluate(LongWritable i) {
+  public Map<Object, Object> evaluate(LongWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -157,7 +158,7 @@ public class UDFToMap extends UDF {
    *          The float value to convert
    * @return IntWritable
    */
-  public List<IntWritable> evaluate(FloatWritable i) {
+  public Map<Object, Object> evaluate(FloatWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -174,7 +175,7 @@ public class UDFToMap extends UDF {
    *          The double value to convert
    * @return IntWritable
    */
-  public List<IntWritable> evaluate(DoubleWritable i) {
+  public Map<Object, Object> evaluate(DoubleWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -191,7 +192,7 @@ public class UDFToMap extends UDF {
    *          The string value to convert
    * @return IntWritable
    */
-  public List<IntWritable> evaluate(Text i) {
+  public Map<Object, Object> evaluate(Text i) {
     if (i == null) {
       return null;
     } else {
@@ -219,7 +220,7 @@ public class UDFToMap extends UDF {
    *          The Timestamp value to convert
    * @return IntWritable
    */
-  public List<IntWritable> evaluate(TimestampWritableV2 i) {
+  public Map<Object, Object> evaluate(TimestampWritableV2 i) {
     if (i == null) {
       return null;
     } else {
@@ -234,7 +235,7 @@ public class UDFToMap extends UDF {
     }
   }
 
-  public List<IntWritable> evaluate(HiveDecimalWritable i) {
+  public Map<Object, Object> evaluate(HiveDecimalWritable i) {
     if (i == null || !i.isSet() || !i.isInt()) {
       return null;
     } else {
@@ -250,7 +251,7 @@ public class UDFToMap extends UDF {
    * @param i RecordIdentifier to convert
    * @return value of the bucket identifier
    */
-  public List<IntWritable> evaluate(RecordIdentifier i) {
+  public Map<Object, Object> evaluate(RecordIdentifier i) {
     return null;
 //    if (i == null) {
 //      return null;
