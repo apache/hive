@@ -1822,13 +1822,7 @@ public final class Utilities {
         }
 
         Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles processing files in directory {}", path);
-        if (!StringUtils.isEmpty(unionSuffix)) {
-          try {
-            items = fs.listStatus(new Path(path, unionSuffix));
-          } catch (FileNotFoundException e) {
-            continue;
-          }
-        }
+        items = maybeGetItemsFromUnionSubdir(fs, path, unionSuffix);
 
         taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs, hconf);
         if (filesKept != null && taskIDToFile != null) {
@@ -1842,12 +1836,15 @@ public final class Utilities {
         return result;
       }
       Path mmDir = extractNonDpMmDir(writeId, stmtId, fileStats, isBaseDir);
-      taskIDToFile = removeTempOrDuplicateFilesNonMm(
-          fs.listStatus(new Path(mmDir, unionSuffix)), fs, hconf);
+
+      Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles processing files in directory {}", mmDir);
+      FileStatus[] items = maybeGetItemsFromUnionSubdir(fs, mmDir, unionSuffix);
+
+      taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs, hconf);
       if (filesKept != null && taskIDToFile != null) {
         addFilesToPathSet(taskIDToFile.values(), filesKept);
       }
-      addBucketFileToResults2(taskIDToFile, numBuckets, hconf, result);
+      addBucketFileToResults(taskIDToFile, numBuckets, hconf, result);
     } else {
       if (fileStats.length == 0) {
         return result;
@@ -1864,10 +1861,24 @@ public final class Utilities {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
         }
       }
-      addBucketFileToResults2(taskIDToFile, numBuckets, hconf, result);
+      addBucketFileToResults(taskIDToFile, numBuckets, hconf, result);
     }
 
     return result;
+  }
+
+  private static FileStatus[] maybeGetItemsFromUnionSubdir(FileSystem fs, Path parentPath, String unionSuffix)
+      throws IOException {
+    if (StringUtils.isEmpty(unionSuffix)) {
+      return null;
+    }
+    Path unionPath = new Path(parentPath, unionSuffix);
+    try {
+      return fs.listStatus(new Path(parentPath, unionSuffix));
+    } catch (FileNotFoundException e) {
+      LOG.debug("Union subdir ({}) not found (this is expected, not an issue)", unionPath);
+      return null;
+    }
   }
 
   private static Path extractNonDpMmDir(Long writeId, int stmtId, FileStatus[] items, boolean isBaseDir) throws IOException {
@@ -1883,22 +1894,11 @@ public final class Utilities {
   }
 
 
-  // TODO: not clear why two if conditions are different. Preserve the existing logic for now.
-  private static void addBucketFileToResults2(HashMap<String, FileStatus> taskIDToFile,
+  private static void addBucketFileToResults(HashMap<String, FileStatus> taskIDToFile,
       int numBuckets, Configuration hconf, List<Path> result) {
     if (MapUtils.isNotEmpty(taskIDToFile) && (numBuckets > taskIDToFile.size())
         && !"tez".equalsIgnoreCase(hconf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
         addBucketsToResultsCommon(taskIDToFile, numBuckets, result);
-    }
-  }
-
-  // TODO: not clear why two if conditions are different. Preserve the existing logic for now.
-  private static void addBucketFileToResults(HashMap<String, FileStatus> taskIDToFile,
-      int numBuckets, Configuration hconf, List<Path> result) {
-    // if the table is bucketed and enforce bucketing, we should check and generate all buckets
-    if (numBuckets > 0 && taskIDToFile != null
-        && !"tez".equalsIgnoreCase(hconf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
-      addBucketsToResultsCommon(taskIDToFile, numBuckets, result);
     }
   }
 
@@ -1925,7 +1925,7 @@ public final class Utilities {
 
   private static HashMap<String, FileStatus> removeTempOrDuplicateFilesNonMm(
       FileStatus[] files, FileSystem fs, Configuration conf) throws IOException {
-    if (files == null || fs == null) {
+    if (files == null || fs == null || files.length == 0) {
       return null;
     }
     HashMap<String, FileStatus> taskIdToFile = new HashMap<String, FileStatus>();
