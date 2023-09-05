@@ -97,6 +97,7 @@ abstract class QueryCompactor implements Compactor {
     Util.overrideConfProps(conf, compactionInfo, tblProperties);
     String user = compactionInfo.runAs;
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
+    sessionState.setCompaction(true);
     long compactorTxnId = Compactor.getCompactorTxnId(conf);
     try {
       for (String query : createQueries) {
@@ -144,6 +145,9 @@ abstract class QueryCompactor implements Compactor {
         LOG.error("Unable to drop temp table {} which was created for running {} compaction", tmpTableName,
             compactionInfo.type);
         LOG.error(ExceptionUtils.getStackTrace(e));
+      } finally {
+        //restore sessionState
+        sessionState.setCompaction(false);
       }
     }
   }
