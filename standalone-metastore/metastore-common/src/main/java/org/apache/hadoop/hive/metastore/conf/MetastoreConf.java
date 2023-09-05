@@ -251,10 +251,10 @@ public class MetastoreConf {
       ConfVars.TRY_DIRECT_SQL_DDL,
       ConfVars.CLIENT_SOCKET_TIMEOUT,
       ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
+      ConfVars.PARTITION_ORDER_EXPR,
       ConfVars.CAPABILITY_CHECK,
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-      ConfVars.EXPRESSION_PROXY_CLASS,
-      ConfVars.PARTITION_ORDER_EXPR
+      ConfVars.EXPRESSION_PROXY_CLASS
   };
 
   static {
@@ -759,10 +759,6 @@ public class MetastoreConf {
         "The default partition name in case the dynamic partition column value is null/empty string or any other values that cannot be escaped. \n" +
             "This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). \n" +
             "The user has to be aware that the dynamic partition value should not contain this value to avoid confusions."),
-    PARTITION_ORDER_EXPR("metastore.partition.order.expr",
-        "hive.metastore.partition.order.expr", "\"PART_NAME\" asc",
-        "The default partition order if the metastore does not return all partitions. \n"
-            + "It can be sorted based on any column in the PARTITIONS table (e.g., \"PARTITIONS\".\"CREATE_TIME\" desc, \"PARTITIONS\".\"LAST_ACCESS_TIME\" desc etc)"),
     DELEGATION_KEY_UPDATE_INTERVAL("metastore.cluster.delegation.key.update-interval",
         "hive.cluster.delegation.key.update-interval", 1, TimeUnit.DAYS, ""),
     DELEGATION_TOKEN_GC_INTERVAL("metastore.cluster.delegation.token.gc-interval",
@@ -1271,6 +1267,10 @@ public class MetastoreConf {
     PARTITION_NAME_WHITELIST_PATTERN("metastore.partition.name.whitelist.pattern",
         "hive.metastore.partition.name.whitelist.pattern", "",
         "Partition names will be checked against this regex pattern and rejected if not matched."),
+    PARTITION_ORDER_EXPR("metastore.partition.order.expr",
+        "hive.metastore.partition.order.expr", "\"PART_NAME\" asc",
+        "The default partition order if the metastore does not return all partitions. \n" +
+            "It can be sorted based on any column in the PARTITIONS table (e.g., \"PARTITIONS\".\"CREATE_TIME\" desc, \"PARTITIONS\".\"LAST_ACCESS_TIME\" desc etc)"),
     PART_INHERIT_TBL_PROPS("metastore.partition.inherit.table.properties",
         "hive.metastore.partition.inherit.table.properties", "",
         "List of comma separated keys occurring in table properties which will get inherited to newly created partitions. \n" +
