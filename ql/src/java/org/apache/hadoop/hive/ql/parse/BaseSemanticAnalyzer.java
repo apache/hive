@@ -1255,41 +1255,54 @@ public abstract class BaseSemanticAnalyzer {
         validatePartSpec(tableHandle, tmpPartSpec, ast, conf, false);
 
         List<FieldSchema> parts = tableHandle.getPartitionKeys();
-        partSpec = new LinkedHashMap<String, String>(partspec.getChildCount());
-        for (FieldSchema fs : parts) {
-          String partKey = fs.getName();
-          partSpec.put(partKey, tmpPartSpec.get(partKey));
+        if (tableHandle.getStorageHandler() != null && tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+          partSpec = tmpPartSpec;
+        } else {
+          partSpec = new LinkedHashMap<String, String>(partspec.getChildCount());
+          for (FieldSchema fs : parts) {
+            String partKey = fs.getName();
+            partSpec.put(partKey, tmpPartSpec.get(partKey));
+          }
         }
 
         // check if the partition spec is valid
         if (numDynParts > 0) {
-          int numStaPart = parts.size() - numDynParts;
+          int numStaPart;
+          if (tableHandle.getStorageHandler() != null && tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+            numStaPart = partSpec.size() - numDynParts;
+          } else {
+            numStaPart = parts.size() - numDynParts;
+          }
           if (numStaPart == 0 &&
               conf.getVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equalsIgnoreCase("strict")) {
             throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_STRICT_MODE.getMsg());
           }
 
-          // check the partitions in partSpec be the same as defined in table schema
-          if (partSpec.keySet().size() != parts.size()) {
-            ErrorPartSpec(partSpec, parts);
-          }
-          Iterator<String> itrPsKeys = partSpec.keySet().iterator();
-          for (FieldSchema fs: parts) {
-            if (!itrPsKeys.next().toLowerCase().equals(fs.getName().toLowerCase())) {
+          // Partitions in partSpec is already checked via storage handler.
+          // Hence no need to check for cases which are always unpartitioned.
+          if (tableHandle.getStorageHandler() == null || !tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+            // check the partitions in partSpec be the same as defined in table schema
+            if (partSpec.keySet().size() != parts.size()) {
               ErrorPartSpec(partSpec, parts);
             }
-          }
-
-          // check if static partition appear after dynamic partitions
-          for (FieldSchema fs: parts) {
-            if (partSpec.get(fs.getName().toLowerCase()) == null) {
-              if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
-                throw new SemanticException(ASTErrorUtils.getMsg(
-                    ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(), ast.getChild(childIndex)));
+            Iterator<String> itrPsKeys = partSpec.keySet().iterator();
+            for (FieldSchema fs: parts) {
+              if (!itrPsKeys.next().toLowerCase().equals(fs.getName().toLowerCase())) {
+                ErrorPartSpec(partSpec, parts);
               }
-              break;
-            } else {
-              --numStaPart;
+            }
+
+            // check if static partition appear after dynamic partitions
+            for (FieldSchema fs: parts) {
+              if (partSpec.get(fs.getName().toLowerCase()) == null) {
+                if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
+                  throw new SemanticException(ASTErrorUtils.getMsg(
+                          ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(), ast.getChild(childIndex)));
+                }
+                break;
+              } else {
+                --numStaPart;
+              }
             }
           }
           partHandle = null;
@@ -1300,7 +1313,9 @@ public abstract class BaseSemanticAnalyzer {
               partitions = db.getPartitions(tableHandle, partSpec);
             } else {
               // this doesn't create partition.
-              partHandle = db.getPartition(tableHandle, partSpec, false);
+              if (tableHandle.getStorageHandler() == null || !tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+                partHandle = db.getPartition(tableHandle, partSpec, false);
+              }
               if (partHandle == null) {
                 // if partSpec doesn't exists in DB, return a delegate one
                 // and the actual partition is created in MoveTask
@@ -1674,10 +1689,12 @@ public abstract class BaseSemanticAnalyzer {
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf, boolean shouldBeFull) throws SemanticException {
-    validateUnsupportedPartitionClause(tbl, partSpec != null && !partSpec.isEmpty());
-
-    tbl.validatePartColumnNames(partSpec, shouldBeFull);
-    validatePartColumnType(tbl, partSpec, astNode, conf);
+    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+      tbl.getStorageHandler().validatePartSpec(tbl, partSpec);
+    } else {
+      tbl.validatePartColumnNames(partSpec, shouldBeFull);
+      validatePartColumnType(tbl, partSpec, astNode, conf);
+    }
   }
 
   /**

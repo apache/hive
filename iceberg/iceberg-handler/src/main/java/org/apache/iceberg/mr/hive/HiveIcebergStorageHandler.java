@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -127,6 +128,7 @@ import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
+import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.RowLevelOperationMode;
@@ -160,6 +162,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.collect.Streams;
+import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
@@ -1610,4 +1613,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return parts;
   }
 
+  @Override
+  public void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+      throws SemanticException {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+
+    if (table.spec().isUnpartitioned()) {
+      throw new SemanticException("Writing data into a partition fails when the Iceberg table is unpartitioned.");
+    }
+
+    Map<String, Types.NestedField> mapOfPartColNamesWithTypes = Maps.newHashMap();
+    for (PartitionField partField : table.spec().fields()) {
+      Types.NestedField field = table.schema().findField(partField.sourceId());
+      mapOfPartColNamesWithTypes.put(field.name(), field);
+    }
+
+    for (Map.Entry<String, String> spec : partitionSpec.entrySet()) {
+      Types.NestedField field = mapOfPartColNamesWithTypes.get(spec.getKey());
+      Objects.requireNonNull(field, String.format("%s is not a partition column", spec.getKey()));
+      // If the partition spec value is null, it's a dynamic partition column.
+      if (spec.getValue() != null) {
+        Object partKeyVal = Conversions.fromPartitionString(field.type(), spec.getValue());
+        Objects.requireNonNull(partKeyVal,
+            String.format("Partition spec value for column : %s is invalid", field.name()));
+      }
+    }
+  }
 }

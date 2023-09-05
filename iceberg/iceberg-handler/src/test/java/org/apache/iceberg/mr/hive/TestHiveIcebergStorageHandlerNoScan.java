@@ -1468,8 +1468,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         spec, FileFormat.PARQUET, ImmutableList.of());
 
     String[] commands = {
-        "INSERT INTO target PARTITION (last_name='Johnson') VALUES (1, 'Rob')",
-        "INSERT OVERWRITE TABLE target PARTITION (last_name='Johnson') SELECT * FROM target WHERE FALSE",
         "DESCRIBE target PARTITION (last_name='Johnson')",
         "TRUNCATE target PARTITION (last_name='Johnson')"
     };
