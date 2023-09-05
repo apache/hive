@@ -687,4 +687,9 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support show partitions command");
   }
 
+  default void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+      throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support validation of partition values");
+  }
+
 }

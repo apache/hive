@@ -425,16 +425,12 @@ class DummyTxnManager extends HiveTxnManagerImpl {
         String[] nameValue = partn.split("=");
         assert(nameValue.length == 2);
         partialSpec.put(nameValue[0], nameValue[1]);
-        try {
-          locks.add(new HiveLockObj(
-                      new HiveLockObject(new DummyPartition(p.getTable(), p.getTable().getDbName()
-                          + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase()
-                          + "/" + partialName,
-                          partialSpec), lockData), mode));
-          partialName += "/";
-        } catch (HiveException e) {
-          throw new LockException(e.getMessage());
-        }
+        locks.add(new HiveLockObj(
+                new HiveLockObject(new DummyPartition(p.getTable(), p.getTable().getDbName()
+                        + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase()
+                        + "/" + partialName,
+                        partialSpec), lockData), mode));
+        partialName += "/";
       }
 
       locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData), mode));
