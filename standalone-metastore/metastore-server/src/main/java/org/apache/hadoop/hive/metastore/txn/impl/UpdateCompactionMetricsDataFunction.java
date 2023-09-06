@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalFunction;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -35,20 +35,20 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
   }
 
   @Override
-  public Boolean execute(DataSourceWrapper dataSourceWrapper) throws MetaException {
-    CompactionMetricsData prevMetricsData = dataSourceWrapper.execute(
+  public Boolean execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException {
+    CompactionMetricsData prevMetricsData = jdbcResourceHolder.execute(
         new CompactionMetricsDataHandler(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
 
     boolean updateRes;
     if (data.getMetricValue() >= data.getThreshold()) {
       if (prevMetricsData != null) {
-        updateRes = updateCompactionMetricsData(data, prevMetricsData, dataSourceWrapper.getJdbcTemplate());
+        updateRes = updateCompactionMetricsData(data, prevMetricsData, jdbcResourceHolder.getJdbcTemplate());
       } else {
-        updateRes = createCompactionMetricsData(data, dataSourceWrapper.getJdbcTemplate());
+        updateRes = createCompactionMetricsData(data, jdbcResourceHolder.getJdbcTemplate());
       }
     } else {
       if (prevMetricsData != null) {
-        int result = dataSourceWrapper.execute(new RemoveCompactionMetricsDataCommand(
+        int result = jdbcResourceHolder.execute(new RemoveCompactionMetricsDataCommand(
             data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
         updateRes = result > 0;
       } else {

@@ -161,9 +161,10 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.impl.InsertCompactionInfoCommand;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.RetryCallProperties;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.RetryHandler;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryCallProperties;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryFunction;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.LockTypeUtil;
@@ -186,14 +187,12 @@ import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatc
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getFullTableName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
+import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * A handler to answer transaction related calls that come into the metastore
@@ -354,8 +353,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static boolean useMinHistoryLevel;
   static boolean useMinHistoryWriteId;
 
-  protected RetryHandler retryHandler;
-  protected static DataSourceWrapper jdbcTemplate;
+  protected SqlRetryHandler sqlRetryHandler;
+  protected static MultiDataSourceJdbcResourceHolder jdbcResourceHolder;
 
   /**
    * Derby specific concurrency control
@@ -413,10 +412,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         sqlGenerator = new SQLGenerator(dbProduct, conf);
       }
       
-      if (jdbcTemplate == null) {
-        jdbcTemplate = new DataSourceWrapper(dbProduct);
-        jdbcTemplate.registerDataSource(POOL_TX, connPool);
-        jdbcTemplate.registerDataSource(POOL_MUTEX, connPoolMutex);
+      if (jdbcResourceHolder == null) {
+        jdbcResourceHolder = new MultiDataSourceJdbcResourceHolder(dbProduct);
+        jdbcResourceHolder.registerDataSource(POOL_TX, connPool);
+        jdbcResourceHolder.registerDataSource(POOL_MUTEX, connPoolMutex);
       }      
     }
 
@@ -457,7 +456,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       throw new RuntimeException(e);
     }
 
-    retryHandler = new RetryHandler(conf, jdbcTemplate);    
+    sqlRetryHandler = new SqlRetryHandler(conf, jdbcResourceHolder.getDatabaseProduct());    
   }
 
   /**
@@ -496,8 +495,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   
   @Override
   @RetrySemantics.ReadOnly
-  public RetryHandler getRetryHandler() {
-    return retryHandler;
+  public SqlRetryHandler getRetryHandler() {
+    return sqlRetryHandler;
+  }
+
+  @Override
+  @RetrySemantics.ReadOnly
+  public MultiDataSourceJdbcResourceHolder getJdbcResourceHolder() {
+    return jdbcResourceHolder;
   }
 
   @Override
@@ -1444,16 +1449,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
     boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
-    try {
-      //start a new transaction
-      jdbcTemplate.beginTransactionWithinRetryContext(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED), POOL_TX);
+    //start a new transaction
+    try (MultiDataSourceJdbcResourceHolder.TransactionWrapper wrapper = jdbcResourceHolder.getTransaction(PROPAGATION_REQUIRED, POOL_TX)) {
       Connection dbConn = null;
       Statement stmt = null;
       Long commitId = null;
       try {
         lockInternal();
         //make sure we are using the connection bound to the transaction, so obtain it via DataSourceUtils.getConnection() 
-        dbConn = jdbcTemplate.getConnection();
+        dbConn = jdbcResourceHolder.getConnection();
         stmt = dbConn.createStatement();
 
         if (rqst.isSetReplLastIdInfo()) {
@@ -1470,7 +1474,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             // corresponding open txn event.
             LOG.info("Target txn id is missing for source txn id : {} and repl policy {}", sourceTxnId,
                 rqst.getReplPolicy());
-            jdbcTemplate.rollback();
             return;
           }
           assert targetTxnIds.size() == 1;
@@ -1497,10 +1500,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
              * (assume that this is most likely due to retry logic)
              */
             LOG.info("Nth commitTxn({}) msg", JavaUtils.txnIdToString(txnid));
-            jdbcTemplate.rollback();
             return;
           }
-          jdbcTemplate.rollback();
           raiseTxnUnexpectedState(actualTxnStatus, txnid);
         }
 
@@ -1575,7 +1576,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                           TxnErrorMsg.ABORT_WRITE_CONFLICT) != 1) {
                     throw new IllegalStateException(msg + " FAILED!");
                   }
-                  jdbcTemplate.commit();
+                  jdbcResourceHolder.getTransactionManager().commit(wrapper.getTxn());
                   throw new TxnAbortedException(msg);
                 }
               }
@@ -1636,24 +1637,21 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (!isHiveReplTxn) {
-          createCommitNotificationEvent(jdbcTemplate.getConnection(), txnid , txnType);
+          createCommitNotificationEvent(jdbcResourceHolder.getConnection(), txnid , txnType);
         }
 
         LOG.debug("Going to commit");
-        jdbcTemplate.commit();
+        jdbcResourceHolder.getTransactionManager().commit(wrapper.getTxn());
 
         if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
           Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).inc();
         }
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
-        jdbcTemplate.rollback();
+        jdbcResourceHolder.getTransactionManager().rollback(wrapper.getTxn());
         checkRetryable(e, "commitTxn(" + rqst + ")");
         throw new MetaException("Unable to update transaction database "
           + StringUtils.stringifyException(e));
-      } catch (RuntimeException e) {
-        jdbcTemplate.rollback();
-        throw e;
       } finally {
         close(null, stmt, dbConn);
         unlockInternal();
@@ -2538,7 +2536,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent
   public void addWriteNotificationLog(ListenerEvent acidWriteEvent) throws MetaException {
-      Connection dbConn = jdbcTemplate.getConnection();
+      Connection dbConn = jdbcResourceHolder.getConnection();
       MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
           acidWriteEvent instanceof AcidWriteEvent ? EventMessage.EventType.ACID_WRITE
               : EventMessage.EventType.BATCH_ACID_WRITE,
@@ -3659,14 +3657,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     String sql = sqlGenerator.addForUpdateClause("SELECT \"NCQ_NEXT\" FROM \"NEXT_COMPACTION_QUEUE_ID\"");
     LOG.debug("going to execute SQL <{}>", sql);
     
-    Long allocatedId = jdbcTemplate.getJdbcTemplate().query(sql, rs -> {
+    Long allocatedId = jdbcResourceHolder.getJdbcTemplate().query(sql, rs -> {
       if (!rs.next()) {
         throw new IllegalStateException("Transaction tables not properly initiated, "
             + "no record found in next_compaction_queue_id");
       }
       long id = rs.getLong(1);
       
-      int count = jdbcTemplate.getJdbcTemplate().update("UPDATE \"NEXT_COMPACTION_QUEUE_ID\" SET \"NCQ_NEXT\" = :newId WHERE \"NCQ_NEXT\" = :id",
+      int count = jdbcResourceHolder.getJdbcTemplate().update("UPDATE \"NEXT_COMPACTION_QUEUE_ID\" SET \"NCQ_NEXT\" = :newId WHERE \"NCQ_NEXT\" = :id",
           new MapSqlParameterSource()
               .addValue("id", id)
               .addValue("newId", id + 1));
@@ -4994,7 +4992,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @throws org.apache.hadoop.hive.metastore.api.MetaException if the time cannot be determined
    */
   protected Timestamp getDbTime() throws MetaException {
-    return jdbcTemplate.getJdbcTemplate().queryForObject(
+    return jdbcResourceHolder.getJdbcTemplate().queryForObject(
         dbProduct.getDBTime(), 
         new MapSqlParameterSource(),
         (ResultSet rs, int rowNum) -> rs.getTimestamp(1));
@@ -5741,7 +5739,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     //want to avoid expiring locks for a txn w/o expiring the txn itself
     try {
       Set<Long> timedOutLockIds = new TreeSet<>(
-          jdbcTemplate.getJdbcTemplate().query(String.format(SELECT_TIMED_OUT_LOCKS_QUERY, getEpochFn(dbProduct)),
+          jdbcResourceHolder.getJdbcTemplate().query(String.format(SELECT_TIMED_OUT_LOCKS_QUERY, getEpochFn(dbProduct)),
               new MapSqlParameterSource().addValue("timeout", timeout),
               (rs, rowNum) -> rs.getLong(1)));
       if (timedOutLockIds.isEmpty()) {
@@ -5764,7 +5762,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         int deletedLocks = 0;
         for (String query : queries) {
           LOG.debug("Going to execute update: <{}>", query);
-          deletedLocks += jdbcTemplate.getJdbcTemplate().update(query, new MapSqlParameterSource());
+          deletedLocks += jdbcResourceHolder.getJdbcTemplate().update(query, new MapSqlParameterSource());
         }
         if (deletedLocks > 0) {
           LOG.info("Deleted {} locks due to timed-out. Lock ids: {}", deletedLocks, timedOutLockIds);
@@ -5783,8 +5781,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @RetrySemantics.Idempotent
   public void performTimeOuts() {
-    try {
-      jdbcTemplate.beginTransactionWithinRetryContext(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED), POOL_TX);
+    try (MultiDataSourceJdbcResourceHolder.TransactionWrapper wrapper = jdbcResourceHolder.getTransaction(PROPAGATION_REQUIRED, POOL_TX)) {
       //We currently commit after selecting the TXNS to abort.  So whether SERIALIZABLE
       //READ_COMMITTED, the effect is the same.  We could use FOR UPDATE on Select from TXNS
       //and do the whole performTimeOuts() in a single huge transaction, but the only benefit
@@ -5809,7 +5806,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
 
         LOG.debug("Going to execute query <{}>", s);
-        List<List<Long>> timedOutTxns = jdbcTemplate.getJdbcTemplate().query(s, rs -> {
+        List<List<Long>> timedOutTxns = jdbcResourceHolder.getJdbcTemplate().query(s, rs -> {
           List<List<Long>> txnbatch = new ArrayList<>();
           List<Long> currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
           while (rs.next()) {
@@ -5829,13 +5826,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           return;
         }
 
-        Object savePoint = jdbcTemplate.createSavepoint();
+        Object savePoint = wrapper.getTxn().createSavepoint();
 
         int numTxnsAborted = 0;
         for (List<Long> batchToAbort : timedOutTxns) {
-          jdbcTemplate.releaseSavepoint(savePoint);
-          savePoint = jdbcTemplate.createSavepoint();
-          if (abortTxns(jdbcTemplate.getConnection(), batchToAbort, true, false, false, TxnErrorMsg.ABORT_TIMEOUT) == batchToAbort.size()) {
+          wrapper.getTxn().releaseSavepoint(savePoint);
+          savePoint = wrapper.getTxn().createSavepoint();
+          if (abortTxns(jdbcResourceHolder.getConnection(), batchToAbort, true, false, false, TxnErrorMsg.ABORT_TIMEOUT) == batchToAbort.size()) {
             numTxnsAborted += batchToAbort.size();
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
           } else {
@@ -5844,7 +5841,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             //This is not likely but may happen if client experiences long pause between heartbeats or
             //unusually long/extreme pauses between heartbeat() calls and other logic in checkLock(),
             //lock(), etc.
-            jdbcTemplate.rollbackToSavepoint(savePoint);
+            wrapper.getTxn().rollbackToSavepoint(savePoint);
           }
         }
         LOG.info("Aborted {} transaction(s) due to timeout", numTxnsAborted);
@@ -5853,7 +5850,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
       }
     } catch (MetaException | SQLException e) {
-      jdbcTemplate.rollback();
       LOG.warn("Aborting timed out transactions failed due to " + e.getMessage(), e);
     }
   }
@@ -6426,42 +6422,40 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   @RetrySemantics.SafeToRetry
-  public AbortCompactionResponseElement abortCompaction(CompactionInfo compactionInfo) throws MetaException {
-    return retryHandler.executeWithRetry(new RetryCallProperties()
-            .withCallerId("abortCompaction(" + compactionInfo + ")")
-            .withDataSource(POOL_TX),
-        (DataSourceWrapper dataSourceWrapper) -> {
-          compactionInfo.state = TxnStore.ABORTED_STATE;
-          compactionInfo.errorMessage = "Compaction Aborted by Abort Comapction request.";
-          int updCount;
-          try {
-            updCount = dataSourceWrapper.execute(new InsertCompactionInfoCommand(compactionInfo, getDbTime().getTime()));
-          } catch (Exception e) {
-            LOG.error("Unable to update compaction record: {}.", compactionInfo);
-            return getAbortCompactionResponseElement(compactionInfo.id, "Error",
-                "Error while aborting compaction:Unable to update compaction record in COMPLETED_COMPACTIONS");
-          }
-          LOG.debug("Inserted {} entries into COMPLETED_COMPACTIONS", updCount);
-          try {
-            updCount = dataSourceWrapper.getJdbcTemplate().update("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = :id",
-                new MapSqlParameterSource().addValue("id", compactionInfo.id));
-
-            if (updCount != 1) {
-              LOG.error("Unable to update compaction record: {}. updCnt={}", compactionInfo, updCount);
-              jdbcTemplate.rollback();
-              return getAbortCompactionResponseElement(compactionInfo.id, "Error",
-                  "Error while aborting compaction: Unable to update compaction record in COMPACTION_QUEUE");
-            } else {
-              return getAbortCompactionResponseElement(compactionInfo.id, "Success",
-                  "Successfully aborted compaction");
-            }
-          } catch (DataAccessException e) {
-            jdbcTemplate.rollback();
-            return getAbortCompactionResponseElement(compactionInfo.id, "Error",
-                "Error while aborting compaction:" + e.getMessage());
-          }
+  private AbortCompactionResponseElement abortCompaction(CompactionInfo compactionInfo) throws MetaException {
+    SqlRetryFunction<AbortCompactionResponseElement> function = () -> {
+      try (MultiDataSourceJdbcResourceHolder.TransactionWrapper wrapper = jdbcResourceHolder.getTransaction(PROPAGATION_REQUIRED, POOL_TX)) {
+        compactionInfo.state = TxnStore.ABORTED_STATE;
+        compactionInfo.errorMessage = "Compaction Aborted by Abort Comapction request.";
+        int updCount;
+        try {
+          updCount = jdbcResourceHolder.execute(new InsertCompactionInfoCommand(compactionInfo, getDbTime().getTime()));
+        } catch (Exception e) {
+          LOG.error("Unable to update compaction record: {}.", compactionInfo);
+          return getAbortCompactionResponseElement(compactionInfo.id, "Error",
+              "Error while aborting compaction:Unable to update compaction record in COMPLETED_COMPACTIONS");
         }
-    );
+        LOG.debug("Inserted {} entries into COMPLETED_COMPACTIONS", updCount);
+        try {
+          updCount = jdbcResourceHolder.getJdbcTemplate().update("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = :id",
+              new MapSqlParameterSource().addValue("id", compactionInfo.id));
+          if (updCount != 1) {
+            LOG.error("Unable to update compaction record: {}. updCnt={}", compactionInfo, updCount);
+            return getAbortCompactionResponseElement(compactionInfo.id, "Error",
+                "Error while aborting compaction: Unable to update compaction record in COMPACTION_QUEUE");
+          } else {
+            jdbcResourceHolder.getTransactionManager().commit(wrapper.getTxn());
+            return getAbortCompactionResponseElement(compactionInfo.id, "Success",
+                "Successfully aborted compaction");
+          }
+        } catch (DataAccessException e) {
+          return getAbortCompactionResponseElement(compactionInfo.id, "Error",
+              "Error while aborting compaction:" + e.getMessage());
+        }
+      }
+    };
+    return sqlRetryHandler.executeWithRetry(
+        new SqlRetryCallProperties().withCallerId("abortCompaction(" + compactionInfo + ")"), function);
   }
   
   private List<CompactionInfo> findEligibleCompactionsToAbort(Map<Long,

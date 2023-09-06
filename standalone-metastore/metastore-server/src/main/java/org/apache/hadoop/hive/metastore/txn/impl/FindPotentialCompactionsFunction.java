@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalFunction;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -42,12 +42,12 @@ public class FindPotentialCompactionsFunction implements TransactionalFunction<S
   }
 
   @Override
-  public Set<CompactionInfo> execute(DataSourceWrapper jdbcTemplate) throws MetaException {
-    Set<CompactionInfo> candidates = new HashSet<>(jdbcTemplate.execute(
+  public Set<CompactionInfo> execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException {
+    Set<CompactionInfo> candidates = new HashSet<>(jdbcResourceHolder.execute(
         new CompactionCandidateHandler(lastChecked, fetchSize)));
     int remaining = fetchSize - candidates.size();
     if (collectAbortedTxns) {
-      candidates.addAll(jdbcTemplate.execute(new AbortedTxnHandler(abortedTimeThreshold, abortedThreshold, remaining)));
+      candidates.addAll(jdbcResourceHolder.execute(new AbortedTxnHandler(abortedTimeThreshold, abortedThreshold, remaining)));
     }
     return candidates;
   }

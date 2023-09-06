@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalFunction;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -56,8 +56,8 @@ public class CleanTxnToWriteIdTableFunction implements TransactionalFunction<Voi
   }
 
   @Override
-  public Void execute(DataSourceWrapper dataSourceWrapper) throws MetaException {
-    NamedParameterJdbcTemplate jdbcTemplate = dataSourceWrapper.getJdbcTemplate();
+  public Void execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException {
+    NamedParameterJdbcTemplate jdbcTemplate = jdbcResourceHolder.getJdbcTemplate();
     String sql = useMinHistoryLevel ? minHistoryLevelSql : noMinHistoryLevelSql;
     MapSqlParameterSource params = new MapSqlParameterSource()
         .addValue("abortedState", TxnStatus.ABORTED.getSqlConst(), Types.CHAR);

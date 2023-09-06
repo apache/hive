@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.ParameterizedCommand;
+import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 

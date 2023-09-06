@@ -17,14 +17,16 @@
  */
 package org.apache.hadoop.hive.metastore.txn.retryhandling;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.jdbc.UncategorizedSQLException;
 
 import java.sql.SQLException;
 import java.util.Objects;
@@ -35,25 +37,26 @@ import java.util.regex.Pattern;
 /**
  * Supports building resilient APIs by automatically retrying failed function calls.
  */
-public class RetryHandler {
+public class SqlRetryHandler {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RetryHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SqlRetryHandler.class);
 
   private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final String MANUAL_RETRY = "ManualRetry";
+
+  private static final ThreadLocal<Object> threadLocal = new ThreadLocal<>();
 
   /**
    * Derby specific concurrency control
    */
   private static final ReentrantLock derbyLock = new ReentrantLock(true);
 
-
-  private final DataSourceWrapper jdbcTemplate;
+  private final DatabaseProduct databaseProduct;
   private final long deadlockRetryInterval;
   private final long retryInterval;
   private final int retryLimit;
   
-  private Configuration conf;
+  private final Configuration conf;
   
   public static String getMessage(Exception ex) {
     StringBuilder sb = new StringBuilder();
@@ -65,9 +68,9 @@ public class RetryHandler {
     return sb.toString();
   }
   
-  public RetryHandler(Configuration conf, DataSourceWrapper jdbcTemplate){
+  public SqlRetryHandler(Configuration conf, DatabaseProduct databaseProduct){
     this.conf = conf;
-    this.jdbcTemplate = jdbcTemplate;
+    this.databaseProduct = databaseProduct;
 
     retryInterval = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_INTERVAL,
         TimeUnit.MILLISECONDS);
@@ -76,110 +79,98 @@ public class RetryHandler {
   }
 
   /**
-   * Establishes a {@link DataSourceWrapper.RetryContext} and executes the passed {@link TransactionalFunction}. 
-   * Automatically retries the execution in case of failure.
-   * @param properties {@link RetryCallProperties} instance used to fine-tune/alter the execution-mechanism.
-   * @param function The {@link TransactionalFunction} to execute.
-   * @return Returns with the result of the execution of the passed {@link TransactionalFunction}.
+   * Executes the passed {@link SqlRetryFunction} and automatically retries the execution in case of failure. If there is
+   * a retry-call upper in the call hierarchy, {@link SqlRetryCallProperties#withRetryPropagation } can be used to 
+   * control wether to join it or create a nested retry-call.
+   * @param properties {@link SqlRetryCallProperties} instance used to fine-tune/alter the execution-mechanism.
+   * @param function The {@link SqlRetryFunction} to execute.
+   * @return Returns with the result of the execution of the passed {@link SqlRetryFunction}.
    * @param <Result> Type of the result
    * @throws MetaException Thrown in case of execution error.
    */
-  public <Result> Result executeWithRetry(RetryCallProperties properties, TransactionalFunction<Result> function) 
-      throws MetaException {
-    return executeWithRetryInternal(properties, function, retryLimit, ALLOWED_REPEATED_DEADLOCKS);
-  }
-
-  /**
-   * Executes the passed {@link TransactionalFunction}, without retry in case of failure.
-   * @param properties {@link RetryCallProperties} instance used to fine-tune/alter the execution-mechanism.
-   * @param function The {@link TransactionalFunction} to execute.
-   * @return Returns with the result of the execution of the passed {@link TransactionalFunction}.
-   * @param <Result> Type of the result
-   * @throws MetaException Thrown in case of execution error.
-   */
-  public <Result> Result executeWithoutRetry(RetryCallProperties properties, TransactionalFunction<Result> function) 
-      throws MetaException {
-    return executeWithRetryInternal(properties, function, 0, 0);
-  }
-
-  private <Result> Result executeWithRetryInternal(RetryCallProperties properties, TransactionalFunction<Result> function
-      , int retryCount, int deadlockCount) throws MetaException {
+  public <Result> Result executeWithRetry(SqlRetryCallProperties properties, SqlRetryFunction<Result> function) throws MetaException {
     Objects.requireNonNull(function, "RetryFunction<Result> cannot be null!");
     Objects.requireNonNull(properties, "RetryCallProperties cannot be null!");
 
-    if (jdbcTemplate.hasRetryContext() && properties.getRetryPropagation().canJoinContext()) {
+    if (threadLocal.get() != null && properties.getRetryPropagation().canJoinContext()) {
       /*
-        If there is a RetryState in the ThreadLocal and we are allowed to join it, we can skip establishing a nested 
-        retry-call (and transaction).
+        If there is a context in the ThreadLocal and we are allowed to join it, we can skip establishing a nested retry-call.
       */
-      LOG.info("Already established retry-context detected, current retry-call will join it. The passed CallProperties " +
+      LOG.info("Already established retry-call detected, current call will join it. The passed SqlRetryCallProperties " +
           "instance will be ignored, using the original one.");
-      return function.execute(jdbcTemplate);
+      try {
+        return function.execute();
+      } catch (SQLException e) {
+        //Since we are in a nested call, This will be caught in the below exception handler.
+        throw new UncategorizedSQLException(null, null, e);
+      }
     }
 
     if (!properties.getRetryPropagation().canCreateContext()) {
       throw new MetaException("The current RetryPropagation mode (" + properties.getRetryPropagation().name() +
-          ") allows only to join an existing retry-context, but there is no context to join!");
+          ") allows only to join an existing retry-call, but there is no retry-call upper in the callstack!");
     }
 
-    LOG.debug("Running retry function:" + properties);
-
-    if (org.apache.commons.lang3.StringUtils.isEmpty(properties.getCaller())) {
+    if (StringUtils.isEmpty(properties.getCaller())) {
       properties.withCallerId(function.toString());
     }
-
+    properties
+        .setRetryCount(retryLimit)
+        .setDeadlockCount(ALLOWED_REPEATED_DEADLOCKS);
+    
     try {
       if (properties.isLockInternally()) {
         lockInternal();
+      }      
+      threadLocal.set(new Object());
+      return executeWithRetryInternal(properties, function);
+    } finally {
+      threadLocal.remove();
+      if (properties.isLockInternally()) {
+        unlockInternal();
       }
-      try {
-        DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(properties.getTransactionPropagationLevel());
-        transactionDefinition.setIsolationLevel(properties.getTransactionIsolationLevel());
-        jdbcTemplate.beginTransactionWithinRetryContext(transactionDefinition, properties.getDataSource());
-        Result result = function.execute(jdbcTemplate);
-        LOG.debug("Going to commit transaction");
-        jdbcTemplate.commit();
-        return result;
-      } catch (Exception e) {
-        if (properties.isRollbackOnError()) {
-          jdbcTemplate.rollback();
-        }
-        throw e;
-      }
+    }
+  }
+
+  private <Result> Result executeWithRetryInternal(SqlRetryCallProperties properties, SqlRetryFunction<Result> function) 
+      throws MetaException {
+    LOG.debug("Running retry function:" + properties);
+
+    try {
+      return function.execute();
     } catch (DataAccessException e) {
       SQLException sqlEx = null;
       if (e.getCause() instanceof SQLException) {
         sqlEx = (SQLException) e.getCause();
       }
       if (sqlEx != null) {
-        if (checkDeadlock(sqlEx, properties.getCaller(), deadlockCount)) {
-          return executeWithRetryInternal(properties, function, retryCount, --deadlockCount);
+        if (checkDeadlock(sqlEx, properties)) {
+          properties.setDeadlockCount(properties.getDeadlockCount() - 1); 
+          return executeWithRetryInternal(properties, function);
         }
-        if (checkRetryable(sqlEx, properties.getCaller(), properties.isRetryOnDuplicateKey(), retryCount)) {
-          return executeWithRetryInternal(properties, function, --retryCount, deadlockCount);
+        if (checkRetryable(sqlEx, properties)) {
+          properties.setRetryCount(properties.getRetryCount() - 1);
+          return executeWithRetryInternal(properties, function);
         }
       }
       LOG.error("Execution failed for caller {}", properties, e);
-      throw properties.getExceptionSupplier().apply(e);
+      throw new MetaException("Failed to execute function: " + properties.getCaller() + ", details:" + e.getMessage());
     } catch (MetaWrapperException e) {
       //unwrap and re-throw
       LOG.error("Execution failed for caller {}", properties, e.getCause());
       throw (MetaException) e.getCause();
     } catch (Exception e) {
       LOG.error("Execution failed for caller {}", properties, e);
-      throw properties.getExceptionSupplier().apply(e);
-    } finally {
-      if (properties.isLockInternally()) {
-        unlockInternal();
-      }
+      throw new MetaException("Failed to execute function: " + properties.getCaller() + ", details:" + e.getMessage());
     }
   }
   
-  private boolean checkDeadlock(SQLException e, String caller, int deadlockCnt) {
-    if (jdbcTemplate.getDatabaseProduct().isDeadlock(e)) {
-      if (deadlockCnt > 0) {
-        long waitInterval = deadlockRetryInterval * (ALLOWED_REPEATED_DEADLOCKS - deadlockCnt);
-        LOG.warn("Deadlock detected in {}. Will wait {} ms try again up to {} times.", caller, waitInterval, deadlockCnt);
+  private boolean checkDeadlock(SQLException e, SqlRetryCallProperties properties) {
+    if (databaseProduct.isDeadlock(e)) {
+      if (properties.getDeadlockCount() > 0) {
+        long waitInterval = deadlockRetryInterval * (ALLOWED_REPEATED_DEADLOCKS - properties.getDeadlockCount());
+        LOG.warn("Deadlock detected in {}. Will wait {} ms try again up to {} times.", 
+            properties.getCaller(), waitInterval, properties.getDeadlockCount());
         // Pause for a just a bit for retrying to avoid immediately jumping back into the deadlock.
         try {
           Thread.sleep(waitInterval);
@@ -188,7 +179,7 @@ public class RetryHandler {
         }
         return true;
       } else {
-        LOG.error("Too many repeated deadlocks in {}, giving up.", caller);
+        LOG.error("Too many repeated deadlocks in {}, giving up.", properties.getCaller());
       }
     }
     return false;
@@ -200,11 +191,10 @@ public class RetryHandler {
    * different database.
    * if the error is retry-able.
    * @param e exception that was thrown.
-   * @param caller name of the method calling this (and other info useful to log)
-   * @param retryOnDuplicateKey whether to retry on unique key constraint violation
+   * @param properties {@link SqlRetryCallProperties} instance containing the rety call settings
    * @return True if retry is possible, false otherwise.
    */
-  private boolean checkRetryable(SQLException e, String caller, boolean retryOnDuplicateKey, int retryCount) {
+  private boolean checkRetryable(SQLException e, SqlRetryCallProperties properties) {
 
     LOG.error("Execution error, checking if retry is possible", e);
     
@@ -218,12 +208,12 @@ public class RetryHandler {
     boolean retry = false;
     if (isRetryable(conf, e)) {
       //in MSSQL this means Communication Link Failure
-      retry = waitForRetry(caller, e.getMessage(), retryCount);
-    } else if (retryOnDuplicateKey && jdbcTemplate.getDatabaseProduct().isDuplicateKeyError(e)) {
-      retry = waitForRetry(caller, e.getMessage(), retryCount);
+      retry = waitForRetry(properties.getCaller(), e.getMessage(), properties.getRetryCount());
+    } else if (properties.isRetryOnDuplicateKey() && databaseProduct.isDuplicateKeyError(e)) {
+      retry = waitForRetry(properties.getCaller(), e.getMessage(), properties.getRetryCount());
     } else {
       //make sure we know we saw an error that we don't recognize
-      LOG.info("Non-retryable error in {} : {}", caller, getMessage(e));
+      LOG.info("Non-retryable error in {} : {}", properties.getCaller(), getMessage(e));
     }
     return retry;
   }
@@ -284,12 +274,12 @@ public class RetryHandler {
    * with Derby database.  See more notes at class level.
    */
   private void lockInternal() {
-    if(jdbcTemplate.getDatabaseProduct().isDERBY()) {
+    if(databaseProduct.isDERBY()) {
       derbyLock.lock();
     }
   }
   private void unlockInternal() {
-    if(jdbcTemplate.getDatabaseProduct().isDERBY()) {
+    if(databaseProduct.isDERBY()) {
       derbyLock.unlock();
     }
   }

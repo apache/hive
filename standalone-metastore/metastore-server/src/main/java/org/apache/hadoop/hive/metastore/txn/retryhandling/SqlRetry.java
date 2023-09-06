@@ -17,10 +17,27 @@
  */
 package org.apache.hadoop.hive.metastore.txn.retryhandling;
 
-import org.springframework.jdbc.core.ResultSetExtractor;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A simple combination of the {@link ParameterizedQuery} and a {@link ResultSetExtractor}.
- * @param <Result> The type of the result 
+ * Can be put on methods to tell {@link SqlRetryHandler} that the method
+ * must be re-executed in case of SQL related error.
  */
-public interface QueryHandler<Result> extends ParameterizedQuery, ResultSetExtractor<Result> {}
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface SqlRetry {
+
+  /**
+   * @return True if the internal (DERBY) lock is necessary. False by default.
+   */
+  boolean lockInternally() default false;
+
+  /**
+   * @return True if the method execution should be retried in case of duplicate key error. False by default.
+   */
+  boolean retryOnDuplicateKey() default false;
+
+}

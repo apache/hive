@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.txn.retryhandling;
+package org.apache.hadoop.hive.metastore.txn.jdbc;
 
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 

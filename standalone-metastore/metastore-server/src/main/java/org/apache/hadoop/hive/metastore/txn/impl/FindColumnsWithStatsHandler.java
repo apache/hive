@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.QueryHandler;
+import org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;

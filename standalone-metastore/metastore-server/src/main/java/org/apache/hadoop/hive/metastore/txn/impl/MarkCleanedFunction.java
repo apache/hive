@@ -24,8 +24,8 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.DataSourceWrapper;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.TransactionalFunction;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -50,8 +50,8 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
   }
 
   @Override
-  public Void execute(DataSourceWrapper dataSourceWrapper) throws MetaException {
-    NamedParameterJdbcTemplate jdbcTemplate = dataSourceWrapper.getJdbcTemplate();
+  public Void execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException {
+    NamedParameterJdbcTemplate jdbcTemplate = jdbcResourceHolder.getJdbcTemplate();
     MapSqlParameterSource param;
     if (!info.isAbortedTxnCleanup()) {
       param = new MapSqlParameterSource()
@@ -67,7 +67,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
               + "\"CC_ORDER_BY\") "
               + "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
               + ":succeeded, \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", "
-              + getEpochFn(dataSourceWrapper.getDatabaseProduct()) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
+              + getEpochFn(jdbcResourceHolder.getDatabaseProduct()) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
               + "\"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", \"CQ_ENQUEUE_TIME\", "
               + "\"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
               + "\"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\", \"CQ_POOL_NAME\", \"CQ_NUMBER_OF_BUCKETS\", "

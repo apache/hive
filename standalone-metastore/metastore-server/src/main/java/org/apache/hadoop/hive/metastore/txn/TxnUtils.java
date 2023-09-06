@@ -147,7 +147,7 @@ public class TxnUtils {
     try {
       TxnStore handler = JavaUtils.getClass(className, TxnStore.class).newInstance();
       handler.setConf(conf);
-      handler = RetryingTxnHandler.getProxy(handler, handler.getRetryHandler());
+      handler = ProxyTxnHandler.getProxy(handler, handler.getRetryHandler(), handler.getJdbcResourceHolder());
       return handler;
     } catch (Exception e) {
       LOG.error("Unable to instantiate raw store directly in fastpath mode", e);
