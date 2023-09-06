@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
   private static final String FUNC_NAME = "ARRAY_REMOVE";
 
+  private static final int ELEMENT_IDX = 1;
+
   public GenericUDFArrayRemove() {
     super(FUNC_NAME, 2, 2, ObjectInspector.Category.LIST);
   }
@@ -44,7 +46,7 @@ public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     ObjectInspector defaultOI = super.initialize(arguments);
-    checkValueAndListElementTypes(arguments);
+    checkValueAndListElementTypes(arrayOI.getListElementObjectInspector(),arguments[ELEMENT_IDX],ELEMENT_IDX);
     return defaultOI;
   }
 

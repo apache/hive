@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -36,6 +37,7 @@ import java.util.List;
     "Example:\n" + "  > SELECT _FUNC_(array(1, 2, 3,4,2), 2) FROM src;\n" + "  2")
 public class GenericUDFArrayPosition extends AbstractGenericUDFArrayBase {
   static final String FUNC_NAME = "ARRAY_POSITION";
+  private static final int ELEMENT_IDX = 1;
 
   public GenericUDFArrayPosition() {
     super(FUNC_NAME, 2, 2, ObjectInspector.Category.PRIMITIVE);
@@ -44,7 +46,7 @@ public class GenericUDFArrayPosition extends AbstractGenericUDFArrayBase {
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     super.initialize(arguments);
-    checkValueAndListElementTypes(arguments);
+    checkValueAndListElementTypes(arrayOI.getListElementObjectInspector(),arguments[ELEMENT_IDX],ELEMENT_IDX);
     return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
   }
 
@@ -52,10 +54,20 @@ public class GenericUDFArrayPosition extends AbstractGenericUDFArrayBase {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object array = arguments[ARRAY_IDX].get();
     Object value = arguments[ELEMENT_IDX].get();
-    if (arrayOI.getListLength(array) <= 0 || value == null) {
+    if (arrayOI.getListLength(array) < 0 || value == null) {
       return null;
     }
-    List<?> resultArray = new ArrayList<>(((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array));
-    return new IntWritable(resultArray.indexOf(arguments[ELEMENT_IDX].get()) + 1);
+    List<?> resultArray = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);
+    // Handling Varchar type this way as Object comparison between string and varchar will not work
+    if ((argumentOIs[ELEMENT_IDX].getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME)
+        || ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getListElementObjectInspector().getTypeName()
+        .contains(serdeConstants.VARCHAR_TYPE_NAME))) {
+      for (int index = 0; index < resultArray.size(); index++) {
+        if (resultArray.get(index).toString().equals(value.toString())) {
+          return new IntWritable(index + 1);
+        }
+      }
+    }
+    return new IntWritable(resultArray.indexOf(value) + 1);
   }
 }

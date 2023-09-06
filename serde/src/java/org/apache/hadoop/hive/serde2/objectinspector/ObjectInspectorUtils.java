@@ -1341,6 +1341,13 @@ public final class ObjectInspectorUtils {
 
     // If both categories are primitive return the comparison of type names.
     if (c1.equals(Category.PRIMITIVE)) {
+      if (o1.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME) || o1.getTypeName()
+          .equals(serdeConstants.STRING_TYPE_NAME)) {
+        if (o2.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME) || o2.getTypeName()
+            .equals(serdeConstants.STRING_TYPE_NAME)) {
+          return true;
+        }
+      }
       return o1.getTypeName().equals(o2.getTypeName());
     }
 

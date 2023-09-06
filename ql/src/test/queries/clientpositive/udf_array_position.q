@@ -24,6 +24,8 @@ SELECT array_position(array(11234567890, 2234567890, 334567890, null, 1123456789
 
 SELECT array_position(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d")),array("a","b","c","d"));
 
+SELECT array_position(array("aa","bb","cc"),"cc");
+
 # handle null array cases
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/test_null_array;

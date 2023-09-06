@@ -85,6 +85,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1
+PREHOOK: query: SELECT array_position(array("aa","bb","cc"),"cc")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_position(array("aa","bb","cc"),"cc")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+3
 PREHOOK: query: create external table test_null_array (id string, value Array<String>) ROW FORMAT DELIMITED
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -116,7 +125,7 @@ POSTHOOK: query: select id,array_position(value,id) from test_null_array
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_null_array
 #### A masked pattern was here ####
-1	NULL
+1	0
 2	0
 3	0
 PREHOOK: query: select value, array_position(value,id) from test_null_array
@@ -129,4 +138,4 @@ POSTHOOK: Input: default@test_null_array
 #### A masked pattern was here ####
 ["NULL"]	0
 ["null","null"]	0
-[]	NULL
+[]	0
