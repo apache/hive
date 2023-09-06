@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +124,8 @@ public class FiltertagAppenderProc implements SemanticNodeProcessor {
     // Unlike HashTableSinkOperator used in MR engine, Tez engine directly passes rows from RS to MapJoin.
     // Therefore, RS's writer and MapJoin's reader should have the same TableDesc. We create valueTableDesc
     // here again because it can be different from RS's valueSerializeInfo due to ColumnPruner.
-    List<TableDesc> newMapJoinValueFilteredTableDescs = new ArrayList<>();
+    List<TableDesc> newMapJoinValueFilteredTableDescs =
+        new ArrayList<>(mapJoinOp.getParentOperators().size());
     for (byte pos = 0; pos < mapJoinOp.getParentOperators().size(); pos++) {
       TableDesc tableDesc;
 
@@ -160,9 +163,7 @@ public class FiltertagAppenderProc implements SemanticNodeProcessor {
       if (filterTagExpr instanceof ExprNodeConstantDesc) {
         filterTagExpr = filterTagMaskExpr;
       } else {
-        List<ExprNodeDesc> plusArgs = new ArrayList<>(2);
-        plusArgs.add(filterTagMaskExpr);
-        plusArgs.add(filterTagExpr);
+        List<ExprNodeDesc> plusArgs = Arrays.asList(filterTagMaskExpr, filterTagExpr);
         filterTagExpr = new ExprNodeGenericFuncDesc(shortType, new GenericUDFOPPlus(), plusArgs);
       }
     }
@@ -199,14 +200,15 @@ public class FiltertagAppenderProc implements SemanticNodeProcessor {
   }
 
   /**
-   * Generate an ExprNodeDesc that expresses thw following code:
-   *   if (!condition) { return (short) (1 << tag) } else { return (short) 0; }.
+   * Generate an ExprNodeDesc that expresses the following code:
+   *   UDFToShort(!condition) * (short) (1 << tag),
+   * which is logically equivalent to
+   *   if (condition) { return (short) 0 } else { return (short) (1 << tag); }.
    */
   private ExprNodeDesc generateFilterTagMask(byte tag, ExprNodeDesc condition) {
     ExprNodeDesc filterMaskValue = new ExprNodeConstantDesc(shortType, (short) (1 << tag));
 
-    List<ExprNodeDesc> negateArg = new ArrayList<>(1);
-    negateArg.add(condition);
+    List<ExprNodeDesc> negateArg = Collections.singletonList(condition);
     ExprNodeDesc negate = new ExprNodeGenericFuncDesc(
         TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME),
         new GenericUDFOPNot(),
@@ -216,16 +218,12 @@ public class FiltertagAppenderProc implements SemanticNodeProcessor {
     toShort.setUdfClassName(UDFToShort.class.getName());
     toShort.setUdfName(UDFToShort.class.getSimpleName());
 
-    List<ExprNodeDesc> toShortArg = new ArrayList<>(1);
-    toShortArg.add(negate);
+    List<ExprNodeDesc> toShortArg = Collections.singletonList(negate);
     ExprNodeDesc conditionAsShort = new ExprNodeGenericFuncDesc(shortType, toShort, toShortArg);
 
-    List<ExprNodeDesc> multiplyArgs = new ArrayList<>(2);
-    multiplyArgs.add(conditionAsShort);
-    multiplyArgs.add(filterMaskValue);
+    List<ExprNodeDesc> multiplyArgs = Arrays.asList(conditionAsShort, filterMaskValue);
     ExprNodeDesc multiply = new ExprNodeGenericFuncDesc(shortType, new GenericUDFOPMultiply(), multiplyArgs);
 
     return multiply;
   }
 }
-
