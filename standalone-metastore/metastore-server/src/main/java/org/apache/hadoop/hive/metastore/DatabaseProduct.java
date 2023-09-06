@@ -767,6 +767,21 @@ public class DatabaseProduct implements Configurable {
     return val;
   }
 
+  /**
+   * Get the max rows in a query with paramSize.
+   * @param batch the configured batch size
+   * @param paramSize the parameter size in a query statement
+   * @return the max allowed rows in a query
+   */
+  public int getMaxRows(int batch, int paramSize) {
+    if (isSQLSERVER()) {
+      // SQL Server supports a maximum of 2100 parameters in a request. Adjust the maxRowsInBatch accordingly
+      int maxAllowedRows = (2100 - paramSize) / paramSize;
+      return Math.min(batch, maxAllowedRows);
+    }
+    return batch;
+  }
+
   // This class implements the Configurable interface for the benefit
   // of "plugin" instances created via reflection (see invocation of
   // ReflectionUtils.newInstance in method determineDatabaseProduct)

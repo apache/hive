@@ -153,7 +153,7 @@ class MetaStoreDirectSql {
   private final int batchSize;
   private final boolean convertMapNullsToEmptyStrings;
   private final String defaultPartName;
-  private final boolean areTxnStatsSupported;
+  private final boolean areTxnStatsEnabled;
 
   /**
    * Whether direct SQL can be used with the current datastore backing {@link #pm}.
@@ -205,7 +205,7 @@ class MetaStoreDirectSql {
       batchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
-    this.areTxnStatsSupported = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
+    this.areTxnStatsEnabled = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
     this.directSqlUpdate = new DirectSqlUpdate(pm, conf, dbType, batchSize);
     ImmutableMap.Builder<String, String> fieldNameToTableNameBuilder =
         new ImmutableMap.Builder<>();
@@ -549,10 +549,15 @@ class MetaStoreDirectSql {
    */
   public List<Partition> alterPartitions(Table table, List<String> partNames,
       List<Partition> newParts, String queryWriteIdList) throws MetaException {
-    String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")";
-    List<String> columns = Arrays.asList("\"PART_ID\"", "\"PART_NAME\"", "\"SD_ID\"", "\"WRITE_ID\"");
-    List<Object[]> rows = getPartitionFieldsViaSqlFilter(table.getCatName(), table.getDbName(),
-        table.getTableName(), columns, filter, partNames, Collections.emptyList(), null);
+    List<Object[]> rows = Batchable.runBatched(batchSize, partNames, new Batchable<String, Object[]>() {
+      @Override
+      public List<Object[]> run(List<String> input) throws Exception {
+        String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
+        List<String> columns = Arrays.asList("\"PART_ID\"", "\"PART_NAME\"", "\"SD_ID\"", "\"WRITE_ID\"");
+        return getPartitionFieldsViaSqlFilter(table.getCatName(), table.getDbName(),
+                table.getTableName(), columns, filter, input, Collections.emptyList(), null);
+      }
+    });
     Map<List<String>, Long> partValuesToId = new HashMap<>();
     Map<Long, Long> partIdToSdId = new HashMap<>();
     Map<Long, Long> partIdToWriteId = new HashMap<>();
@@ -573,7 +578,7 @@ class MetaStoreDirectSql {
       // If transactional, add/update the MUPdaterTransaction
       // for the current updater query.
       if (isTxn) {
-        if (!areTxnStatsSupported) {
+        if (!areTxnStatsEnabled) {
           StatsSetupConst.setBasicStatsState(newPart.getParameters(), StatsSetupConst.FALSE);
         } else if (queryWriteIdList != null && newPart.getWriteId() > 0) {
           // Check concurrent INSERT case and set false to the flag.
@@ -593,9 +598,7 @@ class MetaStoreDirectSql {
     }
 
     directSqlUpdate.alterPartitions(partValuesToId, partIdToSdId, newParts);
-    // The returned result were not utilized, so return an empty list in direct sql for performance.
-    // TODO: Change the API signature of RawStore#alterPartitions to return void instead.
-    return Collections.emptyList();
+    return newParts;
   }
 
   /**
