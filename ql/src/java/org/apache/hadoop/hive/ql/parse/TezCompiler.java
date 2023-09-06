@@ -88,7 +88,7 @@ import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantPropagateOption;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
-import org.apache.hadoop.hive.ql.optimizer.ExtendParentReduceSinkOfMapJoin;
+import org.apache.hadoop.hive.ql.optimizer.FiltertagAppenderProc;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
 import org.apache.hadoop.hive.ql.optimizer.ParallelEdgeFixer;
@@ -500,7 +500,7 @@ public class TezCompiler extends TaskCompiler {
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<>();
     opRules.put(
         new RuleRegExp("Extend parent RS of MapJoin", MapJoinOperator.getOperatorName() + "%"),
-        new ExtendParentReduceSinkOfMapJoin());
+        new FiltertagAppenderProc());
 
     SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     SemanticGraphWalker ogw = new DefaultGraphWalker(disp);

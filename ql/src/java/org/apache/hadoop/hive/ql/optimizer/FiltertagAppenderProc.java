@@ -49,7 +49,16 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-public class ExtendParentReduceSinkOfMapJoin implements SemanticNodeProcessor {
+/**
+ * Append a filterTag computation column to ReduceSinkOperators whose child is MapJoinOperator.
+ * The added column expresses JoinUtil#isFiltered in the form of ExprNode.
+ * The added column should be located at the end of row as CommonJoinOperator expects it.
+ *
+ * This processor only affects small tables of MapJoin that run on Tez engine.
+ * For big table, MapJoinOperator#process() calls CommonJoinOperator#getFilteredValue(), which adds filterTag.
+ * For MapReduce engine, HashTableSinkOperator adds filterTag to every row.
+ */
+public class FiltertagAppenderProc implements SemanticNodeProcessor {
 
   private final TypeInfo shortType = TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME);
 
@@ -59,82 +68,88 @@ public class ExtendParentReduceSinkOfMapJoin implements SemanticNodeProcessor {
     MapJoinOperator mapJoinOp = (MapJoinOperator) nd;
     MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
 
-    if (mapJoinDesc.getFilterMap() != null) {
-      int[][] filterMap = mapJoinDesc.getFilterMap();
+    if (mapJoinDesc.getFilterMap() == null) {
+      return null;
+    }
 
-      // 1. Extend ReduceSinkoperator if it's output is filtered by MapJoinOperator.
-      for (byte pos = 0; pos < filterMap.length; pos++) {
-        if (pos == mapJoinDesc.getPosBigTable() || filterMap[pos] == null) {
-          continue;
-        }
+    int[][] filterMap = mapJoinDesc.getFilterMap();
 
-        ExprNodeDesc filterTagExpr =
-            generateFilterTagExpression(filterMap[pos], mapJoinDesc.getFilters().get(pos));
+    // 1. Extend ReduceSinkoperator if it's output is filtered by MapJoinOperator.
+    for (byte pos = 0; pos < filterMap.length; pos++) {
+      if (pos == mapJoinDesc.getPosBigTable() || filterMap[pos] == null) {
+        continue;
+      }
 
-        // Note that the parent RS for the given pos is retrieved in different way in MapJoinProcessor.
-        // TODO: MapJoinProcessor.convertMapJoin() fixes the order of parent operators.
-        //  Does other callers also fix the order as well as MapJoinProcessor.convertMapJoin()?
+      ExprNodeDesc filterTagExpr =
+          generateFilterTagExpression(filterMap[pos], mapJoinDesc.getFilters().get(pos));
+
+      // Note that the parent RS for the given pos is retrieved in different way in MapJoinProcessor.
+      // TODO: MapJoinProcessor.convertMapJoin() fixes the order of parent operators.
+      //  Does other callers also fix the order as well as MapJoinProcessor.convertMapJoin()?
+      ReduceSinkOperator parent = (ReduceSinkOperator) mapJoinOp.getParentOperators().get(pos);
+      ReduceSinkDesc pRsConf = parent.getConf();
+
+      // MapJoinProcessor.getMapJoinDesc() replaces filter expressions with backtracked one if
+      // adjustParentsChildren is true.
+      // As of now, ConvertJoinMapJoin.convertJoinDynamicPartitionedHashJoin() is the only functions that
+      // calls this method with adjustParentsChildren = false. Therefore, we backtrack filter expressions
+      // only if MapJoinDesc.isDynamicPartitionHashJoin is true, which is also the unique property of
+      // ConvertJoinMapJoin.convertJoinDynamicPartitionedHashJoin().
+      ExprNodeDesc mapSideFilterTagExpr;
+      if (mapJoinDesc.isDynamicPartitionHashJoin()) {
+        mapSideFilterTagExpr = ExprNodeDescUtils.backtrack(filterTagExpr, mapJoinOp, parent);
+      } else {
+        mapSideFilterTagExpr = filterTagExpr;
+      }
+      String filterColumnName = "_filterTag";
+
+      pRsConf.getValueCols().add(mapSideFilterTagExpr);
+      pRsConf.getOutputValueColumnNames().add(filterColumnName);
+      pRsConf.getColumnExprMap()
+          .put(Utilities.ReduceField.VALUE + "." + filterColumnName, mapSideFilterTagExpr);
+
+      ColumnInfo filterTagColumnInfo =
+          new ColumnInfo(Utilities.ReduceField.VALUE + "." + filterColumnName, shortType, "", false);
+      parent.getSchema().getSignature().add(filterTagColumnInfo);
+
+      TableDesc newTableDesc =
+          PlanUtils.getReduceValueTableDesc(
+              PlanUtils.getFieldSchemasFromColumnList(pRsConf.getValueCols(), "_col"));
+      pRsConf.setValueSerializeInfo(newTableDesc);
+    }
+
+    // 2. Update MapJoinOperator's valueFilteredTableDescs.
+    // Unlike HashTableSinkOperator used in MR engine, Tez engine directly passes rows from RS to MapJoin.
+    // Therefore, RS's writer and MapJoin's reader should have the same TableDesc. We create valueTableDesc
+    // here again because it can be different from RS's valueSerializeInfo due to ColumnPruner.
+    List<TableDesc> newMapJoinValueFilteredTableDescs = new ArrayList<>();
+    for (byte pos = 0; pos < mapJoinOp.getParentOperators().size(); pos++) {
+      TableDesc tableDesc;
+
+      if (pos == mapJoinDesc.getPosBigTable() || filterMap[pos] == null) {
+        // We did not change corresponding parent operator. Use the original tableDesc.
+        tableDesc = mapJoinDesc.getValueFilteredTblDescs().get(pos);
+      } else {
+        // Create a new TableDesc based on corresponding parent RSOperator.
         ReduceSinkOperator parent = (ReduceSinkOperator) mapJoinOp.getParentOperators().get(pos);
         ReduceSinkDesc pRsConf = parent.getConf();
 
-        // MapJoinProcessor.getMapJoinDesc() replaces filter expressions with backtracked one if
-        // adjustParentsChildren is true.
-        // As of now, ConvertJoinMapJoin.convertJoinDynamicPartitionedHashJoin() is the only functions that
-        // calls this method with adjustParentsChildren = false. Therefore, we backtrack filter expressions
-        // only if MapJoinDesc.isDynamicPartitionHashJoin is true, which is also the unique property of
-        // ConvertJoinMapJoin.convertJoinDynamicPartitionedHashJoin().
-        ExprNodeDesc mapSideFilterTagExpr;
-        if (mapJoinDesc.isDynamicPartitionHashJoin()) {
-          mapSideFilterTagExpr = ExprNodeDescUtils.backtrack(filterTagExpr, mapJoinOp, parent);
-        } else {
-          mapSideFilterTagExpr = filterTagExpr;
-        }
-        String filterColumnName = "_filterTag";
-
-        pRsConf.getValueCols().add(mapSideFilterTagExpr);
-        pRsConf.getOutputValueColumnNames().add(filterColumnName);
-        pRsConf.getColumnExprMap()
-            .put(Utilities.ReduceField.VALUE + "." + filterColumnName, mapSideFilterTagExpr);
-
-        ColumnInfo filterTagColumnInfo =
-            new ColumnInfo(Utilities.ReduceField.VALUE + "." + filterColumnName, shortType, "", false);
-        parent.getSchema().getSignature().add(filterTagColumnInfo);
-
-        TableDesc newTableDesc =
-            PlanUtils.getReduceValueTableDesc(
-                PlanUtils.getFieldSchemasFromColumnList(pRsConf.getValueCols(), "_col"));
-        pRsConf.setValueSerializeInfo(newTableDesc);
+        tableDesc =
+            PlanUtils.getMapJoinValueTableDesc(
+                PlanUtils.getFieldSchemasFromColumnList(pRsConf.getValueCols(), "mapjoinvalue"));
       }
 
-      // 2. Update MapJoinOperator's valueFilteredTableDescs.
-      // Unlike HashTableSinkOperator used in MR engine, Tez engine directly passes rows from RS to MapJoin.
-      // Therefore, RS's writer and MapJoin's reader should have the same TableDesc. We create valueTableDesc
-      // here again because it can be different from RS's valueSerializeInfo due to ColumnPruner.
-      List<TableDesc> newMapJoinValueFilteredTableDescs = new ArrayList<>();
-      for (byte pos = 0; pos < mapJoinOp.getParentOperators().size(); pos++) {
-        TableDesc tableDesc;
-
-        if (pos == mapJoinDesc.getPosBigTable() || filterMap[pos] == null) {
-          // We did not change corresponding parent operator. Use the original tableDesc.
-          tableDesc = mapJoinDesc.getValueFilteredTblDescs().get(pos);
-        } else {
-          // Create a new TableDesc based on corresponding parent RSOperator.
-          ReduceSinkOperator parent = (ReduceSinkOperator) mapJoinOp.getParentOperators().get(pos);
-          ReduceSinkDesc pRsConf = parent.getConf();
-
-          tableDesc =
-              PlanUtils.getMapJoinValueTableDesc(
-                  PlanUtils.getFieldSchemasFromColumnList(pRsConf.getValueCols(), "mapjoinvalue"));
-        }
-
-        newMapJoinValueFilteredTableDescs.add(tableDesc);
-      }
-      mapJoinDesc.setValueFilteredTblDescs(newMapJoinValueFilteredTableDescs);
+      newMapJoinValueFilteredTableDescs.add(tableDesc);
     }
+    mapJoinDesc.setValueFilteredTblDescs(newMapJoinValueFilteredTableDescs);
 
     return null;
   }
 
+  /**
+   * Generate an ExprNodeDesc that expresses the following method:
+   * JoinUtil#isFiltered(Object, List<ExprNodeEvaluator>, List<ObjectInspector>, int[]).
+   */
   private ExprNodeDesc generateFilterTagExpression(int[] filterMap, List<ExprNodeDesc> filterExprs) {
     ExprNodeDesc filterTagExpr = new ExprNodeConstantDesc(shortType, (short) 0);
     Map<Byte, ExprNodeDesc> filterExprMap = getFilterExprMap(filterMap, filterExprs);
@@ -155,6 +170,12 @@ public class ExtendParentReduceSinkOfMapJoin implements SemanticNodeProcessor {
     return filterTagExpr;
   }
 
+  /**
+   * Group filterExprs by tag and merge each of them into a single boolean ExprNodeDesc using AND operator.
+   * filterInfo is repetition of tag and the length of corresponding filter expressions.
+   * For example, filterInfo = {0, 2, 1, 3} means that the first 2 elements in filterExprs belong to tag 0,
+   * and the remaining 3 elements belong to tag 1.
+   */
   private Map<Byte, ExprNodeDesc> getFilterExprMap(int[] filterInfo, List<ExprNodeDesc> filterExprs) {
     Map<Byte, ExprNodeDesc> filterExprMap = new HashMap<>();
 
@@ -177,6 +198,10 @@ public class ExtendParentReduceSinkOfMapJoin implements SemanticNodeProcessor {
     return filterExprMap;
   }
 
+  /**
+   * Generate an ExprNodeDesc that expresses thw following code:
+   *   if (!condition) { return (short) (1 << tag) } else { return (short) 0; }.
+   */
   private ExprNodeDesc generateFilterTagMask(byte tag, ExprNodeDesc condition) {
     ExprNodeDesc filterMaskValue = new ExprNodeConstantDesc(shortType, (short) (1 << tag));
 
@@ -184,7 +209,8 @@ public class ExtendParentReduceSinkOfMapJoin implements SemanticNodeProcessor {
     negateArg.add(condition);
     ExprNodeDesc negate = new ExprNodeGenericFuncDesc(
         TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME),
-        new GenericUDFOPNot(), negateArg);
+        new GenericUDFOPNot(),
+        negateArg);
 
     GenericUDFBridge toShort = new GenericUDFBridge();
     toShort.setUdfClassName(UDFToShort.class.getName());
