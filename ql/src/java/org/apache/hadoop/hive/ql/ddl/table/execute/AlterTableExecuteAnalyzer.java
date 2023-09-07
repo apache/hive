@@ -74,16 +74,22 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     validateAlterTableType(table, AlterTableType.EXECUTE, false);
     inputs.add(new ReadEntity(table));
     AlterTableExecuteDesc desc = null;
-    if (HiveParser.KW_ROLLBACK == executeCommandType.getType()) {
+    switch (executeCommandType.getType()) {
+    case HiveParser.KW_ROLLBACK:
       desc = getRollbackDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
-    } else if (HiveParser.KW_EXPIRE_SNAPSHOTS == executeCommandType.getType()) {
+      break;
+    case HiveParser.KW_EXPIRE_SNAPSHOTS:
       desc = getExpireSnapshotDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
-    } else if (HiveParser.KW_SET_CURRENT_SNAPSHOT == executeCommandType.getType()) {
+      break;
+    case HiveParser.KW_SET_CURRENT_SNAPSHOT:
       desc = getSetCurrentSnapshotDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
-    } else if (HiveParser.KW_FAST_FORWARD == executeCommandType.getType()) {
+      break;
+    case HiveParser.KW_FAST_FORWARD:
       desc = getFastForwardDesc(tableName, partitionSpec, command);
-    } else if (HiveParser.KW_CHERRY_PICK == executeCommandType.getType()) {
+      break;
+    case HiveParser.KW_CHERRY_PICK:
       desc = getCherryPickDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
+      break;
     }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
