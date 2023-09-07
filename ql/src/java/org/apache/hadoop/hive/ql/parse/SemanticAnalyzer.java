@@ -11265,7 +11265,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (offset > 0 && !hasOrderBy) {
       HiveConf.StrictChecks.checkOffsetWithoutOrderBy(conf);
-      console.printInfo("WARNING: OFFSET without ORDER BY is mostly non-deterministic and meaningless. "
+      warn("OFFSET without ORDER BY is mostly non-deterministic and meaningless. "
           + "Please make sure that you really don't need ORDER BY");
 
       assert limit != null : "OFFSET is always paired with LIMIT";
