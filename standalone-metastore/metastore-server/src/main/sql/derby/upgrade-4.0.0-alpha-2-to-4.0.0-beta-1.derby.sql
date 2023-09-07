@@ -44,8 +44,6 @@ UPDATE "SERDES"
             LEFT JOIN "SDS" ON "TBLS"."SD_ID" = "SDS"."SD_ID"
             WHERE "TBL_ID" IN (SELECT "TBL_ID" FROM "TABLE_PARAMS" WHERE "PARAM_VALUE" LIKE '%KuduStorageHandler%')
     );
--- HIVE-27499
-CREATE UNIQUE INDEX "APP"."NOTIFICATION_LOG_UNIQUE_DB" ON "APP"."NOTIFICATION_LOG" ("DB_NAME", "EVENT_ID");
 
 -- This needs to be the last thing done.  Insert any changes above this line.
 UPDATE "APP".VERSION SET SCHEMA_VERSION='4.0.0-beta-1', VERSION_COMMENT='Hive release version 4.0.0-beta-1' where VER_ID=1;
