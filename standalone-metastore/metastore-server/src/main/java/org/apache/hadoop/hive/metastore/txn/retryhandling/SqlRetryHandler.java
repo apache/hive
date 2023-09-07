@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.ContextNode;
 import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class SqlRetryHandler {
   private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final String MANUAL_RETRY = "ManualRetry";
 
-  private static final ThreadLocal<Object> threadLocal = new ThreadLocal<>();
+  private final ThreadLocal<ContextNode<Object>> threadLocal = new ThreadLocal<>();
 
   /**
    * Derby specific concurrency control
@@ -121,11 +122,16 @@ public class SqlRetryHandler {
     try {
       if (properties.isLockInternally()) {
         lockInternal();
-      }      
-      threadLocal.set(new Object());
+      }
+      threadLocal.set(new ContextNode<>(threadLocal.get(), new Object()));
       return executeWithRetryInternal(properties, function);
     } finally {
-      threadLocal.remove();
+      ContextNode<Object> node = threadLocal.get();
+      if (node != null && node.getParent() != null) {
+        threadLocal.set(node.getParent());
+      } else {
+        threadLocal.remove();
+      }
       if (properties.isLockInternally()) {
         unlockInternal();
       }

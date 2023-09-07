@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryCallProperties;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetry;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryFunction;
@@ -97,30 +98,33 @@ public class ProxyTxnHandler implements InvocationHandler {
       ThrowingSupplier toCall = functionToCall;
       functionToCall = () -> {        
         LOG.debug("Invoking method within transactional context: {}", callerId);
-        MultiDataSourceJdbcResourceHolder.TransactionWrapper wrapper = null;
+        TransactionContext context = null;
         try {
-          wrapper = jdbcResourceHolder.getTransaction(transactional.propagation().value(), transactional.transactionManager());
+          jdbcResourceHolder.bindDataSourceToThread(transactional.transactionManager());
+          context = jdbcResourceHolder.getTransactionManager().getTransaction(transactional.propagation().value());
           Object result = toCall.execute();
           LOG.debug("Successfull method invocation within transactional context: {}, going to commit.", callerId);
-          jdbcResourceHolder.getTransactionManager().commit(wrapper.getTxn());
+          jdbcResourceHolder.getTransactionManager().commit(context);
           return result;
         } catch (Exception e) {
           if (Arrays.stream(transactional.noRollbackFor()).anyMatch(ex -> ex.isInstance(e)) ||
               Arrays.stream(transactional.noRollbackForClassName()).anyMatch(exName -> exName.equals(e.getClass().getName()))) {
             throw e;
           }
-          if (wrapper != null) {
+          if (context != null) {
             if(transactional.rollbackFor().length > 0 || transactional.rollbackForClassName().length > 0) {
               if (Arrays.stream(transactional.rollbackFor()).anyMatch(ex -> ex.isInstance(e)) ||
                   Arrays.stream(transactional.rollbackForClassName()).anyMatch(exName -> exName.equals(e.getClass().getName()))) {
-                jdbcResourceHolder.getTransactionManager().rollback(wrapper.getTxn());                
+                jdbcResourceHolder.getTransactionManager().rollback(context);                
               }
               throw e;
             } else {
-              jdbcResourceHolder.getTransactionManager().rollback(wrapper.getTxn());
+              jdbcResourceHolder.getTransactionManager().rollback(context);
             }
           }
           throw e;
+        } finally {
+          jdbcResourceHolder.unbindDataSourceFromThread();
         }
       };
     }    

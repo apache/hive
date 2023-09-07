@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.jdbc;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.txn.ContextNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -27,8 +28,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -38,18 +37,18 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Wraps multiple {@link DataSource}s into a single object and offers JDBC related resources. 
+ * Holds multiple {@link DataSource}s as a single object and offers JDBC related resources. 
  * Allows access of the {@link NamedParameterJdbcTemplate}, {@link PlatformTransactionManager}, {@link Connection} 
- * objects associated with the wrapped datasources.
+ * objects associated with the registered datasources.
  */
 public class MultiDataSourceJdbcResourceHolder {
 
   private static final Logger LOG = LoggerFactory.getLogger(MultiDataSourceJdbcResourceHolder.class);
 
-  private final ThreadLocal<String> threadLocal = new ThreadLocal<>();
+  private final ThreadLocal<ContextNode<String>> threadLocal = new ThreadLocal<>();
 
   private final Map<String, DataSource> dataSources = new HashMap<>();
-  private final Map<String, PlatformTransactionManager> transactionManagers = new HashMap<>();
+  private final Map<String, AutoCloseableTransactionManager> transactionManagers = new HashMap<>();
   private final Map<String, NamedParameterJdbcTemplate> jdbcTemplates = new HashMap<>();
   private final DatabaseProduct databaseProduct;
 
@@ -70,67 +69,63 @@ public class MultiDataSourceJdbcResourceHolder {
   public void registerDataSource(String dataSourceName, DataSource dataSource) {
     dataSources.put(dataSourceName, dataSource);
     jdbcTemplates.put(dataSourceName, new NamedParameterJdbcTemplate(dataSource));
-    transactionManagers.put(dataSourceName, new DataSourceTransactionManager(dataSource));
-  }
-
-  private String getDataSourceName() {
-    String dataSourceName = threadLocal.get();
-    if (dataSourceName == null) {
-      throw new IllegalStateException("In order to access the JDBC resources, first you need to obtain a transaction " +
-          "using getTransaction(int propagation, String dataSourceName)!");
-    }
-    return dataSourceName;
+    transactionManagers.put(dataSourceName, new AutoCloseableTransactionManager(new DataSourceTransactionManager(dataSource)));
   }
 
   /**
-   * Begins a new transaction or returns an existing, depending on the passed Transaction Propagation.
-   * The created transaction is wrapped into a {@link TransactionWrapper} which is {@link AutoCloseable} and allows using
-   * the wrapper inside a try-with-resources block. Other methods like {@link #getConnection()}, {@link #getJdbcTemplate()},
-   * {@link #getTransactionManager()}, {@link #execute(ParameterizedCommand)}, {@link #execute(String, SqlParameterSource, Function)},
-   * {@link #execute(QueryHandler)} can be called only after calling this method, and before closing the wrapper.
-   * @param propagation The transaction propagation to use.
-   * @param dataSourceName The name of the {@link DataSource} to use for creating the transaction.
-   * @return
+   * Binds the current {@link Thread} to {@link DataSource} identified by the <b>dataSourceName</b> parameter.
+   * Other methods like {@link #getConnection()}, {@link #getJdbcTemplate()}, {@link #execute(ParameterizedCommand)}, 
+   * {@link #execute(String, SqlParameterSource, Function)}, {@link #execute(QueryHandler)} can be called only after 
+   * calling this method, and before calling {@link #unbindDataSourceFromThread()}.
+   * @param dataSourceName The name of the {@link DataSource} bind to the current {@link Thread}.
    */
-  public TransactionWrapper getTransaction(int propagation, String dataSourceName) {
-    try {
-      threadLocal.set(dataSourceName);
-      return new TransactionWrapper(
-          getTransactionManager().getTransaction(new DefaultTransactionDefinition(propagation)));
-    } catch (Exception e) {
-      threadLocal.remove();
-      throw e;
-    }
+  public void bindDataSourceToThread(String dataSourceName) {
+    threadLocal.set(new ContextNode<>(threadLocal.get(), dataSourceName));
   }
 
   /**
-   * @return Returns the {@link NamedParameterJdbcTemplate} associated with the current {@link TransactionWrapper}.
-   * Can be called only within an established {@link TransactionWrapper}.
-   * @throws IllegalStateException Thrown when called outside a {@link TransactionWrapper}.
+   * Removes the binding between the current {@link Thread} and the {@link DataSource}. After calling this method, 
+   * Other methods like {@link #getConnection()}, {@link #getJdbcTemplate()},
+   * {@link #execute(ParameterizedCommand)}, {@link #execute(String, SqlParameterSource, Function)},
+   * {@link #execute(QueryHandler)} will throw {@link IllegalStateException} because it cannot be determined for which
+   * {@link DataSource} the JDBC resources should be returned.
+   */
+  public void unbindDataSourceFromThread() {
+    ContextNode<String> node = threadLocal.get();
+    if (node != null && node.getParent() != null) {
+      threadLocal.set(node.getParent());
+    } else {
+      threadLocal.remove();
+    }
+  }
+  
+  /**
+   * Returns the {@link NamedParameterJdbcTemplate} associated with the current {@link Thread}.
+   * Can be called only after {@link #bindDataSourceToThread(String)} and before {@link #unbindDataSourceFromThread()}.
+   * Ensures that the same instance is returned all the time.
+   * @throws IllegalStateException Thrown when there is no bound {@link DataSource}.
    */
   public NamedParameterJdbcTemplate getJdbcTemplate() {
     return jdbcTemplates.get(getDataSourceName());
   }
 
   /**
-   * Gets a connection to the {@link DataSource} associated with the current {@link TransactionWrapper}. Ensures that the same
-   * instance is returned all the time within a particular transaction. Can be called only within an established
-   * {@link TransactionWrapper}.
-   *
-   * @return Returns a connection to the datasource.
-   * @throws IllegalArgumentException Thrown when called outside a {@link TransactionWrapper}
+   * Returns the {@link Connection} associated with the current {@link Thread}.
+   * Can be called only after {@link #bindDataSourceToThread(String)} and before {@link #unbindDataSourceFromThread()}.
+   * Ensures that the same instance is returned all the time.
+   * @throws IllegalStateException Thrown when there is no bound {@link DataSource}.
    */
   public Connection getConnection() {
     return DataSourceUtils.getConnection(dataSources.get(getDataSourceName()));
   }
 
   /**
-   * Gets the {@link PlatformTransactionManager} associated with the current {@link TransactionWrapper}. Ensures that the same
-   * instance is returned all the time within a particular transaction. Can be called only within an established
-   * {@link TransactionWrapper}.
-   * @return
+   * Returns the {@link AutoCloseableTransactionManager} associated with the current {@link Thread}.
+   * Can be called only after {@link #bindDataSourceToThread(String)} and before {@link #unbindDataSourceFromThread()}.
+   * Ensures that the same instance is returned all the time.
+   * @throws IllegalStateException Thrown when there is no bound {@link DataSource}.
    */
-  public PlatformTransactionManager getTransactionManager() {
+  public AutoCloseableTransactionManager getTransactionManager() {
     return transactionManagers.get(getDataSourceName());
   }
 
@@ -139,6 +134,15 @@ public class MultiDataSourceJdbcResourceHolder {
    */
   public DatabaseProduct getDatabaseProduct() {
     return databaseProduct;
+  }
+
+  private String getDataSourceName() {
+    ContextNode<String> node = threadLocal.get();
+    if (node == null) {
+      throw new IllegalStateException("In order to access the JDBC resources, first you need to obtain a transaction " +
+          "using getTransaction(int propagation, String dataSourceName)!");
+    }
+    return node.getValue();
   }
 
   /**
@@ -199,44 +203,6 @@ public class MultiDataSourceJdbcResourceHolder {
       return getJdbcTemplate().query(queryStr, params, queryHandler);
     } else {
       return getJdbcTemplate().query(queryStr, queryHandler);
-    }
-  }
-
-  /**
-   * Wraps the {@link TransactionStatus} object into an {@link AutoCloseable} object to allow using it in 
-   * try-with-resources block. If the {@link TransactionStatus#isCompleted()} is false upon exiting the try block, 
-   * the transaction will rolled back, otherwise nothing happens.
-   * <br/><br/><b>In other words:</b> This wrapper automatically rolls back uncommitted transactions, but the commit
-   * needs to be done manually using {@link PlatformTransactionManager#commit(TransactionStatus)} the following way:
-   * {@code jdbcResourceHolder.getTransactionManager().commit(wrapper.getTxn());}
-   */
-  public class TransactionWrapper implements AutoCloseable {
-
-    private final TransactionStatus txn;
-
-    TransactionWrapper(TransactionStatus txn) {
-      this.txn = txn;
-    }
-
-    /**
-     * @return Returns the {@link TransactionStatus} instance wrapped by this object.
-     */
-    public TransactionStatus getTxn() {
-      return txn;
-    }
-
-    /**
-     * @see TransactionWrapper TransactionWrapper class level javadoc.
-     */
-    @Override
-    public void close() {
-      try {
-        if (!txn.isCompleted()) {
-          getTransactionManager().rollback(this.txn);
-        }
-      } finally {
-        threadLocal.remove();
-      }
     }
   }
 
