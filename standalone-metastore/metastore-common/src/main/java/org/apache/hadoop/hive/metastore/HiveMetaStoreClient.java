@@ -610,7 +610,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   private <T extends TTransport> T configureThriftMaxMessageSize(T transport) {
-    int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(conf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
+    int maxThriftMessageSize = Math.min(MetastoreConf.getIntVar(
+            conf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE),Integer.MAX_VALUE);
     if (maxThriftMessageSize > 0) {
       if (transport.getConfiguration() == null) {
         LOG.warn("TTransport {} is returning a null Configuration, Thrift max message size is not getting configured",

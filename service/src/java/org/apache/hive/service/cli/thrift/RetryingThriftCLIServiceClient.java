@@ -310,8 +310,8 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
 
     String host = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
     int port = conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT);
-    int maxThriftMessageSize = (int) conf.getSizeVar(HiveConf.ConfVars.HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE);
-    LOG.info("Connecting to " + host + ":" + port);
+    int maxThriftMessageSize = (int) Math.min(conf.getLongVar(HiveConf.ConfVars.HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE),Integer.MAX_VALUE);
+    LOG.info("Connecting to " + host + ":" + port+ " using a thrift max message of size: "+ maxThriftMessageSize);
 
     transport = HiveAuthUtils.getSocketTransport(host, port, 0, maxThriftMessageSize);
     ((TSocket) transport).setTimeout((int) conf.getTimeVar(HiveConf.ConfVars.SERVER_READ_SOCKET_TIMEOUT,
