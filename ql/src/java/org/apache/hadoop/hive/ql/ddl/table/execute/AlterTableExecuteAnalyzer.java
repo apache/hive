@@ -75,21 +75,21 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     inputs.add(new ReadEntity(table));
     AlterTableExecuteDesc desc = null;
     switch (executeCommandType.getType()) {
-    case HiveParser.KW_ROLLBACK:
-      desc = getRollbackDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
-      break;
-    case HiveParser.KW_EXPIRE_SNAPSHOTS:
-      desc = getExpireSnapshotDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
-      break;
-    case HiveParser.KW_SET_CURRENT_SNAPSHOT:
-      desc = getSetCurrentSnapshotDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
-      break;
-    case HiveParser.KW_FAST_FORWARD:
-      desc = getFastForwardDesc(tableName, partitionSpec, command);
-      break;
-    case HiveParser.KW_CHERRY_PICK:
-      desc = getCherryPickDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
-      break;
+      case HiveParser.KW_ROLLBACK:
+        desc = getRollbackDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
+        break;
+      case HiveParser.KW_EXPIRE_SNAPSHOTS:
+        desc = getExpireSnapshotDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
+        break;
+      case HiveParser.KW_SET_CURRENT_SNAPSHOT:
+        desc = getSetCurrentSnapshotDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
+        break;
+      case HiveParser.KW_FAST_FORWARD:
+        desc = getFastForwardDesc(tableName, partitionSpec, command);
+        break;
+      case HiveParser.KW_CHERRY_PICK:
+        desc = getCherryPickDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
+        break;
     }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
