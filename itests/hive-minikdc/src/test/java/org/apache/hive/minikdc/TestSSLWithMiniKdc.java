@@ -98,7 +98,7 @@ public class TestSSLWithMiniKdc {
     MetastoreConf.setVar(clientConf, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:" + miniHS2.getHmsPort());
     // set to a low value to prove THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE is being honored
     // (it should throw an exception)
-    MetastoreConf.setVar(clientConf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "512");
+    MetastoreConf.setLongVar(clientConf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, 512L);
     HiveMetaStoreClient limitedClient = new HiveMetaStoreClient(clientConf);
     String dbName = "default";
     String tableName = "testThriftMaxMessageSize";
