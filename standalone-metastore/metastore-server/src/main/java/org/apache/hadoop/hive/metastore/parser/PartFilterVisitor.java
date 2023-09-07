@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.lang3.StringUtils;
 
 import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
 import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
@@ -110,7 +111,7 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
   @Override
   public TreeNode visitComparison(PartitionFilterParser.ComparisonContext ctx) {
     LeafNode leafNode = new LeafNode();
-    leafNode.keyName = ctx.key.getText();
+    leafNode.keyName = (String) visit(ctx.key);
     leafNode.value = visit(ctx.value);
     leafNode.operator = visitComparisonOperator(ctx.comparisonOperator());
     return leafNode;
@@ -119,7 +120,7 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
   @Override
   public Object visitReverseComparison(PartitionFilterParser.ReverseComparisonContext ctx) {
     LeafNode leafNode = new LeafNode();
-    leafNode.keyName = ctx.key.getText();
+    leafNode.keyName = (String) visit(ctx.key);
     leafNode.value = visit(ctx.value);
     leafNode.operator = visitComparisonOperator(ctx.comparisonOperator());
     leafNode.isReverseOrder = true;
@@ -130,7 +131,7 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
   public TreeNode visitBetweenCondition(PartitionFilterParser.BetweenConditionContext ctx) {
     LeafNode left = new LeafNode();
     LeafNode right = new LeafNode();
-    left.keyName = right.keyName = ctx.key.getText();
+    left.keyName = right.keyName = (String) visit(ctx.key);
     left.value = visit(ctx.lower);
     right.value = visit(ctx.upper);
 
@@ -147,7 +148,7 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
   public TreeNode visitInCondition(PartitionFilterParser.InConditionContext ctx) {
     List<Object> values = visitConstantSeq(ctx.constantSeq());
     boolean isPositive = ctx.NOT() == null;
-    String keyName = ctx.key.getText();
+    String keyName = (String) visit(ctx.key);
     List<LeafNode> nodes = values.stream()
         .map(value -> {
           LeafNode leafNode = new LeafNode();
@@ -264,4 +265,15 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
       throw new ParseCancellationException(e.getMessage());
     }
   }
+
+  @Override
+  public String visitUnquotedIdentifer(PartitionFilterParser.UnquotedIdentiferContext ctx) {
+    return ctx.getText();
+  }
+
+  @Override
+  public String visitQuotedIdentifier(PartitionFilterParser.QuotedIdentifierContext ctx) {
+    return StringUtils.replace(ctx.getText().substring(1, ctx.getText().length() -1 ), "``", "`");
+  }
+
 }
