@@ -40,20 +40,6 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       ListSink
 
-PREHOOK: query: EXPLAIN CBO SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSortLimit(fetch=[2])
-  HiveProject(key=[$6], value=[$7])
-    HiveTableFunctionScan(invocation=[LATERAL(explode(MAP(_UTF-16LE'key1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 100, _UTF-16LE'key2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 200)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) mytab.key, INTEGER mytab.value)])
-      HiveTableScan(table=[[default, src]], table:alias=[src])
-
 PREHOOK: query: SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -93,20 +79,6 @@ STAGE PLANS:
                   expressions: key (type: string), value (type: int)
                   outputColumnNames: _col0, _col1
                   ListSink
-
-PREHOOK: query: EXPLAIN CBO SELECT explode(map('key1', 100, 'key2', 200)) from src limit 2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO SELECT explode(map('key1', 100, 'key2', 200)) from src limit 2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSortLimit(fetch=[2])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableFunctionScan(invocation=[explode(MAP(_UTF-16LE'key1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 100, _UTF-16LE'key2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 200))], rowType=[RecordType(VARCHAR(2147483647) key, INTEGER value)])
-      HiveTableScan(table=[[default, src]], table:alias=[src])
 
 PREHOOK: query: SELECT explode(map('key1', 100, 'key2', 200)) from src limit 2
 PREHOOK: type: QUERY
@@ -311,33 +283,6 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         ListSink
-
-PREHOOK: query: explain CBO select * from lv_noalias a join lv_noalias b on a.key=b.key
-PREHOOK: type: QUERY
-PREHOOK: Input: default@lv_noalias
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: explain CBO select * from lv_noalias a join lv_noalias b on a.key=b.key
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@lv_noalias
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-CBO PLAN:
-HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-  HiveProject(key=[$0], value=[$1])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveProject(key=[$0], value=[$1])
-        HiveSortLimit(fetch=[2])
-          HiveProject(key=[$6], value=[$7])
-            HiveTableFunctionScan(invocation=[LATERAL(explode(MAP(_UTF-16LE'key1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 100, _UTF-16LE'key2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 200)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) mytab.key, INTEGER mytab.value)])
-              HiveTableScan(table=[[default, src]], table:alias=[src])
-  HiveProject(key=[$0], value=[$1])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveProject(key=[$0], value=[$1])
-        HiveSortLimit(fetch=[2])
-          HiveProject(key=[$6], value=[$7])
-            HiveTableFunctionScan(invocation=[LATERAL(explode(MAP(_UTF-16LE'key1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 100, _UTF-16LE'key2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 200)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) mytab.key, INTEGER mytab.value)])
-              HiveTableScan(table=[[default, src]], table:alias=[src])
 
 PREHOOK: query: select * from lv_noalias a join lv_noalias b on a.key=b.key
 PREHOOK: type: QUERY

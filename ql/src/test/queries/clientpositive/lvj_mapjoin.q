@@ -1,5 +1,6 @@
 --! qt:dataset:alltypesorc
 set hive.explain.user=false;
+set hive.cbo.fallback.strategy=NEVER;
 -- SORT_QUERY_RESULTS
 
 drop table sour1;
@@ -22,14 +23,6 @@ insert overwrite table expod1 select id, array(av1,av2,av3) from sour1;
 insert overwrite table expod2 select id, array(bv1,bv2,bv3) from sour2;
 
 explain with sub1 as
-(select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
-sub2 as
-(select bid, bvalue from expod2 lateral view explode(bv) bvs as bvalue)
-select sub1.aid, sub1.avalue, sub2.bvalue
-from sub1,sub2
-where sub1.aid=sub2.bid;
-
-explain cbo with sub1 as
 (select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
 sub2 as
 (select bid, bvalue from expod2 lateral view explode(bv) bvs as bvalue)

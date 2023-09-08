@@ -87,34 +87,6 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       ListSink
 
-PREHOOK: query: EXPLAIN CBO SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z') a AS x, y LIMIT 2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z') a AS x, y LIMIT 2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSortLimit(fetch=[2])
-  HiveProject(x=[$6], y=[$7])
-    HiveTableFunctionScan(invocation=[LATERAL(stack(2, _UTF-16LE'x':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", ARRAY(1), _UTF-16LE'z':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) a.x, INTEGER ARRAY a.y)])
-      HiveTableScan(table=[[default, src]], table:alias=[src])
-
-PREHOOK: query: EXPLAIN CBO SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z', array(4)) a AS x, y LIMIT 2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z', array(4)) a AS x, y LIMIT 2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSortLimit(fetch=[2])
-  HiveProject(x=[$6], y=[$7])
-    HiveTableFunctionScan(invocation=[LATERAL(stack(2, _UTF-16LE'x':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", ARRAY(1), _UTF-16LE'z':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", ARRAY(4)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) a.x, INTEGER ARRAY a.y)])
-      HiveTableScan(table=[[default, src]], table:alias=[src])
-
 PREHOOK: query: SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z') a AS x, y LIMIT 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -165,20 +137,6 @@ STAGE PLANS:
                 expressions: col0 (type: string), col1 (type: string), null (type: void)
                 outputColumnNames: _col0, _col1, _col2
                 ListSink
-
-PREHOOK: query: EXPLAIN CBO
-SELECT stack(1, "en", "dbpedia", NULL )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT stack(1, "en", "dbpedia", NULL )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-CBO PLAN:
-HiveTableFunctionScan(invocation=[stack(1, _UTF-16LE'en':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'dbpedia':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:NULL)], rowType=[RecordType(VARCHAR(2147483647) col0, VARCHAR(2147483647) col1, NULL col2)])
-  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: SELECT stack(1, "en", "dbpedia", NULL )
 PREHOOK: type: QUERY

@@ -210,36 +210,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN CBO SELECT explode(array(1, 2, 3)) AS myCol FROM src LIMIT 3
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO SELECT explode(array(1, 2, 3)) AS myCol FROM src LIMIT 3
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSortLimit(fetch=[3])
-  HiveProject(col=[$0])
-    HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(INTEGER col)])
-      HiveTableScan(table=[[default, src]], table:alias=[src])
-
-PREHOOK: query: EXPLAIN CBO SELECT a.myCol, count(1) FROM (SELECT explode(array(1, 2, 3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO SELECT a.myCol, count(1) FROM (SELECT explode(array(1, 2, 3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-CBO PLAN:
-HiveAggregate(group=[{0}], agg#0=[count()])
-  HiveProject(col=[$0])
-    HiveSortLimit(fetch=[3])
-      HiveProject(col=[$0])
-        HiveTableFunctionScan(invocation=[explode(ARRAY(1, 2, 3))], rowType=[RecordType(INTEGER col)])
-          HiveTableScan(table=[[default, src]], table:alias=[src])
-
 PREHOOK: query: SELECT explode(array(1, 2, 3)) AS myCol FROM src ORDER BY myCol LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -531,38 +501,6 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         ListSink
-
-PREHOOK: query: EXPLAIN CBO SELECT explode(map(1, 'one', 2, 'two', 3, 'three')) as (myKey, myVal) FROM src ORDER BY myKey, myVal LIMIT 3
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO SELECT explode(map(1, 'one', 2, 'two', 3, 'three')) as (myKey, myVal) FROM src ORDER BY myKey, myVal LIMIT 3
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[3])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableFunctionScan(invocation=[explode(MAP(1, _UTF-16LE'one':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 2, _UTF-16LE'two':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 3, _UTF-16LE'three':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))], rowType=[RecordType(INTEGER key, VARCHAR(2147483647) value)])
-      HiveTableScan(table=[[default, src]], table:alias=[src])
-
-PREHOOK: query: EXPLAIN CBO SELECT a.myKey, a.myVal, count(1) FROM (SELECT explode(map(1, 'one', 2, 'two', 3, 'three')) as (myKey, myVal) FROM src LIMIT 3) a GROUP BY a.myKey, a.myVal ORDER BY a.myKey, a.myVal
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO SELECT a.myKey, a.myVal, count(1) FROM (SELECT explode(map(1, 'one', 2, 'two', 3, 'three')) as (myKey, myVal) FROM src LIMIT 3) a GROUP BY a.myKey, a.myVal ORDER BY a.myKey, a.myVal
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])
-  HiveProject(key=[$0], value=[$1], $f2=[$2])
-    HiveAggregate(group=[{0, 1}], agg#0=[count()])
-      HiveProject(key=[$0], value=[$1])
-        HiveSortLimit(fetch=[3])
-          HiveProject(key=[$0], value=[$1])
-            HiveTableFunctionScan(invocation=[explode(MAP(1, _UTF-16LE'one':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 2, _UTF-16LE'two':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 3, _UTF-16LE'three':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))], rowType=[RecordType(INTEGER key, VARCHAR(2147483647) value)])
-              HiveTableScan(table=[[default, src]], table:alias=[src])
 
 PREHOOK: query: SELECT explode(map(1, 'one', 2, 'two', 3, 'three')) as (myKey, myVal) FROM src ORDER BY myKey, myVal LIMIT 3
 PREHOOK: type: QUERY

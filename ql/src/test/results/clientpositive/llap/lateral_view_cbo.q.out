@@ -1,0 +1,34 @@
+PREHOOK: query: EXPLAIN CBO SELECT myTable.myCol FROM src 
+LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT myTable.myCol FROM src 
+LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(mycol=[$6])
+  HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
+    HiveTableScan(table=[[default, src]], table:alias=[src])
+
+PREHOOK: query: EXPLAIN CBO SELECT myTable.myCol, myTable2.myCol2 FROM src
+LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT myTable.myCol, myTable2.myCol2 FROM src
+LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(mycol=[$6], mycol2=[$7])
+  HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5, $6)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol, INTEGER mytable2.mycol2)])
+    HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], mytable.mycol=[$6])
+      HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
+        HiveTableScan(table=[[default, src]], table:alias=[src])
+

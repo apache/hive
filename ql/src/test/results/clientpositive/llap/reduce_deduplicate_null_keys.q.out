@@ -128,52 +128,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN CBO
-WITH
-TC AS
-(SELECT
-   TB.i A,
-   TB.i+1 B
-FROM TA
-LATERAL VIEW POSEXPLODE(ARRAY('a','b')) TB as i, x
-ORDER BY A),
-TD AS
-(SELECT
-    CASE WHEN A = B THEN 1 ELSE 2 END C
-FROM TC)
-SELECT C
-FROM TD
-ORDER BY C
-PREHOOK: type: QUERY
-PREHOOK: Input: default@ta
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-WITH
-TC AS
-(SELECT
-   TB.i A,
-   TB.i+1 B
-FROM TA
-LATERAL VIEW POSEXPLODE(ARRAY('a','b')) TB as i, x
-ORDER BY A),
-TD AS
-(SELECT
-    CASE WHEN A = B THEN 1 ELSE 2 END C
-FROM TC)
-SELECT C
-FROM TD
-ORDER BY C
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ta
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(c=[CASE(=($0, $1), 1, 2)])
-    HiveSortLimit(sort0=[$0], dir0=[ASC])
-      HiveProject(a=[$5], b=[+($5, 1)])
-        HiveTableFunctionScan(invocation=[LATERAL(posexplode(ARRAY(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), $0, $1, $2, $3, $4)], rowType=[RecordType(INTEGER id, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER tb.i, VARCHAR(2147483647) tb.x)])
-          HiveTableScan(table=[[default, ta]], table:alias=[ta])
-
 PREHOOK: query: WITH
 TC AS
 (SELECT

@@ -1,6 +1,7 @@
 -- HIVE-24104: NPE due to null key columns in ReduceSink after deduplication
 -- The query in this test case is not very meaningful but corresponds to a reduced and anonymized version of a query
 -- used in production.
+set hive.cbo.fallback.strategy=NEVER;
 CREATE TABLE TA(id int);
 INSERT INTO TA VALUES(10);
 
@@ -23,22 +24,6 @@ SELECT C
 FROM TD
 ORDER BY C;
 
-EXPLAIN CBO
-WITH
-TC AS
-(SELECT
-   TB.i A,
-   TB.i+1 B
-FROM TA
-LATERAL VIEW POSEXPLODE(ARRAY('a','b')) TB as i, x
-ORDER BY A),
-TD AS
-(SELECT
-    CASE WHEN A = B THEN 1 ELSE 2 END C
-FROM TC)
-SELECT C
-FROM TD
-ORDER BY C;
 -- Execution fails before HIVE-24104
 WITH
 TC AS

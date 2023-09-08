@@ -2,6 +2,7 @@
 -- SORT_QUERY_RESULTS
 
 set hive.mapred.mode=nonstrict;
+set hive.cbo.fallback.strategy=NEVER;
 create table url_t (key string, fullurl string);
 
 insert overwrite table url_t
@@ -23,9 +24,6 @@ describe function parse_url_tuple;
 describe function extended parse_url_tuple;
 
 explain 
-select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key;
-
-explain cbo
 select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key;
 
 select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key;

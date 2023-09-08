@@ -1,6 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.optimize.skewjoin.compiletime = true;
 set hive.auto.convert.join=true;
+set hive.cbo.fallback.strategy=NEVER;
 
 CREATE TABLE T1_n39(key STRING, value STRING) STORED AS TEXTFILE;
 
@@ -16,9 +17,6 @@ insert overwrite table array_valued_T1_n39 select key, array(value) from T1_n39;
 -- adding a order by at the end to make the results deterministic
 
 explain 
-select * from (select a.key as key, b.value as array_val from T1_n39 a join array_valued_T1_n39 b on a.key=b.key) i lateral view explode (array_val) c as val;
-
-explain cbo
 select * from (select a.key as key, b.value as array_val from T1_n39 a join array_valued_T1_n39 b on a.key=b.key) i lateral view explode (array_val) c as val;
 
 select * from (select a.key as key, b.value as array_val from T1_n39 a join array_valued_T1_n39 b on a.key=b.key) i lateral view explode (array_val) c as val

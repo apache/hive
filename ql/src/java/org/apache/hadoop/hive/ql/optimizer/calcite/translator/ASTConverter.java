@@ -387,15 +387,9 @@ public class ASTConverter {
       ASTNode function = buildUDTFAST(call.getOperator().getName(), children);
       sel.add(function);
 
-      // When we are treating a UDTF as a 'select', it is not a lateral view.
-      // In this case, it means that only the fields from the UDTF are selected
-      // out of the RelNode and placed into the SELEXPR. So we want to ignore
-      // any field in the inputRef mapping.
       List<String> fields = udtf.getRowType().getFieldNames();
       for (int i = 0; i < udtf.getRowType().getFieldCount(); ++i) {
-        if (!udtf.containsInputRefMapping(i)) {
-          sel.add(HiveParser.Identifier, fields.get(i));
-        }
+        sel.add(HiveParser.Identifier, fields.get(i));
       }
       b.add(sel);
       hiveAST.select = b.node();
@@ -419,7 +413,7 @@ public class ASTConverter {
     b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
   }
 
-  private ASTNode buildUDTFAST(String functionName, List<ASTNode> children) {
+  private static ASTNode buildUDTFAST(String functionName, List<ASTNode> children) {
     ASTNode node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
     node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, functionName));
     for (ASTNode c : children) {
@@ -588,8 +582,7 @@ public class ASTConverter {
         ast = ASTBuilder.subQuery(left, sqAlias);
         s = new Schema((Union) r, sqAlias);
       }
-    } else if (r instanceof HiveTableFunctionScan &&
-        isLateralView((HiveTableFunctionScan) r)) {
+    } else if (isLateralView(r)) {
       TableFunctionScan tfs = ((TableFunctionScan) r);
 
       // retrieve the base table source.
@@ -644,7 +637,7 @@ public class ASTConverter {
     }
   }
 
-  private ASTNode createASTLateralView(TableFunctionScan tfs, Schema s,
+  private static ASTNode createASTLateralView(TableFunctionScan tfs, Schema s,
       QueryBlockInfo tableFunctionSource, String sqAlias) {
     // The structure of the AST LATERAL VIEW will be:
     //
@@ -667,7 +660,7 @@ public class ASTConverter {
     RexCall call = (RexCall) lateralCall.getOperands().get(0);
     for (RexNode rn : call.getOperands()) {
       ASTNode expr = rn.accept(new RexVisitor(s, rn instanceof RexLiteral,
-          select.getCluster().getRexBuilder()));
+          tfs.getCluster().getRexBuilder()));
       children.add(expr);
     }
     ASTNode function = buildUDTFAST(call.getOperator().getName(), children);
@@ -706,14 +699,11 @@ public class ASTConverter {
     return lateralview.node();
   }
 
-  /**
-   * Check to see if we can optimize out the lateral view operators
-   * We do not need to use the lateral view syntax if all of the fields
-   * selected out of the table scan come from the UDTF call.  No join
-   * is needed because all the fields come from the table level rather
-   * than the row level.
-   */
-  private boolean isLateralView(HiveTableFunctionScan htfs) {
+  private boolean isLateralView(RelNode relNode) {
+    if (!(relNode instanceof TableFunctionScan)) {
+      return false;
+    }
+    TableFunctionScan htfs = (TableFunctionScan) relNode;
     RexCall call = (RexCall) htfs.getCall();
     return ((RexCall) htfs.getCall()).getOperator() == SqlStdOperatorTable.LATERAL;
   }

@@ -175,51 +175,14 @@ STAGE PLANS:
         TableScan
           alias: mytbl_n1
           Select Operator
-            expressions: key (type: string)
+            expressions: array(struct(key,value,'A',10,key),struct(key,value,'B',20,key)) (type: array<struct<col1:string,col2:string,col3:string,col4:int,col5:string>>)
             outputColumnNames: _col0
-            Lateral View Forward
+            UDTF Operator
+              function name: inline
               Select Operator
-                Lateral View Join Operator
-                  outputColumnNames: _col2, _col3, _col4
-                  Select Operator
-                    expressions: _col2 (type: string), _col3 (type: int), _col4 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    ListSink
-              Select Operator
-                expressions: array(struct('A',10,_col0),struct('B',20,_col0)) (type: array<struct<col1:string,col2:int,col3:string>>)
-                outputColumnNames: _col0
-                UDTF Operator
-                  function name: inline
-                  Lateral View Join Operator
-                    outputColumnNames: _col2, _col3, _col4
-                    Select Operator
-                      expressions: _col2 (type: string), _col3 (type: int), _col4 (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      ListSink
-
-PREHOOK: query: EXPLAIN CBO
-SELECT tf.col1, tf.col2, tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t
-  LATERAL VIEW
-  INLINE(array(struct('A', 10, t.key),struct('B', 20, t.key))) tf AS col1, col2, col3
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT tf.col1, tf.col2, tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t
-  LATERAL VIEW
-  INLINE(array(struct('A', 10, t.key),struct('B', 20, t.key))) tf AS col1, col2, col3
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(col1=[$2], col2=[$3], col3=[$4])
-  HiveTableFunctionScan(invocation=[LATERAL(inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0))), $0, $1)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, VARCHAR(2147483647) tf.col3)])
-    HiveProject(key=[$0], value=[$1])
-      HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
+                expressions: col3 (type: string), col4 (type: int), col5 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                ListSink
 
 PREHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
@@ -277,20 +240,6 @@ STAGE PLANS:
                 expressions: col1 (type: string), col2 (type: int), col3 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 ListSink
-
-PREHOOK: query: EXPLAIN CBO
-SELECT INLINE(array(struct('A', 10, 30),struct('B', 20, 30))) AS (col1, col2, col3)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT INLINE(array(struct('A', 10, 30),struct('B', 20, 30))) AS (col1, col2, col3)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-CBO PLAN:
-HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, 30), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, 30)))], rowType=[RecordType(VARCHAR(2147483647) col1, INTEGER col2, INTEGER col3)])
-  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: SELECT INLINE(array(struct('A', 10, 30),struct('B', 20, 30))) AS (col1, col2, col3)
 PREHOOK: type: QUERY
@@ -728,49 +677,14 @@ STAGE PLANS:
         TableScan
           alias: mytbl_n1
           Select Operator
-            expressions: key (type: string)
+            expressions: array(struct(key,value,'A',10,key),struct(key,value,'B',20,key)) (type: array<struct<col1:string,col2:string,col3:string,col4:int,col5:string>>)
             outputColumnNames: _col0
-            Lateral View Forward
+            UDTF Operator
+              function name: inline
               Select Operator
-                Lateral View Join Operator
-                  outputColumnNames: _col2, _col3, _col4
-                  Select Operator
-                    expressions: _col2 (type: string), _col3 (type: int), _col4 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    ListSink
-              Select Operator
-                expressions: array(struct('A',10,_col0),struct('B',20,_col0)) (type: array<struct<col1:string,col2:int,col3:string>>)
-                outputColumnNames: _col0
-                UDTF Operator
-                  function name: inline
-                  Lateral View Join Operator
-                    outputColumnNames: _col2, _col3, _col4
-                    Select Operator
-                      expressions: _col2 (type: string), _col3 (type: int), _col4 (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      ListSink
-
-PREHOOK: query: EXPLAIN CBO
-SELECT tf.col1, tf.col2, tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT tf.col1, tf.col2, tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(col1=[$2], col2=[$3], col3=[$4])
-  HiveTableFunctionScan(invocation=[LATERAL(inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0))), $0, $1)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, VARCHAR(2147483647) tf.col3)])
-    HiveProject(key=[$0], value=[$1])
-      HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
+                expressions: col3 (type: string), col4 (type: int), col5 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                ListSink
 
 PREHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
@@ -823,51 +737,14 @@ STAGE PLANS:
         TableScan
           alias: mytbl_n1
           Select Operator
-            expressions: key (type: string)
+            expressions: array(struct(key,value,'A',10,key),struct(key,value,'B',20,key)) (type: array<struct<col1:string,col2:string,col3:string,col4:int,col5:string>>)
             outputColumnNames: _col0
-            Lateral View Forward
+            UDTF Operator
+              function name: inline
               Select Operator
-                expressions: _col0 (type: string)
+                expressions: col1 (type: string)
                 outputColumnNames: _col0
-                Lateral View Join Operator
-                  outputColumnNames: _col0, _col2, _col3, _col4
-                  Select Operator
-                    expressions: _col0 (type: string)
-                    outputColumnNames: _col0
-                    ListSink
-              Select Operator
-                expressions: array(struct('A',10,_col0),struct('B',20,_col0)) (type: array<struct<col1:string,col2:int,col3:string>>)
-                outputColumnNames: _col0
-                UDTF Operator
-                  function name: inline
-                  Lateral View Join Operator
-                    outputColumnNames: _col0, _col2, _col3, _col4
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      ListSink
-
-PREHOOK: query: EXPLAIN CBO
-SELECT t.key
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT t.key
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(key=[$0])
-  HiveTableFunctionScan(invocation=[LATERAL(inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0))), $0, $1)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, VARCHAR(2147483647) tf.col3)])
-    HiveProject(key=[$0], value=[$1])
-      HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
+                ListSink
 
 PREHOOK: query: SELECT t.key
 FROM
@@ -920,49 +797,14 @@ STAGE PLANS:
         TableScan
           alias: mytbl_n1
           Select Operator
-            expressions: key (type: string)
+            expressions: array(struct(key,value,'A',10,key),struct(key,value,'B',20,key)) (type: array<struct<col1:string,col2:string,col3:string,col4:int,col5:string>>)
             outputColumnNames: _col0
-            Lateral View Forward
+            UDTF Operator
+              function name: inline
               Select Operator
-                Lateral View Join Operator
-                  outputColumnNames: _col2, _col3, _col4
-                  Select Operator
-                    expressions: _col4 (type: string)
-                    outputColumnNames: _col0
-                    ListSink
-              Select Operator
-                expressions: array(struct('A',10,_col0),struct('B',20,_col0)) (type: array<struct<col1:string,col2:int,col3:string>>)
+                expressions: col5 (type: string)
                 outputColumnNames: _col0
-                UDTF Operator
-                  function name: inline
-                  Lateral View Join Operator
-                    outputColumnNames: _col2, _col3, _col4
-                    Select Operator
-                      expressions: _col4 (type: string)
-                      outputColumnNames: _col0
-                      ListSink
-
-PREHOOK: query: EXPLAIN CBO
-SELECT tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(col3=[$4])
-  HiveTableFunctionScan(invocation=[LATERAL(inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0))), $0, $1)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, VARCHAR(2147483647) tf.col3)])
-    HiveProject(key=[$0], value=[$1])
-      HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
+                ListSink
 
 PREHOOK: query: SELECT tf.col3
 FROM
@@ -1057,76 +899,29 @@ STAGE PLANS:
                               isPivotResult: true
                   Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: row_number_window_0 (type: int)
+                    expressions: array(struct(row_number_window_0,'A',10,row_number_window_0),struct(row_number_window_0,'B',20,row_number_window_0)) (type: array<struct<col1:int,col2:string,col3:int,col4:int>>)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                    Lateral View Forward
-                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 13400 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 5 Data size: 13400 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
                       Select Operator
-                        Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                        Lateral View Join Operator
-                          outputColumnNames: _col1, _col2, _col3
-                          Statistics: Num rows: 5 Data size: 12840 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: _col3 (type: int)
-                            outputColumnNames: _col0
-                            Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                            File Output Operator
-                              compressed: false
-                              Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                              table:
-                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      Select Operator
-                        expressions: array(struct('A',10,_col0),struct('B',20,_col0)) (type: array<struct<col1:string,col2:int,col3:int>>)
+                        expressions: col4 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 5 Data size: 12800 Basic stats: COMPLETE Column stats: COMPLETE
-                        UDTF Operator
-                          Statistics: Num rows: 5 Data size: 12800 Basic stats: COMPLETE Column stats: COMPLETE
-                          function name: inline
-                          Lateral View Join Operator
-                            outputColumnNames: _col1, _col2, _col3
-                            Statistics: Num rows: 5 Data size: 12840 Basic stats: COMPLETE Column stats: COMPLETE
-                            Select Operator
-                              expressions: _col3 (type: int)
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                              File Output Operator
-                                compressed: false
-                                Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                                table:
-                                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
         ListSink
-
-PREHOOK: query: EXPLAIN CBO
-SELECT tf.col3
-FROM
-  (SELECT row_number() over (order by key desc) as r FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT tf.col3
-FROM
-  (SELECT row_number() over (order by key desc) as r FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(col3=[$3])
-  HiveTableFunctionScan(invocation=[LATERAL(inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0))), $0)], rowType=[RecordType(INTEGER r, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, INTEGER tf.col3)])
-    HiveProject(r=[row_number() OVER (PARTITION BY 0 ORDER BY $0 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
-      HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
 
 PREHOOK: query: SELECT tf.col3
 FROM

@@ -28,6 +28,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
@@ -135,8 +136,12 @@ public class LateralViewPlan {
 
   private RexCall getLateralFunction(ASTNode functionAST, RowResolver inputRR, RelNode inputRel)
       throws SemanticException {
+    RexCall udtfCall = getUDTFFunction(functionAST, inputRR);
+    if (isInlineArray(udtfCall)) {
+      return udtfCall;
+    }
     List<RexNode> operands = new ArrayList<>();
-    operands.add(getUDTFFunction(functionAST, inputRR));
+    operands.add(udtfCall);
     for (int i = 0; i < inputRel.getRowType().getFieldCount(); ++i) {
       RelDataType type = inputRel.getRowType().getFieldList().get(i).getType();
       operands.add(this.cluster.getRexBuilder().makeInputRef(type, i));
@@ -284,5 +289,23 @@ public class LateralViewPlan {
       colMappings.add(new RelColumnMapping(i, 0, i, false));
     }
     return colMappings;
+  }
+
+  public static boolean isInlineArray(RexCall rexCall) {
+    if (!FunctionRegistry.INLINE_FUNC_NAME.equalsIgnoreCase(rexCall.getOperator().getName())) {
+      return false;
+    }
+
+    Preconditions.checkState(!rexCall.getOperands().isEmpty());
+    RexNode operand = rexCall.getOperands().get(0);
+    if (!(operand instanceof RexCall)) {
+      return false;
+    }
+
+    RexCall firstOperand = (RexCall) operand;
+    if (!FunctionRegistry.ARRAY_FUNC_NAME.equalsIgnoreCase(firstOperand.getOperator().getName())) {
+      return false;
+    }
+    return true;
   }
 }

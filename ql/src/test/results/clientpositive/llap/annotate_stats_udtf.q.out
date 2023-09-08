@@ -125,21 +125,6 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     ListSink
 
-PREHOOK: query: explain cbo select 1, r from HIVE_20262
-      lateral view explode(a) t as r
-PREHOOK: type: QUERY
-PREHOOK: Input: default@hive_20262
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo select 1, r from HIVE_20262
-      lateral view explode(a) t as r
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@hive_20262
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(_o__c0=[1], r=[$5])
-  HiveTableFunctionScan(invocation=[LATERAL(explode($0), $0, $1, $2, $3, $4)], rowType=[RecordType(INTEGER ARRAY a, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER t.r)])
-    HiveTableScan(table=[[default, hive_20262]], table:alias=[hive_20262])
-
 PREHOOK: query: explain select explode(array(1,2,3,4,5)) as col
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

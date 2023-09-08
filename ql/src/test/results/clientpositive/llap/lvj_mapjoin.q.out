@@ -263,42 +263,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain cbo with sub1 as
-(select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
-sub2 as
-(select bid, bvalue from expod2 lateral view explode(bv) bvs as bvalue)
-select sub1.aid, sub1.avalue, sub2.bvalue
-from sub1,sub2
-where sub1.aid=sub2.bid
-PREHOOK: type: QUERY
-PREHOOK: Input: default@expod1
-PREHOOK: Input: default@expod2
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo with sub1 as
-(select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
-sub2 as
-(select bid, bvalue from expod2 lateral view explode(bv) bvs as bvalue)
-select sub1.aid, sub1.avalue, sub2.bvalue
-from sub1,sub2
-where sub1.aid=sub2.bid
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@expod1
-POSTHOOK: Input: default@expod2
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(aid=[$0], avalue=[$1], bvalue=[$3])
-  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(aid=[$0], avalue=[$6])
-      HiveTableFunctionScan(invocation=[LATERAL(explode($1), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(INTEGER aid, VARCHAR(2147483647) ARRAY av, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) avs.avalue)])
-        HiveProject(aid=[$0], av=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5])
-          HiveFilter(condition=[IS NOT NULL($0)])
-            HiveTableScan(table=[[default, expod1]], table:alias=[expod1])
-    HiveProject(bid=[$0], bvalue=[$6])
-      HiveTableFunctionScan(invocation=[LATERAL(explode($1), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(INTEGER bid, VARCHAR(2147483647) ARRAY bv, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) bvs.bvalue)])
-        HiveProject(bid=[$0], bv=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5])
-          HiveFilter(condition=[IS NOT NULL($0)])
-            HiveTableScan(table=[[default, expod2]], table:alias=[expod2])
-
 PREHOOK: query: with sub1 as
 (select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
 sub2 as

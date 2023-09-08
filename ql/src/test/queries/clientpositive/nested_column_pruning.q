@@ -85,9 +85,6 @@ SELECT s2.f8 FROM nested_tbl_1_n1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AN
 EXPLAIN SELECT col1, col2 FROM nested_tbl_1_n1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2;
-EXPLAIN CBO SELECT col1, col2 FROM nested_tbl_1_n1
-LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
-LATERAL VIEW explode(s3.f12) tbl2 AS col2;
 SELECT col1, col2 FROM nested_tbl_1_n1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2;

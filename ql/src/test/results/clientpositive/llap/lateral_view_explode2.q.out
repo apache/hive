@@ -109,21 +109,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN CBO SELECT col1, col2 FROM src LATERAL VIEW explode2(array(1,2,3)) myTable AS col1, col2 group by col1, col2 LIMIT 3
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO SELECT col1, col2 FROM src LATERAL VIEW explode2(array(1,2,3)) myTable AS col1, col2 group by col1, col2 LIMIT 3
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSortLimit(fetch=[3])
-  HiveProject(mytable.col1=[$0], mytable.col2=[$1])
-    HiveAggregate(group=[{6, 7}])
-      HiveTableFunctionScan(invocation=[LATERAL(explode2(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.col1, INTEGER mytable.col2)])
-        HiveTableScan(table=[[default, src]], table:alias=[src])
-
 PREHOOK: query: SELECT col1, col2 FROM src LATERAL VIEW explode2(array(1,2,3)) myTable AS col1, col2 group by col1, col2 LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

@@ -150,22 +150,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain cbo
-select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
-PREHOOK: type: QUERY
-PREHOOK: Input: default@url_t
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo
-select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@url_t
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(key=[$0], ho=[$6], pa=[$7], qu=[$8], re=[$9], pr=[$10], fi=[$11], au=[$12], us=[$13], qk1=[$14])
-    HiveTableFunctionScan(invocation=[LATERAL(parse_url_tuple($1, _UTF-16LE'HOST':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'PATH':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'QUERY':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'REF':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'PROTOCOL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'FILE':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'AUTHORITY':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USERINFO':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'QUERY:k1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) fullurl, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) b.ho, VARCHAR(2147483647) b.pa, VARCHAR(2147483647) b.qu, VARCHAR(2147483647) b.re, VARCHAR(2147483647) b.pr, VARCHAR(2147483647) b.fi, VARCHAR(2147483647) b.au, VARCHAR(2147483647) b.us, VARCHAR(2147483647) b.qk1)])
-      HiveTableScan(table=[[default, url_t]], table:alias=[a])
-
 PREHOOK: query: select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@url_t
