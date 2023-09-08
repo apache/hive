@@ -251,6 +251,7 @@ public class MetastoreConf {
       ConfVars.TRY_DIRECT_SQL_DDL,
       ConfVars.CLIENT_SOCKET_TIMEOUT,
       ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
+      ConfVars.PARTITION_ORDER_EXPR,
       ConfVars.CAPABILITY_CHECK,
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       ConfVars.EXPRESSION_PROXY_CLASS
@@ -1272,6 +1273,10 @@ public class MetastoreConf {
     PARTITION_NAME_WHITELIST_PATTERN("metastore.partition.name.whitelist.pattern",
         "hive.metastore.partition.name.whitelist.pattern", "",
         "Partition names will be checked against this regex pattern and rejected if not matched."),
+    PARTITION_ORDER_EXPR("metastore.partition.order.expr",
+        "hive.metastore.partition.order.expr", "\"PART_NAME\" asc",
+        "The default partition order if the metastore does not return all partitions. \n" +
+            "It can be sorted based on any column in the PARTITIONS table (e.g., \"PARTITIONS\".\"CREATE_TIME\" desc, \"PARTITIONS\".\"LAST_ACCESS_TIME\" desc etc)"),
     PART_INHERIT_TBL_PROPS("metastore.partition.inherit.table.properties",
         "hive.metastore.partition.inherit.table.properties", "",
         "List of comma separated keys occurring in table properties which will get inherited to newly created partitions. \n" +
@@ -1478,9 +1483,10 @@ public class MetastoreConf {
                 " corresponding service discovery servers e.g. a zookeeper. Otherwise they are " +
                 "used as URIs for remote metastore."),
     THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE("metastore.thrift.client.max.message.size",
-        "hive.thrift.client.max.message.size", "1gb", new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
-        "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
-        "library. The upper limit is 2147483648 bytes (or 2gb)."),
+            "hive.thrift.client.max.message.size", (2*1024*1024*1024L)-1L,
+            new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
+            "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
+                    "library. The upper limit is 2147483647 bytes"),
     THRIFT_SERVICE_DISCOVERY_MODE("metastore.service.discovery.mode",
             "hive.metastore.service.discovery.mode",
             "",

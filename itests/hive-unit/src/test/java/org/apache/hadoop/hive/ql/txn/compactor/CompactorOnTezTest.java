@@ -190,31 +190,28 @@ public abstract class CompactorOnTezTest {
   protected HiveHookEvents.HiveHookEventProto getRelatedTezEvent(String dbTableName) throws Exception {
     int retryCount = 3;
     while (retryCount-- > 0) {
-      try {
-        List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
-        for (ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader : readers) {
-          HiveHookEvents.HiveHookEventProto event = reader.readEvent();
-          boolean getRelatedEvent = false;
-          while (!getRelatedEvent) {
-            while (event != null && ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
-              event = reader.readEvent();
+      List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      for (ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader : readers) {
+        do {
+          HiveHookEvents.HiveHookEventProto event;
+          try {
+            if ((event = reader.readEvent()) == null) {
+              break;
             }
-            // Tables read is the table picked for compaction.
-            if (event != null && event.getTablesReadCount() > 0 && dbTableName.equalsIgnoreCase(event.getTablesRead(0))) {
-              getRelatedEvent = true;
-            } else {
-              event = reader.readEvent();
-            }
+          } catch (IOException e) {
+            //IO error, or reached end of current event file. Advancing to next.
+            break;
           }
-          if (getRelatedEvent) {
+          if (ExecutionMode.TEZ.equals(ExecutionMode.valueOf(event.getExecutionMode())) &&
+              event.getTablesReadCount() > 0 &&
+              dbTableName.equalsIgnoreCase(event.getTablesRead(0))) {
             return event;
           }
-        }
-      } catch (EOFException e) {
-        //Since Event writing is async it may happen that the event we are looking for is not yet written out.
-        //Let's retry it after waiting a bit
-        Thread.sleep(2000);
+        } while (true);
       }
+      //Since Event writing is async it may happen that the event we are looking for is not yet written out.
+      //Let's retry it after waiting a bit
+      Thread.sleep(3000);
     }
     return null;
   }

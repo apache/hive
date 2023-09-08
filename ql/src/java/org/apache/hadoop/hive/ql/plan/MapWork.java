@@ -180,6 +180,10 @@ public class MapWork extends BaseWork {
 
   private ProbeDecodeContext probeDecodeContext = null;
 
+  protected List<Path> inputPaths;
+
+  private boolean useInputPathsDirectly;
+
   public MapWork() {}
 
   public MapWork(String name) {
@@ -933,5 +937,21 @@ public class MapWork extends BaseWork {
       return null;
     }
     return new MapExplainVectorization(this);
+  }
+
+  public List<Path> getInputPaths() {
+    return inputPaths;
+  }
+
+  public void setInputPaths(List<Path> inputPaths) {
+    this.inputPaths = inputPaths;
+  }
+
+  public void setUseInputPathsDirectly(boolean useInputPathsDirectly) {
+    this.useInputPathsDirectly = useInputPathsDirectly;
+  }
+
+  public boolean isUseInputPathsDirectly() {
+    return useInputPathsDirectly;
   }
 }

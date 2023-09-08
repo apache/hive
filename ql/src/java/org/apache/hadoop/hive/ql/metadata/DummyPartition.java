@@ -45,13 +45,13 @@ public class DummyPartition extends Partition {
   public DummyPartition() {
   }
   
-  public DummyPartition(Table tbl, String name) throws HiveException {
+  public DummyPartition(Table tbl, String name) {
     setTable(tbl);
     this.name = name;
   }  
 
   public DummyPartition(Table tbl, String name,
-      Map<String, String> partSpec) throws HiveException {
+      Map<String, String> partSpec) {
     setTable(tbl);
     this.name = name;
     this.partSpec = new LinkedHashMap<String, String>(partSpec);

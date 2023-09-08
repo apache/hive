@@ -279,7 +279,7 @@ public class ConvertAstToSearchArg {
   /**
    * Return the boxed literal at the given position
    * @param expr the parent node
-   * @param type the type of the expression
+   * @param boxType the type of the expression
    * @param position the child position to check
    * @return the boxed literal if found otherwise null
    */
@@ -583,12 +583,12 @@ public class ConvertAstToSearchArg {
   }
 
   public static String sargToKryo(SearchArgument sarg) {
-    Output out = new Output(KRYO_OUTPUT_BUFFER_SIZE, KRYO_OUTPUT_BUFFER_MAX_SIZE);
-    Kryo kryo = SerializationUtilities.borrowKryo();
-    kryo.writeObject(out, sarg);
-    out.close();
-    SerializationUtilities.releaseKryo(kryo);
-    return Base64.encodeBase64String(out.toBytes());
+    try (Output out = new Output(KRYO_OUTPUT_BUFFER_SIZE, KRYO_OUTPUT_BUFFER_MAX_SIZE)) {
+      Kryo kryo = SerializationUtilities.borrowKryo();
+      kryo.writeObject(out, sarg);
+      SerializationUtilities.releaseKryo(kryo);
+      return Base64.encodeBase64String(out.toBytes());
+    }
   }
 
 }

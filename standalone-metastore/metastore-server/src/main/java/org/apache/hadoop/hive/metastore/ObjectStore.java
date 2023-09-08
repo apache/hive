@@ -3975,7 +3975,7 @@ public class ObjectStore implements RawStore, Configurable {
         LOG.info(
             "Redirecting to directSQL enabled API: db: {} tbl: {} partVals: {}",
             db_name, tbl_name, Joiner.on(',').join(part_vals));
-        return getPartitions(catName, db_name, tbl_name, -1, skipColSchemaForPartitions);
+        return getPartitions(catName, db_name, tbl_name, max_parts, skipColSchemaForPartitions);
       }
       LOG.debug("executing listPartitionNamesPsWithAuth");
       Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,

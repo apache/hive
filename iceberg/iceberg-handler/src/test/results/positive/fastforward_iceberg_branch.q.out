@@ -1,0 +1,190 @@
+PREHOOK: query: create external table ice01(id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: create external table ice01(id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+PREHOOK: query: insert into ice01 values (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 values (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+PREHOOK: query: alter table ice01 create branch test1
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 create branch test1
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from default.ice01.branch_test1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_test1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+PREHOOK: query: alter table ice01 create branch test01
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 create branch test01
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: insert into default.ice01.branch_test1 values (11), (21), (31), (41)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into default.ice01.branch_test1 values (11), (21), (31), (41)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from default.ice01.branch_test1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_test1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+11
+2
+21
+3
+31
+4
+41
+PREHOOK: query: explain alter table ice01 execute fast-forward 'test1'
+PREHOOK: type: ALTERTABLE_EXECUTE
+PREHOOK: Input: default@ice01
+POSTHOOK: query: explain alter table ice01 execute fast-forward 'test1'
+POSTHOOK: type: ALTERTABLE_EXECUTE
+POSTHOOK: Input: default@ice01
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Execute operation
+      table name: default.ice01
+      spec: AlterTableExecuteSpec{operationType=FAST_FORWARD, operationParams=FastForwardSpec{sourceBranch=main, targetBranch=test1}}
+
+PREHOOK: query: alter table ice01 execute fast-forward 'test1'
+PREHOOK: type: ALTERTABLE_EXECUTE
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 execute fast-forward 'test1'
+POSTHOOK: type: ALTERTABLE_EXECUTE
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+11
+2
+21
+3
+31
+4
+41
+PREHOOK: query: explain alter table ice01 execute fast-forward 'test01' 'test1'
+PREHOOK: type: ALTERTABLE_EXECUTE
+PREHOOK: Input: default@ice01
+POSTHOOK: query: explain alter table ice01 execute fast-forward 'test01' 'test1'
+POSTHOOK: type: ALTERTABLE_EXECUTE
+POSTHOOK: Input: default@ice01
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Execute operation
+      table name: default.ice01
+      spec: AlterTableExecuteSpec{operationType=FAST_FORWARD, operationParams=FastForwardSpec{sourceBranch=test01, targetBranch=test1}}
+
+PREHOOK: query: alter table ice01 execute fast-forward 'test01' 'test1'
+PREHOOK: type: ALTERTABLE_EXECUTE
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 execute fast-forward 'test01' 'test1'
+POSTHOOK: type: ALTERTABLE_EXECUTE
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from default.ice01.branch_test01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_test01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+11
+2
+21
+3
+31
+4
+41
+PREHOOK: query: alter table ice01 create branch test2
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 create branch test2
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: insert into default.ice01.branch_test2 values (12), (22), (32), (42)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into default.ice01.branch_test2 values (12), (22), (32), (42)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: alter table ice01 execute fast-forward 'main' 'test2'
+PREHOOK: type: ALTERTABLE_EXECUTE
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 execute fast-forward 'main' 'test2'
+POSTHOOK: type: ALTERTABLE_EXECUTE
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+11
+12
+2
+21
+22
+3
+31
+32
+4
+41
+42

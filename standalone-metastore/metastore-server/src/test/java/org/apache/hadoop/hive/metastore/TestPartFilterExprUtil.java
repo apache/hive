@@ -70,6 +70,20 @@ public class TestPartFilterExprUtil {
   }
 
   @Test
+  public void testDateColumnNameKeyword() throws MetaException {
+    MetaException exception = assertThrows(MetaException.class,
+            () -> PartFilterExprUtil.parseFilterTree("date='1990-11-10'"));
+
+    assertTrue(exception.getMessage().contains("Error parsing partition filter"));
+  }
+
+  @Test
+  public void testDateColumnNameKeywordWithBackTicks() throws MetaException {
+    checkFilter("`date`='1990-11-10'",
+    "LeafNode{keyName='date', operator='=', value=1990-11-10}");
+  }
+
+  @Test
   public void testSingleColInExpressionWhenDateLiteralTypeIsSpecified() throws MetaException {
     checkFilter("(j) IN (DATE'1990-11-10', DATE'1990-11-11', DATE'1990-11-12')",
     "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=1990-11-11}}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}");

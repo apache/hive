@@ -907,7 +907,7 @@ class MetaStoreDirectSql {
     final String catNameLcase = normalizeSpace(catName).toLowerCase();
 
     // We have to be mindful of order during filtering if we are not returning all partitions.
-    String orderForFilter = (max != null) ? " order by \"PART_NAME\" asc" : "";
+    String orderForFilter = (max != null) ? " order by " + MetastoreConf.getVar(conf, ConfVars.PARTITION_ORDER_EXPR) : "";
 
     String queryText =
         "select " + PARTITIONS + ".\"PART_ID\" from " + PARTITIONS + ""

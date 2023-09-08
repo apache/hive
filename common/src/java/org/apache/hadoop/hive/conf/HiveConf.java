@@ -2928,10 +2928,10 @@ public class HiveConf extends Configuration {
     HIVE_STATS_MAX_NUM_STATS("hive.stats.max.num.stats", (long) 10000,
         "When the number of stats to be updated is huge, this value is used to control the number of \n" +
         " stats to be sent to HMS for update."),
-    HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE("hive.thrift.client.max.message.size", "1gb",
-        new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
-        "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
-        "library. The upper limit is 2147483648 bytes (or 2gb)."),
+    HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE("hive.thrift.client.max.message.size", (2*1024*1024*1024L)-1L,
+            new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
+            "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
+                    "library. The upper limit is 2147483647 bytes."),
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +
@@ -3536,8 +3536,8 @@ public class HiveConf extends Configuration {
     HIVEFETCHTASKCACHING("hive.fetch.task.caching", true,
         "Enabling the caching of the result of fetch tasks eliminates the chance of running into a failing read." +
             " On the other hand, if enabled, the hive.fetch.task.conversion.threshold must be adjusted accordingly. That" +
-            " is 1GB by default which must be lowered in case of enabled caching to prevent the consumption of too much memory."),
-    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", 1073741824L,
+            " is 200MB by default which must be lowered in case of enabled caching to prevent the consumption of too much memory."),
+    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", 209715200L,
         "Input threshold for applying hive.fetch.task.conversion. If target table is native, input length\n" +
         "is calculated by summation of file lengths. If it's not native, storage handler for the table\n" +
         "can optionally implement org.apache.hadoop.hive.ql.metadata.InputEstimator interface."),
