@@ -29,16 +29,18 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
@@ -4037,7 +4039,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
           throws Throwable {
     HiveConf hiveConf = new HiveConf(primary.getConf());
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
-    abortPreviousCompactions(txnHandler, hiveConf);
+    markPreviousCompactionsAsComplete(txnHandler, hiveConf);
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, compactionType);
     rqst.setPartitionname(partName);
     txnHandler.compact(rqst);
@@ -4046,19 +4048,24 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     runCleaner(hiveConf);
   }
 
-  private void abortPreviousCompactions(TxnStore txnHandler, HiveConf conf) throws Throwable {
+  private void markPreviousCompactionsAsComplete(TxnStore txnHandler, HiveConf conf) throws Throwable {
     Connection conn = TestTxnDbUtil.getConnection(conf);
     Statement stmt = conn.createStatement();
-    ResultSet rs = stmt.executeQuery("select * from COMPACTION_QUEUE");
-    List<Long> compactionsToAbort = new ArrayList<>();
+    ResultSet rs = stmt.executeQuery("select CQ_ID from COMPACTION_QUEUE");
+    List<Long> openCompactionIds = new ArrayList<>();
     while (rs.next()) {
-      compactionsToAbort.add(rs.getLong("CQ_ID"));
+      openCompactionIds.add(rs.getLong(1));
     }
-    if (!compactionsToAbort.isEmpty()) {
-      AbortCompactionRequest rqst = new AbortCompactionRequest();
-      rqst.setCompactionIds(compactionsToAbort);
-      txnHandler.abortCompactions(rqst);
-    }
+    openCompactionIds.forEach(id->{
+      CompactionInfoStruct compactionInfoStruct = new CompactionInfoStruct();
+      compactionInfoStruct.setId(id);
+      CompactionInfo compactionInfo = CompactionInfo.compactionStructToInfo(compactionInfoStruct);
+      try {
+        txnHandler.markCompacted(compactionInfo);
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   private FileStatus[] getDirsInTableLoc(WarehouseInstance wh, String db, String table) throws Throwable {
