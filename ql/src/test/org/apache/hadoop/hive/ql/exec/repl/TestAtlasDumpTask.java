@@ -37,20 +37,21 @@ import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.testutil.ReflectionUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.plugins.InlineMockMaker;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
@@ -65,15 +66,15 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockConstructionWithAnswer;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test class for testing Atlas metadata Dump.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({LoggerFactory.class, UserGroupInformation.class, ConfigurationConverter.class})
-
+@RunWith(MockitoJUnitRunner.class)
 public class TestAtlasDumpTask {
 
   @Mock
@@ -92,48 +93,56 @@ public class TestAtlasDumpTask {
 
   @Test
   public void testAtlasDumpMetrics() throws Exception {
-    Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
-    Mockito.when(conf.get(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname)).thenReturn("http://localhost:21000/atlas");
-    Mockito.when(conf.get(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname)).thenReturn("tgtDb");
-    Mockito.when(conf.get(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname)).thenReturn("srcCluster");
-    Mockito.when(conf.get(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname)).thenReturn("tgtCluster");
-    Mockito.when(conf.get(ReplUtils.DEFAULT_FS_CONFIG)).thenReturn("hdfs:tgtFsUri:8020");
-    Mockito.when(work.getStagingDir()).thenReturn(new Path("hdfs://tmp:8020/staging"));
-    Mockito.when(work.getSrcDB()).thenReturn("srcDB");
-    Mockito.when(work.isBootstrap()).thenReturn(true);
-    atlasDumpTask = new AtlasDumpTask(atlasRestClient, conf, work);
-    AtlasDumpTask atlasDumpTaskSpy = Mockito.spy(atlasDumpTask);
-    Mockito.when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
     Logger logger = Mockito.mock(Logger.class);
-    Whitebox.setInternalState(ReplState.class, logger);
-    Mockito.doReturn(0L).when(atlasDumpTaskSpy)
-      .dumpAtlasMetaData(Mockito.any(AtlasRequestBuilder.class), Mockito.any(AtlasReplInfo.class));
-    Mockito.doNothing().when(atlasDumpTaskSpy).createDumpMetadata(Mockito.any(AtlasReplInfo.class),
-                                                                  Mockito.any(Long.class));
-    int status = atlasDumpTaskSpy.execute();
-    Assert.assertEquals(0, status);
-    ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-    ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
-    Mockito.verify(logger,
-        Mockito.times(2)).info(replStateCaptor.capture(),
-        eventCaptor.capture(), eventDetailsCaptor.capture());
-    Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
-    Assert.assertEquals("ATLAS_DUMP_START", eventCaptor.getAllValues().get(0));
-    Assert.assertEquals("ATLAS_DUMP_END", eventCaptor.getAllValues().get(1));
-    Assert.assertTrue(eventDetailsCaptor.getAllValues().get(1).toString(), eventDetailsCaptor.getAllValues().get(0)
-        .toString().contains("{\"dbName\":\"srcDB\",\"dumpStartTime"));
-    Assert.assertTrue(eventDetailsCaptor
-        .getAllValues().get(1).toString().contains("{\"dbName\":\"srcDB\",\"dumpEndTime\""));
+
+    try (MockedConstruction<AtlasDumpLogger> atlasDumpLoggerMockedConstruction = mockConstruction(AtlasDumpLogger.class)) {
+
+      when(work.getMetricCollector()).thenReturn(metricCollector);
+      when(conf.get(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname)).thenReturn("http://localhost:21000/atlas");
+      when(conf.get(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname)).thenReturn("tgtDb");
+      when(conf.get(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname)).thenReturn("srcCluster");
+      when(conf.get(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname)).thenReturn("tgtCluster");
+      when(conf.get(ReplUtils.DEFAULT_FS_CONFIG)).thenReturn("hdfs:tgtFsUri:8020");
+      when(work.getStagingDir()).thenReturn(new Path("hdfs://tmp:8020/staging"));
+      when(work.getSrcDB()).thenReturn("srcDB");
+      when(work.isBootstrap()).thenReturn(true);
+      atlasDumpTask = new AtlasDumpTask(atlasRestClient, conf, work);
+      AtlasDumpTask atlasDumpTaskSpy = Mockito.spy(atlasDumpTask);
+      when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
+      // Todo: figure this shit out
+//      Whitebox.setInternalState(ReplState.class, logger);
+      ReflectionUtil.setField(atlasDumpTaskSpy, "LOG", logger);
+      Mockito.doReturn(0L).when(atlasDumpTaskSpy)
+              .dumpAtlasMetaData(Mockito.any(AtlasRequestBuilder.class), Mockito.any(AtlasReplInfo.class));
+      Mockito.doNothing().when(atlasDumpTaskSpy).createDumpMetadata(Mockito.any(AtlasReplInfo.class),
+              Mockito.any(Long.class));
+      int status = atlasDumpTaskSpy.execute();
+      Assert.assertEquals(0, status);
+      ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
+      ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+      ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
+      Mockito.verify(logger,
+              Mockito.times(2)).info(replStateCaptor.capture(),
+              eventCaptor.capture(), eventDetailsCaptor.capture());
+      Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
+      Assert.assertEquals("ATLAS_DUMP_START", eventCaptor.getAllValues().get(0));
+      Assert.assertEquals("ATLAS_DUMP_END", eventCaptor.getAllValues().get(1));
+      Assert.assertTrue(eventDetailsCaptor.getAllValues().get(1).toString(), eventDetailsCaptor.getAllValues().get(0)
+              .toString().contains("{\"dbName\":\"srcDB\",\"dumpStartTime"));
+      Assert.assertTrue(eventDetailsCaptor
+              .getAllValues().get(1).toString().contains("{\"dbName\":\"srcDB\",\"dumpEndTime\""));
+    }
   }
 
   @Test
-  public void testAtlasRestClientBuilder() throws SemanticException, IOException {
-    mockStatic(UserGroupInformation.class);
-    when(UserGroupInformation.getLoginUser()).thenReturn(mock(UserGroupInformation.class));
-    AtlasRestClientBuilder atlasRestCleintBuilder = new AtlasRestClientBuilder("http://localhost:31000");
-    AtlasRestClient atlasClient = atlasRestCleintBuilder.getClient(conf);
-    Assert.assertTrue(atlasClient != null);
+  public void testAtlasRestClientBuilder() throws SemanticException {
+    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class)) {
+      userGroupInformationMockedStatic.when(UserGroupInformation::getLoginUser).thenReturn(mock(UserGroupInformation.class));
+
+      AtlasRestClientBuilder atlasRestClientBuilder = new AtlasRestClientBuilder("http://localhost:31000");
+      AtlasRestClient atlasClient = atlasRestClientBuilder.getClient(conf);
+      Assert.assertNotNull(atlasClient);
+    }
   }
 
   @Test
@@ -228,23 +237,26 @@ public class TestAtlasDumpTask {
 
   @Test
   public void testAtlasClientTimeouts() throws Exception {
-    when(conf.getTimeVar(HiveConf.ConfVars.REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT,
-            TimeUnit.MILLISECONDS)).thenReturn(20L);
-    when(conf.getTimeVar(HiveConf.ConfVars.REPL_ATLAS_CLIENT_READ_TIMEOUT, TimeUnit.MILLISECONDS)).thenReturn(500L);
-    mockStatic(UserGroupInformation.class);
-    when(UserGroupInformation.getLoginUser()).thenReturn(mock(UserGroupInformation.class));
-    mockStatic(ConfigurationConverter.class);
-    when(ConfigurationConverter.getConfiguration(Mockito.any(Properties.class))).thenCallRealMethod();
-    AtlasRestClientBuilder atlasRestCleintBuilder = new AtlasRestClientBuilder("http://localhost:31000");
-    AtlasRestClient atlasClient = atlasRestCleintBuilder.getClient(conf);
-    Assert.assertTrue(atlasClient != null);
-    ArgumentCaptor<Properties> propsCaptor = ArgumentCaptor.forClass(Properties.class);
-    PowerMockito.verifyStatic(ConfigurationConverter.class, Mockito.times(1));
-    ConfigurationConverter.getConfiguration(propsCaptor.capture());
-    Assert.assertEquals("20", propsCaptor.getValue().getProperty(
-            AtlasRestClientBuilder.ATLAS_PROPERTY_CONNECT_TIMEOUT_IN_MS));
-    Assert.assertEquals("500", propsCaptor.getValue().getProperty(
-            AtlasRestClientBuilder.ATLAS_PROPERTY_READ_TIMEOUT_IN_MS));
+    try (
+            MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
+            MockedStatic<ConfigurationConverter> configurationConverterMockedStatic = mockStatic(ConfigurationConverter.class)
+            ) {
+      userGroupInformationMockedStatic.when(UserGroupInformation::getLoginUser).thenReturn(mock(UserGroupInformation.class));
+      configurationConverterMockedStatic.when(() -> ConfigurationConverter.getConfiguration(Mockito.any(Properties.class))).thenCallRealMethod();
+
+      when(conf.getTimeVar(HiveConf.ConfVars.REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT,
+              TimeUnit.MILLISECONDS)).thenReturn(20L);
+      when(conf.getTimeVar(HiveConf.ConfVars.REPL_ATLAS_CLIENT_READ_TIMEOUT, TimeUnit.MILLISECONDS)).thenReturn(500L);
+      AtlasRestClientBuilder atlasRestCleintBuilder = new AtlasRestClientBuilder("http://localhost:31000");
+      AtlasRestClient atlasClient = atlasRestCleintBuilder.getClient(conf);
+      Assert.assertNotNull(atlasClient);
+      ArgumentCaptor<Properties> propsCaptor = ArgumentCaptor.forClass(Properties.class);
+      configurationConverterMockedStatic.verify(() -> ConfigurationConverter.getConfiguration(propsCaptor.capture()));
+      Assert.assertEquals("20", propsCaptor.getValue().getProperty(
+              AtlasRestClientBuilder.ATLAS_PROPERTY_CONNECT_TIMEOUT_IN_MS));
+      Assert.assertEquals("500", propsCaptor.getValue().getProperty(
+              AtlasRestClientBuilder.ATLAS_PROPERTY_READ_TIMEOUT_IN_MS));
+    }
   }
 
   @Test

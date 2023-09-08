@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.testutil.ReflectionUtil;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -54,7 +55,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-import org.mockito.internal.util.reflection.FieldSetter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -3660,7 +3660,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       driver.getFetchTask().fetch(res);
       swapTxnManager(txnMgr2);
 
-      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+      ReflectionUtil.setField(txnMgr2, "numStatements", 0);
       txnMgr2.getMS().unlock(checkLock.getLockid());
     }
     driver2.lockAndRespond();
@@ -3755,8 +3755,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       
       driver.getFetchTask().fetch(res);
       swapTxnManager(txnMgr2);
-      
-      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+
+      ReflectionUtil.setField(txnMgr2, "numStatements", 0);
       txnMgr2.getMS().unlock(checkLock.getLockid());
     }
     driver2.lockAndRespond();
@@ -3889,7 +3889,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       driver.getFetchTask().fetch(res);
       swapTxnManager(txnMgr2);
 
-      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+      ReflectionUtil.setField(txnMgr2, "numStatements", 0);
       txnMgr2.getMS().unlock(checkLock.getLockid());
     }
     driver2.lockAndRespond();
@@ -4031,7 +4031,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       driver.getFetchTask().fetch(res);
       swapTxnManager(txnMgr2);
 
-      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+      ReflectionUtil.setField(txnMgr2, "numStatements", 0);
       txnMgr2.getMS().unlock(checkLock.getLockid());
     }
     driver2.lockAndRespond();
@@ -4127,7 +4127,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       driver.getFetchTask().fetch(res);
       swapTxnManager(txnMgr2);
 
-      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+      ReflectionUtil.setField(txnMgr2, "numStatements", 0);
       txnMgr2.getMS().unlock(checkLock.getLockid());
     }
     driver2.lockAndRespond();
@@ -4395,7 +4395,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       driver.getFetchTask().fetch(res);
       swapTxnManager(txnMgr2);
 
-      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+      ReflectionUtil.setField(txnMgr2, "numStatements", 0);
       txnMgr2.getMS().unlock(checkLock.getLockid());
     }
     driver2.lockAndRespond();
@@ -4492,7 +4492,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       driver.getFetchTask().fetch(res);
       swapTxnManager(txnMgr2);
 
-      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+      ReflectionUtil.setField(txnMgr2, "numStatements", 0);
       txnMgr2.getMS().unlock(checkLock.getLockid());
     }
     driver2.lockAndRespond();

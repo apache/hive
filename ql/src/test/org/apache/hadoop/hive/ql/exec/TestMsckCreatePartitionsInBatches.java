@@ -186,7 +186,7 @@ public class TestMsckCreatePartitionsInBatches {
     // batch size of 20 and decaying factor of 2
     msck.createPartitionsInBatches(spyDb, repairOutput, partsNotInMs, table, 20, 2, 0);
     // there should be 1 call to create partitions with batch sizes of 10
-    verify(spyDb, times(1)).add_partitions(Mockito.anyObject(), anyBoolean(), anyBoolean());
+    verify(spyDb, times(1)).add_partitions(Mockito.any(), anyBoolean(), anyBoolean());
     ArgumentCaptor<Boolean> ifNotExistsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<Boolean> needResultsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass(List.class);

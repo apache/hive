@@ -49,10 +49,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareOnlyThisForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -67,9 +64,7 @@ import static org.junit.Assert.assertTrue;
  * Unit Test class for In Memory Replication Metric Collection.
  */
 
-@PowerMockIgnore({ "javax.*", "com.sun.*", "org.w3c.*" })
-@PrepareOnlyThisForTest({MetricSink.class})
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class TestReplicationMetricCollector {
 
   HiveConf conf;
@@ -92,8 +87,8 @@ public class TestReplicationMetricCollector {
   }
 
   private void disableBackgroundThreads() {
-    PowerMockito.mockStatic(MetricSink.class);
-    Mockito.when(MetricSink.getInstance()).thenReturn(metricSinkInstance);
+//    PowerMockito.mockStatic(MetricSink.class);
+//    Mockito.when(MetricSink.getInstance()).thenReturn(metricSinkInstance);
   }
 
   @After

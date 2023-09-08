@@ -54,7 +54,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2.swapTxnManager;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class TestTxnCommands3 extends TxnCommandsBaseForTests {

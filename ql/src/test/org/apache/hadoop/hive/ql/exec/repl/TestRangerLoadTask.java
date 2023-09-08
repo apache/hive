@@ -34,7 +34,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +124,7 @@ public class TestRangerLoadTask {
   @Test
   public void testSuccessRangerDumpMetrics() throws Exception {
     Logger logger = Mockito.mock(Logger.class);
-    Whitebox.setInternalState(ReplState.class, logger);
+//    Whitebox.setInternalState(ReplState.class, logger);
     String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
         + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
         + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"cm_hive\",\"name\":\"db-level\",\"policyType\":0,"

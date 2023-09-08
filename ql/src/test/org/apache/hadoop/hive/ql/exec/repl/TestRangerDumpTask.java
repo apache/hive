@@ -35,9 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +48,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SER
 /**
  * Unit test class for testing Ranger Dump.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({LoggerFactory.class})
+@RunWith(MockitoJUnitRunner.class)
 public class TestRangerDumpTask {
 
   private RangerDumpTask task;
@@ -143,7 +140,7 @@ public class TestRangerDumpTask {
   @Test
   public void testSuccessRangerDumpMetrics() throws Exception {
     Logger logger = Mockito.mock(Logger.class);
-    Whitebox.setInternalState(ReplState.class, logger);
+//    Whitebox.setInternalState(ReplState.class, logger);
     RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),

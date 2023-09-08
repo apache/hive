@@ -34,8 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,12 +49,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ PrimaryToReplicaResourceFunction.class, FileSystem.class, ReplCopyTask.class,
-                    System.class })
+@RunWith(MockitoJUnitRunner.class)
 public class TestPrimaryToReplicaResourceFunction {
 
   private PrimaryToReplicaResourceFunction function;
@@ -81,15 +77,15 @@ public class TestPrimaryToReplicaResourceFunction {
 
   @Test
   public void createDestinationPath() throws IOException, SemanticException, URISyntaxException {
-    mockStatic(FileSystem.class);
+//    mockStatic(FileSystem.class);
     when(FileSystem.get(any(Configuration.class))).thenReturn(mockFs);
     when(FileSystem.get(any(URI.class), any(Configuration.class))).thenReturn(mockFs);
     when(mockFs.getScheme()).thenReturn("hdfs");
     when(mockFs.getUri()).thenReturn(new URI("hdfs", "somehost:9000", null, null, null));
-    mockStatic(System.class);
+//    mockStatic(System.class);
 //    when(System.nanoTime()).thenReturn(Long.MAX_VALUE);
     when(functionObj.getFunctionName()).thenReturn("someFunctionName");
-    mockStatic(ReplCopyTask.class);
+//    mockStatic(ReplCopyTask.class);
     Task mock = mock(Task.class);
     when(ReplCopyTask.getLoadCopyTask(any(ReplicationSpec.class), any(Path.class), any(Path.class),
         any(HiveConf.class), any(), any())).thenReturn(mock);

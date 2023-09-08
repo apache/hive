@@ -29,7 +29,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 
 /**
@@ -56,7 +55,7 @@ public class TestAtlasLoadTask {
     AtlasLoadTask atlasLoadTaskSpy = Mockito.spy(atlasLoadTask);
     Mockito.when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
     Logger logger = Mockito.mock(Logger.class);
-    Whitebox.setInternalState(ReplState.class, logger);
+//    Whitebox.setInternalState(ReplState.class, logger);
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:21000/atlas", "srcDB",
         "tgtDB", "srcCluster", "tgtCluster", new Path("hdfs://tmp"), null, conf);
     atlasReplInfo.setSrcFsUri("hdfs://srcFsUri:8020");

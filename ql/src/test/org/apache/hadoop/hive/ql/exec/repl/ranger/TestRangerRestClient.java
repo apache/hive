@@ -28,21 +28,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.TimeUnit;
 
+import static org.mockito.Mockito.mockStatic;
+
 
 /**
  * Unit test class for testing Ranger Dump.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({UserGroupInformation.class})
+@RunWith(MockitoJUnitRunner.class)
 public class TestRangerRestClient {
 
   @Mock
@@ -56,21 +56,24 @@ public class TestRangerRestClient {
 
   @Before
   public void setup() throws Exception {
-    PowerMockito.mockStatic(UserGroupInformation.class);
-    Mockito.when(UserGroupInformation.getLoginUser()).thenReturn(userGroupInformation);
-    Mockito.when(userGroupInformation.doAs((PrivilegedAction<Object>) Mockito.any())).thenCallRealMethod();
-    Mockito.when(userGroupInformation.doAs((PrivilegedExceptionAction<Object>) Mockito.any())).thenCallRealMethod();
-    Mockito.when(mockClient.getRangerExportUrl(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-      .thenCallRealMethod();
-    Mockito.when(mockClient.getRangerImportUrl(Mockito.anyString(), Mockito.anyString()))
-      .thenCallRealMethod();
-    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS)).thenReturn(1L);
-    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS)).thenReturn(20L);
-    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_JITTER, TimeUnit.SECONDS)).thenReturn(1L);
-    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES, TimeUnit.SECONDS))
-      .thenReturn(10L);
-    Mockito.when(conf.getFloat(HiveConf.ConfVars.REPL_RETRY_BACKOFF_COEFFICIENT.varname, 1.0f))
-      .thenReturn(1.0f);
+    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class)) {
+
+      userGroupInformationMockedStatic.when(UserGroupInformation::getLoginUser).thenReturn(userGroupInformation);
+
+      Mockito.when(userGroupInformation.doAs((PrivilegedAction<Object>) Mockito.any())).thenCallRealMethod();
+      Mockito.when(userGroupInformation.doAs((PrivilegedExceptionAction<Object>) Mockito.any())).thenCallRealMethod();
+      Mockito.when(mockClient.getRangerExportUrl(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+              .thenCallRealMethod();
+      Mockito.when(mockClient.getRangerImportUrl(Mockito.anyString(), Mockito.anyString()))
+              .thenCallRealMethod();
+      Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS)).thenReturn(1L);
+      Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS)).thenReturn(20L);
+      Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_JITTER, TimeUnit.SECONDS)).thenReturn(1L);
+      Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES, TimeUnit.SECONDS))
+              .thenReturn(10L);
+      Mockito.when(conf.getFloat(HiveConf.ConfVars.REPL_RETRY_BACKOFF_COEFFICIENT.varname, 1.0f))
+              .thenReturn(1.0f);
+    }
   }
 
   @Test

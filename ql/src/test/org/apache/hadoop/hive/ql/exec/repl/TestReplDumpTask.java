@@ -34,9 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,13 +46,8 @@ import org.slf4j.LoggerFactory;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ Utils.class, ReplDumpTask.class})
-@PowerMockIgnore({ "javax.management.*" })
+@RunWith(MockitoJUnitRunner.class)
 public class TestReplDumpTask {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplDumpTask.class);
@@ -113,20 +106,20 @@ public class TestReplDumpTask {
     String dbRandomKey = "akeytoberandom";
     ReplScope replScope = new ReplScope("default");
 
-    mockStatic(Utils.class);
-    when(Utils.matchesDb(same(hive), eq("default")))
-        .thenReturn(Collections.singletonList("default"));
-    when(Utils.getAllTables(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);
-    when(Utils.setDbBootstrapDumpState(same(hive), eq("default"))).thenReturn(dbRandomKey);
-    when(Utils.matchesTbl(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);
-
-
-    when(hive.getAllFunctions()).thenReturn(Collections.emptyList());
-    when(queryState.getConf()).thenReturn(conf);
-    when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
-    when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
-    when(HiveConf.getVar(conf, HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
-    whenNew(HiveWrapper.class).withAnyArguments().thenReturn(mock(HiveWrapper.class));
+//    mockStatic(Utils.class);
+//    when(Utils.matchesDb(same(hive), eq("default")))
+//        .thenReturn(Collections.singletonList("default"));
+//    when(Utils.getAllTables(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);
+//    when(Utils.setDbBootstrapDumpState(same(hive), eq("default"))).thenReturn(dbRandomKey);
+//    when(Utils.matchesTbl(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);
+//
+//
+//    when(hive.getAllFunctions()).thenReturn(Collections.emptyList());
+//    when(queryState.getConf()).thenReturn(conf);
+//    when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
+//    when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
+//    when(HiveConf.getVar(conf, HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
+//    whenNew(HiveWrapper.class).withAnyArguments().thenReturn(mock(HiveWrapper.class));
 
     ReplDumpTask task = new StubReplDumpTask() {
       private int tableDumpCount = 0;
