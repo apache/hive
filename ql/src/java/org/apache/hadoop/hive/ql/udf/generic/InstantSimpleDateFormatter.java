@@ -18,16 +18,17 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
 
-final class UnixTimeSimpleDateFormatter extends UnixTimeFormatterCache<SimpleDateFormat> {
+final class InstantSimpleDateFormatter extends InstantFormatterCache<SimpleDateFormat> {
   private static final String DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
-  UnixTimeSimpleDateFormatter(final ZoneId zoneId) {
+  InstantSimpleDateFormatter(final ZoneId zoneId) {
     super(zoneId, s -> {
       SimpleDateFormat f = new SimpleDateFormat(s);
       f.setTimeZone(TimeZone.getTimeZone(zoneId));
@@ -36,12 +37,12 @@ final class UnixTimeSimpleDateFormatter extends UnixTimeFormatterCache<SimpleDat
   }
 
   @Override
-  public long parse(final String value) throws RuntimeException {
+  public Instant parse(final String value) throws RuntimeException {
     return parse(value, DEFAULT);
   }
 
   @Override
-  public long parse(String text, String pattern) {
+  public Instant parse(String text, String pattern) {
     Objects.requireNonNull(text);
     Objects.requireNonNull(pattern);
     final SimpleDateFormat formatter = getFormatter(pattern);
@@ -51,19 +52,18 @@ final class UnixTimeSimpleDateFormatter extends UnixTimeFormatterCache<SimpleDat
       throw new DateTimeParseException(text + " cannot be parsed to date. Error at index " + pos.getErrorIndex(), text,
           pos.getErrorIndex());
     }
-    return d.getTime() / 1000;
+    return Instant.ofEpochMilli(d.getTime());
   }
 
   @Override
-  public String format(final long epochSeconds) {
-    return format(epochSeconds, DEFAULT);
+  public String format(final Instant instant) {
+    return format(instant, DEFAULT);
   }
 
   @Override
-  public String format(final long epochSeconds, final String pattern) {
+  public String format(final Instant instant, final String pattern) {
     SimpleDateFormat formatter = getFormatter(pattern);
-    // Convert epochSeconds to milliseconds
-    Date date = new Date(epochSeconds * 1000L);
+    Date date = new Date(instant.toEpochMilli());
     return formatter.format(date);
   }
 }

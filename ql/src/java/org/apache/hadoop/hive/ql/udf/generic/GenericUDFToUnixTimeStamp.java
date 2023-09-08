@@ -60,7 +60,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   private transient TimestampLocalTZObjectInspector inputTimestampLocalTzOI;
   private transient Converter inputTextConverter;
   private transient Converter patternConverter;
-  private transient UnixTimeFormatter formatter;
+  private transient InstantFormatter formatter;
   private transient ZoneId timeZone;
 
   @Override
@@ -100,7 +100,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
               PrimitiveObjectInspectorFactory.javaStringObjectInspector);
         }
         if (formatter == null) {
-          formatter = UnixTimeFormatter.ofConfiguration(conf);
+          formatter = InstantFormatter.ofConfiguration(conf);
         }
         break;
       case DATE:
@@ -125,7 +125,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   @Override
   public void configure(MapredContext context) {
     if (context != null) {
-      formatter = UnixTimeFormatter.ofConfiguration(context.getJobConf());
+      formatter = InstantFormatter.ofConfiguration(context.getJobConf());
       String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
       timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
     }
@@ -150,9 +150,9 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       try {
         final long epochSeconds;
         if (patternConverter == null) {
-          epochSeconds = formatter.parse(textVal);
+          epochSeconds = formatter.parse(textVal).getEpochSecond();
         } else {
-          epochSeconds = formatter.parse(textVal, (String) patternConverter.convert(arguments[1].get()));
+          epochSeconds = formatter.parse(textVal, (String) patternConverter.convert(arguments[1].get())).getEpochSecond();
         }
         retValue.set(epochSeconds);
         return retValue;

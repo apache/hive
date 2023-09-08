@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.generic.UnixTimeFormatter;
+import org.apache.hadoop.hive.ql.udf.generic.InstantFormatter;
 import org.apache.hadoop.io.Text;
 
 import java.nio.charset.CharacterCodingException;
@@ -34,7 +34,7 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
 
   private static final long serialVersionUID = 1L;
 
-  private transient UnixTimeFormatter formatter;
+  private transient InstantFormatter formatter;
 
   public VectorUDFUnixTimeStampString(int colNum, int outputColumnNum) {
     super(colNum, outputColumnNum, -1, -1);
@@ -48,14 +48,14 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
   public void transientInit(Configuration conf) throws HiveException {
     super.transientInit(conf);
     if (formatter == null) {
-      formatter = UnixTimeFormatter.ofConfiguration(conf);
+      formatter = InstantFormatter.ofConfiguration(conf);
     }
   }
 
   @Override
   protected long getField(byte[] bytes, int start, int length) throws ParseException {
     try {
-      return formatter.parse(Text.decode(bytes, start, length));
+      return formatter.parse(Text.decode(bytes, start, length)).getEpochSecond();
     } catch (CharacterCodingException | RuntimeException e) {
       throw new ParseException(e.getMessage(), 0);
     }

@@ -1,6 +1,6 @@
 DESCRIBE FUNCTION date_format;
 DESC FUNCTION EXTENDED date_format;
-set hive.datetime.formatter=DATETIME;
+set hive.datetime.formatter=SIMPLE;
 
 set hive.local.time.zone=Africa/Johannesburg;
 
@@ -75,6 +75,9 @@ select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z");
 
 set hive.local.time.zone=Europe/Berlin;
 select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z");
+
+-- Dates prior to 1900 do not behave well when SIMPLE formatter is used (HIVE-25268) so the results below are not
+-- really the expected ones. However, the results document the current behavior so it is useful to have them.
 
 --julian date
 set hive.local.time.zone=UTC;

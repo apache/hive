@@ -27,14 +27,14 @@ import java.util.function.Function;
  * </p>
  * @param <T> the type of the underlying datetime formatter
  */
-abstract class UnixTimeFormatterCache<T> implements UnixTimeFormatter {
+abstract class InstantFormatterCache<T> implements InstantFormatter {
 
   protected final ZoneId zoneId;
   protected final Function<String, T> loader;
   protected String lastPattern;
   protected T formatter;
 
-  protected UnixTimeFormatterCache(ZoneId zoneId, Function<String, T> loader) {
+  protected InstantFormatterCache(ZoneId zoneId, Function<String, T> loader) {
     this.zoneId = zoneId;
     this.loader = loader;
   }
