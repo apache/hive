@@ -5273,7 +5273,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
 
-      Table table = ensureGetTable(catName, dbName, tblName);
+      MTable table = ensureGetMTable(catName, dbName, tblName);
       // Validate new parts: StorageDescriptor and SerDeInfo must be set in Partition.
       if (!TableType.VIRTUAL_VIEW.name().equals(table.getTableType())) {
         for (Partition newPart : newParts) {
@@ -5286,9 +5286,10 @@ public class ObjectStore implements RawStore, Configurable {
         newParts.forEach(newPart -> newPart.setWriteId(writeId));
       }
 
+      List<FieldSchema> partCols = convertToFieldSchemas(table.getPartitionKeys());
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
-        partNames.add(Warehouse.makePartName(table.getPartitionKeys(), partVal));
+        partNames.add(Warehouse.makePartName(partCols, partVal));
       }
 
       results = new GetListHelper<Partition>(catName, dbName, tblName, true, true) {
@@ -5301,7 +5302,7 @@ public class ObjectStore implements RawStore, Configurable {
         @Override
         protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx)
             throws MetaException, InvalidObjectException {
-          return alterPartitionsViaJdo(catName, dbName, tblName, partNames, newParts, queryWriteIdList);
+          return alterPartitionsViaJdo(table, partNames, newParts, queryWriteIdList);
         }
       }.run(false);
 
@@ -5318,12 +5319,12 @@ public class ObjectStore implements RawStore, Configurable {
     return results;
   }
 
-  private List<Partition> alterPartitionsViaJdo(String catName, String dbName, String tblName,
-        List<String> partNames, List<Partition> newParts, String queryWriteIdList)
+  private List<Partition> alterPartitionsViaJdo(MTable table, List<String> partNames,
+                                                List<Partition> newParts, String queryWriteIdList)
       throws MetaException, InvalidObjectException {
-
-    MTable table = getMTable(catName, dbName, tblName);
-
+    String catName = table.getDatabase().getCatalogName();
+    String dbName = table.getDatabase().getName();
+    String tblName = table.getTableName();
     List<Partition> results = new ArrayList<>(newParts.size());
     List<MPartition> mPartitionList;
 

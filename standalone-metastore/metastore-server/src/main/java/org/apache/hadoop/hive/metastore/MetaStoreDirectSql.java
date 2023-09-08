@@ -102,6 +102,7 @@ import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -547,14 +548,14 @@ class MetaStoreDirectSql {
    * @return
    * @throws MetaException
    */
-  public List<Partition> alterPartitions(Table table, List<String> partNames,
-      List<Partition> newParts, String queryWriteIdList) throws MetaException {
+  public List<Partition> alterPartitions(MTable table, List<String> partNames,
+                                         List<Partition> newParts, String queryWriteIdList) throws MetaException {
     List<Object[]> rows = Batchable.runBatched(batchSize, partNames, new Batchable<String, Object[]>() {
       @Override
       public List<Object[]> run(List<String> input) throws Exception {
         String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
         List<String> columns = Arrays.asList("\"PART_ID\"", "\"PART_NAME\"", "\"SD_ID\"", "\"WRITE_ID\"");
-        return getPartitionFieldsViaSqlFilter(table.getCatName(), table.getDbName(),
+        return getPartitionFieldsViaSqlFilter(table.getDatabase().getCatalogName(), table.getDatabase().getName(),
                 table.getTableName(), columns, filter, input, Collections.emptyList(), null);
       }
     });

@@ -5857,8 +5857,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       oldPart = alterHandler.alterPartition(getMS(), wh, catName, db_name, tbl_name,
           part_vals, new_part, envContext, this, validWriteIds);
 
-      // Only fetch the table if we actually have a listener
-
       if (!listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners,
             EventType.ALTER_PARTITION,
