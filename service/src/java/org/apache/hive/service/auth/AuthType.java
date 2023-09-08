@@ -138,13 +138,6 @@ public class AuthType {
     return "";
   }
 
-  public boolean isLoadedFirst(HiveAuthConstants.AuthTypes type) {
-    if (!isEnabled(type) || authTypes.isEmpty()) {
-      return false;
-    }
-    return authTypes.get(0) == type;
-  }
-
   public boolean isPasswordBasedAuth(HiveAuthConstants.AuthTypes type) {
     return PASSWORD_BASED_TYPES.contains(type);
   }

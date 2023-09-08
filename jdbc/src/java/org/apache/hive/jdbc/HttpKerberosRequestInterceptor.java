@@ -70,9 +70,4 @@ public class HttpKerberosRequestInterceptor extends HttpRequestInterceptorBase {
       kerberosLock.unlock();
     }
   }
-
-  @Override
-  protected String getAuthType() {
-    return "KERBEROS";
-  }
 }
