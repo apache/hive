@@ -85,6 +85,7 @@ public class InputFormatConfig {
   public static final String CATALOG_WAREHOUSE_TEMPLATE = "iceberg.catalog.%s.warehouse";
   public static final String CATALOG_CLASS_TEMPLATE = "iceberg.catalog.%s.catalog-impl";
   public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
+  public static final String QUERY_FILTERS = "iceberg.query.filters";
 
   public enum InMemoryDataModel {
     PIG,

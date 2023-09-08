@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -384,7 +385,40 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     }
     predicate.pushedPredicate = (ExprNodeGenericFuncDesc) pushedPredicate;
+    setFilterExpression(predicate);
     return predicate;
+  }
+
+  /**
+   * Sets the filter expression in the configuration.
+   *
+   * @param predicate The predicate to create the filter expression from.
+   */
+  public void setFilterExpression(DecomposedPredicate predicate) {
+    Expression expr = Expressions.alwaysTrue();
+    try {
+      if (predicate.pushedPredicate != null) {
+        SearchArgument sarg = ConvertAstToSearchArg.create(conf, predicate.pushedPredicate);
+        expr = Expressions.and(expr, HiveIcebergFilterFactory.generateFilterExpression(sarg));
+      }
+    } catch (UnsupportedOperationException e) {
+      LOG.warn("Unable to create Iceberg filter, continuing without filter (will be applied by Hive later): ", e);
+    }
+    SessionStateUtil.addResource(conf, InputFormatConfig.QUERY_FILTERS, expr);
+  }
+
+  /**
+   * Retrieves the query filter expression from the configuration.
+   *
+   * @param config The configuration to retrieve the filter expression from.
+   * @return The query filter expression or alwaysTrue if not found.
+   */
+  public static Expression getQueryFilter(Configuration config) {
+    try {
+      return (Expression) SessionStateUtil.getResource(config, InputFormatConfig.QUERY_FILTERS).get();
+    } catch (NoSuchElementException e) {
+      return Expressions.alwaysTrue();
+    }
   }
 
   @Override
