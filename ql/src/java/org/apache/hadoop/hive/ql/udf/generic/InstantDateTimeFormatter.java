@@ -29,23 +29,23 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Objects;
 
-final class UnixTimeDateTimeFormatter extends UnixTimeFormatterCache<DateTimeFormatter> {
+final class InstantDateTimeFormatter extends InstantFormatterCache<DateTimeFormatter> {
 
-  UnixTimeDateTimeFormatter(final ZoneId zoneId) {
+  InstantDateTimeFormatter(final ZoneId zoneId) {
     super(zoneId,
         s -> new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern(s).toFormatter().withZone(zoneId));
   }
 
   @Override
-  public long parse(String text) throws RuntimeException {
+  public Instant parse(String text) throws RuntimeException {
     Objects.requireNonNull(text);
     Timestamp timestamp = Timestamp.valueOf(text);
     TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp, zoneId);
-    return timestampTZ.getEpochSecond();
+    return Instant.ofEpochSecond(timestampTZ.getEpochSecond(), timestampTZ.getNanos());
   }
 
   @Override
-  public long parse(String text, String pattern) {
+  public Instant parse(String text, String pattern) {
     Objects.requireNonNull(text);
     Objects.requireNonNull(pattern);
     Timestamp timestamp;
@@ -57,19 +57,17 @@ final class UnixTimeDateTimeFormatter extends UnixTimeFormatterCache<DateTimeFor
       LocalDate localDate = LocalDate.parse(text, formatter);
       timestamp = new Timestamp(localDate.atStartOfDay());
     }
-    TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp, zoneId);
-    return timestampTZ.getEpochSecond();
+    return TimestampTZUtil.convert(timestamp, zoneId).toInstant();
   }
 
   @Override
-  public String format(final long epochSeconds) {
-    return format(epochSeconds, "uuuu-MM-dd HH:mm:ss");
+  public String format(final Instant instant) {
+    return format(instant, "uuuu-MM-dd HH:mm:ss");
   }
 
   @Override
-  public String format(final long epochSeconds, final String pattern) {
+  public String format(final Instant instant, final String pattern) {
     DateTimeFormatter formatter = getFormatter(pattern);
-    Instant instant = Instant.ofEpochSecond(epochSeconds);
     ZonedDateTime zonedDT = ZonedDateTime.ofInstant(instant, zoneId);
     return zonedDT.format(formatter);
   }

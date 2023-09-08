@@ -3834,10 +3834,11 @@ public class HiveConf extends Configuration {
         new StringSet("DATETIME", "SIMPLE"),
         "The formatter to use for handling datetime values. The possible values are:\n" +
         " * DATETIME: For using java.time.format.DateTimeFormatter\n" +
-        " * SIMPLE: For using java.text.SimpleDateFormat (known bugs: HIVE-25458, HIVE-25403)\n" +
+        " * SIMPLE: For using java.text.SimpleDateFormat (known bugs: HIVE-25458, HIVE-25403, HIVE-25268)\n" +
         "Currently the configuration only affects the behavior of the following SQL functions:\n" +
-        " * unix_timestamp(string,[string])" + 
-        " * from_unixtime\n\n" +
+        " * unix_timestamp(string,[string])\n" + 
+        " * from_unixtime\n" + 
+        " * date_format\n\n" +
         "The SIMPLE formatter exists purely for compatibility purposes with previous versions of Hive thus its use " +
         "is discouraged. It suffers from known bugs that are unlikely to be fixed in subsequent versions of the product." +
         "Furthermore, using SIMPLE formatter may lead to strange behavior, and unexpected results when combined " +
