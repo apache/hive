@@ -56,7 +56,7 @@ public class AlterTableSetLocationAnalyzer extends AbstractAlterTableAnalyzer {
     } catch (FileNotFoundException e) {
       // Only check host/port pair is valid, whether the file exist or not does not matter
     } catch (Exception e) {
-      throw new SemanticException("Unable to get path:" + newLocation , e);
+      throw new SemanticException("Can not establish connection to server for " + newLocation , e);
     }
 
     outputs.add(toWriteEntity(newLocation));

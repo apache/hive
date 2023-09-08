@@ -6,4 +6,4 @@ POSTHOOK: query: create table testwrongloc(id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testwrongloc
-FAILED: SemanticException Unable to get path:hdfs://### HDFS PATH ###
+FAILED: SemanticException Can not establish connection to server for hdfs://### HDFS PATH ###
