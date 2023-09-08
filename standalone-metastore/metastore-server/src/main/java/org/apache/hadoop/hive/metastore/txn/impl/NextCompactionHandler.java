@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public class NextCompactionHandler implements QueryHandler<CompactionInfo> {
   private static final Logger LOG = LoggerFactory.getLogger(NextCompactionHandler.class);
 
   private final FindNextCompactRequest request;
-  private final MultiDataSourceJdbcResourceHolder retriableDatasourceTxnManager;
+  private final MultiDataSourceJdbcResource retriableDatasourceTxnManager;
   private final Timestamp currentDbTime;
   private final long poolTimeout;
 
@@ -58,7 +58,7 @@ public class NextCompactionHandler implements QueryHandler<CompactionInfo> {
           " \"CQ_STATE\" = :newState " +
           "WHERE \"CQ_ID\" = :id AND \"CQ_STATE\"= :oldState";
 
-  public NextCompactionHandler(FindNextCompactRequest request, MultiDataSourceJdbcResourceHolder retriableDatasourceTxnManager, Timestamp currentDbTime, long poolTimeout) {
+  public NextCompactionHandler(FindNextCompactRequest request, MultiDataSourceJdbcResource retriableDatasourceTxnManager, Timestamp currentDbTime, long poolTimeout) {
     this.request = request;
     this.retriableDatasourceTxnManager = retriableDatasourceTxnManager;
     this.currentDbTime = currentDbTime;

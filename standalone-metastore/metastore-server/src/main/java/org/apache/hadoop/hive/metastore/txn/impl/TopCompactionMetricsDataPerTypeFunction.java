@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
-import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -45,7 +45,7 @@ public class TopCompactionMetricsDataPerTypeFunction implements TransactionalFun
   }
 
   @Override
-  public List<CompactionMetricsData> execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException {
+  public List<CompactionMetricsData> execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
     //TODO: Highly inefficient, should be replaced by a single select
     List<CompactionMetricsData> metricsDataList = new ArrayList<>();
     for (CompactionMetricsData.MetricType type : CompactionMetricsData.MetricType.values()) {

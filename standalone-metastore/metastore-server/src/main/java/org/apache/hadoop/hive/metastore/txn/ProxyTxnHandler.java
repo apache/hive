@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryCallProperties;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetry;
@@ -42,7 +42,7 @@ import java.util.Arrays;
  * <ul>
  *   <li>SQL errors in methods annotated with {@link SqlRetry} will be caught and the method will be re-executed</li>
  *   <li>Methods annotated with {@link Transactional} will be executed after creating a transaction, and all operations done
- *   via {@link MultiDataSourceJdbcResourceHolder}, {@link org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedQuery},
+ *   via {@link MultiDataSourceJdbcResource}, {@link org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedQuery},
  *   {@link org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand} and 
  *   {@link org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler} will use the created transaction.</li>
  *   <li>In case a method is annotated with both annotations, the transaction will be inside the retry-call. This means 
@@ -61,7 +61,7 @@ public class ProxyTxnHandler implements InvocationHandler {
    * @param sqlRetryHandler Responsible to re-execute the methods in case of failure.
    * @return Returns the proxy object capable of retrying the failed calls automatically and transparently. 
    */
-  public static TxnStore getProxy(TxnStore realStore, SqlRetryHandler sqlRetryHandler, MultiDataSourceJdbcResourceHolder jdbcResourceHandler) {
+  public static TxnStore getProxy(TxnStore realStore, SqlRetryHandler sqlRetryHandler, MultiDataSourceJdbcResource jdbcResourceHandler) {
     ProxyTxnHandler handler = new ProxyTxnHandler(realStore, sqlRetryHandler, jdbcResourceHandler);
     return (TxnStore) Proxy.newProxyInstance(
         ProxyTxnHandler.class.getClassLoader(),
@@ -71,12 +71,12 @@ public class ProxyTxnHandler implements InvocationHandler {
 
   private final SqlRetryHandler sqlRetryHandler;
   private final TxnStore realStore;
-  private final MultiDataSourceJdbcResourceHolder jdbcResourceHolder;
+  private final MultiDataSourceJdbcResource jdbcResource;
 
-  private ProxyTxnHandler(TxnStore realStore, SqlRetryHandler sqlRetryHandler, MultiDataSourceJdbcResourceHolder jdbcResourceHolder) {
+  private ProxyTxnHandler(TxnStore realStore, SqlRetryHandler sqlRetryHandler, MultiDataSourceJdbcResource jdbcResource) {
     this.realStore = realStore;
     this.sqlRetryHandler = sqlRetryHandler;
-    this.jdbcResourceHolder = jdbcResourceHolder;
+    this.jdbcResource = jdbcResource;
   }
 
   @Override
@@ -100,11 +100,11 @@ public class ProxyTxnHandler implements InvocationHandler {
         LOG.debug("Invoking method within transactional context: {}", callerId);
         TransactionContext context = null;
         try {
-          jdbcResourceHolder.bindDataSourceToThread(transactional.transactionManager());
-          context = jdbcResourceHolder.getTransactionManager().getTransaction(transactional.propagation().value());
+          jdbcResource.bindDataSource(transactional);
+          context = jdbcResource.getTransactionManager().getTransaction(transactional.propagation().value());
           Object result = toCall.execute();
           LOG.debug("Successfull method invocation within transactional context: {}, going to commit.", callerId);
-          jdbcResourceHolder.getTransactionManager().commit(context);
+          jdbcResource.getTransactionManager().commit(context);
           return result;
         } catch (Exception e) {
           if (Arrays.stream(transactional.noRollbackFor()).anyMatch(ex -> ex.isInstance(e)) ||
@@ -115,16 +115,16 @@ public class ProxyTxnHandler implements InvocationHandler {
             if(transactional.rollbackFor().length > 0 || transactional.rollbackForClassName().length > 0) {
               if (Arrays.stream(transactional.rollbackFor()).anyMatch(ex -> ex.isInstance(e)) ||
                   Arrays.stream(transactional.rollbackForClassName()).anyMatch(exName -> exName.equals(e.getClass().getName()))) {
-                jdbcResourceHolder.getTransactionManager().rollback(context);                
+                jdbcResource.getTransactionManager().rollback(context);                
               }
               throw e;
             } else {
-              jdbcResourceHolder.getTransactionManager().rollback(context);
+              jdbcResource.getTransactionManager().rollback(context);
             }
           }
           throw e;
         } finally {
-          jdbcResourceHolder.unbindDataSourceFromThread();
+          jdbcResource.unbindDataSource();
         }
       };
     }    

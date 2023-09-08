@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class PurgeCompactionHistoryFunction implements TransactionalFunction<Voi
   }
 
   @Override
-  public Void execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException {
+  public Void execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
     NamedParameterJdbcTemplate jdbcTemplate = jdbcResourceHolder.getJdbcTemplate();
     List<Long> deleteSet = new ArrayList<>();
     long timeoutThreshold = System.currentTimeMillis() -

@@ -29,12 +29,12 @@ public interface TransactionalFunction<Result> {
 
   /**
    * Implementations typically should execute transsactional database calls inside.
-   * @param jdbcResourceHolder A {@link MultiDataSourceJdbcResourceHolder} instance responsible for providing all the necessary resources 
+   * @param jdbcResourceHolder A {@link MultiDataSourceJdbcResource} instance responsible for providing all the necessary resources 
    *                          to be able to perform transactional database calls.
    * @return Returns with the result of the function call. 
    * @throws org.springframework.dao.DataAccessException Thrown if any of the JDBC calls fail
    * @throws MetaException Thrown in case of application error within the function
    */
-  Result execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException;
+  Result execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException;
 
 }

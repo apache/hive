@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
   }
 
   @Override
-  public Void execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException {
+  public Void execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
     NamedParameterJdbcTemplate jdbcTemplate = jdbcResourceHolder.getJdbcTemplate();
     MapSqlParameterSource param;
     if (!info.isAbortedTxnCleanup()) {

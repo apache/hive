@@ -74,7 +74,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
-import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetry;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
 import org.springframework.transaction.annotation.Transactional;
@@ -146,9 +146,9 @@ public interface TxnStore extends Configurable {
   SqlRetryHandler getRetryHandler();
 
   /**
-   * @return Returns the {@link MultiDataSourceJdbcResourceHolder} instance used by {@link TxnStore}.
+   * @return Returns the {@link MultiDataSourceJdbcResource} instance used by {@link TxnStore}.
    */
-  MultiDataSourceJdbcResourceHolder getJdbcResourceHolder();
+  MultiDataSourceJdbcResource getJdbcResourceHolder();
   
   /**
    * Get information about open transactions.  This gives extensive information about the
@@ -481,12 +481,12 @@ public interface TxnStore extends Configurable {
    * or runAs set since these are only potential compactions not actual ones.
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
   Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold) throws MetaException;
 
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
   Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold, long lastChecked)
       throws MetaException;
@@ -499,7 +499,7 @@ public interface TxnStore extends Configurable {
    * @param compactionTxnId - txnid in which Compactor is running
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.Idempotent
   void updateCompactorState(CompactionInfo ci, long compactionTxnId) throws MetaException;
 
@@ -513,7 +513,7 @@ public interface TxnStore extends Configurable {
    */
   @Deprecated
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
   CompactionInfo findNextToCompact(String workerId) throws MetaException;
 
@@ -523,7 +523,7 @@ public interface TxnStore extends Configurable {
    * @return an info element for next compaction in the queue, or null if there is no work to do now.
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
   CompactionInfo findNextToCompact(FindNextCompactRequest rqst) throws MetaException;
 
@@ -533,7 +533,7 @@ public interface TxnStore extends Configurable {
    * @param info info on the compaction entry to mark as compacted.
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.SafeToRetry
   void markCompacted(CompactionInfo info) throws MetaException;
 
@@ -545,7 +545,7 @@ public interface TxnStore extends Configurable {
    * @return information on the entry in the queue.
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
   List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException;
 
@@ -560,7 +560,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
   List<CompactionInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException;
 
@@ -570,7 +570,7 @@ public interface TxnStore extends Configurable {
    * @param info info on the compaction entry
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.CannotRetry
   void markCleanerStart(CompactionInfo info) throws MetaException;
 
@@ -580,7 +580,7 @@ public interface TxnStore extends Configurable {
    * @param info info on the compaction entry
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.CannotRetry
   void clearCleanerStart(CompactionInfo info) throws MetaException;
 
@@ -591,7 +591,7 @@ public interface TxnStore extends Configurable {
    * @param info info on the compaction entry to remove
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.CannotRetry
   void markCleaned(CompactionInfo info) throws MetaException;
 
@@ -603,7 +603,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.CannotRetry
   void markFailed(CompactionInfo info) throws MetaException;
 
@@ -614,7 +614,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   void markRefused(CompactionInfo info) throws MetaException;
 
   /**
@@ -624,7 +624,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry(lockInternally = true)
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.CannotRetry
   void setCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException;
 
@@ -633,7 +633,7 @@ public interface TxnStore extends Configurable {
    * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.SafeToRetry
   void cleanTxnToWriteIdTable() throws MetaException;
 
@@ -641,7 +641,7 @@ public interface TxnStore extends Configurable {
    * De-duplicate entries from COMPLETED_TXN_COMPONENTS table.
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.SafeToRetry
   void removeDuplicateCompletedTxnComponents() throws MetaException;
 
@@ -652,7 +652,7 @@ public interface TxnStore extends Configurable {
    * or the delete from the txns was delayed because of TXN_OPENTXN_TIMEOUT window.
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.SafeToRetry
   void cleanEmptyAbortedAndCommittedTxns() throws MetaException;
 
@@ -666,7 +666,7 @@ public interface TxnStore extends Configurable {
    *                 so that like hostname% will match the worker id.
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.Idempotent
   void revokeFromLocalWorkers(String hostname) throws MetaException;
 
@@ -680,7 +680,7 @@ public interface TxnStore extends Configurable {
    *                declared dead.
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.Idempotent
   void revokeTimedoutWorkers(long timeout) throws MetaException;
 
@@ -691,7 +691,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
   List<String> findColumnsWithStats(CompactionInfo ci) throws MetaException;
 
@@ -704,7 +704,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.SafeToRetry
   void purgeCompactionHistory() throws MetaException;
 
@@ -724,7 +724,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
   boolean checkFailedCompactions(CompactionInfo ci) throws MetaException;
 
@@ -788,7 +788,7 @@ public interface TxnStore extends Configurable {
    * @param id {@link CompactionInfo#id}
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.Idempotent
   void setHadoopJobId(String hadoopJobId, long id) throws MetaException;
 
@@ -797,7 +797,7 @@ public interface TxnStore extends Configurable {
    * @param acidWriteEvent
    */
   @SqlRetry(lockInternally = true, retryOnDuplicateKey = true)
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.Idempotent
   void addWriteNotificationLog(ListenerEvent acidWriteEvent) throws MetaException;
 
@@ -807,7 +807,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.Idempotent
   long findMinOpenTxnIdForCleaner() throws MetaException;
 
@@ -818,7 +818,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException ex
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
   Optional<CompactionInfo> getCompactionByTxnId(long txnId) throws MetaException;
 
@@ -830,7 +830,7 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @Deprecated
   long findMinTxnIdSeenOpen() throws MetaException;
 
@@ -853,7 +853,7 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   CompactionMetricsData getCompactionMetricsData(String dbName, String tblName, String partitionName,
       CompactionMetricsData.MetricType type) throws MetaException;
 
@@ -866,7 +866,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.SafeToRetry
   void removeCompactionMetricsData(String dbName, String tblName, String partitionName,
       CompactionMetricsData.MetricType type) throws MetaException;
@@ -878,7 +878,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.ReadOnly
   List<CompactionMetricsData> getTopCompactionMetricsDataPerType(int limit)
       throws MetaException;
@@ -900,7 +900,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @SqlRetry
-  @Transactional(transactionManager = POOL_COMPACTOR)
+  @Transactional(POOL_COMPACTOR)
   @RetrySemantics.Idempotent
   boolean updateCompactionMetricsData(CompactionMetricsData data) throws MetaException;
 

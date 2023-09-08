@@ -28,6 +28,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -41,9 +42,9 @@ import java.util.function.Function;
  * Allows access of the {@link NamedParameterJdbcTemplate}, {@link PlatformTransactionManager}, {@link Connection} 
  * objects associated with the registered datasources.
  */
-public class MultiDataSourceJdbcResourceHolder {
+public class MultiDataSourceJdbcResource {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MultiDataSourceJdbcResourceHolder.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MultiDataSourceJdbcResource.class);
 
   private final ThreadLocal<ContextNode<String>> threadLocal = new ThreadLocal<>();
 
@@ -53,10 +54,10 @@ public class MultiDataSourceJdbcResourceHolder {
   private final DatabaseProduct databaseProduct;
 
   /**
-   * Creates a new instance of the {@link MultiDataSourceJdbcResourceHolder} class
+   * Creates a new instance of the {@link MultiDataSourceJdbcResource} class
    * @param databaseProduct A {@link DatabaseProduct} instance representing the type of the underlying HMS dabatabe.
    */
-  public MultiDataSourceJdbcResourceHolder(DatabaseProduct databaseProduct) {
+  public MultiDataSourceJdbcResource(DatabaseProduct databaseProduct) {
     this.databaseProduct = databaseProduct;
   }
 
@@ -76,11 +77,15 @@ public class MultiDataSourceJdbcResourceHolder {
    * Binds the current {@link Thread} to {@link DataSource} identified by the <b>dataSourceName</b> parameter.
    * Other methods like {@link #getConnection()}, {@link #getJdbcTemplate()}, {@link #execute(ParameterizedCommand)}, 
    * {@link #execute(String, SqlParameterSource, Function)}, {@link #execute(QueryHandler)} can be called only after 
-   * calling this method, and before calling {@link #unbindDataSourceFromThread()}.
+   * calling this method, and before calling {@link #unbindDataSource()}.
    * @param dataSourceName The name of the {@link DataSource} bind to the current {@link Thread}.
    */
-  public void bindDataSourceToThread(String dataSourceName) {
+  public void bindDataSource(String dataSourceName) {
     threadLocal.set(new ContextNode<>(threadLocal.get(), dataSourceName));
+  }
+  
+  public void bindDataSource(Transactional transactional) {
+    threadLocal.set(new ContextNode<>(threadLocal.get(), transactional.transactionManager()));
   }
 
   /**
@@ -90,7 +95,7 @@ public class MultiDataSourceJdbcResourceHolder {
    * {@link #execute(QueryHandler)} will throw {@link IllegalStateException} because it cannot be determined for which
    * {@link DataSource} the JDBC resources should be returned.
    */
-  public void unbindDataSourceFromThread() {
+  public void unbindDataSource() {
     ContextNode<String> node = threadLocal.get();
     if (node != null && node.getParent() != null) {
       threadLocal.set(node.getParent());
@@ -101,7 +106,7 @@ public class MultiDataSourceJdbcResourceHolder {
   
   /**
    * Returns the {@link NamedParameterJdbcTemplate} associated with the current {@link Thread}.
-   * Can be called only after {@link #bindDataSourceToThread(String)} and before {@link #unbindDataSourceFromThread()}.
+   * Can be called only after {@link #bindDataSource(String)} and before {@link #unbindDataSource()}.
    * Ensures that the same instance is returned all the time.
    * @throws IllegalStateException Thrown when there is no bound {@link DataSource}.
    */
@@ -111,7 +116,7 @@ public class MultiDataSourceJdbcResourceHolder {
 
   /**
    * Returns the {@link Connection} associated with the current {@link Thread}.
-   * Can be called only after {@link #bindDataSourceToThread(String)} and before {@link #unbindDataSourceFromThread()}.
+   * Can be called only after {@link #bindDataSource(String)} and before {@link #unbindDataSource()}.
    * Ensures that the same instance is returned all the time.
    * @throws IllegalStateException Thrown when there is no bound {@link DataSource}.
    */
@@ -121,7 +126,7 @@ public class MultiDataSourceJdbcResourceHolder {
 
   /**
    * Returns the {@link AutoCloseableTransactionManager} associated with the current {@link Thread}.
-   * Can be called only after {@link #bindDataSourceToThread(String)} and before {@link #unbindDataSourceFromThread()}.
+   * Can be called only after {@link #bindDataSource(String)} and before {@link #unbindDataSource()}.
    * Ensures that the same instance is returned all the time.
    * @throws IllegalStateException Thrown when there is no bound {@link DataSource}.
    */

@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 
 import java.util.HashSet;
@@ -42,7 +42,7 @@ public class FindPotentialCompactionsFunction implements TransactionalFunction<S
   }
 
   @Override
-  public Set<CompactionInfo> execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException {
+  public Set<CompactionInfo> execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
     Set<CompactionInfo> candidates = new HashSet<>(jdbcResourceHolder.execute(
         new CompactionCandidateHandler(lastChecked, fetchSize)));
     int remaining = fetchSize - candidates.size();

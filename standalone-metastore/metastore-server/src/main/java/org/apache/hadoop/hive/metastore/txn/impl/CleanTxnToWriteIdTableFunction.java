@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
-import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +56,7 @@ public class CleanTxnToWriteIdTableFunction implements TransactionalFunction<Voi
   }
 
   @Override
-  public Void execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException {
+  public Void execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
     NamedParameterJdbcTemplate jdbcTemplate = jdbcResourceHolder.getJdbcTemplate();
     String sql = useMinHistoryLevel ? minHistoryLevelSql : noMinHistoryLevelSql;
     MapSqlParameterSource params = new MapSqlParameterSource()

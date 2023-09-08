@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.impl;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
-import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResourceHolder;
+import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -35,7 +35,7 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
   }
 
   @Override
-  public Boolean execute(MultiDataSourceJdbcResourceHolder jdbcResourceHolder) throws MetaException {
+  public Boolean execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
     CompactionMetricsData prevMetricsData = jdbcResourceHolder.execute(
         new CompactionMetricsDataHandler(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
 
