@@ -1,0 +1,83 @@
+PREHOOK: query: CREATE TABLE date_table (date_string string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_table
+POSTHOOK: query: CREATE TABLE date_table (date_string string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_table
+PREHOOK: query: INSERT INTO date_table VALUES ('2023-09-13'), ('2023-09-14'), ('2023-09-15')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@date_table
+POSTHOOK: query: INSERT INTO date_table VALUES ('2023-09-13'), ('2023-09-14'), ('2023-09-15')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@date_table
+POSTHOOK: Lineage: date_table.date_string SCRIPT []
+PREHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_table
+#### A masked pattern was here ####
+3 ICT
+4 ICT
+5 ICT
+PREHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_table
+#### A masked pattern was here ####
+3 AEST
+4 AEST
+5 AEST
+PREHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_table
+#### A masked pattern was here ####
+3 SAST
+4 SAST
+5 SAST
+PREHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_table
+#### A masked pattern was here ####
+2023 ICT
+2023 ICT
+2023 ICT
+PREHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_table
+#### A masked pattern was here ####
+2023 AEST
+2023 AEST
+2023 AEST
+PREHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT date_format(date_string, 'u z') FROM date_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_table
+#### A masked pattern was here ####
+2023 SAST
+2023 SAST
+2023 SAST
