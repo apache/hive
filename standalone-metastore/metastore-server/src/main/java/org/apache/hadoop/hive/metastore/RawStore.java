@@ -113,7 +113,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
-import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsAdditionalArgs;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
@@ -503,8 +503,7 @@ public interface RawStore extends Configurable {
   @Deprecated
   default List<Partition> getPartitions(String catName, String dbName,
       String tableName, int max) throws MetaException, NoSuchObjectException {
-    return getPartitions(catName, dbName, tableName, new GetPartitionsAdditionalArgs.
-        GetPartitionsAdditionalArgsBuilder().max(max).skipColumnSchemaForPartition(false).build());
+    return getPartitions(catName, dbName, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder().max(max).skipColumnSchemaForPartition(false).build());
   }
 
   /**
@@ -518,7 +517,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException no such table exists
    */
   List<Partition> getPartitions(String catName, String dbName, String tableName,
-      GetPartitionsAdditionalArgs args) throws MetaException, NoSuchObjectException;
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException;
 
   /**
    * Get the location for every partition of a given table. If a partition location is a child of
@@ -769,8 +768,7 @@ public interface RawStore extends Configurable {
   default List<Partition> getPartitionsByFilter(
      String catName, String dbName, String tblName, String filter, short maxParts)
      throws MetaException, NoSuchObjectException {
-    return getPartitionsByFilter(catName, dbName, tblName, new GetPartitionsAdditionalArgs
-        .GetPartitionsAdditionalArgsBuilder()
+    return getPartitionsByFilter(catName, dbName, tblName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
         .filter(filter).max(maxParts).skipColumnSchemaForPartition(false)
         .build());
   }
@@ -786,7 +784,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException no such table.
    */
   List<Partition> getPartitionsByFilter(
-      String catName, String dbName, String tblName, GetPartitionsAdditionalArgs args)
+      String catName, String dbName, String tblName, GetPartitionsArgs args)
       throws MetaException, NoSuchObjectException;
 
   /**
@@ -836,8 +834,7 @@ public interface RawStore extends Configurable {
   default boolean getPartitionsByExpr(String catName, String dbName, String tblName,
        byte[] expr, String defaultPartitionName, short maxParts, List<Partition> result)
        throws TException {
-    return getPartitionsByExpr(catName, dbName, tblName, result, new GetPartitionsAdditionalArgs
-        .GetPartitionsAdditionalArgsBuilder()
+    return getPartitionsByExpr(catName, dbName, tblName, result, new GetPartitionsArgs.GetPartitionsArgsBuilder()
         .expr(expr).defaultPartName(defaultPartitionName).max(maxParts).skipColumnSchemaForPartition(false)
         .build());
   }
@@ -852,7 +849,7 @@ public interface RawStore extends Configurable {
    * @throws TException error executing the expression
    */
   boolean getPartitionsByExpr(String catName, String dbName, String tblName,
-      List<Partition> result, GetPartitionsAdditionalArgs args)
+      List<Partition> result, GetPartitionsArgs args)
       throws TException;
 
   /**
@@ -908,8 +905,7 @@ public interface RawStore extends Configurable {
    */
   default List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
-    return getPartitionsByNames(catName, dbName, tblName, new GetPartitionsAdditionalArgs
-        .GetPartitionsAdditionalArgsBuilder()
+    return getPartitionsByNames(catName, dbName, tblName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
         .partNames(partNames).skipColumnSchemaForPartition(false)
         .build());
   }
@@ -925,7 +921,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException No such table.
    */
   List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
-      GetPartitionsAdditionalArgs args) throws MetaException, NoSuchObjectException;
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException;
 
   Table markPartitionForEvent(String catName, String dbName, String tblName, Map<String,String> partVals, PartitionEventType evtType) throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException;
 
@@ -1161,8 +1157,7 @@ public interface RawStore extends Configurable {
   default List<Partition> getPartitionsWithAuth(String catName, String dbName,
        String tblName, short maxParts, String userName, List<String> groupNames)
        throws MetaException, NoSuchObjectException, InvalidObjectException {
-    return getPartitionsWithAuth(catName, dbName, tblName, new GetPartitionsAdditionalArgs
-        .GetPartitionsAdditionalArgsBuilder()
+    return getPartitionsWithAuth(catName, dbName, tblName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
         .max(maxParts).userName(userName).groupNames(groupNames).skipColumnSchemaForPartition(false)
         .build());
   }
@@ -1180,7 +1175,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error fetching privilege information.
    */
   List<Partition> getPartitionsWithAuth(String catName, String dbName,
-      String tblName, GetPartitionsAdditionalArgs args)
+      String tblName, GetPartitionsArgs args)
       throws MetaException, NoSuchObjectException, InvalidObjectException;
 
   /**
@@ -1229,7 +1224,7 @@ public interface RawStore extends Configurable {
   default List<Partition> listPartitionsPsWithAuth(String catName, String db_name, String tbl_name,
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
       throws MetaException, InvalidObjectException, NoSuchObjectException {
-    return listPartitionsPsWithAuth(catName, db_name, tbl_name, new GetPartitionsAdditionalArgs.GetPartitionsAdditionalArgsBuilder()
+    return listPartitionsPsWithAuth(catName, db_name, tbl_name, new GetPartitionsArgs.GetPartitionsArgsBuilder()
             .part_vals(part_vals).max(max_parts).userName(userName).groupNames(groupNames).skipColumnSchemaForPartition(false)
             .build());
   }
@@ -1249,7 +1244,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error access privilege information
    */
   List<Partition> listPartitionsPsWithAuth(String catName, String db_name, String tbl_name,
-      GetPartitionsAdditionalArgs args) throws MetaException, InvalidObjectException, NoSuchObjectException;
+      GetPartitionsArgs args) throws MetaException, InvalidObjectException, NoSuchObjectException;
 
   /** Persists the given column statistics object to the metastore
    * @param colStats object to persist

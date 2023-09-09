@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.metastore.client.builder;
 
 import java.util.List;
 
-public class GetPartitionsAdditionalArgs {
+public class GetPartitionsArgs {
   private String filter;
   private byte[] expr;
   private String defaultPartName;
@@ -32,7 +32,7 @@ public class GetPartitionsAdditionalArgs {
   private String excludeParamKeyPattern;
   private boolean skipColumnSchemaForPartition;
 
-  private GetPartitionsAdditionalArgs() {
+  private GetPartitionsArgs() {
 
   }
 
@@ -80,7 +80,7 @@ public class GetPartitionsAdditionalArgs {
     return skipColumnSchemaForPartition;
   }
 
-  public static class GetPartitionsAdditionalArgsBuilder {
+  public static class GetPartitionsArgsBuilder {
     private String filter;
     private byte[] expr;
     private String defaultPartName;
@@ -93,63 +93,63 @@ public class GetPartitionsAdditionalArgs {
     private String excludeParamKeyPattern;
     private boolean skipColumnSchemaForPartition;
 
-    public GetPartitionsAdditionalArgsBuilder filter(String filter) {
+    public GetPartitionsArgsBuilder filter(String filter) {
       this.filter = filter;
       return this;
     }
 
-    public GetPartitionsAdditionalArgsBuilder expr(byte[] expr) {
+    public GetPartitionsArgsBuilder expr(byte[] expr) {
       this.expr = expr;
       return this;
     }
 
-    public GetPartitionsAdditionalArgsBuilder defaultPartName(String defaultPartName) {
+    public GetPartitionsArgsBuilder defaultPartName(String defaultPartName) {
       this.defaultPartName = defaultPartName;
       return this;
     }
 
-    public GetPartitionsAdditionalArgsBuilder max(int max) {
+    public GetPartitionsArgsBuilder max(int max) {
       this.max = max;
       return this;
     }
 
-    public GetPartitionsAdditionalArgsBuilder partNames(List<String> partNames) {
+    public GetPartitionsArgsBuilder partNames(List<String> partNames) {
       this.partNames = partNames;
       return this;
     }
 
-    public GetPartitionsAdditionalArgsBuilder part_vals(List<String> part_vals) {
+    public GetPartitionsArgsBuilder part_vals(List<String> part_vals) {
       this.part_vals = part_vals;
       return this;
     }
 
-    public GetPartitionsAdditionalArgsBuilder userName(String userName) {
+    public GetPartitionsArgsBuilder userName(String userName) {
       this.userName = userName;
       return this;
     }
 
-    public GetPartitionsAdditionalArgsBuilder groupNames(List<String> groupNames) {
+    public GetPartitionsArgsBuilder groupNames(List<String> groupNames) {
       this.groupNames = groupNames;
       return this;
     }
 
-    public GetPartitionsAdditionalArgsBuilder includeParamKeyPattern(String includeParamKeyPattern) {
+    public GetPartitionsArgsBuilder includeParamKeyPattern(String includeParamKeyPattern) {
       this.includeParamKeyPattern = includeParamKeyPattern;
       return this;
     }
 
-    public GetPartitionsAdditionalArgsBuilder excludeParamKeyPattern(String excludeParamKeyPattern) {
+    public GetPartitionsArgsBuilder excludeParamKeyPattern(String excludeParamKeyPattern) {
       this.excludeParamKeyPattern = excludeParamKeyPattern;
       return this;
     }
 
-    public GetPartitionsAdditionalArgsBuilder skipColumnSchemaForPartition(boolean skipColumnSchemaForPartition) {
+    public GetPartitionsArgsBuilder skipColumnSchemaForPartition(boolean skipColumnSchemaForPartition) {
       this.skipColumnSchemaForPartition = skipColumnSchemaForPartition;
       return this;
     }
 
-    public GetPartitionsAdditionalArgs build() {
-      GetPartitionsAdditionalArgs additionalArgs = new GetPartitionsAdditionalArgs();
+    public GetPartitionsArgs build() {
+      GetPartitionsArgs additionalArgs = new GetPartitionsArgs();
       additionalArgs.filter = filter;
       additionalArgs.expr = expr;
       additionalArgs.defaultPartName = defaultPartName;
