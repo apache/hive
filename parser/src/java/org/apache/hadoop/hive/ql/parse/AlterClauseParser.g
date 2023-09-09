@@ -481,6 +481,8 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_SET_CURRENT_SNAPSHOT $snapshotParam)
     | KW_EXECUTE KW_FAST_FORWARD sourceBranch=StringLiteral (targetBranch=StringLiteral)?
     -> ^(TOK_ALTERTABLE_EXECUTE KW_FAST_FORWARD $sourceBranch $targetBranch?)
+    | KW_EXECUTE KW_CHERRY_PICK snapshotId=Number
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_CHERRY_PICK $snapshotId)
     ;
 
 alterStatementSuffixDropBranch

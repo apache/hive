@@ -253,4 +253,9 @@ public class IcebergTableUtil {
     LOG.debug("Fast Forwarding the iceberg table {} branch {} to {}", table.name(), sourceBranch, targetBranch);
     table.manageSnapshots().fastForwardBranch(sourceBranch, targetBranch).commit();
   }
+
+  public static void cherryPick(Table table, long snapshotId) {
+    LOG.debug("Cherry-Picking {} to {}", snapshotId, table.name());
+    table.manageSnapshots().cherrypick(snapshotId).commit();
+  }
 }

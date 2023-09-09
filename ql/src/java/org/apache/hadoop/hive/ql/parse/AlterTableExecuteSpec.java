@@ -37,7 +37,8 @@ public class AlterTableExecuteSpec<T> {
     ROLLBACK,
     EXPIRE_SNAPSHOT,
     SET_CURRENT_SNAPSHOT,
-    FAST_FORWARD
+    FAST_FORWARD,
+    CHERRY_PICK;
   }
 
   private final ExecuteOperationType operationType;
@@ -191,6 +192,29 @@ public class AlterTableExecuteSpec<T> {
     public String toString() {
       return MoreObjects.toStringHelper(this).add("sourceBranch", sourceBranch)
           .add("targetBranch", targetBranch).toString();
+    }
+  }
+
+  /**
+   * Value object class, that stores the cherry-pick operation specific parameters.
+   * <ul>
+   *   <li>snapshotId: the snapshotId which needs to be cherry-picked</li>
+   * </ul>
+   */
+  public static class CherryPickSpec {
+    private final long snapshotId;
+
+    public CherryPickSpec(long snapshotId) {
+      this.snapshotId = snapshotId;
+    }
+
+    public long getSnapshotId() {
+      return snapshotId;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
     }
   }
 }
