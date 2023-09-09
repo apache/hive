@@ -906,7 +906,6 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS.
    * @throws NoSuchObjectException No such table.
    */
-  @Deprecated
   default List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
     return getPartitionsByNames(catName, dbName, tblName, new GetPartitionsAdditionalArgs

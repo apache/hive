@@ -84,7 +84,7 @@ public class GetPartitionsAdditionalArgs {
     private String filter;
     private byte[] expr;
     private String defaultPartName;
-    private int max;
+    private int max = -1;
     private List<String> partNames;
     private List<String> part_vals;
     private String userName;
