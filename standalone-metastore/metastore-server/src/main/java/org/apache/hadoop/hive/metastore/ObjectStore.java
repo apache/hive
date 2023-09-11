@@ -191,6 +191,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -3276,7 +3277,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitions(String catName, String dbName, String tableName,
-      int maxParts, boolean skipColumnSchemaForPartition) throws MetaException, NoSuchObjectException {
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
     List<Partition> results = Collections.emptyList();
     boolean success = false;
 
@@ -3284,7 +3285,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     try {
       openTransaction();
-      results = getPartitionsInternal(catName, dbName, tableName, maxParts, true, true, skipColumnSchemaForPartition);
+      results = getPartitionsInternal(catName, dbName, tableName, true, true, args);
       success = commitTransaction();
     } finally {
       if (!success) {
@@ -3335,18 +3336,13 @@ public class ObjectStore implements RawStore, Configurable {
     return partLocations;
   }
 
-  protected List<Partition> getPartitionsInternal(String catName, String dbName, String tblName, final int maxParts,
-      boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
-    return getPartitionsInternal(catName, dbName, tblName, maxParts, allowSql, allowJdo, false);
-  }
-
-  private List<Partition> getPartitionsInternal(String catName, String dbName, String tblName, final int maxParts,
-      boolean allowSql, boolean allowJdo, boolean skipColumnSchemaForPartition)
+  private List<Partition> getPartitionsInternal(String catName, String dbName, String tblName,
+      boolean allowSql, boolean allowJdo, GetPartitionsArgs args)
       throws MetaException, NoSuchObjectException {
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.getPartitions(catName, dbName, tblName, maxParts, skipColumnSchemaForPartition);
+        return directSql.getPartitions(catName, dbName, tblName, args);
       }
       @Override
       protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx) throws MetaException {
@@ -4112,17 +4108,17 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
-      List<String> partNames, boolean skipColSchemaForPartitions) throws MetaException, NoSuchObjectException {
-    return getPartitionsByNamesInternal(catName, dbName, tblName, partNames, true, true, skipColSchemaForPartitions);
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+    return getPartitionsByNamesInternal(catName, dbName, tblName, true, true, args);
   }
 
   protected List<Partition> getPartitionsByNamesInternal(String catName, String dbName,
-      String tblName, final List<String> partNames, boolean allowSql, boolean allowJdo,
-      boolean skipColSchemaForPartitions) throws MetaException, NoSuchObjectException {
+      String tblName, boolean allowSql, boolean allowJdo,
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.getPartitionsViaSqlFilter(catName, dbName, tblName, partNames, skipColSchemaForPartitions);
+        return directSql.getPartitionsViaPartNames(catName, dbName, tblName, null, args);
       }
       @Override
       protected List<Partition> getJdoResult(
@@ -4133,20 +4129,18 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean getPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, List<Partition> result,
-      boolean skipColSchemaForPartitions) throws TException {
-    return getPartitionsByExprInternal(catName, dbName, tblName, expr, defaultPartitionName, maxParts,
-            result, true, true, skipColSchemaForPartitions);
+  public boolean getPartitionsByExpr(String catName, String dbName, String tblName,
+     List<Partition> result, GetPartitionsArgs args) throws TException {
+    return getPartitionsByExprInternal(catName, dbName, tblName, result, true, true, args);
   }
 
-  protected boolean getPartitionsByExprInternal(String catName, String dbName, String tblName, final byte[] expr,
-      final String defaultPartitionName, final  short maxParts, List<Partition> result,
-      boolean allowSql, boolean allowJdo, boolean skipColSchemaForPartitions) throws TException {
+  protected boolean getPartitionsByExprInternal(String catName, String dbName, String tblName,
+      List<Partition> result, boolean allowSql, boolean allowJdo, GetPartitionsArgs args) throws TException {
     assert result != null;
 
+    byte[] expr = args.getExpr();
     final ExpressionTree exprTree = expr.length != 0 ? PartFilterExprUtil.makeExpressionTree(
-          expressionProxy, expr, getDefaultPartitionName(defaultPartitionName), conf) : ExpressionTree.EMPTY_TREE;
+          expressionProxy, expr, getDefaultPartitionName(args.getDefaultPartName()), conf) : ExpressionTree.EMPTY_TREE;
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
 
     catName = normalizeIdentifier(catName);
@@ -4163,17 +4157,17 @@ public class ObjectStore implements RawStore, Configurable {
         if (exprTree != null) {
           SqlFilterForPushdown filter = new SqlFilterForPushdown();
           if (directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
-              exprTree, defaultPartitionName, filter)) {
+              exprTree, args.getDefaultPartName(), filter)) {
             String catalogName = (catName != null) ? catName : getDefaultCatalog(conf);
-            return directSql.getPartitionsViaSqlFilter(catalogName, dbName, tblName, filter, null,
-                    isAcidTable, skipColSchemaForPartitions);
+            return directSql.getPartitionsViaSqlFilter(catalogName, dbName, tblName, filter,
+                    isAcidTable, args);
           }
         }
         // We couldn't do SQL filter pushdown. Get names via normal means.
         List<String> partNames = new LinkedList<>();
         hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
-                catName, dbName, tblName, partitionKeys, expr, defaultPartitionName, maxParts, partNames));
-        return directSql.getPartitionsViaSqlFilter(catName, dbName, tblName, partNames, skipColSchemaForPartitions);
+                catName, dbName, tblName, partitionKeys, expr, args.getDefaultPartName(), (short) args.getMax(), partNames));
+        return directSql.getPartitionsViaPartNames(catName, dbName, tblName, partNames, args);
       }
 
       @Override
@@ -4410,9 +4404,8 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitionsByFilter(String catName, String dbName, String tblName,
-      String filter, short maxParts, boolean skipColSchemaForPartitions) throws MetaException, NoSuchObjectException {
-    return getPartitionsByFilterInternal(catName, dbName, tblName, filter, maxParts,
-            true, true, skipColSchemaForPartitions);
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+    return getPartitionsByFilterInternal(catName, dbName, tblName, true, true, args);
   }
 
   /** Helper class for getting stuff w/transaction, direct SQL, perf logging, etc. */
@@ -4757,8 +4750,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   protected List<Partition> getPartitionsByFilterInternal(
-      String catName, String dbName, String tblName, String filter, final short maxParts,
-      boolean allowSql, boolean allowJdo, boolean skipColSchemaForPartitions)
+      String catName, String dbName, String tblName,
+      boolean allowSql, boolean allowJdo, GetPartitionsArgs args)
       throws MetaException, NoSuchObjectException {
 
     catName = normalizeIdentifier(catName);
@@ -4768,6 +4761,7 @@ public class ObjectStore implements RawStore, Configurable {
     MTable mTable = ensureGetMTable(catName, dbName, tblName);
     List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
     boolean isAcidTable = TxnUtils.isAcidTable(mTable.getParameters());
+    String filter = args.getFilter();
     final ExpressionTree tree = (filter != null && !filter.isEmpty())
         ? PartFilterExprUtil.parseFilterTree(filter) : ExpressionTree.EMPTY_TREE;
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
@@ -4780,8 +4774,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.getPartitionsViaSqlFilter(catName, dbName, tblName, filter,
-                (maxParts < 0) ? null : (int)maxParts, isAcidTable, skipColSchemaForPartitions);
+        return directSql.getPartitionsViaSqlFilter(catName, dbName, tblName, filter, isAcidTable, args);
       }
 
       @Override
@@ -4811,8 +4804,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
     if (fieldList == null || fieldList.isEmpty()) {
       // no fields are requested. Fallback to regular getPartitions implementation to return all the fields
-      return getPartitionsInternal(table.getCatName(), table.getDbName(), table.getTableName(), -1,
-          true, true);
+      return getPartitionsInternal(table.getCatName(), table.getDbName(), table.getTableName(),
+          true, true, new GetPartitionsArgs.GetPartitionsArgsBuilder().skipColumnSchemaForPartition(false).build());
     }
 
     // anonymous class below requires final String objects
