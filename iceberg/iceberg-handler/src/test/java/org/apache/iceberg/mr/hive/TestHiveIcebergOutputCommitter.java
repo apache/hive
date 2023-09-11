@@ -226,7 +226,6 @@ public class TestHiveIcebergOutputCommitter {
     conf.setNumReduceTasks(0);
     conf.set(HiveConf.ConfVars.HIVEQUERYID.varname, QUERY_ID);
     conf.set(InputFormatConfig.OUTPUT_TABLES, table.name());
-    conf.set(InputFormatConfig.OPERATION_TYPE_PREFIX + table.name(), Context.Operation.OTHER.name());
     conf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + table.name(),
             table.properties().get(InputFormatConfig.CATALOG_NAME));
     conf.set(InputFormatConfig.SERIALIZED_TABLE_PREFIX + table.name(), SerializationUtil.serializeToBase64(table));

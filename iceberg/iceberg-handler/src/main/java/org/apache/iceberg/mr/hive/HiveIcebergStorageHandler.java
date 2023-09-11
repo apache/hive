@@ -272,13 +272,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
-    // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
-    String opType = getOperationType();
-    map.put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
-    // Putting the key into the table props as well, so that projection pushdown can be determined on a
-    // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
-    // the serde config for all tables in the query, not just the output tables, so we can't rely on that in the serde.
-    tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
   }
 
   /**
@@ -307,12 +300,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
-    if (tableDesc != null && tableDesc.getProperties() != null &&
-        tableDesc.getProperties().get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName()) != null) {
+    if (tableDesc != null && tableDesc.getProperties() != null) {
       String tableName = tableDesc.getTableName();
-      String opKey = InputFormatConfig.OPERATION_TYPE_PREFIX + tableName;
-      // set operation type into job conf too
-      jobConf.set(opKey, tableDesc.getProperties().getProperty(opKey));
       Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
       String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
@@ -1493,11 +1482,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       LOG.debug("Unable to find commit information in query state for table: {}", tableName);
       return Collections.emptyList();
     }
-  }
-
-  private String getOperationType() {
-    return SessionStateUtil.getProperty(conf, Operation.class.getSimpleName())
-        .orElse(Operation.OTHER.name());
   }
 
   private static class NonSerializingConfig implements Serializable {
