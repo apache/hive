@@ -2905,7 +2905,7 @@ public class ObjectStore implements RawStore, Configurable {
             " does not exist");
       }
       MPartition mpart = getMPartition(catName, dbName, tableName, part_vals, table);
-      part = convertToPart(mpart, false);
+      part = convertToPart(catName, dbName, tableName, mpart, false, null);
       committed = commitTransaction();
       if (part == null) {
         throw new NoSuchObjectException("partition values="
@@ -3070,45 +3070,17 @@ public class ObjectStore implements RawStore, Configurable {
         msd, part.getParameters());
   }
 
-  private Partition convertToPart(MPartition mpart, boolean isAcidTable) throws MetaException {
-    return convertToPart(mpart, isAcidTable, false);
-  }
-
-  private Partition convertToPart(MPartition mpart, boolean isAcidTable,
-      boolean skipColSchemaForPartitions) throws MetaException {
-    if (mpart == null) {
-      return null;
-    }
-    //its possible that MPartition is partially filled, do null checks to avoid NPE
-    MTable table = mpart.getTable();
-    String dbName =
-        table == null ? null : table.getDatabase() == null ? null : table.getDatabase().getName();
-    String tableName = table == null ? null : table.getTableName();
-    String catName = table == null ? null :
-        table.getDatabase() == null ? null : table.getDatabase().getCatalogName();
-    Map<String,String> params = convertMap(mpart.getParameters());
-    Partition p = new Partition(convertList(mpart.getValues()), dbName, tableName, mpart.getCreateTime(),
-        mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), skipColSchemaForPartitions, isAcidTable),
-        params);
-    p.setCatName(catName);
-    if(mpart.getWriteId()>0) {
-      p.setWriteId(mpart.getWriteId());
-    }else {
-      p.setWriteId(-1L);
-    }
-    return p;
-  }
-
   private Partition convertToPart(String catName, String dbName, String tblName,
-      MPartition mpart, boolean isAcidTable, boolean skipColSchemaForPartitions)
+      MPartition mpart, boolean isAcidTable, GetPartitionsArgs args)
       throws MetaException {
     if (mpart == null) {
       return null;
     }
     Map<String,String> params = convertMap(mpart.getParameters());
+    boolean noFS = args != null ? args.isSkipColumnSchemaForPartition() : false;
     Partition p = new Partition(convertList(mpart.getValues()), dbName, tblName,
         mpart.getCreateTime(), mpart.getLastAccessTime(),
-        convertToStorageDescriptor(mpart.getSd(), skipColSchemaForPartitions, isAcidTable), params);
+        convertToStorageDescriptor(mpart.getSd(), noFS, isAcidTable), params);
     p.setCatName(catName);
     if(mpart.getWriteId()>0) {
       p.setWriteId(mpart.getWriteId());
@@ -3336,7 +3308,7 @@ public class ObjectStore implements RawStore, Configurable {
     return partLocations;
   }
 
-  private List<Partition> getPartitionsInternal(String catName, String dbName, String tblName,
+  protected List<Partition> getPartitionsInternal(String catName, String dbName, String tblName,
       boolean allowSql, boolean allowJdo, GetPartitionsArgs args)
       throws MetaException, NoSuchObjectException {
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
@@ -3347,7 +3319,8 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx) throws MetaException {
         try {
-          return convertToParts(listMPartitions(catName, dbName, tblName, maxParts), skipColumnSchemaForPartition);
+          return convertToParts(catName, dbName, tblName,
+              listMPartitions(catName, dbName, tblName, args.getMax()), false, args);
         } catch (Exception e) {
           LOG.error("Failed to convert to parts", e);
           throw new MetaException(e.getMessage());
@@ -3358,25 +3331,26 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitionsWithAuth(String catName, String dbName, String tblName,
-      short max, String userName, List<String> groupNames, boolean skipColumnSchemaForPartition)
+      GetPartitionsArgs args)
           throws MetaException, InvalidObjectException {
     boolean success = false;
 
     try {
       openTransaction();
-      List<MPartition> mparts = listMPartitions(catName, dbName, tblName, max);
+      List<MPartition> mparts = listMPartitions(catName, dbName, tblName, args.getMax());
       List<Partition> parts = new ArrayList<>(mparts.size());
       if (CollectionUtils.isNotEmpty(mparts)) {
         for (MPartition mpart : mparts) {
           MTable mtbl = mpart.getTable();
-          Partition part = convertToPart(mpart, false, skipColumnSchemaForPartition);
+          Partition part = convertToPart(catName, dbName, tblName,
+              mpart, false, args);
           parts.add(part);
 
           if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
             String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
                 .getPartitionKeys()), part.getValues());
             PrincipalPrivilegeSet partAuth = this.getPartitionPrivilegeSet(catName, dbName,
-                tblName, partName, userName, groupNames);
+                tblName, partName, args.getUserName(), args.getGroupNames());
             part.setPrivileges(partAuth);
           }
         }
@@ -3404,7 +3378,7 @@ public class ObjectStore implements RawStore, Configurable {
             + partVals.toString());
       }
       MTable mtbl = mpart.getTable();
-      Partition part = convertToPart(mpart, false);
+      Partition part = convertToPart(catName, dbName, tblName, mpart, false, null);
       if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
         String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
             .getPartitionKeys()), partVals);
@@ -3422,32 +3396,12 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private List<Partition> convertToParts(List<MPartition> mparts,
-      boolean skipColumnSchemaForPartition) throws MetaException {
-    return convertToParts(mparts, null, skipColumnSchemaForPartition);
-  }
-
-  private List<Partition> convertToParts(List<MPartition> src, List<Partition> dest,
-      boolean skipColumnSchemaForPartition) throws MetaException {
-    if (src == null) {
-      return dest;
-    }
-    if (dest == null) {
-      dest = new ArrayList<>(src.size());
-    }
-    for (MPartition mp : src) {
-      dest.add(convertToPart(mp, false, skipColumnSchemaForPartition));
-      Deadline.checkTimeout();
-    }
-    return dest;
-  }
-
   private List<Partition> convertToParts(String catName, String dbName, String tblName,
-      List<MPartition> mparts, boolean isAcidTable, boolean skipColumnSchemaForPartition)
+      List<MPartition> mparts, boolean isAcidTable, GetPartitionsArgs args)
       throws MetaException {
     List<Partition> parts = new ArrayList<>(mparts.size());
     for (MPartition mp : mparts) {
-      parts.add(convertToPart(catName, dbName, tblName, mp, isAcidTable, skipColumnSchemaForPartition));
+      parts.add(convertToPart(catName, dbName, tblName, mp, isAcidTable, args));
       Deadline.checkTimeout();
     }
     return parts;
@@ -3896,7 +3850,7 @@ public class ObjectStore implements RawStore, Configurable {
    *          has types of String, and if resultsCol is null, the types are MPartition.
    */
   private Collection<String> getPartitionPsQueryResults(String catName, String dbName, String tableName, List<String> part_vals,
-      short max_parts, String resultsCol) throws Exception {
+      int max_parts, String resultsCol) throws Exception {
 
     Preconditions.checkState(this.currentTransaction.isActive());
 
@@ -3951,8 +3905,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Partition> listPartitionsPsWithAuth(String catName, String db_name, String tbl_name,
-      List<String> part_vals, short max_parts, String userName, List<String> groupNames,
-      boolean skipColSchemaForPartitions) throws MetaException, InvalidObjectException, NoSuchObjectException {
+      GetPartitionsArgs args) throws MetaException, InvalidObjectException, NoSuchObjectException {
     List<Partition> partitions = new ArrayList<>();
     boolean success = false;
 
@@ -3964,6 +3917,10 @@ public class ObjectStore implements RawStore, Configurable {
         throw new NoSuchObjectException(
             TableName.getQualified(catName, db_name, tbl_name) + " table not found");
       }
+      int max_parts = args.getMax();
+      String userName = args.getUserName();
+      List<String> groupNames = args.getGroupNames();
+      List<String> part_vals = args.getPart_vals();
       boolean getauth = null != userName && null != groupNames &&
           "TRUE".equalsIgnoreCase(
               mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"));
@@ -3971,13 +3928,14 @@ public class ObjectStore implements RawStore, Configurable {
         LOG.info(
             "Redirecting to directSQL enabled API: db: {} tbl: {} partVals: {}",
             db_name, tbl_name, Joiner.on(',').join(part_vals));
-        return getPartitions(catName, db_name, tbl_name, max_parts, skipColSchemaForPartitions);
+        return getPartitions(catName, db_name, tbl_name, args);
       }
       LOG.debug("executing listPartitionNamesPsWithAuth");
       Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
           part_vals, max_parts, null);
       for (Object o : parts) {
-        Partition part = convertToPart((MPartition) o, false, skipColSchemaForPartitions);
+        Partition part = convertToPart(catName, db_name, tbl_name,
+            (MPartition) o, false, args);
         //set auth privileges
         if (getauth) {
           String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
@@ -4123,7 +4081,7 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
-        return getPartitionsViaOrmFilter(catName, dbName, tblName, partNames, false, skipColSchemaForPartitions);
+        return getPartitionsViaOrmFilter(catName, dbName, tblName, args.getPartNames(), false, args);
       }
     }.run(false);
   }
@@ -4177,15 +4135,15 @@ public class ObjectStore implements RawStore, Configurable {
         List<Partition> result = null;
         if (exprTree != null) {
           result = getPartitionsViaOrmFilter(catName, dbName, tblName, exprTree,
-                  maxParts, false, partitionKeys, skipColSchemaForPartitions);
+              false, partitionKeys, args);
         }
         if (result == null) {
           // We couldn't do JDOQL filter pushdown. Get names via normal means.
           List<String> partNames = new ArrayList<>();
           hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
-                  catName, dbName, tblName, partitionKeys, expr, defaultPartitionName, maxParts, partNames));
+                  catName, dbName, tblName, partitionKeys, expr, args.getDefaultPartName(), (short) args.getMax(), partNames));
           result = getPartitionsViaOrmFilter(catName, dbName, tblName, partNames,
-                  isAcidTable, skipColSchemaForPartitions);
+                  isAcidTable, args);
         }
         return result;
       }
@@ -4233,16 +4191,15 @@ public class ObjectStore implements RawStore, Configurable {
    * Gets partition names from the table via ORM (JDOQL) filter pushdown.
    * @param tblName The table.
    * @param tree The expression tree from which JDOQL filter will be made.
-   * @param maxParts Maximum number of partitions to return.
    * @param isValidatedFilter Whether the filter was pre-validated for JDOQL pushdown by a client
    *   (old hive client or non-hive one); if it was and we fail to create a filter, we will throw.
-   * @param skipColSchemaForPartitions skip column schema for partitions
+   * @param args additional arguments for getting partitions
    * @return Resulting partitions. Can be null if isValidatedFilter is false, and
    *         there was error deriving the JDO filter.
    */
   private List<Partition> getPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree,
-      short maxParts, boolean isValidatedFilter, List<FieldSchema> partitionKeys,
-      boolean skipColSchemaForPartitions) throws MetaException {
+      boolean isValidatedFilter, List<FieldSchema> partitionKeys,
+      GetPartitionsArgs args) throws MetaException {
     Map<String, Object> params = new HashMap<>();
     String jdoFilter =
         makeQueryFilterString(catName, dbName, tblName, tree, params, isValidatedFilter, partitionKeys);
@@ -4251,9 +4208,9 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     try (QueryWrapper query = new QueryWrapper(pm.newQuery(MPartition.class, jdoFilter))) {
-      if (maxParts >= 0) {
+      if (args.getMax() >= 0) {
         // User specified a row limit, set it on the Query
-        query.setRange(0, maxParts);
+        query.setRange(0, args.getMax());
       }
       String parameterDeclaration = makeParameterDeclarationStringObj(params);
       query.declareParameters(parameterDeclaration);
@@ -4262,7 +4219,8 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Done executing query for getPartitionsViaOrmFilter");
       pm.retrieveAll(mparts); // TODO: why is this inconsistent with what we get by names?
       LOG.debug("Done retrieving all objects for getPartitionsViaOrmFilter");
-      List<Partition> results = convertToParts(mparts, skipColSchemaForPartitions);
+      List<Partition> results =
+          convertToParts(catName, dbName, tblName, mparts, false, args);
       return results;
     }
   }
@@ -4293,11 +4251,11 @@ public class ObjectStore implements RawStore, Configurable {
    * @param tblName Table name.
    * @param partNames Partition names to get the objects for.
    * @param isAcidTable True if the table is ACID
-   * @param skipColSchemaForPartitions skip column schema for partitions
+   * @param args additional arguments for getting partitions
    * @return Resulting partitions.
    */
   private List<Partition> getPartitionsViaOrmFilter(String catName, String dbName, String tblName,
-      List<String> partNames, boolean isAcidTable, boolean skipColSchemaForPartitions) throws MetaException {
+      List<String> partNames, boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
 
     if (partNames.isEmpty()) {
       return Collections.emptyList();
@@ -4315,7 +4273,7 @@ public class ObjectStore implements RawStore, Configurable {
 
           List<MPartition> mparts = (List<MPartition>) query.executeWithMap(queryWithParams.getRight());
           List<Partition> partitions = convertToParts(catName, dbName, tblName, mparts,
-                  isAcidTable, skipColSchemaForPartitions);
+                  isAcidTable, args);
 
           return partitions;
         }
@@ -4780,8 +4738,8 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
-        return getPartitionsViaOrmFilter(catName, dbName, tblName, tree, maxParts, true,
-                partitionKeys, skipColSchemaForPartitions);
+        return getPartitionsViaOrmFilter(catName, dbName, tblName, tree, true,
+                partitionKeys, args);
       }
     }.run(false);
   }
@@ -4805,7 +4763,11 @@ public class ObjectStore implements RawStore, Configurable {
     if (fieldList == null || fieldList.isEmpty()) {
       // no fields are requested. Fallback to regular getPartitions implementation to return all the fields
       return getPartitionsInternal(table.getCatName(), table.getDbName(), table.getTableName(),
-          true, true, new GetPartitionsArgs.GetPartitionsArgsBuilder().skipColumnSchemaForPartition(false).build());
+          true, true, new GetPartitionsArgs.GetPartitionsArgsBuilder()
+              .excludeParamKeyPattern(partitionsProjectSpec.getIncludeParamKeyPattern())
+              .includeParamKeyPattern(partitionsProjectSpec.getIncludeParamKeyPattern())
+              .skipColumnSchemaForPartition(false)
+              .build());
     }
 
     // anonymous class below requires final String objects
@@ -4895,7 +4857,7 @@ public class ObjectStore implements RawStore, Configurable {
             params.put("t3", normalizeIdentifier(catName));
           }
         try {
-          return convertToParts(listMPartitionsWithProjection(fieldNames, jdoFilter, params), false);
+          return convertToParts(catName, dbName, tblName, listMPartitionsWithProjection(fieldNames, jdoFilter, params), false, null);
         } catch (MetaException me) {
           throw me;
         } catch (Exception e) {
@@ -5282,7 +5244,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     oldCd.t = oldCD;
-    return convertToPart(oldp, false);
+    return convertToPart(catName, dbname, name, oldp, false, null);
   }
 
   @Override
@@ -10158,8 +10120,8 @@ public class ObjectStore implements RawStore, Configurable {
       List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      Partition partition = convertToPart(getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), false);
+      Partition partition = convertToPart(catName, statsDesc.getDbName(), statsDesc.getTableName(),getMPartition(
+          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), false, null);
       List<String> colNames = new ArrayList<>();
 
       for(ColumnStatisticsObj statsObj : statsObjs) {

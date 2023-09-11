@@ -503,7 +503,8 @@ public interface RawStore extends Configurable {
   @Deprecated
   default List<Partition> getPartitions(String catName, String dbName,
       String tableName, int max) throws MetaException, NoSuchObjectException {
-    return getPartitions(catName, dbName, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder().max(max).skipColumnSchemaForPartition(false).build());
+    return getPartitions(catName, dbName, tableName, new GetPartitionsArgs
+        .GetPartitionsArgsBuilder().max(max).build());
   }
 
   /**
@@ -768,8 +769,9 @@ public interface RawStore extends Configurable {
   default List<Partition> getPartitionsByFilter(
      String catName, String dbName, String tblName, String filter, short maxParts)
      throws MetaException, NoSuchObjectException {
-    return getPartitionsByFilter(catName, dbName, tblName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-        .filter(filter).max(maxParts).skipColumnSchemaForPartition(false)
+    return getPartitionsByFilter(catName, dbName, tblName, new GetPartitionsArgs
+        .GetPartitionsArgsBuilder()
+        .filter(filter).max(maxParts)
         .build());
   }
 
@@ -834,8 +836,9 @@ public interface RawStore extends Configurable {
   default boolean getPartitionsByExpr(String catName, String dbName, String tblName,
        byte[] expr, String defaultPartitionName, short maxParts, List<Partition> result)
        throws TException {
-    return getPartitionsByExpr(catName, dbName, tblName, result, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-        .expr(expr).defaultPartName(defaultPartitionName).max(maxParts).skipColumnSchemaForPartition(false)
+    return getPartitionsByExpr(catName, dbName, tblName, result, new GetPartitionsArgs
+        .GetPartitionsArgsBuilder()
+        .expr(expr).defaultPartName(defaultPartitionName).max(maxParts)
         .build());
   }
 
@@ -905,9 +908,8 @@ public interface RawStore extends Configurable {
    */
   default List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
-    return getPartitionsByNames(catName, dbName, tblName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-        .partNames(partNames).skipColumnSchemaForPartition(false)
-        .build());
+    return getPartitionsByNames(catName, dbName, tblName, new GetPartitionsArgs
+        .GetPartitionsArgsBuilder().partNames(partNames).build());
   }
 
   /**
@@ -1157,8 +1159,9 @@ public interface RawStore extends Configurable {
   default List<Partition> getPartitionsWithAuth(String catName, String dbName,
        String tblName, short maxParts, String userName, List<String> groupNames)
        throws MetaException, NoSuchObjectException, InvalidObjectException {
-    return getPartitionsWithAuth(catName, dbName, tblName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-        .max(maxParts).userName(userName).groupNames(groupNames).skipColumnSchemaForPartition(false)
+    return getPartitionsWithAuth(catName, dbName, tblName, new GetPartitionsArgs
+        .GetPartitionsArgsBuilder()
+        .max(maxParts).userName(userName).groupNames(groupNames)
         .build());
   }
 
@@ -1224,9 +1227,10 @@ public interface RawStore extends Configurable {
   default List<Partition> listPartitionsPsWithAuth(String catName, String db_name, String tbl_name,
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
       throws MetaException, InvalidObjectException, NoSuchObjectException {
-    return listPartitionsPsWithAuth(catName, db_name, tbl_name, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-            .part_vals(part_vals).max(max_parts).userName(userName).groupNames(groupNames).skipColumnSchemaForPartition(false)
-            .build());
+    return listPartitionsPsWithAuth(catName, db_name, tbl_name, new GetPartitionsArgs
+        .GetPartitionsArgsBuilder()
+        .part_vals(part_vals).max(max_parts).userName(userName).groupNames(groupNames)
+        .build());
   }
 
   /**
