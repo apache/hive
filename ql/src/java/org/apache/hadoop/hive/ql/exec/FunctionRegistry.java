@@ -556,6 +556,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("percentile_approx", new GenericUDAFPercentileApprox());
     system.registerGenericUDAF("collect_set", new GenericUDAFCollectSet());
     system.registerGenericUDAF("collect_list", new GenericUDAFCollectList());
+    system.registerGenericUDAF("collect_map", new GenericUDAFCollectMap());
 
     system.registerGenericUDAF("ngrams", new GenericUDAFnGrams());
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());

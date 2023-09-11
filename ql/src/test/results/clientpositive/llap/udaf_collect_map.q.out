@@ -1,0 +1,184 @@
+PREHOOK: query: CREATE TABLE test (key int, map_key string, map_value string, map_value_number bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: CREATE TABLE test (key int, map_key string, map_value string, map_value_number bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: INSERT INTO test VALUES
+  (1, 'k-1', 'v-1', 1), (1, 'k-2', 'v-2', 2),
+  (2, 'k-1', 'v-1', 3), (2, null, 'v-null', 4), (2, 'k-null', null, 5),
+  (3, null, 'v-null', 6),
+  (4, 'k-dup', 'v-dup-1', 7), (4, 'k-1', 'v-1', 8), (4, 'k-dup', 'v-dup-2', 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES
+  (1, 'k-1', 'v-1', 1), (1, 'k-2', 'v-2', 2),
+  (2, 'k-1', 'v-1', 3), (2, null, 'v-null', 4), (2, 'k-null', null, 5),
+  (3, null, 'v-null', 6),
+  (4, 'k-dup', 'v-dup-1', 7), (4, 'k-1', 'v-1', 8), (4, 'k-dup', 'v-dup-2', 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.key SCRIPT []
+POSTHOOK: Lineage: test.map_key SCRIPT []
+POSTHOOK: Lineage: test.map_value SCRIPT []
+POSTHOOK: Lineage: test.map_value_number SCRIPT []
+PREHOOK: query: DESCRIBE FUNCTION collect_map
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION collect_map
+POSTHOOK: type: DESCFUNCTION
+collect_map(key, value) - Returns a map of the given key-value columns
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED collect_map
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED collect_map
+POSTHOOK: type: DESCFUNCTION
+collect_map(key, value) - Returns a map of the given key-value columns
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectMap
+Function type:BUILTIN
+PREHOOK: query: SELECT key, collect_map(map_key, map_value)
+FROM test
+GROUP BY key
+ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_map(map_key, map_value)
+FROM test
+GROUP BY key
+ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+1	{"k-1":"v-1","k-2":"v-2"}
+2	{"k-1":"v-1","k-null":null}
+3	{}
+4	{"k-dup":"v-dup-2","k-1":"v-1"}
+PREHOOK: query: SELECT key, collect_map(map_key, map_value_number)
+FROM test
+GROUP BY key
+ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_map(map_key, map_value_number)
+FROM test
+GROUP BY key
+ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+1	{"k-1":1,"k-2":2}
+2	{"k-1":3,"k-null":5}
+3	{}
+4	{"k-dup":9,"k-1":8}
+PREHOOK: query: SELECT key, collect_map(map_key, map_value)
+FROM test
+GROUP BY key
+ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_map(map_key, map_value)
+FROM test
+GROUP BY key
+ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+1	{"k-1":"v-1","k-2":"v-2"}
+2	{"k-1":"v-1","k-null":null}
+3	{}
+4	{"k-dup":"v-dup-2","k-1":"v-1"}
+PREHOOK: query: SELECT key, collect_map(map_key, map_value_number)
+FROM test
+GROUP BY key
+ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_map(map_key, map_value_number)
+FROM test
+GROUP BY key
+ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+1	{"k-1":1,"k-2":2}
+2	{"k-1":3,"k-null":5}
+3	{}
+4	{"k-dup":9,"k-1":8}
+PREHOOK: query: SELECT key, collect_map(map_key, map_value)
+FROM test
+GROUP BY key
+ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_map(map_key, map_value)
+FROM test
+GROUP BY key
+ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+1	{"k-1":"v-1","k-2":"v-2"}
+2	{"k-1":"v-1","k-null":null}
+3	{}
+4	{"k-dup":"v-dup-2","k-1":"v-1"}
+PREHOOK: query: SELECT key, collect_map(map_key, map_value_number)
+FROM test
+GROUP BY key
+ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_map(map_key, map_value_number)
+FROM test
+GROUP BY key
+ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+1	{"k-1":1,"k-2":2}
+2	{"k-1":3,"k-null":5}
+3	{}
+4	{"k-dup":9,"k-1":8}
+PREHOOK: query: SELECT key, collect_map(map_key, map_value)
+FROM test
+GROUP BY key
+ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_map(map_key, map_value)
+FROM test
+GROUP BY key
+ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+1	{"k-1":"v-1","k-2":"v-2"}
+2	{"k-1":"v-1","k-null":null}
+3	{}
+4	{"k-dup":"v-dup-2","k-1":"v-1"}
+PREHOOK: query: SELECT key, collect_map(map_key, map_value_number)
+FROM test
+GROUP BY key
+ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_map(map_key, map_value_number)
+FROM test
+GROUP BY key
+ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+1	{"k-1":1,"k-2":2}
+2	{"k-1":3,"k-null":5}
+3	{}
+4	{"k-dup":9,"k-1":8}
