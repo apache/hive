@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.hadoop.hive.ql.reexec;
 
 import com.google.common.base.Throwables;
@@ -41,10 +40,10 @@ public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
     public void run(HookContext hookContext) throws Exception {
       if (hookContext.getHookType() == HookContext.HookType.ON_FAILURE_HOOK) {
         Throwable exception = hookContext.getException();
-
+        
         if (exception != null && exception.getMessage() != null) {
-
           Throwable cause = Throwables.getRootCause(exception);
+
           if (cause.getClass().getName().equals(validationException) &&
               cause.getMessage().matches(writeConflictErrorPattern.pattern())) {
             retryPossible = true;
@@ -70,5 +69,4 @@ public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
   public boolean shouldReExecuteAfterCompile(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
     return retryPossible;
   }
-
 }
