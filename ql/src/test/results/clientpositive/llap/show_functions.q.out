@@ -80,6 +80,7 @@ character_length
 chr
 coalesce
 collect_list
+collect_map
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
@@ -527,6 +528,7 @@ character_length
 chr
 coalesce
 collect_list
+collect_map
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
@@ -707,6 +709,7 @@ character_length
 chr
 coalesce
 collect_list
+collect_map
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
