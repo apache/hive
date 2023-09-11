@@ -60,12 +60,16 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.getTypeStringFromAST;
 
 
 /**
@@ -671,5 +675,27 @@ public final class ParseUtils {
       val = val.substring(1, val.length() - 1);
     }
     return val;
+  }
+
+  public static TypeInfo getComplexTypeTypeInfo(ASTNode typeNode) throws SemanticException {
+    switch (typeNode.getType()) {
+//      case HiveParser.TOK_LIST:
+//        return serdeConstants.LIST_TYPE_NAME + "<"
+//            + getTypeStringFromAST((ASTNode) typeNode.getChild(0)) + ">";
+      case HiveParser.TOK_MAP:
+        MapTypeInfo mapTypeInfo = new MapTypeInfo();
+        String keyTypeString = getTypeStringFromAST((ASTNode) typeNode.getChild(0));
+        mapTypeInfo.setMapKeyTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo(keyTypeString));
+        mapTypeInfo.setMapValueTypeInfo(getComplexTypeTypeInfo((ASTNode) typeNode.getChild(1)));
+        return mapTypeInfo;
+
+//      case HiveParser.TOK_STRUCT:
+//        return getStructTypeStringFromAST(typeNode);
+//      case HiveParser.TOK_UNIONTYPE:
+//        return getUnionTypeStringFromAST(typeNode);
+      default:
+        String typeString = getTypeStringFromAST(typeNode);
+        return TypeInfoFactory.getPrimitiveTypeInfo(typeString);
+    }
   }
 }

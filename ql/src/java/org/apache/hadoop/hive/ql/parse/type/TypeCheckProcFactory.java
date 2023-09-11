@@ -1136,6 +1136,8 @@ public class TypeCheckProcFactory<T> {
           return timestampLocalTZTypeInfo;
         case HiveParser.TOK_DECIMAL:
           return ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
+        case HiveParser.TOK_MAP:
+          return ParseUtils.getComplexTypeTypeInfo(funcNameNode);
         default:
           return null;
       }

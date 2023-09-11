@@ -487,6 +487,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("!", GenericUDFOPNot.class);
     system.registerGenericUDF("between", GenericUDFBetween.class);
     system.registerGenericUDF("in_bloom_filter", GenericUDFInBloomFilter.class);
+    system.registerGenericUDF("toMap", GenericUDFToMap.class);
 
     // Utility UDFs
     system.registerUDF("version", UDFVersion.class, false);
@@ -501,7 +502,6 @@ public final class FunctionRegistry {
     system.registerUDF(serdeConstants.BIGINT_TYPE_NAME, UDFToLong.class, false, UDFToLong.class.getSimpleName());
     system.registerUDF(serdeConstants.FLOAT_TYPE_NAME, UDFToFloat.class, false, UDFToFloat.class.getSimpleName());
     system.registerUDF(serdeConstants.DOUBLE_TYPE_NAME, UDFToDouble.class, false, UDFToDouble.class.getSimpleName());
-    system.registerUDF("toMap", UDFToMap.class, false, UDFToMap.class.getSimpleName());
     // following mapping is to enable UDFName to UDF while generating expression for default value (in operator tree)
     //  e.g. cast(4 as string) is serialized as UDFToString(4) into metastore, to allow us to generate appropriate UDF for
     //  UDFToString we need the following mappings

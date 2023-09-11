@@ -249,6 +249,46 @@ public class ASTConverter {
             .node();
   }
 
+  private static ASTNode convertType(RelDataType fieldType) {
+    if (fieldType.getSqlTypeName() == SqlTypeName.NULL) {
+      return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
+    }
+
+    if (fieldType.getSqlTypeName() == SqlTypeName.ROW) {
+      ASTBuilder namedStructCallNode = ASTBuilder.construct(HiveParser.TOK_STRUCT, "TOK_STRUCT");
+      namedStructCallNode.add(HiveParser.Identifier, "named_struct");
+      for (RelDataTypeField structFieldType : fieldType.getFieldList()) {
+        namedStructCallNode.add(HiveParser.Identifier, structFieldType.getName());
+        namedStructCallNode.add(createNullField(structFieldType.getType()));
+      }
+      return namedStructCallNode.node();
+    }
+
+    if (fieldType.getSqlTypeName() == SqlTypeName.MAP) {
+      ASTBuilder mapCallNode = ASTBuilder.construct(HiveParser.TOK_MAP, "TOK_MAP");
+      mapCallNode.add(convertType(fieldType.getKeyType()));
+      mapCallNode.add(convertType(fieldType.getValueType()));
+      return mapCallNode.node();
+    }
+
+    if (fieldType.getSqlTypeName() == SqlTypeName.ARRAY) {
+      ASTBuilder arrayCallNode = ASTBuilder.construct(HiveParser.TOK_LIST, "TOK_LIST");
+      arrayCallNode.add(HiveParser.Identifier, "array");
+      arrayCallNode.add(createNullField(fieldType.getComponentType()));
+      return arrayCallNode.node();
+    }
+
+    HiveToken ht = TypeConverter.hiveToken(fieldType);
+    ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
+    if (ht.args != null) {
+      for (String castArg : ht.args) {
+        astBldr.add(HiveParser.Identifier, castArg);
+      }
+    }
+
+    return astBldr.node();
+  }
+
   private ASTNode convert() throws CalciteSemanticException {
     if (root instanceof HiveValues) {
       HiveValues values = (HiveValues) root;
@@ -955,22 +995,22 @@ public class ASTConverter {
           Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst, call.getType())), call.getType());
       case CAST:
         assert(call.getOperands().size() == 1);
-        if (call.getType().isStruct() ||
-            SqlTypeName.MAP.equals(call.getType().getSqlTypeName()) ||
-            SqlTypeName.ARRAY.equals(call.getType().getSqlTypeName())) {
-          // cast for complex types can be ignored safely because explicit casting on such
-          // types are not possible, implicit casting e.g. CAST(ROW__ID as <...>) can be ignored
-          return call.getOperands().get(0).accept(this);
-        }
+//        if (call.getType().isStruct() ||
+//            SqlTypeName.MAP.equals(call.getType().getSqlTypeName()) ||
+//            SqlTypeName.ARRAY.equals(call.getType().getSqlTypeName())) {
+//          // cast for complex types can be ignored safely because explicit casting on such
+//          // types are not possible, implicit casting e.g. CAST(ROW__ID as <...>) can be ignored
+//          return call.getOperands().get(0).accept(this);
+//        }
 
-        HiveToken ht = TypeConverter.hiveToken(call.getType());
-        ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
-        if (ht.args != null) {
-          for (String castArg : ht.args) {
-            astBldr.add(HiveParser.Identifier, castArg);
-          }
-        }
-        astNodeLst.add(astBldr.node());
+//        HiveToken ht = TypeConverter.hiveToken(call.getType());
+//        ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
+//        if (ht.args != null) {
+//          for (String castArg : ht.args) {
+//            astBldr.add(HiveParser.Identifier, castArg);
+//          }
+//        }
+        astNodeLst.add(convertType(call.getType()));
         astNodeLst.add(call.getOperands().get(0).accept(this));
         break;
       case EXTRACT:
