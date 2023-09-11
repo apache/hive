@@ -85,7 +85,7 @@ public class MultiDataSourceJdbcResource {
   }
   
   public void bindDataSource(Transactional transactional) {
-    threadLocal.set(new ContextNode<>(threadLocal.get(), transactional.transactionManager()));
+    threadLocal.set(new ContextNode<>(threadLocal.get(), transactional.value()));
   }
 
   /**

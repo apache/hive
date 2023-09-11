@@ -23,7 +23,7 @@ import org.springframework.transaction.TransactionStatus;
  * Wraps the {@link TransactionStatus} object into an {@link AutoCloseable} object to allow using it in
  * try-with-resources block. If the {@link TransactionStatus#isCompleted()} is false upon exiting the try block,
  * the transaction will rolled back, otherwise nothing happens.
- * <br/><br/><b>In other words:</b> This wrapper automatically rolls back uncommitted transactions, but the commit
+ * <br></br><br></br><b>In other words:</b> This wrapper automatically rolls back uncommitted transactions, but the commit
  * needs to be done manually using {@link AutoCloseableTransactionManager#commit(TransactionContext)} method.
  */
 public class TransactionContext implements AutoCloseable {
