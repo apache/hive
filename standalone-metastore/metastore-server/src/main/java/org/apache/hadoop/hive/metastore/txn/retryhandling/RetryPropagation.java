@@ -28,20 +28,20 @@ public enum RetryPropagation {
    * retry-call method upper in the callstack (a method also annotated with the{@link SqlRetry} annotation), this 
    * method will join it. Joining the retry-call means that if this method fails, the fail will be propagated to the method
    * upper in the callstack and that method will be retried (and this method will be retried as a part of that retry). 
-   * <br></br><br></br><b>In other words:</b> regardless if the inner or outer method fails, the outer method will be re-executed.
+   * <b>In other words:</b> regardless if the inner or outer method fails, the outer method will be re-executed.
    */
   CREATE_OR_JOIN(3),
   /**
    * Regardless if there is a retry-call upper in the callstack, the  {@link SqlRetry} annotated method will be executed
    * as a retry-call, meaning that in case of SQL related errors, the method will be re-executed. 
-   * <br></br><br></br><b>In other words:</b> If the method fails, the error will be caught, and the method will be re-executed.
+   * <b>In other words:</b> If the method fails, the error will be caught, and the method will be re-executed.
    * If there is another retry-call upper in the callstack, this error remains unkown for it, unless all retry attempt
    * are used up.
    */
   CREATE_OR_NESTED(1),
   /**
    * An existing retry-call is required to join it.
-   * <br></br><br></br><b>In other words:</b> While this method does not being executed as a retry-call, it can be called only when 
+   * <b>In other words:</b> While this method does not being executed as a retry-call, it can be called only when 
    * there is a {@link SqlRetry} annotated method upper in the callstack.
    */
   JOIN_EXISTING(2);
