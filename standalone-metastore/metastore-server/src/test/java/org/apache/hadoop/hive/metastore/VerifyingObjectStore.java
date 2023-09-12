@@ -54,9 +54,9 @@ public class VerifyingObjectStore extends ObjectStore {
                                                String filter, short maxParts)
       throws MetaException, NoSuchObjectException {
     List<Partition> sqlResults = getPartitionsByFilterInternal(
-        catName, dbName, tblName, filter, maxParts, true, false);
+        catName, dbName, tblName, filter, maxParts, true, false, false);
     List<Partition> ormResults = getPartitionsByFilterInternal(
-        catName, dbName, tblName, filter, maxParts, false, true);
+        catName, dbName, tblName, filter, maxParts, false, true, false);
     verifyLists(sqlResults, ormResults, Partition.class);
     return sqlResults;
   }
@@ -65,9 +65,9 @@ public class VerifyingObjectStore extends ObjectStore {
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
     List<Partition> sqlResults = getPartitionsByNamesInternal(
-        catName, dbName, tblName, partNames, true, false);
+        catName, dbName, tblName, partNames, true, false, false);
     List<Partition> ormResults = getPartitionsByNamesInternal(
-        catName, dbName, tblName, partNames, false, true);
+        catName, dbName, tblName, partNames, false, true, false);
     verifyLists(sqlResults, ormResults, Partition.class);
     return sqlResults;
   }
@@ -77,9 +77,9 @@ public class VerifyingObjectStore extends ObjectStore {
       String defaultPartitionName, short maxParts, List<Partition> result) throws TException {
     List<Partition> ormParts = new LinkedList<>();
     boolean sqlResult = getPartitionsByExprInternal(
-        catName, dbName, tblName, expr, defaultPartitionName, maxParts, result, true, false);
+        catName, dbName, tblName, expr, defaultPartitionName, maxParts, result, true, false, false);
     boolean ormResult = getPartitionsByExprInternal(
-        catName, dbName, tblName, expr, defaultPartitionName, maxParts, ormParts, false, true);
+        catName, dbName, tblName, expr, defaultPartitionName, maxParts, ormParts, false, true, false);
     if (sqlResult != ormResult) {
       String msg = "The unknown flag is different - SQL " + sqlResult + ", ORM " + ormResult;
       LOG.error(msg);

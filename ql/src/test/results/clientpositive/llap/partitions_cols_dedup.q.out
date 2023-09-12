@@ -1,0 +1,178 @@
+PREHOOK: query: drop database if exists partition_cols_dedup cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists partition_cols_dedup cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database partition_cols_dedup
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:partition_cols_dedup
+POSTHOOK: query: create database partition_cols_dedup
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:partition_cols_dedup
+PREHOOK: query: use partition_cols_dedup
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:partition_cols_dedup
+POSTHOOK: query: use partition_cols_dedup
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:partition_cols_dedup
+PREHOOK: query: create transactional table partitioned_table_1 (i1 int, i2 int, i3 int) partitioned by (year int, month int, day int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:partition_cols_dedup
+PREHOOK: Output: partition_cols_dedup@partitioned_table_1
+POSTHOOK: query: create transactional table partitioned_table_1 (i1 int, i2 int, i3 int) partitioned by (year int, month int, day int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:partition_cols_dedup
+POSTHOOK: Output: partition_cols_dedup@partitioned_table_1
+PREHOOK: query: insert into partitioned_table_1 values (1,1,1,1111,111,11),(2,2,2,2222,222,22),(3,3,3,3333,333,33),(4,4,4,4444,444,44),(5,5,5,5555,555,55)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: partition_cols_dedup@partitioned_table_1
+POSTHOOK: query: insert into partitioned_table_1 values (1,1,1,1111,111,11),(2,2,2,2222,222,22),(3,3,3,3333,333,33),(4,4,4,4444,444,44),(5,5,5,5555,555,55)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: partition_cols_dedup@partitioned_table_1
+POSTHOOK: Output: partition_cols_dedup@partitioned_table_1@year=1111/month=111/day=11
+POSTHOOK: Output: partition_cols_dedup@partitioned_table_1@year=2222/month=222/day=22
+POSTHOOK: Output: partition_cols_dedup@partitioned_table_1@year=3333/month=333/day=33
+POSTHOOK: Output: partition_cols_dedup@partitioned_table_1@year=4444/month=444/day=44
+POSTHOOK: Output: partition_cols_dedup@partitioned_table_1@year=5555/month=555/day=55
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=1111,month=111,day=11).i1 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=1111,month=111,day=11).i2 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=1111,month=111,day=11).i3 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=2222,month=222,day=22).i1 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=2222,month=222,day=22).i2 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=2222,month=222,day=22).i3 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=3333,month=333,day=33).i1 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=3333,month=333,day=33).i2 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=3333,month=333,day=33).i3 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=4444,month=444,day=44).i1 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=4444,month=444,day=44).i2 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=4444,month=444,day=44).i3 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=5555,month=555,day=55).i1 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=5555,month=555,day=55).i2 SCRIPT []
+POSTHOOK: Lineage: partitioned_table_1 PARTITION(year=5555,month=555,day=55).i3 SCRIPT []
+PREHOOK: query: select * from partitioned_table_1
+PREHOOK: type: QUERY
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=1111/month=111/day=11
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=2222/month=222/day=22
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=3333/month=333/day=33
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=4444/month=444/day=44
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=5555/month=555/day=55
+#### A masked pattern was here ####
+POSTHOOK: query: select * from partitioned_table_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=1111/month=111/day=11
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=2222/month=222/day=22
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=3333/month=333/day=33
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=4444/month=444/day=44
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=5555/month=555/day=55
+#### A masked pattern was here ####
+1	1	1	1111	111	11
+2	2	2	2222	222	22
+3	3	3	3333	333	33
+4	4	4	4444	444	44
+5	5	5	5555	555	55
+PREHOOK: query: create table ctas_table_1 as select * from partitioned_table_1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=1111/month=111/day=11
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=2222/month=222/day=22
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=3333/month=333/day=33
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=4444/month=444/day=44
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=5555/month=555/day=55
+PREHOOK: Output: database:partition_cols_dedup
+PREHOOK: Output: partition_cols_dedup@ctas_table_1
+POSTHOOK: query: create table ctas_table_1 as select * from partitioned_table_1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=1111/month=111/day=11
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=2222/month=222/day=22
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=3333/month=333/day=33
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=4444/month=444/day=44
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=5555/month=555/day=55
+POSTHOOK: Output: database:partition_cols_dedup
+POSTHOOK: Output: partition_cols_dedup@ctas_table_1
+POSTHOOK: Lineage: ctas_table_1.day SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:day, type:int, comment:null), ]
+POSTHOOK: Lineage: ctas_table_1.i1 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i1, type:int, comment:null), ]
+POSTHOOK: Lineage: ctas_table_1.i2 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i2, type:int, comment:null), ]
+POSTHOOK: Lineage: ctas_table_1.i3 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i3, type:int, comment:null), ]
+POSTHOOK: Lineage: ctas_table_1.month SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:month, type:int, comment:null), ]
+POSTHOOK: Lineage: ctas_table_1.year SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:year, type:int, comment:null), ]
+PREHOOK: query: select * from ctas_table_1
+PREHOOK: type: QUERY
+PREHOOK: Input: partition_cols_dedup@ctas_table_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ctas_table_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: partition_cols_dedup@ctas_table_1
+#### A masked pattern was here ####
+2	2	2	2222	222	22
+3	3	3	3333	333	33
+4	4	4	4444	444	44
+1	1	1	1111	111	11
+5	5	5	5555	555	55
+PREHOOK: query: create table insert_overwrite_table (c1 int, c2 int) partitioned by (p1 int, p2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:partition_cols_dedup
+PREHOOK: Output: partition_cols_dedup@insert_overwrite_table
+POSTHOOK: query: create table insert_overwrite_table (c1 int, c2 int) partitioned by (p1 int, p2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:partition_cols_dedup
+POSTHOOK: Output: partition_cols_dedup@insert_overwrite_table
+PREHOOK: query: insert overwrite table insert_overwrite_table select i1, i2, year, month from partitioned_table_1
+PREHOOK: type: QUERY
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=1111/month=111/day=11
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=2222/month=222/day=22
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=3333/month=333/day=33
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=4444/month=444/day=44
+PREHOOK: Input: partition_cols_dedup@partitioned_table_1@year=5555/month=555/day=55
+PREHOOK: Output: partition_cols_dedup@insert_overwrite_table
+POSTHOOK: query: insert overwrite table insert_overwrite_table select i1, i2, year, month from partitioned_table_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=1111/month=111/day=11
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=2222/month=222/day=22
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=3333/month=333/day=33
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=4444/month=444/day=44
+POSTHOOK: Input: partition_cols_dedup@partitioned_table_1@year=5555/month=555/day=55
+POSTHOOK: Output: partition_cols_dedup@insert_overwrite_table
+POSTHOOK: Output: partition_cols_dedup@insert_overwrite_table@p1=1111/p2=111
+POSTHOOK: Output: partition_cols_dedup@insert_overwrite_table@p1=2222/p2=222
+POSTHOOK: Output: partition_cols_dedup@insert_overwrite_table@p1=3333/p2=333
+POSTHOOK: Output: partition_cols_dedup@insert_overwrite_table@p1=4444/p2=444
+POSTHOOK: Output: partition_cols_dedup@insert_overwrite_table@p1=5555/p2=555
+POSTHOOK: Lineage: insert_overwrite_table PARTITION(p1=1111,p2=111).c1 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i1, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_overwrite_table PARTITION(p1=1111,p2=111).c2 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i2, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_overwrite_table PARTITION(p1=2222,p2=222).c1 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i1, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_overwrite_table PARTITION(p1=2222,p2=222).c2 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i2, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_overwrite_table PARTITION(p1=3333,p2=333).c1 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i1, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_overwrite_table PARTITION(p1=3333,p2=333).c2 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i2, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_overwrite_table PARTITION(p1=4444,p2=444).c1 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i1, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_overwrite_table PARTITION(p1=4444,p2=444).c2 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i2, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_overwrite_table PARTITION(p1=5555,p2=555).c1 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i1, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_overwrite_table PARTITION(p1=5555,p2=555).c2 SIMPLE [(partitioned_table_1)partitioned_table_1.FieldSchema(name:i2, type:int, comment:null), ]
+PREHOOK: query: select * from insert_overwrite_table
+PREHOOK: type: QUERY
+PREHOOK: Input: partition_cols_dedup@insert_overwrite_table
+PREHOOK: Input: partition_cols_dedup@insert_overwrite_table@p1=1111/p2=111
+PREHOOK: Input: partition_cols_dedup@insert_overwrite_table@p1=2222/p2=222
+PREHOOK: Input: partition_cols_dedup@insert_overwrite_table@p1=3333/p2=333
+PREHOOK: Input: partition_cols_dedup@insert_overwrite_table@p1=4444/p2=444
+PREHOOK: Input: partition_cols_dedup@insert_overwrite_table@p1=5555/p2=555
+#### A masked pattern was here ####
+POSTHOOK: query: select * from insert_overwrite_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: partition_cols_dedup@insert_overwrite_table
+POSTHOOK: Input: partition_cols_dedup@insert_overwrite_table@p1=1111/p2=111
+POSTHOOK: Input: partition_cols_dedup@insert_overwrite_table@p1=2222/p2=222
+POSTHOOK: Input: partition_cols_dedup@insert_overwrite_table@p1=3333/p2=333
+POSTHOOK: Input: partition_cols_dedup@insert_overwrite_table@p1=4444/p2=444
+POSTHOOK: Input: partition_cols_dedup@insert_overwrite_table@p1=5555/p2=555
+#### A masked pattern was here ####
+1	1	1111	111
+2	2	2222	222
+3	3	3333	333
+4	4	4444	444
+5	5	5555	555

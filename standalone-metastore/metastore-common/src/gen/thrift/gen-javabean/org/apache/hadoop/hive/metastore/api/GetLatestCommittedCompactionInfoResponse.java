@@ -329,14 +329,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // COMPACTIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list936 = iprot.readListBegin();
-                struct.compactions = new java.util.ArrayList<CompactionInfoStruct>(_list936.size);
-                @org.apache.thrift.annotation.Nullable CompactionInfoStruct _elem937;
-                for (int _i938 = 0; _i938 < _list936.size; ++_i938)
+                org.apache.thrift.protocol.TList _list952 = iprot.readListBegin();
+                struct.compactions = new java.util.ArrayList<CompactionInfoStruct>(_list952.size);
+                @org.apache.thrift.annotation.Nullable CompactionInfoStruct _elem953;
+                for (int _i954 = 0; _i954 < _list952.size; ++_i954)
                 {
-                  _elem937 = new CompactionInfoStruct();
-                  _elem937.read(iprot);
-                  struct.compactions.add(_elem937);
+                  _elem953 = new CompactionInfoStruct();
+                  _elem953.read(iprot);
+                  struct.compactions.add(_elem953);
                 }
                 iprot.readListEnd();
               }
@@ -362,9 +362,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(COMPACTIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.compactions.size()));
-          for (CompactionInfoStruct _iter939 : struct.compactions)
+          for (CompactionInfoStruct _iter955 : struct.compactions)
           {
-            _iter939.write(oprot);
+            _iter955.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.compactions.size());
-        for (CompactionInfoStruct _iter940 : struct.compactions)
+        for (CompactionInfoStruct _iter956 : struct.compactions)
         {
-          _iter940.write(oprot);
+          _iter956.write(oprot);
         }
       }
     }
@@ -400,14 +400,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetLatestCommittedCompactionInfoResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list941 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.compactions = new java.util.ArrayList<CompactionInfoStruct>(_list941.size);
-        @org.apache.thrift.annotation.Nullable CompactionInfoStruct _elem942;
-        for (int _i943 = 0; _i943 < _list941.size; ++_i943)
+        org.apache.thrift.protocol.TList _list957 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.compactions = new java.util.ArrayList<CompactionInfoStruct>(_list957.size);
+        @org.apache.thrift.annotation.Nullable CompactionInfoStruct _elem958;
+        for (int _i959 = 0; _i959 < _list957.size; ++_i959)
         {
-          _elem942 = new CompactionInfoStruct();
-          _elem942.read(iprot);
-          struct.compactions.add(_elem942);
+          _elem958 = new CompactionInfoStruct();
+          _elem958.read(iprot);
+          struct.compactions.add(_elem958);
         }
       }
       struct.setCompactionsIsSet(true);

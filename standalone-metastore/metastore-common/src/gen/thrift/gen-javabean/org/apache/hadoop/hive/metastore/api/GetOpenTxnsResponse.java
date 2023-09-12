@@ -589,13 +589,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // OPEN_TXNS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list756 = iprot.readListBegin();
-                struct.open_txns = new java.util.ArrayList<java.lang.Long>(_list756.size);
-                long _elem757;
-                for (int _i758 = 0; _i758 < _list756.size; ++_i758)
+                org.apache.thrift.protocol.TList _list772 = iprot.readListBegin();
+                struct.open_txns = new java.util.ArrayList<java.lang.Long>(_list772.size);
+                long _elem773;
+                for (int _i774 = 0; _i774 < _list772.size; ++_i774)
                 {
-                  _elem757 = iprot.readI64();
-                  struct.open_txns.add(_elem757);
+                  _elem773 = iprot.readI64();
+                  struct.open_txns.add(_elem773);
                 }
                 iprot.readListEnd();
               }
@@ -640,9 +640,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(OPEN_TXNS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.open_txns.size()));
-          for (long _iter759 : struct.open_txns)
+          for (long _iter775 : struct.open_txns)
           {
-            oprot.writeI64(_iter759);
+            oprot.writeI64(_iter775);
           }
           oprot.writeListEnd();
         }
@@ -678,9 +678,9 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeI64(struct.txn_high_water_mark);
       {
         oprot.writeI32(struct.open_txns.size());
-        for (long _iter760 : struct.open_txns)
+        for (long _iter776 : struct.open_txns)
         {
-          oprot.writeI64(_iter760);
+          oprot.writeI64(_iter776);
         }
       }
       oprot.writeBinary(struct.abortedBits);
@@ -700,13 +700,13 @@ package org.apache.hadoop.hive.metastore.api;
       struct.txn_high_water_mark = iprot.readI64();
       struct.setTxn_high_water_markIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list761 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
-        struct.open_txns = new java.util.ArrayList<java.lang.Long>(_list761.size);
-        long _elem762;
-        for (int _i763 = 0; _i763 < _list761.size; ++_i763)
+        org.apache.thrift.protocol.TList _list777 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
+        struct.open_txns = new java.util.ArrayList<java.lang.Long>(_list777.size);
+        long _elem778;
+        for (int _i779 = 0; _i779 < _list777.size; ++_i779)
         {
-          _elem762 = iprot.readI64();
-          struct.open_txns.add(_elem762);
+          _elem778 = iprot.readI64();
+          struct.open_txns.add(_elem778);
         }
       }
       struct.setOpen_txnsIsSet(true);

@@ -638,6 +638,11 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
     }
 
     @Override
+    public List<Partition> get_partitions_by_filter_req(GetPartitionsByFilterRequest req) throws MetaException, NoSuchObjectException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
     public void alter_partition(String db_name, String tbl_name, Partition new_part)
             throws InvalidOperationException, MetaException, TException {
         throw new UnsupportedOperationException("this method is not supported");

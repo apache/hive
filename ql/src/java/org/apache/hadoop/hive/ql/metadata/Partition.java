@@ -177,7 +177,7 @@ public class Partition implements Serializable {
           }
         }
         // set default if columns are not set
-        if (tPartition.getSd().getCols() == null) {
+        if (tPartition.getSd().getCols() == null  || tPartition.getSd().getCols().isEmpty()) {
           if (table.getCols() != null) {
             tPartition.getSd().setCols(table.getCols());
           }
