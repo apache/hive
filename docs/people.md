@@ -66,7 +66,7 @@ at all contributors to our issue tracker, mailing list and version control.
 | jcamacho        | Jesus Camacho Rodriguez  | <a href="http://hortonworks.com/">Hortonworks</a> |      |
 | jdere           | Jason Dere               | <a href="http://hortonworks.com/">Hortonworks</a> |      |
 | jpullokk        | Laljo John Pullokkaran   | <a href="http://hortonworks.com/">Hortonworks</a> |      |
-| jssarma         | Joydeep Sensarma         | <a href="http://qubole.com/">Qubole</a>           |      |
+| jssarma         | Joydeep Sensarma         | <a href="https://clearfeed.ai/">Clearfeed.ai</a>  |      |
 | jxiang          | Jimmy Xiang              | <a href="http://cloudera.com/">Cloudera</a>       |      |
 | kevinwilfong    | Kevin Wilfong            | <a href="http://facebook.com/">Facebook</a>       |      |
 | leftyl          | Lefty Leverenz           | <a href="https://www.ibm.com/">IBM</a>            |      |
