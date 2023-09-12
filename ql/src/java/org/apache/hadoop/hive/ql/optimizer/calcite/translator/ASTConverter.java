@@ -256,10 +256,9 @@ public class ASTConverter {
 
     if (fieldType.getSqlTypeName() == SqlTypeName.ROW) {
       ASTBuilder namedStructCallNode = ASTBuilder.construct(HiveParser.TOK_STRUCT, "TOK_STRUCT");
-      namedStructCallNode.add(HiveParser.Identifier, "named_struct");
       for (RelDataTypeField structFieldType : fieldType.getFieldList()) {
         namedStructCallNode.add(HiveParser.Identifier, structFieldType.getName());
-        namedStructCallNode.add(createNullField(structFieldType.getType()));
+        namedStructCallNode.add(convertType(structFieldType.getType()));
       }
       return namedStructCallNode.node();
     }
@@ -273,8 +272,7 @@ public class ASTConverter {
 
     if (fieldType.getSqlTypeName() == SqlTypeName.ARRAY) {
       ASTBuilder arrayCallNode = ASTBuilder.construct(HiveParser.TOK_LIST, "TOK_LIST");
-      arrayCallNode.add(HiveParser.Identifier, "array");
-      arrayCallNode.add(createNullField(fieldType.getComponentType()));
+      arrayCallNode.add(convertType(fieldType.getComponentType()));
       return arrayCallNode.node();
     }
 

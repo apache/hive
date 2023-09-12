@@ -60,8 +60,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -70,6 +72,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.getTypeStringFromAST;
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.unescapeIdentifier;
 
 
 /**
@@ -208,7 +211,7 @@ public final class ParseUtils {
 
     switch(filterCondn.getType()) {
     case HiveParser.TOK_TABLE_OR_COL:
-      String tableOrCol = SemanticAnalyzer.unescapeIdentifier(filterCondn.getChild(0).getText()
+      String tableOrCol = unescapeIdentifier(filterCondn.getChild(0).getText()
           .toLowerCase());
       return getIndex(tabAliases, tableOrCol);
     case HiveParser.Identifier:
@@ -679,23 +682,42 @@ public final class ParseUtils {
 
   public static TypeInfo getComplexTypeTypeInfo(ASTNode typeNode) throws SemanticException {
     switch (typeNode.getType()) {
-//      case HiveParser.TOK_LIST:
-//        return serdeConstants.LIST_TYPE_NAME + "<"
-//            + getTypeStringFromAST((ASTNode) typeNode.getChild(0)) + ">";
+      case HiveParser.TOK_LIST:
+        ListTypeInfo listTypeInfo = new ListTypeInfo();
+        listTypeInfo.setListElementTypeInfo(getComplexTypeTypeInfo((ASTNode) typeNode.getChild(0)));
+        return listTypeInfo;
       case HiveParser.TOK_MAP:
         MapTypeInfo mapTypeInfo = new MapTypeInfo();
         String keyTypeString = getTypeStringFromAST((ASTNode) typeNode.getChild(0));
         mapTypeInfo.setMapKeyTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo(keyTypeString));
         mapTypeInfo.setMapValueTypeInfo(getComplexTypeTypeInfo((ASTNode) typeNode.getChild(1)));
         return mapTypeInfo;
-
-//      case HiveParser.TOK_STRUCT:
-//        return getStructTypeStringFromAST(typeNode);
+      case HiveParser.TOK_STRUCT:
+        StructTypeInfo structTypeInfo = new StructTypeInfo();
+        Map<String, TypeInfo> fields = collectStructFieldNames(typeNode);
+        structTypeInfo.setAllStructFieldNames(new ArrayList<>(fields.keySet()));
+        structTypeInfo.setAllStructFieldTypeInfos(new ArrayList<>(fields.values()));
+        return structTypeInfo;
 //      case HiveParser.TOK_UNIONTYPE:
 //        return getUnionTypeStringFromAST(typeNode);
       default:
         String typeString = getTypeStringFromAST(typeNode);
         return TypeInfoFactory.getPrimitiveTypeInfo(typeString);
     }
+  }
+
+  private static Map<String, TypeInfo> collectStructFieldNames(ASTNode structTypeNode) throws SemanticException {
+    Map<String, TypeInfo> result = new HashMap<>(structTypeNode.getChildCount());
+    for (int i = 0; i < structTypeNode.getChildCount(); i++) {
+      ASTNode child = (ASTNode) structTypeNode.getChild(i);
+
+      String attributeIdentifier = unescapeIdentifier(child.getChild(0).getText());
+      if (result.containsKey(attributeIdentifier)) {
+        throw new SemanticException(ErrorMsg.AMBIGUOUS_STRUCT_ATTRIBUTE, attributeIdentifier);
+      } else {
+        result.put(attributeIdentifier, getComplexTypeTypeInfo((ASTNode) child.getChild(1)));
+      }
+    }
+    return result;
   }
 }
