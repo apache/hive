@@ -660,10 +660,11 @@ class MetaStoreDirectSql {
    * @param dbName Metastore db name.
    * @param tblName Metastore table name.
    * @param partNames Partition names to get.
+   * @param skipColSchemaForPartitions skip column schema for partitions
    * @return List of partitions.
    */
   public List<Partition> getPartitionsViaSqlFilter(final String catName, final String dbName,
-                                                   final String tblName, List<String> partNames)
+      final String tblName, List<String> partNames, boolean skipColSchemaForPartitions)
       throws MetaException {
     if (partNames.isEmpty()) {
       return Collections.emptyList();
@@ -677,7 +678,8 @@ class MetaStoreDirectSql {
         if (partitionIds.isEmpty()) {
           return Collections.emptyList(); // no partitions, bail early.
         }
-        return getPartitionsFromPartitionIds(catName, dbName, tblName, null, partitionIds, Collections.emptyList());
+        return getPartitionsFromPartitionIds(catName, dbName, tblName, null,
+                partitionIds, Collections.emptyList(), skipColSchemaForPartitions);
       }
     });
   }
@@ -687,10 +689,12 @@ class MetaStoreDirectSql {
    * @param filter The filter.
    * @param max The maximum number of partitions to return.
    * @param isAcidTable True if the table is ACID
+   * @param skipColSchemaForPartitions skip column schema for partitions
    * @return List of partitions.
    */
   public List<Partition> getPartitionsViaSqlFilter(String catName, String dbName, String tableName,
-      SqlFilterForPushdown filter, Integer max, boolean isAcidTable) throws MetaException {
+      SqlFilterForPushdown filter, Integer max, boolean isAcidTable,
+      boolean skipColSchemaForPartitions) throws MetaException {
     List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName,
         dbName, tableName, filter.filter, filter.params,
         filter.joins, max);
@@ -701,7 +705,7 @@ class MetaStoreDirectSql {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
         return getPartitionsFromPartitionIds(catName, dbName,
-            tableName, null, input, Collections.emptyList(), isAcidTable);
+            tableName, null, input, Collections.emptyList(), isAcidTable, skipColSchemaForPartitions);
       }
     });
   }
@@ -841,10 +845,11 @@ class MetaStoreDirectSql {
    * @param dbName Metastore db name.
    * @param tblName Metastore table name.
    * @param max The maximum number of partitions to return.
+   * @param skipColumnSchemaForPartition skip column schema for partitions
    * @return List of partitions.
    */
   public List<Partition> getPartitions(String catName,
-      String dbName, String tblName, Integer max) throws MetaException {
+      String dbName, String tblName, Integer max, boolean skipColumnSchemaForPartition) throws MetaException {
     List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName,
         tblName, null, Collections.<String>emptyList(), Collections.<String>emptyList(), max);
     if (partitionIds.isEmpty()) {
@@ -855,7 +860,8 @@ class MetaStoreDirectSql {
     List<Partition> result = Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsFromPartitionIds(catName, dbName, tblName, null, input, Collections.emptyList());
+        return getPartitionsFromPartitionIds(catName, dbName, tblName, null, input, Collections.emptyList(),
+                skipColumnSchemaForPartition);
       }
     });
     return result;
@@ -941,14 +947,15 @@ class MetaStoreDirectSql {
 
   /** Should be called with the list short enough to not trip up Oracle/etc. */
   private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
-      Boolean isView, List<Long> partIdList, List<String> projectionFields) throws MetaException {
-    return getPartitionsFromPartitionIds(catName, dbName, tblName, isView, partIdList, projectionFields, false);
+      Boolean isView, List<Long> partIdList, List<String> projectionFields, boolean skipColumnSchemaForPartition) throws MetaException {
+    return getPartitionsFromPartitionIds(catName, dbName, tblName, isView, partIdList,
+            projectionFields, false, skipColumnSchemaForPartition);
   }
 
   /** Should be called with the list short enough to not trip up Oracle/etc. */
   private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
       Boolean isView, List<Long> partIdList, List<String> projectionFields,
-      boolean isAcidTable) throws MetaException {
+      boolean isAcidTable, boolean skipColumnSchemaForPartition) throws MetaException {
 
     boolean doTrace = LOG.isDebugEnabled();
 
@@ -1127,7 +1134,7 @@ class MetaStoreDirectSql {
     } // if (hasSkewedColumns)
 
     // Get FieldSchema stuff if any.
-    if (!colss.isEmpty()) {
+    if (!colss.isEmpty() && !skipColumnSchemaForPartition) {
       // We are skipping the CDS table here, as it seems to be totally useless.
       MetastoreDirectSqlUtils.setSDCols(COLUMNS_V2, pm, colss, colIds);
     }

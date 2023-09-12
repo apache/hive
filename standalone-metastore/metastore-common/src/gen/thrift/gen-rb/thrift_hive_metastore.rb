@@ -1671,6 +1671,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_by_filter failed: unknown result')
     end
 
+    def get_partitions_by_filter_req(req)
+      send_get_partitions_by_filter_req(req)
+      return recv_get_partitions_by_filter_req()
+    end
+
+    def send_get_partitions_by_filter_req(req)
+      send_message('get_partitions_by_filter_req', Get_partitions_by_filter_req_args, :req => req)
+    end
+
+    def recv_get_partitions_by_filter_req()
+      result = receive_message(Get_partitions_by_filter_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_by_filter_req failed: unknown result')
+    end
+
     def get_part_specs_by_filter(db_name, tbl_name, filter, max_parts)
       send_get_part_specs_by_filter(db_name, tbl_name, filter, max_parts)
       return recv_get_part_specs_by_filter()
@@ -5878,6 +5895,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_partitions_by_filter', seqid)
+    end
+
+    def process_get_partitions_by_filter_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_partitions_by_filter_req_args)
+      result = Get_partitions_by_filter_req_result.new()
+      begin
+        result.success = @handler.get_partitions_by_filter_req(args.req)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_partitions_by_filter_req', seqid)
     end
 
     def process_get_part_specs_by_filter(seqid, iprot, oprot)
@@ -11690,6 +11720,42 @@ module ThriftHiveMetastore
   end
 
   class Get_partitions_by_filter_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partitions_by_filter_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetPartitionsByFilterRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partitions_by_filter_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1
