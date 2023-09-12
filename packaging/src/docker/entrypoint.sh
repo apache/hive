@@ -25,7 +25,7 @@ SKIP_SCHEMA_INIT="${IS_RESUME:-false}"
 
 function initialize_hive {
   COMMAND="-initOrUpgradeSchema"
-  if [ "$(echo "$HIVE_VER" | cut -d '.' -f1)" == "3" ]; then
+  if [ "$(echo "$HIVE_VER" | cut -d '.' -f1)" -lt "4" ]; then
      COMMAND="-${SCHEMA_COMMAND:-initSchema}"
   fi
   $HIVE_HOME/bin/schematool -dbType $DB_DRIVER $COMMAND
