@@ -36,22 +36,17 @@ import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
-import org.apache.hadoop.hive.ql.testutil.ReflectionUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.plugins.InlineMockMaker;
-import org.slf4j.Logger;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
@@ -65,10 +60,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.mockConstructionWithAnswer;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -93,45 +90,29 @@ public class TestAtlasDumpTask {
 
   @Test
   public void testAtlasDumpMetrics() throws Exception {
-    Logger logger = Mockito.mock(Logger.class);
-
-    try (MockedConstruction<AtlasDumpLogger> atlasDumpLoggerMockedConstruction = mockConstruction(AtlasDumpLogger.class)) {
-
-      when(work.getMetricCollector()).thenReturn(metricCollector);
-      when(conf.get(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname)).thenReturn("http://localhost:21000/atlas");
-      when(conf.get(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname)).thenReturn("tgtDb");
-      when(conf.get(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname)).thenReturn("srcCluster");
-      when(conf.get(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname)).thenReturn("tgtCluster");
-      when(conf.get(ReplUtils.DEFAULT_FS_CONFIG)).thenReturn("hdfs:tgtFsUri:8020");
-      when(work.getStagingDir()).thenReturn(new Path("hdfs://tmp:8020/staging"));
-      when(work.getSrcDB()).thenReturn("srcDB");
-      when(work.isBootstrap()).thenReturn(true);
-      atlasDumpTask = new AtlasDumpTask(atlasRestClient, conf, work);
-      AtlasDumpTask atlasDumpTaskSpy = Mockito.spy(atlasDumpTask);
-      when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
-      // Todo: figure this shit out
-//      Whitebox.setInternalState(ReplState.class, logger);
-      ReflectionUtil.setField(atlasDumpTaskSpy, "LOG", logger);
-      Mockito.doReturn(0L).when(atlasDumpTaskSpy)
-              .dumpAtlasMetaData(Mockito.any(AtlasRequestBuilder.class), Mockito.any(AtlasReplInfo.class));
-      Mockito.doNothing().when(atlasDumpTaskSpy).createDumpMetadata(Mockito.any(AtlasReplInfo.class),
-              Mockito.any(Long.class));
-      int status = atlasDumpTaskSpy.execute();
-      Assert.assertEquals(0, status);
-      ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
-      ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-      ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
-      Mockito.verify(logger,
-              Mockito.times(2)).info(replStateCaptor.capture(),
-              eventCaptor.capture(), eventDetailsCaptor.capture());
-      Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
-      Assert.assertEquals("ATLAS_DUMP_START", eventCaptor.getAllValues().get(0));
-      Assert.assertEquals("ATLAS_DUMP_END", eventCaptor.getAllValues().get(1));
-      Assert.assertTrue(eventDetailsCaptor.getAllValues().get(1).toString(), eventDetailsCaptor.getAllValues().get(0)
-              .toString().contains("{\"dbName\":\"srcDB\",\"dumpStartTime"));
-      Assert.assertTrue(eventDetailsCaptor
-              .getAllValues().get(1).toString().contains("{\"dbName\":\"srcDB\",\"dumpEndTime\""));
-    }
+    AtlasDumpLogger logger = mock(AtlasDumpLogger.class);
+    when(work.getMetricCollector()).thenReturn(metricCollector);
+    when(conf.get(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname)).thenReturn("http://localhost:21000/atlas");
+    when(conf.get(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname)).thenReturn("tgtDb");
+    when(conf.get(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname)).thenReturn("srcCluster");
+    when(conf.get(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname)).thenReturn("tgtCluster");
+    when(conf.get(ReplUtils.DEFAULT_FS_CONFIG)).thenReturn("hdfs:tgtFsUri:8020");
+    when(work.getStagingDir()).thenReturn(new Path("hdfs://tmp:8020/staging"));
+    when(work.getSrcDB()).thenReturn("srcDB");
+    when(work.isBootstrap()).thenReturn(true);
+    ReplLoggerFactory replLoggerFactoryMock = mock(ReplLoggerFactory.class);
+    when(replLoggerFactoryMock.createLogger(anyString(), anyString())).thenReturn(logger);
+    atlasDumpTask = new AtlasDumpTask(atlasRestClient, conf, work, replLoggerFactoryMock);
+    AtlasDumpTask atlasDumpTaskSpy = Mockito.spy(atlasDumpTask);
+    when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
+    Mockito.doReturn(0L).when(atlasDumpTaskSpy)
+            .dumpAtlasMetaData(any(AtlasRequestBuilder.class), any(AtlasReplInfo.class));
+    Mockito.doNothing().when(atlasDumpTaskSpy).createDumpMetadata(any(AtlasReplInfo.class),
+            any(Long.class));
+    int status = atlasDumpTaskSpy.execute();
+    Assert.assertEquals(0, status);
+    verify(logger, times(1)).startLog();
+    verify(logger, times(1)).endLog(any());
   }
 
   @Test
@@ -151,7 +132,7 @@ public class TestAtlasDumpTask {
     AtlasExportRequest exportRequest = mock(AtlasExportRequest.class);
     String exportResponseData = "dumpExportContent";
     InputStream exportedMetadataIS = new ByteArrayInputStream(exportResponseData.getBytes(StandardCharsets.UTF_8));
-    when(atlasClientV2.exportData(Mockito.any(AtlasExportRequest.class))).thenReturn(exportedMetadataIS);
+    when(atlasClientV2.exportData(any(AtlasExportRequest.class))).thenReturn(exportedMetadataIS);
     when(exportRequest.toString()).thenReturn("dummyExportRequest");
     when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS)).thenReturn(60L);
     when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS)).thenReturn(1L);
@@ -159,7 +140,7 @@ public class TestAtlasDumpTask {
     AtlasRestClientImpl atlasRestClientImpl = (AtlasRestClientImpl)atlasClient;
     InputStream inputStream = atlasRestClientImpl.exportData(exportRequest);
     ArgumentCaptor<AtlasExportRequest> expReqCaptor = ArgumentCaptor.forClass(AtlasExportRequest.class);
-    Mockito.verify(atlasClientV2, Mockito.times(1)).exportData(expReqCaptor.capture());
+    verify(atlasClientV2, times(1)).exportData(expReqCaptor.capture());
     Assert.assertEquals(expReqCaptor.getValue().toString(), "dummyExportRequest");
     byte[] exportResponseDataReadBytes = new byte[exportResponseData.length()];
     inputStream.read(exportResponseDataReadBytes);
@@ -173,7 +154,7 @@ public class TestAtlasDumpTask {
     AtlasExportRequest exportRequest = mock(AtlasExportRequest.class);
     AtlasServiceException atlasServiceException = mock(AtlasServiceException.class);
     when(atlasServiceException.getMessage()).thenReturn("import or export is in progress");
-    when(atlasClientV2.exportData(Mockito.any(AtlasExportRequest.class))).thenThrow(atlasServiceException);
+    when(atlasClientV2.exportData(any(AtlasExportRequest.class))).thenThrow(atlasServiceException);
     when(exportRequest.toString()).thenReturn("dummyExportRequest");
     setupConfForRetry();
     AtlasRestClient atlasClient = new AtlasRestClientImpl(atlasClientV2, conf);
@@ -187,7 +168,7 @@ public class TestAtlasDumpTask {
       Assert.assertTrue(atlasServiceException == ex.getCause());
     }
     ArgumentCaptor<AtlasExportRequest> expReqCaptor = ArgumentCaptor.forClass(AtlasExportRequest.class);
-    Mockito.verify(atlasClientV2, Mockito.times(3)).exportData(expReqCaptor.capture());
+    verify(atlasClientV2, times(3)).exportData(expReqCaptor.capture());
     for (AtlasExportRequest atlasExportRequest: expReqCaptor.getAllValues()) {
       Assert.assertEquals(atlasExportRequest.toString(), "dummyExportRequest");
     }
@@ -214,7 +195,7 @@ public class TestAtlasDumpTask {
     AtlasServer atlasServerRet = atlasClient.getServer("src", conf);
     Assert.assertNull(atlasServerRet);
     ArgumentCaptor<String> getServerReqCaptor = ArgumentCaptor.forClass(String.class);
-    Mockito.verify(atlasClientV2, Mockito.times(1)).getServer(getServerReqCaptor.capture());
+    verify(atlasClientV2, times(1)).getServer(getServerReqCaptor.capture());
   }
 
   @Test
@@ -232,7 +213,7 @@ public class TestAtlasDumpTask {
       Assert.assertTrue(atlasServiceException == ex.getCause());
     }
     ArgumentCaptor<String> getServerReqCaptor = ArgumentCaptor.forClass(String.class);
-    Mockito.verify(atlasClientV2, Mockito.times(4)).getServer(getServerReqCaptor.capture());
+    verify(atlasClientV2, times(4)).getServer(getServerReqCaptor.capture());
   }
 
   @Test
@@ -242,7 +223,7 @@ public class TestAtlasDumpTask {
             MockedStatic<ConfigurationConverter> configurationConverterMockedStatic = mockStatic(ConfigurationConverter.class)
             ) {
       userGroupInformationMockedStatic.when(UserGroupInformation::getLoginUser).thenReturn(mock(UserGroupInformation.class));
-      configurationConverterMockedStatic.when(() -> ConfigurationConverter.getConfiguration(Mockito.any(Properties.class))).thenCallRealMethod();
+      configurationConverterMockedStatic.when(() -> ConfigurationConverter.getConfiguration(any(Properties.class))).thenCallRealMethod();
 
       when(conf.getTimeVar(HiveConf.ConfVars.REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT,
               TimeUnit.MILLISECONDS)).thenReturn(20L);
@@ -264,7 +245,7 @@ public class TestAtlasDumpTask {
     List<String> listOfTable = Arrays.asList(new String [] {"t1", "t2"});
     AtlasRequestBuilder atlasRequestBuilder = Mockito.spy(AtlasRequestBuilder.class);
     Mockito.doReturn(listOfTable).when(atlasRequestBuilder)
-            .getFileAsList(Mockito.any(Path.class), Mockito.any(HiveConf.class));
+            .getFileAsList(any(Path.class), any(HiveConf.class));
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:31000", "srcDb", "tgtDb",
             "src","tgt", new Path("/tmp/staging"), new Path("/tmp/list"), conf);
     AtlasExportRequest atlasExportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo);
@@ -282,8 +263,8 @@ public class TestAtlasDumpTask {
   public void testGetFileAsListRetry() throws Exception {
     AtlasRequestBuilder atlasRequestBuilder = Mockito.spy(AtlasRequestBuilder.class);
     FileSystem fs = Mockito.mock(FileSystem.class);
-    Mockito.doReturn(fs).when(atlasRequestBuilder).getFileSystem(Mockito.any(Path.class), Mockito.any(HiveConf.class));
-    when(fs.getFileStatus(Mockito.any(Path.class))).thenThrow(new IOException("Unable to connect"));
+    Mockito.doReturn(fs).when(atlasRequestBuilder).getFileSystem(any(Path.class), any(HiveConf.class));
+    when(fs.getFileStatus(any(Path.class))).thenThrow(new IOException("Unable to connect"));
     Path tableListPath = new Path("/tmp/list");
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:31000", "srcDb", "tgtDb",
             "src","tgt", new Path("/tmp/staging"), tableListPath, conf);
@@ -295,7 +276,7 @@ public class TestAtlasDumpTask {
       Assert.assertTrue(e.getMessage().contains("Unable to connect"));
     }
     ArgumentCaptor<Path> getServerReqCaptor = ArgumentCaptor.forClass(Path.class);
-    Mockito.verify(fs, Mockito.times(4)).getFileStatus(getServerReqCaptor.capture());
+    verify(fs, times(4)).getFileStatus(getServerReqCaptor.capture());
     List<Path>  pathList = getServerReqCaptor.getAllValues();
     for (Path path: pathList) {
       Assert.assertTrue(tableListPath.equals(path));

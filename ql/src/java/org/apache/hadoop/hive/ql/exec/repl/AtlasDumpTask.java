@@ -68,16 +68,18 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
   private static final transient Logger LOG = LoggerFactory.getLogger(AtlasDumpTask.class);
   private static final long serialVersionUID = 1L;
   private transient AtlasRestClient atlasRestClient;
+  private ReplLoggerFactory replLoggerFactory = ReplLoggerFactory.getInstance();
 
   public AtlasDumpTask() {
     super();
   }
 
   @VisibleForTesting
-  AtlasDumpTask(final AtlasRestClient atlasRestClient, final HiveConf conf, final AtlasDumpWork work) {
+  AtlasDumpTask(final AtlasRestClient atlasRestClient, final HiveConf conf, final AtlasDumpWork work, final ReplLoggerFactory replLoggerFactory) {
     this.conf = conf;
     this.work = work;
     this.atlasRestClient = atlasRestClient;
+    this.replLoggerFactory = replLoggerFactory;
   }
 
   @Override
@@ -85,10 +87,9 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     try {
       SecurityUtils.reloginExpiringKeytabUser();
       AtlasReplInfo atlasReplInfo = createAtlasReplInfo();
-      LOG.info("Dumping Atlas metadata of srcDb: {}, for TgtDb: {} to staging location:",
+      LOG.info("Dumping Atlas metadata of srcDb: {}, for TgtDb: {} to staging location: {}",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
-      AtlasDumpLogger replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(),
-              atlasReplInfo.getStagingDir().toString());
+      AtlasDumpLogger replLogger = replLoggerFactory.createLogger(atlasReplInfo.getSrcDB(), atlasReplInfo.getStagingDir().toString());
       replLogger.startLog();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.ENTITIES.name(), 0L);
