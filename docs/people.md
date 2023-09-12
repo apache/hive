@@ -51,7 +51,7 @@ at all contributors to our issue tracker, mailing list and version control.
 
 | Apache username | name                     | organization                                      | role |
 | --------------- + ------------------------ + ------------------------------------------------- + ---- |
-| aihuaxu         | Aihua Xu                 | <a href="http://cloudera.com/">Cloudera</a>       |      |
+| aihuaxu         | Aihua Xu                 | <a href="https://www.snowflake.com/">Snowflake</a>|      |
 | athusoo         | Ashish Thusoo            | <a href="http://qubole.com/">Qubole</a>           |      |
 | brock           | Brock Noland             | <a href="http://streamsets.com/">StreamSets</a>   |      |
 | ctang           | Chaoyu Tang              | <a href="http://cloudera.com/">Cloudera</a>       |      |
