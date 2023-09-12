@@ -488,7 +488,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("in_bloom_filter", GenericUDFInBloomFilter.class);
     system.registerGenericUDF("toMap", GenericUDFToMap.class);
     system.registerGenericUDF("toArray", GenericUDFToArray.class);
-    system.registerGenericUDF("toStruct", GenericUDFToArray.class);
+    system.registerGenericUDF("toStruct", GenericUDFToStruct.class);
 
     // Utility UDFs
     system.registerUDF("version", UDFVersion.class, false);

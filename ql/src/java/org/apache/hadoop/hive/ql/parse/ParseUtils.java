@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -707,9 +708,12 @@ public final class ParseUtils {
   }
 
   private static Map<String, TypeInfo> collectStructFieldNames(ASTNode structTypeNode) throws SemanticException {
-    Map<String, TypeInfo> result = new HashMap<>(structTypeNode.getChildCount());
-    for (int i = 0; i < structTypeNode.getChildCount(); i++) {
-      ASTNode child = (ASTNode) structTypeNode.getChild(i);
+    ASTNode fieldListNode = (ASTNode) structTypeNode.getChild(0);
+    assert fieldListNode.getType() == HiveParser.TOK_TABCOLLIST;
+
+    Map<String, TypeInfo> result = new LinkedHashMap<>(fieldListNode.getChildCount());
+    for (int i = 0; i < fieldListNode.getChildCount(); i++) {
+      ASTNode child = (ASTNode) fieldListNode.getChild(i);
 
       String attributeIdentifier = unescapeIdentifier(child.getChild(0).getText());
       if (result.containsKey(attributeIdentifier)) {

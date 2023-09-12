@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ import java.util.List;
     + "Creates a map with the given key/value pairs ")
 public class GenericUDFToStruct extends GenericUDF implements SettableUDF {
   private transient Converter[] converters;
-  private ListTypeInfo typeInfo;
+  private StructTypeInfo typeInfo;
 
 
   // Must be deterministic order map for consistent q-test output across Java versions - see HIVE-9161
@@ -139,7 +140,7 @@ public class GenericUDFToStruct extends GenericUDF implements SettableUDF {
 
   @Override
   public void setTypeInfo(TypeInfo typeInfo) throws UDFArgumentException {
-    this.typeInfo = (ListTypeInfo) typeInfo;
+    this.typeInfo = (StructTypeInfo) typeInfo;
   }
 
   @Override

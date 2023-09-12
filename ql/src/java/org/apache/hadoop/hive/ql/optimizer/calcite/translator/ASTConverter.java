@@ -255,7 +255,8 @@ public class ASTConverter {
     }
 
     if (fieldType.getSqlTypeName() == SqlTypeName.ROW) {
-      ASTBuilder namedStructCallNode = ASTBuilder.construct(HiveParser.TOK_STRUCT, "TOK_STRUCT");
+      ASTBuilder namedStructCallNode = ASTBuilder.construct(HiveParser.TOK_STRUCT, "TOK_STRUCT")
+          .add(HiveParser.TOK_TABCOLLIST, "TOK_TABCOLLIST");
       for (RelDataTypeField structFieldType : fieldType.getFieldList()) {
         namedStructCallNode.add(HiveParser.Identifier, structFieldType.getName());
         namedStructCallNode.add(convertType(structFieldType.getType()));

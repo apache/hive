@@ -169,7 +169,8 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
    * Therefore it is necessary for this method to qualify the intervals with appropriate qualifiers
    */
   public String getExprString() {
-    if (typeInfo.getCategory() == Category.PRIMITIVE) {
+    if (typeInfo.getCategory() == Category.PRIMITIVE
+        || getWritableObjectInspector().getWritableConstantValue() == null) {
       return getFormatted(typeInfo, value);
     } else if (typeInfo.getCategory() == Category.STRUCT) {
       StringBuilder sb = new StringBuilder();

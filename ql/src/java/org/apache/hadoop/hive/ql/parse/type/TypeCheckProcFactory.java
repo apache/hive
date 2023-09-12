@@ -1416,7 +1416,9 @@ public class TypeCheckProcFactory<T> {
       // Return nulls for conversion operators
       if (CONVERSION_FUNCTION_TEXT_MAP.keySet().contains(expr.getType())
           || expr.getToken().getType() == HiveParser.CharSetName
-          || expr.getToken().getType() == HiveParser.CharSetLiteral) {
+          || expr.getToken().getType() == HiveParser.CharSetLiteral
+          || expr.getType() == HiveParser.TOK_TABCOL
+          || expr.getType() == HiveParser.TOK_TABCOLLIST) {
         return null;
       }
 
