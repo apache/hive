@@ -46,8 +46,7 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
  */
 @Description(name = "date_format", value = "_FUNC_(date/timestamp/string, fmt) - converts a date/timestamp/string "
     + "to a value of string in the format specified by the date format fmt.",
-    extended = "Supported formats are DateTimeFormatter formats - "
-        + "https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html. "
+    extended = "Supported formats are defined by the underlying formatter implementation (hive.datetime.formatter). "
         + "Second argument fmt should be constant.\n"
         + "Example: > SELECT _FUNC_('2015-04-08', 'y');\n '2015'")
 public class GenericUDFDateFormat extends GenericUDF {
