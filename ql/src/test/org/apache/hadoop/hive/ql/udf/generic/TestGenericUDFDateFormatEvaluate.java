@@ -67,13 +67,16 @@ public class TestGenericUDFDateFormatEvaluate {
     this.expectedResult = expectedResult.equals("null") ? null : new Text(expectedResult);
   }
 
-  @Parameterized.Parameters(name = "('{0}','{1}'), zone={2}, formatter={3}")
+  @Parameterized.Parameters(name = "date_format('{0}','{1}'), zone={2}, formatter={3}")
   public static Collection<String[]> readInputs() throws IOException, CsvException {
     CSVParser parser = new CSVParserBuilder().withSeparator(';').withIgnoreQuotations(true).build();
     try (InputStream in = TestGenericUDFDateFormatEvaluate.class.getResourceAsStream(
         "TestGenericUDFDateFormatEvaluate.csv")) {
       Objects.requireNonNull(in);
-      try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(in)).withCSVParser(parser).build()) {
+      try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(in))
+          .withSkipLines(1) // Skip header
+          .withCSVParser(parser)
+          .build()) {
         return reader.readAll();
       }
     }
