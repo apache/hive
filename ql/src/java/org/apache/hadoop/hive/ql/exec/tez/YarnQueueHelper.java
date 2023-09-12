@@ -93,6 +93,14 @@ public class YarnQueueHelper {
     lastKnownGoodUrl = 0;
   }
 
+  /**
+   * Checks yarn queue access of a given user for a given queue, and throws
+   * HiveException in case the user doesn't have access to the queue.
+   * @param  queueName the yarn queue name
+   * @param  userName the username
+   * @throws IOException when doAs throws an exception, we simply throw it
+   * InterruptedException when doAs throws an exception, we simply throw it
+   */
   public void checkQueueAccess(
       String queueName, String userName) throws IOException {
     UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
@@ -101,8 +109,9 @@ public class YarnQueueHelper {
         checkQueueAccessInternal(queueName, userName);
         return null;
       });
-    } catch (Exception exception) {
+    } catch (InterruptedException exception) {
       LOG.error("Cannot check queue access against UGI: " + ugi, exception);
+      throw new IOException(exception);
     }
   }
 
