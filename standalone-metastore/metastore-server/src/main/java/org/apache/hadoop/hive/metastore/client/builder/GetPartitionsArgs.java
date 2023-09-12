@@ -91,7 +91,7 @@ public class GetPartitionsArgs {
     private List<String> groupNames;
     private String includeParamKeyPattern;
     private String excludeParamKeyPattern;
-    private boolean skipColumnSchemaForPartition;
+    private boolean skipColumnSchemaForPartition = false;
 
     public GetPartitionsArgsBuilder filter(String filter) {
       this.filter = filter;

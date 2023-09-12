@@ -4766,7 +4766,6 @@ public class ObjectStore implements RawStore, Configurable {
           true, true, new GetPartitionsArgs.GetPartitionsArgsBuilder()
               .excludeParamKeyPattern(partitionsProjectSpec.getIncludeParamKeyPattern())
               .includeParamKeyPattern(partitionsProjectSpec.getIncludeParamKeyPattern())
-              .skipColumnSchemaForPartition(false)
               .build());
     }
 

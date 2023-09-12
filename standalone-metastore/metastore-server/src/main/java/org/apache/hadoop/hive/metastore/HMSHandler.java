@@ -5495,10 +5495,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Deprecated
   public List<Partition> get_partitions(final String db_name, final String tbl_name,
                                         final short max_parts) throws NoSuchObjectException, MetaException {
-    return get_partitions(db_name, tbl_name, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-        .max(max_parts).skipColumnSchemaForPartition(false)
-        .build());
-
+    return get_partitions(db_name, tbl_name,
+        new GetPartitionsArgs.GetPartitionsArgsBuilder().max(max_parts).build());
   }
 
   private List<Partition> get_partitions(final String db_name, final String tbl_name,
@@ -5546,7 +5544,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       final List<String> groupNames) throws TException {
     return get_partitions_with_auth_optional_schema(dbName, tblName,
         new GetPartitionsArgs.GetPartitionsArgsBuilder()
-            .max(maxParts).userName(userName).groupNames(groupNames).skipColumnSchemaForPartition(false)
+            .max(maxParts).userName(userName).groupNames(groupNames)
             .build());
   }
 
@@ -6609,7 +6607,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       // Don't send the parsedDbName, as this method will parse itself.
       ret = get_partitions_ps_with_auth(db_name, tbl_name, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-          .part_vals(part_vals).max(max_parts).skipColumnSchemaForPartition(false)
+          .part_vals(part_vals).max(max_parts)
           .build());
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (Exception e) {
@@ -6634,7 +6632,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       final List<String> groupNames) throws TException {
     return get_partitions_ps_with_auth(db_name, tbl_name, new GetPartitionsArgs.GetPartitionsArgsBuilder()
             .part_vals(part_vals).max(max_parts).userName(userName).groupNames(groupNames)
-            .skipColumnSchemaForPartition(false)
             .build());
   }
 
@@ -7260,9 +7257,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
     return get_partitions_by_filter_internal(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName,
-        new GetPartitionsArgs.GetPartitionsArgsBuilder()
-            .filter(filter).max(maxParts).skipColumnSchemaForPartition(false)
-            .build());
+        new GetPartitionsArgs.GetPartitionsArgsBuilder().filter(filter).max(maxParts).build());
   }
 
   private List<Partition> get_partitions_by_filter_internal(final String catName,
@@ -7458,9 +7453,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                  final List<String> partNames)
       throws TException {
     return get_partitions_by_names(dbName, tblName, false, null, null, null,
-        new GetPartitionsArgs.GetPartitionsArgsBuilder()
-            .partNames(partNames).skipColumnSchemaForPartition(false)
-            .build());
+        new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(partNames).build());
   }
 
   @Override
