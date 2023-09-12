@@ -22,11 +22,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 
 /**
  * StructTypeInfo represents the TypeInfo of a struct. A struct contains one or
@@ -147,4 +150,11 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
     return allStructFieldNames.hashCode() ^ allStructFieldTypeInfos.hashCode();
   }
 
+  @Override
+  public ObjectInspector createObjectInspector() {
+    List<ObjectInspector> structFieldObjectInspectors = allStructFieldTypeInfos.stream()
+        .map(TypeInfo::createObjectInspector)
+        .collect(Collectors.toList());
+    return ObjectInspectorFactory.getColumnarStructObjectInspector(allStructFieldNames, structFieldObjectInspectors);
+  }
 }

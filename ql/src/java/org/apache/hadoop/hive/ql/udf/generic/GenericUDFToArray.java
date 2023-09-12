@@ -26,23 +26,25 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * GenericUDFMap.
  *
  */
-@Description(name = "toMap", value = "_FUNC_(key0, value0, key1, value1...) - "
+@Description(name = "toArray", value = "_FUNC_(key0, value0, key1, value1...) - "
     + "Creates a map with the given key/value pairs ")
-public class GenericUDFToMap extends GenericUDF implements SettableUDF {
+public class GenericUDFToArray extends GenericUDF implements SettableUDF {
   private transient Converter[] converters;
-  private MapTypeInfo typeInfo;
+  private ListTypeInfo typeInfo;
+
 
   // Must be deterministic order map for consistent q-test output across Java versions - see HIVE-9161
-  LinkedHashMap<Object, Object> ret = new LinkedHashMap<>();
+  List<Object> ret = new ArrayList<>();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -118,17 +120,13 @@ public class GenericUDFToMap extends GenericUDF implements SettableUDF {
     }
 
     ret.clear();
-    for (int i = 0; i < arguments.length; i += 2) {
-      ret.put(converters[i].convert(arguments[i].get()), converters[i + 1]
-          .convert(arguments[i + 1].get()));
-    }
     return ret;
   }
 
   @Override
   public String getDisplayString(String[] children) {
     StringBuilder sb = new StringBuilder();
-    sb.append("toMap(");
+    sb.append("toArray(");
     for (int i = 0; i < children.length; ++i) {
       if (i != 0) {
         sb.append(",");
@@ -141,7 +139,7 @@ public class GenericUDFToMap extends GenericUDF implements SettableUDF {
 
   @Override
   public void setTypeInfo(TypeInfo typeInfo) throws UDFArgumentException {
-    this.typeInfo = (MapTypeInfo) typeInfo;
+    this.typeInfo = (ListTypeInfo) typeInfo;
   }
 
   @Override

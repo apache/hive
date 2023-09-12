@@ -32,7 +32,6 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.hadoop.hive.ql.udf.UDFToMap;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Aggr_ConvexHull;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Aggr_Union;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Area;
@@ -488,6 +487,8 @@ public final class FunctionRegistry {
     system.registerGenericUDF("between", GenericUDFBetween.class);
     system.registerGenericUDF("in_bloom_filter", GenericUDFInBloomFilter.class);
     system.registerGenericUDF("toMap", GenericUDFToMap.class);
+    system.registerGenericUDF("toArray", GenericUDFToArray.class);
+    system.registerGenericUDF("toStruct", GenericUDFToArray.class);
 
     // Utility UDFs
     system.registerUDF("version", UDFVersion.class, false);
