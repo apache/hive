@@ -9,13 +9,58 @@ insert into t5 values(1,'Sagar',23),(3,'Surya',NULL),(4,'Raman',45),(5,'Scott',2
 
 set hive.cbo.enable = false;
 
+select * from t3
+where age in (select distinct(age) age from t4)
+order by age ;
+
+select * from t3
+where age not in (select distinct(age) age from t4  )
+order by age ;
+
+
+select * from t3
+where age not in (select distinct(ages) ages from t5 where t5.ages is not null)
+order by age ;
+
+
+select * from t3
+where age not in (select distinct(ages) ages from t5 )
+order by age ;
+
+select count(*) from t3
+where age not in (23,22, null );
+
 explain select * from t3
         where age not in (select distinct(age) age from t4);
 
+select count(*) from t3
+where age not in (select distinct(age)age from t3 t1 where t1.age > 10);
 
 set hive.cbo.enable = true;
 
+select * from t3
+where age in (select distinct(age) age from t4)
+order by age ;
+
+select * from t3
+where age not in (select distinct(age) age from t4  )
+order by age ;
+
+select * from t3
+where age not in (select distinct(ages) ages from t5 where t5.ages is not null)
+order by age ;
+
+
+select * from t3
+where age not in (select distinct(ages) ages from t5 )
+order by age ;
+
+select count(*) from t3
+where age not in (23,22, null );
 
 explain select * from t3
         where age not in (select distinct(age) age from t4);
+
+select count(*) from t3
+where age not in (select distinct(age)age from t3 t1 where t1.age > 10);
 

@@ -55,6 +55,94 @@ POSTHOOK: Output: default@t5
 POSTHOOK: Lineage: t5.ages SCRIPT []
 POSTHOOK: Lineage: t5.id SCRIPT []
 POSTHOOK: Lineage: t5.name SCRIPT []
+PREHOOK: query: select * from t3
+where age in (select distinct(age) age from t4)
+order by age
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age in (select distinct(age) age from t4)
+order by age
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+6	Ramya	5
+1	Sagar	23
+3	Surya	23
+5	Scott	23
+7		23
+8		23
+4	Raman	45
+14	hela	45
+Warning: Shuffle Join MERGEJOIN[46][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from t3
+where age not in (select distinct(age) age from t4  )
+order by age
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (select distinct(age) age from t4  )
+order by age
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9	ron	3
+13	kong	13
+12	fed	18
+11	nick	19
+10	Sam	22
+Warning: Shuffle Join MERGEJOIN[48][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5 where t5.ages is not null)
+order by age
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t5
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5 where t5.ages is not null)
+order by age
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9	ron	3
+13	kong	13
+12	fed	18
+11	nick	19
+10	Sam	22
+Warning: Shuffle Join MERGEJOIN[46][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5 )
+order by age
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t5
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5 )
+order by age
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select count(*) from t3
+where age not in (23,22, null )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from t3
+where age not in (23,22, null )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
 Warning: Shuffle Join MERGEJOIN[44][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from t3
         where age not in (select distinct(age) age from t4)
@@ -248,6 +336,108 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Shuffle Join MERGEJOIN[50][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from t3
+where age not in (select distinct(age)age from t3 t1 where t1.age > 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from t3
+where age not in (select distinct(age)age from t3 t1 where t1.age > 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2
+PREHOOK: query: select * from t3
+where age in (select distinct(age) age from t4)
+order by age
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age in (select distinct(age) age from t4)
+order by age
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+6	Ramya	5
+1	Sagar	23
+3	Surya	23
+5	Scott	23
+7		23
+8		23
+4	Raman	45
+14	hela	45
+Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select * from t3
+where age not in (select distinct(age) age from t4  )
+order by age
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (select distinct(age) age from t4  )
+order by age
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9	ron	3
+13	kong	13
+12	fed	18
+11	nick	19
+10	Sam	22
+Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5 where t5.ages is not null)
+order by age
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t5
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5 where t5.ages is not null)
+order by age
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9	ron	3
+13	kong	13
+12	fed	18
+11	nick	19
+10	Sam	22
+Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5 )
+order by age
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t5
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from t3
+where age not in (select distinct(ages) ages from t5 )
+order by age
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select count(*) from t3
+where age not in (23,22, null )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@t3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from t3
+where age not in (23,22, null )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
 Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from t3
         where age not in (select distinct(age) age from t4)
@@ -436,3 +626,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Shuffle Join MERGEJOIN[44][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select count(*) from t3
+where age not in (select distinct(age)age from t3 t1 where t1.age > 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from t3
+where age not in (select distinct(age)age from t3 t1 where t1.age > 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2

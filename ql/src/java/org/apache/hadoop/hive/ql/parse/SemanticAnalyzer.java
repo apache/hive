@@ -3603,20 +3603,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          * push filters only for this QBJoinTree. Child QBJoinTrees have already been handled.
          */
         pushJoinFilters(qb, joinTree, aliasToOpInfo, false);
-        boolean notInCheck = (subQuery.getNotInCheck() != null)?true : false;
-        if(notInCheck && !qb.isMultiDestQuery()){
-          /**
-           * In case of not in operator, there will be a not in check, so at this point, notInCheck is used to
-           *  direct the JoinPlan to have the condition outerQuerytable.OuterQueryCol is not null predicate added to it
-           *
-           *  Note that: in case of multi dest queries, with even one containing a notIn operator, the code is not changed yet.
-           *  That needs to be worked on as a separate bug
-           */
-          input = genJoinOperatorNIC(qbSQ, joinTree, aliasToOpInfo , input, notInCheck);
-        }
-        else {
-          input = genJoinOperator(qbSQ, joinTree, aliasToOpInfo, input);
-        }
+
+        /*
+         *  Note that: in case of multi dest queries, with even one containing a notIn operator, the code is not changed yet.
+         *  That needs to be worked on as a separate bug
+         * e.g.
+         * from t3 b
+         * INSERT OVERWRITE TABLE t4
+         * select *
+         * where b.age not in
+         * (select a.age
+         * from t3 a
+         * )
+         * order by age
+         * INSERT OVERWRITE TABLE t5
+         * select *
+         * where b.age in
+         * (select c.age
+         * from t3 c
+         * );
+         */
+        boolean notInCheck = (subQuery.getNotInCheck() != null && !qb.isMultiDestQuery() );
+        input = genJoinOperator(qbSQ, joinTree, aliasToOpInfo , input, notInCheck);
+
         searchCond = subQuery.updateOuterQueryFilter(clonedSearchCond);
       }
     }
@@ -3683,14 +3692,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * for inner joins push a 'is not null predicate' to the join sources for
    * every non nullSafe predicate.
    */
+
   private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input,
-                                                     QBJoinTree joinTree, ExprNodeDesc[] joinKeys) throws SemanticException {
+                                                        QBJoinTree joinTree, ExprNodeDesc[] joinKeys) throws SemanticException {
+    return genNotNullFilterForJoinSourcePlan(qb, input, joinTree, joinKeys, false);
+  }
+
+  private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input,
+                                                     QBJoinTree joinTree, ExprNodeDesc[] joinKeys, boolean notInCheck) throws SemanticException {
+
+    /*
+     * The notInCheck param is used for the purpose of adding an
+     *  (outerQueryTable.outerQueryCol is not null ) predicate to the join,
+     *  since it is not added naturally because of outer join
+     */
 
     if (qb == null || joinTree == null) {
       return input;
     }
 
-    if (!joinTree.getNoOuterJoin()) {
+    if (!joinTree.getNoOuterJoin() && !notInCheck) {
       return input;
     }
 
@@ -3755,79 +3776,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
-  /** This function is used for the purpose of adding an
-   *  outerQueryTable.outerQueryCol is not null predicate to the join,
-   *  since it is not added naturally like it is done in the case of "IN" operator
-   **/
-  private Operator genNotNullFilterForJoinSourcePlanNIC(QB qb, Operator input,
-                                                     QBJoinTree joinTree, ExprNodeDesc[] joinKeys) throws SemanticException {
 
-    if (qb == null || joinTree == null) {
-      return input;
-    }
-
-    /** removing the condition of outer join, since for notIn query, it will be an outer join and the predicate won't be added**/
-
-    if (joinKeys == null || joinKeys.length == 0) {
-      return input;
-    }
-    Multimap<Integer, ExprNodeColumnDesc> hashes = ArrayListMultimap.create();
-    if (input instanceof FilterOperator) {
-      ExprNodeDescUtils.getExprNodeColumnDesc(Arrays.asList(((FilterDesc)input.getConf()).getPredicate()), hashes);
-    }
-    ExprNodeDesc filterPred = null;
-    List<Boolean> nullSafes = joinTree.getNullSafes();
-    for (int i = 0; i < joinKeys.length; i++) {
-      if (nullSafes.get(i) || (joinKeys[i] instanceof ExprNodeColumnDesc &&
-              ((ExprNodeColumnDesc)joinKeys[i]).getIsPartitionColOrVirtualCol())) {
-        // no need to generate is not null predicate for partitioning or
-        // virtual column, since those columns can never be null.
-        continue;
-      }
-      boolean skip = false;
-      for (ExprNodeColumnDesc node : hashes.get(joinKeys[i].hashCode())) {
-        if (node.isSame(joinKeys[i])) {
-          skip = true;
-          break;
-        }
-      }
-      if (skip) {
-        // there is already a predicate on this src.
-        continue;
-      }
-      List<ExprNodeDesc> args = new ArrayList<ExprNodeDesc>();
-      args.add(joinKeys[i]);
-      ExprNodeDesc nextExpr = ExprNodeGenericFuncDesc.newInstance(
-              FunctionRegistry.getFunctionInfo("isnotnull").getGenericUDF(), args);
-      filterPred = filterPred == null ? nextExpr : ExprNodeDescUtils
-              .mergePredicates(filterPred, nextExpr);
-    }
-
-    if (filterPred == null) {
-      return input;
-    }
-
-    OpParseContext inputCtx = opParseCtx.get(input);
-    RowResolver inputRR = inputCtx.getRowResolver();
-
-    if (input instanceof FilterOperator) {
-      FilterOperator f = (FilterOperator) input;
-      List<ExprNodeDesc> preds = new ArrayList<ExprNodeDesc>();
-      preds.add(f.getConf().getPredicate());
-      preds.add(filterPred);
-      f.getConf().setPredicate(ExprNodeDescUtils.mergePredicates(preds));
-
-      return input;
-    }
-
-    FilterDesc filterDesc = new FilterDesc(filterPred, false);
-    filterDesc.setGenerated(true);
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(filterDesc,
-            new RowSchema(inputRR.getColumnInfos()), input), inputRR);
-
-    LOG.debug("Created Filter Plan for {} row schema: {}", qb.getId(), inputRR);
-    return output;
-  }
 
   Integer genExprNodeDescRegex(String colRegex, String tabAlias, ASTNode sel,
       List<ExprNodeDesc> exprList, Set<ColumnInfo> excludeCols, RowResolver input,
@@ -9709,102 +9658,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
                                    Map<String, Operator> map,
                                    Operator joiningOp) throws SemanticException {
-    QBJoinTree leftChild = joinTree.getJoinSrc();
-    Operator joinSrcOp = joiningOp instanceof JoinOperator ? joiningOp : null;
-
-    if (joinSrcOp == null && leftChild != null) {
-      joinSrcOp = genJoinOperator(qb, leftChild, map, null);
-    }
-
-    if ( joinSrcOp != null ) {
-      List<ASTNode> filter = joinTree.getFiltersForPushing().get(0);
-      for (ASTNode cond : filter) {
-        joinSrcOp = genFilterPlan(qb, cond, joinSrcOp, false);
-      }
-    }
-
-    String[] baseSrc = joinTree.getBaseSrc();
-    Operator[] srcOps = new Operator[baseSrc.length];
-
-    Set<Integer> omitOpts = null; // set of input to the join that should be
-    // omitted by the output
-    int pos = 0;
-    for (String src : baseSrc) {
-      if (src != null) {
-        Operator srcOp = map.get(src.toLowerCase());
-
-        // for left-semi join, generate an additional selection & group-by
-        // operator before ReduceSink
-        List<ASTNode> fields = joinTree.getRHSSemijoinColumns(src);
-        if (fields != null) {
-          // the RHS table columns should be not be output from the join
-          if (omitOpts == null) {
-            omitOpts = new HashSet<Integer>();
-          }
-          omitOpts.add(pos);
-
-          // generate a selection operator for group-by keys only
-          srcOp = insertSelectForSemijoin(fields, srcOp);
-
-          // generate a groupby operator (HASH mode) for a map-side partial
-          // aggregation for semijoin
-          srcOps[pos++] = genMapGroupByForSemijoin(fields, srcOp);
-        } else {
-          srcOps[pos++] = srcOp;
-        }
-      } else {
-        assert pos == 0;
-        srcOps[pos++] = joinSrcOp;
-      }
-    }
-
-    ExprNodeDesc[][] joinKeys = genJoinKeys(joinTree, srcOps);
-
-    for (int i = 0; i < srcOps.length; i++) {
-      // generate a ReduceSink operator for the join
-      String[] srcs = baseSrc[i] != null ? new String[] {baseSrc[i]} : joinTree.getLeftAliases();
-      if (!isCBOExecuted()) {
-        srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i]);
-      }
-      srcOps[i] = genJoinReduceSinkChild(joinKeys[i], srcOps[i], srcs, joinTree.getNextTag());
-    }
-
-    Operator<?> topOp = genJoinOperatorChildren(joinTree, joinSrcOp, srcOps, omitOpts, joinKeys);
-    JoinOperator joinOp;
-    if (topOp instanceof JoinOperator) {
-      joinOp = (JoinOperator) topOp;
-    } else {
-      // We might generate a Select operator on top of the join operator for
-      // semijoin
-      joinOp = (JoinOperator) topOp.getParentOperators().get(0);
-    }
-    joinOp.getConf().setQBJoinTreeProps(joinTree);
-    joinContext.put(joinOp, joinTree);
-
-    if (joinTree.getPostJoinFilters().size() != 0) {
-      assert joinTree.getNoOuterJoin();
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PUSH_RESIDUAL_INNER)) {
-        // Safety check for postconditions
-        throw new SemanticException("Post-filtering conditions should have been added to the JOIN operator");
-      }
-      for(ASTNode condn : joinTree.getPostJoinFilters()) {
-        topOp = genFilterPlan(qb, condn, topOp, false);
-      }
-    }
-
-    return topOp;
+    return genJoinOperator(qb, joinTree, map, joiningOp, false);
   }
 
-  /**
-   * @param qb
-   * @param joinTree
-   * @param map
-   * @param joiningOp
-   * @param notInCheck
-   * @return
-   * @throws SemanticException
-   */
-  private Operator genJoinOperatorNIC(QB qb, QBJoinTree joinTree,
+  private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
                                    Map<String, Operator> map,
                                    Operator joiningOp, boolean notInCheck) throws SemanticException {
     QBJoinTree leftChild = joinTree.getJoinSrc();
@@ -9863,15 +9720,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // generate a ReduceSink operator for the join
       String[] srcs = baseSrc[i] != null ? new String[] {baseSrc[i]} : joinTree.getLeftAliases();
       if (!isCBOExecuted()) {
-        if(notInCheck && srcOps[i] == OuterSrcOp){
-          /**
-           * The condition srcOps[i] == OuterSrcOp is used to make sure that the predicate for notnull check
-           * is added only for the outer query table.outerqueryCol
-           * even after the outer join condition
-           **/
-          srcOps[i] = genNotNullFilterForJoinSourcePlanNIC(qb, srcOps[i], joinTree , joinKeys[i]);
-        }
-        srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i]);
+        /*
+         * The condition srcOps[i] == OuterSrcOp is used to make sure that the predicate for notnull check
+         * is added only for the outer query table.outerqueryCol
+         * even after the outer join condition
+         */
+        boolean outerNotInCheck = ( notInCheck && (srcOps[i] == OuterSrcOp) );
+        srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i], outerNotInCheck);
       }
       srcOps[i] = genJoinReduceSinkChild(joinKeys[i], srcOps[i], srcs, joinTree.getNextTag());
     }
