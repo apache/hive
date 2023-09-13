@@ -77,7 +77,7 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
     MetastoreConf.setVar(clientConf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     // set to a low value to prove THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE is being honored
     // (it should throw an exception)
-    MetastoreConf.setLongVar(clientConf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, 1024L);
+    MetastoreConf.setVar(clientConf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1024");
     HiveMetaStoreClient limitedClient = new HiveMetaStoreClient(clientConf);
     Exception expectedException = assertThrows(TTransportException.class, () -> {
       limitedClient.listPartitions(dbName, tblName, (short)-1);
