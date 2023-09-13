@@ -114,8 +114,8 @@ TBLPROPERTIES (
 ALTER TABLE default.test ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (col1,col2) DISABLE NOVALIDATE RELY;
 ALTER TABLE default.test ADD CONSTRAINT c4_unique UNIQUE (col4) DISABLE NOVALIDATE RELY;
 ALTER TABLE test.test CHANGE COLUMN col2 col2 timestamp CONSTRAINT  DEFAULT CURRENT_TIMESTAMP() ENABLE NOVALIDATE RELY;
-ALTER TABLE default.test ADD CONSTRAINT c3_c4_check CHECK ((col3 + col4)/(col3 - col4) > 3) ENABLE NOVALIDATE NORELY;
-ALTER TABLE default.test ADD CONSTRAINT #### A masked pattern was here #### CHECK (col3 + col4 > 1) ENABLE NOVALIDATE RELY;
+ALTER TABLE default.test ADD CONSTRAINT c3_c4_check CHECK ((`col3` + `col4`)/(`col3` - `col4`) > 3) ENABLE NOVALIDATE NORELY;
+ALTER TABLE default.test ADD CONSTRAINT #### A masked pattern was here #### CHECK (`col3` + `col4` > 1) ENABLE NOVALIDATE RELY;
 ALTER TABLE default.test CHANGE COLUMN col1 col1 varchar(100) CONSTRAINT #### A masked pattern was here #### NOT NULL ENABLE NOVALIDATE RELY;
 ALTER TABLE default.test CHANGE COLUMN col4 col4 decimal(10,0) CONSTRAINT #### A masked pattern was here #### NOT NULL ENABLE NOVALIDATE RELY;
 PREHOOK: query: SHOW CREATE TABLE TEST2
