@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -73,8 +74,12 @@ public class GenericUDFDateFormat extends GenericUDF {
     obtainTimestampConverter(arguments, 0, tsInputTypes, tsConverters);
 
     HiveConf conf = SessionState.get() == null ? new HiveConf() : SessionState.get().getConf();
-    formatter = InstantFormatter.ofConfiguration(conf);
-    timeZone = conf.getLocalTimeZone();
+    if (formatter == null) {
+      formatter = InstantFormatter.ofConfiguration(conf);
+    }
+    if (timeZone == null) {
+      timeZone = conf.getLocalTimeZone();
+    }
     if (arguments[1] instanceof ConstantObjectInspector) {
       fmtStr = getConstantStringValue(arguments, 1);
     } else {
@@ -82,6 +87,16 @@ public class GenericUDFDateFormat extends GenericUDF {
     }
 
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+  }
+
+  @Override
+  public void configure(final MapredContext context) {
+    super.configure(context);
+    if (context != null) {
+      formatter = InstantFormatter.ofConfiguration(context.getJobConf());
+      String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
+      timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
+    }
   }
 
   @Override
