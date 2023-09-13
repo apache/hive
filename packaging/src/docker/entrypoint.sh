@@ -24,7 +24,11 @@ set -x
 SKIP_SCHEMA_INIT="${IS_RESUME:-false}"
 
 function initialize_hive {
-  $HIVE_HOME/bin/schematool -dbType $DB_DRIVER -initOrUpgradeSchema
+  COMMAND="-initOrUpgradeSchema"
+  if [ "$(echo "$HIVE_VER" | cut -d '.' -f1)" -lt "4" ]; then
+     COMMAND="-${SCHEMA_COMMAND:-initSchema}"
+  fi
+  $HIVE_HOME/bin/schematool -dbType $DB_DRIVER $COMMAND
   if [ $? -eq 0 ]; then
     echo "Initialized schema successfully.."
   else
