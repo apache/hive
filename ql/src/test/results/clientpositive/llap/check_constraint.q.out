@@ -58,22 +58,22 @@ Sort Columns:       	[]
 # Check Constraints	 	 
 Table:              	default.table1_n0   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:a       	Check Value:a BETWEEN i AND j	 
+Column Name:a       	Check Value:`a` BETWEEN `i` AND `j`	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:d       	Check Value:d > round(567.6) AND d < round(1000.4)	 
+Column Name:d       	Check Value:`d` > round(567.6) AND `d` < round(1000.4)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:i       	Check Value:-i > -10	 
+Column Name:i       	Check Value:-`i` > -10	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:j       	Check Value:+j > 10 	 
+Column Name:j       	Check Value:+`j` > 10	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:ij      	Check Value:ij IS NOT NULL	 
+Column Name:ij      	Check Value:`ij` IS NOT NULL	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:bb      	Check Value:bb IN (23.4,56,4)	 
+Column Name:bb      	Check Value:`bb` IN (23.4,56,4)	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO table1_n0 values(1,100,true, 5, 23.4, 700.5)
 PREHOOK: type: QUERY
@@ -236,7 +236,7 @@ Storage Desc Params:
 # Check Constraints	 	 
 Table:              	default.table2_n0   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:i       	Check Value:i + NULL > 0	 
+Column Name:i       	Check Value:`i` + NULL > 0	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO table2_n0 values(8)
 PREHOOK: type: QUERY
@@ -499,7 +499,7 @@ Column Name:        	url
 # Check Constraints	 	 
 Table:              	default.tmulti      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:numclicks	Check Value:numClicks > 0	 
+Column Name:numclicks	Check Value:`numClicks` > 0	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 PREHOOK: type: QUERY
@@ -664,13 +664,13 @@ Column Name:        	url
 # Check Constraints	 	 
 Table:              	default.tmulti      	 
 Constraint Name:    	chk1                	 
-Column Name:null    	Check Value:userName != NULL	 
+Column Name:null    	Check Value:`userName` != NULL	 
 	 	 
 Constraint Name:    	chk2                	 
-Column Name:null    	Check Value:numClicks <= 10000 AND userName != ''	 
+Column Name:null    	Check Value:`numClicks` <= 10000 AND `userName` != ''	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:numclicks	Check Value:numClicks > 0	 
+Column Name:numclicks	Check Value:`numClicks` > 0	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 PREHOOK: type: QUERY
@@ -821,7 +821,7 @@ Column Name:        	url
 # Check Constraints	 	 
 Table:              	default.tcase       	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:numclicks	Check Value:numclicks > 0	 
+Column Name:numclicks	Check Value:`numclicks` > 0	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48)
 PREHOOK: type: QUERY
@@ -973,7 +973,7 @@ Column Name:        	url
 # Check Constraints	 	 
 Table:              	default.tcast       	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:price   	Check Value:cast(numClicks as FLOAT)*price > 10.00	 
+Column Name:price   	Check Value:cast(`numClicks` as FLOAT)*`price` > 10.00	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO tcast values('www.google.com', 100, cast(0.5 as float))
 PREHOOK: type: QUERY
@@ -1214,7 +1214,7 @@ Column Name:i       	Default Value:89
 # Check Constraints	 	 
 Table:              	default.texpr       	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b       	Check Value:((cast(d as float) + f) < cast(i as float) + (i*i))	 
+Column Name:b       	Check Value:((cast(`d` as float) + `f`) < cast(`i` as float) + (`i`*`i`))	 
 	 	 
 PREHOOK: query: explain insert into texpr values(3,3.4,5.6,true)
 PREHOOK: type: QUERY
@@ -1370,7 +1370,7 @@ Column Name:        	de
 # Check Constraints	 	 
 Table:              	default.acid_uami_n0	 
 Constraint Name:    	ch2                 	 
-Column Name:vc      	Check Value:de >= cast(i as decimal(5,2))	 
+Column Name:vc      	Check Value:`de` >= cast(`i` as decimal(5,2))	 
 	 	 
 PREHOOK: query: explain insert into table acid_uami_n0 select cast(key as int), cast (key as decimal(5,2)), value from src
 PREHOOK: type: QUERY
@@ -2468,7 +2468,7 @@ Column Name:        	a1
 # Check Constraints	 	 
 Table:              	default.tmerge      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:key     	Check Value:key > 0 AND (key < 100 OR key = 5)	 
+Column Name:key     	Check Value:`key` > 0 AND (`key` < 100 OR `key` = 5)	 
 	 	 
 PREHOOK: query: create table nonacid (key int, a1 string, value string) stored as orc
 PREHOOK: type: CREATETABLE
@@ -3375,7 +3375,7 @@ Column Name:a       	Default Value:127Y
 # Check Constraints	 	 
 Table:              	default.numericdatatype	 
 Constraint Name:    	check1              	 
-Column Name:b       	Check Value:b in(4,5)	 
+Column Name:b       	Check Value:`b` in(4,5)	 
 	 	 
 PREHOOK: query: ALTER TABLE numericDataType DROP CONSTRAINT check1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
@@ -3576,7 +3576,7 @@ Sort Columns:       	[]
 # Check Constraints	 	 
 Table:              	default.tcheck      	 
 Constraint Name:    	check1              	 
-Column Name:b       	Check Value:b in(4,5)	 
+Column Name:b       	Check Value:`b` in(4,5)	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO tcheck(a) values(1)
 PREHOOK: type: QUERY
@@ -3972,7 +3972,7 @@ Storage Desc Params:
 # Check Constraints	 	 
 Table:              	default.trely       	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:i       	Check Value:i>0     	 
+Column Name:i       	Check Value:`i`>0   	 
 	 	 
 PREHOOK: query: DROP TABLE trely
 PREHOOK: type: DROPTABLE
@@ -4030,7 +4030,7 @@ Storage Desc Params:
 # Check Constraints	 	 
 Table:              	default.tbl1_n1     	 
 Constraint Name:    	check1              	 
-Column Name:null    	Check Value:a != '' AND b > 4	 
+Column Name:null    	Check Value:`a` != '' AND `b` > 4	 
 	 	 
 PREHOOK: query: explain insert into tbl1_n1 values('a', 69)
 PREHOOK: type: QUERY
@@ -4164,10 +4164,10 @@ Storage Desc Params:
 # Check Constraints	 	 
 Table:              	default.tbl1_n1     	 
 Constraint Name:    	check1              	 
-Column Name:null    	Check Value:a != '' AND b > 4	 
+Column Name:null    	Check Value:`a` != '' AND `b` > 4	 
 	 	 
 Constraint Name:    	chk2                	 
-Column Name:null    	Check Value:b < 100 	 
+Column Name:null    	Check Value:`b` < 100	 
 	 	 
 PREHOOK: query: explain insert into tbl1_n1 values('a', 69)
 PREHOOK: type: QUERY
