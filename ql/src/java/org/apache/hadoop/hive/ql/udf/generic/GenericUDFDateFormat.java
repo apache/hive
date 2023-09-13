@@ -73,7 +73,7 @@ public class GenericUDFDateFormat extends GenericUDF {
 
     obtainTimestampConverter(arguments, 0, tsInputTypes, tsConverters);
 
-    HiveConf conf = SessionState.get() == null ? new HiveConf() : SessionState.get().getConf();
+    HiveConf conf = SessionState.getSessionConf();
     if (formatter == null) {
       formatter = InstantFormatter.ofConfiguration(conf);
     }
