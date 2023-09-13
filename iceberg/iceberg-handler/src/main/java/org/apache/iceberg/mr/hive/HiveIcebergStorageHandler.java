@@ -201,6 +201,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
   public static final String STATS = "/stats/";
+  static final String WRITE_KEY = "HiveIcebergStorageHandler_write";
 
   /**
    * Function template for producing a custom sort expression function:
@@ -272,6 +273,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
+    // It means that the table is an output table.
+    tableDesc.getProperties().put(WRITE_KEY, "true");
   }
 
   /**
@@ -300,7 +303,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
-    if (tableDesc != null && tableDesc.getProperties() != null) {
+    if (tableDesc != null && tableDesc.getProperties() != null &&
+        tableDesc.getProperties().get(WRITE_KEY) != null) {
       String tableName = tableDesc.getTableName();
       Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
