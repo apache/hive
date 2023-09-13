@@ -73,6 +73,9 @@ public class PrivilegeRegistry {
   }
 
   private static Privilege getPrivilegeFromRegistry(PrivilegeType ptype) {
+    if (SessionState.get() == null) {
+        throw new IllegalArgumentException("Current Session State has not been set. Cannot obtain privilege.");
+    }
     return SessionState.get().isAuthorizationModeV2() ? RegistryV2.get(ptype) : Registry.get(ptype);
   }
 
