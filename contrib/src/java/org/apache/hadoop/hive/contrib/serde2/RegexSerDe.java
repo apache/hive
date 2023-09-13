@@ -76,6 +76,8 @@ import org.apache.hadoop.io.Writable;
     RegexSerDe.INPUT_REGEX_CASE_SENSITIVE })
 public class RegexSerDe extends AbstractEncodingAwareSerDe {
 
+  private static final Logger LOG = LoggerFactory.getLogger(RegexSerDe.class);
+
   public static final String INPUT_REGEX = "input.regex";
   public static final String OUTPUT_FORMAT_STRING = "output.format.string";
   public static final String INPUT_REGEX_CASE_SENSITIVE = "input.regex.case.insensitive";
@@ -173,7 +175,7 @@ public class RegexSerDe extends AbstractEncodingAwareSerDe {
       if (unmatchedRows >= nextUnmatchedRows) {
         nextUnmatchedRows = getNextNumberToDisplay(nextUnmatchedRows);
         // Report the row
-        log.warn("{} unmatched rows are found: {}", unmatchedRows, rowText);
+        LOG.warn("{} unmatched rows are found: {}", unmatchedRows, rowText);
       }
       return null;
     }
@@ -187,7 +189,7 @@ public class RegexSerDe extends AbstractEncodingAwareSerDe {
         if (partialMatchedRows >= nextPartialMatchedRows) {
           nextPartialMatchedRows = getNextNumberToDisplay(nextPartialMatchedRows);
           // Report the row
-          log.warn("" + partialMatchedRows
+          LOG.warn("" + partialMatchedRows
               + " partially unmatched rows are found, " + " cannot find group "
               + c + ": " + rowText);
         }
