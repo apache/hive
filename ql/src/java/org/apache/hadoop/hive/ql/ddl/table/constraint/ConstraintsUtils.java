@@ -317,6 +317,7 @@ public final class ConstraintsUtils {
 
     SetMultimap<Integer, SemanticNodeProcessor> astNodeToProcessor = HashMultimap.create();
     astNodeToProcessor.put(HiveParser.TOK_TABLE_OR_COL, new ColumnExprProcessor());
+    astNodeToProcessor.put(HiveParser.DOT, new ColumnExprProcessor());
     NodeProcessorCtx nodeProcessorCtx = new ConstraintExpressionContext(unparseTranslator);
 
     CostLessRuleDispatcher costLessRuleDispatcher = new CostLessRuleDispatcher(
@@ -334,7 +335,10 @@ public final class ConstraintsUtils {
       UnparseTranslator unparseTranslator = ((ConstraintExpressionContext)procCtx).getUnparseTranslator();
       ASTNode tokTableOrColNode = (ASTNode) nd;
       for (int i = 0; i < tokTableOrColNode.getChildCount(); ++i) {
-        unparseTranslator.addIdentifierTranslation((ASTNode) tokTableOrColNode.getChild(i));
+        ASTNode child = (ASTNode) tokTableOrColNode.getChild(i);
+        if (child.getType() == HiveParser.Identifier) {
+          unparseTranslator.addIdentifierTranslation(child);
+        }
       }
       return null;
     }
