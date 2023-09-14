@@ -51,14 +51,14 @@ POSTHOOK: query: insert into tbl_ice values (444, 'hola', 800), (555, 'schola', 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
-Warning: Shuffle Join MERGEJOIN[283][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[297][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[288][tables = [$hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 10' is a cross product
-Warning: Shuffle Join MERGEJOIN[285][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 14' is a cross product
-Warning: Shuffle Join MERGEJOIN[290][tables = [$hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 16' is a cross product
-Warning: Shuffle Join MERGEJOIN[305][tables = [$hdt$_1, $hdt$_2, $hdt$_0, $hdt$_3]] in Stage 'Reducer 13' is a cross product
-Warning: Shuffle Join MERGEJOIN[282][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 19' is a cross product
-Warning: Shuffle Join MERGEJOIN[295][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 21' is a cross product
+Warning: Shuffle Join MERGEJOIN[281][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[295][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[286][tables = [$hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 10' is a cross product
+Warning: Shuffle Join MERGEJOIN[283][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 14' is a cross product
+Warning: Shuffle Join MERGEJOIN[288][tables = [$hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 16' is a cross product
+Warning: Shuffle Join MERGEJOIN[303][tables = [$hdt$_1, $hdt$_2, $hdt$_0, $hdt$_3]] in Stage 'Reducer 13' is a cross product
+Warning: Shuffle Join MERGEJOIN[280][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 19' is a cross product
+Warning: Shuffle Join MERGEJOIN[293][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 21' is a cross product
 PREHOOK: query: update tbl_ice set b='Changed again' where a in (select a from tbl_ice where a <= 5) or c in (select c from tbl_ice where c > 800)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
@@ -106,7 +106,7 @@ POSTHOOK: query: insert into tbl_ice_other values (10, 'ten'), (333, 'hundred')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_other
-Warning: Shuffle Join MERGEJOIN[271][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[269][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: update tbl_ice set b='Changed forever' where a in (select t1.a from tbl_ice t1 join tbl_ice_other t2 on t1.a = t2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
@@ -158,7 +158,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_standard_other
 POSTHOOK: Lineage: tbl_standard_other.a SCRIPT []
 POSTHOOK: Lineage: tbl_standard_other.b SCRIPT []
-Warning: Shuffle Join MERGEJOIN[226][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 8' is a cross product
+Warning: Shuffle Join MERGEJOIN[224][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 8' is a cross product
 PREHOOK: query: update tbl_ice set b='The last one' where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice

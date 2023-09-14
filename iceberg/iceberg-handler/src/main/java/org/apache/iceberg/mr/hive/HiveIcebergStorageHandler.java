@@ -712,7 +712,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       fieldOrderMap.put(fields.get(i).name(), i);
     }
 
-    int offset = acidSelectColumns(hmsTable, writeOperation).size();
+    int offset = (shouldOverwrite(hmsTable, writeOperation.name()) ?
+        ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA : acidSelectColumns(hmsTable, writeOperation)).size();
 
     for (TransformSpec spec : transformSpecs) {
       int order = fieldOrderMap.get(spec.getColumnName());
@@ -1048,8 +1049,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   // TODO: remove the checks as copy-on-write mode implementation for these DML ops get added
   private static void checkDMLOperationMode(org.apache.hadoop.hive.ql.metadata.Table table) {
     Map<String, String> opTypes = ImmutableMap.of(
-        TableProperties.MERGE_MODE, TableProperties.MERGE_MODE_DEFAULT,
-        TableProperties.UPDATE_MODE, TableProperties.UPDATE_MODE_DEFAULT);
+        TableProperties.MERGE_MODE, TableProperties.MERGE_MODE_DEFAULT);
 
     for (Map.Entry<String, String> opType : opTypes.entrySet()) {
       String mode = table.getParameters().get(opType.getKey());
@@ -1074,10 +1074,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
     switch (operation) {
       case DELETE:
-      case UPDATE:
         // TODO: make it configurable whether we want to include the table columns in the select query.
         // It might make delete writes faster if we don't have to write out the row object
         return ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+      case UPDATE:
+        return shouldOverwrite(table, operation.name()) ?
+          ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA :
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
       case MERGE:
         return ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default:
@@ -1590,10 +1593,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public boolean shouldOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String operationName) {
     String mode = null;
     String formatVersion = mTable.getTTable().getParameters().get(TableProperties.FORMAT_VERSION);
-    // As of now only delete mode is supported, for all others return false
-    if ("2".equals(formatVersion) && operationName.equalsIgnoreCase(Context.Operation.DELETE.toString())) {
-      mode = mTable.getTTable().getParameters()
-          .getOrDefault(TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT);
+    // As of now only update & delete modes are supported, for all others return false
+    if ("2".equals(formatVersion)) {
+      switch (Context.Operation.valueOf(operationName)) {
+        case DELETE:
+          mode = mTable.getTTable().getParameters().getOrDefault(TableProperties.DELETE_MODE,
+              TableProperties.DELETE_MODE_DEFAULT);
+          break;
+        case UPDATE:
+          mode = mTable.getTTable().getParameters().getOrDefault(TableProperties.UPDATE_MODE,
+            TableProperties.UPDATE_MODE_DEFAULT);
+          break;
+      }
     }
     return COPY_ON_WRITE.equalsIgnoreCase(mode);
   }
