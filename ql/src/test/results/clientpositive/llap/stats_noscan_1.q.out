@@ -265,10 +265,12 @@ Storage Desc Params:
 PREHOOK: query: drop table analyze_srcpart_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@analyze_srcpart_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_srcpart_n0
 POSTHOOK: query: drop table analyze_srcpart_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_srcpart_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_srcpart_n0
 PREHOOK: query: create table analyze_srcpart_partial like srcpart
 PREHOOK: type: CREATETABLE
@@ -493,8 +495,10 @@ Storage Desc Params:
 PREHOOK: query: drop table analyze_srcpart_partial
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@analyze_srcpart_partial
+PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_srcpart_partial
 POSTHOOK: query: drop table analyze_srcpart_partial
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_srcpart_partial
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_srcpart_partial

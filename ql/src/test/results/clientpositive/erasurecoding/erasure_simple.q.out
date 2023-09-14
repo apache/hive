@@ -66,8 +66,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 5
 PREHOOK: query: drop table if exists erasure_table2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists erasure_table2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table erasure_table2 like src  location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###

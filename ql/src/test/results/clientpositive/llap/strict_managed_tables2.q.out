@@ -1,27 +1,39 @@
 PREHOOK: query: drop table if exists smt2_tab1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists smt2_tab1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists smt2_tab2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists smt2_tab2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists smt2_tab3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists smt2_tab3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists smt2_tab4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists smt2_tab4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists smt2_tab5
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists smt2_tab5
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists smt2_tab6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists smt2_tab6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table smt2_tab1 (c1 string, c2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -201,48 +213,60 @@ TBLPROPERTIES (
 PREHOOK: query: drop table if exists smt2_tab1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smt2_tab1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@smt2_tab1
 POSTHOOK: query: drop table if exists smt2_tab1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@smt2_tab1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smt2_tab1
 PREHOOK: query: drop table if exists smt2_tab2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smt2_tab2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@smt2_tab2
 POSTHOOK: query: drop table if exists smt2_tab2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@smt2_tab2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smt2_tab2
 PREHOOK: query: drop table if exists smt2_tab3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smt2_tab3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@smt2_tab3
 POSTHOOK: query: drop table if exists smt2_tab3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@smt2_tab3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smt2_tab3
 PREHOOK: query: drop table if exists smt2_tab4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smt2_tab4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@smt2_tab4
 POSTHOOK: query: drop table if exists smt2_tab4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@smt2_tab4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smt2_tab4
 PREHOOK: query: drop table if exists smt2_tab5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smt2_tab5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@smt2_tab5
 POSTHOOK: query: drop table if exists smt2_tab5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@smt2_tab5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smt2_tab5
 PREHOOK: query: drop table if exists smt2_tab6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smt2_tab6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@smt2_tab6
 POSTHOOK: query: drop table if exists smt2_tab6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@smt2_tab6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smt2_tab6

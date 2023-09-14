@@ -227,7 +227,11 @@ public class FetchOperator implements Serializable {
     if (format == null) {
       try {
         format = ReflectionUtil.newInstance(inputFormatClass, conf);
-        inputFormats.put(inputFormatClass.getName(), format);
+        // HBase input formats are not thread safe today. See HIVE-8808.
+        String inputFormatName = inputFormatClass.getName().toLowerCase();
+        if (!inputFormatName.contains("hbase")) {
+          inputFormats.put(inputFormatClass.getName(), format);
+        }
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
                                   + inputFormatClass.getName() + " as specified in mapredWork!", e);

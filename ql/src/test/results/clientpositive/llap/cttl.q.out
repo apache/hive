@@ -2,8 +2,10 @@ Found 1 items
 -rw-r--r--   3 ### USER ### ### GROUP ###       4316 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists students
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists students
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table students(
             name string,
             age int,
@@ -68,10 +70,12 @@ bob nixon	34	3.34
 PREHOOK: query: drop table students
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@students
+PREHOOK: Output: database:default
 PREHOOK: Output: default@students
 POSTHOOK: query: drop table students
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@students
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@students
 Found 1 items
 -rw-r--r--   3 ### USER ### ### GROUP ###       4316 ### HDFS DATE ### hdfs://### HDFS PATH ###

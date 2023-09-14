@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.info.desc;
 
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -162,6 +163,8 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
 
       Map<String, String> partitionSpec = null;
       try {
+        partitionSpec = getPartSpec(partNode);
+        validateUnsupportedPartitionClause(tab, partitionSpec != null && !partitionSpec.isEmpty());
         partitionSpec = getValidatedPartSpec(tab, partNode, db.getConf(), false);
       } catch (SemanticException e) {
         // get exception in resolving partition it could be DESCRIBE table key

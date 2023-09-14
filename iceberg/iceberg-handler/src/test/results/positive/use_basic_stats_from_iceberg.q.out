@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -49,10 +51,12 @@ Stage-0
 PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice
 POSTHOOK: query: drop table if exists tbl_ice
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice
 PREHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
@@ -101,19 +105,25 @@ Stage-0
 PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice
 POSTHOOK: query: drop table if exists tbl_ice
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice
 PREHOOK: query: drop table if exists  t1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists  t1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists  t2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists  t2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table t1 (a int) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -144,9 +154,10 @@ Database:           	default
 #### A masked pattern was here ####
 Retention:          	0                   	 
 #### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
+Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
+	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"}]}
 	engine.hive.enabled 	true                
@@ -187,9 +198,10 @@ Database:           	default
 #### A masked pattern was here ####
 Retention:          	0                   	 
 #### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
+Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"int\"}]}
 	engine.hive.enabled 	true                
@@ -260,8 +272,10 @@ Stage-0
 
 PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

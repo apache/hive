@@ -71,7 +71,7 @@ public class KafkaUtilsTest {
     Assert.assertEquals(new Properties(), props);
   }
 
-  @Test(expected = IllegalArgumentException.class) public void testSetupKafkaSslPropertiesSslNotInHdfs() {
+  @Test(expected = IllegalStateException.class) public void testSetupKafkaSslPropertiesSslNotInHdfs() {
     Configuration config = new Configuration();
     config.set(KafkaTableProperties.HIVE_KAFKA_SSL_CREDENTIAL_KEYSTORE.getName(), "nonexistentfile");
     config.set(KafkaTableProperties.HIVE_SSL_TRUSTSTORE_LOCATION_CONFIG.getName(), "madeup");

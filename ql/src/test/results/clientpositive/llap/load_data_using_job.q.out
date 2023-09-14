@@ -175,10 +175,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -405,10 +407,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -641,10 +645,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -995,10 +1001,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -1220,10 +1228,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -1450,10 +1460,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -1686,10 +1698,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -2040,10 +2054,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -2630,10 +2646,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string, ds string) partitioned by (hr int) clustered by (key, value) sorted by (key, value) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -2867,10 +2885,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8@hr=1
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) STORED AS ORC
 PREHOOK: type: CREATETABLE
@@ -3105,10 +3125,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: CREATE TABLE orc_test_txn (`id` integer, name string, dept string) PARTITIONED BY (year integer) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE

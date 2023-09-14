@@ -107,18 +107,22 @@ POSTHOOK: Output: tc@tstsrcpart@ds=2008-04-08/hr=12
 PREHOOK: query: drop table tc.tstsrc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tc@tstsrc
+PREHOOK: Output: database:tc
 PREHOOK: Output: tc@tstsrc
 POSTHOOK: query: drop table tc.tstsrc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tc@tstsrc
+POSTHOOK: Output: database:tc
 POSTHOOK: Output: tc@tstsrc
 PREHOOK: query: drop table tc.tstsrcpart
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tc@tstsrcpart
+PREHOOK: Output: database:tc
 PREHOOK: Output: tc@tstsrcpart
 POSTHOOK: query: drop table tc.tstsrcpart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tc@tstsrcpart
+POSTHOOK: Output: database:tc
 POSTHOOK: Output: tc@tstsrcpart
 PREHOOK: query: drop database tc
 PREHOOK: type: DROPDATABASE

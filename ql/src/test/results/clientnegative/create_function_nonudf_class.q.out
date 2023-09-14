@@ -1,6 +1,6 @@
 PREHOOK: query: create function default.badfunc as 'java.lang.String'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.badfunc
 Failed to register default.badfunc using class java.lang.String
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask

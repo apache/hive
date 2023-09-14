@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE orc_a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_b
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_b
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orc_a (id bigint, cdouble double) partitioned by (y int, q smallint)
   CLUSTERED BY (id) SORTED BY (id) INTO 2 BUCKETS stored as orc
 PREHOOK: type: CREATETABLE
@@ -393,16 +397,20 @@ POSTHOOK: Input: default@orc_b
 PREHOOK: query: DROP TABLE orc_a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_a
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_a
 POSTHOOK: query: DROP TABLE orc_a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_a
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_a
 PREHOOK: query: DROP TABLE orc_b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_b
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_b
 POSTHOOK: query: DROP TABLE orc_b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_b
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_b

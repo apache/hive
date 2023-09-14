@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-storage-api</artifactId>
-  <version>4.0.0-SNAPSHOT</version>
+  <version>4.0.0-beta-2-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Hive Storage API</name>
   <properties>
@@ -36,7 +36,7 @@
     <slf4j.version>1.7.30</slf4j.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
-    <maven.versions.plugin.version>2.13.0</maven.versions.plugin.version>
+    <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
   </properties>
   <dependencies>
@@ -190,7 +190,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M4</version>
+        <version>${maven.surefire.plugin.version}</version>
         <configuration>
           <reuseForks>false</reuseForks>
           <argLine>-Xmx3g</argLine>

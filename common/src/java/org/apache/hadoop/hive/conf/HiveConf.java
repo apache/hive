@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.Validator.SizeValidator;
 import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.conf.Validator.TimeValidator;
 import org.apache.hadoop.hive.conf.Validator.WritableDirectoryValidator;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
@@ -794,6 +795,10 @@ public class HiveConf extends Configuration {
     OUTPUT_FILE_EXTENSION("hive.output.file.extension", null,
         "String used as a file extension for output files. \n" +
         "If not set, defaults to the codec extension for text files (e.g. \".gz\"), or no extension otherwise."),
+
+    HIVE_LOAD_DATA_USE_NATIVE_API("hive.load.data.use.native.api", true,
+        "Whether to use a native APIs for load queries to non-native table(like iceberg), if false uses a Tez job for" +
+            " load queries"),
 
     HIVE_IN_TEST("hive.in.test", false, "internal usage only, true in test mode", true),
     HIVE_IN_TEST_SSL("hive.in.ssl.test", false, "internal usage only, true in SSL test mode", true),
@@ -1815,6 +1820,10 @@ public class HiveConf extends Configuration {
     HIVE_STRICT_CHECKS_BUCKETING("hive.strict.checks.bucketing", true,
         "Enabling strict bucketing checks disallows the following:\n" +
         "  Load into bucketed tables."),
+    HIVE_STRICT_CHECKS_OFFSET_NO_ORDERBY("hive.strict.checks.offset.no.orderby", false,
+        "Enabling strict offset checks disallows the following:\n" +
+        "  OFFSET without ORDER BY.\n" +
+        "OFFSET is mostly meaningless when a result set doesn't have a total order."),
     HIVE_STRICT_TIMESTAMP_CONVERSION("hive.strict.timestamp.conversion", true,
         "Restricts unsafe numeric to timestamp conversions"),
     HIVE_LOAD_DATA_OWNER("hive.load.data.owner", "",
@@ -2924,10 +2933,10 @@ public class HiveConf extends Configuration {
     HIVE_STATS_MAX_NUM_STATS("hive.stats.max.num.stats", (long) 10000,
         "When the number of stats to be updated is huge, this value is used to control the number of \n" +
         " stats to be sent to HMS for update."),
-    HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE("hive.thrift.client.max.message.size", "1gb",
-        new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
-        "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
-        "library. The upper limit is 2147483648 bytes (or 2gb)."),
+    HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE("hive.thrift.client.max.message.size", (2*1024*1024*1024L)-1L,
+            new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
+            "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
+                    "library. The upper limit is 2147483647 bytes."),
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +
@@ -3532,8 +3541,8 @@ public class HiveConf extends Configuration {
     HIVEFETCHTASKCACHING("hive.fetch.task.caching", true,
         "Enabling the caching of the result of fetch tasks eliminates the chance of running into a failing read." +
             " On the other hand, if enabled, the hive.fetch.task.conversion.threshold must be adjusted accordingly. That" +
-            " is 1GB by default which must be lowered in case of enabled caching to prevent the consumption of too much memory."),
-    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", 1073741824L,
+            " is 200MB by default which must be lowered in case of enabled caching to prevent the consumption of too much memory."),
+    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", 209715200L,
         "Input threshold for applying hive.fetch.task.conversion. If target table is native, input length\n" +
         "is calculated by summation of file lengths. If it's not native, storage handler for the table\n" +
         "can optionally implement org.apache.hadoop.hive.ql.metadata.InputEstimator interface."),
@@ -3826,7 +3835,18 @@ public class HiveConf extends Configuration {
     HIVE_PRIVILEGE_SYNCHRONIZER_INTERVAL("hive.privilege.synchronizer.interval",
         "1800s", new TimeValidator(TimeUnit.SECONDS),
         "Interval to synchronize privileges from external authorizer periodically in HS2"),
-
+    HIVE_DATETIME_FORMATTER("hive.datetime.formatter", "DATETIME",
+        new StringSet("DATETIME", "SIMPLE"),
+        "The formatter to use for handling datetime values. The possible values are:\n" +
+        " * DATETIME: For using java.time.format.DateTimeFormatter\n" +
+        " * SIMPLE: For using java.text.SimpleDateFormat (known bugs: HIVE-25458, HIVE-25403)\n" +
+        "Currently the configuration only affects the behavior of the following SQL functions:\n" +
+        " * unix_timestamp(string,[string])" + 
+        " * from_unixtime\n\n" +
+        "The SIMPLE formatter exists purely for compatibility purposes with previous versions of Hive thus its use " +
+        "is discouraged. It suffers from known bugs that are unlikely to be fixed in subsequent versions of the product." +
+        "Furthermore, using SIMPLE formatter may lead to strange behavior, and unexpected results when combined " +
+        "with SQL functions/operators that are using the new DATETIME formatter."),
      // HiveServer2 specific configs
     HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR("hive.server2.clear.dangling.scratchdir", false,
         "Clear dangling scratch dir periodically in HS2"),
@@ -4440,6 +4460,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_XSRF_FILTER_ENABLED("hive.server2.xsrf.filter.enabled",false,
         "If enabled, HiveServer2 will block any requests made to it over http " +
         "if an X-XSRF-HEADER header is not present"),
+    HIVE_SERVER2_CSRF_FILTER_ENABLED("hive.server2.csrf.filter.enabled",false,
+        "If enabled, HiveServer2 will block any requests made to it over http " +
+            "if an X-CSRF-TOKEN header is not present"),
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist",
       "set,reset,dfs,add,list,delete,reload,compile,llap",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
@@ -4764,6 +4787,10 @@ public class HiveConf extends Configuration {
         "Turn on Tez' auto reducer parallelism feature. When enabled, Hive will still estimate data sizes\n" +
         "and set parallelism estimates. Tez will sample source vertices' output sizes and adjust the estimates at runtime as\n" +
         "necessary."),
+    TEZ_AUTO_REDUCER_PARALLELISM_MIN_THRESHOLD("hive.tez.auto.reducer.parallelism.min.threshold", 1.0f,
+        "Hive on Tez disables auto reducer parallelism if # of reducers * hive.tez.min.partition.factor is smaller\n" +
+        "than this value. This helps to avoid overhead when the potential impact of auto reducer parallelism is not\n" +
+        "significant. This is effective only when hive.tez.auto.reducer.parallelism is true."),
     TEZ_LLAP_MIN_REDUCER_PER_EXECUTOR("hive.tez.llap.min.reducer.per.executor", 0.33f,
         "If above 0, the min number of reducers for auto-parallelism for LLAP scheduling will\n" +
         "be set to this fraction of the number of executors."),
@@ -5496,7 +5523,7 @@ public class HiveConf extends Configuration {
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager," +
         "hive.security.metastore.authorization.manager,hive.security.metastore.authenticator.manager," +
-        "hive.users.in.admin.role,hive.server2.xsrf.filter.enabled,hive.security.authorization.enabled," +
+        "hive.users.in.admin.role,hive.server2.xsrf.filter.enabled,hive.server2.csrf.filter.enabled,hive.security.authorization.enabled," +
             "hive.distcp.privileged.doAs," +
             "hive.server2.authentication.ldap.baseDN," +
             "hive.server2.authentication.ldap.url," +
@@ -6978,6 +7005,8 @@ public class HiveConf extends Configuration {
         "Cartesian products", ConfVars.HIVE_STRICT_CHECKS_CARTESIAN);
     private static final String NO_BUCKETING_MSG = makeMessage(
         "Load into bucketed tables", ConfVars.HIVE_STRICT_CHECKS_BUCKETING);
+    private static final String NO_OFFSET_WITHOUT_ORDERBY_MSG = makeMessage(
+        "OFFSET without ORDER BY", ConfVars.HIVE_STRICT_CHECKS_OFFSET_NO_ORDERBY);
 
     private static String makeMessage(String what, ConfVars setting) {
       return what + " are disabled for safety reasons. If you know what you are doing, please set "
@@ -7005,6 +7034,12 @@ public class HiveConf extends Configuration {
 
     public static String checkBucketing(Configuration conf) {
       return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_BUCKETING) ? null : NO_BUCKETING_MSG;
+    }
+
+    public static void checkOffsetWithoutOrderBy(Configuration conf) throws SemanticException {
+      if (!isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_OFFSET_NO_ORDERBY)) {
+        throw new SemanticException(NO_OFFSET_WITHOUT_ORDERBY_MSG);
+      }
     }
 
     private static boolean isAllowed(Configuration conf, ConfVars setting) {

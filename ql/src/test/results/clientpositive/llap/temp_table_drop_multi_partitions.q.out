@@ -56,8 +56,10 @@ b=2/c=2
 PREHOOK: query: drop table mp_n0_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mp_n0_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@mp_n0_temp
 POSTHOOK: query: drop table mp_n0_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@mp_n0_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mp_n0_temp

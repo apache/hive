@@ -9,4 +9,4 @@ POSTHOOK: Output: default@ice_tbl
 PREHOOK: query: alter table ice_tbl create branch test_branch_1
 PREHOOK: type: ALTERTABLE_CREATEBRANCH
 PREHOOK: Input: default@ice_tbl
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.UnsupportedOperationException: Cannot alter branch on iceberg table default.ice_tbl which has no snapshot
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.UnsupportedOperationException: Cannot alter create branch on iceberg table default.ice_tbl which has no snapshot

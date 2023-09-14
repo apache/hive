@@ -309,6 +309,24 @@ public class RowResolver implements Serializable{
     return rslvMap.keySet();
   }
 
+  /**
+   * Get alias of the last table containing  column columnName
+   *
+   * @param columnName column
+   * @return table alias or null
+   */
+  public String getTableAliasContainingColumn(String columnName) {
+    String result = null;
+
+    for (Map.Entry<String, Map<String, ColumnInfo>> entry: this.rslvMap.entrySet()) {
+      if (entry.getValue().containsKey(columnName)) {
+        result = entry.getKey();
+      }
+    }
+
+    return result;
+  }
+
   public String[] reverseLookup(String internalName) {
     return invRslvMap.get(internalName);
   }

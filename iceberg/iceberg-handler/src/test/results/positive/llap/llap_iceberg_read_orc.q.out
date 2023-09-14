@@ -1,27 +1,39 @@
 PREHOOK: query: DROP TABLE IF EXISTS llap_orders PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS llap_orders PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS llap_items PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS llap_items PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS mig_source PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS mig_source PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS target_ice PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS target_ice PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS calls PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS calls PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS display PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS display PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE calls (
   s_key bigint,
   year int
@@ -86,8 +98,8 @@ POSTHOOK: query: INSERT INTO display (skey, language_id, hierarchy_display) VALU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@display
-Warning: Shuffle Join MERGEJOIN[62][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
+Warning: Shuffle Join MERGEJOIN[67][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[68][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
 PREHOOK: query: MERGE INTO display USING (
   SELECT distinct display_skey, display, display as orig_display
   FROM (
@@ -243,11 +255,11 @@ POSTHOOK: query: INSERT INTO llap_items VALUES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_items
-PREHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, p2 STRING) STORED BY ICEBERG STORED AS ORC
+PREHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, P2 STRING) STORED BY ICEBERG STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@llap_orders
-POSTHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, p2 STRING) STORED BY ICEBERG STORED AS ORC
+POSTHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, P2 STRING) STORED BY ICEBERG STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_orders
@@ -560,11 +572,11 @@ Cybertruck	4.5	50000
 Model S	NULL	123000
 Model X	2.5	113000
 Model Y	NULL	55000
-PREHOOK: query: ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER p2
+PREHOOK: query: ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER P2
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@llap_orders
 PREHOOK: Output: default@llap_orders
-POSTHOOK: query: ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER p2
+POSTHOOK: query: ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER P2
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders
@@ -596,11 +608,11 @@ POSTHOOK: Input: default@llap_orders
 #### A masked pattern was here ####
 EU	2000-01-04 19:55:46.129	153
 US	2007-06-24 19:23:22.829	12
-PREHOOK: query: ALTER TABLE llap_orders CHANGE p2 state string
+PREHOOK: query: ALTER TABLE llap_orders CHANGE P2 state string
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@llap_orders
 PREHOOK: Output: default@llap_orders
-POSTHOOK: query: ALTER TABLE llap_orders CHANGE p2 state string
+POSTHOOK: query: ALTER TABLE llap_orders CHANGE P2 state string
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders

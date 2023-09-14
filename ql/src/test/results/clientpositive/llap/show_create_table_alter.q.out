@@ -18,7 +18,7 @@ CREATE EXTERNAL TABLE `tmp_showcrt1_n1`(
   `key` smallint, 
   `value` float)
 CLUSTERED BY ( 
-  key) 
+  `key`) 
 SORTED BY ( 
   value DESC) 
 INTO 5 BUCKETS
@@ -52,7 +52,7 @@ CREATE TABLE `tmp_showcrt1_n1`(
   `value` float)
 COMMENT 'temporary table'
 CLUSTERED BY ( 
-  key) 
+  `key`) 
 SORTED BY ( 
   value DESC) 
 INTO 5 BUCKETS
@@ -86,7 +86,7 @@ CREATE EXTERNAL TABLE `tmp_showcrt1_n1`(
   `value` float)
 COMMENT 'changed comment'
 CLUSTERED BY ( 
-  key) 
+  `key`) 
 SORTED BY ( 
   value DESC) 
 INTO 5 BUCKETS
@@ -120,7 +120,7 @@ CREATE EXTERNAL TABLE `tmp_showcrt1_n1`(
   `value` float)
 COMMENT 'changed comment'
 CLUSTERED BY ( 
-  key) 
+  `key`) 
 SORTED BY ( 
   value DESC) 
 INTO 5 BUCKETS
@@ -154,7 +154,7 @@ CREATE EXTERNAL TABLE `tmp_showcrt1_n1`(
   `value` float)
 COMMENT 'changed comment'
 CLUSTERED BY ( 
-  key) 
+  `key`) 
 SORTED BY ( 
   value DESC) 
 INTO 5 BUCKETS
@@ -172,8 +172,10 @@ TBLPROPERTIES (
 PREHOOK: query: DROP TABLE tmp_showcrt1_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_showcrt1_n1
 POSTHOOK: query: DROP TABLE tmp_showcrt1_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_showcrt1_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt1_n1

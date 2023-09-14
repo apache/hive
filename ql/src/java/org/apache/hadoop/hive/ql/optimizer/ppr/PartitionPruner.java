@@ -181,6 +181,8 @@ public class PartitionPruner extends Transform {
     String key = tab.getFullyQualifiedName() + ";";
     if (tab.getMetaTable() != null) {
       key = tab.getFullyQualifiedName() + "." + tab.getMetaTable() + ";";
+    } else if (tab.getSnapshotRef() != null) {
+      key = tab.getFullyQualifiedName() + "." + tab.getSnapshotRef() + ";";
     }
 
     if (!tab.isPartitioned()) {

@@ -1,47 +1,69 @@
 PREHOOK: query: DROP TABLE IF EXISTS source
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS source
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_orc_ctas
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_orc_ctas
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_orc_mmctas
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_orc_mmctas
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_parquet_mmctas
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_parquet_mmctas
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_avro_mmctas
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_avro_mmctas
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_textfile_mmctas
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_textfile_mmctas
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_partition_orc_ctas
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_orc_ctas
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_partition_orc_mmctas
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_orc_mmctas
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_partition_parquet_mmctas
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_parquet_mmctas
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_partition_avro_mmctas
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_avro_mmctas
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test_partition_textfile_mmctas
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_textfile_mmctas
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE source STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT cint, cfloat, cdouble, cstring1, ctimestamp1 FROM alltypesorc)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -1754,120 +1776,150 @@ NULL	-4213	NULL	NULL	-4213.0	cvLH6Eat2yFsyy7p	NULL	NULL	1969-12-31 16:00:13.589	
 PREHOOK: query: DROP TABLE IF EXISTS source
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@source
+PREHOOK: Output: database:default
 PREHOOK: Output: default@source
 POSTHOOK: query: DROP TABLE IF EXISTS source
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source
 PREHOOK: query: DROP TABLE IF EXISTS test_orc_ctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_orc_ctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_orc_ctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_orc_ctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_orc_ctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_orc_ctas
 PREHOOK: query: DROP TABLE IF EXISTS test_orc_mmctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_orc_mmctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_orc_mmctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_orc_mmctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_orc_mmctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_orc_mmctas
 PREHOOK: query: DROP TABLE IF EXISTS test_parquet_mmctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_parquet_mmctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_mmctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_parquet_mmctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_parquet_mmctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_mmctas
 PREHOOK: query: DROP TABLE IF EXISTS test_avro_mmctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_avro_mmctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_avro_mmctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_avro_mmctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_avro_mmctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_avro_mmctas
 PREHOOK: query: DROP TABLE IF EXISTS test_textfile_mmctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_textfile_mmctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_textfile_mmctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_textfile_mmctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_textfile_mmctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_textfile_mmctas
 PREHOOK: query: DROP TABLE IF EXISTS test_partition_orc_ctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_partition_orc_ctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_partition_orc_ctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_orc_ctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_partition_orc_ctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_partition_orc_ctas
 PREHOOK: query: DROP TABLE IF EXISTS test_partition_orc_mmctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_partition_orc_mmctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_partition_orc_mmctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_orc_mmctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_partition_orc_mmctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_partition_orc_mmctas
 PREHOOK: query: DROP TABLE IF EXISTS test_partition_parquet_mmctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_partition_parquet_mmctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_partition_parquet_mmctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_parquet_mmctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_partition_parquet_mmctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_partition_parquet_mmctas
 PREHOOK: query: DROP TABLE IF EXISTS test_partition_avro_mmctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_partition_avro_mmctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_partition_avro_mmctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_avro_mmctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_partition_avro_mmctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_partition_avro_mmctas
 PREHOOK: query: DROP TABLE IF EXISTS test_partition_textfile_mmctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_partition_textfile_mmctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_partition_textfile_mmctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_textfile_mmctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_partition_textfile_mmctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_partition_textfile_mmctas
 PREHOOK: query: DROP TABLE IF EXISTS test_transactional_orc_ctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_transactional_orc_ctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_transactional_orc_ctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_transactional_orc_ctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_transactional_orc_ctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_transactional_orc_ctas
 PREHOOK: query: DROP TABLE IF EXISTS test_transactional_part_orc_ctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_transactional_part_orc_ctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_transactional_part_orc_ctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_transactional_part_orc_ctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_transactional_part_orc_ctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_transactional_part_orc_ctas
 PREHOOK: query: DROP TABLE IF EXISTS test_managed_orc_ctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_managed_orc_ctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_managed_orc_ctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_managed_orc_ctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_managed_orc_ctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_managed_orc_ctas
 PREHOOK: query: DROP TABLE IF EXISTS test_managed_part_orc_ctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_managed_part_orc_ctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_managed_part_orc_ctas
 POSTHOOK: query: DROP TABLE IF EXISTS test_managed_part_orc_ctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_managed_part_orc_ctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_managed_part_orc_ctas

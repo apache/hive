@@ -510,6 +510,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partitions_by_filter\n");
   }
 
+  void get_partitions_by_filter_req(std::vector<Partition> & _return, const GetPartitionsByFilterRequest& req) {
+    // Your implementation goes here
+    printf("get_partitions_by_filter_req\n");
+  }
+
   void get_part_specs_by_filter(std::vector<PartitionSpec> & _return, const std::string& db_name, const std::string& tbl_name, const std::string& filter, const int32_t max_parts) {
     // Your implementation goes here
     printf("get_part_specs_by_filter\n");
@@ -538,6 +543,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_partitions_by_names_req(GetPartitionsByNamesResult& _return, const GetPartitionsByNamesRequest& req) {
     // Your implementation goes here
     printf("get_partitions_by_names_req\n");
+  }
+
+  void get_properties(PropertyGetResponse& _return, const PropertyGetRequest& req) {
+    // Your implementation goes here
+    printf("get_properties\n");
+  }
+
+  bool set_properties(const PropertySetRequest& req) {
+    // Your implementation goes here
+    printf("set_properties\n");
   }
 
   void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) {

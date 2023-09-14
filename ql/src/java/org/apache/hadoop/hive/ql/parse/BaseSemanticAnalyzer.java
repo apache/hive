@@ -116,6 +116,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_LOAD_DATA_USE_NATIVE_API;
 import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_FIRST;
 import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_LAST;
 import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.ASC;
@@ -434,16 +435,16 @@ public abstract class BaseSemanticAnalyzer {
       // table node
       Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableOrColumnNode);
       String tableName = dbTablePair.getValue();
-      String metaTable = null;
+      String tableMetaRef = null;
       if (tableName.contains(".")) {
         String[] tmpNames = tableName.split("\\.");
         tableName = tmpNames[0];
-        metaTable = tmpNames[1];
+        tableMetaRef = tmpNames[1];
       }
       return TableName.fromString(tableName,
           null,
           dbTablePair.getKey() == null ? currentDatabase : dbTablePair.getKey(),
-          metaTable)
+          tableMetaRef)
           .getNotEmptyDbTable();
     } else if (tokenType == HiveParser.StringLiteral) {
       return unescapeSQLString(tableOrColumnNode.getText());
@@ -480,8 +481,8 @@ public abstract class BaseSemanticAnalyzer {
     if (tabNameNode.getChildCount() == 3) {
       final String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
       final String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
-      final String metaTableName = unescapeIdentifier(tabNameNode.getChild(2).getText());
-      return HiveTableName.fromString(tableName, catalogName, dbName, metaTableName);
+      final String tableMetaRef = unescapeIdentifier(tabNameNode.getChild(2).getText());
+      return HiveTableName.fromString(tableName, catalogName, dbName, tableMetaRef);
     }
 
     if (tabNameNode.getChildCount() == 2) {
@@ -1215,6 +1216,9 @@ public abstract class BaseSemanticAnalyzer {
             ast.getChild(childIndex), e.getMessage()), e);
       }
 
+      boolean isUseNativeLoadApi = checkUseNativeApi(conf, ast);
+      allowDynamicPartitionsSpec &= !isUseNativeLoadApi;
+
       // get partition metadata if partition specified
       if (ast.getChildCount() == 2 && ast.getToken().getType() != HiveParser.TOK_CREATETABLE &&
           ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
@@ -1241,45 +1245,64 @@ public abstract class BaseSemanticAnalyzer {
           tmpPartSpec.put(colName, val);
         }
 
+        // Return here in case of native load api, as for now the iceberg tables are considered unpartitioned in HMS
+        if (isUseNativeLoadApi) {
+          partSpec = tmpPartSpec;
+          return;
+        }
+
         // check if the columns, as well as value types in the partition() clause are valid
         validatePartSpec(tableHandle, tmpPartSpec, ast, conf, false);
 
         List<FieldSchema> parts = tableHandle.getPartitionKeys();
-        partSpec = new LinkedHashMap<String, String>(partspec.getChildCount());
-        for (FieldSchema fs : parts) {
-          String partKey = fs.getName();
-          partSpec.put(partKey, tmpPartSpec.get(partKey));
+        if (tableHandle.getStorageHandler() != null && tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+          partSpec = tmpPartSpec;
+        } else {
+          partSpec = new LinkedHashMap<String, String>(partspec.getChildCount());
+          for (FieldSchema fs : parts) {
+            String partKey = fs.getName();
+            partSpec.put(partKey, tmpPartSpec.get(partKey));
+          }
         }
 
         // check if the partition spec is valid
         if (numDynParts > 0) {
-          int numStaPart = parts.size() - numDynParts;
+          int numStaPart;
+          if (tableHandle.getStorageHandler() != null && tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+            numStaPart = partSpec.size() - numDynParts;
+          } else {
+            numStaPart = parts.size() - numDynParts;
+          }
           if (numStaPart == 0 &&
               conf.getVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equalsIgnoreCase("strict")) {
             throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_STRICT_MODE.getMsg());
           }
 
-          // check the partitions in partSpec be the same as defined in table schema
-          if (partSpec.keySet().size() != parts.size()) {
-            ErrorPartSpec(partSpec, parts);
-          }
-          Iterator<String> itrPsKeys = partSpec.keySet().iterator();
-          for (FieldSchema fs: parts) {
-            if (!itrPsKeys.next().toLowerCase().equals(fs.getName().toLowerCase())) {
+          // Partitions in partSpec is already checked via storage handler.
+          // Hence no need to check for cases which are always unpartitioned.
+          if (tableHandle.getStorageHandler() == null || !tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+            // check the partitions in partSpec be the same as defined in table schema
+            if (partSpec.keySet().size() != parts.size()) {
               ErrorPartSpec(partSpec, parts);
             }
-          }
-
-          // check if static partition appear after dynamic partitions
-          for (FieldSchema fs: parts) {
-            if (partSpec.get(fs.getName().toLowerCase()) == null) {
-              if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
-                throw new SemanticException(ASTErrorUtils.getMsg(
-                    ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(), ast.getChild(childIndex)));
+            Iterator<String> itrPsKeys = partSpec.keySet().iterator();
+            for (FieldSchema fs: parts) {
+              if (!itrPsKeys.next().toLowerCase().equals(fs.getName().toLowerCase())) {
+                ErrorPartSpec(partSpec, parts);
               }
-              break;
-            } else {
-              --numStaPart;
+            }
+
+            // check if static partition appear after dynamic partitions
+            for (FieldSchema fs: parts) {
+              if (partSpec.get(fs.getName().toLowerCase()) == null) {
+                if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
+                  throw new SemanticException(ASTErrorUtils.getMsg(
+                          ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(), ast.getChild(childIndex)));
+                }
+                break;
+              } else {
+                --numStaPart;
+              }
             }
           }
           partHandle = null;
@@ -1290,7 +1313,9 @@ public abstract class BaseSemanticAnalyzer {
               partitions = db.getPartitions(tableHandle, partSpec);
             } else {
               // this doesn't create partition.
-              partHandle = db.getPartition(tableHandle, partSpec, false);
+              if (tableHandle.getStorageHandler() == null || !tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+                partHandle = db.getPartition(tableHandle, partSpec, false);
+              }
               if (partHandle == null) {
                 // if partSpec doesn't exists in DB, return a delegate one
                 // and the actual partition is created in MoveTask
@@ -1319,6 +1344,11 @@ public abstract class BaseSemanticAnalyzer {
       } else {
         specType = SpecType.TABLE_ONLY;
       }
+    }
+
+    private boolean checkUseNativeApi(HiveConf conf, ASTNode ast) {
+      boolean isLoad = ast.getParent() != null && ast.getParent().getType() == HiveParser.TOK_LOAD;
+      return isLoad && tableHandle.isNonNative() && conf.getBoolVar(HIVE_LOAD_DATA_USE_NATIVE_API);
     }
 
     public TableName getTableName() {
@@ -1659,10 +1689,12 @@ public abstract class BaseSemanticAnalyzer {
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf, boolean shouldBeFull) throws SemanticException {
-    validateUnsupportedPartitionClause(tbl, partSpec != null && !partSpec.isEmpty());
-
-    tbl.validatePartColumnNames(partSpec, shouldBeFull);
-    validatePartColumnType(tbl, partSpec, astNode, conf);
+    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+      tbl.getStorageHandler().validatePartSpec(tbl, partSpec);
+    } else {
+      tbl.validatePartColumnNames(partSpec, shouldBeFull);
+      validatePartColumnType(tbl, partSpec, astNode, conf);
+    }
   }
 
   /**
@@ -1859,7 +1891,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected Table getTable(TableName tn, boolean throwException) throws SemanticException {
-    return getTable(tn.getDb(), tn.getTable(), tn.getMetaTable(), throwException);
+    return getTable(tn.getDb(), tn.getTable(), tn.getTableMetaRef(), throwException);
   }
 
   protected Table getTable(String tblName) throws SemanticException {
@@ -1874,13 +1906,13 @@ public abstract class BaseSemanticAnalyzer {
     return getTable(database, tblName, null, throwException);
   }
 
-  protected Table getTable(String database, String tblName, String metaTableName, boolean throwException)
+  protected Table getTable(String database, String tblName, String tableMetaRef, boolean throwException)
       throws SemanticException {
     Table tab;
     try {
-      String tableName = metaTableName == null ? tblName : tblName + "." + metaTableName;
+      String tableName = tableMetaRef == null ? tblName : tblName + "." + tableMetaRef;
       tab = database == null ? db.getTable(tableName, false)
-          : db.getTable(database, tblName, metaTableName, false);
+          : db.getTable(database, tblName, tableMetaRef, false);
     }
     catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);

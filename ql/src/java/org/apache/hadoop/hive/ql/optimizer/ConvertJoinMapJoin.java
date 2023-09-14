@@ -30,7 +30,6 @@ import java.util.Stack;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
@@ -51,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
@@ -751,8 +751,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         context.conf.getBoolVar(HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS);
     StringBuilder sb = new StringBuilder();
     for (Operator<?> parentOp : joinOp.getParentOperators()) {
-      if (shouldCheckExternalTables && hasExternalTableAncestor(parentOp, sb)) {
-        LOG.debug("External table {} found in join - disabling SMB join.", sb.toString());
+      if (shouldCheckExternalTables && !canTableUseStats(parentOp, sb)) {
+        LOG.debug("External table {} found in join and also could not provide statistics - disabling SMB join.", sb);
         return false;
       }
       // each side better have 0 or more RS. if either side is unbalanced, cannot convert.
@@ -898,8 +898,9 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     if (shouldCheckExternalTables) {
       StringBuilder sb = new StringBuilder();
       for (Operator<?> parentOp : joinOp.getParentOperators()) {
-        if (hasExternalTableAncestor(parentOp, sb)) {
-          LOG.debug("External table {} found in join - disabling bucket map join.", sb.toString());
+        if (!canTableUseStats(parentOp, sb)) {
+          LOG.debug("External table {} found in join and also could not provide statistics - " +
+              "disabling bucket map join.", sb);
           return false;
         }
       }
@@ -1686,16 +1687,16 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     return Math.min(Math.round(v), numRows);
   }
 
-  private static boolean hasExternalTableAncestor(Operator op, StringBuilder sb) {
-    boolean result = false;
+  private static boolean canTableUseStats(Operator op, StringBuilder sb) {
     Operator ancestor = OperatorUtils.findSingleOperatorUpstream(op, TableScanOperator.class);
     if (ancestor != null) {
       TableScanOperator ts = (TableScanOperator) ancestor;
-      if (MetaStoreUtils.isExternalTable(ts.getConf().getTableMetadata().getTTable())) {
+      Boolean canUseStats = StatsUtils.checkCanProvideStats(new Table(ts.getConf().getTableMetadata().getTTable()));
+      if (!canUseStats) {
         sb.append(ts.getConf().getTableMetadata().getFullyQualifiedName());
-        return true;
+        return false;
       }
     }
-    return result;
+    return true;
   }
 }

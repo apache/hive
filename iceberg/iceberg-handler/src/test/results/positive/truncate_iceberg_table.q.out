@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists test_truncate
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_truncate
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table test_truncate (id int, value string) stored by iceberg stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -225,7 +227,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"value\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"}]}
@@ -417,8 +419,10 @@ Sort Columns:       	[]
 PREHOOK: query: drop table if exists test_truncate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_truncate
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_truncate
 POSTHOOK: query: drop table if exists test_truncate
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_truncate
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_truncate

@@ -19,8 +19,9 @@
 
 package org.apache.iceberg.mr.hive;
 
-import org.apache.hadoop.hive.ql.parse.AlterTableBranchSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.iceberg.ManageSnapshots;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
@@ -38,8 +39,8 @@ public class IcebergBranchExec {
    * @param table the iceberg table
    * @param createBranchSpec Get the basic parameters needed to create a branch
    */
-  public static void createBranch(Table table, AlterTableBranchSpec.CreateBranchSpec createBranchSpec) {
-    String branchName = createBranchSpec.getBranchName();
+  public static void createBranch(Table table, AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createBranchSpec) {
+    String branchName = createBranchSpec.getRefName();
     Long snapshotId = null;
     if (createBranchSpec.getSnapshotId() != null) {
       snapshotId = createBranchSpec.getSnapshotId();
@@ -62,5 +63,16 @@ public class IcebergBranchExec {
     }
 
     manageSnapshots.commit();
+  }
+
+  public static void dropBranch(Table table, AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropBranchSpec) {
+    String branchName = dropBranchSpec.getRefName();
+    boolean ifExists = dropBranchSpec.getIfExists();
+
+    SnapshotRef snapshotRef = table.refs().get(branchName);
+    if (snapshotRef != null || !ifExists) {
+      LOG.info("Dropping branch {} on iceberg table {}", branchName, table.name());
+      table.manageSnapshots().removeBranch(branchName).commit();
+    }
   }
 }

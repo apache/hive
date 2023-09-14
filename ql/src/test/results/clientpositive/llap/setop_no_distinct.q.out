@@ -101,18 +101,22 @@ POSTHOOK: Input: default@b_n1
 PREHOOK: query: drop table a_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@a_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@a_n1
 POSTHOOK: query: drop table a_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@a_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a_n1
 PREHOOK: query: drop table b_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@b_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@b_n1
 POSTHOOK: query: drop table b_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@b_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b_n1
 PREHOOK: query: create table a_n1(key int)
 PREHOOK: type: CREATETABLE
@@ -222,16 +226,20 @@ POSTHOOK: Input: default@b_n1
 PREHOOK: query: drop table a_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@a_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@a_n1
 POSTHOOK: query: drop table a_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@a_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a_n1
 PREHOOK: query: drop table b_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@b_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@b_n1
 POSTHOOK: query: drop table b_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@b_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b_n1

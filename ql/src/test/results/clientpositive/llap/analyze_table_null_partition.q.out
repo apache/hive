@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS test1_n9
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test1_n9
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS test2_n6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test2_n6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE test1_n9(name string, age int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -258,16 +262,20 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE test1_n9
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test1_n9
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test1_n9
 POSTHOOK: query: DROP TABLE test1_n9
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test1_n9
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test1_n9
 PREHOOK: query: DROP TABLE test2_n6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test2_n6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test2_n6
 POSTHOOK: query: DROP TABLE test2_n6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test2_n6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test2_n6

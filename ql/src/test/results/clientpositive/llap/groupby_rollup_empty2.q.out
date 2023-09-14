@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists store_sales_s0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists store_sales_s0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists store_s0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists store_s0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE store_sales_s0 (ss_item_sk int,payload string,payload2 string,payload3 string) PARTITIONED BY (ss_store_sk int) stored as orc TBLPROPERTIES( 'transactional'='false')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

@@ -8,12 +8,16 @@ POSTHOOK: query: DROP VIEW IF EXISTS VIEW_HBASE_TABLE_TEST_1
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: DROP TABLE IF EXISTS HBASE_TABLE_TEST_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS HBASE_TABLE_TEST_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS HBASE_TABLE_TEST_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS HBASE_TABLE_TEST_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE HBASE_TABLE_TEST_1(
   cvalue string ,
   pk string,
@@ -64,9 +68,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@hbase_table_test_1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@VIEW_HBASE_TABLE_TEST_1
-POSTHOOK: Lineage: VIEW_HBASE_TABLE_TEST_1.ccount SIMPLE [(hbase_table_test_1)hbase_table_test_1.FieldSchema(name:ccount, type:int, comment:), ]
-POSTHOOK: Lineage: VIEW_HBASE_TABLE_TEST_1.cvalue SIMPLE [(hbase_table_test_1)hbase_table_test_1.FieldSchema(name:cvalue, type:string, comment:), ]
-POSTHOOK: Lineage: VIEW_HBASE_TABLE_TEST_1.pk SIMPLE [(hbase_table_test_1)hbase_table_test_1.FieldSchema(name:pk, type:string, comment:), ]
+POSTHOOK: Lineage: view_hbase_table_test_1.ccount SIMPLE [(hbase_table_test_1)hbase_table_test_1.FieldSchema(name:ccount, type:int, comment:), ]
+POSTHOOK: Lineage: view_hbase_table_test_1.cvalue SIMPLE [(hbase_table_test_1)hbase_table_test_1.FieldSchema(name:cvalue, type:string, comment:), ]
+POSTHOOK: Lineage: view_hbase_table_test_1.pk SIMPLE [(hbase_table_test_1)hbase_table_test_1.FieldSchema(name:pk, type:string, comment:), ]
 PREHOOK: query: CREATE EXTERNAL TABLE HBASE_TABLE_TEST_2(
   cvalue string ,
     pk string ,
@@ -121,9 +125,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@hbase_table_test_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@VIEW_HBASE_TABLE_TEST_2
-POSTHOOK: Lineage: VIEW_HBASE_TABLE_TEST_2.ccount SIMPLE [(hbase_table_test_2)hbase_table_test_2.FieldSchema(name:ccount, type:int, comment:), ]
-POSTHOOK: Lineage: VIEW_HBASE_TABLE_TEST_2.cvalue SIMPLE [(hbase_table_test_2)hbase_table_test_2.FieldSchema(name:cvalue, type:string, comment:), ]
-POSTHOOK: Lineage: VIEW_HBASE_TABLE_TEST_2.pk SIMPLE [(hbase_table_test_2)hbase_table_test_2.FieldSchema(name:pk, type:string, comment:), ]
+POSTHOOK: Lineage: view_hbase_table_test_2.ccount SIMPLE [(hbase_table_test_2)hbase_table_test_2.FieldSchema(name:ccount, type:int, comment:), ]
+POSTHOOK: Lineage: view_hbase_table_test_2.cvalue SIMPLE [(hbase_table_test_2)hbase_table_test_2.FieldSchema(name:cvalue, type:string, comment:), ]
+POSTHOOK: Lineage: view_hbase_table_test_2.pk SIMPLE [(hbase_table_test_2)hbase_table_test_2.FieldSchema(name:pk, type:string, comment:), ]
 PREHOOK: query: SELECT  p.cvalue cvalue
 FROM `VIEW_HBASE_TABLE_TEST_1` `p`
 LEFT OUTER JOIN `VIEW_HBASE_TABLE_TEST_2` `A1`
@@ -167,16 +171,20 @@ POSTHOOK: Output: default@view_hbase_table_test_1
 PREHOOK: query: DROP TABLE HBASE_TABLE_TEST_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_test_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_test_2
 POSTHOOK: query: DROP TABLE HBASE_TABLE_TEST_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_test_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_test_2
 PREHOOK: query: DROP TABLE HBASE_TABLE_TEST_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_test_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_test_1
 POSTHOOK: query: DROP TABLE HBASE_TABLE_TEST_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_test_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_test_1

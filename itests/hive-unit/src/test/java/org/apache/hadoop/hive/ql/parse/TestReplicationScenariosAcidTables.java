@@ -28,18 +28,26 @@ import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -72,6 +80,9 @@ import org.junit.Test;
 import org.junit.BeforeClass;
 
 import javax.annotation.Nullable;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +105,8 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_TABLE_PROPERTY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_ENABLE_BACKGROUND_THREAD;
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runCleaner;
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 
@@ -1865,7 +1878,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             primary.dump(primaryDbName);
 
     long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
-    primary.testEventCounts(primaryDbName, lastReplId, null, null, 10);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 11);
 
     // Test load
     replica.load(replicatedDbName, primaryDbName)
@@ -4021,4 +4034,187 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         TimeUnit.MINUTES);
     isMetricsEnabledForTests(false);
   }
+
+  private void runCompaction(String dbName, String tblName, String partName, CompactionType compactionType)
+          throws Throwable {
+    HiveConf hiveConf = new HiveConf(primary.getConf());
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    markPreviousCompactionsAsComplete(txnHandler, hiveConf);
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, compactionType);
+    rqst.setPartitionname(partName);
+    txnHandler.compact(rqst);
+    hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, false);
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+  }
+
+  private void markPreviousCompactionsAsComplete(TxnStore txnHandler, HiveConf conf) throws Throwable {
+    Connection conn = TestTxnDbUtil.getConnection(conf);
+    Statement stmt = conn.createStatement();
+    ResultSet rs = stmt.executeQuery("select CQ_ID from COMPACTION_QUEUE");
+    List<Long> openCompactionIds = new ArrayList<>();
+    while (rs.next()) {
+      openCompactionIds.add(rs.getLong(1));
+    }
+    openCompactionIds.forEach(id->{
+      CompactionInfoStruct compactionInfoStruct = new CompactionInfoStruct();
+      compactionInfoStruct.setId(id);
+      CompactionInfo compactionInfo = CompactionInfo.compactionStructToInfo(compactionInfoStruct);
+      try {
+        txnHandler.markCompacted(compactionInfo);
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  private FileStatus[] getDirsInTableLoc(WarehouseInstance wh, String db, String table) throws Throwable {
+    Path tblLoc = new Path(wh.getTable(db, table).getSd().getLocation());
+    FileSystem fs = tblLoc.getFileSystem(wh.getConf());
+    return fs.listStatus(tblLoc, EximUtil.getDirectoryFilter(fs));
+  }
+
+  private FileStatus[] getDirsInPartitionLoc(WarehouseInstance wh, Partition partition)
+          throws Throwable {
+    Path tblLoc = new Path(partition.getSd().getLocation());
+    FileSystem fs = tblLoc.getFileSystem(wh.getConf());
+    return fs.listStatus(tblLoc, EximUtil.getDirectoryFilter(fs));
+  }
+
+  private long getMinorCompactedTxnId(FileStatus[] fileStatuses) {
+    for (FileStatus fileStatus : fileStatuses) {
+      if (fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX)) {
+        AcidUtils.ParsedDeltaLight delta = AcidUtils.ParsedDelta.parse(fileStatus.getPath());
+        if (delta.getVisibilityTxnId() != 0) {
+          return delta.getVisibilityTxnId();
+        }
+      }
+    }
+    return -1;
+  }
+
+  private long getMajorCompactedWriteId(FileStatus[] fileStatuses, boolean replica) {
+    for (FileStatus fileStatus : fileStatuses) {
+      if (fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX)) {
+        AcidUtils.ParsedBaseLight pbl = AcidUtils.ParsedBase.parseBase(fileStatus.getPath());
+        long writeId = pbl.getWriteId();
+        if (replica) {
+          assertEquals(0, pbl.getVisibilityTxnId());
+        }
+        return writeId;
+      }
+    }
+    return -1;
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithMajorCompaction() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNamepart = testName.getMethodName() + "_part";
+    primary.run("use " + primaryDbName)
+            .run("create table " + tableName + " (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into " + tableName + " values(1)")
+            .run("insert into " + tableName + " values(2)")
+            .run("create table " + tableNamepart + " (id int) partitioned by (part int) clustered by(id) " +
+                    "into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\") ")
+            .run("insert into " + tableNamepart + " values(1, 2)")
+            .run("insert into " + tableNamepart + " values(2, 2)");
+    runCompaction(primaryDbName, tableName, null, CompactionType.MAJOR);
+
+    List<Partition> partList = primary.getAllPartitions(primaryDbName, tableNamepart);
+    for (Partition part : partList) {
+      Table tbl = primary.getTable(primaryDbName, tableNamepart);
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues());
+      runCompaction(primaryDbName, tableNamepart, partName, CompactionType.MAJOR);
+    }
+
+    List<String> withClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
+    WarehouseInstance.Tuple dump = primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{tableName, tableNamepart})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(dump.lastReplicationId)
+            .run("select id from " + tableName + " order by id")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select id from " + tableNamepart + " order by id")
+            .verifyResults(new String[]{"1", "2"});
+
+    FileStatus[] fileStatuses = getDirsInTableLoc(primary, primaryDbName, tableName);
+    long writeId = getMajorCompactedWriteId(fileStatuses, false);
+    assertTrue(writeId != -1);
+
+    fileStatuses = getDirsInTableLoc(replica, replicatedDbName, tableName);
+    // replica write id should be same as source write id.
+    assertEquals(writeId, getMajorCompactedWriteId(fileStatuses, true));
+
+    // check for partitioned table.
+    for (Partition part : partList) {
+      fileStatuses = getDirsInPartitionLoc(primary, part);
+      writeId = getMajorCompactedWriteId(fileStatuses, false);
+      assertTrue(writeId != -1);
+      Partition partReplica = replica.getPartition(replicatedDbName, tableNamepart, part.getValues());
+      fileStatuses = getDirsInPartitionLoc(replica, partReplica);
+      assertEquals(writeId, getMajorCompactedWriteId(fileStatuses, true));
+    }
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithMinorCompaction() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNamepart = testName.getMethodName() + "_part";
+    primary.run("use " + primaryDbName)
+            .run("create table " + tableName + " (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into " + tableName + " values(1)")
+            .run("insert into " + tableName + " values(2)")
+            .run("create table " + tableNamepart + " (id int) partitioned by (part int) clustered by(id) " +
+                    "into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\") ")
+            .run("insert into " + tableNamepart + " values(1, 2)")
+            .run("insert into " + tableNamepart + " values(2, 2)");
+
+    runCompaction(primaryDbName, tableName, null, CompactionType.MINOR);
+
+    List<Partition> partList = primary.getAllPartitions(primaryDbName, tableNamepart);
+    for (Partition part : partList) {
+      Table tbl = primary.getTable(primaryDbName, tableNamepart);
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues());
+      runCompaction(primaryDbName, tableNamepart, partName, CompactionType.MINOR);
+    }
+    List<String> withClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
+
+    WarehouseInstance.Tuple dump = primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{tableName, tableNamepart})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(dump.lastReplicationId)
+            .run("select id from " + tableName + " order by id")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select id from " + tableNamepart + " order by id")
+            .verifyResults(new String[]{"1", "2"});
+
+    FileStatus[] fileStatuses = getDirsInTableLoc(primary, primaryDbName, tableName);
+    assertTrue(-1 != getMinorCompactedTxnId(fileStatuses));
+
+    fileStatuses = getDirsInTableLoc(replica, replicatedDbName, tableName);
+    Assert.assertEquals(-1, getMinorCompactedTxnId(fileStatuses));
+
+    // check for partitioned table.
+    for (Partition part : partList) {
+      fileStatuses = getDirsInPartitionLoc(primary, part);
+      assertTrue(-1 != getMinorCompactedTxnId(fileStatuses));
+      Partition partReplica = replica.getPartition(replicatedDbName, tableNamepart, part.getValues());
+      fileStatuses = getDirsInPartitionLoc(replica, partReplica);
+      assertTrue(-1 == getMinorCompactedTxnId(fileStatuses));
+    }
+  }
+
 }

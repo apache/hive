@@ -1232,8 +1232,10 @@ STAGE PLANS:
 PREHOOK: query: drop table t1_n114
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n114
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n114
 POSTHOOK: query: drop table t1_n114
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n114
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n114

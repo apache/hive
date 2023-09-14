@@ -26,7 +26,7 @@ import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 import java.io.IOException;
 import java.util.List;
 
-public interface DatabaseAccessor {
+public interface DatabaseAccessor extends AutoCloseable {
 
   List<String> getColumnNames(Configuration conf) throws HiveJdbcDatabaseAccessException;
 

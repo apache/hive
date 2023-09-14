@@ -77,7 +77,7 @@ public final class HiveSchemaUtil {
     List<String> comments = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
 
     for (FieldSchema col : fieldSchemas) {
-      names.add(col.getName());
+      names.add(col.getName().toLowerCase());
       typeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(col.getType()));
       comments.add(col.getComment());
     }
@@ -92,7 +92,7 @@ public final class HiveSchemaUtil {
    */
   public static PartitionSpec spec(Schema schema, List<FieldSchema> fieldSchemas) {
     PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
-    fieldSchemas.forEach(fieldSchema -> builder.identity(fieldSchema.getName()));
+    fieldSchemas.forEach(fieldSchema -> builder.identity(fieldSchema.getName().toLowerCase()));
     return builder.build();
   }
 
@@ -301,7 +301,7 @@ public final class HiveSchemaUtil {
         return "string";
       case TIMESTAMP:
         Types.TimestampType timestampType = (Types.TimestampType) type;
-        if (MetastoreUtil.hive3PresentOnClasspath() && timestampType.shouldAdjustToUTC()) {
+        if (HiveVersion.min(HiveVersion.HIVE_3) && timestampType.shouldAdjustToUTC()) {
           return "timestamp with local time zone";
         }
         return "timestamp";

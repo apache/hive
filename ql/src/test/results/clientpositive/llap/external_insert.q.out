@@ -1,7 +1,9 @@
 PREHOOK: query: drop table tbl1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tbl1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table src_multi1_n6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table src_multi1_n6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_multi1_n6 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -102,8 +104,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: drop table nzhang_part14_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table nzhang_part14_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists nzhang_part14_n2 (key string, value string)
   partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE

@@ -810,6 +810,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_partitions_by_filter($db_name, $tbl_name, $filter, $max_parts);
     /**
+     * @param \metastore\GetPartitionsByFilterRequest $req
+     * @return \metastore\Partition[]
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_partitions_by_filter_req(\metastore\GetPartitionsByFilterRequest $req);
+    /**
      * @param string $db_name
      * @param string $tbl_name
      * @param string $filter
@@ -860,6 +867,20 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\InvalidObjectException
      */
     public function get_partitions_by_names_req(\metastore\GetPartitionsByNamesRequest $req);
+    /**
+     * @param \metastore\PropertyGetRequest $req
+     * @return \metastore\PropertyGetResponse
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_properties(\metastore\PropertyGetRequest $req);
+    /**
+     * @param \metastore\PropertySetRequest $req
+     * @return bool
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function set_properties(\metastore\PropertySetRequest $req);
     /**
      * @param string $db_name
      * @param string $tbl_name

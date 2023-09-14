@@ -69,14 +69,14 @@ class GetAllFunctionsResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->functions = array();
-                        $_size946 = 0;
-                        $_etype949 = 0;
-                        $xfer += $input->readListBegin($_etype949, $_size946);
-                        for ($_i950 = 0; $_i950 < $_size946; ++$_i950) {
-                            $elem951 = null;
-                            $elem951 = new \metastore\Function();
-                            $xfer += $elem951->read($input);
-                            $this->functions []= $elem951;
+                        $_size994 = 0;
+                        $_etype997 = 0;
+                        $xfer += $input->readListBegin($_etype997, $_size994);
+                        for ($_i998 = 0; $_i998 < $_size994; ++$_i998) {
+                            $elem999 = null;
+                            $elem999 = new \metastore\Function();
+                            $xfer += $elem999->read($input);
+                            $this->functions []= $elem999;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class GetAllFunctionsResponse
             }
             $xfer += $output->writeFieldBegin('functions', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->functions));
-            foreach ($this->functions as $iter952) {
-                $xfer += $iter952->write($output);
+            foreach ($this->functions as $iter1000) {
+                $xfer += $iter1000->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

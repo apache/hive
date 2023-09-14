@@ -1121,8 +1121,10 @@ POSTHOOK: Output: default@alterparttbl@partition_col=CCL
 PREHOOK: query: drop table alterPartTbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alterparttbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alterparttbl
 POSTHOOK: query: drop table alterPartTbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alterparttbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alterparttbl

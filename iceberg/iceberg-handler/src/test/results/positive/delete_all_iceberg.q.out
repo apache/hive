@@ -106,9 +106,10 @@ Database:           	default
 #### A masked pattern was here ####
 Retention:          	0                   	 
 #### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
+Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"key\",\"required\":false,\"type\":\"int\"}]}
 	current-snapshot-id 	#Masked#
@@ -144,8 +145,10 @@ Sort Columns:       	[]
 PREHOOK: query: drop table ice01
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice01
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ice01
 POSTHOOK: query: drop table ice01
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice01
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice01

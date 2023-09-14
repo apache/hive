@@ -16,7 +16,7 @@
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
     <groupId>org.apache.hive</groupId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0-beta-2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-standalone-metastore-common</artifactId>
@@ -25,6 +25,11 @@
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
   </properties>
   <dependencies>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-jexl3</artifactId>
+      <version>${jexl.version}</version>
+    </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-netty-shaded</artifactId>
@@ -98,10 +103,6 @@
     <dependency>
       <groupId>javolution</groupId>
       <artifactId>javolution</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>antlr-runtime</artifactId>
     </dependency>
     <dependency>
       <groupId>org.antlr</groupId>
@@ -307,6 +308,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

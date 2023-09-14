@@ -19,12 +19,14 @@
 package org.apache.hive.hplsql;
 
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hive.hplsql.objects.MethodDictionary.__GETITEM__;
 import static org.apache.hive.hplsql.objects.MethodDictionary.__SETITEM__;
 import static org.apache.hive.hplsql.objects.MethodParams.Arity.UNARY;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -33,6 +35,7 @@ import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +58,9 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
+import org.apache.hadoop.hive.metastore.api.StoredProcedureRequest;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hplsql.Var.Type;
 import org.apache.hive.hplsql.executor.JdbcQueryExecutor;
 import org.apache.hive.hplsql.executor.Metadata;
@@ -79,13 +85,18 @@ import org.apache.hive.hplsql.objects.UtlFileClass;
 import org.apache.hive.hplsql.packages.HmsPackageRegistry;
 import org.apache.hive.hplsql.packages.InMemoryPackageRegistry;
 import org.apache.hive.hplsql.packages.PackageRegistry;
+import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HPL/SQL script executor
  *
  */
 public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
-  
+
+  private static final Logger LOG = LoggerFactory.getLogger(Exec.class);
+
   public static final String VERSION = "HPL/SQL 0.3.31";
   public static final String ERRORCODE = "ERRORCODE";
   public static final String SQLCODE = "SQLCODE";
@@ -633,15 +644,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     }
     ArrayList<String> sql = new ArrayList<>();
     String dir = Utils.getExecDir();
-    String hplsqlJarName = "hplsql.jar";
-    for(String jarName: new java.io.File(dir).list()) {
-      if(jarName.startsWith("hive-hplsql") && jarName.endsWith(".jar")) {
-        hplsqlJarName = jarName;
-        break;
-      }
-    }
-    sql.add("ADD JAR " + dir + hplsqlJarName);
-    sql.add("ADD JAR " + dir + "antlr4-runtime-4.5.jar");
+    addJar(sql, dir, "hive-hplsql");
+    addJar(sql, dir, "antlr4-runtime");
     if(!conf.getLocation().equals("")) {
       sql.add("ADD FILE " + conf.getLocation());
     } else {
@@ -660,6 +664,23 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     sql.add("CREATE TEMPORARY FUNCTION hplsql AS 'org.apache.hive.hplsql.udf.Udf'");
     exec.conn.addPreSql(exec.conf.defaultConnection, sql);
     udfRegistered = true;
+  }
+
+  private static void addJar(ArrayList<String> sql, String dir, String jarNamePrefix) {
+    String jarName = findJarLike(dir, jarNamePrefix);
+    if (isNotBlank(jarName)) {
+      sql.add("ADD JAR " + Paths.get(dir, jarName));
+    }
+  }
+
+  private static String findJarLike(String dir, String prefix) {
+    String[] files = new File(dir).list((dir1, name) -> name.startsWith(prefix) && name.endsWith(".jar"));
+    if (files == null || files.length < 1) {
+      LOG.warn("No jar file found in directory '{}' with prefix '{}'", dir, prefix);
+      return null;
+    }
+
+    return files[0];
   }
 
   /**
@@ -1822,8 +1843,12 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    * User-defined function in a SQL query
    */
   public void execSql(String name, HplsqlParser.Expr_func_paramsContext ctx) {
-    if (execUserSql(ctx, name)) {
-      return;
+    try {
+      if (execUserSql(ctx, name)) {
+        return;
+      }
+    } catch (TException e) {
+      throw new HplValidationException(ctx, e);
     }
     StringBuilder sql = new StringBuilder();
     sql.append(name);
@@ -1845,7 +1870,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    * Execute a HPL/SQL user-defined function in a query.
    * For example converts: select fn(col) from table to select hplsql('fn(:1)', col) from table
    */
-  private boolean execUserSql(HplsqlParser.Expr_func_paramsContext ctx, String name) {
+  private boolean execUserSql(HplsqlParser.Expr_func_paramsContext ctx, String name) throws TException {
     if (!functions.exists(name)) {
       return false;
     }
@@ -1870,10 +1895,28 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
         sql.append(", ");
       }
     }
-    sql.append(")");
+    sql.append(", \"");
+    sql.append(getStoredProcedure(name.toUpperCase()));
+    sql.append("\")");
     exec.stackPush(sql);
     exec.registerUdf();
     return true;
+  }
+
+  /**
+   * Get stored procedure from HMS
+   *
+   * @param functionName name of the procedure
+   * @return procedure
+   */
+  private String getStoredProcedure(String functionName) throws TException {
+    SessionState sessionState = SessionState.get();
+    StoredProcedure storedProcedure = getMsc().getStoredProcedure(
+            new StoredProcedureRequest(
+                    sessionState != null ? sessionState.getCurrentCatalog() : hplSqlSession.currentCatalog(),
+                    sessionState != null ? sessionState.getCurrentDatabase() : hplSqlSession.currentDatabase(),
+                    functionName));
+    return storedProcedure != null ? storedProcedure.getSource() : null;
   }
 
   /**

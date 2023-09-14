@@ -34,6 +34,8 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
@@ -62,6 +64,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -1059,18 +1062,26 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
    * @return Returns <code>true</code> if the commit was successfully executed
    * @throws HiveException If we tried to commit, but there was an error during the process
    */
-  private static boolean checkAndCommitNatively(MoveWork moveWork, Configuration configuration) throws HiveException {
+  private boolean checkAndCommitNatively(MoveWork moveWork, Configuration configuration) throws HiveException {
     String storageHandlerClass = null;
     Properties commitProperties = null;
-    boolean overwrite = false;
-
-    if (moveWork.getLoadTableWork() != null) {
+    Operation operation = context.getOperation();
+    LoadTableDesc loadTableWork = moveWork.getLoadTableWork();
+    if (loadTableWork != null) {
+      if (loadTableWork.isUseAppendForLoad()) {
+        loadTableWork.getMdTable().getStorageHandler()
+            .appendFiles(loadTableWork.getMdTable().getTTable(), loadTableWork.getSourcePath().toUri(),
+                loadTableWork.getLoadFileType() == LoadFileType.REPLACE_ALL, loadTableWork.getPartitionSpec());
+        return true;
+      }
       // Get the info from the table data
       TableDesc tableDesc = moveWork.getLoadTableWork().getTable();
       storageHandlerClass = tableDesc.getProperties().getProperty(
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
       commitProperties = new Properties(tableDesc.getProperties());
-      overwrite = moveWork.getLoadTableWork().isInsertOverwrite();
+      if (moveWork.getLoadTableWork().isInsertOverwrite()) {
+        operation = Operation.IOW;
+      }
     } else if (moveWork.getLoadFileWork() != null) {
       // Get the info from the create table data
       CreateTableDesc createTableDesc = moveWork.getLoadFileWork().getCtasCreateTableDesc();
@@ -1098,7 +1109,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     if (storageHandlerClass != null) {
       HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(configuration, storageHandlerClass);
       if (storageHandler.commitInMoveTask()) {
-        storageHandler.storageHandlerCommit(commitProperties, overwrite);
+        storageHandler.storageHandlerCommit(commitProperties, operation);
         return true;
       }
     }

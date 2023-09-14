@@ -1,7 +1,9 @@
 PREHOOK: query: drop table cross_numbers
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table cross_numbers
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table cross_numbers(i string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -21,8 +23,10 @@ POSTHOOK: Output: default@cross_numbers
 POSTHOOK: Lineage: cross_numbers.i SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: drop table lots_of_rows
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table lots_of_rows
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table lots_of_rows(key string) stored as orc tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -45,8 +49,10 @@ POSTHOOK: Output: default@lots_of_rows
 POSTHOOK: Lineage: lots_of_rows.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (cross_numbers)cross_numbers.FieldSchema(name:i, type:string, comment:null), ]
 PREHOOK: query: drop table testacid1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table testacid1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testacid1(id string, id2 string) clustered by (id2) into 2 buckets stored as orc tblproperties("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -67,8 +73,10 @@ POSTHOOK: Lineage: testacid1.id SIMPLE [(lots_of_rows)lots_of_rows.FieldSchema(n
 POSTHOOK: Lineage: testacid1.id2 SIMPLE [(lots_of_rows)lots_of_rows.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: drop table lots_of_row
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table lots_of_row
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: select * from testacid1 order by id limit 30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testacid1

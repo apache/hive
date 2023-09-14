@@ -3219,8 +3219,10 @@ irG2+wNa4ZWkUKb0+hXweg==
 PREHOOK: query: drop table partint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partint
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partint
 POSTHOOK: query: drop table partint
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partint
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partint

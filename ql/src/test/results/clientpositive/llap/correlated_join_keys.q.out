@@ -1,7 +1,9 @@
 PREHOOK: query: drop table customer_address_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table customer_address_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table customer_address_n0
 (
     ca_address_sk             int,
@@ -283,8 +285,10 @@ STAGE PLANS:
 PREHOOK: query: drop table customer_address_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@customer_address_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@customer_address_n0
 POSTHOOK: query: drop table customer_address_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@customer_address_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer_address_n0

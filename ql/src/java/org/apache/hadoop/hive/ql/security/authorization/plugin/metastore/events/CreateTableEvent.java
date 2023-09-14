@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
@@ -81,7 +82,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     ret.add(getHivePrivilegeObject(database));
     ret.add(getHivePrivilegeObject(table));
 
-    if (StringUtils.isNotEmpty(uri)) {
+    if (StringUtils.isNotEmpty(uri) && table.getTableType() != TableType.EXTERNAL_TABLE.toString()) {
       ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
     }
 

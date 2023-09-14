@@ -1010,7 +1010,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1019,23 +1020,22 @@ STAGE PLANS:
                   alias: src1
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
-                    Number of rows: 1
-                    Offset of rows: 1
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    Number of rows: 2
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: all inputs
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src2
@@ -1067,9 +1067,26 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
-                  Number of rows: 1
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Offset of rows: 1
+                Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1099,7 +1116,7 @@ limit 1 offset 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-86	val_86	86	val_86
+238	val_238	238	val_238
 PREHOOK: query: explain
 select *
 from src src1 left outer join src src2
@@ -1125,7 +1142,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1134,23 +1152,22 @@ STAGE PLANS:
                   alias: src1
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
-                    Number of rows: 1
-                    Offset of rows: 1
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    Number of rows: 2
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: all inputs
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src2
@@ -1182,9 +1199,26 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
-                  Number of rows: 1
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Offset of rows: 1
+                Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1214,7 +1248,7 @@ limit 1 offset 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-86	val_86	86	val_86
+238	val_238	238	val_238
 PREHOOK: query: explain
 select *
 from src src1 left outer join src src2
@@ -1242,6 +1276,7 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
         Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1250,17 +1285,16 @@ STAGE PLANS:
                   alias: src1
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
-                    Number of rows: 1
-                    Offset of rows: 1
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    Number of rows: 2
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string)
                   Filter Operator
@@ -1283,19 +1317,18 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Limit
-                Number of rows: 1
-                Offset of rows: 1
-                Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                Number of rows: 2
+                Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string)
         Reducer 3 
             Execution mode: llap
@@ -1307,9 +1340,26 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
-                  Number of rows: 1
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Offset of rows: 1
+                Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1339,6 +1389,7 @@ limit 1 offset 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+238	val_238	238	val_238
 PREHOOK: query: explain
 select *
 from src src1 right outer join (
@@ -1373,6 +1424,7 @@ STAGE PLANS:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
         Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1381,17 +1433,16 @@ STAGE PLANS:
                   alias: src2
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
-                    Number of rows: 1
-                    Offset of rows: 1
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    Number of rows: 2
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string)
                   Filter Operator
@@ -1428,23 +1479,19 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Limit
-                Number of rows: 1
-                Offset of rows: 1
-                Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 1
-                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col1 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col1 (type: string)
-                      Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: string)
+                Number of rows: 2
+                Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: string)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1455,16 +1502,16 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col1 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
-                  Number of rows: 1
-                  Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
         Reducer 4 
             Execution mode: llap
@@ -1476,21 +1523,38 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 2 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 2492 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
-                  Number of rows: 1
-                  Statistics: Num rows: 1 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col4 (type: string), _col5 (type: string), _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Statistics: Num rows: 2 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 2 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Offset of rows: 1
+                Statistics: Num rows: 1 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string), VALUE._col4 (type: string), VALUE._col5 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 1 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 1 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1518,6 +1582,7 @@ limit 1 offset 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+238	val_238	238	val_238	238	val_238
 PREHOOK: query: explain
 select *
 from src src1 right outer join (
@@ -1553,6 +1618,7 @@ STAGE PLANS:
         Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
         Reducer 5 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1561,17 +1627,16 @@ STAGE PLANS:
                   alias: src2
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
-                    Number of rows: 1
-                    Offset of rows: 1
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    Number of rows: 2
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string)
                   Filter Operator
@@ -1608,19 +1673,18 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Limit
-                Number of rows: 1
-                Offset of rows: 1
-                Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                Number of rows: 2
+                Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col1 (type: string)
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string)
         Reducer 3 
             Execution mode: llap
@@ -1632,33 +1696,32 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col1 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
-                  Number of rows: 1
-                  Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Limit
-                Number of rows: 1
-                Offset of rows: 1
-                Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Number of rows: 2
+                Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
         Reducer 5 
             Execution mode: llap
@@ -1670,10 +1733,26 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 2 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 2492 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
-                  Number of rows: 1
-                  Offset of rows: 1
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 2 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+        Reducer 6 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Offset of rows: 1
+                Statistics: Num rows: 1 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string), VALUE._col4 (type: string), VALUE._col5 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 1 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1709,6 +1788,7 @@ limit 1 offset 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+238	val_238	238	val_238	238	val_238
 PREHOOK: query: explain
 select *
 from src src1 right outer join (
@@ -1807,15 +1887,14 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
-                  Number of rows: 1
-                  Offset of rows: 1
-                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col1 (type: string)
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string)
         Reducer 3 
             Execution mode: llap
@@ -1827,22 +1906,22 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col1 (type: string)
                 outputColumnNames: _col1, _col2
-                Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
                 Top N Key Operator
                   sort order: +
                   keys: _col1 (type: string)
                   null sort order: z
-                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 2
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
         Reducer 4 
             Execution mode: llap
@@ -1850,17 +1929,16 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
-                  Number of rows: 1
-                  Offset of rows: 1
-                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string)
         Reducer 5 
             Execution mode: llap
@@ -1872,18 +1950,18 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                 Top N Key Operator
                   sort order: +
                   keys: _col2 (type: string)
                   null sort order: z
-                  Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 2
                   Reduce Output Operator
                     key expressions: _col2 (type: string)
                     null sort order: z
                     sort order: +
-                    Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string)
         Reducer 6 
             Execution mode: llap
@@ -1891,7 +1969,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 1246 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 1
                   Offset of rows: 1

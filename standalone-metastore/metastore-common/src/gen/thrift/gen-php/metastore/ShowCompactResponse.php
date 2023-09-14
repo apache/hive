@@ -69,14 +69,14 @@ class ShowCompactResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->compacts = array();
-                        $_size763 = 0;
-                        $_etype766 = 0;
-                        $xfer += $input->readListBegin($_etype766, $_size763);
-                        for ($_i767 = 0; $_i767 < $_size763; ++$_i767) {
-                            $elem768 = null;
-                            $elem768 = new \metastore\ShowCompactResponseElement();
-                            $xfer += $elem768->read($input);
-                            $this->compacts []= $elem768;
+                        $_size811 = 0;
+                        $_etype814 = 0;
+                        $xfer += $input->readListBegin($_etype814, $_size811);
+                        for ($_i815 = 0; $_i815 < $_size811; ++$_i815) {
+                            $elem816 = null;
+                            $elem816 = new \metastore\ShowCompactResponseElement();
+                            $xfer += $elem816->read($input);
+                            $this->compacts []= $elem816;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class ShowCompactResponse
             }
             $xfer += $output->writeFieldBegin('compacts', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->compacts));
-            foreach ($this->compacts as $iter769) {
-                $xfer += $iter769->write($output);
+            foreach ($this->compacts as $iter817) {
+                $xfer += $iter817->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

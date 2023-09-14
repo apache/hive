@@ -280,6 +280,7 @@ public class TestObjectStore {
         new StorageDescriptor(ImmutableList.of(new FieldSchema("pk_col", "double", null)),
             "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null),
             null, null, null);
+    sd1.getSerdeInfo().setDescription("this is sd1 description");
     HashMap<String, String> params = new HashMap<>();
     params.put("EXTERNAL", "false");
     Table tbl1 =
@@ -294,6 +295,7 @@ public class TestObjectStore {
         new StorageDescriptor(ImmutableList.of(new FieldSchema("fk_col", "double", null)),
             "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null),
             null, null, null);
+    sd2.getSerdeInfo().setDescription("this is sd2 description");
     Table newTbl1 = new Table("new" + TABLE1, DB1, "owner", 1, 2, 3, sd2, null, params, null, null,
         "MANAGED_TABLE");
 
@@ -310,6 +312,10 @@ public class TestObjectStore {
     Table alteredTable = objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, "new" + TABLE1);
     Assert.assertEquals("Owner of table was not altered", newTbl1.getOwner(), alteredTable.getOwner());
     Assert.assertEquals("Owner type of table was not altered", newTbl1.getOwnerType(), alteredTable.getOwnerType());
+
+    // Verify serde description is altered during the alterTable operation
+    Assert.assertNotEquals("Serde Description was not altered", tbl1.getSd().getSerdeInfo().getDescription(), alteredTable.getSd().getSerdeInfo().getDescription());
+    Assert.assertEquals("Serde Description was not altered", newTbl1.getSd().getSerdeInfo().getDescription(), alteredTable.getSd().getSerdeInfo().getDescription());
 
     objectStore.createTable(tbl1);
     tables = objectStore.getAllTables(DEFAULT_CATALOG_NAME, DB1);

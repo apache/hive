@@ -62,6 +62,21 @@ class AlterPartitionsRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        8 => array(
+            'var' => 'skipColumnSchemaForPartition',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
+        9 => array(
+            'var' => 'partitionColSchema',
+            'isRequired' => false,
+            'type' => TType::LST,
+            'etype' => TType::STRUCT,
+            'elem' => array(
+                'type' => TType::STRUCT,
+                'class' => '\metastore\FieldSchema',
+                ),
+        ),
     );
 
     /**
@@ -92,6 +107,14 @@ class AlterPartitionsRequest
      * @var string
      */
     public $validWriteIdList = null;
+    /**
+     * @var bool
+     */
+    public $skipColumnSchemaForPartition = null;
+    /**
+     * @var \metastore\FieldSchema[]
+     */
+    public $partitionColSchema = null;
 
     public function __construct($vals = null)
     {
@@ -116,6 +139,12 @@ class AlterPartitionsRequest
             }
             if (isset($vals['validWriteIdList'])) {
                 $this->validWriteIdList = $vals['validWriteIdList'];
+            }
+            if (isset($vals['skipColumnSchemaForPartition'])) {
+                $this->skipColumnSchemaForPartition = $vals['skipColumnSchemaForPartition'];
+            }
+            if (isset($vals['partitionColSchema'])) {
+                $this->partitionColSchema = $vals['partitionColSchema'];
             }
         }
     }
@@ -163,14 +192,14 @@ class AlterPartitionsRequest
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->partitions = array();
-                        $_size1151 = 0;
-                        $_etype1154 = 0;
-                        $xfer += $input->readListBegin($_etype1154, $_size1151);
-                        for ($_i1155 = 0; $_i1155 < $_size1151; ++$_i1155) {
-                            $elem1156 = null;
-                            $elem1156 = new \metastore\Partition();
-                            $xfer += $elem1156->read($input);
-                            $this->partitions []= $elem1156;
+                        $_size1199 = 0;
+                        $_etype1202 = 0;
+                        $xfer += $input->readListBegin($_etype1202, $_size1199);
+                        for ($_i1203 = 0; $_i1203 < $_size1199; ++$_i1203) {
+                            $elem1204 = null;
+                            $elem1204 = new \metastore\Partition();
+                            $xfer += $elem1204->read($input);
+                            $this->partitions []= $elem1204;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -195,6 +224,30 @@ class AlterPartitionsRequest
                 case 7:
                     if ($ftype == TType::STRING) {
                         $xfer += $input->readString($this->validWriteIdList);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 8:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->skipColumnSchemaForPartition);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 9:
+                    if ($ftype == TType::LST) {
+                        $this->partitionColSchema = array();
+                        $_size1205 = 0;
+                        $_etype1208 = 0;
+                        $xfer += $input->readListBegin($_etype1208, $_size1205);
+                        for ($_i1209 = 0; $_i1209 < $_size1205; ++$_i1209) {
+                            $elem1210 = null;
+                            $elem1210 = new \metastore\FieldSchema();
+                            $xfer += $elem1210->read($input);
+                            $this->partitionColSchema []= $elem1210;
+                        }
+                        $xfer += $input->readListEnd();
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -234,8 +287,8 @@ class AlterPartitionsRequest
             }
             $xfer += $output->writeFieldBegin('partitions', TType::LST, 4);
             $output->writeListBegin(TType::STRUCT, count($this->partitions));
-            foreach ($this->partitions as $iter1157) {
-                $xfer += $iter1157->write($output);
+            foreach ($this->partitions as $iter1211) {
+                $xfer += $iter1211->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -256,6 +309,23 @@ class AlterPartitionsRequest
         if ($this->validWriteIdList !== null) {
             $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 7);
             $xfer += $output->writeString($this->validWriteIdList);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->skipColumnSchemaForPartition !== null) {
+            $xfer += $output->writeFieldBegin('skipColumnSchemaForPartition', TType::BOOL, 8);
+            $xfer += $output->writeBool($this->skipColumnSchemaForPartition);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->partitionColSchema !== null) {
+            if (!is_array($this->partitionColSchema)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('partitionColSchema', TType::LST, 9);
+            $output->writeListBegin(TType::STRUCT, count($this->partitionColSchema));
+            foreach ($this->partitionColSchema as $iter1212) {
+                $xfer += $iter1212->write($output);
+            }
+            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

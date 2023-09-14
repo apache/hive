@@ -24,7 +24,14 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.CleanupRequest;
@@ -32,13 +39,18 @@ import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runInitiator;
 import static org.mockito.ArgumentMatchers.any;
 
 public class TestAbortedTxnCleaner extends TestHandler {
@@ -319,5 +331,418 @@ public class TestAbortedTxnCleaner extends TestHandler {
 
     List<Path> directories = getDirectories(conf, t, null);
     Assert.assertEquals(5, directories.size());
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testAbortCleanupNotUpdatingSpecificCompactionTables(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "abort_cleanup_not_populating_compaction_tables_test", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // 3-aborted deltas & one committed delta
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler mockedTaskHandler = Mockito.spy(new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover));
+
+    runInitiator(conf);
+    // Initiator must not add anything to compaction_queue
+    String compactionQueuePresence = "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " +
+            " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.run();
+
+    Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPLETED_COMPACTIONS\" " +
+            " WHERE \"CC_DATABASE\" = '" + dbName+ "' AND \"CC_TABLE\" = '" + tableName + "' AND \"CC_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL")));
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\" " +
+            " WHERE \"CTC_DATABASE\" = '" + dbName+ "' AND \"CTC_TABLE\" = '" + tableName + "' AND \"CTC_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL")));
+
+    List<Path> directories = getDirectories(conf, t, null);
+    // All aborted directories removed, hence 1 committed delta directory must be present
+    Assert.assertEquals(1, directories.size());
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testRetryEntryOnFailures(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_retry_entry", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TxnStore mockedTxnHandler = Mockito.spy(txnHandler);
+    TaskHandler mockedTaskHandler = Mockito.spy(new AbortedTxnCleaner(conf, mockedTxnHandler, metadataCache,
+            false, mockedFSRemover));
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.run();
+
+    Mockito.verify(mockedTxnHandler, Mockito.times(1)).setCleanerRetryRetentionTimeOnError(any(CompactionInfo.class));
+    ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().get(0);
+    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+            && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
+            "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
+            scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
+    Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
+            TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+                    .replace("\n", "").trim());
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testRetryInfoBeingUsed(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_retry_usage", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    // Set retry retention time as 10 s (10000 ms).
+    long retryRetentionTime = 10000;
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover);
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().get(0);
+    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+            && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
+            "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
+            scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
+    Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+
+    // Delay for time specified in retry retention.
+    Thread.sleep(retryRetentionTime);
+
+    Mockito.doAnswer(InvocationOnMock::callRealMethod).when(mockedFSRemover).clean(any());
+
+    cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    // The retry record must be not present since it will deleted due to successful abort cleanup.
+    Assert.assertEquals(0, txnHandler.showCompact(new ShowCompactRequest()).getCompactsSize());
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testRetryWithinRetentionTime(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_retry_nodelay", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover);
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().get(0);
+    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+            && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
+            "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
+            scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
+    Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
+            TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+
+    Mockito.doAnswer(InvocationOnMock::callRealMethod).when(mockedFSRemover).clean(any());
+
+    cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    // The retry entry is not removed since retry conditions are not achieved hence its not picked for cleanup.
+    scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, scr.getCompactsSize());
+    scre = scr.getCompacts().get(0);
+    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+            && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
+            "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
+            scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
+    Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
+            TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testRetryUpdateRetentionTimeWhenFailedTwice(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_retry_retention_time_failed_twice", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    // Set retry retention time as 10 s (10000 ms).
+    long retryRetentionTime = 10000;
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover);
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().get(0);
+    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+            && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
+            "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
+            scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
+    Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+
+    // Delay for time specified in retry retention.
+    Thread.sleep(retryRetentionTime);
+
+    cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, scr.getCompactsSize());
+    scre = scr.getCompacts().get(0);
+    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+            && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
+            "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
+            scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
+    // The retry entry must reflect double the retention time now.
+    Assert.assertEquals(Long.toString(2 * retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testRetryUpdateErrorMessageWhenFailedTwice(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_retry_error_msg_failed_twice", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    // Set retry retention time as 10 s (10000 ms).
+    long retryRetentionTime = 10000;
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover);
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing first retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().get(0);
+    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+            && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
+            "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
+            scre.getErrorMessage().equalsIgnoreCase("Testing first retry"));
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
+    Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+
+    // Delay for time specified in retry retention.
+    Thread.sleep(retryRetentionTime);
+
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing second retry");
+    }).when(mockedFSRemover).clean(any());
+
+    cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, scr.getCompactsSize());
+    scre = scr.getCompacts().get(0);
+    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+            && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
+            "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
+            scre.getErrorMessage().equalsIgnoreCase("Testing second retry"));
+    // The retry entry must reflect double the retention time now.
+    Assert.assertEquals(Long.toString(2 * retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testZeroRetryRetentionTimeForAbortCleanup(boolean isPartitioned) throws Exception {
+    String dbName = "default", tableName = "handler_zero_retryretention", partName = "today";
+    Table t = newTable(dbName, tableName, isPartitioned);
+    Partition p = isPartitioned ? newPartition(t, partName) : null;
+
+    // Add 2 committed deltas and 2 aborted deltas
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, 0, TimeUnit.MILLISECONDS);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover);
+    // Invoke runtime exception when calling markCleaned.
+    Mockito.doAnswer(invocationOnMock -> {
+      throw new RuntimeException("Testing retry");
+    }).when(mockedFSRemover).clean(any());
+
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().get(0);
+    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+            && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
+            "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
+            scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
+    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
+    String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
+    Assert.assertEquals(Integer.toString(0), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+            .replace("\n", "").trim());
+
+    Mockito.doAnswer(InvocationOnMock::callRealMethod).when(mockedFSRemover).clean(any());
+
+    cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.run();
+
+    // The retry entry should be removed since retry conditions are achieved because retry retention time is 0.
+    Assert.assertEquals(0, txnHandler.showCompact(new ShowCompactRequest()).getCompactsSize());
   }
 }

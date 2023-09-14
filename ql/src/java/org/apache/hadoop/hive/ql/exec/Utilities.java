@@ -257,6 +257,7 @@ public final class Utilities {
   public static final String MAPNAME = "Map ";
   public static final String REDUCENAME = "Reducer ";
   public static final String ENSURE_OPERATORS_EXECUTED = "ENSURE_OPERATORS_EXECUTED";
+  public static final String SNAPSHOT_REF = "snapshot_ref";
 
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
@@ -763,6 +764,9 @@ public final class Utilities {
     if (tbl.getMetaTable() != null) {
       props.put("metaTable", tbl.getMetaTable());
     }
+    if (tbl.getSnapshotRef() != null) {
+      props.put(SNAPSHOT_REF, tbl.getSnapshotRef());
+    }
     return (new TableDesc(tbl.getInputFormatClass(), tbl
         .getOutputFormatClass(), props));
   }
@@ -1035,7 +1039,8 @@ public final class Utilities {
     return src;
   }
 
-  private static final String tmpPrefix = "_tmp.";
+  private static final String hadoopTmpPrefix = "_tmp.";
+  private static final String tmpPrefix = "-tmp.";
   private static final String taskTmpPrefix = "_task_tmp.";
 
   public static Path toTaskTempPath(Path orig) {
@@ -1066,7 +1071,7 @@ public final class Utilities {
     String name = file.getPath().getName();
     // in addition to detecting hive temporary files, we also check hadoop
     // temporary folders that used to show up in older releases
-    return (name.startsWith("_task") || name.startsWith(tmpPrefix));
+    return (name.startsWith("_task") || name.startsWith(tmpPrefix) || name.startsWith(hadoopTmpPrefix));
   }
 
   /**
@@ -1389,7 +1394,7 @@ public final class Utilities {
   }
 
 
-  private static boolean shouldAvoidRename(FileSinkDesc conf, Configuration hConf) {
+  public static boolean shouldAvoidRename(FileSinkDesc conf, Configuration hConf) {
     // we are avoiding rename/move only if following conditions are met
     //  * execution engine is tez
     //  * if it is select query
@@ -1431,6 +1436,9 @@ public final class Utilities {
     FileSystem fs = specPath.getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
+    if (!StringUtils.isEmpty(unionSuffix)) {
+      specPath = specPath.getParent();
+    }
     PerfLogger perfLogger = SessionState.getPerfLogger();
     boolean isBlobStorage = BlobStorageUtils.isBlobStorageFileSystem(hconf, fs);
     boolean avoidRename = false;
@@ -3517,6 +3525,9 @@ public final class Utilities {
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
     DriverState driverState = DriverState.getDriverState();
+    if (work.isUseInputPathsDirectly() && work.getInputPaths() != null) {
+      return work.getInputPaths();
+    }
     // AliasToWork contains all the aliases
     Collection<String> aliasToWork = work.getAliasToWork().keySet();
     if (!skipDummy) {
@@ -4548,7 +4559,7 @@ public final class Utilities {
     if (isDelete) {
       deltaDir = AcidUtils.deleteDeltaSubdir(writeId, writeId, stmtId);
     }
-    Path manifestPath = new Path(manifestRoot, "_tmp." + deltaDir);
+    Path manifestPath = new Path(manifestRoot, Utilities.toTempPath(deltaDir));
 
     if (isInsertOverwrite) {
       // When doing a multi-statement insert overwrite query with dynamic partitioning, the

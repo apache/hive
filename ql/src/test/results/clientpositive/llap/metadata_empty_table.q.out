@@ -1,11 +1,15 @@
 PREHOOK: query: drop table nullscan_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table nullscan_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table onerow_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table onerow_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table nullscan_table(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -68,16 +72,20 @@ true
 PREHOOK: query: drop table nullscan_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nullscan_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@nullscan_table
 POSTHOOK: query: drop table nullscan_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nullscan_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nullscan_table
 PREHOOK: query: drop table onerow_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@onerow_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@onerow_table
 POSTHOOK: query: drop table onerow_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@onerow_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@onerow_table

@@ -480,8 +480,10 @@ POSTHOOK: Output: default@view1_n0
 PREHOOK: query: drop table table1_n12
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1_n12
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1_n12
 POSTHOOK: query: drop table table1_n12
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1_n12
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1_n12

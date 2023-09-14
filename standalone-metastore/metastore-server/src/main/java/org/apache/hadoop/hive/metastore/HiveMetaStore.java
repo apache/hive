@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ShutdownHookManager;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.thrift.TProcessor;
@@ -88,6 +87,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -119,6 +119,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static ZooKeeperHiveHelper zooKeeperHelper = null;
   private static String msHost = null;
   private static ThriftServer thriftServer;
+  private static Server propertyServer = null;
+
+
+  public static Server getPropertyServer() {
+    return propertyServer;
+  }
 
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
     if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
@@ -129,18 +135,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     return true;
   }
 
-  private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)
-      throws MetaException {
-    return newRetryingHMSHandler(baseHandler, conf, false);
-  }
-
-  private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf,
-      boolean local) throws MetaException {
-    return RetryingHMSHandler.getProxy(conf, baseHandler, local);
-  }
-
   /**
-   * Create retrying HMS handler for embedded metastore.
+   * Create HMS handler for embedded metastore.
    *
    * <h1>IMPORTANT</h1>
    *
@@ -151,10 +147,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @param conf configuration to use
    * @throws MetaException
    */
-  static Iface newRetryingHMSHandler(Configuration conf)
+  static Iface newHMSHandler(Configuration conf)
       throws MetaException {
     HMSHandler baseHandler = new HMSHandler("hive client", conf);
-    return RetryingHMSHandler.getProxy(conf, baseHandler, true);
+    return HMSHandlerProxyFactory.getProxy(conf, baseHandler, true);
   }
 
   /**
@@ -382,20 +378,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static ThriftServer startHttpMetastore(int port, Configuration conf)
       throws Exception {
     LOG.info("Attempting to start http metastore server on port: {}", port);
-
-    // This check is likely pointless, especially with the current state of the http
-    // servlet which respects whatever comes in. Putting this in place for the moment
-    // only to enable testing on an otherwise secure cluster.
-    LOG.info(" Checking if security is enabled");
-    if (UserGroupInformation.isSecurityEnabled()) {
-      LOG.info("Logging in via keytab while starting HTTP metastore");
-      // Handle renewal
-      String kerberosName = SecurityUtil.getServerPrincipal(MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL), "0.0.0.0");
-      String keyTabFile = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
-      UserGroupInformation.loginUserFromKeytab(kerberosName, keyTabFile);
-    } else {
-      LOG.info("Security is not enabled. Not logging in via keytab");
-    }
+    // login principal if security is enabled
+    ServletSecurity.loginServerPincipal(conf);
 
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
@@ -410,7 +394,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       thread.setDaemon(true);
       thread.setName("Metastore-HttpHandler-Pool: Thread-" + thread.getId());
       return thread;
-    });
+    }) {
+      @Override
+      public void setThreadFactory(ThreadFactory threadFactory) {
+        // Avoid ExecutorThreadPool overriding the ThreadFactory
+        LOG.warn("Ignore setting the thread factory as the pool has already provided his own: {}", getThreadFactory());
+      }
+    };
     ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);
     // HTTP Server
     org.eclipse.jetty.server.Server server = new Server(threadPool);
@@ -425,31 +415,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
-    final boolean useSsl  = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
-    String schemeName = useSsl ? "https" : "http";
-    if (useSsl) {
-      String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
-      if (keyStorePath.isEmpty()) {
-        throw new IllegalArgumentException(ConfVars.SSL_KEYSTORE_PATH.toString()
-            + " Not configured for SSL connection");
-      }
-      String keyStorePassword =
-          MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
-      String keyStoreType =
-          MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_TYPE).trim();
-      String keyStoreAlgorithm =
-          MetastoreConf.getVar(conf, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
-
-      SslContextFactory sslContextFactory = new SslContextFactory();
-      String[] excludedProtocols = MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
-      LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
-      sslContextFactory.addExcludeProtocols(excludedProtocols);
-      LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = "
-          + Arrays.toString(sslContextFactory.getExcludeProtocols()));
-      sslContextFactory.setKeyStorePath(keyStorePath);
-      sslContextFactory.setKeyStorePassword(keyStorePassword);
-      sslContextFactory.setKeyStoreType(keyStoreType);
-      sslContextFactory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm);
+    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
+    if (sslContextFactory != null) {
       connector = new ServerConnector(server, sslContextFactory, http);
     } else {
       connector = new ServerConnector(server, http);
@@ -474,9 +441,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       protocolFactory = new TBinaryProtocol.Factory();
     }
 
-    HMSHandler baseHandler = new HMSHandler("new db based metaserver",
-        conf);
-    IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+    HMSHandler baseHandler = new HMSHandler("new db based metaserver", conf);
+    IHMSHandler handler = HMSHandlerProxyFactory.getProxy(conf, baseHandler, false);
     processor = new ThriftHiveMetastore.Processor<>(handler);
     LOG.info("Starting DB backed MetaStore Server with generic processor");
     TServlet thriftHttpServlet = new HmsThriftHttpServlet(processor, protocolFactory, conf);
@@ -530,7 +496,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             + minWorkerThreads);
         HMSHandler.LOG.info("Options.maxWorkerThreads = "
             + maxWorkerThreads);
-        HMSHandler.LOG.info("Enable SSL = " + useSsl);
+        HMSHandler.LOG.info("Enable SSL = " + (sslContextFactory != null));
       }
 
       @Override
@@ -587,7 +553,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       LOG.info("Binding host " + msHost + " for metastore server");
     }
     
-    IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+    IHMSHandler handler = HMSHandlerProxyFactory.getProxy(conf, baseHandler, false);
     TServerSocket serverSocket;
     if (useSasl) {
       processor = saslServer.wrapProcessor(
@@ -769,6 +735,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       }
     }
+    // optionally create and start the property server and servlet
+    propertyServer = PropertyServlet.startServer(conf);
 
     thriftServer.start();
   }
@@ -816,6 +784,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
     };
+    t.setDaemon(true);
     t.start();
   }
 
@@ -857,28 +826,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
          LeaderElectionContext context = new LeaderElectionContext.ContextBuilder(conf)
              .setHMSHandler(thriftServer.getHandler()).servHost(getServerHostName())
-             // always tasks
-             .setTType(LeaderElectionContext.TTYPE.ALWAYS_TASKS)
+             .setTType(LeaderElectionContext.TTYPE.ALWAYS_TASKS) // always tasks
              .addListener(new HouseKeepingTasks(conf, false))
-             // housekeeping tasks
-             .setTType(LeaderElectionContext.TTYPE.HOUSEKEEPING)
+             .setTType(LeaderElectionContext.TTYPE.HOUSEKEEPING) // housekeeping tasks
              .addListener(new CMClearer(conf))
              .addListener(new StatsUpdaterTask(conf))
              .addListener(new CompactorTasks(conf, false))
              .addListener(new CompactorPMF())
              .addListener(new HouseKeepingTasks(conf, true))
-             // compactor worker
-             .setTType(LeaderElectionContext.TTYPE.WORKER)
-             .addListener(new CompactorTasks(conf, true), MetastoreConf.getVar(conf,
-                 MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore"))
+             .setTType(LeaderElectionContext.TTYPE.WORKER) // compactor worker
+             .addListener(new CompactorTasks(conf, true),
+                 MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore"))
              .build();
           if (shutdownHookMgr != null) {
             shutdownHookMgr.addShutdownHook(() -> context.close(), 0);
           }
           context.start();
         } catch (Throwable e) {
-          LOG.error("Failure when starting the leader tasks, compactions or housekeeping tasks may not happen, " +
-              StringUtils.stringifyException(e));
+          LOG.error("Failure when starting the leader tasks, Compaction or Housekeeping tasks may not happen", e);
         } finally {
           startLock.unlock();
         }

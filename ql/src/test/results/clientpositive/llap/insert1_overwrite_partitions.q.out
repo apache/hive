@@ -225,10 +225,12 @@ POSTHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 PREHOOK: query: drop table destinTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destintable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@destintable
 POSTHOOK: query: drop table destinTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destintable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destintable
 PREHOOK: query: CREATE TABLE destinTable (one string,two string)
 PREHOOK: type: CREATETABLE
@@ -375,18 +377,22 @@ POSTHOOK: Lineage: destintable.two SIMPLE [(sourcetable)sourcetable.FieldSchema(
 PREHOOK: query: drop table destinTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destintable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@destintable
 POSTHOOK: query: drop table destinTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destintable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destintable
 PREHOOK: query: drop table sourceTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sourcetable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sourcetable
 POSTHOOK: query: drop table sourceTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sourcetable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sourcetable
 PREHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (DS string,HR string)
 PREHOOK: type: CREATETABLE
@@ -561,16 +567,20 @@ POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourc
 PREHOOK: query: drop table destinTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destintable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@destintable
 POSTHOOK: query: drop table destinTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destintable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destintable
 PREHOOK: query: drop table sourceTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sourcetable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sourcetable
 POSTHOOK: query: drop table sourceTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sourcetable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sourcetable

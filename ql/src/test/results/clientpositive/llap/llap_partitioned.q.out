@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE orc_llap_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_llap_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_llap_dim_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_llap_dim_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orc_llap_part(
     csmallint SMALLINT,
     cint INT,
@@ -1606,8 +1610,10 @@ POSTHOOK: Lineage: orc_llap_dim_part PARTITION(ctinyint=20).cstring1 EXPRESSION 
 POSTHOOK: Lineage: orc_llap_dim_part PARTITION(ctinyint=20).cvchar1 EXPRESSION []
 PREHOOK: query: drop table llap_temp_table_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table llap_temp_table_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: explain vectorization detail
 SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part oft
   INNER JOIN orc_llap_dim_part od ON oft.ctinyint = od.ctinyint
@@ -2487,24 +2493,30 @@ POSTHOOK: Input: default@llap_temp_table_n0
 PREHOOK: query: drop table llap_temp_table_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@llap_temp_table_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@llap_temp_table_n0
 POSTHOOK: query: drop table llap_temp_table_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@llap_temp_table_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table_n0
 PREHOOK: query: DROP TABLE orc_llap_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_llap_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_llap_part
 POSTHOOK: query: DROP TABLE orc_llap_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_llap_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap_part
 PREHOOK: query: DROP TABLE orc_llap_dim_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_llap_dim_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_llap_dim_part
 POSTHOOK: query: DROP TABLE orc_llap_dim_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_llap_dim_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap_dim_part

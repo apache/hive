@@ -76,6 +76,7 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.security.metastore.authenticator.manager");
     addToExpectedRestrictedMap("hive.users.in.admin.role");
     addToExpectedRestrictedMap("hive.server2.xsrf.filter.enabled");
+    addToExpectedRestrictedMap("hive.server2.csrf.filter.enabled");
     addToExpectedRestrictedMap("hive.security.authorization.enabled");
     addToExpectedRestrictedMap("hive.distcp.privileged.doAs");
     addToExpectedRestrictedMap("hive.server2.authentication.ldap.baseDN");

@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.iceberg.BaseMetastoreCatalog;
@@ -64,6 +65,13 @@ import org.slf4j.LoggerFactory;
 public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespaces, Configurable {
   public static final String LIST_ALL_TABLES = "list-all-tables";
   public static final String LIST_ALL_TABLES_DEFAULT = "false";
+
+  public static final String HMS_TABLE_OWNER = "hive.metastore.table.owner";
+  public static final String HMS_DB_OWNER = "hive.metastore.database.owner";
+  public static final String HMS_DB_OWNER_TYPE = "hive.metastore.database.owner-type";
+
+  // MetastoreConf is not available with current Hive version
+  static final String HIVE_CONF_CATALOG = "metastore.catalog.default";
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveCatalog.class);
 
@@ -244,11 +252,16 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   @Override
   public void createNamespace(Namespace namespace, Map<String, String> meta) {
     Preconditions.checkArgument(
-        !namespace.isEmpty(),
-        "Cannot create namespace with invalid name: %s", namespace);
-    Preconditions.checkArgument(isValidateNamespace(namespace),
-        "Cannot support multi part namespace in Hive Metastore: %s", namespace);
-
+        !namespace.isEmpty(), "Cannot create namespace with invalid name: %s", namespace);
+    Preconditions.checkArgument(
+        isValidateNamespace(namespace),
+        "Cannot support multi part namespace in Hive Metastore: %s",
+        namespace);
+    Preconditions.checkArgument(
+        meta.get(HMS_DB_OWNER_TYPE) == null || meta.get(HMS_DB_OWNER) != null,
+        "Create namespace setting %s without setting %s is not allowed",
+        HMS_DB_OWNER_TYPE,
+        HMS_DB_OWNER);
     try {
       clients.run(client -> {
         client.createDatabase(convertToDatabase(namespace, meta));
@@ -262,12 +275,12 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
             namespace);
 
     } catch (TException e) {
-      throw new RuntimeException("Failed to create namespace " + namespace + " in Hive Matastore", e);
+      throw new RuntimeException("Failed to create namespace " + namespace + " in Hive Metastore", e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException(
-          "Interrupted in call to createDatabase(name) " + namespace + " in Hive Matastore", e);
+          "Interrupted in call to createDatabase(name) " + namespace + " in Hive Metastore", e);
     }
   }
 
@@ -289,12 +302,12 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       return namespaces;
 
     } catch (TException e) {
-      throw new RuntimeException("Failed to list all namespace: " + namespace + " in Hive Matastore",  e);
+      throw new RuntimeException("Failed to list all namespace: " + namespace + " in Hive Metastore",  e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException(
-          "Interrupted in call to getAllDatabases() " + namespace + " in Hive Matastore", e);
+          "Interrupted in call to getAllDatabases() " + namespace + " in Hive Metastore", e);
     }
   }
 
@@ -323,17 +336,22 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       return false;
 
     } catch (TException e) {
-      throw new RuntimeException("Failed to drop namespace " + namespace + " in Hive Matastore", e);
+      throw new RuntimeException("Failed to drop namespace " + namespace + " in Hive Metastore", e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException(
-          "Interrupted in call to drop dropDatabase(name) " + namespace + " in Hive Matastore", e);
+          "Interrupted in call to drop dropDatabase(name) " + namespace + " in Hive Metastore", e);
     }
   }
 
   @Override
   public boolean setProperties(Namespace namespace,  Map<String, String> properties) {
+    Preconditions.checkArgument(
+        (properties.get(HMS_DB_OWNER_TYPE) == null) == (properties.get(HMS_DB_OWNER) == null),
+        "Setting %s and %s has to be performed together or not at all",
+        HMS_DB_OWNER_TYPE,
+        HMS_DB_OWNER);
     Map<String, String> parameter = Maps.newHashMap();
 
     parameter.putAll(loadNamespaceMetadata(namespace));
@@ -349,6 +367,11 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
 
   @Override
   public boolean removeProperties(Namespace namespace,  Set<String> properties) {
+    Preconditions.checkArgument(
+        properties.contains(HMS_DB_OWNER_TYPE) == properties.contains(HMS_DB_OWNER),
+        "Removing %s and %s has to be performed together or not at all",
+        HMS_DB_OWNER_TYPE,
+        HMS_DB_OWNER);
     Map<String, String> parameter = Maps.newHashMap();
 
     parameter.putAll(loadNamespaceMetadata(namespace));
@@ -374,11 +397,11 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
 
     } catch (TException e) {
       throw new RuntimeException(
-          "Failed to list namespace under namespace: " + namespace + " in Hive Matastore", e);
+          "Failed to list namespace under namespace: " + namespace + " in Hive Metastore", e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new RuntimeException("Interrupted in call to getDatabase(name) " + namespace + " in Hive Matastore", e);
+      throw new RuntimeException("Interrupted in call to getDatabase(name) " + namespace + " in Hive Metastore", e);
     }
   }
 
@@ -398,12 +421,12 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       throw new NoSuchNamespaceException(e, "Namespace does not exist: %s", namespace);
 
     } catch (TException e) {
-      throw new RuntimeException("Failed to list namespace under namespace: " + namespace + " in Hive Matastore", e);
+      throw new RuntimeException("Failed to list namespace under namespace: " + namespace + " in Hive Metastore", e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException(
-          "Interrupted in call to getDatabase(name) " + namespace + " in Hive Matastore", e);
+          "Interrupted in call to getDatabase(name) " + namespace + " in Hive Metastore", e);
     }
   }
 
@@ -489,6 +512,12 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     if (database.getDescription() != null) {
       meta.put("comment", database.getDescription());
     }
+    if (database.getOwnerName() != null) {
+      meta.put(HMS_DB_OWNER, database.getOwnerName());
+      if (database.getOwnerType() != null) {
+        meta.put(HMS_DB_OWNER_TYPE, database.getOwnerType().name());
+      }
+    }
 
     return meta;
   }
@@ -510,12 +539,22 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
         database.setDescription(value);
       } else if (key.equals("location")) {
         database.setLocationUri(value);
+      } else if (key.equals(HMS_DB_OWNER)) {
+        database.setOwnerName(value);
+      } else if (key.equals(HMS_DB_OWNER_TYPE) && value != null) {
+        database.setOwnerType(PrincipalType.valueOf(value));
       } else {
         if (value != null) {
           parameter.put(key, value);
         }
       }
     });
+
+    if (database.getOwnerName() == null) {
+      database.setOwnerName(HiveHadoopUtil.currentUser());
+      database.setOwnerType(PrincipalType.USER);
+    }
+
     database.setParameters(parameter);
 
     return database;
@@ -546,5 +585,10 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   @VisibleForTesting
   void setListAllTables(boolean listAllTables) {
     this.listAllTables = listAllTables;
+  }
+
+  @VisibleForTesting
+  ClientPool<IMetaStoreClient, TException> clientPool() {
+    return clients;
   }
 }

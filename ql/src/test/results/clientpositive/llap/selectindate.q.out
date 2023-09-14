@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists datetest
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists datetest
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table datetest(dValue date, iValue int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -63,8 +65,10 @@ POSTHOOK: Input: default@datetest
 PREHOOK: query: drop table datetest
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@datetest
+PREHOOK: Output: database:default
 PREHOOK: Output: default@datetest
 POSTHOOK: query: drop table datetest
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@datetest
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@datetest

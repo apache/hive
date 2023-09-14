@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,6 +32,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 
 /**
  * ThriftHttpServletTest.
@@ -42,11 +45,13 @@ public class ThriftHttpServletTest {
 
   private ThriftHttpServlet thriftHttpServlet;
 
+  private HiveConf hiveConf = new HiveConf();
+
   @Before
   public void setUp() throws Exception {
     String authType = HiveAuthConstants.AuthTypes.KERBEROS.toString();
-    thriftHttpServlet = new ThriftHttpServlet(null, null, authType, null, null, null,
-        new HiveConf());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION, authType);
+    thriftHttpServlet = new ThriftHttpServlet(null, null, null, null, null, hiveConf);
   }
 
   @Test
@@ -70,4 +75,5 @@ public class ThriftHttpServletTest {
         "from the client is empty.");
     thriftHttpServlet.doKerberosAuth(httpServletRequest);
   }
+
 }

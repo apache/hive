@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_ice_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice_orc(a int, b string) stored by iceberg stored as orc
 TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
 PREHOOK: type: CREATETABLE
@@ -895,32 +897,40 @@ STAGE PLANS:
 PREHOOK: query: drop table tbl_ice_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc
 POSTHOOK: query: drop table tbl_ice_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc
 PREHOOK: query: drop table tbl_ice_orc_all_types
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_orc_all_types
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc_all_types
 POSTHOOK: query: drop table tbl_ice_orc_all_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_orc_all_types
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc_all_types
 PREHOOK: query: drop table tbl_ice_orc_parted
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_orc_parted
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc_parted
 POSTHOOK: query: drop table tbl_ice_orc_parted
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_orc_parted
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc_parted
 PREHOOK: query: drop table tbl_ice_orc_complex
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_orc_complex
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc_complex
 POSTHOOK: query: drop table tbl_ice_orc_complex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_orc_complex
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc_complex

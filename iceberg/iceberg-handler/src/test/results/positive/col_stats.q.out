@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_ice_puffin
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice_puffin
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice_puffin(a int, b string, c int) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -96,7 +98,7 @@ avg_col_len         	3.4444444444444446
 max_col_len         	5                   
 num_trues           	                    
 num_falses          	                    
-bit_vector          	HL                  
+bit_vector          	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: update tbl_ice_puffin set b='two' where b='one' or b='three'
@@ -204,10 +206,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"
 PREHOOK: query: drop table if exists tbl_ice_puffin
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_puffin
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_puffin
 POSTHOOK: query: drop table if exists tbl_ice_puffin
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_puffin
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_puffin
 PREHOOK: query: create external table tbl_ice_puffin(a int, b string, c int) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
@@ -256,10 +260,12 @@ Stage-0
 PREHOOK: query: drop table if exists tbl_ice_puffin
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_puffin
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_puffin
 POSTHOOK: query: drop table if exists tbl_ice_puffin
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_puffin
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_puffin
 PREHOOK: query: create external table tbl_ice_puffin(a int, b string, c int) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
@@ -352,8 +358,10 @@ comment
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -499,9 +507,10 @@ Database:           	default
 #### A masked pattern was here ####
 Retention:          	0                   	 
 #### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
+Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
+	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"}]}
 	engine.hive.enabled 	true                
@@ -542,9 +551,10 @@ Database:           	default
 #### A masked pattern was here ####
 Retention:          	0                   	 
 #### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
+Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"int\"}]}
 	engine.hive.enabled 	true                
