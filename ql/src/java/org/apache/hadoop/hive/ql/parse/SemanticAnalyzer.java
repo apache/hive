@@ -14095,6 +14095,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(e);
         }
       }
+      try {
+        HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
+        if (storageHandler != null) {
+          storageHandler.addResourcesForCreateTable(tblProps, conf);
+        }
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
       SessionStateUtil.addResourceOrThrow(conf, META_TABLE_LOCATION, tblLocation);
       break;
     case CTT: // CREATE TRANSACTIONAL TABLE
