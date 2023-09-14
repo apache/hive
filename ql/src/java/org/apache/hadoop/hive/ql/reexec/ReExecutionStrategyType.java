@@ -18,6 +18,12 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.util.stream.Collectors.toMap;
+
 public enum ReExecutionStrategyType {
   OVERLAY("overlay", ReExecutionOverlayPlugin.class),
   REOPTIMIZE("reoptimize", ReOptimizePlugin.class),
@@ -25,6 +31,10 @@ public enum ReExecutionStrategyType {
   RECOMPILE_WITHOUT_CBO("recompile_without_cbo", ReCompileWithoutCBOPlugin.class),
   DAGSUBMIT("dagsubmit", ReExecutionDagSubmitPlugin.class),
   WRITE_CONFLICT("write_conflict", ReExecuteOnWriteConflictPlugin.class);
+
+  private static final Map<String, ? extends Class<? extends IReExecutionPlugin>> STRATEGY_LOOKUP =
+      Arrays.stream(ReExecutionStrategyType.values())
+          .collect(toMap(ReExecutionStrategyType::getStrategy, ReExecutionStrategyType::getPluginClass));
 
   ReExecutionStrategyType(String strategy, Class<? extends IReExecutionPlugin> pluginClass) {
     this.strategy = strategy;
@@ -42,12 +52,7 @@ public enum ReExecutionStrategyType {
     return pluginClass;
   }
 
-  public static ReExecutionStrategyType fromStrategyName(String strategy) {
-    for (ReExecutionStrategyType type : values()) {
-      if (type.getStrategy().equals(strategy.toLowerCase())) {
-        return type;
-      }
-    }
-    throw new IllegalArgumentException("Unknown re-execution plugin: " + strategy);
+  public static Class<? extends IReExecutionPlugin> fromStrategyName(String strategy) {
+    return Optional.of(STRATEGY_LOOKUP.get(strategy.toLowerCase())).orElseThrow(IllegalArgumentException::new);
   }
 }

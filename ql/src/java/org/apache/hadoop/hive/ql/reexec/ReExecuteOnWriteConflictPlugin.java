@@ -30,12 +30,12 @@ import java.util.regex.Pattern;
 
 public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
   private static final Logger LOG = LoggerFactory.getLogger(ReExecuteOnWriteConflictPlugin.class);
-  private boolean retryPossible;
+  private static boolean retryPossible;
 
-  private final Pattern writeConflictErrorPattern = Pattern.compile("^Found.*conflicting.*files(.*)");
-  private final String validationException = "org.apache.iceberg.exceptions.ValidationException";
+  private static final Pattern writeConflictErrorPattern = Pattern.compile("^Found.*conflicting.*files(.*)");
+  private static final String validationException = "org.apache.iceberg.exceptions.ValidationException";
 
-  class LocalHook implements ExecuteWithHookContext {
+  private static final class LocalHook implements ExecuteWithHookContext {
     @Override
     public void run(HookContext hookContext) throws Exception {
       if (hookContext.getHookType() == HookContext.HookType.ON_FAILURE_HOOK) {

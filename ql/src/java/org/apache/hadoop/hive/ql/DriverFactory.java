@@ -68,9 +68,9 @@ public final class DriverFactory {
   }
 
   private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
-    ReExecutionStrategyType pluginType = ReExecutionStrategyType.fromStrategyName(name);
+    Class<? extends IReExecutionPlugin> pluginType = ReExecutionStrategyType.fromStrategyName(name);
     try {
-      return pluginType.getPluginClass().newInstance();
+      return pluginType.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException(
           "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
