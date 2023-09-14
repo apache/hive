@@ -77,6 +77,8 @@ import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
+import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
@@ -107,6 +109,12 @@ import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvide
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -368,10 +376,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   @Override
   public DecomposedPredicate decomposePredicate(JobConf jobConf, Deserializer deserializer, ExprNodeDesc exprNodeDesc) {
+    IndexPredicateAnalyzer analyzer = newAnalyzer((HiveIcebergSerDe) deserializer);
+    List<IndexSearchCondition> sConditions = Lists.newArrayList();
+    ExprNodeDesc residualPredicate = analyzer.analyzePredicate(exprNodeDesc, sConditions);
+
     DecomposedPredicate predicate = new DecomposedPredicate();
-    predicate.residualPredicate = (ExprNodeGenericFuncDesc) exprNodeDesc;
-    predicate.pushedPredicate = (ExprNodeGenericFuncDesc) exprNodeDesc;
+    predicate.residualPredicate = (ExprNodeGenericFuncDesc) residualPredicate;
+    predicate.pushedPredicate = analyzer.translateSearchConditions(sConditions);
     return predicate;
+  }
+
+  private IndexPredicateAnalyzer newAnalyzer(HiveIcebergSerDe deserializer) {
+    IndexPredicateAnalyzer analyzer = new IndexPredicateAnalyzer();
+
+    analyzer.addComparisonOp(GenericUDFOPEqual.class.getName());
+    analyzer.addComparisonOp(GenericUDFOPEqualNS.class.getName());
+    analyzer.addComparisonOp(GenericUDFOPGreaterThan.class.getName());
+    analyzer.addComparisonOp(GenericUDFOPEqualOrGreaterThan.class.getName());
+    analyzer.addComparisonOp(GenericUDFOPLessThan.class.getName());
+    analyzer.addComparisonOp(GenericUDFOPEqualOrLessThan.class.getName());
+
+    for (Types.NestedField col : deserializer.getTableSchema().columns()) {
+      analyzer.allowColumnName(col.name());
+    }
+    return analyzer;
   }
 
   @Override
@@ -1052,6 +1080,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       default:
         return ImmutableList.of();
     }
+  }
+
+  @Override
+  public FieldSchema getRowId() {
+    VirtualColumn rowId = VirtualColumn.ROW_POSITION;
+    return new FieldSchema(rowId.getName(), rowId.getTypeInfo().getTypeName(), "");
   }
 
   @Override

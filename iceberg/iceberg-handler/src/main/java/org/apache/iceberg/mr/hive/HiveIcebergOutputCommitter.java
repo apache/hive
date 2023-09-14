@@ -56,6 +56,7 @@ import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.DeleteFiles;
+import org.apache.iceberg.OverwriteFiles;
 import org.apache.iceberg.ReplacePartitions;
 import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Snapshot;
@@ -140,12 +141,15 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               if (writers.get(output) != null) {
                 Collection<DataFile> dataFiles = Lists.newArrayList();
                 Collection<DeleteFile> deleteFiles = Lists.newArrayList();
+                Collection<DataFile> referencedDataFiles = Lists.newArrayList();
                 for (HiveIcebergWriter writer : writers.get(output)) {
                   FilesForCommit files = writer.files();
                   dataFiles.addAll(files.dataFiles());
                   deleteFiles.addAll(files.deleteFiles());
+                  referencedDataFiles.addAll(files.referencedDataFiles());
                 }
-                createFileForCommit(new FilesForCommit(dataFiles, deleteFiles), fileForCommitLocation, table.io());
+                createFileForCommit(new FilesForCommit(dataFiles, deleteFiles, referencedDataFiles),
+                    fileForCommitLocation, table.io());
               } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
                 createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
@@ -405,6 +409,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
     List<DataFile> dataFiles = Lists.newArrayList();
     List<DeleteFile> deleteFiles = Lists.newArrayList();
+    List<DataFile> referencedDataFiles = Lists.newArrayList();
 
     Table table = null;
     String branchName = null;
@@ -431,9 +436,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           numTasks, executor, outputTable.table.location(), jobContext, io, true);
       dataFiles.addAll(writeResults.dataFiles());
       deleteFiles.addAll(writeResults.deleteFiles());
+      referencedDataFiles.addAll(writeResults.referencedDataFiles());
     }
 
-    FilesForCommit filesForCommit = new FilesForCommit(dataFiles, deleteFiles);
+    FilesForCommit filesForCommit = new FilesForCommit(dataFiles, deleteFiles, referencedDataFiles);
     long startTime = System.currentTimeMillis();
 
     if (Operation.IOW != operation) {
@@ -469,6 +475,21 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   private void commitWrite(Table table, String branchName, Long snapshotId, long startTime,
       FilesForCommit results, Operation operation) {
+
+    if (!results.referencedDataFiles().isEmpty()) {
+      OverwriteFiles write = table.newOverwrite();
+      results.referencedDataFiles().forEach(write::deleteFile);
+      results.dataFiles().forEach(write::addFile);
+
+      if (StringUtils.isNotEmpty(branchName)) {
+        write.toBranch(HiveUtils.getTableSnapshotRef(branchName));
+      }
+      if (snapshotId != null) {
+        write.validateFromSnapshot(snapshotId);
+      }
+      write.commit();
+      return;
+    }
 
     if (results.deleteFiles().isEmpty() && Operation.MERGE != operation) {
       AppendFiles write = table.newAppend();
@@ -620,6 +641,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     // starting from 0.
     Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
     Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
+    Collection<DataFile> referencedDataFiles = new ConcurrentLinkedQueue<>();
     Tasks.range(numTasks)
         .throwFailureWhenFinished(throwOnFailure)
         .executeWith(executor)
@@ -629,9 +651,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           FilesForCommit files = readFileForCommit(taskFileName, io);
           dataFiles.addAll(files.dataFiles());
           deleteFiles.addAll(files.deleteFiles());
+          referencedDataFiles.addAll(files.referencedDataFiles());
+
         });
 
-    return new FilesForCommit(dataFiles, deleteFiles);
+    return new FilesForCommit(dataFiles, deleteFiles, referencedDataFiles);
   }
 
   /**

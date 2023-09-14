@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -120,15 +121,20 @@ public class WriterBuilder {
         new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null, deleteFileFormat, null, null, null,
             skipRowData ? null : dataSchema);
 
+    boolean copyOnWriteMode = RowLevelOperationMode.COPY_ON_WRITE.modeName().equals(
+        properties.getOrDefault(TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT)) &&
+        operation == Operation.DELETE;
+
+    Operation op = copyOnWriteMode ? Operation.OTHER : operation;
     HiveIcebergWriter writer;
-    switch (operation) {
+    switch (op) {
       case DELETE:
         writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
             io, targetFileSize, skipRowData);
         break;
       case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
-            io, targetFileSize);
+            io, targetFileSize, copyOnWriteMode);
         break;
       default:
         // Update and Merge should be splitted to inserts and deletes

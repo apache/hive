@@ -119,31 +119,22 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       updateOutputs(mTable);
       return;
     }
-    
-    boolean shouldOverwrite = false;
+
+    boolean copyOnWriteMode = false;
     HiveStorageHandler storageHandler = mTable.getStorageHandler();
     if (storageHandler != null) {
-      shouldOverwrite = storageHandler.shouldOverwrite(mTable, operation.name());
+      copyOnWriteMode = storageHandler.shouldOverwrite(mTable, operation.name());
     }
-    
     StringBuilder rewrittenQueryStr = new StringBuilder();
-    if (shouldOverwrite) {
-      rewrittenQueryStr.append("insert overwrite table ");
-    } else {
-      rewrittenQueryStr.append("insert into table ");
-    }
+    rewrittenQueryStr.append("insert into table ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
     addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
     ColumnAppender columnAppender = getColumnAppender(null, DELETE_PREFIX);
     int columnOffset = columnAppender.getDeleteValues(operation).size();
-    if (!shouldOverwrite) {
-      rewrittenQueryStr.append(" select ");
-      columnAppender.appendAcidSelectColumns(rewrittenQueryStr, operation);
-      rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
-    } else {
-      rewrittenQueryStr.append(" select * ");
-    }
+    rewrittenQueryStr.append(" select ");
+    columnAppender.appendAcidSelectColumns(rewrittenQueryStr, operation);
+    rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
 
     Map<Integer, ASTNode> setColExprs = null;
     Map<String, ASTNode> setCols = null;
@@ -176,42 +167,51 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     rewrittenQueryStr.append(" from ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
 
-    ASTNode where = null;
+    ASTNode where = null; String whereClause = null; 
     int whereIndex = deleting() ? 1 : 2;
     if (children.size() > whereIndex) {
       where = (ASTNode)children.get(whereIndex);
       assert where.getToken().getType() == HiveParser.TOK_WHERE :
           "Expected where clause, but found " + where.getName();
-
-      if (shouldOverwrite) {
-        if (where.getChildCount() == 1) {
-
-          // Add isNull check for the where clause condition, since null is treated as false in where condition and
-          // not null also resolves to false, so we need to explicitly handle this case.
-          ASTNode isNullFuncNodeExpr = new ASTNode(new CommonToken(HiveParser.TOK_FUNCTION, "TOK_FUNCTION"));
-          isNullFuncNodeExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, "isNull")));
-          isNullFuncNodeExpr.addChild(where.getChild(0));
-
-          ASTNode orNodeExpr = new ASTNode(new CommonToken(HiveParser.KW_OR, "OR"));
-          orNodeExpr.addChild(isNullFuncNodeExpr);
-
-          // Add the inverted where clause condition, since we want to hold the records which doesn't satisfy this
-          // condition.
-          ASTNode notNodeExpr = new ASTNode(new CommonToken(HiveParser.KW_NOT, "!"));
-          notNodeExpr.addChild(where.getChild(0));
-          orNodeExpr.addChild(notNodeExpr);
-          where.setChild(0, orNodeExpr);
-        } else if (where.getChildCount() > 1) {
-          throw new SemanticException("Overwrite mode not supported with more than 1 children in where clause.");
-        }
+      
+      if (copyOnWriteMode) {
+        whereClause = ctx.getTokenRewriteStream().toString(
+            where.getChild(0).getTokenStartIndex(), where.getChild(0).getTokenStopIndex());
+        rewrittenQueryStr.append(" where (");
+        // Add isNull check for the where clause condition, since null is treated as false in where condition and
+        // not null also resolves to false, so we need to explicitly handle this case.
+        rewrittenQueryStr.append("     isNull(").append(whereClause).append(") ");
+        // Add the inverted where clause condition, since we want to hold the records which doesn't satisfy this
+        // condition.
+        rewrittenQueryStr.append("     or not(").append(whereClause).append(")");
+        // Add the file path filter that match the delete condition 
+        rewrittenQueryStr.append("   ) and FILE__PATH in (");
+        rewrittenQueryStr.append("      select `FILE__PATH` from ").append(getFullTableNameForSQL(tabNameNode));
+        rewrittenQueryStr.append("      where ").append(whereClause);
+        rewrittenQueryStr.append("   )");
       }
     }
-
-    if (!shouldOverwrite) {
-      // Add a sort by clause so that the row ids come out in the correct order
-      appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
+    
+    if (copyOnWriteMode) {
+      rewrittenQueryStr.append("   union all ");
+      rewrittenQueryStr.append(" select ");
+      columnAppender.appendAcidSelectColumnsForTombstone(rewrittenQueryStr, operation);
+      rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
+      rewrittenQueryStr.append(" from ( ");
+      rewrittenQueryStr.append("   select ");
+      columnAppender.appendAcidSelectColumnsForTombstone(rewrittenQueryStr, operation);
+      rewrittenQueryStr.append("     row_number() over (partition by FILE__PATH) rn ");
+      rewrittenQueryStr.append("   from ").append(getFullTableNameForSQL(tabNameNode));
+      if (whereClause != null) {
+        rewrittenQueryStr.append(" where ").append(whereClause);
+      }
+      rewrittenQueryStr.append(" )t where rn=1 ");
     }
-    ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, rewrittenQueryStr);
+
+    // Add a sort by clause so that the row ids come out in the correct order
+    appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
+    
+    ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 
@@ -223,16 +223,11 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       rewrittenCtx.setOperation(Context.Operation.UPDATE);
       rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
     } else if (deleting()) {
-      if (shouldOverwrite) {
-        // We are now actually executing an Insert query, so set the modes accordingly.
-        rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.INSERT);
-      } else {
-        rewrittenCtx.setOperation(Context.Operation.DELETE);
-        rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.DELETE);
-      }
+      rewrittenCtx.setOperation(Context.Operation.DELETE);
+      rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.DELETE);
     }
 
-    if (where != null) {
+    if (where != null && !copyOnWriteMode) {
       // The structure of the AST for the rewritten insert statement is:
       // TOK_QUERY -> TOK_FROM
       //          \-> TOK_INSERT -> TOK_INSERT_INTO
