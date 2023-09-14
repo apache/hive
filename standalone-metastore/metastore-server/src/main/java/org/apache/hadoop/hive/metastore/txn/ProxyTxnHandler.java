@@ -81,7 +81,13 @@ public class ProxyTxnHandler implements InvocationHandler {
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    String strArgs = args == null ? "" : StringUtils.join(Arrays.asList(args), ",");
+    String strArgs;
+    try {
+      strArgs = args == null ? "" : StringUtils.join(Arrays.asList(args), ",");
+    } catch (Exception e) {
+      LOG.warn("Error while trying to stringify the method arguments.", e);
+      strArgs = "unknown";
+    }
     String callerId = method.getName() + "(" + strArgs + ")";
     SqlRetry retry = method.getAnnotation(SqlRetry.class);
     Transactional transactional = method.getAnnotation(Transactional.class);

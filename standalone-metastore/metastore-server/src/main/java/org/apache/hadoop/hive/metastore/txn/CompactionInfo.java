@@ -117,7 +117,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
 
   public String getFullPartitionName() {
     if (fullPartitionName == null) {
-      StringBuilder buf = new StringBuilder(dbname);
+      StringBuilder buf = new StringBuilder();
+      buf.append(dbname);
       buf.append('.');
       buf.append(tableName);
       if (partName != null) {
