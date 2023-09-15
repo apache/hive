@@ -653,9 +653,10 @@ STAGE PLANS:
                         className: VectorReduceSinkEmptyKeyOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumns: 1:int, 2:timestamp
+                        valueColumns: 1:int, 2:timestamp, 3:smallint
+                        valueExpressions: ConstantVectorExpression(val 0) -> 3:smallint
                     Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: int), _col1 (type: timestamp)
+                    value expressions: _col0 (type: int), _col1 (type: timestamp), 0S (type: smallint)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
