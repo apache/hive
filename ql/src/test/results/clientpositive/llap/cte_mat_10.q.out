@@ -1,0 +1,359 @@
+PREHOOK: query: explain with x as ( select 'x' as id ),
+a1 as ( select 'a1' as id),
+a2 as ( select 'a2 <- ' || id as id from a1 ),
+a3 as ( select 'a3 <- ' || id as id from a2 ),
+b1 as ( select 'b1' as id ),
+b2 as (
+  select 'b2 <- ' || id as id from b1
+  union all
+  select 'b2 <- ' || id as id from b1
+)
+select * from a2
+union all
+select * from x
+union all
+select * from a3
+union all
+select * from a3
+union all
+select * from b2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@a2
+PREHOOK: Input: default@a3
+PREHOOK: Input: default@b1
+#### A masked pattern was here ####
+POSTHOOK: query: explain with x as ( select 'x' as id ),
+a1 as ( select 'a1' as id),
+a2 as ( select 'a2 <- ' || id as id from a1 ),
+a3 as ( select 'a3 <- ' || id as id from a2 ),
+b1 as ( select 'b1' as id ),
+b2 as (
+  select 'b2 <- ' || id as id from b1
+  union all
+  select 'b2 <- ' || id as id from b1
+)
+select * from a2
+union all
+select * from x
+union all
+select * from a3
+union all
+select * from a3
+union all
+select * from b2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@a2
+POSTHOOK: Input: default@a3
+POSTHOOK: Input: default@b1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-2, Stage-0
+  Stage-5 depends on stages: Stage-4
+  Stage-10 depends on stages: Stage-2, Stage-0, Stage-5, Stage-3, Stage-8, Stage-6
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+  Stage-7 is a root stage
+  Stage-8 depends on stages: Stage-7
+  Stage-6 depends on stages: Stage-7
+  Stage-9 depends on stages: Stage-10
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 'a2 <- a1' (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.a2
+            Execution mode: llap
+            LLAP IO: no inputs
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: a2
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: concat('a3 <- ', id) (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.a3
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-5
+    Dependency Collection
+
+  Stage: Stage-10
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 10 <- Union 5 (CONTAINS)
+        Map 4 <- Union 5 (CONTAINS)
+        Map 6 <- Union 5 (CONTAINS)
+        Map 7 <- Union 5 (CONTAINS)
+        Map 8 <- Union 5 (CONTAINS)
+        Map 9 <- Union 5 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: b1
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: concat('b2 <- ', id) (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 1005 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: a2
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: id (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 1005 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 'x' (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 1005 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: a3
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: id (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 1005 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: a3
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: id (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 1005 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: b1
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: concat('b2 <- ', id) (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 1005 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Union 5 
+            Vertex: Union 5
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-7
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 'b1' (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.b1
+            Execution mode: llap
+            LLAP IO: no inputs
+
+  Stage: Stage-8
+    Dependency Collection
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-9
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: with x as ( select 'x' as id ),
+a1 as ( select 'a1' as id),
+a2 as ( select 'a2 <- ' || id as id from a1 ),
+a3 as ( select 'a3 <- ' || id as id from a2 ),
+b1 as ( select 'b1' as id ),
+b2 as (
+  select 'b2 <- ' || id as id from b1
+  union all
+  select 'b2 <- ' || id as id from b1
+)
+select * from a2
+union all
+select * from x
+union all
+select * from a3
+union all
+select * from a3
+union all
+select * from b2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@a2
+PREHOOK: Input: default@a3
+PREHOOK: Input: default@b1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@a2
+PREHOOK: Output: default@a3
+PREHOOK: Output: default@b1
+#### A masked pattern was here ####
+POSTHOOK: query: with x as ( select 'x' as id ),
+a1 as ( select 'a1' as id),
+a2 as ( select 'a2 <- ' || id as id from a1 ),
+a3 as ( select 'a3 <- ' || id as id from a2 ),
+b1 as ( select 'b1' as id ),
+b2 as (
+  select 'b2 <- ' || id as id from b1
+  union all
+  select 'b2 <- ' || id as id from b1
+)
+select * from a2
+union all
+select * from x
+union all
+select * from a3
+union all
+select * from a3
+union all
+select * from b2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@a2
+POSTHOOK: Input: default@a3
+POSTHOOK: Input: default@b1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@a2
+POSTHOOK: Output: default@a3
+POSTHOOK: Output: default@b1
+#### A masked pattern was here ####
+a2 <- a1
+x
+a3 <- a2 <- a1
+a3 <- a2 <- a1
+b2 <- b1
+b2 <- b1
