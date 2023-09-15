@@ -167,47 +167,40 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     rewrittenQueryStr.append(" from ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
 
-    ASTNode where = null; String whereClause = null; 
+    ASTNode where = null;
     int whereIndex = deleting() ? 1 : 2;
+    
     if (children.size() > whereIndex) {
       where = (ASTNode)children.get(whereIndex);
       assert where.getToken().getType() == HiveParser.TOK_WHERE :
           "Expected where clause, but found " + where.getName();
       
       if (copyOnWriteMode) {
-        whereClause = ctx.getTokenRewriteStream().toString(
+        String whereClause = ctx.getTokenRewriteStream().toString(
             where.getChild(0).getTokenStartIndex(), where.getChild(0).getTokenStopIndex());
-        rewrittenQueryStr.append(" where (");
-        // Add isNull check for the where clause condition, since null is treated as false in where condition and
-        // not null also resolves to false, so we need to explicitly handle this case.
-        rewrittenQueryStr.append("     isNull(").append(whereClause).append(") ");
-        // Add the inverted where clause condition, since we want to hold the records which doesn't satisfy this
-        // condition.
-        rewrittenQueryStr.append("     or not(").append(whereClause).append(")");
-        // Add the file path filter that match the delete condition 
-        rewrittenQueryStr.append("   ) and FILE__PATH in (");
+        
+        rewrittenQueryStr.append(" where ");
+        // Add the inverted where clause, since we want to hold the records which doesn't satisfy the condition.
+        rewrittenQueryStr.append("   not(").append(whereClause).append(")");
+        // Add the file path filter that matches the delete condition.
+        rewrittenQueryStr.append("   and FILE__PATH in (");
         rewrittenQueryStr.append("      select `FILE__PATH` from ").append(getFullTableNameForSQL(tabNameNode));
         rewrittenQueryStr.append("      where ").append(whereClause);
         rewrittenQueryStr.append("   )");
-      }
-    }
-    
-    if (copyOnWriteMode) {
-      rewrittenQueryStr.append("   union all ");
-      rewrittenQueryStr.append(" select ");
-      columnAppender.appendAcidSelectColumnsForTombstone(rewrittenQueryStr, operation);
-      rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
-      rewrittenQueryStr.append(" from ( ");
-      rewrittenQueryStr.append("   select ");
-      columnAppender.appendAcidSelectColumnsForTombstone(rewrittenQueryStr, operation);
-      rewrittenQueryStr.append("     row_number() over (partition by FILE__PATH) rn ");
-      rewrittenQueryStr.append("   from ").append(getFullTableNameForSQL(tabNameNode));
-      if (whereClause != null) {
-        rewrittenQueryStr.append(" where ").append(whereClause);
-      }
-      rewrittenQueryStr.append(" )t where rn=1 ");
-    }
 
+        rewrittenQueryStr.append("   union all ");
+        rewrittenQueryStr.append(" select ");
+        columnAppender.appendAcidSelectColumnsForTombstone(rewrittenQueryStr, operation);
+        rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
+        rewrittenQueryStr.append(" from ( ");
+        rewrittenQueryStr.append("   select ");
+        columnAppender.appendAcidSelectColumnsForTombstone(rewrittenQueryStr, operation);
+        rewrittenQueryStr.append("     row_number() over (partition by FILE__PATH) rn ");
+        rewrittenQueryStr.append("   from ").append(getFullTableNameForSQL(tabNameNode));
+        rewrittenQueryStr.append(" where ").append(whereClause);
+        rewrittenQueryStr.append(" )t where rn=1 ");
+      }
+    }
     // Add a sort by clause so that the row ids come out in the correct order
     appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
     

@@ -122,7 +122,7 @@ public class WriterBuilder {
             skipRowData ? null : dataSchema);
 
     boolean copyOnWriteMode = RowLevelOperationMode.COPY_ON_WRITE.modeName().equals(
-        properties.getOrDefault(TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT)) &&
+        properties.get(TableProperties.DELETE_MODE)) &&
         operation == Operation.DELETE;
 
     Operation op = copyOnWriteMode ? Operation.OTHER : operation;
