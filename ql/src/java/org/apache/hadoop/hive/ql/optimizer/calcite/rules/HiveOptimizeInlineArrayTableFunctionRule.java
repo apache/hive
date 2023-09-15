@@ -26,6 +26,7 @@ import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -74,12 +75,17 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
     }
 
     RexCall udtfCall = (RexCall) tableFunctionScanRel.getCall();
-    if (!FunctionRegistry.INLINE_FUNC_NAME.equalsIgnoreCase(udtfCall.getOperator().getName())) {
+    if (udtfCall.getOperator() != SqlStdOperatorTable.LATERAL) {
       return false;
     }
 
-    Preconditions.checkState(!udtfCall.getOperands().isEmpty());
-    RexNode operand = udtfCall.getOperands().get(0);
+    RexCall inlineCall = (RexCall) udtfCall.getOperands().get(0);
+    if (!FunctionRegistry.INLINE_FUNC_NAME.equalsIgnoreCase(inlineCall.getOperator().getName())) {
+      return false;
+    }
+
+    Preconditions.checkState(!inlineCall.getOperands().isEmpty());
+    RexNode operand = inlineCall.getOperands().get(0);
     if (!(operand instanceof RexCall)) {
       return false;
     }
@@ -100,7 +106,8 @@ public class HiveOptimizeInlineArrayTableFunctionRule extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final HiveTableFunctionScan tfs = call.rel(0);
     RelNode inputRel = tfs.getInput(0);
-    RexCall inlineCall = (RexCall) tfs.getCall();
+    RexCall lateralCall = (RexCall) tfs.getCall();
+    RexCall inlineCall = (RexCall) lateralCall.getOperands().get(0);
     RexCall arrayCall = (RexCall) inlineCall.getOperands().get(0);
     RelOptCluster cluster = tfs.getCluster();
 

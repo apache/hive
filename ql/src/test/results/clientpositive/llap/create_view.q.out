@@ -1121,7 +1121,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 Original Query:     	SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol	 
-Expanded Query:     	SELECT `src`.`key`, `src`.`value`, `mytable`.`mycol` FROM `default`.`src` LATERAL VIEW explode(array(1,2,3)) myTable AS myCol	 
+Expanded Query:     	SELECT `src`.`key`, `src`.`value`, `mytable`.`mycol` FROM `default`.`src` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`	 
 PREHOOK: query: SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY

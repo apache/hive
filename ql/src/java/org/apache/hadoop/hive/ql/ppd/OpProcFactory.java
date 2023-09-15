@@ -385,6 +385,23 @@ public final class OpProcFactory {
 
   }
 
+  public static class LateralViewJoinerPPD extends JoinerPPD implements SemanticNodeProcessor {
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      Object o = super.process(nd, stack, procCtx, nodeOutputs);
+      Operator<?> operator = (Operator<?>) nd;
+      OpWalkerInfo owi = (OpWalkerInfo) procCtx;
+      if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+        // remove all the candidate filter operators
+        // when we get to the TS
+        removeAllCandidates(owi);
+      }
+      return o;
+    }
+  }
+
   public static class LateralViewForwardPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
@@ -1414,7 +1431,7 @@ public final class OpProcFactory {
   }
 
   public static SemanticNodeProcessor getLVJProc() {
-    return new JoinerPPD();
+    return new LateralViewJoinerPPD();
   }
 
   public static SemanticNodeProcessor getRSProc() {

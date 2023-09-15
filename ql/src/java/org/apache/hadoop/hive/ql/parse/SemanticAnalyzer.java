@@ -1288,6 +1288,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return alias;
   }
 
+  private void processLateralViewSelect(ASTNode lateralViewSelect) throws SemanticException {
+    ASTNode selExprToken = (ASTNode) lateralViewSelect.getChild(0);
+    if (selExprToken.getToken().getType() != HiveParser.TOK_SELEXPR) {
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), selExprToken));
+    }
+    for (Object o : selExprToken.getChildren()) {
+      ASTNode node = (ASTNode) o;
+      switch (node.getToken().getType()) {
+        case HiveParser.TOK_FUNCTION:
+          break;
+        case HiveParser.Identifier:
+          unparseTranslator.addIdentifierTranslation(node);
+          break;
+        case HiveParser.TOK_TABALIAS:
+          unparseTranslator.addIdentifierTranslation((ASTNode) node.getChild(0));
+          break;
+        default:
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), selExprToken));
+      }
+    }
+  }
+
   /*
    * Phase1: hold onto any CTE definitions in aliasToCTE.
    * CTE definitions are global to the Query.
@@ -1629,6 +1653,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), lateralView));
     }
+    processLateralViewSelect((ASTNode) lateralView.getChild(0));
     alias = alias.toLowerCase();
     qb.getParseInfo().addLateralViewForAlias(alias, lateralView);
     qb.addAlias(alias);

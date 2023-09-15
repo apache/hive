@@ -30,6 +30,7 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -62,6 +63,10 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
 
   @Override
   public boolean matches(RelOptRuleCall call) {
+    if (Bug.CALCITE_5985_FIXED) {
+      throw new IllegalStateException("Class is redundant after fix is merged into Calcite");
+    }
+
     final Filter filterRel = call.rel(0);
     final HiveTableFunctionScan tfs = call.rel(1);
 
