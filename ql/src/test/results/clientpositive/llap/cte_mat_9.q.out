@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists cte_mat_9_a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists cte_mat_9_a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table cte_mat_9_a (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -21,8 +23,10 @@ POSTHOOK: Output: default@cte_mat_9_a
 POSTHOOK: Lineage: cte_mat_9_a.id SCRIPT []
 PREHOOK: query: drop table if exists cte_mat_9_b
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists cte_mat_9_b
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table cte_mat_9_b (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
