@@ -112,9 +112,7 @@ class TestASTConverter {
       "               TOK_NULL\n" +
       "            b\n" +
       "         TOK_SELEXPR\n" +
-      "            TOK_FUNCTION\n" +
-      "               TOK_NULL\n" +
-      "               TOK_NULL\n" +
+      "            TOK_NULL\n" +
       "            c\n" +
       "      TOK_LIMIT\n" +
       "         0\n" +

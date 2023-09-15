@@ -180,7 +180,7 @@ public class ASTConverter {
     ASTBuilder select = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
     for (int i = 0; i < dataType.getFieldCount(); ++i) {
       RelDataTypeField fieldType = dataType.getFieldList().get(i);
-      select.add(ASTBuilder.selectExpr(createCastNull(fieldType.getType()), fieldType.getName()));
+      select.add(ASTBuilder.selectExpr(createNullField(fieldType.getType()), fieldType.getName()));
     }
 
     ASTNode insert = ASTBuilder.
@@ -194,6 +194,14 @@ public class ASTConverter {
             construct(HiveParser.TOK_QUERY, "TOK_QUERY").
             add(insert).
             node();
+  }
+
+  private static ASTNode createNullField(RelDataType fieldType) {
+    if (fieldType.getSqlTypeName() == SqlTypeName.NULL) {
+      return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
+    }
+
+    return createCastNull(fieldType);
   }
 
   private static ASTNode createCastNull(RelDataType fieldType) {
