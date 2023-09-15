@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
-import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,6 +43,10 @@ import java.util.List;
 
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test class for testing Ranger Load.
@@ -68,30 +72,34 @@ public class TestRangerLoadTask {
   @Mock
   private ReplicationMetricCollector metricCollector;
 
+  @Mock
+  private ReplLoggerFactory replLoggerFactory;
+
   @Before
   public void setup() throws Exception {
-    task = new RangerLoadTask(mockClient, conf, work);
-    Mockito.when(mockClient.changeDataSet(Mockito.anyList(), Mockito.anyString(), Mockito.anyString()))
+    when(replLoggerFactory.createRangerLoadLogger(anyString(), anyString(), anyString(), anyLong())).thenCallRealMethod();
+    task = new RangerLoadTask(mockClient, conf, work, replLoggerFactory);
+    when(mockClient.changeDataSet(Mockito.anyList(), Mockito.anyString(), Mockito.anyString()))
       .thenCallRealMethod();
-    Mockito.when(mockClient.getDenyPolicyForReplicatedDb(Mockito.anyString(), Mockito.anyString(),
+    when(mockClient.getDenyPolicyForReplicatedDb(Mockito.anyString(), Mockito.anyString(),
       Mockito.anyString())).thenCallRealMethod();
-    Mockito.when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenReturn(true);
-    Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
+    when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenReturn(true);
+    when(work.getMetricCollector()).thenReturn(metricCollector);
   }
 
   @Test
   public void testFailureInvalidAuthProviderEndpoint() {
-    Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("dumppath"));
+    when(work.getCurrentDumpPath()).thenReturn(new Path("dumppath"));
     int status = task.execute();
     Assert.assertEquals(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.getErrorCode(), status);
   }
 
   @Test
   public void testSuccessValidAuthProviderEndpoint() throws MalformedURLException {
-    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
-    Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
-    Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
-    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
+    when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    when(work.getSourceDbName()).thenReturn("srcdb");
+    when(work.getTargetDbName()).thenReturn("tgtdb");
+    when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
   }
@@ -110,21 +118,21 @@ public class TestRangerLoadTask {
         + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
         + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
     RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
-    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
-    Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
-    Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
+    when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    when(work.getSourceDbName()).thenReturn("srcdb");
+    when(work.getTargetDbName()).thenReturn("tgtdb");
     Path rangerDumpPath = new Path("/tmp");
-    Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
-    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
-    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
+    when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
+    when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
   }
 
   @Test
   public void testSuccessRangerDumpMetrics() throws Exception {
-    Logger logger = Mockito.mock(Logger.class);
-//    Whitebox.setInternalState(ReplState.class, logger);
+    RangerLoadLogger logger = Mockito.mock(RangerLoadLogger.class);
+    when(replLoggerFactory.createRangerLoadLogger(anyString(), anyString(), anyString(), anyLong())).thenReturn(logger);
     String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
         + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
         + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"cm_hive\",\"name\":\"db-level\",\"policyType\":0,"
@@ -137,42 +145,29 @@ public class TestRangerLoadTask {
         + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
         + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
     RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
-    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
-    Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
-    Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
+    when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    when(work.getSourceDbName()).thenReturn("srcdb");
+    when(work.getTargetDbName()).thenReturn("tgtdb");
     Path rangerDumpPath = new Path("/tmp");
-    Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
-    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
-    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
+    when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
+    when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
-    ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-    ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
-    Mockito.verify(logger,
-        Mockito.times(2)).info(replStateCaptor.capture(),
-        eventCaptor.capture(), eventDetailsCaptor.capture());
-    Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
-    Assert.assertEquals("RANGER_LOAD_START", eventCaptor.getAllValues().get(0));
-    Assert.assertEquals("RANGER_LOAD_END", eventCaptor.getAllValues().get(1));
-    Assert.assertTrue(eventDetailsCaptor.getAllValues().get(0)
-        .toString().contains("{\"sourceDbName\":\"srcdb\",\"targetDbName\":\"tgtdb\""
-        + ",\"estimatedNumPolicies\":1,\"loadStartTime\":"));
-    Assert.assertTrue(eventDetailsCaptor
-        .getAllValues().get(1).toString().contains("{\"sourceDbName\":\"srcdb\",\"targetDbName\""
-        + ":\"tgtdb\",\"actualNumPolicies\":1,\"loadEndTime\""));
+    verify(logger).startLog();
+    verify(logger).endLog(anyLong());
   }
 
   @Test
   public void testRangerDenyTask() throws Exception {
     RangerDenyTask rangerDenyTask = new RangerDenyTask(mockClient, conf, rangerDenyWork);
-    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
-    Mockito.when(rangerDenyWork.getSourceDbName()).thenReturn("srcdb");
-    Mockito.when(rangerDenyWork.getTargetDbName()).thenReturn("tgtdb");
-    Mockito.when(rangerDenyWork.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
-    Mockito.when(rangerDenyWork.getMetricCollector()).thenReturn(metricCollector);
-    Mockito.when(conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(true);
-    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
+    when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    when(rangerDenyWork.getSourceDbName()).thenReturn("srcdb");
+    when(rangerDenyWork.getTargetDbName()).thenReturn("tgtdb");
+    when(rangerDenyWork.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
+    when(rangerDenyWork.getMetricCollector()).thenReturn(metricCollector);
+    when(conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(true);
+    when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     int status = rangerDenyTask.execute();
     Assert.assertEquals(0, status);
     ArgumentCaptor<RangerExportPolicyList> rangerPolicyCapture = ArgumentCaptor.forClass(RangerExportPolicyList.class);
@@ -216,7 +211,7 @@ public class TestRangerLoadTask {
       }
     }
     Assert.assertTrue(isReplAdminDenied);
-    Mockito.when(conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(false);
+    when(conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(false);
     status = rangerDenyTask.execute();
     Assert.assertEquals(0, status);
     Mockito.verify(mockClient,

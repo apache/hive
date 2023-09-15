@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -60,16 +59,18 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
   private transient RangerRestClient rangerRestClient;
 
   private transient ReplLogger replLogger;
+  private transient ReplLoggerFactory replLoggerFactory;
 
-  public RangerLoadTask() {
+  public RangerLoadTask(RangerRestClientImpl mockClient, HiveConf conf, RangerLoadWork work) {
     super();
   }
 
   @VisibleForTesting
-  RangerLoadTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerLoadWork work) {
+  RangerLoadTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerLoadWork work, ReplLoggerFactory replLoggerFactory) {
     this.conf = conf;
     this.work = work;
     this.rangerRestClient = rangerRestClient;
+    this.replLoggerFactory = replLoggerFactory;
   }
 
   @Override
@@ -111,7 +112,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         rangerExportPolicyList = rangerRestClient.readRangerPoliciesFromJsonFile(new Path(work.getCurrentDumpPath(),
                 ReplUtils.HIVE_RANGER_POLICIES_FILE_NAME), conf);
         int expectedPolicyCount = rangerExportPolicyList == null ? 0 : rangerExportPolicyList.getListSize();
-        replLogger = new RangerLoadLogger(work.getSourceDbName(), work.getTargetDbName(),
+        replLogger = replLoggerFactory.createRangerLoadLogger(work.getSourceDbName(), work.getTargetDbName(),
           work.getCurrentDumpPath().toString(), expectedPolicyCount);
         replLogger.startLog();
         Map<String, Long> metricMap = new HashMap<>();

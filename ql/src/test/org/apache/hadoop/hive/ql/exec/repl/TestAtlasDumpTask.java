@@ -101,7 +101,7 @@ public class TestAtlasDumpTask {
     when(work.getSrcDB()).thenReturn("srcDB");
     when(work.isBootstrap()).thenReturn(true);
     ReplLoggerFactory replLoggerFactoryMock = mock(ReplLoggerFactory.class);
-    when(replLoggerFactoryMock.createLogger(anyString(), anyString())).thenReturn(logger);
+    when(replLoggerFactoryMock.createAtlasDumpLogger(anyString(), anyString())).thenReturn(logger);
     atlasDumpTask = new AtlasDumpTask(atlasRestClient, conf, work, replLoggerFactoryMock);
     AtlasDumpTask atlasDumpTaskSpy = Mockito.spy(atlasDumpTask);
     when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);

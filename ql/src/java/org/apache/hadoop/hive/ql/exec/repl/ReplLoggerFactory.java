@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.RangerDumpLogger;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.AtlasLoadLogger;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
 
 public class ReplLoggerFactory  {
   private static ReplLoggerFactory instance;
@@ -34,8 +37,19 @@ public class ReplLoggerFactory  {
     return  instance;
   }
 
-  public AtlasDumpLogger createLogger(String dbName, String dumpDir) {
+  public AtlasDumpLogger createAtlasDumpLogger(String dbName, String dumpDir) {
     return new AtlasDumpLogger(dbName, dumpDir);
   }
 
+  public AtlasLoadLogger createAtlasLoadLogger(String srcDb, String trgDb, String dumpDir) {
+    return new AtlasLoadLogger(srcDb, trgDb, dumpDir);
+  }
+
+  public RangerDumpLogger createRangerDumpLogger(String srcDb, String dumpDir) {
+    return new RangerDumpLogger(srcDb, dumpDir);
+  }
+
+  public RangerLoadLogger createRangerLoadLogger(String srcDb, String trgDb, String dumpDir, long estimatedNumPolicies) {
+    return new RangerLoadLogger(srcDb, trgDb, dumpDir, estimatedNumPolicies);
+  }
 }

@@ -60,15 +60,18 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
 
   private transient ReplLogger replLogger;
 
+  private ReplLoggerFactory replLoggerFactory = ReplLoggerFactory.getInstance();
+
   public RangerDumpTask() {
     super();
   }
 
   @VisibleForTesting
-  RangerDumpTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerDumpWork work) {
+  RangerDumpTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerDumpWork work, ReplLoggerFactory replLoggerFactory) {
     this.conf = conf;
     this.work = work;
     this.rangerRestClient = rangerRestClient;
+    this.replLoggerFactory = replLoggerFactory;
   }
 
   @Override
@@ -86,7 +89,7 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.POLICIES.name(), 0L);
       work.getMetricCollector().reportStageStart(getName(), metricMap);
-      replLogger = new RangerDumpLogger(work.getDbName(), work.getCurrentDumpPath().toString());
+      replLogger = replLoggerFactory.createRangerDumpLogger(work.getDbName(), work.getCurrentDumpPath().toString());
       replLogger.startLog();
       if (rangerRestClient == null) {
         rangerRestClient = getRangerRestClient();
