@@ -28,7 +28,6 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.util.Tasks;
-import org.apache.iceberg.util.TestConstants;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -55,7 +54,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                TestConstants.RETRY_STRATEGIES);
+                RETRY_STRATEGIES);
             shell.executeStatement(sql);
             shell.closeSession();
           });
@@ -92,7 +91,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                TestConstants.RETRY_STRATEGIES);
+                RETRY_STRATEGIES);
             shell.executeStatement(sql[i]);
             shell.closeSession();
           });
@@ -131,7 +130,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                TestConstants.RETRY_STRATEGIES);
+                RETRY_STRATEGIES);
             shell.executeStatement(sql);
             shell.closeSession();
           });

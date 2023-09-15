@@ -32,7 +32,7 @@ public enum ReExecutionStrategyType {
   DAGSUBMIT("dagsubmit", ReExecutionDagSubmitPlugin.class),
   WRITE_CONFLICT("write_conflict", ReExecuteOnWriteConflictPlugin.class);
 
-  private static final Map<String, ? extends Class<? extends IReExecutionPlugin>> STRATEGY_LOOKUP =
+  private static Map<String, ? extends Class<? extends IReExecutionPlugin>> STRATEGY_LOOKUP =
       Arrays.stream(ReExecutionStrategyType.values())
           .collect(toMap(ReExecutionStrategyType::getStrategy, ReExecutionStrategyType::getPluginClass));
 

@@ -43,7 +43,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Tasks;
-import org.apache.iceberg.util.TestConstants;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -669,7 +668,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
           HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
           HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
           HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-              TestConstants.RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
+              RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
           shell.executeStatement(sql);
           shell.closeSession();
         });
@@ -693,7 +692,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                TestConstants.RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
+                RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
             shell.executeStatement(sql);
             shell.closeSession();
           });
@@ -727,7 +726,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                TestConstants.RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
+                RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
             shell.executeStatement(sql[i]);
             shell.closeSession();
           });
@@ -761,7 +760,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                TestConstants.RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
+                RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
             shell.executeStatement(sql);
             shell.closeSession();
           });

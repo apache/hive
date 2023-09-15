@@ -25,13 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
-import org.apache.hadoop.hive.ql.reexec.ReExecuteLostAMQueryPlugin;
-import org.apache.hadoop.hive.ql.reexec.ReCompileWithoutCBOPlugin;
-import org.apache.hadoop.hive.ql.reexec.ReExecutionOverlayPlugin;
-import org.apache.hadoop.hive.ql.reexec.ReExecutionDagSubmitPlugin;
-import org.apache.hadoop.hive.ql.reexec.ReExecuteOnWriteConflictPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionStrategyType;
-import org.apache.hadoop.hive.ql.reexec.ReOptimizePlugin;
 
 import com.google.common.base.Strings;
 
