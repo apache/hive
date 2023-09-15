@@ -69,8 +69,10 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   private boolean sslEnabled;
   private String keyStoreLocation;
   private String keyStorePassword;
+  private String keyStoreType;
   private String trustStoreLocation;
   private String trustStorePassword;
+  private String trustStoreType;
 
   private List<ACL> newNodeAcl;
   private Configuration conf;
@@ -144,8 +146,10 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
               .sslEnabled(sslEnabled)
               .keyStoreLocation(keyStoreLocation)
               .keyStorePassword(keyStorePassword)
+              .keyStoreType(keyStoreType)
               .trustStoreLocation(trustStoreLocation)
               .trustStorePassword(trustStorePassword)
+              .trustStoreType(trustStoreType)
               .build();
           zkSession = zkHelper.getNewZookeeperClient(aclDefaultProvider);
           zkSession.start();
@@ -499,10 +503,14 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
           keyStoreLocation = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_LOCATION);
           keyStorePassword =
               MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD);
+          keyStoreType =
+              MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_TYPE);
           trustStoreLocation =
               MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION);
           trustStorePassword =
               MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD);
+          trustStoreType =
+              MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_TYPE);
         } catch (IOException ex) {
           throw new RuntimeException("Failed to read zookeeper configuration passwords", ex);
         }
@@ -517,10 +525,12 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
           keyStoreLocation = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_LOCATION, "");
           char[] pwd = conf.getPassword(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_PASSWORD);
           keyStorePassword = pwd == null ? null : new String(pwd);
+          keyStoreType = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_TYPE, "");
           trustStoreLocation =
               conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_LOCATION, "");
           pwd = conf.getPassword(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_PASSWORD);
           trustStorePassword = pwd == null ? null : new String(pwd);
+          trustStoreType = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_TYPE, "");
         } catch (IOException ex) {
           throw new RuntimeException("Failed to read zookeeper configuration passwords", ex);
         }

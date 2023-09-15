@@ -146,8 +146,10 @@ public class Utils {
     public static final String ZOOKEEPER_SSL_ENABLE = "zooKeeperSSLEnable";
     public static final String ZOOKEEPER_KEYSTORE_LOCATION = "zooKeeperKeystoreLocation";
     public static final String ZOOKEEPER_KEYSTORE_PASSWORD= "zooKeeperKeystorePassword";
+    public static final String ZOOKEEPER_KEYSTORE_TYPE= "zooKeeperKeystoreType";
     public static final String ZOOKEEPER_TRUSTSTORE_LOCATION  = "zooKeeperTruststoreLocation";
     public static final String ZOOKEEPER_TRUSTSTORE_PASSWORD = "zooKeeperTruststorePassword";
+    public static final String ZOOKEEPER_TRUSTSTORE_TYPE = "zooKeeperTruststoreType";
     // Default namespace value on ZooKeeper.
     // This value is used if the param "zooKeeperNamespace" is not specified in the JDBC Uri.
     static final String ZOOKEEPER_DEFAULT_NAMESPACE = "hiveserver2";
@@ -185,7 +187,7 @@ public class Utils {
     static final String TRUE = "true";
     static final String SSL_KEY_STORE = "sslKeyStore";
     static final String SSL_KEY_STORE_PASSWORD = "keyStorePassword";
-    static final String SSL_KEY_STORE_TYPE = "JKS";
+    static final String SSL_KEY_STORE_TYPE = "keyStoreType";
     static final String SUNX509_ALGORITHM_STRING = "SunX509";
     static final String SUNJSSE_ALGORITHM_STRING = "SunJSSE";
    // --------------- End 2 way ssl options ----------------------------
@@ -207,8 +209,10 @@ public class Utils {
     private boolean zooKeeperSslEnabled = false;
     private String zookeeperKeyStoreLocation = "";
     private String zookeeperKeyStorePassword = "";
+    private String zookeeperKeyStoreType;
     private String zookeeperTrustStoreLocation = "";
     private String zookeeperTrustStorePassword = "";
+    private String zookeeperTrustStoreType;
     private String currentHostZnodePath;
     private final List<String> rejectedHostZnodePaths = new ArrayList<String>();
 
@@ -233,8 +237,10 @@ public class Utils {
       this.zooKeeperSslEnabled = params.zooKeeperSslEnabled;
       this.zookeeperKeyStoreLocation = params.zookeeperKeyStoreLocation;
       this.zookeeperKeyStorePassword = params.zookeeperKeyStorePassword;
+      this.zookeeperKeyStoreType = params.zookeeperKeyStoreType;
       this.zookeeperTrustStoreLocation = params.zookeeperTrustStoreLocation;
       this.zookeeperTrustStorePassword = params.zookeeperTrustStorePassword;
+      this.zookeeperTrustStoreType = params.zookeeperTrustStoreType;
 
       this.currentHostZnodePath = params.currentHostZnodePath;
       this.rejectedHostZnodePaths.addAll(rejectedHostZnodePaths);
@@ -291,12 +297,20 @@ public class Utils {
       return zookeeperKeyStorePassword;
     }
 
+    public String getZookeeperKeyStoreType() {
+      return zookeeperKeyStoreType;
+    }
+
     public String getZookeeperTrustStoreLocation() {
       return zookeeperTrustStoreLocation;
     }
 
     public String getZookeeperTrustStorePassword() {
       return zookeeperTrustStorePassword;
+    }
+
+    public String getZookeeperTrustStoreType() {
+      return zookeeperTrustStoreType;
     }
 
     public List<String> getRejectedHostZnodePaths() {
@@ -359,12 +373,20 @@ public class Utils {
       this.zookeeperKeyStorePassword = zookeeperKeyStorePassword;
     }
 
+    public void setZookeeperKeyStoreType(String zookeeperKeyStoreType) {
+      this.zookeeperKeyStoreType = zookeeperKeyStoreType;
+    }
+
     public void setZookeeperTrustStoreLocation(String zookeeperTrustStoreLocation) {
       this.zookeeperTrustStoreLocation = zookeeperTrustStoreLocation;
     }
 
     public void setZookeeperTrustStorePassword(String zookeeperTrustStorePassword) {
       this.zookeeperTrustStorePassword = zookeeperTrustStorePassword;
+    }
+
+    public void setZookeeperTrustStoreType(String zookeeperTrustStoreType) {
+      this.zookeeperTrustStoreType = zookeeperTrustStoreType;
     }
 
     public void setCurrentHostZnodePath(String currentHostZnodePath) {
