@@ -157,11 +157,15 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
 
   private static ExprNodeConstantDesc toListConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
                                                       ObjectInspector listElementOI) {
+    List<Object> constant = null;
     PrimitiveObjectInspector poi = (PrimitiveObjectInspector)listElementOI;
-    List<?> values = (List<?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
-    List<Object> constant = new ArrayList<Object>();
-    for (Object o : values) {
-      constant.add(poi.getPrimitiveJavaObject(o));
+    Object constantValue = ((ConstantObjectInspector) inspector).getWritableConstantValue();
+    if (constantValue != null) {
+      List<?> values = (List<?>) constantValue;
+      constant = new ArrayList<>(values.size());
+      for (Object o : values) {
+        constant.add(poi.getPrimitiveJavaObject(o));
+      }
     }
 
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
@@ -172,12 +176,16 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
 
   private static ExprNodeConstantDesc toMapConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
                                                      ObjectInspector keyOI, ObjectInspector valueOI) {
-    PrimitiveObjectInspector keyPoi = (PrimitiveObjectInspector)keyOI;
-    PrimitiveObjectInspector valuePoi = (PrimitiveObjectInspector)valueOI;
-    Map<?, ?> values = (Map<?, ?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
-    Map<Object, Object> constant = new LinkedHashMap<Object, Object>();
-    for (Map.Entry<?, ?> e : values.entrySet()) {
-      constant.put(keyPoi.getPrimitiveJavaObject(e.getKey()), valuePoi.getPrimitiveJavaObject(e.getValue()));
+    Map<Object, Object> constant = null;
+    Object constantValue = ((ConstantObjectInspector) inspector).getWritableConstantValue();
+    if (constantValue != null) {
+      PrimitiveObjectInspector keyPoi = (PrimitiveObjectInspector) keyOI;
+      PrimitiveObjectInspector valuePoi = (PrimitiveObjectInspector) valueOI;
+      Map<?, ?> values = (Map<?, ?>) constantValue;
+      constant = new LinkedHashMap<>(values.size());
+      for (Map.Entry<?, ?> e : values.entrySet()) {
+        constant.put(keyPoi.getPrimitiveJavaObject(e.getKey()), valuePoi.getPrimitiveJavaObject(e.getValue()));
+      }
     }
 
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
