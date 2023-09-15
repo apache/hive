@@ -711,7 +711,7 @@ public class Hive {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
         if (replWriteId > 0) {
-          ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
+          ValidWriteIdList writeIds = getMSC().getValidWriteIds(getFullTableName(dbName, tblName), replWriteId);
           tableSnapshot = new TableSnapshot(replWriteId, writeIds.writeToString());
         } else {
           // Make sure we pass in the names, so we can get the correct snapshot for rename table.
@@ -2625,8 +2625,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
 
-    alterTable(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), tbl, false, environmentContext,
-            true, ((writeId == null) ? 0 : writeId));
+    alterTable(tbl, false, environmentContext, true);
 
     if (AcidUtils.isTransactionalTable(tbl)) {
       addWriteNotificationLog(tbl, null, newFiles, writeId);
@@ -3885,7 +3884,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void recycleDirToCmPath(Path dataPath, boolean isPurge) throws HiveException {
     try {
       CmRecycleRequest request = new CmRecycleRequest(dataPath.toString(), isPurge);
-      getSynchronizedMSC().recycleDirToCmPath(request);
+      getMSC().recycleDirToCmPath(request);
     } catch (Exception e) {
       throw new HiveException(e);
     }
