@@ -133,8 +133,7 @@ public class TestCleaner extends CompactorTest {
       cleaner.init(new AtomicBoolean(true));
       cleaner.setCleanupHandlers(taskHandlers);
 
-
-      ReflectionUtil.setField(cleaner, "txnHandler", mockedHandler);
+      ReflectionUtil.setInAllFields(cleaner, "txnHandler", mockedHandler);
 
       cleaner.run();
 
@@ -161,7 +160,7 @@ public class TestCleaner extends CompactorTest {
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
     cleaner.setCleanupHandlers(taskHandlers);
-    ReflectionUtil.setField(cleaner, "txnHandler", mockedHandler);
+    ReflectionUtil.setInAllFields(cleaner, "txnHandler", mockedHandler);
 
     cleaner.run();
 
@@ -204,7 +203,7 @@ public class TestCleaner extends CompactorTest {
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
     cleaner.setCleanupHandlers(taskHandlers);
-    ReflectionUtil.setField(cleaner, "txnHandler", mockedHandler);
+    ReflectionUtil.setInAllFields(cleaner, "txnHandler", mockedHandler);
 
     cleaner.run();
 
@@ -220,7 +219,7 @@ public class TestCleaner extends CompactorTest {
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
     cleaner.setCleanupHandlers(taskHandlers);
-    ReflectionUtil.setField(cleaner, "txnHandler", mockedHandler);
+    ReflectionUtil.setInAllFields(cleaner, "txnHandler", mockedHandler);
 
     cleaner.run();
 

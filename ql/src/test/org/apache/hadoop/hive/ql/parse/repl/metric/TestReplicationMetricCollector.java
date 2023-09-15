@@ -47,6 +47,7 @@ import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -75,6 +76,8 @@ public class TestReplicationMetricCollector {
   @Mock
   private MetricSink metricSinkInstance;
 
+  static MockedStatic<MetricSink> metricSinkMockedStatic;
+
   @Before
   public void setup() throws Exception {
     conf = new HiveConf();
@@ -87,13 +90,14 @@ public class TestReplicationMetricCollector {
   }
 
   private void disableBackgroundThreads() {
-//    PowerMockito.mockStatic(MetricSink.class);
-//    Mockito.when(MetricSink.getInstance()).thenReturn(metricSinkInstance);
+    metricSinkMockedStatic = Mockito.mockStatic(MetricSink.class);
+    metricSinkMockedStatic.when(MetricSink::getInstance).thenReturn(metricSinkInstance);
   }
 
   @After
   public void finalize() {
     MetricCollector.getInstance().deinit();
+    metricSinkMockedStatic.close();
   }
 
   @Test

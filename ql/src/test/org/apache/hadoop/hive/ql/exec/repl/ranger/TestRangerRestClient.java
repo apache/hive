@@ -22,6 +22,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,26 +55,26 @@ public class TestRangerRestClient {
   @Mock
   private HiveConf conf;
 
+  MockedStatic<UserGroupInformation> userGroupInformationMockedStatic;
+
   @Before
   public void setup() throws Exception {
-    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class)) {
+    userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
 
-      userGroupInformationMockedStatic.when(UserGroupInformation::getLoginUser).thenReturn(userGroupInformation);
+    userGroupInformationMockedStatic.when(UserGroupInformation::getLoginUser).thenReturn(userGroupInformation);
 
-      Mockito.when(userGroupInformation.doAs((PrivilegedAction<Object>) Mockito.any())).thenCallRealMethod();
-      Mockito.when(userGroupInformation.doAs((PrivilegedExceptionAction<Object>) Mockito.any())).thenCallRealMethod();
-      Mockito.when(mockClient.getRangerExportUrl(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-              .thenCallRealMethod();
-      Mockito.when(mockClient.getRangerImportUrl(Mockito.anyString(), Mockito.anyString()))
-              .thenCallRealMethod();
-      Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS)).thenReturn(1L);
-      Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS)).thenReturn(20L);
-      Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_JITTER, TimeUnit.SECONDS)).thenReturn(1L);
-      Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES, TimeUnit.SECONDS))
-              .thenReturn(10L);
-      Mockito.when(conf.getFloat(HiveConf.ConfVars.REPL_RETRY_BACKOFF_COEFFICIENT.varname, 1.0f))
-              .thenReturn(1.0f);
-    }
+    Mockito.when(mockClient.getRangerExportUrl(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+            .thenCallRealMethod();
+    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS)).thenReturn(1L);
+    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS)).thenReturn(20L);
+    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_JITTER, TimeUnit.SECONDS)).thenReturn(1L);
+    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES, TimeUnit.SECONDS))
+            .thenReturn(10L);
+  }
+
+  @After
+  public void tearDown() {
+    userGroupInformationMockedStatic.close();
   }
 
   @Test

@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -40,7 +42,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -48,31 +52,45 @@ import static org.mockito.Mockito.verify;
 public class TestCompactionHeartbeatService {
 
   private static Field HEARTBEAT_SINGLETON;
+  private static Field HEARTBEAT_CLIENTPOOL;
   @Mock
   private HiveConf conf;
   @Mock
   private IMetaStoreClient client;
+  private MockedStatic<HiveMetaStoreUtils> hiveMetaStoreUtilsMockedStatic;
+  private ObjectPool<IMetaStoreClient> clientPool;
 
   @BeforeClass
   public static void setupClass() throws NoSuchFieldException {
     HEARTBEAT_SINGLETON = CompactionHeartbeatService.class.getDeclaredField("instance");
     HEARTBEAT_SINGLETON.setAccessible(true);
+
+    HEARTBEAT_CLIENTPOOL = CompactionHeartbeatService.class.getDeclaredField("clientPool");
+    HEARTBEAT_CLIENTPOOL.setAccessible(true);
   }
 
   @Before
   public void setup() throws Exception {
-    try (MockedStatic<HiveMetaStoreUtils> hiveMetaStoreUtilsMockedStatic = mockStatic(HiveMetaStoreUtils.class)){
-      hiveMetaStoreUtilsMockedStatic.when(() -> HiveMetaStoreUtils.getHiveMetastoreClient(any())).thenReturn(client);
+    hiveMetaStoreUtilsMockedStatic = mockStatic(HiveMetaStoreUtils.class);
+    hiveMetaStoreUtilsMockedStatic.when(() -> HiveMetaStoreUtils.getHiveMetastoreClient(any())).thenReturn(client);
 
-      Mockito.when(conf.get(MetastoreConf.ConfVars.TXN_TIMEOUT.getVarname())).thenReturn("100ms");
-      Mockito.when(conf.get(MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS.getVarname())).thenReturn("4");
-      HEARTBEAT_SINGLETON.set(null,null);
-    }
+    Mockito.when(conf.get(MetastoreConf.ConfVars.TXN_TIMEOUT.getVarname())).thenReturn("100ms");
+    Mockito.when(conf.get(MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS.getVarname())).thenReturn("4");
+    HEARTBEAT_SINGLETON.set(null,null);
+
+    IMetaStoreClientFactory metaStoreClientFactory = spy((new IMetaStoreClientFactory(conf)));
+    doReturn(client).when(metaStoreClientFactory).create();
+
+    clientPool = spy(new GenericObjectPool<>(metaStoreClientFactory));
+
+    CompactionHeartbeatService compactionHeartbeatService = CompactionHeartbeatService.getInstance(conf);
+    HEARTBEAT_CLIENTPOOL.set(compactionHeartbeatService, clientPool);
   }
 
   @After
   public void tearDown() throws InterruptedException {
     CompactionHeartbeatService.getInstance(conf).shutdown();
+    hiveMetaStoreUtilsMockedStatic.close();
   }
 
   @Test
@@ -147,7 +165,7 @@ public class TestCompactionHeartbeatService {
     // Check if bad clients were closed and new ones were requested
     verify(client, times(3)).heartbeat(0,0);
     verify(client, times(3)).close();
-//    PowerMockito.verifyStatic(HiveMetaStoreUtils.class, times(3));
-//    HiveMetaStoreUtils.getHiveMetastoreClient(conf);
+    HiveMetaStoreUtils.getHiveMetastoreClient(conf);
+    verify(clientPool, times(3)).borrowObject();
   }
 }

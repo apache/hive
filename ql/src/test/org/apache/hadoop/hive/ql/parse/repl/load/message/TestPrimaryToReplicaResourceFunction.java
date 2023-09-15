@@ -30,10 +30,12 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
+import org.apache.hadoop.hive.ql.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -72,30 +75,32 @@ public class TestPrimaryToReplicaResourceFunction {
         new Context("primaryDb", null, null, null, hiveConf, null, null, logger);
     when(hiveConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR))
         .thenReturn("/someBasePath/withADir/");
-    function = new PrimaryToReplicaResourceFunction(context, metadata, "replicaDbName");
+    TimeUtil timeUtil = mock(TimeUtil.class);
+    when(timeUtil.getNanoTime()).thenReturn(0L);
+    function = new PrimaryToReplicaResourceFunction(context, metadata, "replicaDbName", timeUtil);
   }
 
   @Test
   public void createDestinationPath() throws IOException, SemanticException, URISyntaxException {
-//    mockStatic(FileSystem.class);
-    when(FileSystem.get(any(Configuration.class))).thenReturn(mockFs);
-    when(FileSystem.get(any(URI.class), any(Configuration.class))).thenReturn(mockFs);
+    MockedStatic<FileSystem> fileSystemMockedStatic = mockStatic(FileSystem.class);
+    MockedStatic<ReplCopyTask> ignoredReplCopyTaskMockedStatic = mockStatic(ReplCopyTask.class);
+    MockedStatic<CreateFunctionHandler> createFunctionHandlerMockedStatic = mockStatic(CreateFunctionHandler.class);
+
+    fileSystemMockedStatic.when(() -> FileSystem.get(any(Configuration.class))).thenReturn(mockFs);
+    fileSystemMockedStatic.when(() -> FileSystem.get(any(URI.class), any(Configuration.class))).thenReturn(mockFs);
+
     when(mockFs.getScheme()).thenReturn("hdfs");
     when(mockFs.getUri()).thenReturn(new URI("hdfs", "somehost:9000", null, null, null));
-//    mockStatic(System.class);
-//    when(System.nanoTime()).thenReturn(Long.MAX_VALUE);
+
     when(functionObj.getFunctionName()).thenReturn("someFunctionName");
-//    mockStatic(ReplCopyTask.class);
     Task mock = mock(Task.class);
     when(ReplCopyTask.getLoadCopyTask(any(ReplicationSpec.class), any(Path.class), any(Path.class),
-        any(HiveConf.class), any(), any())).thenReturn(mock);
-
+            any(HiveConf.class), any(), any())).thenReturn(mock);
     ResourceUri resourceUri = function.destinationResourceUri(new ResourceUri(ResourceType.JAR,
-        "hdfs://localhost:9000/user/someplace/ab.jar#e094828883"));
-
+            "hdfs://localhost:9000/user/someplace/ab.jar#e094828883"));
     assertThat(resourceUri.getUri(),
-        is(equalTo(
-            "hdfs://somehost:9000/someBasePath/withADir/replicadbname/somefunctionname/" + String
-                .valueOf(0L) + "/ab.jar")));
+            is(equalTo(
+                    "hdfs://somehost:9000/someBasePath/withADir/replicadbname/somefunctionname/" + String
+                            .valueOf(0L) + "/ab.jar")));
   }
 }

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
+import org.apache.hadoop.hive.ql.util.TimeUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
     private CreateFunctionDesc build() throws SemanticException {
       replCopyTasks.clear();
       PrimaryToReplicaResourceFunction conversionFunction =
-          new PrimaryToReplicaResourceFunction(context, metadata, destinationDbName);
+          new PrimaryToReplicaResourceFunction(context, metadata, destinationDbName, new TimeUtil());
       // We explicitly create immutable lists here as it forces the guava lib to run the transformations
       // and not do them lazily. The reason being the function class used for transformations additionally
       // also creates the corresponding replCopyTasks, which cannot be evaluated lazily. since the query
@@ -153,13 +154,15 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
     private final List<Task<?>> replCopyTasks = new ArrayList<>();
     private final String functionsRootDir;
     private String destinationDbName;
+    private TimeUtil timeUtil;
 
     PrimaryToReplicaResourceFunction(Context context, MetaData metadata,
-        String destinationDbName) {
+                                     String destinationDbName, TimeUtil timeUtil) {
       this.context = context;
       this.metadata = metadata;
       this.destinationDbName = destinationDbName;
       this.functionsRootDir = context.hiveConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR);
+      this.timeUtil = timeUtil;
     }
 
     @Override
@@ -187,7 +190,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
           pathBuilder
               .addDescendant(destinationDbName.toLowerCase())
               .addDescendant(metadata.function.getFunctionName().toLowerCase())
-              .addDescendant(String.valueOf(System.nanoTime()))
+              .addDescendant(String.valueOf(timeUtil.getNanoTime()))
               .addDescendant(split[split.length - 1])
               .build(),
           new Path(functionsRootDir).getFileSystem(context.hiveConf)
