@@ -36,6 +36,8 @@ select `partition` from default.test_ice_bigint.partitions;
 
 create table test_ice_str (a bigint, b string) stored by iceberg stored as orc tblproperties ('format-version'='2');
 insert into test_ice_str values (115674892756, 'ddd'), (2267849027657399057, 'eefe');
+insert into test_ice_str values (115674892756, 'a"ab'), (2267849027657399057, 'eefe');
+insert into test_ice_str values (115674892756, "a'ab"), (2267849027657399057, "eefe");
 alter table test_ice_str set partition spec(b);
 insert into test_ice_str values (33678499377556738, 'rrfdfdf');
 insert into table test_ice_str select * from test_ice_str;
@@ -48,6 +50,10 @@ select * from test_ice_str;
 select `partition` from default.test_ice_str.partitions;
 explain truncate table test_ice_str partition (b = 'rrfdfdf');
 truncate table test_ice_str partition (b = 'rrfdfdf');
+select * from test_ice_str;
+select `partition` from default.test_ice_str.partitions;
+truncate table test_ice_str partition (b = 'a"ab');
+truncate table test_ice_str partition (b = "a'ab");
 select * from test_ice_str;
 select `partition` from default.test_ice_str.partitions;
 

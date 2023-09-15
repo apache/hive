@@ -49,10 +49,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.metadata.DummyPartition;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.parse.*;
 import org.apache.hadoop.hive.ql.parse.ParseUtils.ReparseResult;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
@@ -375,9 +372,10 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
   }
 
   public StringBuilder constructDeleteQuery(Table table, Map<String, String> partitionSpec) throws SemanticException {
-    StringBuilder sb = new StringBuilder().append("delete from ").append(table.getTableName())
+    String qualifiedTableName = HiveTableName.ofNullable(HiveUtils.unparseIdentifier(table.getTableName(), this.conf),
+            HiveUtils.unparseIdentifier(table.getDbName(), this.conf), null).getNotEmptyDbTable();
+    StringBuilder sb = new StringBuilder().append("delete from ").append(qualifiedTableName)
             .append(" where ");
-    List<String> keyList = new ArrayList<String>(partitionSpec.keySet());
     Deserializer deserializer = table.getDeserializer();
     Map<String, PrimitiveObjectInspector.PrimitiveCategory> stringTypeInfoMap = new HashMap<>();
     try {
@@ -385,8 +383,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       if (objectInspector.getCategory() == ObjectInspector.Category.STRUCT) {
         StructObjectInspector structObjectInspector = (StructObjectInspector) objectInspector;
         List<? extends StructField> structFields =  structObjectInspector.getAllStructFieldRefs();
-        for (int index = 0;index < structFields.size();index++) {
-          StructField structField = structFields.get(index);
+        for (StructField structField : structFields) {
           if (structField.getFieldObjectInspector().getCategory() == ObjectInspector.Category.PRIMITIVE) {
             PrimitiveObjectInspector primitiveObjectInspector = (PrimitiveObjectInspector) structField.getFieldObjectInspector();
             stringTypeInfoMap.put(structField.getFieldName(),
@@ -397,17 +394,31 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
     } catch (SerDeException e) {
       throw new SemanticException(String.format("Unable to get object inspector due to: %s", e));
     }
-    for (int index = 0;index < keyList.size();index++) {
-      String key = keyList.get(index);
+    boolean first = true;
+    for (String key : partitionSpec.keySet()) {
       PrimitiveObjectInspector.PrimitiveCategory category = stringTypeInfoMap.get(key);
+      if (category == null) {
+        throw new SemanticException(String.format(
+            "Only primitive partition column type is supported via TRUNCATE operation " +
+            " but column %s is not a primitive category.", key));
+      }
       String value = partitionSpec.get(key);
       boolean shouldEncloseQuotes = TypeInfoUtils.shouldEncloseQuotes(category);
-      sb.append(index == 0 ? "" : " and ").append(key).append(" = ");
-      if (shouldEncloseQuotes) {
-        sb.append("'").append(value).append("'");
-      } else {
-        sb.append(value);
+      if (value != null) {
+        sb.append(first ? "" : " and ").append(key).append(" = ");
+        if (shouldEncloseQuotes) {
+          // The partition value is containing a single-quote hence we cannot use \' as the enclosing quote.
+          // We need to use \" as the enclosing quote.
+          if (value.contains("'")) {
+            sb.append("\"" ).append(value).append("\"");
+          } else {
+            sb.append("'").append(value).append("'");
+          }
+        } else {
+          sb.append(value);
+        }
       }
+      first = false;
     }
     return sb;
   }

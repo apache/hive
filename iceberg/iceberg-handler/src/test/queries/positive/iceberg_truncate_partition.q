@@ -15,6 +15,8 @@ insert into ice_parquet_str_date values ('str', 1, 'yab', '2023-07-26');
 insert into ice_parquet_str_date values ('str', 1, 'yzb', '2023-07-26');
 insert into ice_parquet_str_date values ('str', 1, 'xyz', '2022-02-07');
 insert into ice_parquet_str_date values ('str', 1, 'abc', '2019-02-07');
+insert into ice_parquet_str_date values ('str', 1, 'a"ab', '2019-02-07');
+insert into ice_parquet_str_date values ('str', 1, "a'ab", '2019-02-07');
 
 select `partition` from default.ice_parquet_str_date.partitions;
 truncate table ice_parquet_str_date partition (datecol = '2022-02-07');
@@ -22,6 +24,8 @@ select `partition` from default.ice_parquet_str_date.partitions;
 truncate table ice_parquet_str_date partition (pcol = 'yzb', datecol = '2023-07-26');
 select `partition` from default.ice_parquet_str_date.partitions;
 truncate table ice_parquet_str_date partition (pcol = 'xyz');
+truncate table ice_parquet_str_date partition (pcol = 'a"ab');
+truncate table ice_parquet_str_date partition (pcol = "a'ab");
 
 select * from ice_parquet_str_date;
 

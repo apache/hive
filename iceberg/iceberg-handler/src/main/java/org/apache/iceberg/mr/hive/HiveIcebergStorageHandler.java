@@ -1648,7 +1648,22 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
-  // Metadata delete or a positional delete
+  /**
+   * A function to decide whether a given truncate query can perform a metadata delete or not.
+   * If its not possible to perform metadata delete then try to perform a positional delete.
+   * The steps to decide whether truncate is possible is as follows - <br>
+   * a. Create an expression based on the partition spec columns and partition spec values. <br>
+   * b. Find files which match the expression using Apache Iceberg's FindFiles API. <br>
+   * c. Do strict evaluation on whether the expression can clearly match all rows in the file. <br>
+   * If for all files, the strict evaluation returns true, it means that we safely delete all files
+   * by performing a metadata delete operation. If not, we must convert the truncate to delete query
+   * which eventually performs a positional delete.
+   * @param hmsTable A Hive table instance.
+   * @param partitionSpec Map containing partition specification given by user.
+   * @return true if we can perform metadata delete, otherwise false.
+   * @throws SemanticException Exception raised when a partition transform is being used
+   * or when partition column is not present in the table.
+   */
   @Override
   public boolean shouldTruncate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
       throws SemanticException {
@@ -1657,10 +1672,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       return true;
     }
 
-    Map<String, PartitionField> partitionFieldMap = Maps.newHashMap();
-    for (PartitionField partField : table.spec().fields()) {
-      partitionFieldMap.put(partField.name(), partField);
-    }
+    Map<String, PartitionField> partitionFieldMap = Maps.newHashMapWithExpectedSize(table.spec().fields().size());
+    table.spec().fields().forEach(partField -> partitionFieldMap.put(partField.name(), partField));
     Expression finalExp = Expressions.alwaysTrue();
     for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
       String partColName = entry.getKey();

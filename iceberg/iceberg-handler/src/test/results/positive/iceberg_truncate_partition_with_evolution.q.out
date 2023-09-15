@@ -436,6 +436,22 @@ POSTHOOK: query: insert into test_ice_str values (115674892756, 'ddd'), (2267849
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_ice_str
+PREHOOK: query: insert into test_ice_str values (115674892756, 'a"ab'), (2267849027657399057, 'eefe')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_str
+POSTHOOK: query: insert into test_ice_str values (115674892756, 'a"ab'), (2267849027657399057, 'eefe')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_str
+PREHOOK: query: insert into test_ice_str values (115674892756, "a'ab"), (2267849027657399057, "eefe")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_str
+POSTHOOK: query: insert into test_ice_str values (115674892756, "a'ab"), (2267849027657399057, "eefe")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_str
 PREHOOK: query: alter table test_ice_str set partition spec(b)
 PREHOOK: type: ALTERTABLE_SETPARTSPEC
 PREHOOK: Input: default@test_ice_str
@@ -467,8 +483,16 @@ POSTHOOK: query: select * from test_ice_str
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_ice_str
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+115674892756	a"ab
+115674892756	a"ab
+115674892756	a'ab
+115674892756	a'ab
 115674892756	ddd
 115674892756	ddd
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
 2267849027657399057	eefe
 2267849027657399057	eefe
 33678499377556738	rrfdfdf
@@ -481,6 +505,8 @@ POSTHOOK: query: select `partition` from default.test_ice_str.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_ice_str
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"a'ab"}
+{"b":"a\"ab"}
 {"b":"ddd"}
 {"b":"eefe"}
 {"b":"rrfdfdf"}
@@ -510,19 +536,19 @@ STAGE PLANS:
                 TableScan
                   alias: test_ice_str
                   filterExpr: (b = 'ddd') (type: boolean)
-                  Statistics: Num rows: 6 Data size: 594 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 14 Data size: 1386 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (b = 'ddd') (type: boolean)
-                    Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 297 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), a (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                      Statistics: Num rows: 2 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
                         null sort order: zzzz
                         sort order: ++++
-                        Statistics: Num rows: 2 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col4 (type: bigint)
             Execution mode: vectorized
         Reducer 2 
@@ -531,10 +557,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: bigint), VALUE._col0 (type: bigint), 'ddd' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 2 Data size: 598 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 897 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 598 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 897 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                       output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -572,6 +598,14 @@ POSTHOOK: query: select * from test_ice_str
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_ice_str
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+115674892756	a"ab
+115674892756	a"ab
+115674892756	a'ab
+115674892756	a'ab
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
 2267849027657399057	eefe
 2267849027657399057	eefe
 33678499377556738	rrfdfdf
@@ -584,6 +618,8 @@ POSTHOOK: query: select `partition` from default.test_ice_str.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_ice_str
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"a'ab"}
+{"b":"a\"ab"}
 {"b":"ddd"}
 {"b":"eefe"}
 {"b":"rrfdfdf"}
@@ -618,6 +654,14 @@ POSTHOOK: query: select * from test_ice_str
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_ice_str
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+115674892756	a"ab
+115674892756	a"ab
+115674892756	a'ab
+115674892756	a'ab
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
 2267849027657399057	eefe
 2267849027657399057	eefe
 PREHOOK: query: select `partition` from default.test_ice_str.partitions
@@ -628,6 +672,47 @@ POSTHOOK: query: select `partition` from default.test_ice_str.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_ice_str
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"a'ab"}
+{"b":"a\"ab"}
+{"b":"ddd"}
+{"b":"eefe"}
+{"b":null}
+PREHOOK: query: truncate table test_ice_str partition (b = 'a"ab')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_str@b=a%22ab
+POSTHOOK: query: truncate table test_ice_str partition (b = 'a"ab')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_str@b=a%22ab
+PREHOOK: query: truncate table test_ice_str partition (b = "a'ab")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_str@b=a%27ab
+POSTHOOK: query: truncate table test_ice_str partition (b = "a'ab")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_str@b=a%27ab
+PREHOOK: query: select * from test_ice_str
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_str
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+PREHOOK: query: select `partition` from default.test_ice_str.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_str.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"a'ab"}
+{"b":"a\"ab"}
 {"b":"ddd"}
 {"b":"eefe"}
 {"b":null}

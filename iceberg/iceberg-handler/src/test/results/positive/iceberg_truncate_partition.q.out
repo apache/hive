@@ -82,6 +82,22 @@ POSTHOOK: query: insert into ice_parquet_str_date values ('str', 1, 'abc', '2019
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_str_date
+PREHOOK: query: insert into ice_parquet_str_date values ('str', 1, 'a"ab', '2019-02-07')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_str_date
+POSTHOOK: query: insert into ice_parquet_str_date values ('str', 1, 'a"ab', '2019-02-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_str_date
+PREHOOK: query: insert into ice_parquet_str_date values ('str', 1, "a'ab", '2019-02-07')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_str_date
+POSTHOOK: query: insert into ice_parquet_str_date values ('str', 1, "a'ab", '2019-02-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_str_date
 PREHOOK: query: select `partition` from default.ice_parquet_str_date.partitions
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_parquet_str_date
@@ -90,6 +106,8 @@ POSTHOOK: query: select `partition` from default.ice_parquet_str_date.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_str_date
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"pcol":"a'ab","datecol":"2019-02-07"}
+{"pcol":"a\"ab","datecol":"2019-02-07"}
 {"pcol":"abc","datecol":"2019-02-07"}
 {"pcol":"xya","datecol":"2027-01-20"}
 {"pcol":"xyb","datecol":"2025-07-18"}
@@ -112,6 +130,8 @@ POSTHOOK: query: select `partition` from default.ice_parquet_str_date.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_str_date
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"pcol":"a'ab","datecol":"2019-02-07"}
+{"pcol":"a\"ab","datecol":"2019-02-07"}
 {"pcol":"abc","datecol":"2019-02-07"}
 {"pcol":"xya","datecol":"2027-01-20"}
 {"pcol":"xyb","datecol":"2025-07-18"}
@@ -132,6 +152,8 @@ POSTHOOK: query: select `partition` from default.ice_parquet_str_date.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_str_date
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"pcol":"a'ab","datecol":"2019-02-07"}
+{"pcol":"a\"ab","datecol":"2019-02-07"}
 {"pcol":"abc","datecol":"2019-02-07"}
 {"pcol":"xya","datecol":"2027-01-20"}
 {"pcol":"xyb","datecol":"2025-07-18"}
@@ -143,6 +165,18 @@ PREHOOK: Output: default@ice_parquet_str_date@pcol=xyz
 POSTHOOK: query: truncate table ice_parquet_str_date partition (pcol = 'xyz')
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@ice_parquet_str_date@pcol=xyz
+PREHOOK: query: truncate table ice_parquet_str_date partition (pcol = 'a"ab')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ice_parquet_str_date@pcol=a%22ab
+POSTHOOK: query: truncate table ice_parquet_str_date partition (pcol = 'a"ab')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ice_parquet_str_date@pcol=a%22ab
+PREHOOK: query: truncate table ice_parquet_str_date partition (pcol = "a'ab")
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ice_parquet_str_date@pcol=a%27ab
+POSTHOOK: query: truncate table ice_parquet_str_date partition (pcol = "a'ab")
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ice_parquet_str_date@pcol=a%27ab
 PREHOOK: query: select * from ice_parquet_str_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_parquet_str_date

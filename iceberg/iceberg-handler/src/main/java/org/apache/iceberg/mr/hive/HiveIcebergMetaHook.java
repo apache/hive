@@ -610,7 +610,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       partitionFieldMap.put(partField.name(), partField);
     }
     Expression finalExp = Expressions.alwaysTrue();
-    if (partNames != null && !partNames.isEmpty()) {
+    if (partNames != null) {
       for (String partName : partNames) {
         String[] partColPairs = partName.split("/");
         Expression subExp = Expressions.alwaysTrue();
@@ -626,7 +626,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
             TransformSpec.TransformType transformType = IcebergTableUtil.getTransformType(partitionField.transform());
             Object value = Conversions.fromPartitionString(resultType, partColValue);
             Iterable iterable = () -> Collections.singletonList(value).iterator();
-            if (transformType.equals(TransformSpec.TransformType.IDENTITY)) {
+            if (TransformSpec.TransformType.IDENTITY.equals(transformType)) {
               Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
               subExp = Expressions.and(subExp, boundPredicate);
             } else {
