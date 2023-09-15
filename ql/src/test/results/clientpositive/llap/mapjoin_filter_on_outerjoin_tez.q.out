@@ -687,8 +687,10 @@ NULL	NULL	66	val_66
 NULL	NULL	98	val_98
 PREHOOK: query: DROP TABLE IF EXISTS c
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS c
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE c (key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -709,8 +711,10 @@ POSTHOOK: Lineage: c.key SCRIPT []
 POSTHOOK: Lineage: c.value SCRIPT []
 PREHOOK: query: DROP TABLE IF EXISTS d
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS d
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE d (key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
